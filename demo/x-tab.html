@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-tab demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --chip-bg: rgba(15, 23, 42, 0.06);
+        --chip-fg: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --chip-bg: rgba(148, 163, 184, 0.12);
+          --chip-fg: #cbd5e1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 {
+        margin-top: 0;
+      }
+
+      .section-card > p {
+        color: var(--muted);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        color: var(--chip-fg);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .demo-block {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .tab-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .tab-row.vertical {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      x-tab {
+        display: inline-block;
+      }
+
+      x-tab.demo-tab {
+        --x-tab-color: var(--page-fg);
+        --x-tab-background: rgba(255, 255, 255, 0.72);
+        --x-tab-border-color: rgba(148, 163, 184, 0.24);
+        --x-tab-hover-background: rgba(59, 130, 246, 0.07);
+        --x-tab-selected-color: #2563eb;
+        --x-tab-selected-background: rgba(59, 130, 246, 0.12);
+        --x-tab-selected-border-color: rgba(59, 130, 246, 0.18);
+        --x-tab-focus-ring: rgba(59, 130, 246, 0.36);
+        --x-tab-disabled-opacity: 0.5;
+        --x-tab-padding-sm: 6px 12px;
+        --x-tab-padding-md: 10px 16px;
+        --x-tab-padding-lg: 14px 20px;
+        --x-tab-radius: 12px;
+        --x-tab-transition-duration: 140ms;
+        --x-tab-transition-timing: ease;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-tab.demo-tab {
+          --x-tab-color: #e5e7eb;
+          --x-tab-background: rgba(15, 23, 42, 0.72);
+          --x-tab-border-color: rgba(100, 116, 139, 0.32);
+          --x-tab-hover-background: rgba(96, 165, 250, 0.10);
+          --x-tab-selected-color: #93c5fd;
+          --x-tab-selected-background: rgba(96, 165, 250, 0.14);
+          --x-tab-selected-border-color: rgba(96, 165, 250, 0.26);
+          --x-tab-focus-ring: rgba(96, 165, 250, 0.4);
+        }
+      }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.42);
+        padding: 16px;
+        color: var(--muted);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .panel {
+          background: rgba(15, 23, 42, 0.42);
+        }
+      }
+
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.8em;
+        padding: 0.15em 0.45em;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--page-fg);
+        font-size: 0.9em;
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .kbd {
+          background: rgba(15, 23, 42, 0.42);
+          color: #e5e7eb;
+        }
+      }
+
+      .event-log {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--surface-border);
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .event-log {
+          background: rgba(15, 23, 42, 0.42);
+        }
+      }
+
+      code {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.92em;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Light & Dark Mode</div>
+        <h1>x-tab</h1>
+        <p class="subtitle">
+          Themeable single-tab trigger component for tab interfaces. This demo
+          follows the same professional light and dark mode visual system as the
+          other component demos and highlights selected, disabled, variant, and
+          keyboard activation states.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Default horizontal tabs</h2>
+          <p>
+            Standard horizontal tabs with one selected item and one disabled item.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row" role="tablist" aria-label="Default horizontal tabs">
+              <x-tab class="demo-tab" selected value="overview" label="Overview tab" controls="panel-overview">Overview</x-tab>
+              <x-tab class="demo-tab" value="analytics" label="Analytics tab" controls="panel-analytics">Analytics</x-tab>
+              <x-tab class="demo-tab" value="reports" label="Reports tab" controls="panel-reports">Reports</x-tab>
+              <x-tab class="demo-tab" disabled value="settings" label="Settings tab" controls="panel-settings">Settings</x-tab>
+            </div>
+
+            <div id="panel-overview" class="panel">
+              Selected tabs expose <code>aria-selected="true"</code> and
+              <code>tabindex="0"</code>, while non-selected or disabled tabs remain out of the active tab stop.
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Underline variant</h2>
+          <p>
+            Underline styling works well for compact navigation and editorial layouts.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row" role="tablist" aria-label="Underline tabs">
+              <x-tab class="demo-tab" variant="underline" selected value="all">All</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="open">Open</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="closed">Closed</x-tab>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Pill variant</h2>
+          <p>
+            Pill tabs provide a stronger filled selected state for filter-like interfaces.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row" role="tablist" aria-label="Pill tabs">
+              <x-tab class="demo-tab" variant="pill" value="daily">Daily</x-tab>
+              <x-tab class="demo-tab" variant="pill" selected value="weekly">Weekly</x-tab>
+              <x-tab class="demo-tab" variant="pill" value="monthly">Monthly</x-tab>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Vertical tabs</h2>
+          <p>
+            Vertical orientation changes the visual treatment while keeping the same tab semantics.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row vertical" role="tablist" aria-label="Vertical tabs" aria-orientation="vertical">
+              <x-tab class="demo-tab" orientation="vertical" selected value="profile">Profile</x-tab>
+              <x-tab class="demo-tab" orientation="vertical" value="security">Security</x-tab>
+              <x-tab class="demo-tab" orientation="vertical" value="notifications">Notifications</x-tab>
+              <x-tab class="demo-tab" orientation="vertical" disabled value="billing">Billing</x-tab>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Sizes and explicit states</h2>
+          <p>
+            The component supports size variation while preserving clear selected and disabled states.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row">
+              <x-tab class="demo-tab" size="sm" value="small">Small</x-tab>
+              <x-tab class="demo-tab" size="md" selected value="medium">Medium selected</x-tab>
+              <x-tab class="demo-tab" size="lg" disabled value="large">Large disabled</x-tab>
+            </div>
+
+            <div class="chip-row">
+              <span class="chip">Selected tab</span>
+              <span class="chip">Disabled tab</span>
+              <span class="chip">Default, underline, and pill variants</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Keyboard activation example</h2>
+          <p>
+            Activate an enabled, non-selected tab with <span class="kbd">Enter</span>
+            or <span class="kbd">Space</span>. The component emits a
+            <code>tab-select</code> event with the tab value.
+          </p>
+
+          <div class="demo-block">
+            <div class="tab-row" role="tablist" aria-label="Interactive tabs">
+              <x-tab id="demo-tab-account" class="demo-tab" value="account">Account</x-tab>
+              <x-tab id="demo-tab-team" class="demo-tab" value="team">Team</x-tab>
+              <x-tab id="demo-tab-billing" class="demo-tab" selected value="billing">Billing</x-tab>
+            </div>
+
+            <div id="tab-event-log" class="event-log">No tab-select events yet.</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const log = document.getElementById("tab-event-log");
+        const tabs = [
+          document.getElementById("demo-tab-account"),
+          document.getElementById("demo-tab-team"),
+          document.getElementById("demo-tab-billing")
+        ];
+        let count = 0;
+
+        tabs.forEach(function (tab) {
+          tab.addEventListener("tab-select", function (event) {
+            count += 1;
+            log.textContent =
+              "tab-select event #" +
+              count +
+              " · value: " +
+              (event.detail && event.detail.value ? event.detail.value : "");
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

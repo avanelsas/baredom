@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-search-field demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-primary-bg: #2563eb;
+        --btn-secondary-bg: #6b7280;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+        width: 160px;
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .btn {
+        padding: 8px 20px; border-radius: 6px; border: none;
+        font-size: 14px; cursor: pointer; color: #fff;
+      }
+      .btn-primary   { background: var(--btn-primary-bg); }
+      .btn-secondary { background: var(--btn-secondary-bg); }
+      x-search-field { display: block; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-search-field demo</h1>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Standalone</h2>
+    <div class="stack">
+      <x-search-field id="standalone" name="q" label="Search" placeholder="Search…"></x-search-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>With required</h2>
+    <div class="stack">
+      <x-search-field name="q2" label="Required search" placeholder="Must fill in" required></x-search-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Disabled</h2>
+    <div class="stack">
+      <x-search-field name="q3" label="Disabled" placeholder="Cannot search" disabled value="pre-filled"></x-search-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-form id="search-form">
+      <x-search-field name="q" label="Site search" placeholder="Search the site…" required></x-search-field>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <button type="reset"  class="btn btn-secondary">Reset</button>
+      </div>
+    </x-form>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
+      <label>label       <input type="text" id="ctrl-label" value="Search"></label>
+      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
+      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>autocomplete
+        <select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+          <option value="off">off</option>
+          <option value="on">on</option>
+        </select>
+      </label>
+    </div>
+    <x-search-field id="live-field" name="live" label="Search" placeholder="Search…"></x-search-field>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Event log</h2>
+    <div class="log" id="log">Events will appear here.</div>
+
+    <script>
+      const log = document.getElementById('log');
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      // --- Standalone ---
+      const standalone = document.getElementById('standalone');
+      standalone.addEventListener('x-search-field-input',  e => logEvent('x-search-field-input',  e.detail));
+      standalone.addEventListener('x-search-field-change', e => logEvent('x-search-field-change', e.detail));
+      standalone.addEventListener('x-search-field-search', e => logEvent('x-search-field-search', e.detail));
+      standalone.addEventListener('x-search-field-clear',  e => logEvent('x-search-field-clear',  e.detail));
+
+      // --- x-form integration ---
+      const searchForm = document.getElementById('search-form');
+      searchForm.addEventListener('x-form-submit', e => {
+        logEvent('x-form-submit', e.detail.values);
+      });
+      searchForm.addEventListener('x-form-reset', () => {
+        logEvent('x-form-reset', {});
+      });
+
+      // --- Live controls ---
+      const liveField = document.getElementById('live-field');
+      liveField.addEventListener('x-search-field-input',  e => logEvent('live: x-search-field-input',  e.detail));
+      liveField.addEventListener('x-search-field-change', e => logEvent('live: x-search-field-change', e.detail));
+      liveField.addEventListener('x-search-field-search', e => logEvent('live: x-search-field-search', e.detail));
+      liveField.addEventListener('x-search-field-clear',  e => logEvent('live: x-search-field-clear',  e.detail));
+
+      function updateLive() {
+        const placeholder  = document.getElementById('ctrl-placeholder').value;
+        const label        = document.getElementById('ctrl-label').value;
+        const disabled     = document.getElementById('ctrl-disabled').checked;
+        const required     = document.getElementById('ctrl-required').checked;
+        const autocomplete = document.getElementById('ctrl-autocomplete').value;
+
+        liveField.setAttribute('placeholder',  placeholder);
+        liveField.setAttribute('label',        label);
+        liveField.setAttribute('autocomplete', autocomplete);
+        if (disabled) liveField.setAttribute('disabled', ''); else liveField.removeAttribute('disabled');
+        if (required) liveField.setAttribute('required', ''); else liveField.removeAttribute('required');
+      }
+
+      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+        el.addEventListener('change', updateLive);
+        el.addEventListener('input',  updateLive);
+      });
+      updateLive();
+    </script>
+  </body>
+</html>

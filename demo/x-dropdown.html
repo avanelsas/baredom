@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-dropdown demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    :root {
+      --page-bg: #f9fafb;
+      --page-fg: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --input-bg: #fff;
+      --input-fg: #111827;
+      --surface-bg: #fff;
+      --surface-border: #e5e7eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #111827;
+        --page-fg: #f9fafb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --input-bg: #374151;
+        --input-fg: #f9fafb;
+        --surface-bg: #1f2937;
+        --surface-border: #374151;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      padding: 24px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 22px; margin-bottom: 32px; }
+
+    h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section { margin-bottom: 40px; }
+
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .row   { display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    label { font-size: 13px; color: var(--muted); }
+
+    input[type="text"],
+    select {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    button.demo-btn {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.demo-btn:hover { opacity: 0.8; }
+
+    .log {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      min-height: 80px;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+    }
+
+    .log-entry { margin-bottom: 2px; }
+    .log-entry.cancelled { color: #dc2626; }
+    @media (prefers-color-scheme: dark) {
+      .log-entry.cancelled { color: #f87171; }
+    }
+    .log-entry.muted { color: #9ca3af; }
+
+    /* Dropdown menu item styles (light DOM) */
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background: none;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--page-fg);
+      text-align: start;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .menu-item:hover { background: rgba(100,100,100,0.1); }
+    .menu-item.danger { color: #ef4444; }
+
+    .menu-separator {
+      height: 1px;
+      background: var(--border);
+      margin: 0.25rem 0;
+    }
+
+    /* Demo toolbar for demos with multiple items */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-dropdown</h1>
+
+<!-- ===================== STATIC: STATES ===================== -->
+<section>
+  <h2>States — closed, open, disabled</h2>
+  <div class="toolbar">
+
+    <x-dropdown label="Actions">
+      <button class="menu-item">Edit</button>
+      <button class="menu-item">Duplicate</button>
+      <div class="menu-separator"></div>
+      <button class="menu-item danger">Delete</button>
+    </x-dropdown>
+
+    <x-dropdown label="Pre-opened" open>
+      <button class="menu-item">Option A</button>
+      <button class="menu-item">Option B</button>
+      <button class="menu-item">Option C</button>
+    </x-dropdown>
+
+    <x-dropdown label="Disabled" disabled>
+      <button class="menu-item">Hidden</button>
+    </x-dropdown>
+
+  </div>
+</section>
+
+<!-- ===================== PLACEMENTS ===================== -->
+<section>
+  <h2>Placement variants</h2>
+  <div style="display:flex; justify-content:space-between; padding: 60px 20px;">
+
+    <x-dropdown label="↙ bottom-start" placement="bottom-start">
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
+    </x-dropdown>
+
+    <x-dropdown label="bottom-end ↘" placement="bottom-end">
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
+    </x-dropdown>
+
+  </div>
+  <div style="display:flex; justify-content:space-between; padding: 0 20px 60px;">
+
+    <x-dropdown label="↖ top-start" placement="top-start">
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
+    </x-dropdown>
+
+    <x-dropdown label="top-end ↗" placement="top-end">
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
+    </x-dropdown>
+
+  </div>
+</section>
+
+<!-- ===================== LINKS IN MENU ===================== -->
+<section>
+  <h2>Menu with links</h2>
+  <div class="toolbar">
+    <x-dropdown label="Navigate">
+      <a class="menu-item" href="#section-a">Section A</a>
+      <a class="menu-item" href="#section-b">Section B</a>
+      <a class="menu-item" href="#section-c">Section C</a>
+    </x-dropdown>
+  </div>
+</section>
+
+<!-- ===================== CUSTOM THEME ===================== -->
+<section>
+  <h2>Custom theme</h2>
+  <div class="toolbar">
+    <x-dropdown label="Primary"
+      style="
+        --x-dropdown-trigger-bg: #6366f1;
+        --x-dropdown-trigger-bg-hover: #4f46e5;
+        --x-dropdown-trigger-bg-active: #4338ca;
+        --x-dropdown-trigger-color: #fff;
+        --x-dropdown-trigger-border: none;
+        --x-dropdown-chevron-color: rgba(255,255,255,0.8);
+        --x-dropdown-panel-radius: 12px;
+        --x-dropdown-panel-shadow: 0 8px 24px rgba(99,102,241,0.35);
+      ">
+      <button class="menu-item">Option 1</button>
+      <button class="menu-item">Option 2</button>
+      <button class="menu-item">Option 3</button>
+    </x-dropdown>
+
+    <x-dropdown label="Danger"
+      style="
+        --x-dropdown-trigger-bg: #fef2f2;
+        --x-dropdown-trigger-bg-hover: #fee2e2;
+        --x-dropdown-trigger-bg-active: #fecaca;
+        --x-dropdown-trigger-color: #dc2626;
+        --x-dropdown-trigger-border: 1px solid #fca5a5;
+        --x-dropdown-chevron-color: #dc2626;
+      ">
+      <button class="menu-item danger">Remove all</button>
+      <button class="menu-item danger">Reset</button>
+    </x-dropdown>
+  </div>
+</section>
+
+<!-- ===================== LIVE CONTROL PANEL ===================== -->
+<section>
+  <h2>Live control panel</h2>
+
+  <x-dropdown id="live-dd" label="Live dropdown">
+    <button class="menu-item" onclick="logLine('Clicked: Edit')">Edit</button>
+    <button class="menu-item" onclick="logLine('Clicked: Duplicate')">Duplicate</button>
+    <div class="menu-separator"></div>
+    <button class="menu-item danger" onclick="logLine('Clicked: Delete')">Delete</button>
+  </x-dropdown>
+
+  <div class="stack" style="margin-top:16px;">
+    <div class="row">
+      <label for="ctrl-label">label:</label>
+      <input id="ctrl-label" type="text" value="Live dropdown" style="flex:1;min-width:160px;" />
+      <button class="demo-btn" onclick="applyLabel()">Apply</button>
+    </div>
+    <div class="row">
+      <label for="ctrl-placement">placement:</label>
+      <select id="ctrl-placement">
+        <option value="bottom-start" selected>bottom-start</option>
+        <option value="bottom-end">bottom-end</option>
+        <option value="top-start">top-start</option>
+        <option value="top-end">top-end</option>
+      </select>
+      <button class="demo-btn" onclick="applyPlacement()">Apply</button>
+    </div>
+    <div class="row">
+      <button class="demo-btn" onclick="liveDD.toggle()">toggle()</button>
+      <button class="demo-btn" onclick="liveDD.show()">show()</button>
+      <button class="demo-btn" onclick="liveDD.hide()">hide()</button>
+      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+    </div>
+    <div class="row">
+      <label>
+        <input type="checkbox" id="ctrl-guard" />
+        Cancel next toggle (preventDefault)
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EVENT LOG ===================== -->
+<section>
+  <h2>Event log</h2>
+  <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
+  <div class="row" style="margin-top:10px;">
+    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+  </div>
+</section>
+
+<script>
+  const liveDD = document.getElementById('live-dd');
+  window.liveDD = liveDD;
+
+  window.applyLabel = () => {
+    liveDD.setAttribute('label', document.getElementById('ctrl-label').value);
+  };
+
+  window.applyPlacement = () => {
+    liveDD.setAttribute('placement', document.getElementById('ctrl-placement').value);
+  };
+
+  window.toggleDisabled = () => {
+    liveDD.hasAttribute('disabled')
+      ? liveDD.removeAttribute('disabled')
+      : liveDD.setAttribute('disabled', '');
+  };
+
+  // ---- Event logging ----
+  const logEl = document.getElementById('log');
+  let firstEntry = true;
+
+  window.logLine = function logLine(text, cls = '') {
+    if (firstEntry) { logEl.innerHTML = ''; firstEntry = false; }
+    const div = document.createElement('div');
+    div.className = 'log-entry' + (cls ? ' ' + cls : '');
+    const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    div.textContent = `[${ts}] ${text}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  window.clearLog = () => { logEl.innerHTML = ''; firstEntry = true; };
+
+  document.addEventListener('x-dropdown-toggle', e => {
+    const guardOn = document.getElementById('ctrl-guard').checked;
+    let cancelled = false;
+    if (guardOn) {
+      e.preventDefault();
+      cancelled = true;
+      document.getElementById('ctrl-guard').checked = false;
+    }
+    const { open, source } = e.detail;
+    const tag = e.target.getAttribute('label') || e.target.tagName;
+    if (cancelled) {
+      logLine(`x-dropdown-toggle [CANCELLED] — label="${tag}" open=${open} source="${source}"`, 'cancelled');
+    } else {
+      logLine(`x-dropdown-toggle — label="${tag}" open=${open} source="${source}"`);
+    }
+  });
+
+  document.addEventListener('x-dropdown-change', e => {
+    const { open } = e.detail;
+    const tag = e.target.getAttribute('label') || e.target.tagName;
+    logLine(`x-dropdown-change — label="${tag}" open=${open}`, 'muted');
+  });
+</script>
+
+</body>
+</html>

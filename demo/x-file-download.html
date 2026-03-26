@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-file-download demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --log-bg: #f1f5f9;
+        --log-fg: #0f172a;
+        --log-border: #cbd5e1;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --log-bg: #1e293b;
+          --log-fg: #f8fafc;
+          --log-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 24px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .examples { display: flex; flex-direction: column; gap: 16px; max-width: 560px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+        width: 200px;
+      }
+      #event-log {
+        font-size: 12px; font-family: monospace;
+        background: var(--log-bg); color: var(--log-fg);
+        border: 1px solid var(--log-border);
+        border-radius: 6px; padding: 10px 12px;
+        min-height: 60px; max-height: 160px; overflow-y: auto;
+        white-space: pre-wrap; word-break: break-all;
+      }
+      .log-empty { color: var(--muted); font-style: italic; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-file-download demo</h1>
+
+    <div class="examples">
+
+      <h2>Default — href + filename</h2>
+      <div class="row">
+        <x-file-download href="data:text/plain,Hello" filename="hello.txt">
+          Download hello.txt
+        </x-file-download>
+      </div>
+
+      <h2>Disabled state</h2>
+      <div class="row">
+        <x-file-download href="data:text/plain,Hello" filename="hello.txt" disabled>
+          Download (disabled)
+        </x-file-download>
+      </div>
+
+      <h2>No filename — bare href (browser uses server name)</h2>
+      <div class="row">
+        <x-file-download href="data:text/plain,Hello">
+          Export data
+        </x-file-download>
+      </div>
+
+      <h2>Custom aria-label (icon only)</h2>
+      <div class="row">
+        <x-file-download
+          href="data:text/plain,Hello"
+          filename="file.txt"
+          aria-label="Download file.txt">
+        </x-file-download>
+      </div>
+
+      <h2>Custom theming (green pill)</h2>
+      <div class="row">
+        <x-file-download
+          id="themed"
+          href="data:text/plain,Hello"
+          filename="green.txt"
+          style="--x-file-download-bg:#16a34a;--x-file-download-hover-bg:#15803d;--x-file-download-active-bg:#166534;--x-file-download-border-radius:9999px;">
+          Download (green)
+        </x-file-download>
+      </div>
+
+      <h2>Live controls</h2>
+      <div class="controls">
+        <label>
+          href
+          <input type="text" id="ctrl-href" value="data:text/plain,Live+file+content" />
+        </label>
+        <label>
+          filename
+          <input type="text" id="ctrl-filename" value="live-file.txt" />
+        </label>
+        <label>
+          disabled
+          <input type="checkbox" id="ctrl-disabled" />
+        </label>
+      </div>
+      <div class="row">
+        <x-file-download id="live-dl" href="data:text/plain,Live+file+content" filename="live-file.txt">
+          Download live file
+        </x-file-download>
+      </div>
+
+      <h2>Event log</h2>
+      <div id="event-log"><span class="log-empty">No events yet — click a button above</span></div>
+
+    </div>
+
+    <script>
+      const liveDl = document.getElementById('live-dl');
+
+      // Live controls
+      function updateLive() {
+        const href     = document.getElementById('ctrl-href').value;
+        const filename = document.getElementById('ctrl-filename').value;
+        const disabled = document.getElementById('ctrl-disabled').checked;
+
+        liveDl.setAttribute('href', href);
+        if (filename) liveDl.setAttribute('filename', filename);
+        else          liveDl.removeAttribute('filename');
+        if (disabled) liveDl.setAttribute('disabled', '');
+        else          liveDl.removeAttribute('disabled');
+      }
+
+      document.querySelectorAll('.controls input').forEach(el => {
+        el.addEventListener('change', updateLive);
+        el.addEventListener('input',  updateLive);
+      });
+
+      // Event logging — listen on all x-file-download elements
+      const log = document.getElementById('event-log');
+      let logEmpty = true;
+
+      document.addEventListener('x-file-download-click', (e) => {
+        if (logEmpty) {
+          log.innerHTML = '';
+          logEmpty = false;
+        }
+        const time   = new Date().toLocaleTimeString();
+        const detail = JSON.stringify(e.detail);
+        const entry  = document.createElement('div');
+        entry.textContent = `[${time}] x-file-download-click ${detail}`;
+        log.prepend(entry);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-toaster demo</title>
+  <script src="/js/main.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --log-bg: #111827;
+      --log-fg: #f9fafb;
+      --log-entry-border: #1f2937;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --log-bg: #020617;
+        --log-fg: #f9fafb;
+        --log-entry-border: #1e293b;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 24px;
+      line-height: 1.4;
+    }
+
+    h1 { margin: 0 0 1.5rem; font-size: 1.5rem; }
+    h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 1rem; }
+
+    .card {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+
+    label {
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 0.8125rem; font-weight: 500; color: var(--muted);
+    }
+
+    input, select {
+      padding: 6px 10px;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: var(--input-bg);
+      color: var(--input-fg);
+      min-width: 140px;
+    }
+
+    button {
+      padding: 5px 12px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #ffffff;
+    }
+    button:hover { background: #1e40af; }
+    button.secondary { background: var(--surface-bg); color: var(--page-fg); border-color: var(--surface-border); }
+    button.secondary:hover { opacity: 0.8; }
+    button.danger { background: #dc2626; }
+    button.danger:hover { background: #b91c1c; }
+
+    pre {
+      background: var(--log-bg);
+      color: var(--log-fg);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.8125rem;
+      max-height: 260px;
+      overflow-y: auto;
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      white-space: pre-wrap;
+    }
+
+    .log-empty { color: #6b7280; font-style: italic; }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;
+      background: var(--surface-border); color: var(--muted);
+    }
+    .chip.info    { background: #cff4fc; color: #055160; }
+    .chip.success { background: #d1e7dd; color: #0a3622; }
+    .chip.warning { background: #fff3cd; color: #664d03; }
+    .chip.error   { background: #f8d7da; color: #58151c; }
+  </style>
+</head>
+<body>
+
+<h1>x-toaster</h1>
+
+<!-- ── Quick-fire buttons ───────────────────────────────────────────────── -->
+<div class="card">
+  <h2>Quick fire</h2>
+  <div class="row">
+    <button onclick="fire('info')">Info</button>
+    <button onclick="fire('success')">Success</button>
+    <button onclick="fire('warning')">Warning</button>
+    <button onclick="fire('error')">Error</button>
+    <button class="secondary" onclick="fireWithProgress()">With progress</button>
+    <button class="secondary" onclick="fireHeading()">With heading</button>
+    <button class="danger"    onclick="fireMany()">Spam × 8</button>
+  </div>
+</div>
+
+<!-- ── Custom toast builder ─────────────────────────────────────────────── -->
+<div class="card">
+  <h2>Custom toast</h2>
+  <div class="grid">
+    <label>Type
+      <select id="sel-type">
+        <option value="info">info</option>
+        <option value="success">success</option>
+        <option value="warning">warning</option>
+        <option value="error">error</option>
+      </select>
+    </label>
+    <label>Heading
+      <input id="inp-heading" type="text" placeholder="(optional)" />
+    </label>
+    <label>Message
+      <input id="inp-message" type="text" value="Something happened." />
+    </label>
+    <label>Timeout (ms)
+      <input id="inp-timeout" type="number" placeholder="(none)" min="500" step="500" />
+    </label>
+    <label>Max toasts
+      <input id="inp-max" type="number" value="5" min="1" max="20" />
+    </label>
+    <label>Show progress
+      <select id="sel-progress">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </label>
+    <label>Dismissible
+      <select id="sel-dismissible">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </label>
+  </div>
+  <div class="row" style="margin-top:1rem;">
+    <button onclick="fireCustom()">Add toast</button>
+    <button class="danger" onclick="clearAll()">Clear all</button>
+  </div>
+</div>
+
+<!-- ── Position control ──────────────────────────────────────────────────── -->
+<div class="card">
+  <h2>Position</h2>
+  <div class="row">
+    <label>Corner / edge
+      <select id="sel-position" onchange="changePosition(this.value)">
+        <option value="top-start">top-start</option>
+        <option value="top-center">top-center</option>
+        <option value="top-end" selected>top-end</option>
+        <option value="bottom-start">bottom-start</option>
+        <option value="bottom-center">bottom-center</option>
+        <option value="bottom-end">bottom-end</option>
+      </select>
+    </label>
+    <button onclick="fire('info')">Test position</button>
+  </div>
+</div>
+
+<!-- ── Event log ─────────────────────────────────────────────────────────── -->
+<div class="card">
+  <h2>Event log — <code>x-toaster-dismiss</code></h2>
+  <pre id="log"><span class="log-empty">Dismiss a toast to see events here…</span></pre>
+  <div class="row" style="margin-top:0.75rem;">
+    <button class="secondary" onclick="clearLog()">Clear log</button>
+  </div>
+</div>
+
+<!-- ── The toaster ───────────────────────────────────────────────────────── -->
+<x-toaster id="toaster" position="top-end"></x-toaster>
+
+<script>
+  const toaster = document.getElementById('toaster');
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function getOpts() {
+    const type       = document.getElementById('sel-type').value;
+    const heading    = document.getElementById('inp-heading').value.trim() || undefined;
+    const message    = document.getElementById('inp-message').value.trim() || 'Something happened.';
+    const timeoutRaw = document.getElementById('inp-timeout').value.trim();
+    const timeoutMs  = timeoutRaw ? parseInt(timeoutRaw, 10) : undefined;
+    const progress   = document.getElementById('sel-progress').value === 'yes';
+    const dismissible = document.getElementById('sel-dismissible').value !== 'no';
+    const maxRaw     = document.getElementById('inp-max').value.trim();
+    if (maxRaw) toaster.maxToasts = parseInt(maxRaw, 10);
+    return { type, heading, message, timeoutMs,
+             showProgress: progress && !!timeoutMs,
+             dismissible: dismissible || undefined };
+  }
+
+  // ── Quick-fire ───────────────────────────────────────────────────────────
+  window.fire = (type) => {
+    toaster.toast({ type, message: `This is a ${type} toast.` });
+  };
+
+  window.fireWithProgress = () => {
+    toaster.toast({ type: 'info', message: 'Auto-dismissing in 5 s.', timeoutMs: 5000, showProgress: true });
+  };
+
+  window.fireHeading = () => {
+    toaster.toast({ type: 'success', heading: 'Changes saved', message: 'Your profile has been updated.' });
+  };
+
+  window.fireMany = () => {
+    const types = ['info', 'success', 'warning', 'error'];
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => toaster.toast({ type: types[i % 4], message: `Rapid toast #${i + 1}` }), i * 80);
+    }
+  };
+
+  // ── Custom ───────────────────────────────────────────────────────────────
+  window.fireCustom = () => toaster.toast(getOpts());
+
+  window.clearAll = () => {
+    document.querySelectorAll(`#toaster ${toaster.tagName.toLowerCase()}, #toaster x-toast`).forEach(t => {
+      if (typeof t.dismiss === 'function') t.dismiss('cleared');
+    });
+    // Fallback: also query direct children
+    Array.from(toaster.children).forEach(c => {
+      if (typeof c.dismiss === 'function') c.dismiss('cleared');
+    });
+  };
+
+  // ── Position ─────────────────────────────────────────────────────────────
+  window.changePosition = (pos) => {
+    toaster.position = pos;
+  };
+
+  // ── Event log ────────────────────────────────────────────────────────────
+  const log = document.getElementById('log');
+  let logEntries = [];
+
+  toaster.addEventListener('x-toaster-dismiss', (e) => {
+    const d = e.detail;
+    const time = new Date().toLocaleTimeString();
+    logEntries.unshift({ time, ...d });
+    if (logEntries.length > 30) logEntries.pop();
+    renderLog();
+  });
+
+  function renderLog() {
+    if (!logEntries.length) {
+      log.innerHTML = '<span class="log-empty">Dismiss a toast to see events here…</span>';
+      return;
+    }
+    log.innerHTML = logEntries.map(e =>
+      `<span class="chip ${e.type}">${e.type}</span> ` +
+      `<strong>${e.time}</strong>  reason=<em>${e.reason}</em>` +
+      (e.heading ? `  heading=<em>${e.heading}</em>` : '') +
+      (e.message ? `  msg=<em>${e.message}</em>` : '')
+    ).join('\n');
+  }
+
+  window.clearLog = () => { logEntries = []; renderLog(); };
+</script>
+
+</body>
+</html>

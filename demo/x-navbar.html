@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-navbar demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --card-bg: rgba(255, 255, 255, 0.82);
+        --card-border: rgba(148, 163, 184, 0.24);
+        --card-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --log-bg: #0f172a;
+        --log-fg: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --card-bg: rgba(15, 23, 42, 0.82);
+          --card-border: rgba(51, 65, 85, 0.88);
+          --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --log-bg: #0b1120;
+          --log-fg: #e2e8f0;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      x-navbar.topbar {
+        display: block;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        --x-navbar-radius: 0;
+        --x-navbar-height: 4.25rem;
+        --x-navbar-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+        --x-navbar-border: rgba(148, 163, 184, 0.18);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-navbar.topbar {
+          --x-navbar-shadow: 0 16px 36px rgba(0, 0, 0, 0.42);
+          --x-navbar-border: rgba(51, 65, 85, 0.92);
+        }
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+      }
+
+      .hero {
+        margin: 12px 0 24px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .eyebrow {
+          background: rgba(96, 165, 250, 0.14);
+          color: #93c5fd;
+        }
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 18px;
+      }
+
+      .card {
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .card p {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+
+      .brand {
+        color: inherit;
+        text-decoration: none;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .nav-link {
+        color: inherit;
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 10px;
+      }
+
+      .nav-link:hover {
+        background: rgba(148, 163, 184, 0.14);
+      }
+
+      .action-list,
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .ghost-btn,
+      .primary-btn,
+      .menu-btn {
+        font: inherit;
+        border-radius: 12px;
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+
+      .ghost-btn,
+      .menu-btn {
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: transparent;
+        color: inherit;
+      }
+
+      .primary-btn {
+        border: 0;
+        background: #2563eb;
+        color: white;
+      }
+
+      .helper {
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .log {
+        min-height: 150px;
+        padding: 16px;
+        border-radius: 16px;
+        background: var(--log-bg);
+        color: var(--log-fg);
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+
+      .spacer {
+        height: 900px;
+        border-radius: 20px;
+        border: 1px dashed var(--card-border);
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <x-navbar
+      id="navbar-main"
+      class="topbar"
+      label="Main navigation"
+      sticky
+      elevated
+    >
+      <a slot="brand" href="#home" class="brand">Acme</a>
+
+      <div slot="start" class="helper">Workspace</div>
+
+      <a class="nav-link" href="#home">Home</a>
+      <a class="nav-link" href="#docs">Docs</a>
+      <a class="nav-link" href="#pricing">Pricing</a>
+      <a class="nav-link" href="#about">About</a>
+
+      <div slot="actions" class="action-list">
+        <button class="ghost-btn" type="button">Log in</button>
+        <button class="primary-btn" type="button">Start free</button>
+      </div>
+
+      <button slot="toggle" class="menu-btn" type="button">Open menu</button>
+
+      <div slot="end" class="helper">v1.0</div>
+    </x-navbar>
+
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Refactored Shell</div>
+        <h1>x-navbar</h1>
+        <p class="subtitle">
+          This refactored version is a pure navigation shell. The toggle slot is
+          consumer-owned and the navbar does not assume menu behavior.
+        </p>
+      </section>
+
+      <section class="stack">
+        <article class="card">
+          <h2>Controls</h2>
+          <p>
+            These mutate only shell-level presentation: sticky, elevated, variant,
+            height, and vertical alignment.
+          </p>
+          <div class="toolbar">
+            <button id="btn-toggle-elevated" class="ghost-btn" type="button">Toggle elevated</button>
+            <button id="btn-toggle-sticky" class="ghost-btn" type="button">Toggle sticky</button>
+            <button id="btn-cycle-variant" class="ghost-btn" type="button">Cycle variant</button>
+            <button id="btn-height" class="ghost-btn" type="button">Toggle height</button>
+            <button id="btn-align" class="ghost-btn" type="button">Toggle align-items</button>
+            <button id="btn-orientation" class="ghost-btn" type="button">Toggle orientation</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Consumer-owned toggle</h2>
+          <p>
+            The toggle button below is just slotted content. Any behavior belongs
+            to the consumer or another component such as a sidebar.
+          </p>
+          <div class="row">
+            <button id="external-menu-action" class="ghost-btn" type="button">Simulate sidebar open</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Event log</h2>
+          <p>
+            Interact with the navbar to inspect `navigate`, `brand-activate`, and `focus-visible`.
+          </p>
+          <div class="log" id="log">Interact with the x-navbar to see events here.</div>
+        </article>
+
+        <article class="card">
+          <h2>Scroll area</h2>
+          <p>
+            Scroll down to verify that the navbar remains pinned when `sticky` is enabled.
+          </p>
+          <div class="spacer">Scroll me</div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const navbar = document.getElementById("navbar-main");
+      const log = document.getElementById("log");
+
+      function writeLine(text) {
+        const stamp = new Date().toLocaleTimeString();
+        log.textContent = `[${stamp}] ${text}\n` + log.textContent;
+      }
+
+      function navbarName(el) {
+        return el.id || el.getAttribute("label") || "x-navbar";
+      }
+
+      ["navigate", "brand-activate", "focus-visible"].forEach((eventName) => {
+        navbar.addEventListener(eventName, (event) => {
+          writeLine(
+            `${navbarName(navbar)} → ${eventName} ${JSON.stringify(event.detail ?? {})}`
+          );
+        });
+      });
+
+      document.getElementById("btn-toggle-elevated").addEventListener("click", () => {
+        navbar.toggleAttribute("elevated");
+        writeLine(`${navbarName(navbar)} → state ${JSON.stringify({
+          elevated: navbar.hasAttribute("elevated")
+        })}`);
+      });
+
+      document.getElementById("btn-toggle-sticky").addEventListener("click", () => {
+        navbar.toggleAttribute("sticky");
+        writeLine(`${navbarName(navbar)} → state ${JSON.stringify({
+          sticky: navbar.hasAttribute("sticky")
+        })}`);
+      });
+
+      document.getElementById("btn-cycle-variant").addEventListener("click", () => {
+        const order = ["default", "subtle", "transparent", "inverted"];
+        const current = navbar.getAttribute("variant") || "default";
+        const next = order[(order.indexOf(current) + 1) % order.length];
+        navbar.setAttribute("variant", next);
+        writeLine(`${navbarName(navbar)} → variant ${JSON.stringify({ next })}`);
+      });
+
+      document.getElementById("btn-height").addEventListener("click", () => {
+        const current = getComputedStyle(navbar).getPropertyValue("--x-navbar-height").trim();
+        const next = current === "72px" ? "4.25rem" : "72px";
+        navbar.style.setProperty("--x-navbar-height", next);
+        writeLine(`${navbarName(navbar)} → token ${JSON.stringify({ "--x-navbar-height": next })}`);
+      });
+
+      document.getElementById("btn-align").addEventListener("click", () => {
+        const current = getComputedStyle(navbar).getPropertyValue("--x-navbar-align-items").trim() || "center";
+        const next = current === "end" ? "center" : "end";
+        navbar.style.setProperty("--x-navbar-align-items", next);
+        writeLine(`${navbarName(navbar)} → token ${JSON.stringify({ "--x-navbar-align-items": next })}`);
+      });
+
+      document.getElementById("btn-orientation").addEventListener("click", () => {
+        const current = navbar.getAttribute("orientation") || "horizontal";
+        const next = current === "vertical" ? "horizontal" : "vertical";
+        navbar.setAttribute("orientation", next);
+        writeLine(`${navbarName(navbar)} → orientation ${JSON.stringify({ next })}`);
+      });
+
+      document.getElementById("external-menu-action").addEventListener("click", () => {
+        writeLine("App shell → open x-sidebar (simulated)");
+      });
+
+      document.querySelectorAll("a[href^='#']").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+        });
+      });
+    </script>
+
+    <script src="../js/main.js"></script>
+  </body>
+</html>

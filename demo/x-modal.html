@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-modal demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-bg: #2563eb;
+        --btn-fg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --btn-bg: #3b82f6;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      p.desc { color: var(--muted); margin: 0 0 32px; font-size: 0.9rem; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      button {
+        font-size: 13px; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+        background: var(--btn-bg); color: var(--btn-fg); font-weight: 500;
+      }
+      button.secondary {
+        background: var(--surface-bg); color: var(--page-fg);
+        border: 1px solid var(--surface-border);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      /* Modal content styling */
+      .modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        font-weight: 600; font-size: 1rem;
+      }
+      .modal-close {
+        background: none; border: none; cursor: pointer;
+        color: inherit; padding: 4px; border-radius: 4px;
+        font-size: 1.25rem; line-height: 1; display: flex;
+      }
+      .modal-body-content { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+      .modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-modal</h1>
+    <p class="desc">Centered overlay dialog with opacity + scale animation. Traps focus, dismisses on Escape or backdrop click.</p>
+
+    <h2>Size Variants</h2>
+    <div class="row">
+      <button onclick="openModal('sm')">Small (sm)</button>
+      <button onclick="openModal('md')">Medium (md)</button>
+      <button onclick="openModal('lg')">Large (lg)</button>
+      <button onclick="openModal('xl')">Extra Large (xl)</button>
+      <button onclick="openModal('full')">Full Screen</button>
+    </div>
+
+    <h2>Live Controls</h2>
+    <div class="controls">
+      <label>Size:
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+          <option value="xl">xl</option>
+          <option value="full">full</option>
+        </select>
+      </label>
+      <label>Label:
+        <input type="text" id="ctrl-label" value="Modal" style="width:140px" />
+      </label>
+      <button onclick="applyControls()">Apply &amp; Open</button>
+    </div>
+
+    <h2>API</h2>
+    <div class="row">
+      <button onclick="document.getElementById('demo-modal').show()">show()</button>
+      <button onclick="document.getElementById('demo-modal').hide()">hide()</button>
+      <button onclick="document.getElementById('demo-modal').toggle()">toggle()</button>
+      <button class="secondary" onclick="clearLog()">Clear log</button>
+    </div>
+
+    <div class="log" id="event-log">Events will appear here…</div>
+
+    <!-- The modal component -->
+    <x-modal id="demo-modal" size="md" label="Modal">
+      <div slot="header" class="modal-header">
+        <span id="modal-title">Modal</span>
+        <button class="modal-close" onclick="document.getElementById('demo-modal').hide()" aria-label="Close">&#x2715;</button>
+      </div>
+
+      <div class="modal-body-content">
+        <p>This is the modal body. You can place any content here.</p>
+        <p>Try pressing <kbd>Tab</kbd> to cycle focus within the modal, or <kbd>Escape</kbd> to close it. Clicking the backdrop also closes the modal.</p>
+        <p>The <code>size</code> attribute controls the width: <code>sm</code>, <code>md</code>, <code>lg</code>, <code>xl</code>, or <code>full</code>.</p>
+        <input type="text" placeholder="Focusable input" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);font-size:13px;" />
+      </div>
+
+      <div slot="footer" class="modal-footer">
+        <button class="secondary" onclick="document.getElementById('demo-modal').hide()">Cancel</button>
+        <button onclick="handleConfirm()">Confirm</button>
+      </div>
+    </x-modal>
+
+    <script>
+      const modal = document.getElementById('demo-modal');
+      const log = document.getElementById('event-log');
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.push(new Date().toLocaleTimeString() + '  ' + msg);
+        if (logLines.length > 20) logLines = logLines.slice(-20);
+        log.textContent = logLines.join('\n');
+      }
+
+      function clearLog() {
+        logLines = [];
+        log.textContent = 'Events will appear here…';
+      }
+
+      modal.addEventListener('x-modal-toggle', (e) => {
+        addLog('x-modal-toggle  { open: ' + e.detail.open + ' }');
+      });
+
+      modal.addEventListener('x-modal-dismiss', (e) => {
+        addLog('x-modal-dismiss { reason: "' + e.detail.reason + '" }');
+      });
+
+      function openModal(size) {
+        modal.setAttribute('size', size);
+        document.getElementById('ctrl-size').value = size;
+        const label = size === 'full' ? 'Full Screen Modal' : size.toUpperCase() + ' Modal';
+        modal.setAttribute('label', label);
+        document.getElementById('modal-title').textContent = label;
+        modal.show();
+      }
+
+      function applyControls() {
+        const size = document.getElementById('ctrl-size').value;
+        const label = document.getElementById('ctrl-label').value || 'Modal';
+        modal.setAttribute('size', size);
+        modal.setAttribute('label', label);
+        document.getElementById('modal-title').textContent = label;
+        modal.show();
+      }
+
+      function handleConfirm() {
+        addLog('Confirm button clicked');
+        modal.hide();
+      }
+    </script>
+  </body>
+</html>

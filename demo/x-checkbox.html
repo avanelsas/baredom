@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-checkbox demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .item { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-checkbox demo</h1>
+
+    <h2>States</h2>
+    <div class="row">
+      <div class="item"><x-checkbox aria-label="Unchecked"></x-checkbox> Unchecked</div>
+      <div class="item"><x-checkbox checked aria-label="Checked"></x-checkbox> Checked</div>
+      <div class="item"><x-checkbox indeterminate aria-label="Indeterminate"></x-checkbox> Indeterminate</div>
+      <div class="item"><x-checkbox disabled aria-label="Disabled"></x-checkbox> Disabled</div>
+      <div class="item"><x-checkbox checked disabled aria-label="Checked disabled"></x-checkbox> Checked + disabled</div>
+      <div class="item"><x-checkbox indeterminate disabled aria-label="Indeterminate disabled"></x-checkbox> Indeterminate + disabled</div>
+    </div>
+
+    <h2>Readonly</h2>
+    <div class="row">
+      <div class="item"><x-checkbox checked readonly aria-label="Readonly checked"></x-checkbox> Readonly (checked)</div>
+    </div>
+
+    <h2>Required</h2>
+    <div class="row">
+      <div class="item"><x-checkbox required aria-label="Required"></x-checkbox> Required (unchecked = invalid)</div>
+    </div>
+
+    <h2>Interactive — click to toggle</h2>
+    <div class="row">
+      <div class="item">
+        <x-checkbox id="toggle-cb" aria-label="Toggle me"></x-checkbox>
+        Toggle me
+      </div>
+    </div>
+
+    <h2>Intercept toggle (block on condition)</h2>
+    <div class="row">
+      <div class="item">
+        <x-checkbox id="guard-cb" aria-label="Guarded checkbox"></x-checkbox>
+        Guarded (every other click blocked)
+      </div>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>checked    <input type="checkbox" id="ctrl-checked"></label>
+      <label>indeterminate <input type="checkbox" id="ctrl-indet"></label>
+      <label>disabled   <input type="checkbox" id="ctrl-disabled"></label>
+      <label>readonly   <input type="checkbox" id="ctrl-readonly"></label>
+      <label>required   <input type="checkbox" id="ctrl-required"></label>
+      <label>value
+        <input type="text" id="ctrl-value" value="on" style="width:80px">
+      </label>
+    </div>
+    <div class="row">
+      <div class="item">
+        <x-checkbox id="live-cb" aria-label="Live checkbox"></x-checkbox>
+        Live checkbox
+      </div>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      // interactive
+      const toggleCb = document.getElementById("toggle-cb");
+      toggleCb.addEventListener("x-checkbox-change", e =>
+        logEvent("x-checkbox-change", e.detail));
+
+      // guarded
+      const guardCb = document.getElementById("guard-cb");
+      let blockNext = false;
+      guardCb.addEventListener("x-checkbox-change-request", e => {
+        if (blockNext) { e.preventDefault(); logEvent("x-checkbox-change-request [BLOCKED]", e.detail); }
+        else           { logEvent("x-checkbox-change-request [allowed]", e.detail); }
+        blockNext = !blockNext;
+      });
+      guardCb.addEventListener("x-checkbox-change", e =>
+        logEvent("x-checkbox-change", e.detail));
+
+      // live
+      const liveCb = document.getElementById("live-cb");
+      liveCb.addEventListener("x-checkbox-change", e =>
+        logEvent("x-checkbox-change (live)", e.detail));
+
+      function updateLive() {
+        const checked = document.getElementById("ctrl-checked").checked;
+        const indet   = document.getElementById("ctrl-indet").checked;
+        const disabled= document.getElementById("ctrl-disabled").checked;
+        const readonly= document.getElementById("ctrl-readonly").checked;
+        const required= document.getElementById("ctrl-required").checked;
+        const value   = document.getElementById("ctrl-value").value.trim();
+        if (checked)  liveCb.setAttribute("checked", "");        else liveCb.removeAttribute("checked");
+        if (indet)    liveCb.setAttribute("indeterminate", "");  else liveCb.removeAttribute("indeterminate");
+        if (disabled) liveCb.setAttribute("disabled", "");       else liveCb.removeAttribute("disabled");
+        if (readonly) liveCb.setAttribute("readonly", "");       else liveCb.removeAttribute("readonly");
+        if (required) liveCb.setAttribute("required", "");       else liveCb.removeAttribute("required");
+        if (value)    liveCb.setAttribute("value", value);       else liveCb.removeAttribute("value");
+      }
+      document.querySelectorAll(".controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+    </script>
+  </body>
+</html>

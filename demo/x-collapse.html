@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-collapse demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    :root {
+      --page-bg: #f9fafb;
+      --page-fg: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --input-bg: #fff;
+      --input-fg: #111827;
+      --surface-bg: #fff;
+      --surface-border: #e5e7eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #111827;
+        --page-fg: #f9fafb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --input-bg: #374151;
+        --input-fg: #f9fafb;
+        --surface-bg: #1f2937;
+        --surface-border: #374151;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      padding: 24px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 22px; margin-bottom: 32px; }
+
+    h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section { margin-bottom: 40px; }
+
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .row   { display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    label { font-size: 13px; color: var(--muted); }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    button.demo-btn {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.demo-btn:hover { opacity: 0.8; }
+
+    .log {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      min-height: 80px;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+    }
+
+    .log-entry { margin-bottom: 2px; }
+    .log-entry.cancelled { color: #dc2626; }
+    @media (prefers-color-scheme: dark) {
+      .log-entry.cancelled { color: #f87171; }
+    }
+    .log-entry.muted { color: #9ca3af; }
+
+    /* Surface for accordion demo */
+    .surface {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .surface x-collapse + x-collapse {
+      border-top: 1px solid var(--surface-border);
+    }
+
+    .panel-body {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    x-collapse {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-collapse</h1>
+
+<!-- ===================== STATIC: INDIVIDUAL STATES ===================== -->
+<section>
+  <h2>States — collapsed, open, disabled</h2>
+  <div class="stack">
+    <x-collapse header="Collapsed by default">
+      <div class="panel-body" slot="content">
+        This panel starts closed. Click the header to expand it.
+      </div>
+    </x-collapse>
+
+    <x-collapse header="Open by default" open>
+      <div class="panel-body" slot="content">
+        This panel starts expanded because the <code>open</code> attribute is present.
+      </div>
+    </x-collapse>
+
+    <x-collapse header="Disabled — cannot be toggled" disabled>
+      <div class="panel-body" slot="content">
+        You should never see this because the toggle is disabled.
+      </div>
+    </x-collapse>
+
+    <x-collapse header="Disabled and open" disabled open>
+      <div class="panel-body" slot="content">
+        Panel is open but the trigger is disabled — state is locked open.
+      </div>
+    </x-collapse>
+  </div>
+</section>
+
+<!-- ===================== ACCORDION ===================== -->
+<section>
+  <h2>Accordion (close-others pattern)</h2>
+  <div class="surface">
+    <x-collapse class="accordion-item" header="What is a Web Component?">
+      <div class="panel-body" slot="content">
+        Web Components are a set of web platform APIs that let you create reusable, encapsulated HTML elements using Custom Elements, Shadow DOM, and HTML Templates.
+      </div>
+    </x-collapse>
+    <x-collapse class="accordion-item" header="How does shadow DOM work?">
+      <div class="panel-body" slot="content">
+        Shadow DOM attaches a separate DOM tree to an element. Styles inside the shadow root are scoped and do not bleed out, and external styles do not bleed in (except for inherited CSS properties and custom properties).
+      </div>
+    </x-collapse>
+    <x-collapse class="accordion-item" header="What is slot-based composition?">
+      <div class="panel-body" slot="content">
+        Named slots let you project light DOM children into specific locations in the shadow DOM template. The slotted content remains in the light DOM and is reflected into the shadow tree.
+      </div>
+    </x-collapse>
+    <x-collapse class="accordion-item" header="Can I cancel a toggle?">
+      <div class="panel-body" slot="content">
+        Yes. The <code>x-collapse-toggle</code> event is cancelable. Calling <code>preventDefault()</code> on it stops the state change and suppresses the subsequent <code>x-collapse-change</code> event.
+      </div>
+    </x-collapse>
+  </div>
+</section>
+
+<!-- ===================== CUSTOM DURATION ===================== -->
+<section>
+  <h2>Custom animation duration</h2>
+  <div class="stack">
+    <x-collapse header="Fast — 80ms" duration-ms="80">
+      <div class="panel-body" slot="content">
+        Nearly instant animation.
+      </div>
+    </x-collapse>
+    <x-collapse header="Default — 300ms">
+      <div class="panel-body" slot="content">
+        Default 300ms ease-in-out.
+      </div>
+    </x-collapse>
+    <x-collapse header="Slow — 900ms" duration-ms="900">
+      <div class="panel-body" slot="content">
+        Noticeably slow for demonstration purposes.
+      </div>
+    </x-collapse>
+    <x-collapse header="No animation — 0ms" duration-ms="0">
+      <div class="panel-body" slot="content">
+        Instant, no transition at all.
+      </div>
+    </x-collapse>
+  </div>
+</section>
+
+<!-- ===================== LIVE CONTROL PANEL ===================== -->
+<section>
+  <h2>Live control panel</h2>
+
+  <x-collapse id="live-collapse" header="Live demo panel" duration-ms="300">
+    <div class="panel-body" slot="content">
+      <p>This is the live demo panel. Use the controls below to change attributes and call methods.</p>
+      <p style="margin-top:8px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
+    </div>
+  </x-collapse>
+
+  <div class="stack" style="margin-top:16px;">
+    <div class="row">
+      <label for="ctrl-header">header:</label>
+      <input id="ctrl-header" type="text" value="Live demo panel" style="flex:1;min-width:160px;" />
+      <button class="demo-btn" onclick="applyHeader()">Apply</button>
+    </div>
+    <div class="row">
+      <label for="ctrl-duration">duration-ms:</label>
+      <input id="ctrl-duration" type="number" value="300" min="0" max="2000" style="width:90px;" />
+      <button class="demo-btn" onclick="applyDuration()">Apply</button>
+    </div>
+    <div class="row">
+      <button class="demo-btn" onclick="toggleOpen()">toggle()</button>
+      <button class="demo-btn" onclick="setOpen(true)">Set open</button>
+      <button class="demo-btn" onclick="setOpen(false)">Set closed</button>
+      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+    </div>
+    <div class="row">
+      <label>
+        <input type="checkbox" id="ctrl-guard" />
+        Cancel next toggle (preventDefault)
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EVENT LOG ===================== -->
+<section>
+  <h2>Event log</h2>
+  <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
+  <div class="row" style="margin-top:10px;">
+    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+  </div>
+</section>
+
+<script>
+  // ---- Accordion: close-others when one opens ----
+  const accordionItems = document.querySelectorAll('.accordion-item');
+  accordionItems.forEach(item => {
+    item.addEventListener('x-collapse-toggle', e => {
+      if (e.detail.open) {
+        accordionItems.forEach(other => {
+          if (other !== item && other.hasAttribute('open')) {
+            other.removeAttribute('open');
+          }
+        });
+      }
+    });
+  });
+
+  // ---- Live controls ----
+  const liveEl = document.getElementById('live-collapse');
+
+  window.applyHeader = () => {
+    liveEl.setAttribute('header', document.getElementById('ctrl-header').value);
+  };
+  window.applyDuration = () => {
+    liveEl.setAttribute('duration-ms', document.getElementById('ctrl-duration').value);
+  };
+  window.toggleOpen = () => {
+    if (typeof liveEl.toggle === 'function') {
+      liveEl.toggle();
+    } else {
+      liveEl.hasAttribute('open')
+        ? liveEl.removeAttribute('open')
+        : liveEl.setAttribute('open', '');
+    }
+  };
+  window.setOpen = (val) => {
+    val ? liveEl.setAttribute('open', '') : liveEl.removeAttribute('open');
+  };
+  window.toggleDisabled = () => {
+    liveEl.hasAttribute('disabled')
+      ? liveEl.removeAttribute('disabled')
+      : liveEl.setAttribute('disabled', '');
+  };
+
+  // ---- Event logging (all x-collapse elements on the page) ----
+  const logEl = document.getElementById('log');
+  let firstEntry = true;
+
+  function logLine(text, cls = '') {
+    if (firstEntry) { logEl.innerHTML = ''; firstEntry = false; }
+    const div = document.createElement('div');
+    div.className = 'log-entry' + (cls ? ' ' + cls : '');
+    const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    div.textContent = `[${ts}] ${text}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  window.clearLog = () => { logEl.innerHTML = ''; firstEntry = true; };
+
+  document.addEventListener('x-collapse-toggle', e => {
+    const guardOn = document.getElementById('ctrl-guard').checked;
+    let cancelled = false;
+    if (guardOn) {
+      e.preventDefault();
+      cancelled = true;
+      document.getElementById('ctrl-guard').checked = false; // one-shot
+    }
+    const { open, source } = e.detail;
+    const tag = e.target.getAttribute('header') || e.target.tagName;
+    if (cancelled) {
+      logLine(`x-collapse-toggle [CANCELLED] — header="${tag}" open=${open} source="${source}"`, 'cancelled');
+    } else {
+      logLine(`x-collapse-toggle — header="${tag}" open=${open} source="${source}"`);
+    }
+  });
+
+  document.addEventListener('x-collapse-change', e => {
+    const { open } = e.detail;
+    const tag = e.target.getAttribute('header') || e.target.tagName;
+    logLine(`x-collapse-change — header="${tag}" open=${open}`, 'muted');
+  });
+</script>
+
+</body>
+</html>

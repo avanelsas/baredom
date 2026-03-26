@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-breadcrumbs demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; max-width: 640px; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-breadcrumbs demo</h1>
+
+    <h2>Default</h2>
+    <x-breadcrumbs>
+      <a href="#home">Home</a>
+      <a href="#home/products">Products</a>
+      <a href="#home/products/shoes">Shoes</a>
+    </x-breadcrumbs>
+
+    <h2>Custom separator</h2>
+    <x-breadcrumbs separator="›">
+      <a href="#home">Home</a>
+      <a href="#home/category">Category</a>
+      <a href="#home/category/subcategory">Subcategory</a>
+      <a href="#home/category/subcategory/product">Product</a>
+    </x-breadcrumbs>
+
+    <h2>Collapsed (max-items)</h2>
+    <x-breadcrumbs max-items="3" items-before="1" items-after="2">
+      <a href="#home">Home</a>
+      <a href="#home/docs">Docs</a>
+      <a href="#home/docs/components">Components</a>
+      <a href="#home/docs/components/avatar">Avatar</a>
+      <a href="#home/docs/components/avatar/api">API</a>
+    </x-breadcrumbs>
+
+    <h2>Variants</h2>
+    <div class="stack">
+      <x-breadcrumbs variant="default">
+        <a href="#home">Home</a>
+        <a href="#home/settings">Settings</a>
+        <a href="#home/settings/profile">Profile</a>
+      </x-breadcrumbs>
+      <x-breadcrumbs variant="subtle">
+        <a href="#home">Home</a>
+        <a href="#home/settings">Settings</a>
+        <a href="#home/settings/profile">Profile</a>
+      </x-breadcrumbs>
+      <x-breadcrumbs variant="text">
+        <a href="#home">Home</a>
+        <a href="#home/settings">Settings</a>
+        <a href="#home/settings/profile">Profile</a>
+      </x-breadcrumbs>
+    </div>
+
+    <h2>Sizes</h2>
+    <div class="stack">
+      <x-breadcrumbs size="sm">
+        <a href="#home">Home</a>
+        <a href="#home/docs">Docs</a>
+        <a href="#home/docs/page">Page</a>
+      </x-breadcrumbs>
+      <x-breadcrumbs size="md">
+        <a href="#home">Home</a>
+        <a href="#home/docs">Docs</a>
+        <a href="#home/docs/page">Page</a>
+      </x-breadcrumbs>
+      <x-breadcrumbs size="lg">
+        <a href="#home">Home</a>
+        <a href="#home/docs">Docs</a>
+        <a href="#home/docs/page">Page</a>
+      </x-breadcrumbs>
+    </div>
+
+    <h2>Disabled</h2>
+    <x-breadcrumbs disabled>
+      <a href="#home">Home</a>
+      <a href="#home/products">Products</a>
+      <a href="#home/products/shoes">Shoes</a>
+    </x-breadcrumbs>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>separator
+        <input type="text" id="ctrl-sep" value="/" style="width:40px">
+      </label>
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="default" selected>default</option>
+          <option value="subtle">subtle</option>
+          <option value="text">text</option>
+        </select>
+      </label>
+      <label>size
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </label>
+      <label>max-items
+        <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
+      </label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <x-breadcrumbs id="live">
+      <a href="#home">Home</a>
+      <a href="#home/docs">Docs</a>
+      <a href="#home/docs/components">Components</a>
+      <a href="#home/docs/components/avatar">Avatar</a>
+      <a href="#home/docs/components/avatar/api">API</a>
+    </x-breadcrumbs>
+
+    <script>
+      const live = document.getElementById("live");
+      function update() {
+        live.setAttribute("separator", document.getElementById("ctrl-sep").value || "/");
+        live.setAttribute("variant",   document.getElementById("ctrl-variant").value);
+        live.setAttribute("size",      document.getElementById("ctrl-size").value);
+        const max      = document.getElementById("ctrl-max").value.trim();
+        const disabled = document.getElementById("ctrl-disabled").checked;
+        if (max) live.setAttribute("max-items", max); else live.removeAttribute("max-items");
+        if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", update);
+        el.addEventListener("input", update);
+      });
+    </script>
+  </body>
+</html>

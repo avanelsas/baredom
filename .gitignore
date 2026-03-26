@@ -1,0 +1,28 @@
+# Build output
+dist/
+out/
+target/
+
+# Shadow-cljs cache
+.shadow-cljs/
+
+# Node
+node_modules/
+*.tgz
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.iml
+
+# Clojure
+.cpcache/
+
+# Claude
+.claude/
+
+# Ignore all npm pack tarballs for this project
+vanelsas-baredom-*.tgz

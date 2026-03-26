@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-menu demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-bg: #2563eb;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --btn-bg: #3b82f6;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 800px; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .trigger-btn {
+        padding: 8px 16px; border-radius: 6px; border: 1px solid var(--surface-border);
+        background: var(--surface-bg); color: var(--page-fg);
+        font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      }
+      .trigger-btn:hover { background: var(--border); }
+      .chevron { font-size: 10px; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-menu demo</h1>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Basic menu</h2>
+    <div class="row">
+      <x-menu id="menu-basic" label="Actions">
+        <button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></button>
+        <x-menu-item value="edit">Edit</x-menu-item>
+        <x-menu-item value="duplicate">Duplicate</x-menu-item>
+        <x-menu-item value="archive">Archive</x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="delete" variant="danger">Delete</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>With icons</h2>
+    <div class="row">
+      <x-menu id="menu-icons" label="File actions">
+        <button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></button>
+        <x-menu-item value="new">
+          <span slot="icon">📄</span>
+          New file
+        </x-menu-item>
+        <x-menu-item value="open">
+          <span slot="icon">📂</span>
+          Open
+        </x-menu-item>
+        <x-menu-item value="save">
+          <span slot="icon">💾</span>
+          Save
+        </x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="export">
+          <span slot="icon">↗</span>
+          Export
+        </x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>With disabled items</h2>
+    <div class="row">
+      <x-menu id="menu-disabled" label="Options">
+        <button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></button>
+        <x-menu-item value="copy">Copy</x-menu-item>
+        <x-menu-item value="cut" disabled>Cut (disabled)</x-menu-item>
+        <x-menu-item value="paste" disabled>Paste (disabled)</x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="select-all">Select all</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Placements</h2>
+    <div class="row" style="margin-top: 80px; justify-content: center;">
+      <x-menu placement="top-start" label="Top start">
+        <button slot="trigger" class="trigger-btn">top-start ↑</button>
+        <x-menu-item value="a">Item A</x-menu-item>
+        <x-menu-item value="b">Item B</x-menu-item>
+        <x-menu-item value="c">Item C</x-menu-item>
+      </x-menu>
+      <x-menu placement="top-end" label="Top end">
+        <button slot="trigger" class="trigger-btn">top-end ↑</button>
+        <x-menu-item value="a">Item A</x-menu-item>
+        <x-menu-item value="b">Item B</x-menu-item>
+        <x-menu-item value="c">Item C</x-menu-item>
+      </x-menu>
+      <x-menu placement="bottom-start" label="Bottom start">
+        <button slot="trigger" class="trigger-btn">bottom-start ↓</button>
+        <x-menu-item value="a">Item A</x-menu-item>
+        <x-menu-item value="b">Item B</x-menu-item>
+        <x-menu-item value="c">Item C</x-menu-item>
+      </x-menu>
+      <x-menu placement="bottom-end" label="Bottom end">
+        <button slot="trigger" class="trigger-btn">bottom-end ↓</button>
+        <x-menu-item value="a">Item A</x-menu-item>
+        <x-menu-item value="b">Item B</x-menu-item>
+        <x-menu-item value="c">Item C</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>placement
+        <select id="ctrl-placement">
+          <option value="bottom-start">bottom-start</option>
+          <option value="bottom-end">bottom-end</option>
+          <option value="top-start">top-start</option>
+          <option value="top-end">top-end</option>
+        </select>
+      </label>
+      <label>label <input type="text" id="ctrl-label" value="Live menu"></label>
+      <label>open <input type="checkbox" id="ctrl-open"></label>
+    </div>
+    <x-menu id="menu-live" label="Live menu">
+      <button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></button>
+      <x-menu-item value="action-1">Action 1</x-menu-item>
+      <x-menu-item value="action-2">Action 2</x-menu-item>
+      <x-menu-item type="divider"></x-menu-item>
+      <x-menu-item value="danger-action" variant="danger">Danger action</x-menu-item>
+    </x-menu>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Event log</h2>
+    <div class="log" id="log">Events will appear here.</div>
+
+    <script>
+      const log = document.getElementById('log');
+      function logEvent(name, detail) {
+        const msg = `${name}  ${JSON.stringify(detail)}`;
+        log.textContent = msg + '\n' + log.textContent;
+      }
+
+      // Wire up all menus for event logging
+      document.querySelectorAll('x-menu').forEach(menu => {
+        const id = menu.id || 'x-menu';
+        menu.addEventListener('x-menu-open',   () => logEvent(`${id}: x-menu-open`, {}));
+        menu.addEventListener('x-menu-close',  () => logEvent(`${id}: x-menu-close`, {}));
+        menu.addEventListener('x-menu-select', e  => logEvent(`${id}: x-menu-select`, e.detail));
+      });
+
+      // Live controls
+      const liveMenu = document.getElementById('menu-live');
+      const ctrlPlacement = document.getElementById('ctrl-placement');
+      const ctrlLabel = document.getElementById('ctrl-label');
+      const ctrlOpen = document.getElementById('ctrl-open');
+
+      function updateLive() {
+        liveMenu.setAttribute('placement', ctrlPlacement.value);
+        liveMenu.setAttribute('label', ctrlLabel.value || '');
+        if (ctrlOpen.checked) {
+          liveMenu.setAttribute('open', '');
+        } else {
+          liveMenu.removeAttribute('open');
+        }
+      }
+
+      // Sync checkbox with actual open state
+      liveMenu.addEventListener('x-menu-open',  () => { ctrlOpen.checked = true; });
+      liveMenu.addEventListener('x-menu-close', () => { ctrlOpen.checked = false; });
+
+      ctrlPlacement.addEventListener('change', updateLive);
+      ctrlLabel.addEventListener('input', updateLive);
+      ctrlOpen.addEventListener('change', updateLive);
+      updateLive();
+    </script>
+  </body>
+</html>

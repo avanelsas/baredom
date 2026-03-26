@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-copy demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls input[type=text], .controls select, .controls input[type=number] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-copy demo</h1>
+
+    <h2>Basic — copy text</h2>
+    <div class="row">
+      <x-copy text="Hello, world!" id="c1">
+        <x-button variant="default">Copy text</x-button>
+      </x-copy>
+    </div>
+
+    <h2>Custom success message &amp; tooltip duration</h2>
+    <div class="row">
+      <x-copy text="npm install @vanelsas/baredom"
+              success-message="Copied!"
+              tooltip-ms="2000"
+              id="c2">
+        <x-button variant="primary">Copy install command</x-button>
+      </x-copy>
+    </div>
+
+    <h2>No tooltip</h2>
+    <div class="row">
+      <x-copy text="silent copy" show-tooltip="false" id="c3">
+        <x-button variant="default">Copy (no tooltip)</x-button>
+      </x-copy>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-copy disabled text="noop" id="c4">
+        <x-button variant="default" disabled>Disabled</x-button>
+      </x-copy>
+    </div>
+
+    <h2>Copy from element (from + from-attr)</h2>
+    <div class="row">
+      <input id="source-input" type="text" value="Text from input element"
+             style="font-size:14px;padding:6px 10px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+      <x-copy from="#source-input" from-attr="value" id="c5">
+        <x-button variant="default">Copy from input</x-button>
+      </x-copy>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>text
+        <input type="text" id="ctrl-text" value="Hello, world!" style="width:200px">
+      </label>
+      <label>success-message
+        <input type="text" id="ctrl-success" value="Copied" style="width:100px">
+      </label>
+      <label>tooltip-ms
+        <input type="number" id="ctrl-ms" value="1200" style="width:70px" min="100">
+      </label>
+      <label>show-tooltip
+        <select id="ctrl-tooltip">
+          <option value="">true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <div class="row">
+      <x-copy id="copy-live">
+        <x-button variant="primary" id="live-btn">Copy</x-button>
+      </x-copy>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(id, name, detail) {
+        log.textContent = `${id}:${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      ["c1","c2","c3","c4","c5","copy-live"].forEach(id => {
+        const el = document.getElementById(id);
+        ["x-copy-request", "x-copy-success", "x-copy-error"].forEach(evt =>
+          el.addEventListener(evt, e => logEvent(id, evt, e.detail)));
+      });
+
+      const liveCopy = document.getElementById("copy-live");
+      function updateLive() {
+        liveCopy.setAttribute("text",            document.getElementById("ctrl-text").value);
+        liveCopy.setAttribute("success-message", document.getElementById("ctrl-success").value);
+        liveCopy.setAttribute("tooltip-ms",      document.getElementById("ctrl-ms").value);
+        const tooltip = document.getElementById("ctrl-tooltip").value;
+        if (tooltip) liveCopy.setAttribute("show-tooltip", tooltip);
+        else liveCopy.removeAttribute("show-tooltip");
+        if (document.getElementById("ctrl-disabled").checked) {
+          liveCopy.setAttribute("disabled", "");
+          document.getElementById("live-btn").setAttribute("disabled", "");
+        } else {
+          liveCopy.removeAttribute("disabled");
+          document.getElementById("live-btn").removeAttribute("disabled");
+        }
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+      updateLive();
+    </script>
+  </body>
+</html>

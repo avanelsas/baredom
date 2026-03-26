@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-chip demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 640px;
+      }
+
+      .chip-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select,
+      .row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .row button:hover { background: #1e40af; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 4px 0 0;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-chip demo</h1>
+
+    <h2>Default (removable)</h2>
+    <ul class="chip-row" id="basic-list" role="list">
+      <x-chip role="listitem" label="Design"></x-chip>
+      <x-chip role="listitem" label="Engineering" value="eng"></x-chip>
+      <x-chip role="listitem" label="Marketing" value="mkt"></x-chip>
+      <x-chip role="listitem" label="Product"></x-chip>
+      <x-chip role="listitem" label="Research" value="research"></x-chip>
+    </ul>
+    <p class="hint">Click × or focus a chip and press Backspace / Delete to remove it.</p>
+
+    <h2>Non-removable</h2>
+    <ul class="chip-row" role="list">
+      <x-chip role="listitem" label="Read-only" removable="false"></x-chip>
+      <x-chip role="listitem" label="Locked" removable="false"></x-chip>
+    </ul>
+
+    <h2>Disabled</h2>
+    <ul class="chip-row" role="list">
+      <x-chip role="listitem" label="Archived" disabled></x-chip>
+      <x-chip role="listitem" label="Inactive" disabled></x-chip>
+    </ul>
+
+    <h2>Prevent removal demo</h2>
+    <ul class="chip-row" id="guarded-list" role="list">
+      <x-chip role="listitem" label="Protected A" value="a"></x-chip>
+      <x-chip role="listitem" label="Protected B" value="b"></x-chip>
+    </ul>
+    <p class="hint">Removal is always cancelled here — <code>event.preventDefault()</code> is called in the handler.</p>
+
+    <h2>Spawn chips</h2>
+    <div class="row">
+      <label>label
+        <input type="text" id="ctrl-label" value="New chip" style="width:140px">
+      </label>
+      <label>value
+        <input type="text" id="ctrl-value" placeholder="optional" style="width:100px">
+      </label>
+      <label>removable
+        <select id="ctrl-removable">
+          <option value="">true (default)</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <label>disabled
+        <select id="ctrl-disabled">
+          <option value="">no</option>
+          <option value="true">yes</option>
+        </select>
+      </label>
+      <button id="spawn-btn">Add chip</button>
+    </div>
+    <ul class="chip-row" id="live-list" role="list"></ul>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+
+      function appendLog(msg) {
+        log.textContent = msg + "\n" + log.textContent;
+      }
+
+      function wireChip(chip) {
+        chip.addEventListener("x-chip-remove", e => {
+          const d = e.detail;
+          appendLog(`x-chip-remove  label="${d.label}"  value="${d.value}"`);
+          // Remove the element from the DOM after the event
+          e.target.remove();
+        });
+      }
+
+      // Wire static chips in #basic-list
+      document.querySelectorAll("#basic-list x-chip").forEach(wireChip);
+
+      // Guarded list — always prevent removal
+      document.querySelectorAll("#guarded-list x-chip").forEach(chip => {
+        chip.addEventListener("x-chip-remove", e => {
+          const d = e.detail;
+          appendLog(`x-chip-remove  label="${d.label}"  value="${d.value}"  [PREVENTED]`);
+          e.preventDefault();
+        });
+      });
+
+      // Spawn
+      document.getElementById("spawn-btn").addEventListener("click", () => {
+        const label     = document.getElementById("ctrl-label").value.trim() || "Chip";
+        const value     = document.getElementById("ctrl-value").value.trim();
+        const removable = document.getElementById("ctrl-removable").value;
+        const disabled  = document.getElementById("ctrl-disabled").value;
+
+        const chip = document.createElement("x-chip");
+        chip.setAttribute("role", "listitem");
+        chip.setAttribute("label", label);
+        if (value)     chip.setAttribute("value", value);
+        if (removable) chip.setAttribute("removable", removable);
+        if (disabled)  chip.setAttribute("disabled", "");
+
+        wireChip(chip);
+        document.getElementById("live-list").appendChild(chip);
+        appendLog(`[Spawned]  label="${label}"  value="${value || "(from label)"}"`);
+      });
+    </script>
+  </body>
+</html>

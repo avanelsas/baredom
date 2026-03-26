@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-grid demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --chip-bg: rgba(15, 23, 42, 0.06);
+        --chip-fg: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --chip-bg: rgba(148, 163, 184, 0.12);
+          --chip-fg: #cbd5e1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 {
+        margin-top: 0;
+      }
+
+      .section-card > p {
+        color: var(--muted);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        color: var(--chip-fg);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      x-grid {
+        display: block;
+      }
+
+      x-card.demo-card {
+        --x-card-color: var(--page-fg);
+        --x-card-background: rgba(255, 255, 255, 0.72);
+        --x-card-filled-background: rgba(241, 245, 249, 0.92);
+        --x-card-border-color: rgba(148, 163, 184, 0.28);
+        --x-card-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+        --x-card-hover-background: rgba(59, 130, 246, 0.07);
+        --x-card-press-background: rgba(59, 130, 246, 0.12);
+        --x-card-focus-ring: rgba(59, 130, 246, 0.42);
+      }
+
+      x-stat.demo-stat {
+        --x-stat-background: rgba(255, 255, 255, 0.72);
+        --x-stat-color: var(--page-fg);
+        --x-stat-muted-color: var(--muted);
+        --x-stat-border-color: rgba(148, 163, 184, 0.28);
+        --x-stat-positive-color: #16a34a;
+        --x-stat-warning-color: #d97706;
+        --x-stat-danger-color: #dc2626;
+        --x-stat-label-color: var(--muted);
+        --x-stat-value-color: var(--page-fg);
+        --x-stat-hint-color: var(--muted);
+        --x-stat-icon-color: var(--accent);
+        --x-stat-radius: 18px;
+        --x-stat-padding: 18px;
+        --x-stat-gap: 10px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-card.demo-card {
+          --x-card-color: #e5e7eb;
+          --x-card-background: rgba(15, 23, 42, 0.72);
+          --x-card-filled-background: rgba(30, 41, 59, 0.92);
+          --x-card-border-color: rgba(100, 116, 139, 0.42);
+          --x-card-shadow: 0 14px 30px rgba(0, 0, 0, 0.30);
+          --x-card-hover-background: rgba(96, 165, 250, 0.10);
+          --x-card-press-background: rgba(96, 165, 250, 0.16);
+          --x-card-focus-ring: rgba(96, 165, 250, 0.48);
+        }
+
+        x-stat.demo-stat {
+          --x-stat-background: rgba(15, 23, 42, 0.72);
+          --x-stat-color: #e5e7eb;
+          --x-stat-muted-color: #94a3b8;
+          --x-stat-border-color: rgba(100, 116, 139, 0.42);
+          --x-stat-positive-color: #4ade80;
+          --x-stat-warning-color: #fbbf24;
+          --x-stat-danger-color: #f87171;
+          --x-stat-label-color: #94a3b8;
+          --x-stat-value-color: #e5e7eb;
+          --x-stat-hint-color: #94a3b8;
+          --x-stat-icon-color: #93c5fd;
+        }
+      }
+
+      .card-content {
+        display: grid;
+        gap: 12px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.2;
+      }
+
+      .card-body {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .slot-label {
+        font-size: 0.86rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .slot-value {
+        font-size: clamp(1.4rem, 2vw, 2.2rem);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .slot-hint {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .metric-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 12px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .metric-icon {
+          background: rgba(96, 165, 250, 0.14);
+          color: #93c5fd;
+        }
+      }
+
+      .mini-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .mini-grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .mini-grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .mini-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      code {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.92em;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Light & Dark Mode</div>
+        <h1>x-grid</h1>
+        <p class="subtitle">
+          Themeable layout primitive for arranging content in responsive CSS Grid
+          layouts. This demo matches the visual language of the other component
+          demos and shows how <code>x-grid</code> works with cards and stats.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Basic 3-column card grid</h2>
+          <p>
+            A fixed three-column layout is useful for structured dashboard
+            surfaces and evenly sized overview cards.
+          </p>
+
+          <x-grid columns="repeat(3, minmax(0, 1fr))" gap="lg">
+            <x-card class="demo-card" variant="elevated" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Planning</h3>
+                <p class="card-body">Align milestones, owners, and dependencies across the next release cycle.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="outlined" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Execution</h3>
+                <p class="card-body">Coordinate implementation work with clearer visibility into delivery status.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="filled" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Reporting</h3>
+                <p class="card-body">Summarize progress and outcomes in a consistent presentation layer.</p>
+              </div>
+            </x-card>
+          </x-grid>
+        </section>
+
+        <section class="section-card">
+          <h2>Responsive auto-fit stat grid</h2>
+          <p>
+            With <code>min-column-size</code>, the grid automatically fits as
+            many columns as the viewport allows while preserving readable stat widths.
+          </p>
+
+          <x-grid min-column-size="14rem" gap="lg">
+            <x-stat class="demo-stat" variant="default" label="Revenue" value="$128.4K" hint="Quarter to date"></x-stat>
+            <x-stat class="demo-stat" variant="positive" label="Growth" value="+18.2%" hint="Healthy upward trend"></x-stat>
+            <x-stat class="demo-stat" variant="warning" label="At-risk" value="12" hint="Review recommended"></x-stat>
+            <x-stat class="demo-stat" variant="danger" label="Failed checks" value="3" hint="Requires attention"></x-stat>
+            <x-stat class="demo-stat" variant="subtle" label="Conversion" value="4.8%" hint="Compared with last period"></x-stat>
+            <x-stat class="demo-stat" variant="default" label="ARR" value="$2.4M" hint="Annual recurring revenue"></x-stat>
+          </x-grid>
+        </section>
+
+        <section class="section-card">
+          <h2>Mixed card heights</h2>
+          <p>
+            Grid works well even when children have different content lengths and
+            natural heights.
+          </p>
+
+          <x-grid min-column-size="16rem" gap="lg">
+            <x-card class="demo-card" variant="elevated" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Short summary</h3>
+                <p class="card-body">Compact content block.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="outlined" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Longer content example</h3>
+                <p class="card-body">
+                  This card intentionally contains more text to demonstrate how
+                  the layout behaves with uneven content heights while remaining
+                  visually organized.
+                </p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="filled" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Medium length</h3>
+                <p class="card-body">
+                  Enough copy to create variation without breaking the grid rhythm.
+                </p>
+              </div>
+            </x-card>
+          </x-grid>
+        </section>
+
+        <section class="section-card">
+          <h2>Custom gap sizes</h2>
+          <p>
+            Shared and directional gap controls let you fine-tune row and column spacing.
+          </p>
+
+          <div class="mini-grid two">
+            <div>
+              <div class="chip-row">
+                <span class="chip">gap="sm"</span>
+              </div>
+              <x-grid min-column-size="10rem" gap="sm">
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">A</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">B</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">C</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">D</h3></div>
+                </x-card>
+              </x-grid>
+            </div>
+
+            <div>
+              <div class="chip-row">
+                <span class="chip">gap="lg"</span>
+                <span class="chip">row-gap="xl"</span>
+                <span class="chip">column-gap="sm"</span>
+              </div>
+              <x-grid min-column-size="10rem" gap="lg" row-gap="xl" column-gap="sm">
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">A</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">B</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">C</h3></div>
+                </x-card>
+                <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
+                  <div class="card-content"><h3 class="card-title">D</h3></div>
+                </x-card>
+              </x-grid>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Explicit columns example</h2>
+          <p>
+            When you need precise control, set an explicit grid template through
+            the <code>columns</code> attribute.
+          </p>
+
+          <x-grid columns="2fr 1fr 1fr" gap="lg">
+            <x-card class="demo-card" variant="elevated" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Primary surface</h3>
+                <p class="card-body">A wider lead column for featured content or narrative context.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="outlined" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Secondary</h3>
+                <p class="card-body">Compact supporting detail.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="outlined" padding="md" radius="lg">
+              <div class="card-content">
+                <h3 class="card-title">Tertiary</h3>
+                <p class="card-body">Another supporting panel.</p>
+              </div>
+            </x-card>
+          </x-grid>
+        </section>
+
+        <section class="section-card">
+          <h2>Min-column-size responsive example</h2>
+          <p>
+            Adjusting the minimum column size changes how aggressively the grid
+            wraps across different viewport widths.
+          </p>
+
+          <div class="mini-grid two">
+            <div>
+              <div class="chip-row">
+                <span class="chip">min-column-size="10rem"</span>
+              </div>
+              <x-grid min-column-size="10rem" gap="md">
+                <x-stat class="demo-stat" label="North" value="128" hint="Compact"></x-stat>
+                <x-stat class="demo-stat" label="South" value="94" hint="Compact"></x-stat>
+                <x-stat class="demo-stat" label="East" value="156" hint="Compact"></x-stat>
+                <x-stat class="demo-stat" label="West" value="117" hint="Compact"></x-stat>
+              </x-grid>
+            </div>
+
+            <div>
+              <div class="chip-row">
+                <span class="chip">min-column-size="18rem"</span>
+              </div>
+              <x-grid min-column-size="18rem" gap="md">
+                <x-stat class="demo-stat" label="North" value="128" hint="More spacious"></x-stat>
+                <x-stat class="demo-stat" label="South" value="94" hint="More spacious"></x-stat>
+                <x-stat class="demo-stat" label="East" value="156" hint="More spacious"></x-stat>
+                <x-stat class="demo-stat" label="West" value="117" hint="More spacious"></x-stat>
+              </x-grid>
+            </div>
+          </div>
+
+          <p class="mini-note">
+            This is especially useful for dashboards, card collections, and
+            responsive stat layouts where you want fluid wrapping without manual breakpoints.
+          </p>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

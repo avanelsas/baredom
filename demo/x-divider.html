@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-divider demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 640px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select,
+      .row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .row button:hover { background: #1e40af; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .section-text {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 640px;
+        margin: 0;
+        padding: 8px 0;
+      }
+
+      .vertical-demo {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 40px;
+        max-width: 400px;
+      }
+
+      .vertical-demo span {
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .surface {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 640px;
+      }
+
+      #live-zone {
+        max-width: 640px;
+      }
+
+      #live-zone x-divider {
+        display: block;
+        margin: 8px 0;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-divider demo</h1>
+
+    <h2>Default (horizontal, solid)</h2>
+    <div class="stack">
+      <p class="section-text">Content above</p>
+      <x-divider></x-divider>
+      <p class="section-text">Content below</p>
+    </div>
+
+    <h2>Variants</h2>
+    <div class="stack">
+      <x-divider variant="solid"></x-divider>
+      <x-divider variant="dashed"></x-divider>
+      <x-divider variant="dotted"></x-divider>
+    </div>
+
+    <h2>Custom colour and thickness</h2>
+    <div class="stack">
+      <x-divider color="#3b82f6" thickness="2px"></x-divider>
+      <x-divider color="#ef4444" thickness="3px" variant="dashed"></x-divider>
+      <x-divider color="#10b981" thickness="1px" variant="dotted"></x-divider>
+    </div>
+
+    <h2>With label — center (default)</h2>
+    <div class="stack">
+      <x-divider label="Section A"></x-divider>
+    </div>
+
+    <h2>With label — start</h2>
+    <div class="stack">
+      <x-divider label="Introduction" align="start"></x-divider>
+    </div>
+
+    <h2>With label — end</h2>
+    <div class="stack">
+      <x-divider label="End of section" align="end"></x-divider>
+    </div>
+
+    <h2>Inset</h2>
+    <div class="surface">
+      <p class="section-text" style="margin:0 0 12px">Above the inset divider</p>
+      <x-divider inset="24px"></x-divider>
+      <p class="section-text" style="margin:12px 0 0">Below the inset divider</p>
+    </div>
+
+    <h2>Vertical</h2>
+    <div class="vertical-demo">
+      <span>Left content</span>
+      <x-divider orientation="vertical" style="height:100%; align-self:stretch"></x-divider>
+      <span>Right content</span>
+      <x-divider orientation="vertical" variant="dashed" style="height:100%; align-self:stretch"></x-divider>
+      <span>More content</span>
+    </div>
+
+    <h2>Decorative (role=presentation)</h2>
+    <div class="stack">
+      <x-divider role="presentation" color="#a855f7" thickness="2px"></x-divider>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="row">
+      <label>orientation
+        <select id="ctrl-orientation">
+          <option value="horizontal">horizontal</option>
+          <option value="vertical">vertical</option>
+        </select>
+      </label>
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="solid">solid</option>
+          <option value="dashed">dashed</option>
+          <option value="dotted">dotted</option>
+        </select>
+      </label>
+      <label>thickness
+        <input type="text" id="ctrl-thickness" placeholder="e.g. 2px" style="width:80px">
+      </label>
+      <label>color
+        <input type="text" id="ctrl-color" placeholder="e.g. #3b82f6" style="width:110px">
+      </label>
+      <label>inset
+        <input type="text" id="ctrl-inset" placeholder="e.g. 16px" style="width:80px">
+      </label>
+      <label>label
+        <input type="text" id="ctrl-label" placeholder="optional text" style="width:120px">
+      </label>
+      <label>align
+        <select id="ctrl-align">
+          <option value="center">center</option>
+          <option value="start">start</option>
+          <option value="end">end</option>
+        </select>
+      </label>
+      <label>role
+        <select id="ctrl-role">
+          <option value="separator">separator</option>
+          <option value="presentation">presentation</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <button id="apply-btn">Apply</button>
+      <button id="reset-btn">Reset</button>
+    </div>
+
+    <div id="live-zone">
+      <p class="section-text">Above the live divider</p>
+      <x-divider id="live-divider"></x-divider>
+      <p class="section-text">Below the live divider</p>
+    </div>
+
+    <div class="log" id="log">x-divider has no events — attribute changes are reflected above.</div>
+
+    <script>
+      const liveDivider = document.getElementById("live-divider");
+
+      document.getElementById("apply-btn").addEventListener("click", () => {
+        const orientation = document.getElementById("ctrl-orientation").value;
+        const variant     = document.getElementById("ctrl-variant").value;
+        const thickness   = document.getElementById("ctrl-thickness").value.trim();
+        const color       = document.getElementById("ctrl-color").value.trim();
+        const inset       = document.getElementById("ctrl-inset").value.trim();
+        const label       = document.getElementById("ctrl-label").value.trim();
+        const align       = document.getElementById("ctrl-align").value;
+        const role        = document.getElementById("ctrl-role").value;
+
+        liveDivider.setAttribute("orientation", orientation);
+        liveDivider.setAttribute("variant", variant);
+        liveDivider.setAttribute("align", align);
+        liveDivider.setAttribute("role", role);
+
+        if (thickness) liveDivider.setAttribute("thickness", thickness);
+        else           liveDivider.removeAttribute("thickness");
+
+        if (color) liveDivider.setAttribute("color", color);
+        else       liveDivider.removeAttribute("color");
+
+        if (inset) liveDivider.setAttribute("inset", inset);
+        else       liveDivider.removeAttribute("inset");
+
+        if (label) liveDivider.setAttribute("label", label);
+        else       liveDivider.removeAttribute("label");
+
+        const log = document.getElementById("log");
+        const attrs = Array.from(liveDivider.attributes).map(a => `${a.name}="${a.value}"`).join(" ");
+        log.textContent = `[Applied]  <x-divider ${attrs}>\n` + log.textContent;
+      });
+
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        ["orientation","variant","thickness","color","inset","label","align","role"].forEach(a => {
+          liveDivider.removeAttribute(a);
+        });
+        document.getElementById("ctrl-orientation").value = "horizontal";
+        document.getElementById("ctrl-variant").value     = "solid";
+        document.getElementById("ctrl-align").value       = "center";
+        document.getElementById("ctrl-role").value        = "separator";
+        document.getElementById("ctrl-thickness").value   = "";
+        document.getElementById("ctrl-color").value       = "";
+        document.getElementById("ctrl-inset").value       = "";
+        document.getElementById("ctrl-label").value       = "";
+        const log = document.getElementById("log");
+        log.textContent = "[Reset]  All attributes cleared.\n" + log.textContent;
+      });
+    </script>
+  </body>
+</html>

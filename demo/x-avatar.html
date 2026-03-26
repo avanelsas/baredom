@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-avatar demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+
+      .row label { font-size: 13px; color: var(--muted); }
+
+      .ctrl-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .ctrl-row label { font-size: 13px; }
+
+      .ctrl-row select,
+      .ctrl-row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .ctrl-row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .ctrl-row button:hover { background: #1e40af; }
+
+      /* Inline badge styling for demo */
+      .demo-badge {
+        background: #ef4444;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        padding: 0 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, sans-serif;
+        line-height: 1;
+      }
+
+      #spawn-zone {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 8px;
+        align-items: center;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-avatar demo</h1>
+
+    <h2>Sizes</h2>
+    <div class="row">
+      <label>xs</label><x-avatar size="xs" name="Alice Bob"></x-avatar>
+      <label>sm</label><x-avatar size="sm" name="Alice Bob"></x-avatar>
+      <label>md</label><x-avatar size="md" name="Alice Bob"></x-avatar>
+      <label>lg</label><x-avatar size="lg" name="Alice Bob"></x-avatar>
+      <label>xl</label><x-avatar size="xl" name="Alice Bob"></x-avatar>
+    </div>
+
+    <h2>Shapes</h2>
+    <div class="row">
+      <label>circle</label><x-avatar shape="circle"  name="Alice Bob"></x-avatar>
+      <label>rounded</label><x-avatar shape="rounded" name="Alice Bob"></x-avatar>
+      <label>square</label><x-avatar shape="square"  name="Alice Bob"></x-avatar>
+    </div>
+
+    <h2>Variants</h2>
+    <div class="row">
+      <label>neutral</label><x-avatar variant="neutral" name="Alice Bob" size="lg"></x-avatar>
+      <label>brand</label>  <x-avatar variant="brand"   name="Alice Bob" size="lg"></x-avatar>
+      <label>subtle</label> <x-avatar variant="subtle"  name="Alice Bob" size="lg"></x-avatar>
+    </div>
+
+    <h2>Status indicators</h2>
+    <div class="row">
+      <label>online</label> <x-avatar status="online"  name="Alice" size="lg"></x-avatar>
+      <label>busy</label>   <x-avatar status="busy"    name="Bob"   size="lg"></x-avatar>
+      <label>away</label>   <x-avatar status="away"    name="Carol" size="lg"></x-avatar>
+      <label>offline</label><x-avatar status="offline" name="Dave"  size="lg"></x-avatar>
+    </div>
+
+    <h2>Explicit initials</h2>
+    <div class="row">
+      <x-avatar initials="JD" size="lg"></x-avatar>
+      <x-avatar initials="AB" size="lg" variant="brand"></x-avatar>
+      <x-avatar initials="Z"  size="lg" variant="subtle"></x-avatar>
+    </div>
+
+    <h2>Fallback (no name / initials / src)</h2>
+    <div class="row">
+      <x-avatar size="lg"></x-avatar>
+      <x-avatar size="lg" shape="rounded"></x-avatar>
+      <x-avatar size="lg" shape="square"></x-avatar>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-avatar name="Alice Bob" size="lg" disabled></x-avatar>
+      <x-avatar name="Alice Bob" size="lg" status="online" disabled></x-avatar>
+    </div>
+
+    <h2>Image (loaded / broken)</h2>
+    <div class="row">
+      <label>loaded</label>
+      <x-avatar
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%234f46e5'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%23fff' opacity='.8'/%3E%3Cellipse cx='40' cy='66' rx='22' ry='14' fill='%23fff' opacity='.8'/%3E%3C/svg%3E"
+        alt="Illustrated avatar"
+        size="xl">
+      </x-avatar>
+      <label>broken src → initials</label>
+      <x-avatar src="https://localhost/no-such-image.png" name="Alice Bob" size="xl"></x-avatar>
+    </div>
+
+    <h2>Badge slot</h2>
+    <div class="row">
+      <x-avatar name="Alice Bob" size="xl">
+        <span slot="badge" class="demo-badge">3</span>
+      </x-avatar>
+      <x-avatar name="Carol D" size="xl" status="online" variant="brand">
+        <span slot="badge" class="demo-badge">!</span>
+      </x-avatar>
+    </div>
+
+    <h2>Spawn avatar</h2>
+    <div class="ctrl-row">
+      <label>name
+        <input type="text" id="ctrl-name" value="Alice Bob" style="width:130px">
+      </label>
+      <label>initials
+        <input type="text" id="ctrl-initials" placeholder="auto" style="width:60px">
+      </label>
+      <label>size
+        <select id="ctrl-size">
+          <option value="xs">xs</option>
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+          <option value="xl">xl</option>
+        </select>
+      </label>
+      <label>shape
+        <select id="ctrl-shape">
+          <option value="circle" selected>circle</option>
+          <option value="rounded">rounded</option>
+          <option value="square">square</option>
+        </select>
+      </label>
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="neutral" selected>neutral</option>
+          <option value="brand">brand</option>
+          <option value="subtle">subtle</option>
+        </select>
+      </label>
+      <label>status
+        <select id="ctrl-status">
+          <option value="">none</option>
+          <option value="online">online</option>
+          <option value="offline">offline</option>
+          <option value="busy">busy</option>
+          <option value="away">away</option>
+        </select>
+      </label>
+      <label>disabled
+        <input type="checkbox" id="ctrl-disabled">
+      </label>
+      <button id="spawn-btn">Spawn</button>
+    </div>
+    <div id="spawn-zone"></div>
+
+    <script>
+      document.getElementById("spawn-btn").addEventListener("click", () => {
+        const name     = document.getElementById("ctrl-name").value.trim();
+        const initials = document.getElementById("ctrl-initials").value.trim();
+        const size     = document.getElementById("ctrl-size").value;
+        const shape    = document.getElementById("ctrl-shape").value;
+        const variant  = document.getElementById("ctrl-variant").value;
+        const status   = document.getElementById("ctrl-status").value;
+        const disabled = document.getElementById("ctrl-disabled").checked;
+
+        const el = document.createElement("x-avatar");
+        if (name)     el.setAttribute("name",     name);
+        if (initials) el.setAttribute("initials", initials);
+        el.setAttribute("size",    size);
+        el.setAttribute("shape",   shape);
+        el.setAttribute("variant", variant);
+        if (status)   el.setAttribute("status", status);
+        if (disabled) el.setAttribute("disabled", "");
+
+        document.getElementById("spawn-zone").appendChild(el);
+      });
+    </script>
+  </body>
+</html>

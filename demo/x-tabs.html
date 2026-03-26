@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-tabs demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --chip-bg: rgba(15, 23, 42, 0.06);
+        --chip-fg: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --chip-bg: rgba(148, 163, 184, 0.12);
+          --chip-fg: #cbd5e1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 {
+        margin-top: 0;
+      }
+
+      .section-card > p {
+        color: var(--muted);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        color: var(--chip-fg);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .demo-block {
+        display: grid;
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .panel {
+        border: 1px solid var(--surface-border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.42);
+        padding: 18px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .panel {
+          background: rgba(15, 23, 42, 0.42);
+        }
+      }
+
+      .panel h3 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .panel-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .vertical-layout {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 20px;
+        align-items: start;
+      }
+
+      @media (max-width: 760px) {
+        .vertical-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      x-tabs {
+        display: block;
+        --x-tabs-gap: 10px;
+        --x-tabs-panel-gap: 16px;
+      }
+
+      x-tab {
+        display: inline-block;
+      }
+
+      x-tab.demo-tab {
+        --x-tab-color: var(--page-fg);
+        --x-tab-background: rgba(255, 255, 255, 0.72);
+        --x-tab-border-color: rgba(148, 163, 184, 0.24);
+        --x-tab-hover-background: rgba(59, 130, 246, 0.07);
+        --x-tab-selected-color: #2563eb;
+        --x-tab-selected-background: rgba(59, 130, 246, 0.12);
+        --x-tab-selected-border-color: rgba(59, 130, 246, 0.18);
+        --x-tab-focus-ring: rgba(59, 130, 246, 0.36);
+        --x-tab-disabled-opacity: 0.5;
+        --x-tab-padding-sm: 6px 12px;
+        --x-tab-padding-md: 10px 16px;
+        --x-tab-padding-lg: 14px 20px;
+        --x-tab-radius: 12px;
+        --x-tab-transition-duration: 140ms;
+        --x-tab-transition-timing: ease;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-tab.demo-tab {
+          --x-tab-color: #e5e7eb;
+          --x-tab-background: rgba(15, 23, 42, 0.72);
+          --x-tab-border-color: rgba(100, 116, 139, 0.32);
+          --x-tab-hover-background: rgba(96, 165, 250, 0.10);
+          --x-tab-selected-color: #93c5fd;
+          --x-tab-selected-background: rgba(96, 165, 250, 0.14);
+          --x-tab-selected-border-color: rgba(96, 165, 250, 0.26);
+          --x-tab-focus-ring: rgba(96, 165, 250, 0.4);
+        }
+      }
+
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.8em;
+        padding: 0.15em 0.45em;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--page-fg);
+        font-size: 0.9em;
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .kbd {
+          background: rgba(15, 23, 42, 0.42);
+          color: #e5e7eb;
+        }
+      }
+
+      .event-log {
+        margin-top: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--surface-border);
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .event-log {
+          background: rgba(15, 23, 42, 0.42);
+        }
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      code {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.92em;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Light & Dark Mode</div>
+        <h1>x-tabs</h1>
+        <p class="subtitle">
+          Themeable tab system container that coordinates <code>x-tab</code>
+          triggers and associated panels. This demo follows the same professional
+          visual language as the other component demos and highlights selection,
+          panel coordination, orientation, activation mode, loop behavior, and
+          disabled-tab handling.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Default horizontal tabs with coordinated panels</h2>
+          <p>
+            A standard horizontal tabs pattern with one selected panel and one disabled tab.
+          </p>
+
+          <div class="demo-block">
+            <x-tabs id="tabs-default" label="Product sections">
+              <x-tab class="demo-tab" value="overview" controls="panel-default-overview">Overview</x-tab>
+              <x-tab class="demo-tab" value="analytics" controls="panel-default-analytics">Analytics</x-tab>
+              <x-tab class="demo-tab" value="reports" controls="panel-default-reports">Reports</x-tab>
+              <x-tab class="demo-tab" value="settings" controls="panel-default-settings" disabled>Settings</x-tab>
+            </x-tabs>
+
+            <div class="panel-grid">
+              <section id="panel-default-overview" class="panel">
+                <h3>Overview</h3>
+                <p>Selected tabs coordinate panel visibility while preserving a lightweight container shell.</p>
+              </section>
+              <section id="panel-default-analytics" class="panel" hidden>
+                <h3>Analytics</h3>
+                <p>Switch tabs to reveal the associated content panel via each tab’s <code>controls</code> attribute.</p>
+              </section>
+              <section id="panel-default-reports" class="panel" hidden>
+                <h3>Reports</h3>
+                <p>The container owns selection and visibility coordination, while <code>x-tab</code> owns trigger semantics.</p>
+              </section>
+              <section id="panel-default-settings" class="panel" hidden>
+                <h3>Settings</h3>
+                <p>This panel stays inactive because its tab is disabled.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Manual activation example</h2>
+          <p>
+            In manual activation mode, arrow keys move focus only. Press
+            <span class="kbd">Enter</span> or <span class="kbd">Space</span> to select.
+          </p>
+
+          <div class="demo-block">
+            <x-tabs id="tabs-manual" activation="manual" label="Manual activation example">
+              <x-tab class="demo-tab" variant="underline" value="design" controls="panel-manual-design">Design</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="build" controls="panel-manual-build">Build</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="ship" controls="panel-manual-ship">Ship</x-tab>
+            </x-tabs>
+
+            <div class="chip-row">
+              <span class="chip">activation="manual"</span>
+              <span class="chip">Arrow keys move focus</span>
+              <span class="chip">Enter / Space select</span>
+            </div>
+
+            <div class="panel-grid">
+              <section id="panel-manual-design" class="panel">
+                <h3>Design</h3>
+                <p>Use manual activation when users need to inspect tab triggers before committing to a panel change.</p>
+              </section>
+              <section id="panel-manual-build" class="panel" hidden>
+                <h3>Build</h3>
+                <p>Selection is committed by explicit keyboard activation or direct click interaction.</p>
+              </section>
+              <section id="panel-manual-ship" class="panel" hidden>
+                <h3>Ship</h3>
+                <p>This keeps navigation deliberate in more complex interfaces.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Vertical tabs example</h2>
+          <p>
+            Vertical orientation changes keyboard traversal to
+            <span class="kbd">↑</span> and <span class="kbd">↓</span>.
+          </p>
+
+          <div class="demo-block vertical-layout">
+            <x-tabs id="tabs-vertical" orientation="vertical" label="Vertical sections">
+              <x-tab class="demo-tab" variant="pill" orientation="vertical" value="profile" controls="panel-vertical-profile">Profile</x-tab>
+              <x-tab class="demo-tab" variant="pill" orientation="vertical" value="security" controls="panel-vertical-security">Security</x-tab>
+              <x-tab class="demo-tab" variant="pill" orientation="vertical" value="notifications" controls="panel-vertical-notifications">Notifications</x-tab>
+              <x-tab class="demo-tab" variant="pill" orientation="vertical" value="billing" controls="panel-vertical-billing" disabled>Billing</x-tab>
+            </x-tabs>
+
+            <div class="panel-grid">
+              <section id="panel-vertical-profile" class="panel">
+                <h3>Profile</h3>
+                <p>Vertical tab stacks work well for settings, admin areas, and profile management screens.</p>
+              </section>
+              <section id="panel-vertical-security" class="panel" hidden>
+                <h3>Security</h3>
+                <p>Orientation is coordinated at the container level and reflected through keyboard behavior.</p>
+              </section>
+              <section id="panel-vertical-notifications" class="panel" hidden>
+                <h3>Notifications</h3>
+                <p>Tabs remain semantically consistent while the layout changes.</p>
+              </section>
+              <section id="panel-vertical-billing" class="panel" hidden>
+                <h3>Billing</h3>
+                <p>The disabled tab is skipped during navigation.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Disabled tab skipping and loop navigation</h2>
+          <p>
+            Loop mode wraps keyboard traversal from the last enabled tab to the first enabled tab.
+          </p>
+
+          <div class="demo-block">
+            <x-tabs id="tabs-loop" loop label="Loop navigation example">
+              <x-tab class="demo-tab" value="north" controls="panel-loop-north">North</x-tab>
+              <x-tab class="demo-tab" value="east" controls="panel-loop-east" disabled>East</x-tab>
+              <x-tab class="demo-tab" value="south" controls="panel-loop-south">South</x-tab>
+              <x-tab class="demo-tab" value="west" controls="panel-loop-west">West</x-tab>
+            </x-tabs>
+
+            <div class="chip-row">
+              <span class="chip">loop</span>
+              <span class="chip">Disabled tabs skipped</span>
+              <span class="chip">Home / End supported</span>
+            </div>
+
+            <div class="panel-grid">
+              <section id="panel-loop-north" class="panel">
+                <h3>North</h3>
+                <p>Press arrow keys repeatedly to see focus and selection wrap across enabled tabs only.</p>
+              </section>
+              <section id="panel-loop-east" class="panel" hidden>
+                <h3>East</h3>
+                <p>Disabled tabs remain unavailable for traversal and activation.</p>
+              </section>
+              <section id="panel-loop-south" class="panel" hidden>
+                <h3>South</h3>
+                <p>The container keeps a single selected value invariant.</p>
+              </section>
+              <section id="panel-loop-west" class="panel" hidden>
+                <h3>West</h3>
+                <p>Loop behavior is controlled at the container level.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Controlled selection and event output</h2>
+          <p>
+            The container emits <code>value-change</code> whenever coordinated selection changes.
+          </p>
+
+          <div class="demo-block">
+            <x-tabs id="tabs-events" value="quarterly" label="Controlled selection example">
+              <x-tab class="demo-tab" variant="underline" value="monthly" controls="panel-events-monthly">Monthly</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="quarterly" controls="panel-events-quarterly">Quarterly</x-tab>
+              <x-tab class="demo-tab" variant="underline" value="yearly" controls="panel-events-yearly">Yearly</x-tab>
+            </x-tabs>
+
+            <div id="tabs-event-log" class="event-log">No value-change events yet.</div>
+
+            <div class="panel-grid">
+              <section id="panel-events-monthly" class="panel" hidden>
+                <h3>Monthly</h3>
+                <p>Use controlled selection when a parent application model owns the active tab value.</p>
+              </section>
+              <section id="panel-events-quarterly" class="panel">
+                <h3>Quarterly</h3>
+                <p>The initial selected value is derived from the container’s <code>value</code> attribute.</p>
+              </section>
+              <section id="panel-events-yearly" class="panel" hidden>
+                <h3>Yearly</h3>
+                <p>Selection changes surface through a single container-level event.</p>
+              </section>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const eventTabs = document.getElementById("tabs-events");
+        const eventLog = document.getElementById("tabs-event-log");
+        let count = 0;
+
+        eventTabs.addEventListener("value-change", function (event) {
+          count += 1;
+          eventLog.textContent =
+            "value-change event #" +
+            count +
+            " · value: " +
+            (event.detail && event.detail.value ? event.detail.value : "");
+        });
+      })();
+    </script>
+  </body>
+</html>

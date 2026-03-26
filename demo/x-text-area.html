@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>x-text-area demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 24px;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
+    h2 { font-size: 15px; font-weight: 600; margin: 32px 0 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    /* Control panel */
+    .controls {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .control-row label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .control-row input[type=text],
+    .control-row input[type=number],
+    .control-row select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+      font-size: 13px;
+      width: 140px;
+    }
+    .control-row input[type=checkbox] { width: 16px; height: 16px; margin-top: 6px; cursor: pointer; }
+    button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    /* Event log */
+    .log {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-entry { padding: 3px 0; border-bottom: 1px solid var(--border); }
+    .log-entry:last-child { border-bottom: none; }
+    .log-empty { color: var(--muted); font-style: italic; }
+  </style>
+  <script src="../js/main.js"></script>
+</head>
+<body>
+
+<h1>x-text-area</h1>
+
+<h2>States</h2>
+<div class="grid">
+
+  <div class="card">
+    <div class="card-label">Default</div>
+    <x-text-area
+      name="default"
+      label="Message"
+      placeholder="Type your message…"
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">With hint</div>
+    <x-text-area
+      name="with-hint"
+      label="Bio"
+      hint="Keep it under 200 characters."
+      placeholder="Tell us about yourself"
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Error state</div>
+    <x-text-area
+      name="with-error"
+      label="Feedback"
+      error="Feedback is required."
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Hint + error</div>
+    <x-text-area
+      name="hint-and-error"
+      label="Notes"
+      hint="Be specific."
+      error="Please provide more detail."
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Disabled</div>
+    <x-text-area
+      name="disabled-field"
+      label="Notes"
+      value="This field is disabled."
+      disabled
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Read-only</div>
+    <x-text-area
+      name="readonly-field"
+      label="Read-only content"
+      value="You can read but not edit this."
+      readonly
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Required</div>
+    <x-text-area
+      name="required-field"
+      label="Description"
+      required
+      placeholder="Required field"
+      rows="3">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Tall (rows=8)</div>
+    <x-text-area
+      name="tall"
+      label="Long text"
+      rows="8"
+      placeholder="Lots of room…">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Resize: none</div>
+    <x-text-area
+      name="no-resize"
+      label="Fixed size"
+      resize="none"
+      rows="3"
+      placeholder="Cannot resize">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Resize: both</div>
+    <x-text-area
+      name="both-resize"
+      label="Free resize"
+      resize="both"
+      rows="3"
+      placeholder="Drag any corner">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Max length (50)</div>
+    <x-text-area
+      name="limited"
+      label="Short summary"
+      maxlength="50"
+      rows="3"
+      placeholder="Max 50 chars">
+    </x-text-area>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Prepopulated value</div>
+    <x-text-area
+      name="prepop"
+      label="Existing content"
+      value="This was set via the value attribute."
+      rows="3">
+    </x-text-area>
+  </div>
+
+</div>
+
+<h2>Live Control Panel</h2>
+<div class="controls">
+  <div class="control-row">
+    <label>label <input type="text" id="ctrl-label" value="Message" placeholder="Label text"></label>
+    <label>placeholder <input type="text" id="ctrl-placeholder" value="Type here…"></label>
+    <label>hint <input type="text" id="ctrl-hint" placeholder="Hint text"></label>
+    <label>error <input type="text" id="ctrl-error" placeholder="Error message"></label>
+  </div>
+  <div class="control-row">
+    <label>name <input type="text" id="ctrl-name" value="live"></label>
+    <label>rows <input type="number" id="ctrl-rows" value="3" min="1" max="20"></label>
+    <label>maxlength <input type="number" id="ctrl-maxlength" placeholder="none" min="1"></label>
+    <label>resize
+      <select id="ctrl-resize">
+        <option value="vertical" selected>vertical</option>
+        <option value="none">none</option>
+        <option value="horizontal">horizontal</option>
+        <option value="both">both</option>
+      </select>
+    </label>
+  </div>
+  <div class="control-row">
+    <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    <label>readonly <input type="checkbox" id="ctrl-readonly"></label>
+    <label>required <input type="checkbox" id="ctrl-required"></label>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:24px">
+  <div class="card-label">Live preview</div>
+  <x-text-area id="live-ta" name="live" label="Message" placeholder="Type here…" rows="3"></x-text-area>
+</div>
+
+<h2>Event Log</h2>
+<div class="log" id="event-log">
+  <div class="log-empty">Events will appear here…</div>
+</div>
+
+<script>
+
+  // Wait for element upgrade
+  customElements.whenDefined('x-text-area').then(() => {
+
+    // ----- Live control panel -----
+    const liveTa = document.getElementById('live-ta');
+
+    function applyControls() {
+      const label       = document.getElementById('ctrl-label').value;
+      const placeholder = document.getElementById('ctrl-placeholder').value;
+      const hint        = document.getElementById('ctrl-hint').value;
+      const error       = document.getElementById('ctrl-error').value;
+      const name        = document.getElementById('ctrl-name').value;
+      const rows        = document.getElementById('ctrl-rows').value;
+      const maxlength   = document.getElementById('ctrl-maxlength').value;
+      const resize      = document.getElementById('ctrl-resize').value;
+      const disabled    = document.getElementById('ctrl-disabled').checked;
+      const readonly    = document.getElementById('ctrl-readonly').checked;
+      const required    = document.getElementById('ctrl-required').checked;
+
+      liveTa.setAttribute('label',       label);
+      liveTa.setAttribute('placeholder', placeholder);
+      liveTa.setAttribute('name',        name);
+      liveTa.setAttribute('rows',        rows);
+      liveTa.setAttribute('resize',      resize);
+
+      if (hint)   liveTa.setAttribute('hint',  hint);
+      else        liveTa.removeAttribute('hint');
+      if (error)  liveTa.setAttribute('error', error);
+      else        liveTa.removeAttribute('error');
+      if (maxlength) liveTa.setAttribute('maxlength', maxlength);
+      else           liveTa.removeAttribute('maxlength');
+
+      if (disabled) liveTa.setAttribute('disabled',  '');
+      else          liveTa.removeAttribute('disabled');
+      if (readonly) liveTa.setAttribute('readonly',  '');
+      else          liveTa.removeAttribute('readonly');
+      if (required) liveTa.setAttribute('required',  '');
+      else          liveTa.removeAttribute('required');
+    }
+
+    document.querySelectorAll('[id^=ctrl-]').forEach(el => {
+      el.addEventListener('input',  applyControls);
+      el.addEventListener('change', applyControls);
+    });
+
+    applyControls();
+
+    // ----- Event log -----
+    const log = document.getElementById('event-log');
+    let logEmpty = true;
+
+    function addLogEntry(text) {
+      if (logEmpty) {
+        log.innerHTML = '';
+        logEmpty = false;
+      }
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      log.prepend(entry);
+    }
+
+    document.querySelectorAll('x-text-area').forEach(el => {
+      el.addEventListener('x-text-area-input', e => {
+        addLogEntry(`x-text-area-input  name="${e.detail.name}" value="${e.detail.value}"`);
+      });
+      el.addEventListener('x-text-area-change', e => {
+        addLogEntry(`x-text-area-change name="${e.detail.name}" value="${e.detail.value}"`);
+      });
+    });
+
+  });
+</script>
+</body>
+</html>

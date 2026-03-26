@@ -1,0 +1,407 @@
+(ns app.components.x-select.x-select
+  (:require [goog.object :as gobj]
+            [app.components.x-select.model :as model]))
+
+;; ---------------------------------------------------------------------------
+;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
+;; ---------------------------------------------------------------------------
+(def ^:private k-refs     "__xSelectRefs")
+(def ^:private k-handlers "__xSelectHandlers")
+
+;; ---------------------------------------------------------------------------
+;; Style
+;; ---------------------------------------------------------------------------
+(def ^:private style-text
+  (str
+   ":host{"
+   "display:inline-block;"
+   "color-scheme:light dark;"
+   "--x-select-height-sm:2rem;"
+   "--x-select-height-md:2.5rem;"
+   "--x-select-height-lg:3rem;"
+   "--x-select-radius:0.5rem;"
+   "--x-select-font-size-sm:0.75rem;"
+   "--x-select-font-size-md:0.875rem;"
+   "--x-select-font-size-lg:1rem;"
+   "--x-select-padding-inline:0.75rem;"
+   "--x-select-bg:#ffffff;"
+   "--x-select-bg-disabled:#f8fafc;"
+   "--x-select-fg:#0f172a;"
+   "--x-select-fg-disabled:#94a3b8;"
+   "--x-select-placeholder-fg:#94a3b8;"
+   "--x-select-border:#cbd5e1;"
+   "--x-select-border-hover:#94a3b8;"
+   "--x-select-border-focus:#3b82f6;"
+   "--x-select-chevron:#64748b;"
+   "--x-select-focus-ring:#93c5fd;"
+   "--x-select-shadow:0 1px 2px rgba(15,23,42,0.06);"
+   "--x-select-transition-duration:140ms;"
+   "}"
+   "@media (prefers-color-scheme:dark){"
+   ":host{"
+   "--x-select-bg:#1f2937;"
+   "--x-select-bg-disabled:#111827;"
+   "--x-select-fg:#f1f5f9;"
+   "--x-select-border:#374151;"
+   "--x-select-border-hover:#4b5563;"
+   "--x-select-border-focus:#60a5fa;"
+   "--x-select-chevron:#94a3b8;"
+   "}"
+   "}"
+   "[part=wrapper]{"
+   "position:relative;"
+   "display:flex;"
+   "align-items:stretch;"
+   "height:var(--x-select-height-md);"
+   "border:1px solid var(--x-select-border);"
+   "border-radius:var(--x-select-radius);"
+   "background:var(--x-select-bg);"
+   "box-shadow:var(--x-select-shadow);"
+   "transition:border-color var(--x-select-transition-duration) ease,"
+   "box-shadow var(--x-select-transition-duration) ease;"
+   "overflow:hidden;"
+   "font-size:var(--x-select-font-size-md);"
+   "}"
+   "[part=wrapper][data-size=sm]{"
+   "height:var(--x-select-height-sm);"
+   "font-size:var(--x-select-font-size-sm);"
+   "}"
+   "[part=wrapper][data-size=lg]{"
+   "height:var(--x-select-height-lg);"
+   "font-size:var(--x-select-font-size-lg);"
+   "}"
+   "[part=wrapper][data-disabled]{"
+   "background:var(--x-select-bg-disabled);"
+   "opacity:0.6;"
+   "pointer-events:none;"
+   "}"
+   "[part=wrapper]:hover:not([data-disabled]){"
+   "border-color:var(--x-select-border-hover);"
+   "}"
+   "[part=wrapper]:focus-within:not([data-disabled]){"
+   "border-color:var(--x-select-border-focus);"
+   "box-shadow:0 0 0 3px var(--x-select-focus-ring);"
+   "}"
+   "[part=select]{"
+   "appearance:none;"
+   "-webkit-appearance:none;"
+   "flex:1;"
+   "min-width:0;"
+   "background:transparent;"
+   "border:none;"
+   "outline:none;"
+   "color:var(--x-select-fg);"
+   "font-size:inherit;"
+   "font-family:inherit;"
+   "padding-inline:var(--x-select-padding-inline);"
+   "padding-inline-end:calc(var(--x-select-padding-inline) + 1.75rem);"
+   "cursor:pointer;"
+   "width:100%;"
+   "}"
+   "[part=select]:disabled{"
+   "color:var(--x-select-fg-disabled);"
+   "cursor:default;"
+   "}"
+   "[part=select] option[data-placeholder]{"
+   "color:var(--x-select-placeholder-fg);"
+   "}"
+   "[part=chevron]{"
+   "position:absolute;"
+   "right:var(--x-select-padding-inline);"
+   "top:50%;"
+   "transform:translateY(-50%);"
+   "display:flex;"
+   "align-items:center;"
+   "justify-content:center;"
+   "pointer-events:none;"
+   "color:var(--x-select-chevron);"
+   "width:1rem;"
+   "height:1rem;"
+   "}"
+   "slot{"
+   "display:none;"
+   "}"
+   "@media (prefers-reduced-motion:reduce){"
+   "[part=wrapper]{transition:none;}"
+   "}"))
+
+(def ^:private chevron-svg
+  (str "<svg xmlns=\"http://www.w3.org/2000/svg\""
+       " width=\"16\" height=\"16\" viewBox=\"0 0 16 16\""
+       " fill=\"none\" stroke=\"currentColor\""
+       " stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\""
+       " aria-hidden=\"true\">"
+       "<polyline points=\"4 6 8 10 12 6\"/>"
+       "</svg>"))
+
+;; ---------------------------------------------------------------------------
+;; DOM helpers
+;; ---------------------------------------------------------------------------
+(defn- make-el [tag] (.createElement js/document tag))
+
+(defn- set-attr! [^js el attr val]
+  (.setAttribute el attr val))
+
+(defn- remove-attr! [^js el attr]
+  (.removeAttribute el attr))
+
+(defn- has-attr? [^js el attr]
+  (.hasAttribute el attr))
+
+(defn- get-attr [^js el attr]
+  (.getAttribute el attr))
+
+(defn- set-bool-attr! [^js el attr value]
+  (if value (set-attr! el attr "") (remove-attr! el attr)))
+
+;; ---------------------------------------------------------------------------
+;; Shadow DOM construction
+;; ---------------------------------------------------------------------------
+(defn- make-shadow! [^js el]
+  (let [root       (.attachShadow el #js {:mode "open"})
+        style-el   (make-el "style")
+        wrapper-el (make-el "div")
+        select-el  (make-el "select")
+        ph-opt-el  (make-el "option")
+        chevron-el (make-el "span")
+        slot-el    (make-el "slot")]
+
+    (set! (.-textContent style-el) style-text)
+
+    (set-attr! wrapper-el "part" "wrapper")
+    (set-attr! select-el  "part" "select")
+    (set-attr! chevron-el "part" "chevron")
+    (set-attr! chevron-el "aria-hidden" "true")
+
+    ;; Placeholder option: empty value, hidden by default, disabled, selected
+    (set-attr! ph-opt-el "data-placeholder" "")
+    (set-attr! ph-opt-el "value" "")
+    (set! (.-hidden ph-opt-el) true)
+    (set! (.-disabled ph-opt-el) true)
+    (set! (.-selected ph-opt-el) true)
+
+    ;; Inline chevron SVG
+    (set! (.-innerHTML chevron-el) chevron-svg)
+
+    (.appendChild select-el ph-opt-el)
+    (.appendChild wrapper-el select-el)
+    (.appendChild wrapper-el chevron-el)
+    (.appendChild root style-el)
+    (.appendChild root wrapper-el)
+    (.appendChild root slot-el)
+
+    (let [refs #js {:root            root
+                    :wrapper         wrapper-el
+                    :select          select-el
+                    :placeholder-opt ph-opt-el
+                    :slot            slot-el
+                    :chevron         chevron-el}]
+      (gobj/set el k-refs refs)
+      refs)))
+
+;; ---------------------------------------------------------------------------
+;; Read element state from attributes
+;; ---------------------------------------------------------------------------
+(defn- read-model [^js el]
+  (model/normalize
+   {:disabled-present? (has-attr? el model/attr-disabled)
+    :required-present? (has-attr? el model/attr-required)
+    :size-raw          (get-attr el model/attr-size)
+    :placeholder-raw   (get-attr el model/attr-placeholder)
+    :value-raw         (get-attr el model/attr-value)
+    :name-raw          (get-attr el model/attr-name)}))
+
+;; ---------------------------------------------------------------------------
+;; Render
+;; ---------------------------------------------------------------------------
+(defn- render! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js wrapper-el (gobj/get refs "wrapper")
+          ^js select-el  (gobj/get refs "select")
+          ^js ph-opt-el  (gobj/get refs "placeholder-opt")
+          m              (read-model el)
+          disabled?      (:disabled? m)
+          required?      (:required? m)
+          size           (:size m)
+          placeholder    (:placeholder m)
+          value          (:value m)
+          name-val       (:name m)]
+
+      ;; Sync disabled to internal select
+      (set! (.-disabled select-el) disabled?)
+
+      ;; Sync required
+      (if required?
+        (set-attr! select-el model/attr-required "")
+        (remove-attr! select-el model/attr-required))
+
+      ;; Sync name
+      (if (and (string? name-val) (not= name-val ""))
+        (set-attr! select-el model/attr-name name-val)
+        (remove-attr! select-el model/attr-name))
+
+      ;; Placeholder option visibility
+      (if (and (string? placeholder) (not= placeholder ""))
+        (do
+          (set! (.-textContent ph-opt-el) placeholder)
+          (set! (.-hidden ph-opt-el) false))
+        (set! (.-hidden ph-opt-el) true))
+
+      ;; Sync value to internal select
+      (set! (.-value select-el) (or value ""))
+
+      ;; data-size on wrapper for CSS size selectors
+      (set-attr! wrapper-el "data-size" size)
+
+      ;; data-disabled on wrapper for CSS disabled styles
+      (if disabled?
+        (set-attr! wrapper-el "data-disabled" "")
+        (remove-attr! wrapper-el "data-disabled"))
+
+      ;; aria-label on internal select when no name attr present
+      (if (or (nil? name-val) (= name-val ""))
+        (set-attr! select-el "aria-label" (or placeholder "select"))
+        (remove-attr! select-el "aria-label")))))
+
+;; ---------------------------------------------------------------------------
+;; Option sync from slot
+;; ---------------------------------------------------------------------------
+(defn- sync-options! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js select-el (gobj/get refs "select")
+          ^js ph-opt-el (gobj/get refs "placeholder-opt")
+          ^js slot-el   (gobj/get refs "slot")
+          assigned      (.assignedElements slot-el #js {:flatten true})]
+      ;; Remove all children of select except the placeholder option
+      (loop []
+        (let [^js last-child (.-lastChild select-el)]
+          (when (and last-child (not (identical? last-child ph-opt-el)))
+            (.removeChild select-el last-child)
+            (recur))))
+      ;; Append clones of assigned option/optgroup elements
+      (doseq [^js node (array-seq assigned)]
+        (let [tag-lower (.toLowerCase (.-tagName node))]
+          (when (or (= tag-lower "option") (= tag-lower "optgroup"))
+            (.appendChild select-el (.cloneNode node true)))))
+      ;; Sync value after options are in place
+      (render! el))))
+
+;; ---------------------------------------------------------------------------
+;; Event dispatch
+;; ---------------------------------------------------------------------------
+(defn- dispatch! [^js el event-name detail]
+  (.dispatchEvent
+   el
+   (js/CustomEvent.
+    event-name
+    #js {:detail     detail
+         :bubbles    true
+         :composed   true
+         :cancelable false})))
+
+;; ---------------------------------------------------------------------------
+;; Change handler — dispatches select-change, does NOT set value attr
+;; ---------------------------------------------------------------------------
+(defn- make-change-handler [^js el]
+  (fn [^js _]
+    (when-let [refs (gobj/get el k-refs)]
+      (let [^js sel (gobj/get refs "select")
+            value   (.-value sel)
+            label   (if (> (alength (.-selectedOptions sel)) 0)
+                      (.-text (aget (.-selectedOptions sel) 0))
+                      "")]
+        (dispatch! el model/event-select-change #js {:value value :label label})))))
+
+;; ---------------------------------------------------------------------------
+;; Slotchange handler
+;; ---------------------------------------------------------------------------
+(defn- make-slotchange-handler [^js el]
+  (fn [^js _] (sync-options! el)))
+
+;; ---------------------------------------------------------------------------
+;; Listener management
+;; ---------------------------------------------------------------------------
+(defn- add-listeners! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js select-el  (gobj/get refs "select")
+          ^js slot-el    (gobj/get refs "slot")
+          change-h       (make-change-handler el)
+          slotchange-h   (make-slotchange-handler el)
+          handlers       #js {:change change-h :slotchange slotchange-h}]
+      (.addEventListener select-el "change"     change-h)
+      (.addEventListener slot-el   "slotchange" slotchange-h)
+      (gobj/set el k-handlers handlers))))
+
+(defn- remove-listeners! [^js el]
+  (when-let [refs     (gobj/get el k-refs)]
+    (when-let [handlers (gobj/get el k-handlers)]
+      (let [^js select-el (gobj/get refs "select")
+            ^js slot-el   (gobj/get refs "slot")]
+        (.removeEventListener select-el "change"     (gobj/get handlers "change"))
+        (.removeEventListener slot-el   "slotchange" (gobj/get handlers "slotchange")))
+      (gobj/set el k-handlers nil))))
+
+;; ---------------------------------------------------------------------------
+;; Lifecycle
+;; ---------------------------------------------------------------------------
+(defn- connected! [^js el]
+  (when-not (gobj/get el k-refs) (make-shadow! el))
+  (remove-listeners! el)
+  (add-listeners! el)
+  (sync-options! el)
+  (render! el))
+
+(defn- disconnected! [^js el]
+  (remove-listeners! el))
+
+(defn- attribute-changed! [^js el _name _old _new]
+  (render! el))
+
+;; ---------------------------------------------------------------------------
+;; Property helpers
+;; ---------------------------------------------------------------------------
+(defn- define-bool-prop! [^js proto prop-name attr-name]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+
+(defn- define-string-prop! [^js proto prop-name attr-name]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this (or (get-attr this attr-name) nil)))
+        :set (fn [v] (this-as ^js this
+                              (if (and (some? v) (not= v js/undefined))
+                                (set-attr! this attr-name (str v))
+                                (remove-attr! this attr-name))))}))
+
+;; ---------------------------------------------------------------------------
+;; Element class and registration
+;; ---------------------------------------------------------------------------
+(defn- element-class []
+  (let [cls   (js* "(class extends HTMLElement {})")
+        proto (.-prototype cls)]
+
+    (.defineProperty js/Object cls "observedAttributes"
+                     #js {:get (fn [] model/observed-attributes)})
+
+    (define-bool-prop!   proto "disabled" model/attr-disabled)
+    (define-bool-prop!   proto "required" model/attr-required)
+    (define-string-prop! proto "value"    model/attr-value)
+
+    (aset proto "connectedCallback"
+          (fn [] (this-as ^js this (connected! this))))
+    (aset proto "disconnectedCallback"
+          (fn [] (this-as ^js this (disconnected! this))))
+    (aset proto "attributeChangedCallback"
+          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
+
+    cls))
+
+(defn init! []
+  (when-not (.get js/customElements model/tag-name)
+    (.define js/customElements model/tag-name (element-class))))

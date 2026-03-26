@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-timeline-item demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+        max-width: 760px;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+      }
+
+      /* Give items explicit height for the connector to span between them */
+      .timeline x-timeline-item {
+        min-height: 4rem;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select,
+      .row input[type="text"] {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row input[type="checkbox"] { width: 16px; height: 16px; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .surface {
+        padding: 16px;
+        border-radius: 10px;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        max-width: 600px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-timeline-item demo</h1>
+
+    <h2>Status variants</h2>
+    <div class="timeline" id="variants">
+      <x-timeline-item label="Jan 2024" title="Project kickoff" status="complete">
+        <p style="margin:0;font-size:0.875rem">The project was officially launched.</p>
+      </x-timeline-item>
+      <x-timeline-item label="Mar 2024" title="Design phase" status="complete">
+        <p style="margin:0;font-size:0.875rem">All wireframes and prototypes approved.</p>
+      </x-timeline-item>
+      <x-timeline-item label="Jun 2024" title="Development" status="active">
+        <p style="margin:0;font-size:0.875rem">Currently in progress — sprint 4 of 6.</p>
+      </x-timeline-item>
+      <x-timeline-item label="Sep 2024" title="QA &amp; Testing" status="pending">
+        <p style="margin:0;font-size:0.875rem">Scheduled for Q3 delivery.</p>
+      </x-timeline-item>
+      <x-timeline-item label="Oct 2024" title="Build failure" status="error">
+        <p style="margin:0;font-size:0.875rem">CI pipeline failed — hotfix in progress.</p>
+      </x-timeline-item>
+      <x-timeline-item label="Nov 2024" title="Security alert" status="warning" data-last="">
+        <p style="margin:0;font-size:0.875rem">Dependency audit flagged 2 medium issues.</p>
+      </x-timeline-item>
+    </div>
+
+    <h2>Connector variants</h2>
+    <div class="timeline">
+      <x-timeline-item label="Step 1" title="Solid connector" status="complete">
+        Default connector style.
+      </x-timeline-item>
+      <x-timeline-item label="Step 2" title="Dashed connector" status="active" connector="dashed">
+        Dashed line connecting to next item.
+      </x-timeline-item>
+      <x-timeline-item label="Step 3" title="No connector" status="pending" connector="none" data-last="">
+        No connector line below.
+      </x-timeline-item>
+    </div>
+
+    <h2>Position end (label on right)</h2>
+    <div class="timeline">
+      <x-timeline-item position="end" label="Jan" title="First event" status="complete">
+        Content appears on the left; label on the right.
+      </x-timeline-item>
+      <x-timeline-item position="end" label="Feb" title="Second event" status="active" data-last="">
+        Same layout, active status.
+      </x-timeline-item>
+    </div>
+
+    <h2>Custom icon / Icon hidden</h2>
+    <div class="timeline">
+      <x-timeline-item label="🚀" title="Deployed" status="complete" icon="🚀">
+        Custom emoji icon overrides the default glyph.
+      </x-timeline-item>
+      <x-timeline-item label="—" title="No icon" status="active" icon="none" data-last="">
+        Icon attribute set to "none" hides the marker icon.
+      </x-timeline-item>
+    </div>
+
+    <h2>With actions slot</h2>
+    <div class="timeline">
+      <x-timeline-item label="Pending" title="Awaiting approval" status="pending" data-last="">
+        <p style="margin:0 0 0.5rem;font-size:0.875rem">This step requires sign-off from the manager.</p>
+        <div slot="actions" style="display:flex;gap:8px">
+          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:none;background:#1d4ed8;color:#fff;cursor:pointer">Approve</button>
+          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:inherit;cursor:pointer">Reject</button>
+        </div>
+      </x-timeline-item>
+    </div>
+
+    <h2>Disabled item</h2>
+    <div class="timeline">
+      <x-timeline-item label="TBD" title="Future step" status="pending" disabled data-last="">
+        This item is disabled and cannot be clicked.
+      </x-timeline-item>
+    </div>
+
+    <h2>Live control panel</h2>
+    <div class="surface">
+      <div class="row">
+        <label>status
+          <select id="ctrl-status">
+            <option value="pending">pending</option>
+            <option value="active">active</option>
+            <option value="complete">complete</option>
+            <option value="error">error</option>
+            <option value="warning">warning</option>
+          </select>
+        </label>
+        <label>connector
+          <select id="ctrl-connector">
+            <option value="solid">solid</option>
+            <option value="dashed">dashed</option>
+            <option value="none">none</option>
+          </select>
+        </label>
+        <label>position
+          <select id="ctrl-position">
+            <option value="start">start</option>
+            <option value="end">end</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>title
+          <input type="text" id="ctrl-title" value="Live item title" style="width:160px" />
+        </label>
+        <label>label
+          <input type="text" id="ctrl-label" value="Now" style="width:80px" />
+        </label>
+      </div>
+      <div class="row">
+        <label>icon
+          <input type="text" id="ctrl-icon" placeholder="e.g. ★ or none" style="width:100px" />
+        </label>
+        <label style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="ctrl-disabled" />
+          disabled
+        </label>
+        <label style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="ctrl-data-last" />
+          data-last
+        </label>
+      </div>
+    </div>
+
+    <h2>Live preview</h2>
+    <div class="timeline">
+      <x-timeline-item
+        id="live"
+        status="pending"
+        title="Live item title"
+        label="Now">
+        This is the default slot content. Edit the controls above to see it update.
+      </x-timeline-item>
+    </div>
+
+    <h2>Event log</h2>
+    <div class="log" id="log">Waiting for events…</div>
+
+    <script>
+      customElements.whenDefined('x-timeline-item').then(() => {
+        const live = document.getElementById('live');
+        const log  = document.getElementById('log');
+        let logLines = [];
+
+        function addLog(msg) {
+          const ts = new Date().toLocaleTimeString();
+          logLines.unshift('[' + ts + '] ' + msg);
+          if (logLines.length > 20) logLines.length = 20;
+          log.textContent = logLines.join('\n');
+        }
+
+        // Wire up variant items' click events for logging
+        document.getElementById('variants').addEventListener('x-timeline-item-connected', e => {
+          addLog('connected  status=' + e.detail.status + ' label="' + e.detail.label + '" position=' + e.detail.position);
+        });
+
+        // Live item events
+        live.addEventListener('x-timeline-item-click', e => {
+          addLog('click  status=' + e.detail.status + ' label="' + e.detail.label + '"');
+        });
+
+        // Controls
+        document.getElementById('ctrl-status').addEventListener('change', e => {
+          live.setAttribute('status', e.target.value);
+        });
+        document.getElementById('ctrl-connector').addEventListener('change', e => {
+          live.setAttribute('connector', e.target.value);
+        });
+        document.getElementById('ctrl-position').addEventListener('change', e => {
+          live.setAttribute('position', e.target.value);
+        });
+        document.getElementById('ctrl-title').addEventListener('input', e => {
+          const v = e.target.value;
+          if (v) live.setAttribute('title', v);
+          else live.removeAttribute('title');
+        });
+        document.getElementById('ctrl-label').addEventListener('input', e => {
+          const v = e.target.value;
+          if (v) live.setAttribute('label', v);
+          else live.removeAttribute('label');
+        });
+        document.getElementById('ctrl-icon').addEventListener('input', e => {
+          const v = e.target.value.trim();
+          if (v) live.setAttribute('icon', v);
+          else live.removeAttribute('icon');
+        });
+        document.getElementById('ctrl-disabled').addEventListener('change', e => {
+          if (e.target.checked) live.setAttribute('disabled', '');
+          else live.removeAttribute('disabled');
+        });
+        document.getElementById('ctrl-data-last').addEventListener('change', e => {
+          if (e.target.checked) live.setAttribute('data-last', '');
+          else live.removeAttribute('data-last');
+        });
+      });
+    </script>
+  </body>
+</html>

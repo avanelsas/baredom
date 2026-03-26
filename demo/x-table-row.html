@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>x-table-row demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+      padding: 24px;
+      background: #f9fafb;
+      color: #111827;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #f3f4f6; }
+      .label { color: #9ca3af; }
+    }
+
+    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
+
+    .section {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin: 0 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    /* Grid table container */
+    .table-grid {
+      display: grid;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table-grid-3 { grid-template-columns: 2fr 1fr 1fr; }
+    .table-grid-4 { grid-template-columns: 2fr 1fr 1fr 120px; }
+
+    /* Shared row styles across all demos */
+    x-table-row {
+      --x-table-cell-border-color: rgba(0,0,0,0.06);
+    }
+
+    /* State demo labels */
+    .state-label {
+      display: inline-block;
+      font-size: 11px;
+      color: #6b7280;
+      background: #f3f4f6;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* Control panel */
+    .panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 12px; font-weight: 500; color: #6b7280; }
+
+    .checkbox-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    input[type=number] {
+      width: 80px;
+      padding: 6px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    /* Event log */
+    .log {
+      height: 160px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+    }
+
+    .log-entry { margin: 2px 0; }
+    .log-entry.click     { color: #2563eb; }
+    .log-entry.connected { color: #16a34a; }
+    .log-entry.disconnected { color: #dc2626; }
+
+    @media (prefers-color-scheme: dark) {
+      .log-entry.click     { color: #60a5fa; }
+      .log-entry.connected { color: #34d399; }
+      .log-entry.disconnected { color: #f87171; }
+    }
+
+    .log-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #f3f4f6; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-yellow { background: #fef9c3; color: #713f12; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+
+    @media (prefers-color-scheme: dark) {
+      .section { background: #1f2937; border-color: #374151; }
+      .section h2 { color: #f9fafb; border-color: #374151; }
+      .panel { background: #1f2937; border-color: #374151; }
+      .field label { color: #9ca3af; }
+      input[type=number] { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+      button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+      button:hover { background: #4b5563; }
+      .state-label { background: #374151; color: #9ca3af; }
+      .table-grid { border-color: #374151; }
+      x-table-row { --x-table-cell-border-color: rgba(255,255,255,0.06); }
+    }
+  </style>
+</head>
+<body>
+  <h1>x-table-row</h1>
+
+  <!-- ── Subgrid table: combined x-table-row + x-table-cell ── -->
+  <div class="section">
+    <h2>Subgrid table (x-table-row + x-table-cell)</h2>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 16px">
+      The outer <code>&lt;div&gt;</code> sets <code>display:grid;grid-template-columns</code>.
+      Each <code>x-table-row</code> uses <code>grid-template-columns:subgrid</code> to inherit the tracks.
+      Cells align perfectly across all rows.
+    </p>
+
+    <div class="table-grid table-grid-4">
+      <x-table-row id="header-row">
+        <x-table-cell type="header" scope="col" sortable sort-direction="none">Name</x-table-cell>
+        <x-table-cell type="header" scope="col">Status</x-table-cell>
+        <x-table-cell type="header" scope="col">Role</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Joined</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive row-index="1" id="row-alice">
+        <x-table-cell truncate>Alice Wonderland</x-table-cell>
+        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell>Admin</x-table-cell>
+        <x-table-cell align="end">2024-01-15</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive selected row-index="2" id="row-bob">
+        <x-table-cell truncate>Bob Builder</x-table-cell>
+        <x-table-cell><span class="badge badge-yellow">Pending</span></x-table-cell>
+        <x-table-cell>Member</x-table-cell>
+        <x-table-cell align="end">2024-03-02</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive row-index="3" id="row-carol">
+        <x-table-cell truncate>Carol Danvers</x-table-cell>
+        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell>Editor</x-table-cell>
+        <x-table-cell align="end">2023-11-07</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive disabled row-index="4" id="row-dave">
+        <x-table-cell truncate>Dave Grohl</x-table-cell>
+        <x-table-cell><span class="badge badge-red">Suspended</span></x-table-cell>
+        <x-table-cell>Viewer</x-table-cell>
+        <x-table-cell align="end">2022-06-19</x-table-cell>
+      </x-table-row>
+    </div>
+  </div>
+
+  <!-- ── State variants ── -->
+  <div class="section">
+    <h2>Row state variants</h2>
+
+    <div class="table-grid table-grid-3">
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Default row</x-table-cell>
+        <x-table-cell type="header" scope="col">No hover</x-table-cell>
+        <x-table-cell type="header" scope="col">Not focusable</x-table-cell>
+      </x-table-row>
+
+      <x-table-row>
+        <x-table-cell>Default</x-table-cell>
+        <x-table-cell>No interaction</x-table-cell>
+        <x-table-cell>role=row only</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive>
+        <x-table-cell>Interactive</x-table-cell>
+        <x-table-cell>Hover + focus</x-table-cell>
+        <x-table-cell>tabindex=0</x-table-cell>
+      </x-table-row>
+
+      <x-table-row selected>
+        <x-table-cell>Selected</x-table-cell>
+        <x-table-cell>aria-selected=true</x-table-cell>
+        <x-table-cell>selection bg</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive selected>
+        <x-table-cell>Interactive + selected</x-table-cell>
+        <x-table-cell>Hover shows deeper bg</x-table-cell>
+        <x-table-cell>focusable</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive disabled>
+        <x-table-cell>Interactive + disabled</x-table-cell>
+        <x-table-cell>Reduced opacity</x-table-cell>
+        <x-table-cell>pointer-events:none</x-table-cell>
+      </x-table-row>
+    </div>
+  </div>
+
+  <!-- ── Keyboard navigation ── -->
+  <div class="section">
+    <h2>Keyboard navigation</h2>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 12px">
+      Tab to focus a row below, then press <kbd>Enter</kbd> or <kbd>Space</kbd> to toggle selection.
+    </p>
+
+    <div class="table-grid table-grid-3" id="keyboard-table">
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Name</x-table-cell>
+        <x-table-cell type="header" scope="col">Row index</x-table-cell>
+        <x-table-cell type="header" scope="col">State</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="1">
+        <x-table-cell>Row 1 — focusable</x-table-cell>
+        <x-table-cell>1</x-table-cell>
+        <x-table-cell>Enter/Space selects</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="2">
+        <x-table-cell>Row 2 — focusable</x-table-cell>
+        <x-table-cell>2</x-table-cell>
+        <x-table-cell>Enter/Space selects</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="3" selected>
+        <x-table-cell>Row 3 — pre-selected</x-table-cell>
+        <x-table-cell>3</x-table-cell>
+        <x-table-cell>Already selected</x-table-cell>
+      </x-table-row>
+    </div>
+  </div>
+
+  <!-- ── Live control panel ── -->
+  <div class="section">
+    <h2>Live control panel</h2>
+
+    <div class="panel">
+      <div class="field">
+        <label>row-index</label>
+        <input type="number" id="ctrl-row-index" value="1" min="1" max="100">
+      </div>
+      <div class="field">
+        <label>Flags</label>
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="ctrl-interactive"> interactive
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="ctrl-selected"> selected
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="ctrl-disabled"> disabled
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-grid table-grid-3">
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Preview row</x-table-cell>
+        <x-table-cell type="header" scope="col">Cell B</x-table-cell>
+        <x-table-cell type="header" scope="col">Cell C</x-table-cell>
+      </x-table-row>
+      <x-table-row id="preview-row">
+        <x-table-cell>Preview A — change attributes above</x-table-cell>
+        <x-table-cell>Preview B</x-table-cell>
+        <x-table-cell>Preview C</x-table-cell>
+      </x-table-row>
+    </div>
+  </div>
+
+  <!-- ── Event log ── -->
+  <div class="section">
+    <h2>Event log</h2>
+
+    <div class="log-actions">
+      <button id="btn-clear">Clear log</button>
+      <button id="btn-cancel-next">Cancel next click</button>
+    </div>
+
+    <div class="log" id="event-log">
+      <div class="log-entry" style="color:#475569">// Events appear here…</div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const log = document.getElementById('event-log');
+
+    function addLog(text, kind) {
+      const div = document.createElement('div');
+      div.className = 'log-entry ' + kind;
+      div.textContent = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function fmtDetail(d) {
+      return JSON.stringify(d);
+    }
+
+    // ── Global event listeners ──────────────────────────────────────────────
+    document.addEventListener('x-table-row-click', e => {
+      addLog(`[click] rowIndex=${e.detail.rowIndex} selected=${e.detail.selected} disabled=${e.detail.disabled} target=${e.target.id || '<row>'}`, 'click');
+    });
+
+    document.addEventListener('x-table-row-connected', e => {
+      addLog(`[connected] rowIndex=${e.detail.rowIndex} interactive=${e.detail.interactive}`, 'connected');
+    });
+
+    document.addEventListener('x-table-row-disconnected', _e => {
+      addLog('[disconnected]', 'disconnected');
+    });
+
+    // ── Keyboard demo: toggle selection on Enter/Space ──────────────────────
+    document.getElementById('keyboard-table').addEventListener('x-table-row-click', e => {
+      e.target.toggleAttribute('selected');
+    });
+
+    // ── Subgrid table: toggle selection ────────────────────────────────────
+    const rows = ['row-alice', 'row-bob', 'row-carol'];
+    rows.forEach(id => {
+      document.getElementById(id)?.addEventListener('x-table-row-click', e => {
+        e.target.toggleAttribute('selected');
+      });
+    });
+
+    // ── Cancel next click ───────────────────────────────────────────────────
+    let cancelNext = false;
+    document.getElementById('btn-cancel-next').addEventListener('click', () => {
+      cancelNext = true;
+      addLog('// Next x-table-row-click will be cancelled', 'disconnected');
+    });
+    document.addEventListener('x-table-row-click', e => {
+      if (cancelNext) {
+        e.preventDefault();
+        cancelNext = false;
+        addLog('// click was cancelled (preventDefault called)', 'disconnected');
+      }
+    }, { capture: true });
+
+    // ── Clear log ───────────────────────────────────────────────────────────
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      log.innerHTML = '';
+    });
+
+    // ── Live control panel ──────────────────────────────────────────────────
+    const preview = document.getElementById('preview-row');
+
+    function syncPreview() {
+      const interactive = document.getElementById('ctrl-interactive').checked;
+      const selected    = document.getElementById('ctrl-selected').checked;
+      const disabled    = document.getElementById('ctrl-disabled').checked;
+      const rowIndex    = parseInt(document.getElementById('ctrl-row-index').value, 10);
+
+      interactive ? preview.setAttribute('interactive', '')   : preview.removeAttribute('interactive');
+      selected    ? preview.setAttribute('selected', '')      : preview.removeAttribute('selected');
+      disabled    ? preview.setAttribute('disabled', '')      : preview.removeAttribute('disabled');
+      if (rowIndex > 0) {
+        preview.setAttribute('row-index', String(rowIndex));
+      } else {
+        preview.removeAttribute('row-index');
+      }
+    }
+
+    ['ctrl-interactive', 'ctrl-selected', 'ctrl-disabled', 'ctrl-row-index'].forEach(id => {
+      document.getElementById(id).addEventListener('change', syncPreview);
+      document.getElementById(id).addEventListener('input',  syncPreview);
+    });
+  </script>
+</body>
+</html>

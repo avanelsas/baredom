@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-stepper demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --radius: 10px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --surface: #1f2937;
+        --border: #374151;
+        --text: #f9fafb;
+        --text-muted: #9ca3af;
+      }
+    }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    .subtitle { font-size: 0.875rem; color: var(--text-muted); margin: 0 0 32px; }
+
+    h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 0 0 16px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    label { font-size: 0.8125rem; color: var(--text-muted); display: block; margin-bottom: 6px; }
+
+    select, input[type=number], input[type=text] {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font: inherit;
+      font-size: 0.875rem;
+      background: var(--bg);
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.875rem; }
+    .check-row input { width: auto; margin: 0; }
+
+    .event-log {
+      font-size: 0.8125rem;
+      font-family: monospace;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+      color: var(--text-muted);
+    }
+
+    .event-log p { margin: 0 0 4px; }
+    .event-log p:last-child { margin: 0; }
+    .event-log .new { color: var(--text); }
+
+    .nav-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+    button.btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    button.btn:hover { background: var(--bg); }
+    button.btn:disabled { opacity: 0.4; cursor: default; }
+
+    .tag {
+      font-size: 0.75rem;
+      font-family: monospace;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-stepper</h1>
+  <p class="subtitle">A stateless step-progress component. Attributes drive all rendering.</p>
+
+  <!-- ── Interactive playground ───────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Playground</h2>
+
+    <x-stepper id="playground"
+      steps='[{"label":"Account","description":"Create your credentials"},{"label":"Profile","description":"Tell us about yourself"},{"label":"Review","description":"Check everything looks right"},{"label":"Done"}]'
+      current="0"
+      orientation="horizontal"
+      size="md">
+    </x-stepper>
+
+    <div class="nav-row">
+      <button class="btn" id="btn-prev">← Previous</button>
+      <button class="btn" id="btn-next">Next →</button>
+    </div>
+
+    <div class="event-log" id="event-log"><p>Events will appear here…</p></div>
+  </div>
+
+  <!-- ── Controls ─────────────────────────────────────────────────────────── -->
+  <div class="section grid-2">
+    <div>
+      <h2>Orientation</h2>
+      <label for="ctrl-orientation">orientation</label>
+      <select id="ctrl-orientation">
+        <option value="horizontal" selected>horizontal</option>
+        <option value="vertical">vertical</option>
+      </select>
+
+      <label for="ctrl-size">size</label>
+      <select id="ctrl-size">
+        <option value="sm">sm</option>
+        <option value="md" selected>md</option>
+        <option value="lg">lg</option>
+      </select>
+
+      <div class="check-row">
+        <input type="checkbox" id="ctrl-disabled">
+        <label for="ctrl-disabled" style="margin:0">disabled</label>
+      </div>
+    </div>
+
+    <div>
+      <h2>Step count</h2>
+      <label for="ctrl-count">Number of steps (integer shorthand)</label>
+      <input type="number" id="ctrl-count" min="1" max="8" value="">
+      <p style="font-size:0.8125rem;color:var(--text-muted);margin:0 0 8px">
+        Leave blank to use the JSON steps above.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Horizontal sizes ──────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Horizontal — sizes</h2>
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:0 0 16px">
+      <span class="tag">size="sm"</span>
+    </p>
+    <x-stepper steps='[{"label":"Account"},{"label":"Profile"},{"label":"Done"}]'
+               current="1" size="sm"></x-stepper>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:16px 0">
+      <span class="tag">size="md"</span>
+    </p>
+    <x-stepper steps='[{"label":"Account"},{"label":"Profile"},{"label":"Done"}]'
+               current="1" size="md"></x-stepper>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:16px 0">
+      <span class="tag">size="lg"</span>
+    </p>
+    <x-stepper steps='[{"label":"Account"},{"label":"Profile"},{"label":"Done"}]'
+               current="1" size="lg"></x-stepper>
+  </div>
+
+  <!-- ── Step states ───────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>All step states (current = 0, 1, 2)</h2>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:0 0 8px">current=0 (all upcoming)</p>
+    <x-stepper steps="4" current="0"></x-stepper>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:16px 0 8px">current=2 (mixed)</p>
+    <x-stepper steps="4" current="2"></x-stepper>
+
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:16px 0 8px">current=3 (all complete)</p>
+    <x-stepper steps="4" current="3"></x-stepper>
+  </div>
+
+  <!-- ── Vertical layout ───────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Vertical orientation</h2>
+    <x-stepper
+      orientation="vertical"
+      steps='[{"label":"Install","description":"Run npm install to get dependencies"},{"label":"Configure","description":"Edit the config file"},{"label":"Test","description":"Run the test suite"},{"label":"Deploy","description":"Ship to production"}]'
+      current="1">
+    </x-stepper>
+  </div>
+
+  <!-- ── Integer shorthand ─────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Integer shorthand (<code>steps="5"</code>)</h2>
+    <x-stepper steps="5" current="2"></x-stepper>
+  </div>
+
+  <!-- ── Disabled ──────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Disabled</h2>
+    <x-stepper steps="4" current="1" disabled></x-stepper>
+  </div>
+
+  <!-- ── Custom theme ──────────────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Custom theme (purple)</h2>
+    <x-stepper
+      steps='[{"label":"Plan"},{"label":"Build"},{"label":"Launch"}]'
+      current="1"
+      style="--x-stepper-complete-bg:#7c3aed;
+             --x-stepper-complete-color:#fff;
+             --x-stepper-complete-connector:#7c3aed;
+             --x-stepper-current-bg:#7c3aed;
+             --x-stepper-current-color:#fff;">
+    </x-stepper>
+  </div>
+
+  <script>
+    const pg = document.getElementById('playground');
+    const log = document.getElementById('event-log');
+
+    function addLog(msg) {
+      const p = document.createElement('p');
+      p.className = 'new';
+      p.textContent = msg;
+      log.innerHTML = '';
+      log.appendChild(p);
+    }
+
+    // Navigation buttons
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      const cur = parseInt(pg.getAttribute('current') || '0', 10);
+      if (cur > 0) pg.setAttribute('current', String(cur - 1));
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      const cur = parseInt(pg.getAttribute('current') || '0', 10);
+      const steps = pg.querySelectorAll ? null : null; // count from shadow
+      // Count steps from data-attribute or shadow DOM
+      const stepCount = 4; // matches JSON above
+      if (cur < stepCount - 1) pg.setAttribute('current', String(cur + 1));
+    });
+
+    // Event log
+    pg.addEventListener('x-stepper-change', (e) => {
+      addLog(`x-stepper-change → from: ${e.detail.from}, to: ${e.detail.to}`);
+    });
+
+    // Controls
+    document.getElementById('ctrl-orientation').addEventListener('change', (e) => {
+      pg.setAttribute('orientation', e.target.value);
+    });
+
+    document.getElementById('ctrl-size').addEventListener('change', (e) => {
+      pg.setAttribute('size', e.target.value);
+    });
+
+    document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+      if (e.target.checked) pg.setAttribute('disabled', '');
+      else pg.removeAttribute('disabled');
+    });
+
+    document.getElementById('ctrl-count').addEventListener('input', (e) => {
+      const v = e.target.value.trim();
+      if (v) {
+        pg.setAttribute('steps', v);
+        pg.setAttribute('current', '0');
+      } else {
+        pg.setAttribute('steps', JSON.stringify([
+          {label: 'Account', description: 'Create your credentials'},
+          {label: 'Profile', description: 'Tell us about yourself'},
+          {label: 'Review', description: 'Check everything looks right'},
+          {label: 'Done'}
+        ]));
+      }
+    });
+  </script>
+
+</body>
+</html>

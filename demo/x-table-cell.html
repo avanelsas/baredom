@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-table-cell demo</title>
+  <script src="/js/main.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f9fafb;
+      color: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #f9fafb; }
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    label { font-size: 0.875rem; }
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .panel { background: #1f2937; border-color: #374151; }
+    }
+    .grid-row {
+      display: grid;
+      grid-template-columns: repeat(4, 160px);
+      border-top: 1px solid #e5e7eb;
+      border-left: 1px solid #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      .grid-row { border-color: #374151; }
+    }
+    .scroll-container {
+      overflow-x: auto;
+      max-width: 480px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .scroll-container { border-color: #374151; }
+    }
+    .scroll-row {
+      display: grid;
+      grid-template-columns: 160px repeat(5, 200px);
+      min-width: max-content;
+    }
+    .log {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #f3f4f6;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      .log { background: #111827; border-color: #374151; }
+    }
+    .log-entry { margin-bottom: 4px; }
+    .log-entry span { color: #6b7280; }
+    select, input[type=checkbox] { font-size: 0.875rem; }
+    select {
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      select { background: #374151; color: #f9fafb; border-color: #4b5563; }
+    }
+    button.action-btn {
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      background: white;
+      font-size: 0.875rem;
+      cursor: pointer;
+      color: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      button.action-btn { background: #374151; color: #f9fafb; border-color: #4b5563; }
+    }
+    x-table-cell {
+      --x-table-cell-border-color: #e5e7eb;
+      --x-table-cell-sticky-bg: #f9fafb;
+    }
+    @media (prefers-color-scheme: dark) {
+      x-table-cell {
+        --x-table-cell-border-color: #374151;
+        --x-table-cell-sticky-bg: #1f2937;
+      }
+    }
+    .truncate-container {
+      display: grid;
+      grid-template-columns: 200px 200px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    @media (prefers-color-scheme: dark) {
+      .truncate-container { border-color: #374151; }
+    }
+  </style>
+</head>
+<body>
+  <h1>x-table-cell</h1>
+
+  <!-- ── Basic data cells ───────────────────────────────────────────────── -->
+  <h2>Data cells — alignment</h2>
+  <div class="panel">
+    <div class="grid-row">
+      <x-table-cell align="start">Start (default)</x-table-cell>
+      <x-table-cell align="center">Center</x-table-cell>
+      <x-table-cell align="end">End</x-table-cell>
+      <x-table-cell>Default</x-table-cell>
+    </div>
+    <div class="grid-row" style="margin-top:1rem;">
+      <x-table-cell valign="top" style="height:60px">Top</x-table-cell>
+      <x-table-cell valign="middle" style="height:60px">Middle</x-table-cell>
+      <x-table-cell valign="bottom" style="height:60px">Bottom</x-table-cell>
+      <x-table-cell style="height:60px">Default</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Header cells ───────────────────────────────────────────────────── -->
+  <h2>Header cells</h2>
+  <div class="panel">
+    <div class="grid-row">
+      <x-table-cell type="header">Name</x-table-cell>
+      <x-table-cell type="header" scope="col">Column</x-table-cell>
+      <x-table-cell type="header" scope="row">Row</x-table-cell>
+      <x-table-cell type="header" align="end">Right-aligned</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Sortable header cells ──────────────────────────────────────────── -->
+  <h2>Sortable header cells</h2>
+  <div class="panel">
+    <p style="font-size:0.875rem;margin:0 0 0.75rem;">Click a sort button to cycle: none → asc → desc → none</p>
+    <div class="grid-row">
+      <x-table-cell id="sort-name" type="header" sortable sort-direction="none">Name</x-table-cell>
+      <x-table-cell id="sort-date" type="header" sortable sort-direction="asc">Date</x-table-cell>
+      <x-table-cell id="sort-amount" type="header" sortable sort-direction="desc">Amount</x-table-cell>
+      <x-table-cell type="header">No sort</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Truncate ───────────────────────────────────────────────────────── -->
+  <h2>Truncation</h2>
+  <div class="panel">
+    <div class="truncate-container">
+      <x-table-cell truncate>This is a very long text string that will be cut off with an ellipsis</x-table-cell>
+      <x-table-cell>This is the same long text but without truncation, so it wraps normally</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Column span ────────────────────────────────────────────────────── -->
+  <h2>Column span</h2>
+  <div class="panel">
+    <div class="grid-row">
+      <x-table-cell type="header" col-span="2">Spans 2</x-table-cell>
+      <x-table-cell type="header">Col 3</x-table-cell>
+      <x-table-cell type="header">Col 4</x-table-cell>
+    </div>
+    <div class="grid-row">
+      <x-table-cell col-span="3">Wide cell spanning 3</x-table-cell>
+      <x-table-cell>Cell 4</x-table-cell>
+    </div>
+    <div class="grid-row">
+      <x-table-cell>A</x-table-cell>
+      <x-table-cell>B</x-table-cell>
+      <x-table-cell>C</x-table-cell>
+      <x-table-cell>D</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Sticky ─────────────────────────────────────────────────────────── -->
+  <h2>Sticky column (scroll horizontally)</h2>
+  <div class="panel">
+    <div class="scroll-container">
+      <div class="scroll-row">
+        <x-table-cell type="header" sticky="start">Name (sticky)</x-table-cell>
+        <x-table-cell type="header">Jan</x-table-cell>
+        <x-table-cell type="header">Feb</x-table-cell>
+        <x-table-cell type="header">Mar</x-table-cell>
+        <x-table-cell type="header">Apr</x-table-cell>
+        <x-table-cell type="header">May</x-table-cell>
+      </div>
+      <div class="scroll-row">
+        <x-table-cell sticky="start">Alice</x-table-cell>
+        <x-table-cell>100</x-table-cell>
+        <x-table-cell>200</x-table-cell>
+        <x-table-cell>150</x-table-cell>
+        <x-table-cell>300</x-table-cell>
+        <x-table-cell>250</x-table-cell>
+      </div>
+      <div class="scroll-row">
+        <x-table-cell sticky="start">Bob</x-table-cell>
+        <x-table-cell>80</x-table-cell>
+        <x-table-cell>120</x-table-cell>
+        <x-table-cell>200</x-table-cell>
+        <x-table-cell>180</x-table-cell>
+        <x-table-cell>220</x-table-cell>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Disabled ───────────────────────────────────────────────────────── -->
+  <h2>Disabled state</h2>
+  <div class="panel">
+    <div class="grid-row">
+      <x-table-cell disabled>Data (disabled)</x-table-cell>
+      <x-table-cell type="header" sortable disabled>Header sortable (disabled)</x-table-cell>
+      <x-table-cell type="header" sortable sort-direction="asc" disabled>Sorted (disabled)</x-table-cell>
+      <x-table-cell>Normal</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Custom sort icon ───────────────────────────────────────────────── -->
+  <h2>Custom sort icon via slot</h2>
+  <div class="panel">
+    <div class="grid-row">
+      <x-table-cell type="header" sortable sort-direction="none">
+        Default icon
+      </x-table-cell>
+      <x-table-cell id="custom-sort" type="header" sortable sort-direction="none">
+        Custom icon
+        <svg slot="sort-icon" width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+          <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 4v3l2 2"/>
+        </svg>
+      </x-table-cell>
+      <x-table-cell type="header">No sort</x-table-cell>
+      <x-table-cell type="header">No sort</x-table-cell>
+    </div>
+  </div>
+
+  <!-- ── Live control panel ─────────────────────────────────────────────── -->
+  <h2>Live control panel</h2>
+  <div class="panel">
+    <div class="grid-row" style="margin-bottom:1.5rem;">
+      <x-table-cell id="demo-cell" type="data">Preview cell</x-table-cell>
+    </div>
+    <div class="row">
+      <label>type:
+        <select id="ctrl-type">
+          <option value="data">data</option>
+          <option value="header">header</option>
+        </select>
+      </label>
+      <label>scope:
+        <select id="ctrl-scope">
+          <option value="col">col</option>
+          <option value="row">row</option>
+          <option value="colgroup">colgroup</option>
+          <option value="rowgroup">rowgroup</option>
+        </select>
+      </label>
+      <label>align:
+        <select id="ctrl-align">
+          <option value="start">start</option>
+          <option value="center">center</option>
+          <option value="end">end</option>
+        </select>
+      </label>
+      <label>valign:
+        <select id="ctrl-valign">
+          <option value="top">top</option>
+          <option value="middle" selected>middle</option>
+          <option value="bottom">bottom</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>sticky:
+        <select id="ctrl-sticky">
+          <option value="none">none</option>
+          <option value="start">start</option>
+          <option value="end">end</option>
+        </select>
+      </label>
+      <label>sort-direction:
+        <select id="ctrl-sort-dir">
+          <option value="none">none</option>
+          <option value="asc">asc</option>
+          <option value="desc">desc</option>
+        </select>
+      </label>
+      <label>col-span:
+        <select id="ctrl-col-span">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="ctrl-sortable"> sortable</label>
+      <label><input type="checkbox" id="ctrl-truncate"> truncate</label>
+      <label><input type="checkbox" id="ctrl-disabled"> disabled</label>
+    </div>
+  </div>
+
+  <!-- ── Event log ──────────────────────────────────────────────────────── -->
+  <h2>Event log</h2>
+  <div class="panel">
+    <div class="row" style="margin-bottom:0.75rem;">
+      <button class="action-btn" id="clear-log">Clear log</button>
+      <button class="action-btn" id="cancel-next-sort">Cancel next sort</button>
+    </div>
+    <div id="event-log" class="log">
+      <div class="log-entry"><span>— events will appear here —</span></div>
+    </div>
+  </div>
+
+  <script>
+    // ── Sort cycling for all sortable demo cells ─────────────────────────────
+    document.addEventListener('x-table-cell-sort', function (e) {
+      // Auto-update sort-direction on the firing element
+      e.target.setAttribute('sort-direction', e.detail.direction);
+
+      logEvent('x-table-cell-sort',
+        'direction=' + e.detail.direction +
+        ' prev=' + e.detail.previousDirection +
+        ' target=' + (e.target.id || e.target.tagName.toLowerCase()));
+    });
+
+    // ── Coordination events ──────────────────────────────────────────────────
+    document.addEventListener('x-table-cell-connected', function (e) {
+      logEvent('x-table-cell-connected',
+        'type=' + e.detail.type +
+        ' scope=' + e.detail.scope +
+        ' colSpan=' + e.detail.colSpan +
+        (e.target.id ? ' id=' + e.target.id : ''));
+    });
+
+    document.addEventListener('x-table-cell-disconnected', function (e) {
+      logEvent('x-table-cell-disconnected',
+        e.target.id ? 'id=' + e.target.id : '');
+    });
+
+    // ── Event log helpers ────────────────────────────────────────────────────
+    function logEvent(name, detail) {
+      var log = document.getElementById('event-log');
+      var entry = document.createElement('div');
+      entry.className = 'log-entry';
+      var time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 2 });
+      entry.innerHTML = '<span>' + time + '</span> <strong>' + name + '</strong> ' + (detail || '');
+      log.insertBefore(entry, log.firstChild);
+      if (log.children.length > 30) log.removeChild(log.lastChild);
+    }
+
+    document.getElementById('clear-log').addEventListener('click', function () {
+      var log = document.getElementById('event-log');
+      log.innerHTML = '<div class="log-entry"><span>— log cleared —</span></div>';
+    });
+
+    // Cancel next sort demo
+    var cancelNext = false;
+    document.getElementById('cancel-next-sort').addEventListener('click', function () {
+      cancelNext = true;
+      this.textContent = 'Cancel ARMED — click a sort button';
+    });
+    document.addEventListener('x-table-cell-sort', function (e) {
+      if (cancelNext) {
+        e.preventDefault();
+        cancelNext = false;
+        document.getElementById('cancel-next-sort').textContent = 'Cancel next sort';
+        logEvent('x-table-cell-sort', 'CANCELLED (preventDefault called)');
+        // remove sort-direction update that would have happened
+        e.target.setAttribute('sort-direction', e.detail.previousDirection);
+      }
+    }, true); // capture phase to run before the auto-update listener
+
+    // ── Live control panel wiring ────────────────────────────────────────────
+    var demoCell = document.getElementById('demo-cell');
+
+    function syncBoolAttr(el, attr, value) {
+      if (value) el.setAttribute(attr, '');
+      else el.removeAttribute(attr);
+    }
+
+    document.getElementById('ctrl-type').addEventListener('change', function () {
+      demoCell.setAttribute('type', this.value);
+    });
+    document.getElementById('ctrl-scope').addEventListener('change', function () {
+      demoCell.setAttribute('scope', this.value);
+    });
+    document.getElementById('ctrl-align').addEventListener('change', function () {
+      demoCell.setAttribute('align', this.value);
+    });
+    document.getElementById('ctrl-valign').addEventListener('change', function () {
+      demoCell.setAttribute('valign', this.value);
+    });
+    document.getElementById('ctrl-sticky').addEventListener('change', function () {
+      demoCell.setAttribute('sticky', this.value);
+    });
+    document.getElementById('ctrl-sort-dir').addEventListener('change', function () {
+      demoCell.setAttribute('sort-direction', this.value);
+    });
+    document.getElementById('ctrl-col-span').addEventListener('change', function () {
+      demoCell.setAttribute('col-span', this.value);
+    });
+    document.getElementById('ctrl-sortable').addEventListener('change', function () {
+      syncBoolAttr(demoCell, 'sortable', this.checked);
+    });
+    document.getElementById('ctrl-truncate').addEventListener('change', function () {
+      syncBoolAttr(demoCell, 'truncate', this.checked);
+    });
+    document.getElementById('ctrl-disabled').addEventListener('change', function () {
+      syncBoolAttr(demoCell, 'disabled', this.checked);
+    });
+  </script>
+</body>
+</html>

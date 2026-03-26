@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-avatar-group demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-avatar-group demo</h1>
+
+    <h2>Overlap variants</h2>
+    <div class="row">
+      <x-avatar-group overlap="none">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group overlap="sm">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group overlap="lg">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+    </div>
+
+    <h2>Size variants</h2>
+    <div class="row">
+      <x-avatar-group size="xs" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group size="sm" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group size="md" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group size="lg" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group size="xl" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+    </div>
+
+    <h2>Overflow (max)</h2>
+    <div class="row">
+      <x-avatar-group max="2" label="Team (overflow example)">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+        <x-avatar name="Greg Holt"></x-avatar>
+      </x-avatar-group>
+      <x-avatar-group size="lg" max="3">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+        <x-avatar name="Greg Holt"></x-avatar>
+        <x-avatar name="Ivan Jay"></x-avatar>
+      </x-avatar-group>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-avatar-group disabled>
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+      </x-avatar-group>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>size
+        <select id="ctrl-size">
+          <option value="xs">xs</option>
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+          <option value="xl">xl</option>
+        </select>
+      </label>
+      <label>overlap
+        <select id="ctrl-overlap">
+          <option value="none">none</option>
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </label>
+      <label>max
+        <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
+      </label>
+      <label>disabled
+        <input type="checkbox" id="ctrl-disabled">
+      </label>
+    </div>
+    <div style="margin-top:8px">
+      <x-avatar-group id="live" overlap="md">
+        <x-avatar name="Alice Bob"></x-avatar>
+        <x-avatar name="Carol Dan"></x-avatar>
+        <x-avatar name="Eve Fox"></x-avatar>
+        <x-avatar name="Greg Holt"></x-avatar>
+      </x-avatar-group>
+    </div>
+
+    <script>
+      const live = document.getElementById("live");
+      function update() {
+        const size     = document.getElementById("ctrl-size").value;
+        const overlap  = document.getElementById("ctrl-overlap").value;
+        const maxVal   = document.getElementById("ctrl-max").value.trim();
+        const disabled = document.getElementById("ctrl-disabled").checked;
+        live.setAttribute("size", size);
+        live.setAttribute("overlap", overlap);
+        if (maxVal) live.setAttribute("max", maxVal); else live.removeAttribute("max");
+        if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", update);
+        el.addEventListener("input", update);
+      });
+    </script>
+  </body>
+</html>

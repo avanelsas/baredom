@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-fieldset demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .examples { display: flex; flex-direction: column; gap: 24px; max-width: 480px; }
+      label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+      label input[type=text], label input[type=email] {
+        font-size: 14px; padding: 6px 10px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+      .controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; flex-direction: row; align-items: center; gap: 6px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+        width: 180px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-fieldset demo</h1>
+
+    <div class="examples">
+      <h2>Basic grouping</h2>
+      <x-fieldset legend="Personal Information">
+        <label>
+          First name
+          <input type="text" name="first-name" placeholder="Jane" />
+        </label>
+        <label>
+          Last name
+          <input type="text" name="last-name" placeholder="Doe" />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" placeholder="jane@example.com" />
+        </label>
+      </x-fieldset>
+
+      <h2>Disabled (visual only)</h2>
+      <x-fieldset legend="Payment Details" disabled>
+        <label>
+          Card number
+          <input type="text" placeholder="•••• •••• •••• ••••" />
+        </label>
+        <label>
+          Expiry
+          <input type="text" placeholder="MM/YY" />
+        </label>
+      </x-fieldset>
+
+      <h2>No legend — aria-label only</h2>
+      <x-fieldset aria-label="Shipping address">
+        <label>
+          Street
+          <input type="text" placeholder="123 Main St" />
+        </label>
+        <label>
+          City
+          <input type="text" placeholder="Springfield" />
+        </label>
+      </x-fieldset>
+
+      <h2>Custom legend text (checkboxes)</h2>
+      <x-fieldset legend="Notification Preferences">
+        <div class="row"><input type="checkbox" id="n1" /><label for="n1">Email updates</label></div>
+        <div class="row"><input type="checkbox" id="n2" /><label for="n2">SMS alerts</label></div>
+        <div class="row"><input type="checkbox" id="n3" checked /><label for="n3">Weekly digest</label></div>
+      </x-fieldset>
+
+      <h2>Live controls</h2>
+      <div class="controls">
+        <label>
+          legend
+          <input type="text" id="ctrl-legend" value="Billing Address" />
+        </label>
+        <label>
+          disabled
+          <input type="checkbox" id="ctrl-disabled" />
+        </label>
+      </div>
+      <x-fieldset id="live-fs" legend="Billing Address">
+        <label>
+          Street
+          <input type="text" placeholder="1 Infinite Loop" />
+        </label>
+        <label>
+          Postcode
+          <input type="text" placeholder="94025" />
+        </label>
+      </x-fieldset>
+    </div>
+
+    <script>
+      const liveFs = document.getElementById("live-fs");
+
+      function updateLive() {
+        const legend   = document.getElementById("ctrl-legend").value;
+        const disabled = document.getElementById("ctrl-disabled").checked;
+        liveFs.setAttribute("legend", legend);
+        if (disabled) liveFs.setAttribute("disabled", "");
+        else          liveFs.removeAttribute("disabled");
+      }
+
+      document.querySelectorAll(".controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input",  updateLive);
+      });
+    </script>
+  </body>
+</html>

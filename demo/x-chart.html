@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-chart demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 60px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-chart demo</h1>
+
+    <h2>Line chart</h2>
+    <x-chart id="chart-line" type="line"></x-chart>
+
+    <h2>Bar chart</h2>
+    <x-chart id="chart-bar" type="bar"></x-chart>
+
+    <h2>Area chart</h2>
+    <x-chart id="chart-area" type="area"></x-chart>
+
+    <h2>Multi-series line (tooltip cursor="x")</h2>
+    <x-chart id="chart-multi" type="line" tooltip cursor="x"></x-chart>
+
+    <h2>Multi-series area (tooltip cursor="nearest")</h2>
+    <x-chart id="chart-multi-nearest" type="area" tooltip cursor="nearest"></x-chart>
+
+    <h2>Loading state</h2>
+    <x-chart loading></x-chart>
+
+    <h2>Disabled state</h2>
+    <x-chart id="chart-disabled" type="bar" disabled></x-chart>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>type
+        <select id="ctrl-type">
+          <option value="line" selected>line</option>
+          <option value="bar">bar</option>
+          <option value="area">area</option>
+        </select>
+      </label>
+      <label>height
+        <input type="number" id="ctrl-height" value="180" style="width:70px" min="60">
+      </label>
+      <label>grid <input type="checkbox" id="ctrl-grid" checked></label>
+      <label>axes <input type="checkbox" id="ctrl-axes" checked></label>
+      <label>tooltip <input type="checkbox" id="ctrl-tooltip"></label>
+      <label>cursor
+        <select id="ctrl-cursor">
+          <option value="nearest" selected>nearest</option>
+          <option value="x">x</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <label>x-format
+        <select id="ctrl-xfmt">
+          <option value="" selected>(default)</option>
+          <option value="int">int</option>
+          <option value="raw">raw</option>
+          <option value="abbr">abbr</option>
+        </select>
+      </label>
+      <label>y-format
+        <select id="ctrl-yfmt">
+          <option value="" selected>(default)</option>
+          <option value="int">int</option>
+          <option value="pct">pct</option>
+          <option value="abbr">abbr</option>
+          <option value="fixed:2">fixed:2</option>
+        </select>
+      </label>
+      <label>loading <input type="checkbox" id="ctrl-loading"></label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <x-chart id="chart-live" type="line"></x-chart>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const revenue = JSON.stringify([{
+        id: "s1", label: "Revenue",
+        data: [{x:1,y:10},{x:2,y:25},{x:3,y:18},{x:4,y:40},{x:5,y:35},{x:6,y:55}]
+      }]);
+
+      const users = JSON.stringify([{
+        id: "s1", label: "Users",
+        data: [{x:1,y:120},{x:2,y:200},{x:3,y:150},{x:4,y:320},{x:5,y:280}]
+      }]);
+
+      const area = JSON.stringify([{
+        id: "s1", label: "Requests",
+        data: [{x:1,y:50},{x:2,y:80},{x:3,y:60},{x:4,y:110},{x:5,y:95},{x:6,y:130}]
+      }]);
+
+      const multi = JSON.stringify([
+        {id:"s1", label:"Revenue",
+         data:[{x:1,y:10},{x:2,y:25},{x:3,y:18},{x:4,y:40},{x:5,y:35}]},
+        {id:"s2", label:"Expenses",
+         data:[{x:1,y:8},{x:2,y:15},{x:3,y:22},{x:4,y:18},{x:5,y:28}]}
+      ]);
+
+      document.getElementById("chart-line").setAttribute("data", revenue);
+      document.getElementById("chart-bar").setAttribute("data", users);
+      document.getElementById("chart-area").setAttribute("data", area);
+      document.getElementById("chart-multi").setAttribute("data", multi);
+      document.getElementById("chart-multi-nearest").setAttribute("data", multi);
+      document.getElementById("chart-disabled").setAttribute("data", users);
+
+      const live = document.getElementById("chart-live");
+      live.setAttribute("data", multi);
+
+      const log = document.getElementById("log");
+      live.addEventListener("x-chart-select", e => {
+        log.textContent = `x-chart-select  ${JSON.stringify(e.detail)}\n` + log.textContent;
+      });
+      live.addEventListener("x-chart-hover", e => {
+        log.textContent = `x-chart-hover   ${JSON.stringify(e.detail)}\n` + log.textContent;
+      });
+
+      function updateLive() {
+        live.setAttribute("type",   document.getElementById("ctrl-type").value);
+        live.setAttribute("height", document.getElementById("ctrl-height").value);
+        const grid    = document.getElementById("ctrl-grid").checked;
+        const axes    = document.getElementById("ctrl-axes").checked;
+        const tooltip = document.getElementById("ctrl-tooltip").checked;
+        const loading = document.getElementById("ctrl-loading").checked;
+        const disabled= document.getElementById("ctrl-disabled").checked;
+        const cursor  = document.getElementById("ctrl-cursor").value;
+        const xfmt    = document.getElementById("ctrl-xfmt").value;
+        const yfmt    = document.getElementById("ctrl-yfmt").value;
+        if (grid)    live.setAttribute("grid", "");    else live.setAttribute("grid", "false");
+        if (axes)    live.setAttribute("axes", "");    else live.setAttribute("axes", "false");
+        if (tooltip) live.setAttribute("tooltip", ""); else live.removeAttribute("tooltip");
+        if (loading) live.setAttribute("loading", ""); else live.removeAttribute("loading");
+        if (disabled)live.setAttribute("disabled",""); else live.removeAttribute("disabled");
+        live.setAttribute("cursor", cursor);
+        if (xfmt) live.setAttribute("x-format", xfmt); else live.removeAttribute("x-format");
+        if (yfmt) live.setAttribute("y-format", yfmt); else live.removeAttribute("y-format");
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+    </script>
+  </body>
+</html>

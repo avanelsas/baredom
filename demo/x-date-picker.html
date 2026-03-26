@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-date-picker demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; max-width: 400px; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input[type=text], .controls input[type=date] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-date-picker demo</h1>
+
+    <h2>Single date</h2>
+    <div class="stack">
+      <x-date-picker id="dp-single" placeholder="Select a date"></x-date-picker>
+    </div>
+
+    <h2>Date range</h2>
+    <div class="stack">
+      <x-date-picker id="dp-range" mode="range" placeholder="Select date range"></x-date-picker>
+    </div>
+
+    <h2>Pre-selected value</h2>
+    <div class="stack">
+      <x-date-picker id="dp-preset" value="2026-03-18" placeholder="Select a date"></x-date-picker>
+    </div>
+
+    <h2>With min/max bounds</h2>
+    <div class="stack">
+      <x-date-picker id="dp-bounded"
+        min="2026-01-01"
+        max="2026-12-31"
+        placeholder="Jan–Dec 2026 only">
+      </x-date-picker>
+    </div>
+
+    <h2>Localized display</h2>
+    <div class="stack">
+      <x-date-picker id="dp-localized"
+        format="localized"
+        locale="en-US"
+        placeholder="Select a date">
+      </x-date-picker>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="stack">
+      <x-date-picker disabled placeholder="Not available"></x-date-picker>
+    </div>
+
+    <h2>Readonly</h2>
+    <div class="stack">
+      <x-date-picker readonly value="2026-03-18"></x-date-picker>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>mode
+        <select id="ctrl-mode">
+          <option value="single" selected>single</option>
+          <option value="range">range</option>
+        </select>
+      </label>
+      <label>format
+        <select id="ctrl-format">
+          <option value="iso" selected>iso</option>
+          <option value="localized">localized</option>
+        </select>
+      </label>
+      <label>locale
+        <input type="text" id="ctrl-locale" value="" placeholder="default" style="width:80px">
+      </label>
+      <label>min
+        <input type="text" id="ctrl-min" placeholder="YYYY-MM-DD" style="width:110px">
+      </label>
+      <label>max
+        <input type="text" id="ctrl-max" placeholder="YYYY-MM-DD" style="width:110px">
+      </label>
+      <label>placeholder
+        <input type="text" id="ctrl-placeholder" value="Select a date" style="width:140px">
+      </label>
+      <label>disabled  <input type="checkbox" id="ctrl-disabled"></label>
+      <label>readonly  <input type="checkbox" id="ctrl-readonly"></label>
+      <label>required  <input type="checkbox" id="ctrl-required"></label>
+      <label>close-on-select <input type="checkbox" id="ctrl-close"></label>
+    </div>
+    <div class="stack">
+      <x-date-picker id="dp-live" placeholder="Select a date"></x-date-picker>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(id, name, detail) {
+        log.textContent = `${id}:${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      ["dp-single","dp-range","dp-preset","dp-bounded","dp-localized","dp-live"].forEach(id => {
+        const el = document.getElementById(id);
+        ["x-date-picker-input", "x-date-picker-change-request", "x-date-picker-change"].forEach(evt =>
+          el.addEventListener(evt, e => logEvent(id, evt, e.detail)));
+      });
+
+      const live = document.getElementById("dp-live");
+      function updateLive() {
+        const mode   = document.getElementById("ctrl-mode").value;
+        const format = document.getElementById("ctrl-format").value;
+        const locale = document.getElementById("ctrl-locale").value.trim();
+        const min    = document.getElementById("ctrl-min").value.trim();
+        const max    = document.getElementById("ctrl-max").value.trim();
+        const ph     = document.getElementById("ctrl-placeholder").value;
+        live.setAttribute("mode", mode);
+        live.setAttribute("format", format);
+        if (locale) live.setAttribute("locale", locale); else live.removeAttribute("locale");
+        if (min) live.setAttribute("min", min); else live.removeAttribute("min");
+        if (max) live.setAttribute("max", max); else live.removeAttribute("max");
+        live.setAttribute("placeholder", ph);
+        if (document.getElementById("ctrl-disabled").checked) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
+        if (document.getElementById("ctrl-readonly").checked) live.setAttribute("readonly", ""); else live.removeAttribute("readonly");
+        if (document.getElementById("ctrl-required").checked) live.setAttribute("required", ""); else live.removeAttribute("required");
+        if (document.getElementById("ctrl-close").checked)    live.setAttribute("close-on-select", ""); else live.removeAttribute("close-on-select");
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+    </script>
+  </body>
+</html>

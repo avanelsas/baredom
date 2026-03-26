@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-stat demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --chip-bg: rgba(15, 23, 42, 0.06);
+        --chip-fg: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --chip-bg: rgba(148, 163, 184, 0.12);
+          --chip-fg: #cbd5e1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 {
+        margin-top: 0;
+      }
+
+      .section-card > p {
+        color: var(--muted);
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .stat-grid.single {
+        grid-template-columns: 1fr;
+      }
+
+      x-stat {
+        display: block;
+      }
+
+      x-stat.demo-stat {
+        --x-stat-background: rgba(255, 255, 255, 0.72);
+        --x-stat-color: var(--page-fg);
+        --x-stat-muted-color: var(--muted);
+        --x-stat-border-color: rgba(148, 163, 184, 0.28);
+        --x-stat-positive-color: #16a34a;
+        --x-stat-warning-color: #d97706;
+        --x-stat-danger-color: #dc2626;
+        --x-stat-label-color: var(--muted);
+        --x-stat-value-color: var(--page-fg);
+        --x-stat-hint-color: var(--muted);
+        --x-stat-icon-color: var(--accent);
+        --x-stat-radius: 18px;
+        --x-stat-padding: 18px;
+        --x-stat-gap: 10px;
+        --x-stat-transition-duration: 140ms;
+        --x-stat-transition-timing: ease;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-stat.demo-stat {
+          --x-stat-background: rgba(15, 23, 42, 0.72);
+          --x-stat-color: #e5e7eb;
+          --x-stat-muted-color: #94a3b8;
+          --x-stat-border-color: rgba(100, 116, 139, 0.42);
+          --x-stat-positive-color: #4ade80;
+          --x-stat-warning-color: #fbbf24;
+          --x-stat-danger-color: #f87171;
+          --x-stat-label-color: #94a3b8;
+          --x-stat-value-color: #e5e7eb;
+          --x-stat-hint-color: #94a3b8;
+          --x-stat-icon-color: #93c5fd;
+        }
+      }
+
+      .slot-label {
+        font-size: 0.86rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .slot-value {
+        font-size: clamp(1.6rem, 2vw, 2.4rem);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .slot-hint {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .metric-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 12px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .metric-icon {
+          background: rgba(96, 165, 250, 0.14);
+          color: #93c5fd;
+        }
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        color: var(--chip-fg);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      code {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.92em;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Light & Dark Mode</div>
+        <h1>x-stat</h1>
+        <p class="subtitle">
+          Themeable metric display component for label, value, hint, and optional
+          contextual regions. This demo follows the same professional light and
+          dark mode presentation style as the other component demos.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Semantic variants</h2>
+          <p>
+            Variants provide restrained semantic emphasis for dashboard metrics,
+            reporting summaries, and operational status displays.
+          </p>
+
+          <div class="stat-grid">
+            <x-stat
+              class="demo-stat"
+              variant="default"
+              size="md"
+              label="Revenue"
+              value="$128.4K"
+              hint="Quarter to date"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              variant="subtle"
+              size="md"
+              label="Conversion rate"
+              value="4.8%"
+              hint="Compared with last period"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              variant="positive"
+              size="md"
+              label="Net growth"
+              value="+18.2%"
+              hint="Healthy upward trend"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              variant="warning"
+              size="md"
+              label="At-risk accounts"
+              value="12"
+              hint="Review recommended"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              variant="danger"
+              size="md"
+              label="Failed checks"
+              value="3"
+              hint="Immediate follow-up required"
+            ></x-stat>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Size, emphasis, and alignment</h2>
+          <p>
+            The component adapts well to compact cards, centered summary tiles,
+            and larger headline metrics.
+          </p>
+
+          <div class="stat-grid">
+            <x-stat
+              class="demo-stat"
+              size="sm"
+              emphasis="normal"
+              align="start"
+              label="Small stat"
+              value="128"
+              hint="Compact density"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              size="md"
+              emphasis="high"
+              align="center"
+              label="Centered KPI"
+              value="92%"
+              hint="Operational readiness"
+            ></x-stat>
+
+            <x-stat
+              class="demo-stat"
+              size="lg"
+              emphasis="high"
+              align="end"
+              label="Large metric"
+              value="$2.4M"
+              hint="Annual recurring revenue"
+            ></x-stat>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Named slots</h2>
+          <p>
+            Named slots allow richer composition while preserving the expected
+            reading order of icon, label, value, and hint.
+          </p>
+
+          <div class="stat-grid">
+            <x-stat class="demo-stat" variant="positive" trend="up" size="md">
+              <span slot="icon" class="metric-icon" aria-hidden="true">↗</span>
+              <span slot="label" class="slot-label">Monthly recurring revenue</span>
+              <span slot="value" class="slot-value">$84,920</span>
+              <span slot="hint" class="slot-hint">Up 11.4% from the previous month</span>
+            </x-stat>
+
+            <x-stat class="demo-stat" variant="warning" trend="neutral" size="md">
+              <span slot="icon" class="metric-icon" aria-hidden="true">•</span>
+              <span slot="label" class="slot-label">Pipeline coverage</span>
+              <span slot="value" class="slot-value">1.9×</span>
+              <span slot="hint" class="slot-hint">Healthy, but below target buffer</span>
+            </x-stat>
+
+            <x-stat class="demo-stat" variant="danger" trend="down" size="md">
+              <span slot="icon" class="metric-icon" aria-hidden="true">↘</span>
+              <span slot="label" class="slot-label">Service availability</span>
+              <span slot="value" class="slot-value">98.91%</span>
+              <span slot="hint" class="slot-hint">Below the expected reliability band</span>
+            </x-stat>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Loading state</h2>
+          <p>
+            Loading can be used while data is being resolved, while still keeping
+            a stable stat layout and accessible busy state.
+          </p>
+
+          <div class="stat-grid single">
+            <x-stat
+              class="demo-stat"
+              loading
+              label="Forecast"
+              value="Loading…"
+              hint="Refreshing live metric feed"
+            ></x-stat>
+            <div class="chip-row">
+              <span class="chip">role="group"</span>
+              <span class="chip">aria-busy when loading</span>
+              <span class="chip">Reduced-motion aware</span>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

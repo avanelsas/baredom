@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-currency-field demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-primary-bg: #2563eb;
+        --btn-secondary-bg: #6b7280;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+        width: 130px;
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .btn {
+        padding: 8px 20px; border-radius: 6px; border: none;
+        font-size: 14px; cursor: pointer; color: #fff;
+      }
+      .btn-primary   { background: var(--btn-primary-bg); }
+      .btn-secondary { background: var(--btn-secondary-bg); }
+      x-currency-field { display: block; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-currency-field demo</h1>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Standalone (USD default)</h2>
+    <div class="stack">
+      <x-currency-field id="standalone" name="amount" label="Amount" placeholder="0.00"></x-currency-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>With hint and pre-filled value</h2>
+    <div class="stack">
+      <x-currency-field name="price" label="Price" hint="Enter the product price" value="1234.56" currency="USD"></x-currency-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Required validation</h2>
+    <div class="stack">
+      <x-currency-field name="required-amount" label="Required amount" required placeholder="Must fill in"></x-currency-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Disabled</h2>
+    <div class="stack">
+      <x-currency-field name="disabled-amount" label="Disabled" disabled value="999.99" currency="EUR"></x-currency-field>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-form id="price-form">
+      <x-currency-field name="price" label="Product price" placeholder="0.00" required currency="USD"></x-currency-field>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset"  class="btn btn-secondary">Reset</button>
+      </div>
+    </x-form>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>currency    <input type="text" id="ctrl-currency" value="USD"></label>
+      <label>locale      <input type="text" id="ctrl-locale" value=""></label>
+      <label>min         <input type="text" id="ctrl-min" value=""></label>
+      <label>max         <input type="text" id="ctrl-max" value=""></label>
+      <label>label       <input type="text" id="ctrl-label" value="Amount"></label>
+      <label>placeholder <input type="text" id="ctrl-placeholder" value="0.00"></label>
+      <label>hint        <input type="text" id="ctrl-hint" value=""></label>
+      <label>error       <input type="text" id="ctrl-error" value=""></label>
+      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
+      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>readonly    <input type="checkbox" id="ctrl-readonly"></label>
+    </div>
+    <x-currency-field id="live-field" name="live" label="Amount" placeholder="0.00"></x-currency-field>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Event log</h2>
+    <div class="log" id="log">Events will appear here.</div>
+
+    <script>
+      const log = document.getElementById('log');
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      // --- Standalone ---
+      const standalone = document.getElementById('standalone');
+      standalone.addEventListener('x-currency-field-input',  e => logEvent('x-currency-field-input',  e.detail));
+      standalone.addEventListener('x-currency-field-change', e => logEvent('x-currency-field-change', e.detail));
+
+      // --- x-form integration ---
+      const priceForm = document.getElementById('price-form');
+      priceForm.addEventListener('x-form-submit', e => {
+        logEvent('x-form-submit', e.detail.values);
+      });
+      priceForm.addEventListener('x-form-reset', () => {
+        logEvent('x-form-reset', {});
+      });
+
+      // --- Live controls ---
+      const liveField = document.getElementById('live-field');
+      liveField.addEventListener('x-currency-field-input',  e => logEvent('live: x-currency-field-input',  e.detail));
+      liveField.addEventListener('x-currency-field-change', e => logEvent('live: x-currency-field-change', e.detail));
+
+      function updateLive() {
+        const currency    = document.getElementById('ctrl-currency').value;
+        const locale      = document.getElementById('ctrl-locale').value;
+        const min         = document.getElementById('ctrl-min').value;
+        const max         = document.getElementById('ctrl-max').value;
+        const label       = document.getElementById('ctrl-label').value;
+        const placeholder = document.getElementById('ctrl-placeholder').value;
+        const hint        = document.getElementById('ctrl-hint').value;
+        const error       = document.getElementById('ctrl-error').value;
+        const disabled    = document.getElementById('ctrl-disabled').checked;
+        const required    = document.getElementById('ctrl-required').checked;
+        const readonly    = document.getElementById('ctrl-readonly').checked;
+
+        liveField.setAttribute('currency',    currency || 'USD');
+        liveField.setAttribute('label',       label);
+        liveField.setAttribute('placeholder', placeholder);
+        if (locale)      liveField.setAttribute('locale', locale);      else liveField.removeAttribute('locale');
+        if (min)         liveField.setAttribute('min', min);             else liveField.removeAttribute('min');
+        if (max)         liveField.setAttribute('max', max);             else liveField.removeAttribute('max');
+        if (hint)        liveField.setAttribute('hint', hint);           else liveField.removeAttribute('hint');
+        if (error)       liveField.setAttribute('error', error);         else liveField.removeAttribute('error');
+        if (disabled)    liveField.setAttribute('disabled', '');         else liveField.removeAttribute('disabled');
+        if (required)    liveField.setAttribute('required', '');         else liveField.removeAttribute('required');
+        if (readonly)    liveField.setAttribute('readonly', '');         else liveField.removeAttribute('readonly');
+      }
+
+      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+        el.addEventListener('change', updateLive);
+        el.addEventListener('input',  updateLive);
+      });
+      updateLive();
+    </script>
+  </body>
+</html>

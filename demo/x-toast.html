@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>x-toast demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+      --log-bg: #111827;
+      --log-fg: #f9fafb;
+      --log-entry-border: #1f2937;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+        --log-bg: #020617;
+        --log-fg: #f9fafb;
+        --log-entry-border: #1e293b;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      padding: 32px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      max-width: 960px;
+    }
+
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 16px; }
+    p  { margin: 0 0 24px; color: var(--muted); font-size: 0.875rem; }
+
+    .section {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .toast-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    input, select {
+      padding: 6px 10px;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    button {
+      padding: 5px 12px;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+    button:hover { opacity: 0.85; }
+
+    .btn-primary {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .btn-primary:hover { background: #1e40af; border-color: #1e40af; opacity: 1; }
+
+    #log {
+      background: var(--log-bg);
+      color: var(--log-fg);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 80px;
+      max-height: 240px;
+      overflow-y: auto;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8125rem;
+      white-space: pre-wrap;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--log-entry-border);
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-entry .reason { font-weight: 600; color: #f9fafb; }
+    .log-entry .ts { color: #6b7280; margin-right: 6px; }
+
+    .empty-log { color: #6b7280; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<h1>x-toast</h1>
+<p>Floating notification card. Auto-dismiss, progress bar, and x-toaster coordination via cancelable events.</p>
+
+<!-- ── Type variants ─────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Type variants</h2>
+  <div class="toast-row" id="variants">
+    <x-toast type="info"    message="Informational notification."></x-toast>
+    <x-toast type="success" message="Operation completed successfully."></x-toast>
+    <x-toast type="warning" message="This action may have side effects."></x-toast>
+    <x-toast type="error"   message="Something went wrong. Please retry."></x-toast>
+  </div>
+</div>
+
+<!-- ── With heading ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>With heading</h2>
+  <div class="toast-row">
+    <x-toast type="success" heading="Saved" message="Your changes have been saved."></x-toast>
+    <x-toast type="error"   heading="Upload failed" message="The file exceeds the 10 MB limit."></x-toast>
+  </div>
+</div>
+
+<!-- ── Message only ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Message only (no heading)</h2>
+  <div class="toast-row">
+    <x-toast type="info"    message="Your session will expire in 5 minutes."></x-toast>
+    <x-toast type="warning" message="Low disk space detected."></x-toast>
+  </div>
+</div>
+
+<!-- ── Non-dismissible ───────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Non-dismissible</h2>
+  <div class="toast-row">
+    <x-toast type="info" message="Processing in background…" dismissible="false"></x-toast>
+  </div>
+</div>
+
+<!-- ── Disabled ──────────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Disabled</h2>
+  <div class="toast-row">
+    <x-toast type="warning" heading="Read-only" message="This notification cannot be dismissed." disabled></x-toast>
+  </div>
+</div>
+
+<!-- ── Custom icon ───────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Custom icon via attribute</h2>
+  <div class="toast-row">
+    <x-toast type="success" icon="🚀" message="Deployment started successfully."></x-toast>
+    <x-toast type="error"   icon="🔥" heading="Fire!" message="Something is on fire."></x-toast>
+    <x-toast type="info"    icon="none" message="Icon hidden with icon=&quot;none&quot;."></x-toast>
+  </div>
+</div>
+
+<!-- ── Auto-dismiss ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Auto-dismiss (timeout-ms)</h2>
+  <p style="margin:0 0 12px">Toasts below auto-dismiss. Click "Reset" to re-add them.</p>
+  <div class="toast-row" id="auto-dismiss-zone">
+    <x-toast id="td1" type="success" message="Auto-dismisses in 5 seconds." timeout-ms="5000"></x-toast>
+  </div>
+  <br>
+  <button onclick="resetAutoToast()">Reset auto-dismiss toast</button>
+</div>
+
+<!-- ── Progress bar ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Progress bar (show-progress)</h2>
+  <p style="margin:0 0 12px">Progress bar animates from full to empty over the timeout duration.</p>
+  <div class="toast-row" id="progress-zone">
+    <x-toast id="tp1" type="info" heading="Uploading" message="File upload in progress…" timeout-ms="6000" show-progress></x-toast>
+    <x-toast id="tp2" type="warning" message="Session expiring soon." timeout-ms="8000" show-progress></x-toast>
+  </div>
+  <br>
+  <button onclick="resetProgressToasts()">Reset progress toasts</button>
+</div>
+
+<!-- ── Spawn control panel ───────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Spawn toast</h2>
+  <div class="controls">
+    <label>
+      Type
+      <select id="ctrl-type">
+        <option value="info">info</option>
+        <option value="success">success</option>
+        <option value="warning">warning</option>
+        <option value="error">error</option>
+      </select>
+    </label>
+    <label>
+      Heading
+      <input type="text" id="ctrl-heading" placeholder="Optional title">
+    </label>
+    <label>
+      Message
+      <input type="text" id="ctrl-message" value="Something happened.">
+    </label>
+    <label>
+      Icon (glyph or "none")
+      <input type="text" id="ctrl-icon" placeholder="Leave blank for default">
+    </label>
+    <label>
+      Dismissible
+      <select id="ctrl-dismissible">
+        <option value="true">true</option>
+        <option value="false">false</option>
+      </select>
+    </label>
+    <label>
+      timeout-ms (blank = none)
+      <input type="number" id="ctrl-timeout" placeholder="e.g. 4000">
+    </label>
+    <label>
+      Show progress bar
+      <select id="ctrl-progress">
+        <option value="false">false</option>
+        <option value="true">true</option>
+      </select>
+    </label>
+  </div>
+  <button class="btn-primary" onclick="spawnToast()">Spawn toast</button>
+  <div id="spawn-zone" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
+</div>
+
+<!-- ── Event log ─────────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>Event log — x-toast-dismiss</h2>
+  <div id="log"><span class="empty-log">No events yet.</span></div>
+  <br>
+  <button onclick="document.getElementById('log').innerHTML='<span class=\'empty-log\'>No events yet.</span>'">Clear log</button>
+</div>
+
+<script>
+  // ── Global dismiss listener ──────────────────────────────────────────────
+  document.addEventListener('x-toast-dismiss', e => {
+    const log = document.getElementById('log');
+    const empty = log.querySelector('.empty-log');
+    if (empty) empty.remove();
+
+    const d = e.detail;
+    const ts = new Date().toLocaleTimeString();
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML =
+      `<span class="ts">${ts}</span>` +
+      `x-toast-dismiss &nbsp; ` +
+      `type=<span class="reason">${d.type}</span> &nbsp; ` +
+      `reason=<span class="reason">${d.reason}</span>` +
+      (d.heading ? ` &nbsp; heading="${d.heading}"` : '') +
+      (d.message ? ` &nbsp; message="${d.message}"` : '');
+    log.appendChild(entry);
+    log.scrollTop = log.scrollHeight;
+  });
+
+  // ── Spawn toast ──────────────────────────────────────────────────────────
+  function spawnToast() {
+    const type       = document.getElementById('ctrl-type').value;
+    const heading    = document.getElementById('ctrl-heading').value.trim();
+    const message    = document.getElementById('ctrl-message').value.trim();
+    const icon       = document.getElementById('ctrl-icon').value.trim();
+    const dismissible = document.getElementById('ctrl-dismissible').value;
+    const timeout    = document.getElementById('ctrl-timeout').value.trim();
+    const progress   = document.getElementById('ctrl-progress').value;
+
+    const el = document.createElement('x-toast');
+    el.setAttribute('type', type);
+    if (message) el.setAttribute('message', message);
+    if (heading) el.setAttribute('heading', heading);
+    if (icon)    el.setAttribute('icon', icon);
+    if (dismissible === 'false') el.setAttribute('dismissible', 'false');
+    if (timeout) el.setAttribute('timeout-ms', timeout);
+    if (progress === 'true') el.setAttribute('show-progress', '');
+
+    document.getElementById('spawn-zone').appendChild(el);
+  }
+
+  // ── Reset helpers ────────────────────────────────────────────────────────
+  function resetAutoToast() {
+    const zone = document.getElementById('auto-dismiss-zone');
+    zone.innerHTML = '';
+    const el = document.createElement('x-toast');
+    el.setAttribute('type', 'success');
+    el.setAttribute('message', 'Auto-dismisses in 5 seconds.');
+    el.setAttribute('timeout-ms', '5000');
+    zone.appendChild(el);
+  }
+
+  function resetProgressToasts() {
+    const zone = document.getElementById('progress-zone');
+    zone.innerHTML = '';
+
+    const t1 = document.createElement('x-toast');
+    t1.setAttribute('type', 'info');
+    t1.setAttribute('heading', 'Uploading');
+    t1.setAttribute('message', 'File upload in progress…');
+    t1.setAttribute('timeout-ms', '6000');
+    t1.setAttribute('show-progress', '');
+    zone.appendChild(t1);
+
+    const t2 = document.createElement('x-toast');
+    t2.setAttribute('type', 'warning');
+    t2.setAttribute('message', 'Session expiring soon.');
+    t2.setAttribute('timeout-ms', '8000');
+    t2.setAttribute('show-progress', '');
+    zone.appendChild(t2);
+  }
+</script>
+
+</body>
+</html>

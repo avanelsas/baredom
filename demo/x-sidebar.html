@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-sidebar demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --demo-bg: #f9fafb;
+        --demo-fg: #111827;
+        --demo-border: #e5e7eb;
+        --demo-muted: #6b7280;
+        --demo-surface: #ffffff;
+        --demo-accent: #4f46e5;
+        --demo-radius: 14px;
+        --demo-gap: 16px;
+        --demo-shadow: 0 10px 24px rgb(0 0 0 / 0.12);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --demo-bg: #111827;
+          --demo-fg: #f9fafb;
+          --demo-border: #374151;
+          --demo-muted: #9ca3af;
+          --demo-surface: #1f2937;
+          --demo-shadow: 0 10px 24px rgb(0 0 0 / 0.4);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: var(--demo-bg);
+        color: var(--demo-fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      body {
+        padding: 24px;
+      }
+
+      .page {
+        display: grid;
+        gap: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .hero {
+        display: grid;
+        gap: 8px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 2.75rem);
+        line-height: 1.05;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--demo-muted);
+        max-width: 70ch;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(300px, 380px) 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .stack {
+        display: grid;
+        gap: 24px;
+      }
+
+      .card {
+        border: 1px solid var(--demo-border);
+        border-radius: var(--demo-radius);
+        background: var(--demo-surface);
+        box-shadow: var(--demo-shadow);
+        padding: 16px;
+      }
+
+      .card h2,
+      .card h3 {
+        margin: 0 0 12px 0;
+      }
+
+      .card p {
+        margin: 0 0 12px 0;
+        color: var(--demo-muted);
+      }
+
+      .controls {
+        display: grid;
+        gap: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .field label {
+        font-weight: 600;
+      }
+
+      .field input[type="text"],
+      .field input[type="number"],
+      .field select,
+      .field textarea {
+        inline-size: 100%;
+        border: 1px solid var(--demo-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font: inherit;
+        background: var(--demo-bg);
+        color: var(--demo-fg);
+      }
+
+      .inline-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .inline-options label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        border: 1px solid var(--demo-border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font: inherit;
+        background: var(--demo-bg);
+        color: var(--demo-fg);
+        cursor: pointer;
+      }
+
+      button.primary {
+        border-color: transparent;
+        background: var(--demo-accent);
+        color: white;
+      }
+
+      code,
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      pre {
+        margin: 0;
+        border: 1px solid var(--demo-border);
+        border-radius: 12px;
+        padding: 12px;
+        overflow: auto;
+        background: #f3f4f6;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        pre { background: #1f2937; }
+      }
+
+      .demo-stage {
+        display: grid;
+        gap: 16px;
+      }
+
+      .demo-shell {
+        position: relative;
+        min-height: 560px;
+        border: 1px solid var(--demo-border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #f3f4f6, #f9fafb);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .demo-shell { background: linear-gradient(180deg, #1f2937, #111827); }
+      }
+
+      .demo-main {
+        min-height: 560px;
+        padding: 24px 24px 24px 24px;
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
+      .demo-main h2 {
+        margin: 0;
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+      }
+
+      .mini-card {
+        border: 1px solid var(--demo-border);
+        border-radius: 14px;
+        padding: 14px;
+        background: var(--demo-surface);
+      }
+
+      .mini-card strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+        padding: 14px;
+      }
+
+      .nav h3 {
+        margin: 0 0 6px 0;
+        font-size: 0.95rem;
+      }
+
+      .nav a,
+      .nav button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        text-decoration: none;
+        color: inherit;
+        border-radius: 10px;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        background: transparent;
+      }
+
+      .nav a:hover,
+      .nav button:hover {
+        background: #f3f4f6;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .nav a:hover,
+        .nav button:hover { background: #374151; }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-sidebar {
+          --x-sidebar-bg: #1f2937;
+          --x-sidebar-fg: #f9fafb;
+          --x-sidebar-border: #374151;
+        }
+      }
+
+      .examples {
+        display: grid;
+        gap: 16px;
+      }
+
+      .example-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+
+      .example-box {
+        border: 1px solid var(--demo-border);
+        border-radius: 14px;
+        padding: 14px;
+        background: var(--demo-surface);
+      }
+
+      .event-log {
+        display: grid;
+        gap: 8px;
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      .event-item {
+        border: 1px solid var(--demo-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: var(--demo-bg);
+      }
+
+      .event-item strong {
+        display: inline-block;
+        min-width: 80px;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .status {
+        border: 1px solid var(--demo-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: var(--demo-bg);
+      }
+
+      .status .label {
+        display: block;
+        font-size: 0.84rem;
+        color: var(--demo-muted);
+      }
+
+      .status .value {
+        display: block;
+        margin-top: 4px;
+        font-weight: 700;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <h1>x-sidebar demo</h1>
+        <p>
+          Standalone demo page for the <code>x-sidebar</code> custom element.
+          This page loads <code>js/main.js</code>, relies on app startup
+          registration, demonstrates multiple states, and provides a live
+          control panel for supported attributes and properties.
+        </p>
+      </header>
+
+      <div class="layout">
+        <aside class="stack">
+          <section class="card">
+            <h2>Live controls</h2>
+            <p>
+              Change attributes and properties at runtime. All emitted events are
+              logged below and mirrored to the browser console.
+            </p>
+            <p>
+              Notes: <code>collapsed</code> only affects docked mode. Below the
+              breakpoint, the effective variant becomes modal. Clicking items
+              inside the sidebar does not auto-close by default; that behavior is
+              consumer-controlled.
+            </p>
+
+            <div class="controls">
+              <div class="field">
+                <label for="label-input">label attribute</label>
+                <input id="label-input" type="text" value="Sidebar" />
+              </div>
+
+              <div class="field">
+                <label for="placement-select">placement attribute</label>
+                <select id="placement-select">
+                  <option value="left" selected>left</option>
+                  <option value="right">right</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="variant-select">variant attribute</label>
+                <select id="variant-select">
+                  <option value="docked" selected>docked</option>
+                  <option value="overlay">overlay</option>
+                  <option value="modal">modal</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="breakpoint-input">breakpoint attribute</label>
+                <input id="breakpoint-input" type="number" min="0" step="1" value="768" />
+              </div>
+
+              <div class="field">
+                <label>Boolean attributes</label>
+                <div class="inline-options">
+                  <label>
+                    <input id="open-attr-input" type="checkbox" checked />
+                    open
+                  </label>
+                  <label>
+                    <input id="collapsed-attr-input" type="checkbox" />
+                    collapsed
+                  </label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Property API</label>
+                <div class="button-row">
+                  <button id="set-open-true" type="button" class="primary">sidebar.open = true</button>
+                  <button id="set-open-false" type="button">sidebar.open = false</button>
+                  <button id="set-collapsed-true" type="button">sidebar.collapsed = true</button>
+                  <button id="set-collapsed-false" type="button">sidebar.collapsed = false</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Utilities</label>
+                <div class="button-row">
+                  <button id="reset-button" type="button">Reset demo</button>
+                  <button id="clear-log-button" type="button">Clear event log</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Current state</h2>
+            <div id="status-grid" class="status-grid"></div>
+          </section>
+
+          <section class="card">
+            <h2>Event log</h2>
+            <div id="event-log" class="event-log"></div>
+          </section>
+
+          <section class="card">
+            <h2>Example markup</h2>
+            <pre id="markup-preview"></pre>
+          </section>
+        </aside>
+
+        <main class="stack">
+          <section class="card demo-stage">
+            <h2>Interactive demo</h2>
+            <p>
+              Resize the browser to observe the breakpoint-driven modal behavior.
+              The sidebar content is slotted inside the animated panel so the
+              content moves with the sidebar.
+            </p>
+
+            <div class="demo-shell">
+              <x-sidebar id="live-sidebar"
+                         open
+                         placement="left"
+                         variant="docked"
+                         breakpoint="768"
+                         label="Sidebar">
+                <nav class="nav" aria-label="Demo navigation">
+                  <h3>Navigation</h3>
+                  <a href="#overview">Overview</a>
+                  <a href="#analytics">Analytics</a>
+                  <a href="#reports">Reports</a>
+                  <a href="#team">Team</a>
+                  <a href="#settings">Settings</a>
+                  <button id="inner-close-button" type="button">Close via consumer button</button>
+                </nav>
+              </x-sidebar>
+
+              <div class="demo-main">
+                <div class="button-row">
+                  <button id="main-toggle-button" type="button" class="primary">Toggle open</button>
+                  <button id="main-modal-button" type="button">Force modal variant</button>
+                  <button id="main-docked-button" type="button">Force docked variant</button>
+                </div>
+
+                <h2>App content area</h2>
+                <p>
+                  This content represents the main application surface next to the
+                  sidebar. On smaller viewports, the declared variant resolves to
+                  modal behavior.
+                </p>
+
+                <div class="demo-grid">
+                  <div class="mini-card">
+                    <strong>Users</strong>
+                    <span>1,284 active this week</span>
+                  </div>
+                  <div class="mini-card">
+                    <strong>Reports</strong>
+                    <span>12 pending review</span>
+                  </div>
+                  <div class="mini-card">
+                    <strong>Uptime</strong>
+                    <span>99.97% over 30 days</span>
+                  </div>
+                  <div class="mini-card">
+                    <strong>Revenue</strong>
+                    <span>€48,210 this month</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card examples">
+            <h2>Multiple states</h2>
+            <div class="example-grid">
+              <div class="example-box">
+                <h3>Docked</h3>
+                <pre>&lt;x-sidebar open placement="left" variant="docked" label="Sidebar"&gt;...&lt;/x-sidebar&gt;</pre>
+              </div>
+              <div class="example-box">
+                <h3>Overlay</h3>
+                <pre>&lt;x-sidebar open placement="right" variant="overlay" label="Tools"&gt;...&lt;/x-sidebar&gt;</pre>
+              </div>
+              <div class="example-box">
+                <h3>Modal</h3>
+                <pre>&lt;x-sidebar open placement="left" variant="modal" label="Navigation"&gt;...&lt;/x-sidebar&gt;</pre>
+              </div>
+              <div class="example-box">
+                <h3>Collapsed docked</h3>
+                <pre>&lt;x-sidebar open collapsed placement="left" variant="docked" label="Sidebar"&gt;...&lt;/x-sidebar&gt;</pre>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+      (function () {
+        if (!customElements.get("x-sidebar")) {
+          console.error("x-sidebar demo did not detect a registered x-sidebar element after loading js/main.js");
+          return;
+        }
+
+        var sidebar = document.getElementById("live-sidebar");
+        var labelInput = document.getElementById("label-input");
+        var placementSelect = document.getElementById("placement-select");
+        var variantSelect = document.getElementById("variant-select");
+        var breakpointInput = document.getElementById("breakpoint-input");
+        var openAttrInput = document.getElementById("open-attr-input");
+        var collapsedAttrInput = document.getElementById("collapsed-attr-input");
+        var setOpenTrueButton = document.getElementById("set-open-true");
+        var setOpenFalseButton = document.getElementById("set-open-false");
+        var setCollapsedTrueButton = document.getElementById("set-collapsed-true");
+        var setCollapsedFalseButton = document.getElementById("set-collapsed-false");
+        var resetButton = document.getElementById("reset-button");
+        var clearLogButton = document.getElementById("clear-log-button");
+        var toggleButton = document.getElementById("main-toggle-button");
+        var modalButton = document.getElementById("main-modal-button");
+        var dockedButton = document.getElementById("main-docked-button");
+        var innerCloseButton = document.getElementById("inner-close-button");
+        var eventLog = document.getElementById("event-log");
+        var markupPreview = document.getElementById("markup-preview");
+        var statusGrid = document.getElementById("status-grid");
+
+        function createStatusItem(label, value) {
+          var item = document.createElement("div");
+          item.className = "status";
+
+          var labelEl = document.createElement("span");
+          labelEl.className = "label";
+          labelEl.textContent = label;
+
+          var valueEl = document.createElement("span");
+          valueEl.className = "value";
+          valueEl.textContent = String(value);
+
+          item.appendChild(labelEl);
+          item.appendChild(valueEl);
+          return item;
+        }
+
+        function addEventLog(name, detail) {
+          var item = document.createElement("div");
+          item.className = "event-item";
+          item.innerHTML =
+            "<strong>" +
+            name +
+            "</strong> <code>" +
+            escapeHtml(JSON.stringify(detail)) +
+            "</code>";
+
+          eventLog.prepend(item);
+          console.log("[x-sidebar demo event]", name, detail);
+        }
+
+        function escapeHtml(value) {
+          return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;");
+        }
+
+        function syncMarkupPreview() {
+          var lines = ["<x-sidebar"];
+
+          if (sidebar.hasAttribute("open")) {
+            lines.push("  open");
+          }
+
+          if (sidebar.hasAttribute("collapsed")) {
+            lines.push("  collapsed");
+          }
+
+          lines.push('  placement="' + sidebar.getAttribute("placement") + '"');
+          lines.push('  variant="' + sidebar.getAttribute("variant") + '"');
+          lines.push('  breakpoint="' + sidebar.getAttribute("breakpoint") + '"');
+          lines.push('  label="' + sidebar.getAttribute("label") + '"');
+          lines.push(">");
+          lines.push("  ...");
+          lines.push("</x-sidebar>");
+
+          markupPreview.textContent = lines.join("\n");
+        }
+
+        function syncStatus() {
+          statusGrid.innerHTML = "";
+          statusGrid.appendChild(createStatusItem("open property", sidebar.open));
+          statusGrid.appendChild(createStatusItem("collapsed property", sidebar.collapsed));
+          statusGrid.appendChild(
+            createStatusItem(
+              "data-effective-variant",
+              sidebar.getAttribute("data-effective-variant") || "n/a"
+            )
+          );
+          statusGrid.appendChild(
+            createStatusItem("placement attribute", sidebar.getAttribute("placement"))
+          );
+          statusGrid.appendChild(
+            createStatusItem("variant attribute", sidebar.getAttribute("variant"))
+          );
+          statusGrid.appendChild(
+            createStatusItem("breakpoint attribute", sidebar.getAttribute("breakpoint"))
+          );
+          statusGrid.appendChild(
+            createStatusItem("label attribute", sidebar.getAttribute("label"))
+          );
+          statusGrid.appendChild(
+            createStatusItem(
+              "data-collapsed",
+              sidebar.getAttribute("data-collapsed") || "false"
+            )
+          );
+        }
+
+        function syncControlsFromElement() {
+          labelInput.value = sidebar.getAttribute("label") || "Sidebar";
+          placementSelect.value = sidebar.getAttribute("placement") || "left";
+          variantSelect.value = sidebar.getAttribute("variant") || "docked";
+          breakpointInput.value = sidebar.getAttribute("breakpoint") || "768";
+          openAttrInput.checked = sidebar.hasAttribute("open");
+          collapsedAttrInput.checked = sidebar.hasAttribute("collapsed");
+          syncMarkupPreview();
+          syncStatus();
+        }
+
+        function applyControlsToElement() {
+          sidebar.setAttribute("label", labelInput.value || "Sidebar");
+          sidebar.setAttribute("placement", placementSelect.value);
+          sidebar.setAttribute("variant", variantSelect.value);
+          sidebar.setAttribute("breakpoint", breakpointInput.value || "768");
+
+          if (openAttrInput.checked) {
+            sidebar.setAttribute("open", "");
+          } else {
+            sidebar.removeAttribute("open");
+          }
+
+          if (collapsedAttrInput.checked) {
+            sidebar.setAttribute("collapsed", "");
+          } else {
+            sidebar.removeAttribute("collapsed");
+          }
+
+          syncControlsFromElement();
+        }
+
+        function resetDemo() {
+          sidebar.setAttribute("open", "");
+          sidebar.removeAttribute("collapsed");
+          sidebar.setAttribute("placement", "left");
+          sidebar.setAttribute("variant", "docked");
+          sidebar.setAttribute("breakpoint", "768");
+          sidebar.setAttribute("label", "Sidebar");
+          syncControlsFromElement();
+          addEventLog("demo-reset", {
+            open: sidebar.open,
+            collapsed: sidebar.collapsed
+          });
+        }
+
+        labelInput.addEventListener("input", applyControlsToElement);
+        placementSelect.addEventListener("change", applyControlsToElement);
+        variantSelect.addEventListener("change", applyControlsToElement);
+        breakpointInput.addEventListener("input", applyControlsToElement);
+        openAttrInput.addEventListener("change", applyControlsToElement);
+        collapsedAttrInput.addEventListener("change", applyControlsToElement);
+
+        setOpenTrueButton.addEventListener("click", function () {
+          sidebar.open = true;
+          syncControlsFromElement();
+        });
+
+        setOpenFalseButton.addEventListener("click", function () {
+          sidebar.open = false;
+          syncControlsFromElement();
+        });
+
+        setCollapsedTrueButton.addEventListener("click", function () {
+          sidebar.collapsed = true;
+          syncControlsFromElement();
+        });
+
+        setCollapsedFalseButton.addEventListener("click", function () {
+          sidebar.collapsed = false;
+          syncControlsFromElement();
+        });
+
+        resetButton.addEventListener("click", resetDemo);
+
+        clearLogButton.addEventListener("click", function () {
+          eventLog.innerHTML = "";
+        });
+
+        toggleButton.addEventListener("click", function () {
+          sidebar.open = !sidebar.open;
+          syncControlsFromElement();
+        });
+
+        modalButton.addEventListener("click", function () {
+          sidebar.setAttribute("variant", "modal");
+          sidebar.open = true;
+          syncControlsFromElement();
+        });
+
+        dockedButton.addEventListener("click", function () {
+          sidebar.setAttribute("variant", "docked");
+          sidebar.open = true;
+          syncControlsFromElement();
+        });
+
+        innerCloseButton.addEventListener("click", function () {
+          sidebar.open = false;
+          syncControlsFromElement();
+        });
+
+        sidebar.addEventListener("toggle", function (event) {
+          addEventLog("toggle", event.detail);
+          syncControlsFromElement();
+        });
+
+        sidebar.addEventListener("dismiss", function (event) {
+          addEventLog("dismiss", event.detail);
+          syncControlsFromElement();
+        });
+
+        syncControlsFromElement();
+        addEventLog("demo-ready", {
+          tagName: "x-sidebar",
+          open: sidebar.open,
+          collapsed: sidebar.collapsed
+        });
+      })();
+    </script>
+  </body>
+</html>

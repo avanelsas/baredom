@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-button demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+        line-height: 1.4;
+        background: #f9fafb;
+        color: #111827;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body { background: #111827; color: #f9fafb; }
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        background: #fff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .card { background: #1f2937; border-color: #374151; }
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #111827;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+      }
+
+      x-button.brand {
+        --x-button-bg: #2563eb;
+        --x-button-bg-hover: #1d4ed8;
+        --x-button-bg-active: #1e40af;
+        --x-button-focus-ring: #93c5fd;
+      }
+
+      .spinner-dot {
+        width: 0.75em;
+        height: 0.75em;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.75;
+      }
+
+      .icon {
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.75;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>x-button demo</h1>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Variants</h2>
+        <div class="row">
+          <x-button id="primary">Primary</x-button>
+          <x-button variant="secondary">Secondary</x-button>
+          <x-button variant="tertiary">Tertiary</x-button>
+          <x-button variant="ghost">Ghost</x-button>
+          <x-button variant="danger">Danger</x-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Sizes</h2>
+        <div class="row">
+          <x-button size="sm">Small</x-button>
+          <x-button size="md">Medium</x-button>
+          <x-button size="lg">Large</x-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>States</h2>
+        <div class="row">
+          <x-button pressed>Pressed</x-button>
+          <x-button disabled>Disabled</x-button>
+          <x-button loading label="Saving">
+            Saving
+            <span slot="spinner" class="spinner-dot" aria-hidden="true"></span>
+          </x-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Slots</h2>
+        <div class="row">
+          <x-button class="brand">
+            <span slot="icon-start" class="icon" aria-hidden="true"></span>
+            Save
+          </x-button>
+
+          <x-button label="Next">
+            Next
+            <span slot="icon-end" class="icon" aria-hidden="true"></span>
+          </x-button>
+        </div>
+      </section>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      const btn = document.getElementById("primary");
+
+      [
+        "press",
+        "press-start",
+        "press-end",
+        "hover-start",
+        "hover-end",
+        "focus-visible"
+      ].forEach((name) => {
+        btn.addEventListener(name, (event) => {
+          log.textContent =
+            name + " " + JSON.stringify(event.detail ?? {});
+        });
+      });
+    </script>
+
+    <script src="../js/main.js"></script>
+  </body>
+</html>

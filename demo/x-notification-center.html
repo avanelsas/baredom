@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-notification-center demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+        max-width: 800px;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .panel {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+
+      .row label {
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .row select,
+      .row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .row button:hover { background: #1e40af; }
+
+      .row button.danger {
+        background: #dc2626;
+      }
+      .row button.danger:hover { background: #b91c1c; }
+
+      .quick-btns {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+
+      .quick-btns button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+      }
+
+      .quick-btns button.info    { background: #0066cc; }
+      .quick-btns button.success { background: #108c48; }
+      .quick-btns button.warning { background: #cc7800; }
+      .quick-btns button.error   { background: #be1428; }
+      .quick-btns button.info:hover    { background: #0052a3; }
+      .quick-btns button.success:hover { background: #0d722e; }
+      .quick-btns button.warning:hover { background: #a36000; }
+      .quick-btns button.error:hover   { background: #9e0f20; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 120px;
+        max-height: 320px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-notification-center demo</h1>
+
+    <x-notification-center id="nc" position="top-right"></x-notification-center>
+
+    <h2>Center Settings</h2>
+    <div class="panel">
+      <div class="row">
+        <label>position
+          <select id="ctrl-position">
+            <option value="top-right">top-right</option>
+            <option value="top-left">top-left</option>
+            <option value="bottom-right">bottom-right</option>
+            <option value="bottom-left">bottom-left</option>
+            <option value="top-center">top-center</option>
+            <option value="bottom-center">bottom-center</option>
+          </select>
+        </label>
+        <label>max
+          <input type="number" id="ctrl-max" value="5" min="1" max="20" style="width:60px">
+        </label>
+        <button id="apply-settings-btn">Apply</button>
+      </div>
+    </div>
+
+    <h2>Quick Push</h2>
+    <div class="quick-btns">
+      <button class="info"    id="q-info">Info</button>
+      <button class="success" id="q-success">Success</button>
+      <button class="warning" id="q-warning">Warning</button>
+      <button class="error"   id="q-error">Error</button>
+    </div>
+
+    <h2>Custom Push</h2>
+    <div class="panel">
+      <div class="row">
+        <label>type
+          <select id="push-type">
+            <option value="info">info</option>
+            <option value="success">success</option>
+            <option value="warning">warning</option>
+            <option value="error">error</option>
+          </select>
+        </label>
+        <label>text
+          <input type="text" id="push-text" value="Notification message" style="width:200px">
+        </label>
+      </div>
+      <div class="row">
+        <label>icon
+          <input type="text" id="push-icon" placeholder="glyph or 'none'" style="width:90px">
+        </label>
+        <label>timeoutMs
+          <input type="number" id="push-timeout" placeholder="none" style="width:80px">
+        </label>
+        <label>dismissible
+          <select id="push-dismissible">
+            <option value="">true (default)</option>
+            <option value="false">false</option>
+          </select>
+        </label>
+        <label>id
+          <input type="text" id="push-id" placeholder="auto" style="width:100px">
+        </label>
+      </div>
+      <div class="row">
+        <button id="push-btn">Push</button>
+        <button id="clear-btn" class="danger">Clear All</button>
+      </div>
+    </div>
+
+    <h2>Event Log</h2>
+    <div class="log" id="log">Events will appear here...</div>
+
+    <script>
+      const nc  = document.getElementById("nc");
+      const log = document.getElementById("log");
+
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.unshift(msg);
+        if (logLines.length > 50) logLines.pop();
+        log.textContent = logLines.join("\n");
+      }
+
+      nc.addEventListener("x-notification-center-push", e => {
+        const { id, count } = e.detail;
+        addLog(`[push]    id=${id}  count=${count}`);
+      });
+
+      nc.addEventListener("x-notification-center-dismiss", e => {
+        const { id, type, reason, text, count } = e.detail;
+        addLog(`[dismiss] id=${id}  type=${type}  reason=${reason}  text="${text}"  count=${count}`);
+      });
+
+      nc.addEventListener("x-notification-center-empty", () => {
+        addLog(`[empty]   All notifications dismissed`);
+      });
+
+      // Quick push buttons
+      document.getElementById("q-info").addEventListener("click", () => {
+        nc.push({ type: "info", text: "Here is some information for you." });
+      });
+      document.getElementById("q-success").addEventListener("click", () => {
+        nc.push({ type: "success", text: "Operation completed successfully." });
+      });
+      document.getElementById("q-warning").addEventListener("click", () => {
+        nc.push({ type: "warning", text: "Low disk space — please free up some room." });
+      });
+      document.getElementById("q-error").addEventListener("click", () => {
+        nc.push({ type: "error", text: "Connection failed. Please check your network." });
+      });
+
+      // Apply settings
+      document.getElementById("apply-settings-btn").addEventListener("click", () => {
+        const pos = document.getElementById("ctrl-position").value;
+        const max = parseInt(document.getElementById("ctrl-max").value, 10);
+        nc.position = pos;
+        if (max > 0) nc.max = max;
+        addLog(`[config]  position=${pos}  max=${nc.max}`);
+      });
+
+      // Custom push
+      document.getElementById("push-btn").addEventListener("click", () => {
+        const opts = {};
+        const type = document.getElementById("push-type").value;
+        const text = document.getElementById("push-text").value.trim();
+        const icon = document.getElementById("push-icon").value.trim();
+        const timeout = document.getElementById("push-timeout").value.trim();
+        const dis = document.getElementById("push-dismissible").value;
+        const id = document.getElementById("push-id").value.trim();
+
+        if (type)    opts.type = type;
+        if (text)    opts.text = text;
+        if (icon)    opts.icon = icon;
+        if (timeout) opts.timeoutMs = parseInt(timeout, 10);
+        if (dis === "false") opts.dismissible = false;
+        if (id)      opts.id = id;
+
+        nc.push(opts);
+      });
+
+      // Clear all
+      document.getElementById("clear-btn").addEventListener("click", () => {
+        nc.clear();
+        addLog(`[clear]   All notifications removed`);
+      });
+    </script>
+  </body>
+</html>

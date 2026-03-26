@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-cancel-dialogue demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-cancel-dialogue demo</h1>
+
+    <h2>Basic confirmation</h2>
+    <div class="row">
+      <x-cancel-dialogue
+        id="dlg-basic"
+        headline="Discard changes?"
+        message="Your unsaved changes will be lost. This action cannot be undone."
+      ></x-cancel-dialogue>
+      <x-button id="open-basic" variant="default">Open dialog</x-button>
+    </div>
+
+    <h2>Danger variant</h2>
+    <div class="row">
+      <x-cancel-dialogue
+        id="dlg-danger"
+        headline="Delete item?"
+        message="This action cannot be undone."
+        confirm-text="Delete"
+        cancel-text="Keep"
+        danger
+      ></x-cancel-dialogue>
+      <x-button id="open-danger" variant="danger">Delete item</x-button>
+    </div>
+
+    <h2>No message</h2>
+    <div class="row">
+      <x-cancel-dialogue
+        id="dlg-short"
+        headline="Are you sure?"
+        confirm-text="Yes, proceed"
+        cancel-text="No, go back"
+      ></x-cancel-dialogue>
+      <x-button id="open-short" variant="default">Open (no message)</x-button>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>headline
+        <input type="text" id="ctrl-headline" value="Discard changes?" style="width:180px">
+      </label>
+      <label>message
+        <input type="text" id="ctrl-message" value="Your changes will be lost." style="width:200px">
+      </label>
+      <label>confirm-text
+        <input type="text" id="ctrl-confirm" value="Discard" style="width:90px">
+      </label>
+      <label>cancel-text
+        <input type="text" id="ctrl-cancel" value="Keep editing" style="width:90px">
+      </label>
+      <label>danger <input type="checkbox" id="ctrl-danger"></label>
+    </div>
+    <div class="row">
+      <x-cancel-dialogue id="dlg-live"></x-cancel-dialogue>
+      <x-button id="open-live" variant="primary">Open live dialog</x-button>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      function wire(id) {
+        const dlg = document.getElementById(id);
+        ["x-cancel-dialogue-cancel-request",
+         "x-cancel-dialogue-cancel",
+         "x-cancel-dialogue-confirm-request",
+         "x-cancel-dialogue-confirm"].forEach(evt => {
+          dlg.addEventListener(evt, e => {
+            logEvent(evt, e.detail);
+            if (evt === "x-cancel-dialogue-cancel" || evt === "x-cancel-dialogue-confirm") {
+              dlg.removeAttribute("open");
+            }
+          });
+        });
+      }
+
+      ["dlg-basic", "dlg-danger", "dlg-short", "dlg-live"].forEach(wire);
+
+      document.getElementById("open-basic").addEventListener("click", () =>
+        document.getElementById("dlg-basic").setAttribute("open", ""));
+      document.getElementById("open-danger").addEventListener("click", () =>
+        document.getElementById("dlg-danger").setAttribute("open", ""));
+      document.getElementById("open-short").addEventListener("click", () =>
+        document.getElementById("dlg-short").setAttribute("open", ""));
+
+      const liveDlg = document.getElementById("dlg-live");
+      function updateLive() {
+        liveDlg.setAttribute("headline",     document.getElementById("ctrl-headline").value);
+        liveDlg.setAttribute("message",      document.getElementById("ctrl-message").value);
+        liveDlg.setAttribute("confirm-text", document.getElementById("ctrl-confirm").value);
+        liveDlg.setAttribute("cancel-text",  document.getElementById("ctrl-cancel").value);
+        if (document.getElementById("ctrl-danger").checked)
+          liveDlg.setAttribute("danger", "");
+        else
+          liveDlg.removeAttribute("danger");
+      }
+      document.querySelectorAll(".controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+      updateLive();
+
+      document.getElementById("open-live").addEventListener("click", () =>
+        liveDlg.setAttribute("open", ""));
+    </script>
+  </body>
+</html>

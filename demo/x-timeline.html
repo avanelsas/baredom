@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-timeline Demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f9fafb;
+      color: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #f9fafb; }
+    }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    h2 { font-size: 1.125rem; margin: 2rem 0 0.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #374151; }
+    }
+    p { margin: 0 0 1.5rem; color: #6b7280; font-size: 0.875rem; }
+    @media (prefers-color-scheme: dark) { p { color: #9ca3af; } }
+
+    .demo-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      .demo-section { background: #1f2937; border-color: #374151; }
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .controls { background: #1f2937; border-color: #374151; }
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+    label { font-weight: 500; }
+    select, input[type=text] {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #111827;
+      font-size: 0.875rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      select, input[type=text] { background: #374151; border-color: #4b5563; color: #f9fafb; }
+    }
+    .toggle-btn {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #111827;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .toggle-btn.active {
+      background: #1d4ed8;
+      border-color: transparent;
+      color: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      .toggle-btn { background: #374151; border-color: #4b5563; color: #f9fafb; }
+      .toggle-btn.active { background: #3b82f6; }
+    }
+
+    .event-log {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.8125rem;
+      min-height: 3rem;
+      max-height: 10rem;
+      overflow-y: auto;
+    }
+    @media (prefers-color-scheme: dark) {
+      .event-log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+    }
+    .event-log-entry { margin: 0; padding: 0.125rem 0; }
+    .event-log-label { color: #6b7280; }
+    .event-log-empty { color: #9ca3af; font-style: italic; }
+
+    x-timeline { max-width: 480px; }
+  </style>
+</head>
+<body>
+
+<h1>x-timeline</h1>
+<p>A coordinator component for <code>x-timeline-item</code> children.</p>
+
+<!-- ── Live control panel ──────────────────────────────────────────────── -->
+<div class="controls">
+  <div class="control-group">
+    <label for="ctrl-position">position</label>
+    <select id="ctrl-position">
+      <option value="start" selected>start</option>
+      <option value="end">end</option>
+      <option value="alternating">alternating</option>
+    </select>
+  </div>
+
+  <div class="control-group">
+    <label for="ctrl-label">label</label>
+    <input id="ctrl-label" type="text" value="" placeholder="(empty)" style="width:14rem" />
+  </div>
+
+  <div class="control-group">
+    <button id="ctrl-striped" class="toggle-btn">striped: off</button>
+  </div>
+</div>
+
+<!-- ── Live demo timeline ─────────────────────────────────────────────── -->
+<div class="demo-section">
+  <h2>Live timeline</h2>
+  <x-timeline id="live-timeline">
+    <x-timeline-item status="complete" label="Jan 1"  title="Project kick-off">
+      <span>Stakeholder alignment and goal-setting.</span>
+    </x-timeline-item>
+    <x-timeline-item status="complete" label="Feb 3"  title="Design review">
+      <span>Wireframes and component architecture approved.</span>
+    </x-timeline-item>
+    <x-timeline-item status="active"   label="Mar 15" title="Development">
+      <span>Building out the core features.</span>
+    </x-timeline-item>
+    <x-timeline-item status="pending"  label="Apr 30" title="Launch">
+      <span>Production deployment and monitoring.</span>
+    </x-timeline-item>
+  </x-timeline>
+
+  <div class="event-log" id="event-log">
+    <p class="event-log-empty">Click an item to see x-timeline-select events here.</p>
+  </div>
+</div>
+
+<!-- ── Alternating (static) ───────────────────────────────────────────── -->
+<div class="demo-section">
+  <h2>Alternating layout</h2>
+  <x-timeline position="alternating" label="Project milestones">
+    <x-timeline-item status="complete" label="Q1" title="Planning phase">
+      <span>Requirements gathering and design.</span>
+    </x-timeline-item>
+    <x-timeline-item status="complete" label="Q2" title="Build phase">
+      <span>Implementation of core modules.</span>
+    </x-timeline-item>
+    <x-timeline-item status="active"   label="Q3" title="Testing phase">
+      <span>Integration tests and performance profiling.</span>
+    </x-timeline-item>
+    <x-timeline-item status="pending"  label="Q4" title="Launch phase">
+      <span>Staged rollout and monitoring.</span>
+    </x-timeline-item>
+  </x-timeline>
+</div>
+
+<!-- ── Striped (static) ───────────────────────────────────────────────── -->
+<div class="demo-section">
+  <h2>Striped</h2>
+  <x-timeline striped>
+    <x-timeline-item status="complete" label="Step 1" title="Environment setup">
+    </x-timeline-item>
+    <x-timeline-item status="complete" label="Step 2" title="Install dependencies">
+    </x-timeline-item>
+    <x-timeline-item status="error"    label="Step 3" title="Run migrations" connector="dashed">
+      <span>Migration failed on table <code>users</code>.</span>
+    </x-timeline-item>
+    <x-timeline-item status="pending"  label="Step 4" title="Deploy">
+    </x-timeline-item>
+  </x-timeline>
+</div>
+
+<!-- ── All statuses ───────────────────────────────────────────────────── -->
+<div class="demo-section">
+  <h2>All statuses</h2>
+  <x-timeline>
+    <x-timeline-item status="pending"  title="Pending"  label="1"></x-timeline-item>
+    <x-timeline-item status="active"   title="Active"   label="2"></x-timeline-item>
+    <x-timeline-item status="complete" title="Complete" label="3"></x-timeline-item>
+    <x-timeline-item status="warning"  title="Warning"  label="4"></x-timeline-item>
+    <x-timeline-item status="error"    title="Error"    label="5"></x-timeline-item>
+  </x-timeline>
+</div>
+
+<script>
+  const tl = document.getElementById('live-timeline');
+  const log = document.getElementById('event-log');
+  const posCtrl = document.getElementById('ctrl-position');
+  const labelCtrl = document.getElementById('ctrl-label');
+  const stripedBtn = document.getElementById('ctrl-striped');
+
+  // Event log
+  tl.addEventListener('x-timeline-select', (e) => {
+    const { index, status, label } = e.detail;
+    const p = document.createElement('p');
+    p.className = 'event-log-entry';
+    p.innerHTML =
+      `<span class="event-log-label">x-timeline-select</span>` +
+      ` index=${index} status="${status}" label="${label}"`;
+    log.querySelector('.event-log-empty')?.remove();
+    log.appendChild(p);
+    log.scrollTop = log.scrollHeight;
+  });
+
+  // Controls
+  posCtrl.addEventListener('change', () => {
+    tl.setAttribute('position', posCtrl.value);
+  });
+
+  labelCtrl.addEventListener('input', () => {
+    const v = labelCtrl.value.trim();
+    if (v) tl.setAttribute('label', v);
+    else tl.removeAttribute('label');
+  });
+
+  let striped = false;
+  stripedBtn.addEventListener('click', () => {
+    striped = !striped;
+    if (striped) {
+      tl.setAttribute('striped', '');
+      stripedBtn.textContent = 'striped: on';
+      stripedBtn.classList.add('active');
+    } else {
+      tl.removeAttribute('striped');
+      stripedBtn.textContent = 'striped: off';
+      stripedBtn.classList.remove('active');
+    }
+  });
+</script>
+</body>
+</html>

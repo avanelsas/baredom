@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-drawer demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-bg: #2563eb;
+        --btn-fg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --btn-bg: #3b82f6;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      p.desc { color: var(--muted); margin: 0 0 32px; font-size: 0.9rem; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      button {
+        font-size: 13px; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+        background: var(--btn-bg); color: var(--btn-fg); font-weight: 500;
+      }
+      button.secondary {
+        background: var(--surface-bg); color: var(--page-fg);
+        border: 1px solid var(--surface-border);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      /* Drawer content styling */
+      .drawer-header {
+        display: flex; align-items: center; justify-content: space-between;
+        font-weight: 600; font-size: 1rem;
+      }
+      .drawer-close {
+        background: none; border: none; cursor: pointer;
+        color: inherit; padding: 4px; border-radius: 4px;
+        font-size: 1.25rem; line-height: 1; display: flex;
+      }
+      .drawer-body-content { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+      .drawer-footer { display: flex; gap: 8px; justify-content: flex-end; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-drawer</h1>
+    <p class="desc">Modal overlay panel that slides in from any edge. Always shows backdrop, traps focus, dismisses on Escape or backdrop click.</p>
+
+    <h2>Placement</h2>
+    <div class="row">
+      <button onclick="openDrawer('right')">Right (default)</button>
+      <button onclick="openDrawer('left')">Left</button>
+      <button onclick="openDrawer('top')">Top</button>
+      <button onclick="openDrawer('bottom')">Bottom</button>
+    </div>
+
+    <h2>Live Controls</h2>
+    <div class="controls">
+      <label>Placement:
+        <select id="ctrl-placement">
+          <option value="right" selected>right</option>
+          <option value="left">left</option>
+          <option value="top">top</option>
+          <option value="bottom">bottom</option>
+        </select>
+      </label>
+      <label>Label:
+        <input type="text" id="ctrl-label" value="Drawer" style="width:140px" />
+      </label>
+      <label>Size (CSS):
+        <input type="text" id="ctrl-size" value="20rem" style="width:100px" />
+      </label>
+      <button onclick="applyControls()">Apply &amp; Open</button>
+    </div>
+
+    <h2>API</h2>
+    <div class="row">
+      <button onclick="document.getElementById('demo-drawer').show()">show()</button>
+      <button onclick="document.getElementById('demo-drawer').hide()">hide()</button>
+      <button onclick="document.getElementById('demo-drawer').toggle()">toggle()</button>
+      <button class="secondary" onclick="clearLog()">Clear log</button>
+    </div>
+
+    <div class="log" id="event-log">Events will appear here…</div>
+
+    <!-- The drawer component -->
+    <x-drawer id="demo-drawer" placement="right" label="Drawer">
+      <div slot="header" class="drawer-header">
+        <span id="drawer-title">Drawer</span>
+        <button class="drawer-close" onclick="document.getElementById('demo-drawer').hide()" aria-label="Close">&#x2715;</button>
+      </div>
+
+      <div class="drawer-body-content">
+        <p>This is the drawer body. You can place any content here.</p>
+        <p>Try pressing <kbd>Tab</kbd> to cycle focus within the drawer, or <kbd>Escape</kbd> to close it. Clicking the backdrop also closes the drawer.</p>
+        <p>The <code>--x-drawer-size</code> CSS custom property controls the width (for left/right) or height (for top/bottom).</p>
+        <input type="text" placeholder="Focusable input" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);font-size:13px;" />
+      </div>
+
+      <div slot="footer" class="drawer-footer">
+        <button class="secondary" onclick="document.getElementById('demo-drawer').hide()">Cancel</button>
+        <button onclick="handleSave()">Save changes</button>
+      </div>
+    </x-drawer>
+
+    <script>
+      const drawer = document.getElementById('demo-drawer');
+      const log = document.getElementById('event-log');
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.push(new Date().toLocaleTimeString() + '  ' + msg);
+        if (logLines.length > 20) logLines = logLines.slice(-20);
+        log.textContent = logLines.join('\n');
+      }
+
+      function clearLog() {
+        logLines = [];
+        log.textContent = 'Events will appear here…';
+      }
+
+      drawer.addEventListener('x-drawer-toggle', (e) => {
+        addLog('x-drawer-toggle  { open: ' + e.detail.open + ' }');
+      });
+
+      drawer.addEventListener('x-drawer-dismiss', (e) => {
+        addLog('x-drawer-dismiss { reason: "' + e.detail.reason + '" }');
+      });
+
+      function openDrawer(placement) {
+        drawer.setAttribute('placement', placement);
+        document.getElementById('ctrl-placement').value = placement;
+        document.getElementById('drawer-title').textContent =
+          placement.charAt(0).toUpperCase() + placement.slice(1) + ' Drawer';
+        drawer.show();
+      }
+
+      function applyControls() {
+        const placement = document.getElementById('ctrl-placement').value;
+        const label = document.getElementById('ctrl-label').value || 'Drawer';
+        const size = document.getElementById('ctrl-size').value || '20rem';
+        drawer.setAttribute('placement', placement);
+        drawer.setAttribute('label', label);
+        drawer.style.setProperty('--x-drawer-size', size);
+        document.getElementById('drawer-title').textContent = label;
+        drawer.show();
+      }
+
+      function handleSave() {
+        addLog('Save button clicked');
+        drawer.hide();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>x-table demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
+
+    .section {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin: 0 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Badge helpers */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-yellow { background: #fef9c3; color: #713f12; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+
+    /* Control panel */
+    .panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--page-bg);
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+
+    .checkbox-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+
+    select, input[type=text] {
+      padding: 6px 8px;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--surface-border);
+      background: var(--input-bg);
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--input-fg);
+    }
+
+    button:hover { background: var(--border); }
+
+    /* Event log */
+    .log {
+      height: 180px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .log-entry { margin: 2px 0; color: #94a3b8; }
+    .log-sort       { color: #a78bfa; }
+    .log-select     { color: #60a5fa; }
+    .log-connected  { color: #34d399; }
+
+    .log-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>x-table</h1>
+
+  <!-- ── Basic bordered table ── -->
+  <div class="section">
+    <h2>Basic table — bordered + caption</h2>
+
+    <x-table columns="2fr 1fr 1fr 120px" bordered caption="Team Members" id="basic-table">
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Name</x-table-cell>
+        <x-table-cell type="header" scope="col">Status</x-table-cell>
+        <x-table-cell type="header" scope="col">Role</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Joined</x-table-cell>
+      </x-table-row>
+
+      <x-table-row>
+        <x-table-cell truncate>Alice Wonderland</x-table-cell>
+        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell>Admin</x-table-cell>
+        <x-table-cell align="end">2024-01-15</x-table-cell>
+      </x-table-row>
+
+      <x-table-row>
+        <x-table-cell truncate>Bob Builder</x-table-cell>
+        <x-table-cell><span class="badge badge-yellow">Pending</span></x-table-cell>
+        <x-table-cell>Member</x-table-cell>
+        <x-table-cell align="end">2024-03-02</x-table-cell>
+      </x-table-row>
+
+      <x-table-row>
+        <x-table-cell truncate>Carol Danvers</x-table-cell>
+        <x-table-cell><span class="badge badge-red">Suspended</span></x-table-cell>
+        <x-table-cell>Viewer</x-table-cell>
+        <x-table-cell align="end">2022-06-19</x-table-cell>
+      </x-table-row>
+    </x-table>
+  </div>
+
+  <!-- ── Striped + compact ── -->
+  <div class="section">
+    <h2>Striped + compact</h2>
+
+    <x-table columns="2fr 1fr 1fr" bordered striped compact>
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Product</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Price</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Stock</x-table-cell>
+      </x-table-row>
+      <x-table-row>
+        <x-table-cell>Widget Alpha</x-table-cell>
+        <x-table-cell align="end">$12.99</x-table-cell>
+        <x-table-cell align="end">240</x-table-cell>
+      </x-table-row>
+      <x-table-row>
+        <x-table-cell>Widget Beta</x-table-cell>
+        <x-table-cell align="end">$8.49</x-table-cell>
+        <x-table-cell align="end">0</x-table-cell>
+      </x-table-row>
+      <x-table-row>
+        <x-table-cell>Widget Gamma</x-table-cell>
+        <x-table-cell align="end">$24.00</x-table-cell>
+        <x-table-cell align="end">17</x-table-cell>
+      </x-table-row>
+      <x-table-row>
+        <x-table-cell>Widget Delta</x-table-cell>
+        <x-table-cell align="end">$5.00</x-table-cell>
+        <x-table-cell align="end">832</x-table-cell>
+      </x-table-row>
+      <x-table-row>
+        <x-table-cell>Widget Epsilon</x-table-cell>
+        <x-table-cell align="end">$99.99</x-table-cell>
+        <x-table-cell align="end">3</x-table-cell>
+      </x-table-row>
+    </x-table>
+  </div>
+
+  <!-- ── Single selection + sort ── -->
+  <div class="section">
+    <h2>Single selection + sortable columns</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">
+      Click a row to select it (only one at a time). Click column headers to sort.
+      <code>x-table-sort</code> and <code>x-table-row-select</code> appear in the event log.
+    </p>
+
+    <x-table id="selectable-table" columns="2fr 1fr 1fr 100px"
+             selectable="single" bordered full-width>
+      <x-table-row id="sel-header-row">
+        <x-table-cell type="header" scope="col" sortable sort-direction="asc">Name</x-table-cell>
+        <x-table-cell type="header" scope="col" sortable>Status</x-table-cell>
+        <x-table-cell type="header" scope="col" sortable>Role</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Joined</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive row-index="1" id="sel-row-1">
+        <x-table-cell truncate>Alice Wonderland</x-table-cell>
+        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell>Admin</x-table-cell>
+        <x-table-cell align="end">2024-01-15</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive row-index="2" id="sel-row-2">
+        <x-table-cell truncate>Bob Builder</x-table-cell>
+        <x-table-cell><span class="badge badge-yellow">Pending</span></x-table-cell>
+        <x-table-cell>Member</x-table-cell>
+        <x-table-cell align="end">2024-03-02</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive row-index="3" id="sel-row-3">
+        <x-table-cell truncate>Carol Danvers</x-table-cell>
+        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell>Editor</x-table-cell>
+        <x-table-cell align="end">2023-11-07</x-table-cell>
+      </x-table-row>
+
+      <x-table-row interactive disabled row-index="4">
+        <x-table-cell truncate>Dave Grohl (disabled)</x-table-cell>
+        <x-table-cell><span class="badge badge-red">Suspended</span></x-table-cell>
+        <x-table-cell>Viewer</x-table-cell>
+        <x-table-cell align="end">2022-06-19</x-table-cell>
+      </x-table-row>
+    </x-table>
+  </div>
+
+  <!-- ── Multi selection ── -->
+  <div class="section">
+    <h2>Multi selection (selectable="multi")</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 12px">
+      Click any row to toggle its selection. Multiple rows can be selected simultaneously.
+    </p>
+
+    <x-table columns="2fr 1fr 1fr" selectable="multi" bordered striped>
+      <x-table-row>
+        <x-table-cell type="header" scope="col">Name</x-table-cell>
+        <x-table-cell type="header" scope="col">Department</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Score</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="1">
+        <x-table-cell>Alice</x-table-cell>
+        <x-table-cell>Engineering</x-table-cell>
+        <x-table-cell align="end">98</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="2">
+        <x-table-cell>Bob</x-table-cell>
+        <x-table-cell>Design</x-table-cell>
+        <x-table-cell align="end">87</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="3">
+        <x-table-cell>Carol</x-table-cell>
+        <x-table-cell>Product</x-table-cell>
+        <x-table-cell align="end">91</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="4">
+        <x-table-cell>Dave</x-table-cell>
+        <x-table-cell>Marketing</x-table-cell>
+        <x-table-cell align="end">74</x-table-cell>
+      </x-table-row>
+    </x-table>
+  </div>
+
+  <!-- ── Live control panel ── -->
+  <div class="section">
+    <h2>Live control panel</h2>
+
+    <div class="panel">
+      <div class="field">
+        <label>columns</label>
+        <input type="text" id="ctrl-columns" value="2fr 1fr 1fr" style="width:160px">
+      </div>
+      <div class="field">
+        <label>caption</label>
+        <input type="text" id="ctrl-caption" value="" placeholder="(none)" style="width:140px">
+      </div>
+      <div class="field">
+        <label>selectable</label>
+        <select id="ctrl-selectable">
+          <option value="none" selected>none</option>
+          <option value="single">single</option>
+          <option value="multi">multi</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Flags</label>
+        <div class="checkbox-row">
+          <label class="checkbox-label"><input type="checkbox" id="ctrl-striped"> striped</label>
+          <label class="checkbox-label"><input type="checkbox" id="ctrl-bordered" checked> bordered</label>
+          <label class="checkbox-label"><input type="checkbox" id="ctrl-full-width"> full-width</label>
+          <label class="checkbox-label"><input type="checkbox" id="ctrl-compact"> compact</label>
+        </div>
+      </div>
+    </div>
+
+    <x-table id="preview-table" columns="2fr 1fr 1fr" bordered>
+      <x-table-row>
+        <x-table-cell type="header" scope="col" sortable sort-direction="none">Name</x-table-cell>
+        <x-table-cell type="header" scope="col">Role</x-table-cell>
+        <x-table-cell type="header" scope="col" align="end">Score</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="1">
+        <x-table-cell truncate>Alice Wonderland</x-table-cell>
+        <x-table-cell>Admin</x-table-cell>
+        <x-table-cell align="end">98</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="2">
+        <x-table-cell truncate>Bob Builder</x-table-cell>
+        <x-table-cell>Member</x-table-cell>
+        <x-table-cell align="end">87</x-table-cell>
+      </x-table-row>
+      <x-table-row interactive row-index="3">
+        <x-table-cell truncate>Carol Danvers</x-table-cell>
+        <x-table-cell>Editor</x-table-cell>
+        <x-table-cell align="end">91</x-table-cell>
+      </x-table-row>
+    </x-table>
+  </div>
+
+  <!-- ── Event log ── -->
+  <div class="section">
+    <h2>Event log</h2>
+
+    <div class="log-actions">
+      <button id="btn-clear">Clear log</button>
+      <button id="btn-cancel-sort">Cancel next sort</button>
+      <button id="btn-cancel-select">Cancel next selection</button>
+    </div>
+
+    <div class="log" id="event-log">
+      <div class="log-entry" style="color:#475569">// Events appear here…</div>
+    </div>
+  </div>
+
+  <script src="/js/main.js" defer></script>
+  <script defer>
+    const log = document.getElementById('event-log');
+
+    function addLog(text, kind) {
+      const div = document.createElement('div');
+      div.className = 'log-entry ' + (kind || '');
+      div.textContent = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+      // Trim to 80 entries
+      while (log.children.length > 80) log.removeChild(log.firstChild);
+    }
+
+    // ── Sort cycling for the selectable-table ─────────────────────────────────
+    const selectableTable = document.getElementById('selectable-table');
+    const headerRow = document.getElementById('sel-header-row');
+
+    selectableTable.addEventListener('x-table-sort', e => {
+      const { colIndex, direction } = e.detail;
+      addLog(
+        `[x-table-sort] colIndex=${colIndex} direction=${direction} prev=${e.detail.previousDirection}`,
+        'log-sort'
+      );
+      // Update sort-direction on header cells
+      const headerCells = headerRow.querySelectorAll('x-table-cell');
+      headerCells.forEach((cell, i) => {
+        cell.setAttribute('sort-direction', i === colIndex ? direction : 'none');
+      });
+    });
+
+    // ── Row selection for the selectable-table ────────────────────────────────
+    selectableTable.addEventListener('x-table-row-select', e => {
+      addLog(
+        `[x-table-row-select] rowIndex=${e.detail.rowIndex} selected=${e.detail.selected} mode=${e.detail.selectionMode}`,
+        'log-select'
+      );
+    });
+
+    // ── Sort for preview-table (live panel) ───────────────────────────────────
+    const previewTable = document.getElementById('preview-table');
+    previewTable.addEventListener('x-table-sort', e => {
+      addLog(
+        `[preview x-table-sort] colIndex=${e.detail.colIndex} direction=${e.detail.direction}`,
+        'log-sort'
+      );
+    });
+
+    previewTable.addEventListener('x-table-row-select', e => {
+      addLog(
+        `[preview x-table-row-select] rowIndex=${e.detail.rowIndex} selected=${e.detail.selected}`,
+        'log-select'
+      );
+    });
+
+    // ── Connected events (global) ─────────────────────────────────────────────
+    document.addEventListener('x-table-row-connected', e => {
+      addLog(`[x-table-row-connected] rowIndex=${e.detail.rowIndex}`, 'log-connected');
+    });
+
+    // ── Cancel controls ───────────────────────────────────────────────────────
+    let cancelSort = false;
+    document.getElementById('btn-cancel-sort').addEventListener('click', () => {
+      cancelSort = true;
+      addLog('// Next x-table-sort will be cancelled', 'log-sort');
+    });
+
+    let cancelSelect = false;
+    document.getElementById('btn-cancel-select').addEventListener('click', () => {
+      cancelSelect = true;
+      addLog('// Next x-table-row-select will be cancelled', 'log-select');
+    });
+
+    document.addEventListener('x-table-sort', e => {
+      if (cancelSort) {
+        e.preventDefault();
+        cancelSort = false;
+        addLog('// x-table-sort CANCELLED (preventDefault)', 'log-sort');
+      }
+    }, { capture: true });
+
+    document.addEventListener('x-table-row-select', e => {
+      if (cancelSelect) {
+        e.preventDefault();
+        cancelSelect = false;
+        addLog('// x-table-row-select CANCELLED (no DOM change)', 'log-select');
+      }
+    }, { capture: true });
+
+    // ── Clear log ─────────────────────────────────────────────────────────────
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      log.innerHTML = '';
+    });
+
+    // ── Live control panel ────────────────────────────────────────────────────
+    const preview = document.getElementById('preview-table');
+
+    function syncPreview() {
+      const columns    = document.getElementById('ctrl-columns').value.trim();
+      const caption    = document.getElementById('ctrl-caption').value.trim();
+      const selectable = document.getElementById('ctrl-selectable').value;
+      const striped    = document.getElementById('ctrl-striped').checked;
+      const bordered   = document.getElementById('ctrl-bordered').checked;
+      const fullWidth  = document.getElementById('ctrl-full-width').checked;
+      const compact    = document.getElementById('ctrl-compact').checked;
+
+      if (columns)       preview.setAttribute('columns', columns);
+      else               preview.removeAttribute('columns');
+
+      if (caption)       preview.setAttribute('caption', caption);
+      else               preview.removeAttribute('caption');
+
+      preview.setAttribute('selectable', selectable);
+
+      striped   ? preview.setAttribute('striped', '')     : preview.removeAttribute('striped');
+      bordered  ? preview.setAttribute('bordered', '')    : preview.removeAttribute('bordered');
+      fullWidth ? preview.setAttribute('full-width', '')  : preview.removeAttribute('full-width');
+      compact   ? preview.setAttribute('compact', '')     : preview.removeAttribute('compact');
+
+      // Update interactive attribute on data rows when selectable changes
+      const dataRows = Array.from(preview.querySelectorAll('x-table-row')).slice(1);
+      dataRows.forEach(row => {
+        if (selectable !== 'none') row.setAttribute('interactive', '');
+        else row.removeAttribute('interactive');
+      });
+    }
+
+    ['ctrl-columns', 'ctrl-caption'].forEach(id => {
+      document.getElementById(id).addEventListener('input', syncPreview);
+    });
+    ['ctrl-selectable', 'ctrl-striped', 'ctrl-bordered', 'ctrl-full-width', 'ctrl-compact'].forEach(id => {
+      document.getElementById(id).addEventListener('change', syncPreview);
+    });
+  </script>
+</body>
+</html>

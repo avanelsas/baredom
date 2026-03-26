@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x-radio demo</title>
+  <meta name="color-scheme" content="light dark" />
+  <script src="/js/main.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 24px;
+      line-height: 1.4;
+    }
+
+    h1  { font-size: 1.6rem; margin-bottom: 0.25rem; }
+
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 32px 0 10px;
+    }
+
+    pre {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+
+    label { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-right: 1rem; user-select: none; }
+    label.disabled { opacity: 0.6; cursor: default; }
+
+    fieldset {
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: var(--surface-bg);
+    }
+
+    legend { font-weight: 600; padding: 0 0.25rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 0.5rem 0; }
+
+    .row label { font-size: 13px; }
+
+    .row select,
+    .row input {
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--surface-border);
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    #event-log {
+      height: 180px;
+      overflow-y: auto;
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    #event-log p { margin: 0.15rem 0; }
+    .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    .controls label { font-size: 0.85rem; }
+
+    .tag { display: inline-block; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; }
+    .tag-request { background: #dbeafe; color: #1e40af; }
+    .tag-change  { background: #d1fae5; color: #065f46; }
+    .tag-cancel  { background: #fee2e2; color: #991b1b; }
+
+    button.action {
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: none;
+      background: #1d4ed8;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    button.action:hover { background: #1e40af; }
+  </style>
+</head>
+<body>
+
+<h1>x-radio</h1>
+<p>Native Web Component — mutually exclusive radio group with roving tabindex and form association.</p>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Basic group (one pre-selected)</h2>
+<fieldset>
+  <legend>Favourite fruit</legend>
+  <div class="row">
+    <label>
+      <x-radio name="fruit" value="apple" aria-label="Apple"></x-radio>
+      Apple
+    </label>
+    <label>
+      <x-radio name="fruit" value="banana" checked aria-label="Banana"></x-radio>
+      Banana
+    </label>
+    <label>
+      <x-radio name="fruit" value="cherry" aria-label="Cherry"></x-radio>
+      Cherry
+    </label>
+  </div>
+</fieldset>
+<pre>&lt;x-radio name="fruit" value="apple" aria-label="Apple"&gt;&lt;/x-radio&gt;
+&lt;x-radio name="fruit" value="banana" checked aria-label="Banana"&gt;&lt;/x-radio&gt;
+&lt;x-radio name="fruit" value="cherry" aria-label="Cherry"&gt;&lt;/x-radio&gt;</pre>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Disabled (whole group + individual)</h2>
+<fieldset>
+  <legend>Plan</legend>
+  <div class="row">
+    <label class="disabled">
+      <x-radio name="plan-demo" value="free" disabled aria-label="Free"></x-radio>
+      Free (disabled)
+    </label>
+    <label>
+      <x-radio name="plan-demo" value="pro" checked aria-label="Pro"></x-radio>
+      Pro
+    </label>
+    <label class="disabled">
+      <x-radio name="plan-demo" value="enterprise" disabled aria-label="Enterprise"></x-radio>
+      Enterprise (disabled)
+    </label>
+  </div>
+</fieldset>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Readonly</h2>
+<fieldset>
+  <legend>Status (readonly)</legend>
+  <div class="row">
+    <label>
+      <x-radio name="status-demo" value="active" readonly checked aria-label="Active"></x-radio>
+      Active
+    </label>
+    <label>
+      <x-radio name="status-demo" value="inactive" readonly aria-label="Inactive"></x-radio>
+      Inactive
+    </label>
+  </div>
+</fieldset>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Required</h2>
+<form id="required-form" style="display:flex;flex-direction:column;gap:0.75rem;">
+  <fieldset>
+    <legend>Agree to terms (required)</legend>
+    <div class="row">
+      <label>
+        <x-radio name="terms" value="yes" required aria-label="Yes I agree"></x-radio>
+        Yes, I agree
+      </label>
+      <label>
+        <x-radio name="terms" value="no" required aria-label="No"></x-radio>
+        No
+      </label>
+    </div>
+  </fieldset>
+  <button type="submit" class="action" style="align-self:flex-start">Submit</button>
+  <p id="required-result" style="font-size:0.85rem;margin:0;"></p>
+</form>
+<script>
+  document.getElementById('required-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    document.getElementById('required-result').textContent =
+      'Submitted: terms=' + (data.get('terms') ?? '(none)');
+  });
+</script>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Custom CSS variables (colored dot)</h2>
+<fieldset>
+  <legend>Pick a colour</legend>
+  <div class="row">
+    <label style="--x-radio-checked-color:#7c3aed;">
+      <x-radio id="r-purple" name="colour" value="purple" style="--x-radio-checked-color:#7c3aed;" aria-label="Purple" checked></x-radio>
+      Purple
+    </label>
+    <label style="--x-radio-checked-color:#dc2626;">
+      <x-radio id="r-red" name="colour" value="red" style="--x-radio-checked-color:#dc2626;" aria-label="Red"></x-radio>
+      Red
+    </label>
+    <label style="--x-radio-checked-color:#16a34a;">
+      <x-radio id="r-green" name="colour" value="green" style="--x-radio-checked-color:#16a34a;" aria-label="Green"></x-radio>
+      Green
+    </label>
+  </div>
+</fieldset>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Event log</h2>
+<p style="font-size:0.85rem;margin-bottom:0.5rem;">
+  The radios below log all events. The first option has a preventDefault demo toggle.
+</p>
+<fieldset>
+  <legend>Size</legend>
+  <div class="row">
+    <label>
+      <x-radio id="r-small" name="size-log" value="small" aria-label="Small"></x-radio>
+      Small
+    </label>
+    <label>
+      <x-radio id="r-medium" name="size-log" value="medium" aria-label="Medium"></x-radio>
+      Medium
+    </label>
+    <label>
+      <x-radio id="r-large" name="size-log" value="large" aria-label="Large"></x-radio>
+      Large
+    </label>
+  </div>
+</fieldset>
+<div class="controls">
+  <label>
+    <input type="checkbox" id="cancel-toggle"> Cancel change-request on "small"
+  </label>
+  <button class="action" onclick="document.getElementById('event-log').innerHTML=''">Clear log</button>
+</div>
+<div id="event-log"></div>
+
+<script>
+  const log = document.getElementById('event-log');
+  const cancelToggle = document.getElementById('cancel-toggle');
+
+  function addEntry(msg, cls) {
+    const p = document.createElement('p');
+    p.innerHTML = msg;
+    log.prepend(p);
+  }
+
+  document.querySelectorAll('x-radio[name="size-log"]').forEach(r => {
+    r.addEventListener('x-radio-change-request', (e) => {
+      const cancelled = cancelToggle.checked && e.detail.value === 'small';
+      if (cancelled) e.preventDefault();
+      addEntry(
+        `<span class="tag tag-request">change-request</span> ` +
+        `value=${e.detail.value} prev=${e.detail.previousChecked} next=${e.detail.nextChecked}` +
+        (cancelled ? ' <span class="tag tag-cancel">prevented</span>' : '')
+      );
+    });
+    r.addEventListener('x-radio-change', (e) => {
+      addEntry(
+        `<span class="tag tag-change">change</span> ` +
+        `value=${e.detail.value} checked=${e.detail.checked}`
+      );
+    });
+  });
+</script>
+
+<!-- ------------------------------------------------------------------ -->
+<h2>Live controls panel</h2>
+<fieldset>
+  <legend>Live radio</legend>
+  <div class="row">
+    <label><x-radio id="live-r1" name="live" value="one" aria-label="One"></x-radio> One</label>
+    <label><x-radio id="live-r2" name="live" value="two" aria-label="Two"></x-radio> Two</label>
+    <label><x-radio id="live-r3" name="live" value="three" aria-label="Three"></x-radio> Three</label>
+  </div>
+</fieldset>
+<div class="controls">
+  <label><input type="checkbox" id="ctrl-checked" onchange="syncLive()"> checked (r1)</label>
+  <label><input type="checkbox" id="ctrl-disabled" onchange="syncLive()"> disabled (r1)</label>
+  <label><input type="checkbox" id="ctrl-readonly" onchange="syncLive()"> readonly (r1)</label>
+  <label><input type="checkbox" id="ctrl-required" onchange="syncLive()"> required</label>
+</div>
+<pre id="live-state" style="margin-top:0.5rem;font-size:0.8rem;"></pre>
+
+<script>
+  window.syncLive = function syncLive() {
+    const r1 = document.getElementById('live-r1');
+    const checked  = document.getElementById('ctrl-checked').checked;
+    const disabled = document.getElementById('ctrl-disabled').checked;
+    const readonly = document.getElementById('ctrl-readonly').checked;
+    const required = document.getElementById('ctrl-required').checked;
+
+    r1.checked  = checked;
+    r1.disabled = disabled;
+    r1.readOnly = readonly;
+
+    document.querySelectorAll('x-radio[name="live"]').forEach(r => {
+      r.required = required;
+    });
+
+    document.getElementById('live-state').textContent =
+      `r1: checked=${r1.checked} disabled=${r1.disabled} readOnly=${r1.readOnly} required=${r1.required}`;
+  };
+
+  document.querySelectorAll('x-radio[name="live"]').forEach(r => {
+    r.addEventListener('x-radio-change', () => window.syncLive());
+  });
+</script>
+
+</body>
+</html>

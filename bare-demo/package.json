@@ -1,0 +1,16 @@
+{
+  "name": "baredom-demo",
+  "version": "1.0.0",
+  "description": "Framework-free ClojureScript demo consuming the BareDOM web component library",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx shadow-cljs watch app"
+  },
+  "dependencies": {
+    "@vanelsas/baredom": "^0.1.2-alpha"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^3.3.6"
+  }
+}

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-popover demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    :root {
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 22px; margin-bottom: 32px; }
+
+    h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section { margin-bottom: 48px; }
+
+    .row { display: flex; flex-direction: row; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+
+    label { font-size: 13px; color: var(--muted); }
+
+    input[type="text"],
+    select {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    button.demo-btn {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.demo-btn:hover { opacity: 0.8; }
+
+    /* Trigger button styles */
+    .trigger-btn {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trigger-btn:hover { background: var(--surface-border); }
+    .trigger-btn:focus-visible {
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }
+
+    /* Popover body content styles */
+    .pop-text {
+      font-size: 0.9rem;
+      color: var(--page-fg);
+      line-height: 1.6;
+    }
+    .pop-footer-row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .pop-footer-btn {
+      padding: 5px 14px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--input-fg);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .pop-footer-btn.primary {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+    }
+    .pop-footer-btn:hover { opacity: 0.85; }
+
+    .log {
+      background: #0a0a0a;
+      color: #d4f5a0;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      min-height: 80px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-entry { margin-bottom: 2px; }
+    .log-entry.cancelled { color: #f5a0a0; }
+    .log-entry.muted { color: #9ca3af; }
+
+    /* Extra space around placement demo so panels don't overlap page edges */
+    .placement-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      padding: 60px 40px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-popover</h1>
+
+<!-- ===================== BASIC: OPEN / CLOSED / DISABLED ===================== -->
+<section>
+  <h2>States — closed, open, disabled</h2>
+  <div class="row">
+
+    <x-popover heading="Details">
+      <button class="trigger-btn" slot="trigger">Open popover</button>
+      <p class="pop-text">This is the main body of the popover. It can contain any content.</p>
+    </x-popover>
+
+    <x-popover heading="Pre-opened" open>
+      <button class="trigger-btn" slot="trigger">Pre-opened</button>
+      <p class="pop-text">This popover starts open via the <code>open</code> attribute.</p>
+    </x-popover>
+
+    <x-popover heading="Disabled" disabled>
+      <button class="trigger-btn" slot="trigger" disabled>Disabled</button>
+      <p class="pop-text">This should never appear.</p>
+    </x-popover>
+
+  </div>
+</section>
+
+<!-- ===================== NO CLOSE BUTTON ===================== -->
+<section>
+  <h2>Without close button (no-close)</h2>
+  <div class="row">
+
+    <x-popover heading="Info" no-close>
+      <button class="trigger-btn" slot="trigger">? Info</button>
+      <p class="pop-text">Click outside or press Escape to close this popover. The close button is hidden via <code>no-close</code>.</p>
+    </x-popover>
+
+  </div>
+</section>
+
+<!-- ===================== FOOTER SLOT ===================== -->
+<section>
+  <h2>Footer slot</h2>
+  <div class="row">
+
+    <x-popover heading="Confirm deletion" id="confirm-pop">
+      <button class="trigger-btn" slot="trigger">Delete item</button>
+      <p class="pop-text">This action cannot be undone. Are you sure you want to delete this item?</p>
+      <div class="pop-footer-row" slot="footer">
+        <button class="pop-footer-btn" onclick="document.getElementById('confirm-pop').hide()">Cancel</button>
+        <button class="pop-footer-btn primary" onclick="logLine('Confirmed delete!'); document.getElementById('confirm-pop').hide()">Confirm</button>
+      </div>
+    </x-popover>
+
+    <x-popover heading="No footer">
+      <button class="trigger-btn" slot="trigger">No footer</button>
+      <p class="pop-text">This popover has no footer slot. The footer area is hidden via CSS <code>:has()</code>.</p>
+    </x-popover>
+
+  </div>
+</section>
+
+<!-- ===================== PLACEMENT VARIANTS ===================== -->
+<section>
+  <h2>Placement variants</h2>
+  <div class="placement-grid">
+
+    <div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">bottom-start (default)</p>
+      <x-popover placement="bottom-start" heading="Bottom start">
+        <button class="trigger-btn" slot="trigger">↙ bottom-start</button>
+        <p class="pop-text">Panel opens below, aligned to the left edge.</p>
+      </x-popover>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">bottom-end</p>
+        <x-popover placement="bottom-end" heading="Bottom end">
+          <button class="trigger-btn" slot="trigger">bottom-end ↘</button>
+          <p class="pop-text">Panel opens below, aligned to the right edge.</p>
+        </x-popover>
+      </div>
+    </div>
+
+    <div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">top-start</p>
+      <x-popover placement="top-start" heading="Top start">
+        <button class="trigger-btn" slot="trigger">↖ top-start</button>
+        <p class="pop-text">Panel opens above, aligned to the left edge.</p>
+      </x-popover>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">top-end</p>
+        <x-popover placement="top-end" heading="Top end">
+          <button class="trigger-btn" slot="trigger">top-end ↗</button>
+          <p class="pop-text">Panel opens above, aligned to the right edge.</p>
+        </x-popover>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== CUSTOM THEME ===================== -->
+<section>
+  <h2>Custom theme</h2>
+  <div class="row">
+
+    <x-popover
+      heading="Indigo theme"
+      style="
+        --x-popover-panel-bg: #1e1b4b;
+        --x-popover-panel-border: 1px solid #4338ca;
+        --x-popover-panel-shadow: 0 8px 24px rgba(99,102,241,0.35);
+        --x-popover-header-border: 1px solid #3730a3;
+        --x-popover-heading-color: #e0e7ff;
+        --x-popover-body-color: #c7d2fe;
+        --x-popover-close-color: #818cf8;
+        --x-popover-close-bg-hover: rgba(255,255,255,0.08);
+        --x-popover-close-color-hover: #e0e7ff;
+        --x-popover-arrow-bg: #1e1b4b;
+        --x-popover-arrow-border: #4338ca;
+      "
+    >
+      <button class="trigger-btn" slot="trigger">Indigo</button>
+      <p class="pop-text" style="color:#c7d2fe">A custom dark indigo theme applied via CSS custom properties.</p>
+    </x-popover>
+
+    <x-popover
+      heading="Success theme"
+      style="
+        --x-popover-panel-bg: #f0fdf4;
+        --x-popover-panel-border: 1px solid #86efac;
+        --x-popover-header-border: 1px solid #86efac;
+        --x-popover-heading-color: #166534;
+        --x-popover-body-color: #15803d;
+        --x-popover-close-color: #4ade80;
+        --x-popover-close-bg-hover: rgba(22,163,74,0.1);
+        --x-popover-close-color-hover: #166534;
+        --x-popover-arrow-bg: #f0fdf4;
+        --x-popover-arrow-border: #86efac;
+      "
+    >
+      <button class="trigger-btn" slot="trigger">Success</button>
+      <p class="pop-text" style="color:#15803d">A success-colored theme to indicate positive actions.</p>
+    </x-popover>
+
+  </div>
+</section>
+
+<!-- ===================== LIVE CONTROL PANEL ===================== -->
+<section>
+  <h2>Live control panel</h2>
+
+  <x-popover id="live-pop" heading="Live popover">
+    <button class="trigger-btn" slot="trigger">Click me</button>
+    <p class="pop-text">Use the controls below to change attributes at runtime.</p>
+    <div class="pop-footer-row" slot="footer">
+      <button class="pop-footer-btn" onclick="document.getElementById('live-pop').hide()">Close</button>
+    </div>
+  </x-popover>
+
+  <div class="stack" style="margin-top:16px;">
+    <div class="row">
+      <label for="ctrl-heading">heading:</label>
+      <input id="ctrl-heading" type="text" value="Live popover" style="flex:1;min-width:180px;" />
+      <button class="demo-btn" onclick="applyHeading()">Apply</button>
+    </div>
+    <div class="row">
+      <label for="ctrl-close-label">close-label:</label>
+      <input id="ctrl-close-label" type="text" value="Close" style="flex:1;min-width:180px;" />
+      <button class="demo-btn" onclick="applyCloseLabel()">Apply</button>
+    </div>
+    <div class="row">
+      <label for="ctrl-placement">placement:</label>
+      <select id="ctrl-placement">
+        <option value="bottom-start" selected>bottom-start</option>
+        <option value="bottom-end">bottom-end</option>
+        <option value="top-start">top-start</option>
+        <option value="top-end">top-end</option>
+      </select>
+      <button class="demo-btn" onclick="applyPlacement()">Apply</button>
+    </div>
+    <div class="row">
+      <button class="demo-btn" onclick="livePop.toggle()">toggle()</button>
+      <button class="demo-btn" onclick="livePop.show()">show()</button>
+      <button class="demo-btn" onclick="livePop.hide()">hide()</button>
+      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+      <button class="demo-btn" onclick="toggleNoClose()">Toggle no-close</button>
+    </div>
+    <div class="row">
+      <label>
+        <input type="checkbox" id="ctrl-guard" />
+        Cancel next toggle (preventDefault)
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EVENT LOG ===================== -->
+<section>
+  <h2>Event log</h2>
+  <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
+  <div class="row" style="margin-top:10px;">
+    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+  </div>
+</section>
+
+<script>
+  const livePop = document.getElementById('live-pop');
+  window.livePop = livePop;
+
+  window.applyHeading = () => {
+    livePop.setAttribute('heading', document.getElementById('ctrl-heading').value);
+  };
+
+  window.applyCloseLabel = () => {
+    livePop.setAttribute('close-label', document.getElementById('ctrl-close-label').value);
+  };
+
+  window.applyPlacement = () => {
+    livePop.setAttribute('placement', document.getElementById('ctrl-placement').value);
+  };
+
+  window.toggleDisabled = () => {
+    livePop.hasAttribute('disabled')
+      ? livePop.removeAttribute('disabled')
+      : livePop.setAttribute('disabled', '');
+  };
+
+  window.toggleNoClose = () => {
+    livePop.hasAttribute('no-close')
+      ? livePop.removeAttribute('no-close')
+      : livePop.setAttribute('no-close', '');
+  };
+
+  // ---- Event logging ----
+  const logEl = document.getElementById('log');
+  let firstEntry = true;
+
+  window.logLine = function logLine(text, cls = '') {
+    if (firstEntry) { logEl.innerHTML = ''; firstEntry = false; }
+    const div = document.createElement('div');
+    div.className = 'log-entry' + (cls ? ' ' + cls : '');
+    const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    div.textContent = `[${ts}] ${text}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  window.clearLog = () => { logEl.innerHTML = ''; firstEntry = true; };
+
+  document.addEventListener('x-popover-toggle', e => {
+    const guardOn = document.getElementById('ctrl-guard').checked;
+    let cancelled = false;
+    if (guardOn) {
+      e.preventDefault();
+      cancelled = true;
+      document.getElementById('ctrl-guard').checked = false;
+    }
+    const { open, source } = e.detail;
+    if (cancelled) {
+      logLine(`x-popover-toggle [CANCELLED] — open=${open} source="${source}"`, 'cancelled');
+    } else {
+      logLine(`x-popover-toggle — open=${open} source="${source}"`);
+    }
+  });
+
+  document.addEventListener('x-popover-change', e => {
+    const { open } = e.detail;
+    logLine(`x-popover-change — open=${open}`, 'muted');
+  });
+</script>
+
+</body>
+</html>

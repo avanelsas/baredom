@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 561 167.76">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0f121a;
+      }
+
+      .cls-2 {
+        font-family: JetBrainsMono-Regular, 'JetBrains Mono';
+        font-size: 144px;
+        font-variation-settings: 'wght' 400;
+      }
+
+      .cls-3 {
+        fill: #79bde8;
+      }
+    </style>
+  </defs>
+  <text class="cls-2" transform="translate(21.3 124.56)"><tspan class="cls-3" x="0" y="0">&lt;</tspan><tspan class="cls-1" x="86.4" y="0">bare</tspan><tspan class="cls-3" x="431.99" y="0">&gt;</tspan></text>
+</svg>

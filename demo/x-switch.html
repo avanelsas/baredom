@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x-switch demo</title>
+  <script src="/js/main.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f9fafb;
+      color: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #f9fafb; }
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    label { font-size: 0.875rem; }
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      max-width: 640px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .panel { background: #1f2937; border-color: #374151; }
+    }
+    .log {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      font-family: monospace;
+      max-height: 160px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      max-width: 640px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    button.ctrl {
+      appearance: none;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8125rem;
+      background: #fff;
+      cursor: pointer;
+    }
+    @media (prefers-color-scheme: dark) {
+      button.ctrl { background: #374151; border-color: #4b5563; color: #f9fafb; }
+    }
+    button.ctrl:hover { background: #f3f4f6; }
+    @media (prefers-color-scheme: dark) {
+      button.ctrl:hover { background: #4b5563; }
+    }
+    x-switch.large {
+      --x-switch-track-width: 56px;
+      --x-switch-track-height: 30px;
+      --x-switch-thumb-size: 22px;
+      --x-switch-thumb-offset: 4px;
+    }
+    x-switch.green {
+      --x-switch-track-bg-checked: #16a34a;
+      --x-switch-focus-ring: #86efac;
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-switch</h1>
+
+<h2>States</h2>
+<div class="panel">
+  <div class="row">
+    <x-switch id="sw-default" name="default"></x-switch>
+    <label for="sw-default">Default (unchecked)</label>
+  </div>
+  <div class="row">
+    <x-switch id="sw-checked" name="checked" checked></x-switch>
+    <label for="sw-checked">Pre-checked</label>
+  </div>
+  <div class="row">
+    <x-switch id="sw-disabled" name="disabled" disabled></x-switch>
+    <label for="sw-disabled">Disabled (off)</label>
+  </div>
+  <div class="row">
+    <x-switch id="sw-disabled-on" name="disabled-on" disabled checked></x-switch>
+    <label for="sw-disabled-on">Disabled (on)</label>
+  </div>
+  <div class="row">
+    <x-switch id="sw-readonly" name="readonly" readonly checked></x-switch>
+    <label for="sw-readonly">Readonly (on, not toggleable)</label>
+  </div>
+</div>
+
+<h2>Custom size &amp; colour</h2>
+<div class="panel">
+  <div class="row">
+    <x-switch class="large" name="large"></x-switch>
+    <label>Large</label>
+  </div>
+  <div class="row">
+    <x-switch class="green" name="green" checked></x-switch>
+    <label>Green accent</label>
+  </div>
+</div>
+
+<h2>Interactive control panel</h2>
+<div class="panel">
+  <div class="row">
+    <x-switch id="sw-demo" name="demo" aria-label="Demo switch"></x-switch>
+    <label>Demo switch</label>
+  </div>
+  <div class="controls">
+    <button class="ctrl" id="btn-toggle">Toggle checked</button>
+    <button class="ctrl" id="btn-disable">Toggle disabled</button>
+    <button class="ctrl" id="btn-readonly">Toggle readonly</button>
+    <button class="ctrl" id="btn-cancel">Next toggle: cancel</button>
+  </div>
+</div>
+
+<h2>Event log</h2>
+<div class="log" id="log">— waiting for events —</div>
+
+<h2>Form submission</h2>
+<div class="panel">
+  <form id="demo-form">
+    <div class="row">
+      <x-switch name="newsletter" id="sw-form"></x-switch>
+      <label for="sw-form">Subscribe to newsletter</label>
+    </div>
+    <div style="margin-top:0.75rem">
+      <button class="ctrl" type="submit">Submit</button>
+      <button class="ctrl" type="reset">Reset</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const log = document.getElementById('log');
+  const demo = document.getElementById('sw-demo');
+  let cancelNext = false;
+
+  function addLog(msg) {
+    const ts = new Date().toLocaleTimeString();
+    log.textContent = `[${ts}] ${msg}\n` + log.textContent;
+  }
+
+  demo.addEventListener('x-switch-change-request', (e) => {
+    if (cancelNext) {
+      e.preventDefault();
+      cancelNext = false;
+      addLog('x-switch-change-request cancelled (previousChecked=' + e.detail.previousChecked + ')');
+    } else {
+      addLog('x-switch-change-request → nextChecked=' + e.detail.nextChecked);
+    }
+  });
+
+  demo.addEventListener('x-switch-change', (e) => {
+    addLog('x-switch-change → checked=' + e.detail.checked + ', value=' + e.detail.value);
+  });
+
+  document.getElementById('btn-toggle').addEventListener('click', () => {
+    demo.checked = !demo.checked;
+  });
+
+  document.getElementById('btn-disable').addEventListener('click', () => {
+    demo.disabled = !demo.disabled;
+  });
+
+  document.getElementById('btn-readonly').addEventListener('click', () => {
+    demo.readOnly = !demo.readOnly;
+  });
+
+  document.getElementById('btn-cancel').addEventListener('click', () => {
+    cancelNext = true;
+    addLog('Next toggle will be cancelled via preventDefault()');
+  });
+
+  document.getElementById('demo-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    const entries = [...data.entries()].map(([k, v]) => `${k}=${v}`).join(', ');
+    addLog('form submit → ' + (entries || '(no values)'));
+  });
+
+  document.getElementById('demo-form').addEventListener('reset', () => {
+    addLog('form reset');
+  });
+</script>
+
+</body>
+</html>

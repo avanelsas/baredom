@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-spacer demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select,
+      .row input[type=text] {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .row button:hover { background: #1e40af; }
+
+      /* ── Demo helpers ─────────────────────────────────────── */
+
+      .surface {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 560px;
+      }
+
+      .block {
+        background: #3b82f6;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px;
+        padding: 8px 14px;
+      }
+
+      .col-demo {
+        display: flex;
+        flex-direction: column;
+        max-width: 220px;
+      }
+
+      .row-demo {
+        display: flex;
+        align-items: center;
+        max-width: 440px;
+      }
+
+      .nav-demo {
+        display: flex;
+        align-items: center;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 10px 16px;
+        max-width: 560px;
+      }
+
+      .nav-demo .logo {
+        font-size: 15px;
+        font-weight: 700;
+        color: #3b82f6;
+      }
+
+      .nav-demo button {
+        font-size: 13px;
+        padding: 5px 14px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+        color: var(--page-fg);
+        cursor: pointer;
+        margin-left: 8px;
+      }
+
+      /* Visualise the spacer with an outline when .show-outline is active */
+      .show-outline x-spacer {
+        outline: 2px dashed #f59e0b;
+        outline-offset: -1px;
+      }
+
+      #live-zone {
+        max-width: 560px;
+      }
+
+      .section-note {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 6px 0 10px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-spacer demo</h1>
+
+    <h2>Vertical spacer (default)</h2>
+    <p class="section-note">Creates vertical whitespace between stacked elements.</p>
+    <div class="col-demo surface">
+      <div class="block">Block A</div>
+      <x-spacer size="24px"></x-spacer>
+      <div class="block">Block B</div>
+      <x-spacer size="8px"></x-spacer>
+      <div class="block">Block C (8px gap)</div>
+    </div>
+
+    <h2>Horizontal spacer</h2>
+    <p class="section-note">Creates horizontal whitespace in a flex row.</p>
+    <div class="row-demo surface">
+      <div class="block">Left</div>
+      <x-spacer axis="horizontal" size="32px"></x-spacer>
+      <div class="block">Right (32px gap)</div>
+    </div>
+
+    <h2>Grow spacer — flex spring</h2>
+    <p class="section-note">Pushes trailing content to the end of a flex row (like a nav bar).</p>
+    <div class="nav-demo">
+      <span class="logo">MyApp</span>
+      <x-spacer grow></x-spacer>
+      <button>Docs</button>
+      <button>Sign in</button>
+    </div>
+
+    <h2>Grow spacer with minimum size</h2>
+    <p class="section-note">Grow with <code>size="16px"</code> as flex basis / minimum.</p>
+    <div class="nav-demo">
+      <span class="logo">MyApp</span>
+      <x-spacer grow size="16px"></x-spacer>
+      <button>Settings</button>
+    </div>
+
+    <h2>Multiple sizes</h2>
+    <div class="col-demo surface">
+      <div class="block">0.5rem</div>
+      <x-spacer size="0.5rem"></x-spacer>
+      <div class="block">1rem (default)</div>
+      <x-spacer></x-spacer>
+      <div class="block">2rem</div>
+      <x-spacer size="2rem"></x-spacer>
+      <div class="block">3rem</div>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="row">
+      <label>size
+        <input type="text" id="ctrl-size" value="1rem" style="width:90px">
+      </label>
+      <label>axis
+        <select id="ctrl-axis">
+          <option value="vertical">vertical</option>
+          <option value="horizontal">horizontal</option>
+        </select>
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="ctrl-grow">
+        grow
+      </label>
+      <button id="apply-btn">Apply</button>
+      <button id="reset-btn">Reset</button>
+      <label style="display:flex;align-items:center;gap:4px;margin-left:8px;">
+        <input type="checkbox" id="ctrl-outline">
+        show outline
+      </label>
+    </div>
+
+    <div class="col-demo surface" id="live-zone">
+      <div class="block">Content before</div>
+      <x-spacer id="live-spacer"></x-spacer>
+      <div class="block">Content after</div>
+    </div>
+
+    <p class="section-note" id="live-info">size="1rem" axis="vertical" grow=false</p>
+
+    <script>
+      const spacer   = document.getElementById("live-spacer");
+      const liveZone = document.getElementById("live-zone");
+      const info     = document.getElementById("live-info");
+
+      function updateInfo() {
+        const size = spacer.getAttribute("size") || "1rem";
+        const axis = spacer.getAttribute("axis") || "vertical";
+        const grow = spacer.hasAttribute("grow");
+        info.textContent = `size="${size}" axis="${axis}" grow=${grow}`;
+      }
+
+      document.getElementById("apply-btn").addEventListener("click", () => {
+        const size = document.getElementById("ctrl-size").value.trim();
+        const axis = document.getElementById("ctrl-axis").value;
+        const grow = document.getElementById("ctrl-grow").checked;
+
+        if (size) spacer.setAttribute("size", size);
+        else       spacer.removeAttribute("size");
+
+        spacer.setAttribute("axis", axis);
+
+        if (grow) spacer.setAttribute("grow", "");
+        else      spacer.removeAttribute("grow");
+
+        // Switch container flex-direction to match axis
+        liveZone.style.flexDirection = axis === "horizontal" ? "row" : "column";
+
+        updateInfo();
+      });
+
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        spacer.removeAttribute("size");
+        spacer.removeAttribute("axis");
+        spacer.removeAttribute("grow");
+        liveZone.style.flexDirection = "column";
+        document.getElementById("ctrl-size").value    = "1rem";
+        document.getElementById("ctrl-axis").value    = "vertical";
+        document.getElementById("ctrl-grow").checked  = false;
+        updateInfo();
+      });
+
+      document.getElementById("ctrl-outline").addEventListener("change", (e) => {
+        liveZone.classList.toggle("show-outline", e.target.checked);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-slider demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 680px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; margin: 8px 0; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .label { font-size: 13px; color: var(--muted); min-width: 80px; }
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls input[type=text],
+      .controls input[type=number],
+      .controls select {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg); color: var(--input-fg);
+        width: 160px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-slider demo</h1>
+
+    <!-- ── Sizes ─────────────────────────────────────────────── -->
+    <h2>Sizes</h2>
+    <div class="stack">
+      <div class="row">
+        <span class="label">sm</span>
+        <x-slider size="sm" value="40" style="flex:1"></x-slider>
+      </div>
+      <div class="row">
+        <span class="label">md (default)</span>
+        <x-slider size="md" value="55" style="flex:1"></x-slider>
+      </div>
+      <div class="row">
+        <span class="label">lg</span>
+        <x-slider size="lg" value="70" style="flex:1"></x-slider>
+      </div>
+    </div>
+
+    <!-- ── With label and value ───────────────────────────────── -->
+    <h2>Label &amp; show-value</h2>
+    <div class="stack">
+      <x-slider label="Volume" show-value value="60" min="0" max="100"></x-slider>
+      <x-slider label="Brightness" value="80" min="0" max="100"></x-slider>
+      <x-slider show-value value="30" min="0" max="100"></x-slider>
+    </div>
+
+    <!-- ── Custom range and step ─────────────────────────────── -->
+    <h2>Custom range &amp; step</h2>
+    <div class="stack">
+      <div class="row">
+        <span class="label">step=10</span>
+        <x-slider min="0" max="100" step="10" value="50" show-value style="flex:1"></x-slider>
+      </div>
+      <div class="row">
+        <span class="label">step=0.1</span>
+        <x-slider min="0" max="1" step="0.1" value="0.5" show-value style="flex:1"></x-slider>
+      </div>
+      <div class="row">
+        <span class="label">step=any</span>
+        <x-slider min="-50" max="50" step="any" value="0" label="Offset" show-value style="flex:1"></x-slider>
+      </div>
+    </div>
+
+    <!-- ── Disabled ───────────────────────────────────────────── -->
+    <h2>Disabled</h2>
+    <div class="stack">
+      <x-slider disabled value="40" label="Disabled slider"></x-slider>
+      <x-slider disabled value="75" show-value label="Disabled with value"></x-slider>
+    </div>
+
+    <!-- ── Readonly ───────────────────────────────────────────── -->
+    <h2>Readonly</h2>
+    <div class="stack">
+      <x-slider readonly value="60" label="Readonly (focusable, not draggable)"></x-slider>
+    </div>
+
+    <!-- ── Custom theme ───────────────────────────────────────── -->
+    <h2>Custom theme</h2>
+    <div class="theme-demo stack">
+      <x-slider
+        style="--x-slider-fill-color:#22c55e;--x-slider-thumb-border:2px solid #22c55e;--x-slider-focus-ring:#86efac;"
+        value="65" label="Green theme" show-value>
+      </x-slider>
+      <x-slider
+        style="--x-slider-fill-color:#f59e0b;--x-slider-thumb-border:2px solid #f59e0b;--x-slider-focus-ring:#fcd34d;"
+        value="40" label="Amber theme" show-value>
+      </x-slider>
+      <x-slider
+        style="--x-slider-fill-color:#ef4444;--x-slider-thumb-border:2px solid #ef4444;--x-slider-focus-ring:#fca5a5;"
+        value="80" label="Red theme" show-value>
+      </x-slider>
+    </div>
+
+    <!-- ── Live control panel ────────────────────────────────── -->
+    <h2>Live control panel</h2>
+    <x-slider id="live-slider" label="Live slider" show-value value="50" min="0" max="100" step="1"></x-slider>
+
+    <div class="controls" style="margin-top:16px;">
+      <label for="ctrl-value">value</label>
+      <input type="number" id="ctrl-value" value="50" min="0" max="100" />
+
+      <label for="ctrl-min">min</label>
+      <input type="number" id="ctrl-min" value="0" />
+
+      <label for="ctrl-max">max</label>
+      <input type="number" id="ctrl-max" value="100" />
+
+      <label for="ctrl-step">step</label>
+      <input type="text" id="ctrl-step" value="1" />
+
+      <label for="ctrl-label">label</label>
+      <input type="text" id="ctrl-label" value="Live slider" />
+
+      <label for="ctrl-size">size</label>
+      <select id="ctrl-size">
+        <option value="sm">sm</option>
+        <option value="md" selected>md</option>
+        <option value="lg">lg</option>
+      </select>
+
+      <label>show-value</label>
+      <label><input type="checkbox" id="ctrl-show-value" checked /> enabled</label>
+
+      <label>disabled</label>
+      <label><input type="checkbox" id="ctrl-disabled" /> enabled</label>
+
+      <label>readonly</label>
+      <label><input type="checkbox" id="ctrl-readonly" /> enabled</label>
+    </div>
+
+    <!-- ── Event log ─────────────────────────────────────────── -->
+    <h2>Event log</h2>
+    <div class="log" id="event-log">Waiting for events…</div>
+
+    <!-- ── Form integration ──────────────────────────────────── -->
+    <h2>Form integration</h2>
+    <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;">
+      <x-slider name="brightness" value="70" min="0" max="100"
+                label="Brightness" show-value></x-slider>
+      <x-slider name="contrast" value="50" min="0" max="100"
+                label="Contrast" show-value></x-slider>
+      <div style="display:flex;gap:8px;">
+        <button type="submit"
+                style="padding:6px 16px;border-radius:6px;border:none;background:#3b82f6;color:#fff;cursor:pointer;font-size:14px;">
+          Submit
+        </button>
+        <button type="reset"
+                style="padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--input-bg);color:var(--page-fg);cursor:pointer;font-size:14px;">
+          Reset
+        </button>
+      </div>
+    </form>
+    <div class="log" id="form-log" style="margin-top:8px;">Form output will appear here…</div>
+
+    <script>
+      const liveSlider = document.getElementById('live-slider');
+
+      // Control panel wiring
+      document.getElementById('ctrl-value').addEventListener('input', (e) => {
+        liveSlider.setAttribute('value', e.target.value);
+      });
+      document.getElementById('ctrl-min').addEventListener('input', (e) => {
+        liveSlider.setAttribute('min', e.target.value);
+      });
+      document.getElementById('ctrl-max').addEventListener('input', (e) => {
+        liveSlider.setAttribute('max', e.target.value);
+      });
+      document.getElementById('ctrl-step').addEventListener('input', (e) => {
+        liveSlider.setAttribute('step', e.target.value);
+      });
+      document.getElementById('ctrl-label').addEventListener('input', (e) => {
+        const v = e.target.value;
+        if (v) liveSlider.setAttribute('label', v);
+        else liveSlider.removeAttribute('label');
+      });
+      document.getElementById('ctrl-size').addEventListener('change', (e) => {
+        liveSlider.setAttribute('size', e.target.value);
+      });
+      document.getElementById('ctrl-show-value').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('show-value', '');
+        else liveSlider.removeAttribute('show-value');
+      });
+      document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('disabled', '');
+        else liveSlider.removeAttribute('disabled');
+      });
+      document.getElementById('ctrl-readonly').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('readonly', '');
+        else liveSlider.removeAttribute('readonly');
+      });
+
+      // Event log
+      const log = document.getElementById('event-log');
+      let logLines = [];
+      function appendLog(msg) {
+        logLines.push(msg);
+        if (logLines.length > 12) logLines = logLines.slice(-12);
+        log.textContent = logLines.join('\n');
+      }
+      liveSlider.addEventListener('x-slider-input', (e) => {
+        appendLog(`x-slider-input  value=${e.detail.value}  min=${e.detail.min}  max=${e.detail.max}`);
+        document.getElementById('ctrl-value').value = e.detail.value;
+      });
+      liveSlider.addEventListener('x-slider-change', (e) => {
+        appendLog(`x-slider-change value=${e.detail.value}  min=${e.detail.min}  max=${e.detail.max}`);
+      });
+
+      // Form submission
+      const formLog = document.getElementById('form-log');
+      document.getElementById('demo-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const entries = [...data.entries()].map(([k, v]) => `${k}=${v}`).join('  ');
+        formLog.textContent = `Submitted: ${entries}`;
+      });
+    </script>
+  </body>
+</html>

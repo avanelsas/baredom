@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-alert demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 640px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select,
+      .row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+
+      .row button:hover { background: #1e40af; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-alert demo</h1>
+
+    <h2>Variants</h2>
+    <div class="stack">
+      <x-alert type="info"    text="Your session will expire in 5 minutes."></x-alert>
+      <x-alert type="success" text="Changes saved successfully."></x-alert>
+      <x-alert type="warning" text="Low disk space — consider cleaning up old files."></x-alert>
+      <x-alert type="error"   text="Failed to connect. Please check your network."></x-alert>
+    </div>
+
+    <h2>Non-dismissible</h2>
+    <div class="stack">
+      <x-alert type="warning" text="You are in read-only mode." dismissible="false"></x-alert>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="stack">
+      <x-alert type="error" text="System maintenance in progress." disabled></x-alert>
+    </div>
+
+    <h2>Custom icon (attribute)</h2>
+    <div class="stack">
+      <x-alert type="info" icon="★" text="New features are available in this release."></x-alert>
+    </div>
+
+    <h2>Icon hidden</h2>
+    <div class="stack">
+      <x-alert type="success" icon="none" text="Minimal alert — no icon shown."></x-alert>
+    </div>
+
+    <h2>Auto-dismiss (3 s)</h2>
+    <div class="stack" id="auto-zone">
+      <x-alert id="auto-alert" type="success"
+               text="This alert dismisses automatically in 3 seconds."
+               timeout-ms="3000"></x-alert>
+    </div>
+    <div class="row">
+      <button id="reset-btn">Reset</button>
+    </div>
+
+    <h2>Spawn alert</h2>
+    <div class="row">
+      <label>type
+        <select id="ctrl-type">
+          <option value="info">info</option>
+          <option value="success">success</option>
+          <option value="warning">warning</option>
+          <option value="error">error</option>
+        </select>
+      </label>
+      <label>text
+        <input type="text" id="ctrl-text" value="Alert message here" style="width:180px">
+      </label>
+      <label>icon
+        <input type="text" id="ctrl-icon" placeholder="glyph or 'none'" style="width:90px">
+      </label>
+      <label>dismissible
+        <select id="ctrl-dismissible">
+          <option value="">true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <label>timeout-ms
+        <input type="number" id="ctrl-timeout" placeholder="none" style="width:80px">
+      </label>
+      <button id="spawn-btn">Spawn</button>
+    </div>
+    <div class="stack" id="live-zone"></div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+
+      function logEvent(e) {
+        const d = e.detail;
+        log.textContent =
+          `x-alert-dismiss  type=${d.type}  reason=${d.reason}  text="${d.text}"\n` +
+          log.textContent;
+      }
+
+      function watch(el) {
+        el.addEventListener("x-alert-dismiss", logEvent);
+      }
+
+      document.querySelectorAll("x-alert").forEach(watch);
+
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        const zone = document.getElementById("auto-zone");
+        const old  = document.getElementById("auto-alert");
+        if (old) old.remove();
+        const el = document.createElement("x-alert");
+        el.id = "auto-alert";
+        el.setAttribute("type", "success");
+        el.setAttribute("text", "This alert dismisses automatically in 3 seconds.");
+        el.setAttribute("timeout-ms", "3000");
+        watch(el);
+        zone.appendChild(el);
+      });
+
+      document.getElementById("spawn-btn").addEventListener("click", () => {
+        const type = document.getElementById("ctrl-type").value;
+        const text = document.getElementById("ctrl-text").value || "Alert message";
+        const icon = document.getElementById("ctrl-icon").value.trim();
+        const dis  = document.getElementById("ctrl-dismissible").value;
+        const tms  = document.getElementById("ctrl-timeout").value.trim();
+
+        const el = document.createElement("x-alert");
+        el.setAttribute("type", type);
+        el.setAttribute("text", text);
+        if (icon) el.setAttribute("icon", icon);
+        if (dis)  el.setAttribute("dismissible", dis);
+        if (tms)  el.setAttribute("timeout-ms", tms);
+
+        watch(el);
+        document.getElementById("live-zone").prepend(el);
+      });
+    </script>
+  </body>
+</html>

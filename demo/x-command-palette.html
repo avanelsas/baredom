@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-command-palette demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls input[type=text], .controls select {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .hint { font-size: 12px; color: var(--muted); margin: 4px 0; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-command-palette demo</h1>
+
+    <p class="hint">Press <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl+K</kbd> (Win/Linux) to open the palette.</p>
+
+    <h2>Basic</h2>
+    <div class="row">
+      <x-command-palette id="palette-basic"></x-command-palette>
+      <x-button id="open-basic" variant="default">Open palette (⌘K)</x-button>
+    </div>
+
+    <h2>With groups</h2>
+    <div class="row">
+      <x-command-palette id="palette-groups"></x-command-palette>
+      <x-button id="open-groups" variant="default">Open (grouped)</x-button>
+    </div>
+
+    <h2>Custom placeholder &amp; empty text</h2>
+    <div class="row">
+      <x-command-palette
+        id="palette-custom"
+        placeholder="Type a command…"
+        empty-text="No commands found"
+      ></x-command-palette>
+      <x-button id="open-custom" variant="default">Open (custom text)</x-button>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>placeholder
+        <input type="text" id="ctrl-placeholder" value="Search…" style="width:160px">
+      </label>
+      <label>empty-text
+        <input type="text" id="ctrl-empty" value="No results" style="width:140px">
+      </label>
+      <label>dismissible
+        <select id="ctrl-dismissible">
+          <option value="">true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <label>no-scrim <input type="checkbox" id="ctrl-no-scrim"></label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <div class="row">
+      <x-command-palette id="palette-live"></x-command-palette>
+      <x-button id="open-live" variant="primary">Open live palette</x-button>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      const baseItems = [
+        { id: "new-file",   label: "New file",        group: "File",    keywords: ["create", "add"] },
+        { id: "open-file",  label: "Open file…",      group: "File",    keywords: ["load"] },
+        { id: "save",       label: "Save",             group: "File",    keywords: ["write"] },
+        { id: "settings",   label: "Preferences",      group: "App",     keywords: ["config", "options"] },
+        { id: "theme",      label: "Toggle theme",     group: "App" },
+        { id: "shortcuts",  label: "Keyboard shortcuts",group: "Help" },
+        { id: "docs",       label: "Documentation",    group: "Help" },
+        { id: "disabled-item", label: "Disabled action", group: "App", disabled: true },
+      ];
+
+      function setup(id, items) {
+        const pal = document.getElementById(id);
+        pal.items = items;
+        pal.addEventListener("x-command-palette-select", e => {
+          logEvent(`${id}:x-command-palette-select`, { id: e.detail.item.id, label: e.detail.item.label });
+          pal.removeAttribute("open");
+        });
+        pal.addEventListener("x-command-palette-close", () => pal.removeAttribute("open"));
+        pal.addEventListener("x-command-palette-query-change", e =>
+          logEvent(`${id}:x-command-palette-query-change`, e.detail));
+      }
+
+      setup("palette-basic", baseItems.slice(0, 4));
+      setup("palette-groups", baseItems);
+      setup("palette-custom", baseItems.slice(0, 5));
+      setup("palette-live", baseItems);
+
+      document.getElementById("open-basic").addEventListener("click", () =>
+        document.getElementById("palette-basic").setAttribute("open", ""));
+      document.getElementById("open-groups").addEventListener("click", () =>
+        document.getElementById("palette-groups").setAttribute("open", ""));
+      document.getElementById("open-custom").addEventListener("click", () =>
+        document.getElementById("palette-custom").setAttribute("open", ""));
+
+      const livePal = document.getElementById("palette-live");
+      document.getElementById("open-live").addEventListener("click", () =>
+        livePal.setAttribute("open", ""));
+
+      function updateLive() {
+        livePal.setAttribute("placeholder", document.getElementById("ctrl-placeholder").value);
+        livePal.setAttribute("empty-text",  document.getElementById("ctrl-empty").value);
+        const dis = document.getElementById("ctrl-dismissible").value;
+        if (dis) livePal.setAttribute("dismissible", dis); else livePal.removeAttribute("dismissible");
+        if (document.getElementById("ctrl-no-scrim").checked)
+          livePal.setAttribute("no-scrim", "");
+        else livePal.removeAttribute("no-scrim");
+        if (document.getElementById("ctrl-disabled").checked)
+          livePal.setAttribute("disabled", "");
+        else livePal.removeAttribute("disabled");
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+
+      // Global ⌘K / Ctrl+K shortcut
+      document.addEventListener("keydown", e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+          e.preventDefault();
+          document.getElementById("palette-basic").setAttribute("open", "");
+        }
+      });
+    </script>
+  </body>
+</html>

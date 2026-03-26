@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-card demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #475569;
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --chip-bg: rgba(15, 23, 42, 0.06);
+        --chip-fg: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #020617;
+          --page-fg: #e5e7eb;
+          --muted: #94a3b8;
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+            radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --chip-bg: rgba(148, 163, 184, 0.12);
+          --chip-fg: #cbd5e1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--hero-bg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 {
+        margin-top: 0;
+      }
+
+      .section-card > p {
+        color: var(--muted);
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .card-grid.single {
+        grid-template-columns: 1fr;
+      }
+
+      x-card {
+        display: block;
+      }
+
+      x-card.demo-card {
+        --x-card-color: var(--page-fg);
+        --x-card-background: rgba(255, 255, 255, 0.72);
+        --x-card-filled-background: rgba(241, 245, 249, 0.92);
+        --x-card-border-color: rgba(148, 163, 184, 0.28);
+        --x-card-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+        --x-card-hover-background: rgba(59, 130, 246, 0.07);
+        --x-card-press-background: rgba(59, 130, 246, 0.12);
+        --x-card-focus-ring: rgba(59, 130, 246, 0.42);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        x-card.demo-card {
+          --x-card-color: #e5e7eb;
+          --x-card-background: rgba(15, 23, 42, 0.72);
+          --x-card-filled-background: rgba(30, 41, 59, 0.92);
+          --x-card-border-color: rgba(100, 116, 139, 0.42);
+          --x-card-shadow: 0 14px 30px rgba(0, 0, 0, 0.30);
+          --x-card-hover-background: rgba(96, 165, 250, 0.10);
+          --x-card-press-background: rgba(96, 165, 250, 0.16);
+          --x-card-focus-ring: rgba(96, 165, 250, 0.48);
+        }
+      }
+
+      .card-content {
+        display: grid;
+        gap: 12px;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.2;
+      }
+
+      .card-body {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        color: var(--chip-fg);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .event-log {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--surface-border);
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .event-log {
+          background: rgba(15, 23, 42, 0.42);
+        }
+      }
+
+      code {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 0.92em;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Light & Dark Mode</div>
+        <h1>x-card</h1>
+        <p class="subtitle">
+          Themeable surface container for grouping related content. This demo
+          follows your system light and dark mode setting and uses a more
+          polished, professional surface palette.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Surface variants</h2>
+          <p>
+            The card supports elevated, outlined, filled, and ghost treatments
+            while keeping a consistent content structure.
+          </p>
+
+          <div class="card-grid">
+            <x-card class="demo-card" variant="elevated" padding="md" radius="lg" label="Elevated card">
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Elevated</h3>
+                  <span class="chip">Default</span>
+                </div>
+                <p class="card-body">
+                  Soft elevation for content that should feel distinct from the page.
+                </p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="outlined" padding="md" radius="lg" label="Outlined card">
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Outlined</h3>
+                  <span class="chip">Structured</span>
+                </div>
+                <p class="card-body">
+                  Clear edge definition for forms, settings panels, and grouped metadata.
+                </p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="filled" padding="md" radius="lg" label="Filled card">
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Filled</h3>
+                  <span class="chip">Emphasis</span>
+                </div>
+                <p class="card-body">
+                  A stronger surface treatment for highlighted summaries and dashboard modules.
+                </p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="ghost" padding="md" radius="lg" label="Ghost card">
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Ghost</h3>
+                  <span class="chip">Minimal</span>
+                </div>
+                <p class="card-body">
+                  Minimal chrome for low-emphasis containers embedded in richer layouts.
+                </p>
+              </div>
+            </x-card>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Padding and radius</h2>
+          <p>
+            Spacing and corner radius can be tuned without changing the content model.
+          </p>
+
+          <div class="card-grid">
+            <x-card class="demo-card" variant="outlined" padding="sm" radius="sm" label="Compact card">
+              <div class="card-content">
+                <h3 class="card-title">Compact card</h3>
+                <p class="card-body">Small padding and subtle rounding for dense layouts.</p>
+              </div>
+            </x-card>
+
+            <x-card class="demo-card" variant="elevated" padding="lg" radius="xl" label="Spacious card">
+              <div class="card-content">
+                <h3 class="card-title">Spacious card</h3>
+                <p class="card-body">Larger padding and a softer silhouette for hero content.</p>
+              </div>
+            </x-card>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Interactive behavior</h2>
+          <p>
+            Interactive cards expose button-like activation while preserving the default slot content model.
+          </p>
+
+          <div class="card-grid single">
+            <x-card
+              id="interactive-card"
+              class="demo-card"
+              variant="elevated"
+              padding="md"
+              radius="lg"
+              interactive
+              label="Interactive metrics card"
+            >
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Interactive card</h3>
+                  <span class="chip">Click · Enter · Space</span>
+                </div>
+                <p class="card-body">
+                  Activate this card with a pointer, Enter, or Space to emit a
+                  <code>press</code> event.
+                </p>
+                <div class="row">
+                  <span class="chip">Focusable</span>
+                  <span class="chip">Visible focus ring</span>
+                  <span class="chip">Reduced-motion aware</span>
+                </div>
+              </div>
+            </x-card>
+
+            <div id="event-log" class="event-log">No press events yet.</div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Disabled state</h2>
+          <p>
+            Disabled cards suppress interaction and present a muted visual state.
+          </p>
+
+          <div class="card-grid single">
+            <x-card
+              class="demo-card"
+              variant="outlined"
+              padding="md"
+              radius="lg"
+              interactive
+              disabled
+              label="Disabled billing summary card"
+            >
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">Disabled interactive card</h3>
+                  <span class="chip">Unavailable</span>
+                </div>
+                <p class="card-body">
+                  Interaction is disabled, so no <code>press</code> event is emitted.
+                </p>
+              </div>
+            </x-card>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const card = document.getElementById("interactive-card");
+        const log = document.getElementById("event-log");
+        let count = 0;
+
+        card.addEventListener("press", function () {
+          count += 1;
+          log.textContent = "press event count: " + count;
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BareDOM Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    x-navbar {
+      --x-navbar-radius: 0;
+    }
+
+    x-sidebar {
+      --x-sidebar-bg: #1e293b;
+      --x-sidebar-fg: #e2e8f0;
+      --x-sidebar-border: rgba(255, 255, 255, 0.06);
+    }
+
+    x-modal {
+      --x-modal-bg: #1e293b;
+      --x-modal-fg: #e2e8f0;
+      --x-modal-border: rgba(255, 255, 255, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      x-sidebar {
+        --x-sidebar-bg: #0d1628;
+        --x-sidebar-border: rgba(255, 255, 255, 0.04);
+      }
+      x-modal {
+        --x-modal-bg: #0d1628;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      color-scheme: light dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #f8fafc; }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-main {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .welcome {
+      padding: 64px 0 32px;
+    }
+
+    .welcome h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0 0 16px;
+      line-height: 1.2;
+    }
+
+    .welcome p {
+      font-size: 1.0625rem;
+      color: #64748b;
+      margin: 0 0 32px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .welcome p { color: #94a3b8; }
+    }
+
+    .sidebar-inner {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 240px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      flex-shrink: 0;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+    }
+
+    .sidebar-heading {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      padding: 12px 12px 6px;
+      margin: 0;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #e2e8f0;
+    }
+
+    .sidebar-item--active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+
+    .sidebar-item--active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: #818cf8;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Modal body content ── */
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-intro {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #94a3b8;
+    }
+
+    .modal-formula {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    .modal-formula-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .modal-formula-code {
+      margin: 0;
+      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 14px;
+      color: #a5b4fc;
+    }
+
+    .modal-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .modal-feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px;
+      background: rgba(0, 0, 0, 0.15);
+      gap: 4px;
+    }
+
+    .modal-feature-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #a5b4fc;
+      line-height: 1;
+    }
+
+    .modal-feature-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .modal-note {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #64748b;
+    }
+
+    /* ── Event log panel ── */
+
+    #event-log {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 340px;
+      z-index: 9999;
+    }
+
+    #event-log x-card {
+      --x-card-background: #ffffff;
+      --x-card-color: #0f172a;
+      --x-card-border-color: rgba(0, 0, 0, 0.1);
+      --x-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #event-log x-card {
+        --x-card-background: #1e293b;
+        --x-card-color: #e2e8f0;
+        --x-card-border-color: rgba(255, 255, 255, 0.08);
+        --x-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    .event-log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .event-log-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-title { color: #94a3b8; }
+    }
+
+    .event-log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: baseline;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-size: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-entry { border-bottom-color: rgba(255, 255, 255, 0.05); }
+    }
+
+    .event-log-time {
+      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 10px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .event-log-type {
+      font-weight: 600;
+      color: #6366f1;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-type { color: #a5b4fc; }
+    }
+
+    .event-log-source {
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .event-log-empty {
+      margin: 0;
+      padding: 12px 0 4px;
+      font-size: 12px;
+      font-style: italic;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="event-log"></div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

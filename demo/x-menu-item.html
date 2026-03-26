@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-menu-item demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --btn-bg: #2563eb;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --btn-bg: #3b82f6;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 800px; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .trigger-btn {
+        padding: 8px 16px; border-radius: 6px; border: 1px solid var(--surface-border);
+        background: var(--surface-bg); color: var(--page-fg);
+        font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      }
+      .trigger-btn:hover { background: var(--border); }
+      .chevron { font-size: 10px; }
+
+      /* Standalone items sit inside a styled card so they look contained */
+      .item-surface {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+        min-width: 200px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-menu-item demo</h1>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Variants</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Normal, danger, and divider in a single menu.</p>
+    <div class="row">
+      <x-menu id="menu-variants" label="Actions">
+        <button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></button>
+        <x-menu-item value="edit">Edit</x-menu-item>
+        <x-menu-item value="duplicate">Duplicate</x-menu-item>
+        <x-menu-item value="archive">Archive</x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="delete" variant="danger">Delete</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>With icons</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Assigning content to <code>slot="icon"</code> activates the icon gap.</p>
+    <div class="row">
+      <x-menu id="menu-icons" label="File">
+        <button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></button>
+        <x-menu-item value="new">
+          <span slot="icon">📄</span>
+          New file
+        </x-menu-item>
+        <x-menu-item value="open">
+          <span slot="icon">📂</span>
+          Open
+        </x-menu-item>
+        <x-menu-item value="save">
+          <span slot="icon">💾</span>
+          Save
+        </x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="delete" variant="danger">
+          <span slot="icon">🗑</span>
+          Delete
+        </x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Disabled items</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Disabled items are shown at reduced opacity and do not respond to clicks or keyboard.</p>
+    <div class="row">
+      <x-menu id="menu-disabled" label="Options">
+        <button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></button>
+        <x-menu-item value="copy">Copy</x-menu-item>
+        <x-menu-item value="cut" disabled>Cut (disabled)</x-menu-item>
+        <x-menu-item value="paste" disabled>Paste (disabled)</x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="select-all">Select all</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Standalone items</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px"><code>x-menu-item</code> is a valid standalone element. It fires <code>x-menu-item-select</code> directly when clicked or activated with Enter / Space.</p>
+    <div class="row">
+      <div class="item-surface">
+        <x-menu-item value="standalone-copy">
+          <span slot="icon">📋</span>
+          Copy
+        </x-menu-item>
+        <x-menu-item value="standalone-paste">
+          <span slot="icon">📌</span>
+          Paste
+        </x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="standalone-delete" variant="danger">
+          <span slot="icon">🗑</span>
+          Delete
+        </x-menu-item>
+        <x-menu-item value="standalone-disabled" disabled>Unavailable</x-menu-item>
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Live controls</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Adjust the attributes of the live item below.</p>
+    <div class="controls">
+      <label>value <input type="text" id="ctrl-value" value="live-action" style="width:120px"></label>
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="">default</option>
+          <option value="danger">danger</option>
+        </select>
+      </label>
+      <label>type
+        <select id="ctrl-type">
+          <option value="">item</option>
+          <option value="divider">divider</option>
+        </select>
+      </label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <div class="row">
+      <x-menu id="menu-live" label="Live menu">
+        <button slot="trigger" class="trigger-btn">Live menu <span class="chevron">▾</span></button>
+        <x-menu-item value="before">Item before</x-menu-item>
+        <x-menu-item id="live-item" value="live-action">Live item</x-menu-item>
+        <x-menu-item value="after">Item after</x-menu-item>
+      </x-menu>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <h2>Event log</h2>
+    <div class="log" id="log">Events will appear here.</div>
+
+    <script>
+      const log = document.getElementById('log');
+
+      function logEvent(name, detail, source) {
+        const src = source instanceof Element
+          ? (source.id ? `#${source.id}` : source.tagName.toLowerCase())
+          : '';
+        const msg = `${name}  ${JSON.stringify(detail)}${src ? `  (from ${src})` : ''}`;
+        log.textContent = msg + '\n' + log.textContent;
+      }
+
+      // Capture x-menu-item-select bubbling from any item on the page
+      document.addEventListener('x-menu-item-select', e => {
+        logEvent('x-menu-item-select', e.detail, e.target);
+      });
+
+      // Capture x-menu-select re-dispatched by each x-menu
+      document.querySelectorAll('x-menu').forEach(menu => {
+        menu.addEventListener('x-menu-open',   ()  => logEvent('x-menu-open',   {}, menu));
+        menu.addEventListener('x-menu-close',  ()  => logEvent('x-menu-close',  {}, menu));
+        menu.addEventListener('x-menu-select', e   => logEvent('x-menu-select', e.detail, menu));
+      });
+
+      // Live controls
+      const liveItem    = document.getElementById('live-item');
+      const ctrlValue   = document.getElementById('ctrl-value');
+      const ctrlVariant = document.getElementById('ctrl-variant');
+      const ctrlType    = document.getElementById('ctrl-type');
+      const ctrlDisabled = document.getElementById('ctrl-disabled');
+
+      function updateLive() {
+        const v = ctrlValue.value.trim();
+        if (v) liveItem.setAttribute('value', v);
+        else   liveItem.removeAttribute('value');
+
+        const variant = ctrlVariant.value;
+        if (variant) liveItem.setAttribute('variant', variant);
+        else         liveItem.removeAttribute('variant');
+
+        const type = ctrlType.value;
+        if (type) liveItem.setAttribute('type', type);
+        else      liveItem.removeAttribute('type');
+
+        if (ctrlDisabled.checked) liveItem.setAttribute('disabled', '');
+        else                      liveItem.removeAttribute('disabled');
+
+        // Update visible label when not a divider
+        if (!type) liveItem.textContent = v || 'Live item';
+      }
+
+      ctrlValue.addEventListener('input',  updateLive);
+      ctrlVariant.addEventListener('change', updateLive);
+      ctrlType.addEventListener('change',  updateLive);
+      ctrlDisabled.addEventListener('change', updateLive);
+      updateLive();
+    </script>
+  </body>
+</html>

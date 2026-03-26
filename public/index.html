@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Web Components — Demo Library</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+      --surface-hover: #f1f5f9;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-subtle: #eef2ff;
+      --accent-fg: #4f46e5;
+      --tag-bg: #f1f5f9;
+      --tag-fg: #475569;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f1f5f9;
+        --muted: #94a3b8;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+        --surface-hover: #273549;
+        --accent: #818cf8;
+        --accent-hover: #a5b4fc;
+        --accent-subtle: #1e1b4b;
+        --accent-fg: #818cf8;
+        --tag-bg: #1e293b;
+        --tag-fg: #94a3b8;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+        --shadow-md: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.2);
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      padding: 48px 32px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .header-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-fg);
+      background: var(--accent-subtle);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    header p {
+      margin: 0 0 24px;
+      font-size: 1.0625rem;
+      color: var(--muted);
+      max-width: 560px;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .header-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────────── */
+    .toolbar {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 340px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
+      fill: var(--muted);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    #search:focus { border-color: var(--accent); }
+
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-bg);
+      color: var(--muted);
+      transition: background .12s, color .12s, border-color .12s;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      background: var(--surface-hover);
+      color: var(--page-fg);
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .filter-chip.active { color: #0f172a; }
+    }
+
+    /* ── Section label ───────────────────────────────────── */
+    .section-label {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Grid ────────────────────────────────────────────── */
+    .grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px 64px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Component card ──────────────────────────────────── */
+    .comp-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 18px 20px 16px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .15s, border-color .15s, transform .12s;
+    }
+
+    .comp-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .comp-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .comp-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--accent-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .comp-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--accent-fg);
+    }
+
+    .comp-name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .comp-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      margin-bottom: 10px;
+    }
+
+    .comp-category {
+      margin-top: auto;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--tag-bg);
+      color: var(--tag-fg);
+    }
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 32px;
+      border-top: 1px solid var(--surface-border);
+      font-size: 0.8125rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 32px 20px 28px; }
+      .toolbar { padding: 0 20px 20px; }
+      .section-label { padding: 0 20px 10px; }
+      .grid { padding: 0 20px 48px; grid-template-columns: 1fr 1fr; gap: 10px; }
+      footer { padding: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .comp-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="row">
+    <img src="./assets/baredom_logo_transparent.svg" width=140 height=40/>
+    <div class="header-eyebrow">Web Components</div>
+  </div>
+  <h1>Library demo</h1>
+  <p>Native Custom Elements — zero dependencies, zero framework runtime. Click any component to open its interactive demo.</p>
+  <div class="header-meta">
+    <span id="count-label">— components</span>
+    <span>shadow-cljs · ESM · ClojureScript</span>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 16 16">
+      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+    </svg>
+    <input id="search" type="search" placeholder="Filter components…" autocomplete="off" />
+  </div>
+  <div class="filter-chips" id="filter-chips">
+    <button class="filter-chip active" data-cat="all">All</button>
+    <button class="filter-chip" data-cat="form">Form</button>
+    <button class="filter-chip" data-cat="feedback">Feedback</button>
+    <button class="filter-chip" data-cat="navigation">Navigation</button>
+    <button class="filter-chip" data-cat="layout">Layout</button>
+    <button class="filter-chip" data-cat="data">Data</button>
+    <button class="filter-chip" data-cat="overlay">Overlay</button>
+  </div>
+</div>
+
+<div class="section-label" id="section-label">All components</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <span>Native Web Components · Custom Elements v1</span>
+  <span><code>npx shadow-cljs watch app</code></span>
+</footer>
+
+<script>
+  const components = [
+    { name: "Alert",               tag: "x-alert",               file: "x-alert",               cat: "feedback"   },
+    { name: "Avatar",              tag: "x-avatar",               file: "x-avatar",               cat: "data"       },
+    { name: "Avatar Group",        tag: "x-avatar-group",         file: "x-avatar-group",         cat: "data"       },
+    { name: "Badge",               tag: "x-badge",                file: "x-badge",                cat: "feedback"   },
+    { name: "Breadcrumbs",         tag: "x-breadcrumbs",          file: "x-breadcrumbs",          cat: "navigation" },
+    { name: "Button",              tag: "x-button",               file: "x-button",               cat: "form"       },
+    { name: "Cancel Dialogue",     tag: "x-cancel-dialogue",      file: "x-cancel-dialogue",      cat: "overlay"    },
+    { name: "Card",                tag: "x-card",                 file: "x-card",                 cat: "layout"     },
+    { name: "Chart",               tag: "x-chart",                file: "x-chart",                cat: "data"       },
+    { name: "Checkbox",            tag: "x-checkbox",             file: "x-checkbox",             cat: "form"       },
+    { name: "Chip",                tag: "x-chip",                 file: "x-chip",                 cat: "feedback"   },
+    { name: "Collapse",            tag: "x-collapse",             file: "x-collapse",             cat: "layout"     },
+    { name: "Command Palette",     tag: "x-command-palette",      file: "x-command-palette",      cat: "overlay"    },
+    { name: "Container",           tag: "x-container",            file: "x-container",            cat: "layout"     },
+    { name: "Context Menu",        tag: "x-context-menu",         file: "x-context-menu",         cat: "overlay"    },
+    { name: "Copy",                tag: "x-copy",                 file: "x-copy",                 cat: "form"       },
+    { name: "Currency Field",      tag: "x-currency-field",       file: "x-currency-field",       cat: "form"       },
+    { name: "Date Picker",         tag: "x-date-picker",          file: "x-date-picker",          cat: "form"       },
+    { name: "Divider",             tag: "x-divider",              file: "x-divider",              cat: "layout"     },
+    { name: "Drawer",              tag: "x-drawer",               file: "x-drawer",               cat: "overlay"    },
+    { name: "Dropdown",            tag: "x-dropdown",             file: "x-dropdown",             cat: "overlay"    },
+    { name: "Fieldset",            tag: "x-fieldset",             file: "x-fieldset",             cat: "form"       },
+    { name: "File Download",       tag: "x-file-download",        file: "x-file-download",        cat: "form"       },
+    { name: "Form",                tag: "x-form",                 file: "x-form",                 cat: "form"       },
+    { name: "Form Field",          tag: "x-form-field",           file: "x-form-field",           cat: "form"       },
+    { name: "Grid",                tag: "x-grid",                 file: "x-grid",                 cat: "layout"     },
+    { name: "Menu",                tag: "x-menu",                 file: "x-menu",                 cat: "navigation" },
+    { name: "Menu Item",           tag: "x-menu-item",            file: "x-menu-item",            cat: "navigation" },
+    { name: "Modal",               tag: "x-modal",                file: "x-modal",                cat: "overlay"    },
+    { name: "Navbar",              tag: "x-navbar",               file: "x-navbar",               cat: "navigation" },
+    { name: "Notification Center", tag: "x-notification-center",  file: "x-notification-center",  cat: "feedback"   },
+    { name: "Pagination",          tag: "x-pagination",           file: "x-pagination",           cat: "navigation" },
+    { name: "Popover",             tag: "x-popover",              file: "x-popover",              cat: "overlay"    },
+    { name: "Progress",            tag: "x-progress",             file: "x-progress",             cat: "feedback"   },
+    { name: "Progress Circle",     tag: "x-progress-circle",      file: "x-progress-circle",      cat: "feedback"   },
+    { name: "Radio",               tag: "x-radio",                file: "x-radio",                cat: "form"       },
+    { name: "Search Field",        tag: "x-search-field",         file: "x-search-field",         cat: "form"       },
+    { name: "Select",              tag: "x-select",               file: "x-select",               cat: "form"       },
+    { name: "Sidebar",             tag: "x-sidebar",              file: "x-sidebar",              cat: "navigation" },
+    { name: "Skeleton",            tag: "x-skeleton",             file: "x-skeleton",             cat: "feedback"   },
+    { name: "Slider",              tag: "x-slider",               file: "x-slider",               cat: "form"       },
+    { name: "Spacer",              tag: "x-spacer",               file: "x-spacer",               cat: "layout"     },
+    { name: "Spinner",             tag: "x-spinner",              file: "x-spinner",              cat: "feedback"   },
+    { name: "Stat",                tag: "x-stat",                 file: "x-stat",                 cat: "data"       },
+    { name: "Stepper",             tag: "x-stepper",              file: "x-stepper",              cat: "form"       },
+    { name: "Switch",              tag: "x-switch",               file: "x-switch",               cat: "form"       },
+    { name: "Tab",                 tag: "x-tab",                  file: "x-tab",                  cat: "navigation" },
+    { name: "Table",               tag: "x-table",                file: "x-table",                cat: "data"       },
+    { name: "Table Cell",          tag: "x-table-cell",           file: "x-table-cell",           cat: "data"       },
+    { name: "Table Row",           tag: "x-table-row",            file: "x-table-row",            cat: "data"       },
+    { name: "Tabs",                tag: "x-tabs",                 file: "x-tabs",                 cat: "navigation" },
+    { name: "Text Area",           tag: "x-text-area",            file: "x-text-area",            cat: "form"       },
+    { name: "Timeline",            tag: "x-timeline",             file: "x-timeline",             cat: "data"       },
+    { name: "Timeline Item",       tag: "x-timeline-item",        file: "x-timeline-item",        cat: "data"       },
+    { name: "Toast",               tag: "x-toast",                file: "x-toast",                cat: "feedback"   },
+    { name: "Toaster",             tag: "x-toaster",              file: "x-toaster",              cat: "feedback"   },
+  ];
+
+  const catIcons = {
+    form:       `<svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="9" height="2" rx="1"/><rect x="1" y="11" width="11" height="2" rx="1"/></svg>`,
+    feedback:   `<svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0 3.5c.276 0 .5.224.5.5v4a.5.5 0 0 1-1 0V8c0-.276.224-.5.5-.5z"/></svg>`,
+    navigation: `<svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="10" height="2" rx="1"/><rect x="1" y="12" width="12" height="2" rx="1"/></svg>`,
+    layout:     `<svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>`,
+    data:       `<svg viewBox="0 0 16 16"><ellipse cx="8" cy="4" rx="6" ry="2"/><path d="M2 4v3c0 1.105 2.686 2 6 2s6-.895 6-2V4"/><path d="M2 7v4c0 1.105 2.686 2 6 2s6-.895 6-2V7"/></svg>`,
+    overlay:    `<svg viewBox="0 0 16 16"><rect x="1" y="1" width="9" height="9" rx="1" opacity=".4"/><rect x="6" y="6" width="9" height="9" rx="1"/></svg>`,
+  };
+
+  let activeCategory = "all";
+  let searchQuery = "";
+
+  function render() {
+    const filtered = components.filter(c => {
+      const matchesCat = activeCategory === "all" || c.cat === activeCategory;
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.tag.includes(q) || c.cat.includes(q);
+      return matchesCat && matchesSearch;
+    });
+
+    document.getElementById("count-label").textContent = `${components.length} components`;
+
+    const label = document.getElementById("section-label");
+    if (searchQuery) {
+      label.textContent = `${filtered.length} result${filtered.length !== 1 ? "s" : ""} for "${searchQuery}"`;
+    } else if (activeCategory === "all") {
+      label.textContent = "All components";
+    } else {
+      label.textContent = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
+    }
+
+    const grid = document.getElementById("grid");
+
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="empty">No components match your filter.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(c => `
+      <a class="comp-card" href="demo/${c.file}.html" target="_blank" rel="noopener">
+        <div class="comp-icon">${catIcons[c.cat]}</div>
+        <div class="comp-name">${c.name}</div>
+        <div class="comp-tag">&lt;${c.tag}&gt;</div>
+        <span class="comp-category">${c.cat}</span>
+      </a>
+    `).join("");
+  }
+
+  document.getElementById("filter-chips").addEventListener("click", e => {
+    const chip = e.target.closest(".filter-chip");
+    if (!chip) return;
+    activeCategory = chip.dataset.cat;
+    document.querySelectorAll(".filter-chip").forEach(el =>
+      el.classList.toggle("active", el === chip));
+    render();
+  });
+
+  document.getElementById("search").addEventListener("input", e => {
+    searchQuery = e.target.value.trim();
+    if (searchQuery) {
+      activeCategory = "all";
+      document.querySelectorAll(".filter-chip").forEach(el =>
+        el.classList.toggle("active", el.dataset.cat === "all"));
+    }
+    render();
+  });
+
+  render();
+</script>
+
+</body>
+</html>

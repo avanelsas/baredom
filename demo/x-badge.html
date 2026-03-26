@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-badge demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls select, .controls input {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-badge demo</h1>
+
+    <h2>Colour variants</h2>
+    <div class="row">
+      <x-badge variant="neutral">Neutral</x-badge>
+      <x-badge variant="info">Info</x-badge>
+      <x-badge variant="success">Success</x-badge>
+      <x-badge variant="warning">Warning</x-badge>
+      <x-badge variant="error">Error</x-badge>
+    </div>
+
+    <h2>Count mode</h2>
+    <div class="row">
+      <x-badge variant="info"  count="7"></x-badge>
+      <x-badge variant="error" count="23"></x-badge>
+      <x-badge variant="error" count="999" max="99"></x-badge>
+    </div>
+
+    <h2>Text mode</h2>
+    <div class="row">
+      <x-badge variant="success" text="NEW"></x-badge>
+      <x-badge variant="warning" text="BETA"></x-badge>
+      <x-badge variant="info"    text="v2"></x-badge>
+    </div>
+
+    <h2>Small size</h2>
+    <div class="row">
+      <x-badge variant="info"    size="sm" count="5"></x-badge>
+      <x-badge variant="error"   size="sm" count="12"></x-badge>
+      <x-badge variant="neutral" size="sm" text="tag"></x-badge>
+    </div>
+
+    <h2>Pill shape</h2>
+    <div class="row">
+      <x-badge variant="success" pill count="3"></x-badge>
+      <x-badge variant="info"    pill text="NEW"></x-badge>
+    </div>
+
+    <h2>Dot mode</h2>
+    <div class="row">
+      <x-badge variant="error"   dot></x-badge>
+      <x-badge variant="warning" dot></x-badge>
+      <x-badge variant="success" dot></x-badge>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="neutral">neutral</option>
+          <option value="info" selected>info</option>
+          <option value="success">success</option>
+          <option value="warning">warning</option>
+          <option value="error">error</option>
+        </select>
+      </label>
+      <label>size
+        <select id="ctrl-size">
+          <option value="md" selected>md</option>
+          <option value="sm">sm</option>
+        </select>
+      </label>
+      <label>count
+        <input type="number" id="ctrl-count" placeholder="none" style="width:60px" min="0">
+      </label>
+      <label>max
+        <input type="number" id="ctrl-max" value="99" style="width:60px" min="1">
+      </label>
+      <label>text
+        <input type="text" id="ctrl-text" placeholder="none" style="width:80px">
+      </label>
+      <label>dot <input type="checkbox" id="ctrl-dot"></label>
+      <label>pill <input type="checkbox" id="ctrl-pill"></label>
+    </div>
+    <div class="row">
+      <x-badge id="live" variant="info">Label</x-badge>
+    </div>
+
+    <script>
+      const live = document.getElementById("live");
+      function update() {
+        live.setAttribute("variant", document.getElementById("ctrl-variant").value);
+        live.setAttribute("size",    document.getElementById("ctrl-size").value);
+
+        const count = document.getElementById("ctrl-count").value.trim();
+        const text  = document.getElementById("ctrl-text").value.trim();
+        const max   = document.getElementById("ctrl-max").value.trim();
+        const dot   = document.getElementById("ctrl-dot").checked;
+        const pill  = document.getElementById("ctrl-pill").checked;
+
+        if (count) live.setAttribute("count", count); else live.removeAttribute("count");
+        if (text)  live.setAttribute("text",  text);  else live.removeAttribute("text");
+        if (max)   live.setAttribute("max",   max);   else live.removeAttribute("max");
+        if (dot)   live.setAttribute("dot",   "");    else live.removeAttribute("dot");
+        if (pill)  live.setAttribute("pill",  "");    else live.removeAttribute("pill");
+
+        // If no content mode, show slot text
+        if (!count && !text && !dot) live.textContent = "Label";
+        else live.textContent = "";
+      }
+      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+        el.addEventListener("change", update);
+        el.addEventListener("input", update);
+      });
+    </script>
+  </body>
+</html>

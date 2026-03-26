@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-progress-circle demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+        --log-bg: #f1f5f9;
+        --log-fg: #334155;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+          --log-bg: #1e293b;
+          --log-fg: #94a3b8;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 720px; }
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 8px 0; }
+      .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text], .controls input[type=number] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .controls input[type=range] { width: 120px; }
+      #event-log {
+        background: var(--log-bg); color: var(--log-fg);
+        border-radius: 8px; padding: 10px 12px;
+        font-family: monospace; font-size: 12px;
+        min-height: 48px; max-height: 120px; overflow-y: auto;
+        margin-top: 8px;
+      }
+      #event-log p { margin: 0 0 2px; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-progress-circle demo</h1>
+
+    <h2>Variants</h2>
+    <div class="row">
+      <x-progress-circle value="65" variant="default" show-value label="Default"></x-progress-circle>
+      <x-progress-circle value="65" variant="success" show-value label="Success"></x-progress-circle>
+      <x-progress-circle value="65" variant="warning" show-value label="Warning"></x-progress-circle>
+      <x-progress-circle value="65" variant="danger"  show-value label="Danger"></x-progress-circle>
+    </div>
+
+    <h2>Sizes</h2>
+    <div class="row">
+      <x-progress-circle value="50" size="sm" show-value label="sm"></x-progress-circle>
+      <x-progress-circle value="50" size="md" show-value label="md"></x-progress-circle>
+      <x-progress-circle value="50" size="lg" show-value label="lg"></x-progress-circle>
+    </div>
+
+    <h2>Without value text</h2>
+    <div class="row">
+      <x-progress-circle value="30"></x-progress-circle>
+      <x-progress-circle value="70" variant="success"></x-progress-circle>
+      <x-progress-circle value="0"></x-progress-circle>
+      <x-progress-circle value="100" variant="success" show-value></x-progress-circle>
+    </div>
+
+    <h2>Indeterminate</h2>
+    <div class="row">
+      <x-progress-circle indeterminate label="Loading…"></x-progress-circle>
+      <x-progress-circle indeterminate variant="success" size="sm"></x-progress-circle>
+      <x-progress-circle indeterminate variant="warning" size="lg"></x-progress-circle>
+    </div>
+
+    <h2>Custom theme</h2>
+    <div class="row">
+      <x-progress-circle value="72" show-value size="lg"
+        style="--x-progress-circle-fill-color:#8b5cf6;--x-progress-circle-track-color:#ede9fe;">
+      </x-progress-circle>
+      <x-progress-circle value="45" show-value size="md"
+        style="--x-progress-circle-fill-color:#f43f5e;--x-progress-circle-stroke-width:4;">
+      </x-progress-circle>
+    </div>
+
+    <h2>Live control</h2>
+    <div class="controls">
+      <label>value
+        <input type="range" id="ctrl-value" min="0" max="100" value="40">
+        <span id="ctrl-value-display">40</span>
+      </label>
+      <label>max
+        <input type="number" id="ctrl-max" value="100" min="1" style="width:60px">
+      </label>
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="default" selected>default</option>
+          <option value="success">success</option>
+          <option value="warning">warning</option>
+          <option value="danger">danger</option>
+        </select>
+      </label>
+      <label>size
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </label>
+      <label>show-value <input type="checkbox" id="ctrl-show-value" checked></label>
+      <label>indeterminate <input type="checkbox" id="ctrl-indeterminate"></label>
+    </div>
+
+    <div class="row">
+      <x-progress-circle id="live" value="40" show-value></x-progress-circle>
+    </div>
+
+    <h2>Event log (<code>x-progress-circle-complete</code>)</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 6px;">
+      Drag the value slider to 100 to trigger the event. Drop below 100 to reset.
+    </p>
+    <div id="event-log"><p style="color:var(--muted)">Events will appear here…</p></div>
+
+    <script>
+      const live       = document.getElementById('live');
+      const log        = document.getElementById('event-log');
+      const valSlider  = document.getElementById('ctrl-value');
+      const valDisplay = document.getElementById('ctrl-value-display');
+
+      function update() {
+        const value   = valSlider.value;
+        const max     = document.getElementById('ctrl-max').value;
+        const variant = document.getElementById('ctrl-variant').value;
+        const size    = document.getElementById('ctrl-size').value;
+        const showVal = document.getElementById('ctrl-show-value').checked;
+        const indet   = document.getElementById('ctrl-indeterminate').checked;
+
+        valDisplay.textContent = value;
+        live.setAttribute('value', value);
+        live.setAttribute('max', max || '100');
+        live.setAttribute('variant', variant);
+        live.setAttribute('size', size);
+
+        if (showVal) live.setAttribute('show-value', '');
+        else live.removeAttribute('show-value');
+
+        if (indet) live.setAttribute('indeterminate', '');
+        else live.removeAttribute('indeterminate');
+      }
+
+      valSlider.addEventListener('input', () => {
+        valDisplay.textContent = valSlider.value;
+        update();
+      });
+
+      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value)').forEach(el => {
+        el.addEventListener('change', update);
+        el.addEventListener('input', update);
+      });
+
+      live.addEventListener('x-progress-circle-complete', e => {
+        const p = document.createElement('p');
+        const t = new Date().toLocaleTimeString();
+        p.textContent = `[${t}] x-progress-circle-complete — value: ${e.detail.value}, max: ${e.detail.max}`;
+        if (log.querySelector('p[style]')) log.innerHTML = '';
+        log.appendChild(p);
+        log.scrollTop = log.scrollHeight;
+      });
+    </script>
+  </body>
+</html>

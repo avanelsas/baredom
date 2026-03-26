@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-select demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .item { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; gap: 6px; align-items: center; }
+      .controls input[type=text], .controls select {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-select demo</h1>
+
+    <h2>Default (md)</h2>
+    <div class="row">
+      <x-select name="fruit" placeholder="Pick a fruit">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+        <option value="cherry">Cherry</option>
+      </x-select>
+    </div>
+
+    <h2>Sizes</h2>
+    <div class="row">
+      <div class="item">
+        <x-select size="sm" name="size-sm" placeholder="Small">
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </x-select>
+        sm
+      </div>
+      <div class="item">
+        <x-select size="md" name="size-md" placeholder="Medium">
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </x-select>
+        md
+      </div>
+      <div class="item">
+        <x-select size="lg" name="size-lg" placeholder="Large">
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </x-select>
+        lg
+      </div>
+    </div>
+
+    <h2>With pre-selected value</h2>
+    <div class="row">
+      <x-select name="role" value="editor">
+        <option value="admin">Admin</option>
+        <option value="editor">Editor</option>
+        <option value="viewer">Viewer</option>
+      </x-select>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-select disabled name="disabled-sel" placeholder="Disabled">
+        <option value="x">Option X</option>
+      </x-select>
+      <x-select disabled name="disabled-val" value="pro">
+        <option value="free">Free</option>
+        <option value="pro">Pro</option>
+      </x-select>
+    </div>
+
+    <h2>Required</h2>
+    <div class="row">
+      <x-select required name="required-sel" placeholder="Required field">
+        <option value="one">One</option>
+        <option value="two">Two</option>
+      </x-select>
+    </div>
+
+    <h2>Option groups</h2>
+    <div class="row">
+      <x-select name="city" placeholder="Choose a city">
+        <optgroup label="North America">
+          <option value="nyc">New York</option>
+          <option value="la">Los Angeles</option>
+          <option value="tor">Toronto</option>
+        </optgroup>
+        <optgroup label="Europe">
+          <option value="lon">London</option>
+          <option value="par">Paris</option>
+          <option value="ber">Berlin</option>
+        </optgroup>
+      </x-select>
+    </div>
+
+    <h2>Interactive — select-change events logged below</h2>
+    <div class="row">
+      <x-select id="interactive-sel" name="plan" placeholder="Choose a plan">
+        <option value="free">Free</option>
+        <option value="pro">Pro — $9/mo</option>
+        <option value="enterprise">Enterprise</option>
+      </x-select>
+    </div>
+
+    <h2>Consumer-controlled value (reacts to select-change)</h2>
+    <div class="row">
+      <x-select id="controlled-sel" name="controlled" placeholder="Pick one">
+        <option value="alpha">Alpha</option>
+        <option value="beta">Beta</option>
+        <option value="gamma">Gamma</option>
+      </x-select>
+      <span id="controlled-display" style="font-size:14px;color:var(--muted)">No selection</span>
+    </div>
+
+    <h2>Live controls</h2>
+    <div class="controls">
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>required <input type="checkbox" id="ctrl-required"></label>
+      <label>
+        size
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </label>
+      <label>placeholder <input type="text" id="ctrl-placeholder" value="Select…" style="width:120px"></label>
+      <label>value <input type="text" id="ctrl-value" style="width:80px" placeholder="(attr)"></label>
+    </div>
+    <div class="row">
+      <x-select id="live-sel" name="live" placeholder="Select…">
+        <option value="red">Red</option>
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+      </x-select>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      // Interactive
+      const interactiveSel = document.getElementById("interactive-sel");
+      interactiveSel.addEventListener("select-change", e =>
+        logEvent("select-change (interactive)", e.detail));
+
+      // Consumer-controlled
+      const controlledSel     = document.getElementById("controlled-sel");
+      const controlledDisplay = document.getElementById("controlled-display");
+      controlledSel.addEventListener("select-change", e => {
+        controlledSel.setAttribute("value", e.detail.value);
+        controlledDisplay.textContent = `value="${e.detail.value}" label="${e.detail.label}"`;
+        logEvent("select-change (controlled)", e.detail);
+      });
+
+      // Live select
+      const liveSel = document.getElementById("live-sel");
+      liveSel.addEventListener("select-change", e =>
+        logEvent("select-change (live)", e.detail));
+
+      function updateLive() {
+        const disabled    = document.getElementById("ctrl-disabled").checked;
+        const required    = document.getElementById("ctrl-required").checked;
+        const size        = document.getElementById("ctrl-size").value;
+        const placeholder = document.getElementById("ctrl-placeholder").value;
+        const value       = document.getElementById("ctrl-value").value.trim();
+
+        if (disabled) liveSel.setAttribute("disabled", "");       else liveSel.removeAttribute("disabled");
+        if (required) liveSel.setAttribute("required", "");       else liveSel.removeAttribute("required");
+        liveSel.setAttribute("size", size);
+        if (placeholder) liveSel.setAttribute("placeholder", placeholder); else liveSel.removeAttribute("placeholder");
+        if (value)    liveSel.setAttribute("value", value);       else liveSel.removeAttribute("value");
+      }
+
+      document.querySelectorAll(".controls input, .controls select").forEach(el => {
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input",  updateLive);
+      });
+
+      // Initialize live controls
+      updateLive();
+    </script>
+  </body>
+</html>

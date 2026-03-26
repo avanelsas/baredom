@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark" />
+  <title>x-pagination Demo</title>
+  <script src="/js/main.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-fg: #0f172a;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f8fafc;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1e293b;
+        --input-fg: #f8fafc;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      line-height: 1.4;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 2rem; }
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 32px 0 10px;
+    }
+
+    .demo-row {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .panel {
+      border: 1px solid var(--surface-border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      background: var(--surface-bg);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .control-group { display: flex; flex-direction: column; gap: 0.25rem; }
+
+    label { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+
+    input[type="number"], select {
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--surface-border);
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    input[type="checkbox"] { margin-right: 0.5rem; }
+
+    .event-log {
+      font-family: monospace;
+      font-size: 12px;
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+    }
+
+    .event-log p { margin: 0.15rem 0; }
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+    /* Custom theme example */
+    .themed-pagination {
+      --x-pagination-button-radius: 9999px;
+      --x-pagination-current-bg: #7c3aed;
+      --x-pagination-current-color: #fff;
+      --x-pagination-button-hover-bg: rgba(124, 58, 237, 0.1);
+      --x-pagination-button-hover-color: #7c3aed;
+    }
+  </style>
+</head>
+<body>
+  <h1>x-pagination</h1>
+
+  <!-- ── Live Control Panel ────────────────────────────────────────── -->
+  <h2>Interactive</h2>
+  <div class="panel">
+    <div class="controls">
+      <div class="control-group">
+        <label for="ctrl-page">page</label>
+        <input id="ctrl-page" type="number" min="1" value="1">
+      </div>
+      <div class="control-group">
+        <label for="ctrl-total">total-pages</label>
+        <input id="ctrl-total" type="number" min="1" value="10">
+      </div>
+      <div class="control-group">
+        <label for="ctrl-siblings">sibling-count</label>
+        <input id="ctrl-siblings" type="number" min="0" value="1">
+      </div>
+      <div class="control-group">
+        <label for="ctrl-boundary">boundary-count</label>
+        <input id="ctrl-boundary" type="number" min="0" value="1">
+      </div>
+      <div class="control-group">
+        <label for="ctrl-size">size</label>
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </div>
+      <div class="control-group" style="justify-content:flex-end">
+        <label>
+          <input id="ctrl-disabled" type="checkbox"> disabled
+        </label>
+      </div>
+    </div>
+
+    <x-pagination id="demo-main" page="1" total-pages="10"></x-pagination>
+
+    <div class="event-log" id="event-log">
+      <p style="color:#999">Events will appear here…</p>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ── Sizes ─────────────────────────────────────────────────────── -->
+  <h2>Sizes</h2>
+  <div class="demo-row">
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">size="sm"</p>
+      <x-pagination page="3" total-pages="10" size="sm"></x-pagination>
+    </div>
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">size="md" (default)</p>
+      <x-pagination page="3" total-pages="10" size="md"></x-pagination>
+    </div>
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">size="lg"</p>
+      <x-pagination page="3" total-pages="10" size="lg"></x-pagination>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ── Ellipsis variants ─────────────────────────────────────────── -->
+  <h2>Ellipsis behaviour</h2>
+  <div class="demo-row">
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">Page 1 of 20 — ellipsis right</p>
+      <x-pagination page="1" total-pages="20"></x-pagination>
+    </div>
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">Page 10 of 20 — ellipsis both sides</p>
+      <x-pagination page="10" total-pages="20"></x-pagination>
+    </div>
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">Page 20 of 20 — ellipsis left</p>
+      <x-pagination page="20" total-pages="20"></x-pagination>
+    </div>
+    <div>
+      <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">sibling-count="2" boundary-count="2"</p>
+      <x-pagination page="10" total-pages="20" sibling-count="2" boundary-count="2"></x-pagination>
+    </div>
+  </div>
+
+  <hr class="section-sep">
+
+  <!-- ── Disabled ───────────────────────────────────────────────────── -->
+  <h2>Disabled</h2>
+  <x-pagination page="3" total-pages="10" disabled></x-pagination>
+
+  <hr class="section-sep">
+
+  <!-- ── Custom slot content ────────────────────────────────────────── -->
+  <h2>Custom prev/next slot content</h2>
+  <x-pagination page="5" total-pages="10">
+    <span slot="prev">&#8592; Back</span>
+    <span slot="next">Forward &#8594;</span>
+  </x-pagination>
+
+  <hr class="section-sep">
+
+  <!-- ── Custom theme ───────────────────────────────────────────────── -->
+  <h2>Custom theme (purple pill buttons)</h2>
+  <x-pagination class="themed-pagination" page="3" total-pages="10"></x-pagination>
+
+  <script>
+    // ── Live control panel wiring ───────────────────────────────────
+    const demo = document.getElementById('demo-main');
+    const log  = document.getElementById('event-log');
+
+    function syncAttr(id, attr, isBoolean) {
+      const el = document.getElementById(id);
+      function update() {
+        if (isBoolean) {
+          if (el.checked) demo.setAttribute(attr, '');
+          else demo.removeAttribute(attr);
+        } else {
+          demo.setAttribute(attr, el.value);
+        }
+      }
+      el.addEventListener('change', update);
+      el.addEventListener('input', update);
+    }
+
+    syncAttr('ctrl-page',     'page');
+    syncAttr('ctrl-total',    'total-pages');
+    syncAttr('ctrl-siblings', 'sibling-count');
+    syncAttr('ctrl-boundary', 'boundary-count');
+    syncAttr('ctrl-size',     'size');
+    syncAttr('ctrl-disabled', 'disabled', true);
+
+    // Sync page input when user clicks a page button
+    demo.addEventListener('page-change', e => {
+      document.getElementById('ctrl-page').value = e.detail.page;
+      demo.setAttribute('page', String(e.detail.page));
+
+      const entry = document.createElement('p');
+      entry.textContent = `page-change → { page: ${e.detail.page} }`;
+      const placeholder = log.querySelector('p[style]');
+      if (placeholder) placeholder.remove();
+      log.insertBefore(entry, log.firstChild);
+    });
+
+    // Also log events from all other demos
+    document.querySelectorAll('x-pagination:not(#demo-main)').forEach(el => {
+      el.addEventListener('page-change', e => {
+        el.setAttribute('page', String(e.detail.page));
+      });
+    });
+  </script>
+</body>
+</html>

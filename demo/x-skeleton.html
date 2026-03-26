@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-skeleton demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 720px; }
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      .stack { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+      .row   { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .card-skeleton { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+      .card-skeleton .lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+      .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-skeleton demo</h1>
+
+    <h2>Variants — default size</h2>
+    <div class="stack">
+      <x-skeleton variant="rect"></x-skeleton>
+      <x-skeleton variant="text"></x-skeleton>
+      <x-skeleton variant="circle"></x-skeleton>
+    </div>
+
+    <h2>Animations</h2>
+    <div class="stack">
+      <x-skeleton animation="pulse" height="2rem"></x-skeleton>
+      <x-skeleton animation="wave"  height="2rem"></x-skeleton>
+      <x-skeleton animation="none"  height="2rem"></x-skeleton>
+    </div>
+
+    <h2>Explicit sizes</h2>
+    <div class="stack">
+      <x-skeleton height="4rem"></x-skeleton>
+      <x-skeleton width="60%" height="1rem"></x-skeleton>
+      <x-skeleton variant="circle" width="56px" height="56px"></x-skeleton>
+    </div>
+
+    <h2>Card placeholder composition</h2>
+    <div class="card-skeleton">
+      <x-skeleton variant="circle" width="48px" height="48px"></x-skeleton>
+      <div class="lines">
+        <x-skeleton variant="text" width="55%"></x-skeleton>
+        <x-skeleton variant="text" width="35%"></x-skeleton>
+      </div>
+    </div>
+    <div class="stack" style="margin-top:12px;">
+      <x-skeleton height="120px"></x-skeleton>
+      <x-skeleton variant="text" width="80%"></x-skeleton>
+      <x-skeleton variant="text" width="60%"></x-skeleton>
+    </div>
+
+    <h2>Custom theme</h2>
+    <div class="stack">
+      <x-skeleton
+        animation="wave"
+        height="48px"
+        style="
+          --x-skeleton-color:#ede9fe;
+          --x-skeleton-highlight:rgba(139,92,246,0.3);
+          --x-skeleton-border-radius:8px;
+        ">
+      </x-skeleton>
+      <x-skeleton
+        height="48px"
+        style="
+          --x-skeleton-color:#fef9c3;
+          --x-skeleton-border-radius:24px;
+        ">
+      </x-skeleton>
+    </div>
+
+    <h2>Live control</h2>
+    <div class="controls">
+      <label>variant
+        <select id="ctrl-variant">
+          <option value="rect" selected>rect</option>
+          <option value="text">text</option>
+          <option value="circle">circle</option>
+        </select>
+      </label>
+      <label>animation
+        <select id="ctrl-animation">
+          <option value="pulse" selected>pulse</option>
+          <option value="wave">wave</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <label>width
+        <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:100px">
+      </label>
+      <label>height
+        <input type="text" id="ctrl-height" value="3rem" style="width:80px">
+      </label>
+    </div>
+    <x-skeleton id="live" height="3rem"></x-skeleton>
+
+    <script>
+      const live = document.getElementById('live');
+
+      function update() {
+        const variant   = document.getElementById('ctrl-variant').value;
+        const animation = document.getElementById('ctrl-animation').value;
+        const width     = document.getElementById('ctrl-width').value.trim();
+        const height    = document.getElementById('ctrl-height').value.trim();
+
+        live.setAttribute('variant',   variant);
+        live.setAttribute('animation', animation);
+
+        if (width)  live.setAttribute('width',  width);
+        else        live.removeAttribute('width');
+
+        if (height) live.setAttribute('height', height);
+        else        live.removeAttribute('height');
+      }
+
+      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+        el.addEventListener('change', update);
+        el.addEventListener('input',  update);
+      });
+    </script>
+  </body>
+</html>

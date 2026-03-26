@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-spinner demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --radius: 10px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --surface: #1f2937;
+        --border: #374151;
+        --text: #f9fafb;
+        --text-muted: #9ca3af;
+      }
+    }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    h2 { font-size: 1rem; font-weight: 600; margin: 0 0 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cell label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Control panel */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.875rem;
+    }
+
+    .preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-spinner</h1>
+<p style="color:var(--text-muted);margin:0 0 24px">Indeterminate loading indicator.</p>
+
+<!-- Sizes -->
+<div class="section">
+  <h2>Sizes</h2>
+  <div class="row">
+    <div class="cell">
+      <x-spinner size="xs"></x-spinner>
+      <label>xs</label>
+    </div>
+    <div class="cell">
+      <x-spinner size="sm"></x-spinner>
+      <label>sm</label>
+    </div>
+    <div class="cell">
+      <x-spinner size="md"></x-spinner>
+      <label>md (default)</label>
+    </div>
+    <div class="cell">
+      <x-spinner size="lg"></x-spinner>
+      <label>lg</label>
+    </div>
+    <div class="cell">
+      <x-spinner size="xl"></x-spinner>
+      <label>xl</label>
+    </div>
+  </div>
+</div>
+
+<!-- Variants -->
+<div class="section">
+  <h2>Variants</h2>
+  <div class="row">
+    <div class="cell">
+      <x-spinner variant="default"></x-spinner>
+      <label>default</label>
+    </div>
+    <div class="cell">
+      <x-spinner variant="primary"></x-spinner>
+      <label>primary</label>
+    </div>
+    <div class="cell">
+      <x-spinner variant="success"></x-spinner>
+      <label>success</label>
+    </div>
+    <div class="cell">
+      <x-spinner variant="warning"></x-spinner>
+      <label>warning</label>
+    </div>
+    <div class="cell">
+      <x-spinner variant="danger"></x-spinner>
+      <label>danger</label>
+    </div>
+  </div>
+</div>
+
+<!-- Sizes × Variants grid -->
+<div class="section">
+  <h2>Sizes × Variants</h2>
+  <div id="grid" style="display:flex;flex-direction:column;gap:16px;"></div>
+</div>
+
+<!-- Custom CSS properties -->
+<div class="section">
+  <h2>Custom CSS properties</h2>
+  <div class="row">
+    <div class="cell">
+      <x-spinner style="--x-spinner-size:40px;--x-spinner-thickness:4px;--x-spinner-color:#8b5cf6;--x-spinner-duration:1.2s;"></x-spinner>
+      <label>40px, 4px thick, purple, 1.2s</label>
+    </div>
+    <div class="cell">
+      <x-spinner style="--x-spinner-size:32px;--x-spinner-thickness:3px;--x-spinner-color:#ec4899;--x-spinner-track-color:rgba(236,72,153,0.15);"></x-spinner>
+      <label>pink + tinted track</label>
+    </div>
+    <div class="cell">
+      <x-spinner style="--x-spinner-size:48px;--x-spinner-thickness:5px;--x-spinner-duration:2s;--x-spinner-color:#0ea5e9;"></x-spinner>
+      <label>48px, 5px, slow</label>
+    </div>
+  </div>
+</div>
+
+<!-- Inline usage -->
+<div class="section">
+  <h2>Inline usage</h2>
+  <p style="margin:0">
+    Uploading file
+    <x-spinner size="sm" variant="primary" label="Uploading" style="vertical-align:middle;margin-left:6px;"></x-spinner>
+    &nbsp;please wait…
+  </p>
+</div>
+
+<!-- Live control panel -->
+<div class="section">
+  <h2>Live control panel</h2>
+  <div class="controls">
+    <div class="field">
+      <label for="ctrl-size">size</label>
+      <select id="ctrl-size">
+        <option value="xs">xs</option>
+        <option value="sm">sm</option>
+        <option value="md" selected>md</option>
+        <option value="lg">lg</option>
+        <option value="xl">xl</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ctrl-variant">variant</label>
+      <select id="ctrl-variant">
+        <option value="default" selected>default</option>
+        <option value="primary">primary</option>
+        <option value="success">success</option>
+        <option value="warning">warning</option>
+        <option value="danger">danger</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ctrl-label">label (aria-label)</label>
+      <input id="ctrl-label" type="text" value="Loading">
+    </div>
+  </div>
+  <div class="preview">
+    <x-spinner id="live-spinner"></x-spinner>
+  </div>
+</div>
+
+<script>
+  // Build sizes × variants grid
+  const sizes    = ['xs', 'sm', 'md', 'lg', 'xl'];
+  const variants = ['default', 'primary', 'success', 'warning', 'danger'];
+  const grid = document.getElementById('grid');
+
+  variants.forEach(v => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:24px;flex-wrap:wrap;';
+    const variantLabel = document.createElement('span');
+    variantLabel.textContent = v;
+    variantLabel.style.cssText = 'font-size:0.75rem;color:var(--text-muted);width:60px;flex-shrink:0;';
+    row.appendChild(variantLabel);
+    sizes.forEach(s => {
+      const el = document.createElement('x-spinner');
+      el.setAttribute('size', s);
+      el.setAttribute('variant', v);
+      row.appendChild(el);
+    });
+    grid.appendChild(row);
+  });
+
+  // Live control panel
+  const live = document.getElementById('live-spinner');
+  const ctrlSize    = document.getElementById('ctrl-size');
+  const ctrlVariant = document.getElementById('ctrl-variant');
+  const ctrlLabel   = document.getElementById('ctrl-label');
+
+  function updateLive() {
+    live.setAttribute('size',    ctrlSize.value);
+    live.setAttribute('variant', ctrlVariant.value);
+    live.setAttribute('label',   ctrlLabel.value || 'Loading');
+  }
+
+  ctrlSize.addEventListener('change', updateLive);
+  ctrlVariant.addEventListener('change', updateLive);
+  ctrlLabel.addEventListener('input', updateLive);
+  updateLive();
+</script>
+
+</body>
+</html>
