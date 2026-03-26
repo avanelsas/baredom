@@ -1,5 +1,9 @@
 # BareDOM
 
+<p align="left">
+  <img src="public/assets/baredom_lightmode.svg" alt="Baredom Logo" width="120">
+</p>
+
 **Native web components. Zero runtime. No framework required.**
 
 [![npm version](https://img.shields.io/npm/v/%40vanelsas%2Fbaredom.svg)](https://www.npmjs.com/package/@vanelsas/baredom)
