@@ -3,7 +3,6 @@
 
  :dev-http
  {8000 "public"
-  8021 "out/test"
   8080 "."}
 
  :builds
@@ -322,4 +321,3 @@
      :depends-on #{:base}}
 
     }}}}
-
