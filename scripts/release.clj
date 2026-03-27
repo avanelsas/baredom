@@ -180,5 +180,5 @@
     (success "────────────────────────────────────────────────")
     (success " Released v" new-version)
     (success " GitHub Actions will publish to NPM and Clojars.")
-    (success " https://github.com/vanelsas/baredom/actions")
+    (success " https://github.com/avanelsas/baredom/actions")
     (success "────────────────────────────────────────────────")))
