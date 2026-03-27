@@ -113,8 +113,8 @@ return base.removeAttribute("aria-label");
 app.components.x_container.x_container.connected_BANG_ = (function app$components$x_container$x_container$connected_BANG_(el){
 if(cljs.core.truth_(app.components.x_container.x_container.get_el_state(el))){
 } else {
-var state_20868 = app.components.x_container.x_container.create_shadow_BANG_(el);
-app.components.x_container.x_container.set_el_state_BANG_(el,state_20868);
+var state_20854 = app.components.x_container.x_container.create_shadow_BANG_(el);
+app.components.x_container.x_container.set_el_state_BANG_(el,state_20854);
 }
 
 return app.components.x_container.x_container.render_BANG_(el,app.components.x_container.x_container.get_el_state(el));

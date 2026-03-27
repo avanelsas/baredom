@@ -49,22 +49,22 @@ return app.components.x_navbar.model.normalize_enum(value,app.components.x_navba
 app.components.x_navbar.model.non_empty_string_QMARK_ = (function app$components$x_navbar$model$non_empty_string_QMARK_(value){
 return ((typeof value === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2("",value)));
 });
-app.components.x_navbar.model.public_state = (function app$components$x_navbar$model$public_state(p__20958){
-var map__20959 = p__20958;
-var map__20959__$1 = cljs.core.__destructure_map(map__20959);
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var sticky = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"sticky","sticky",-2121213869));
-var elevated = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"elevated","elevated",-7323953));
-var breakpoint = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"breakpoint","breakpoint",1183378440));
-var alignment = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20959__$1,new cljs.core.Keyword(null,"alignment","alignment",1040093386));
+app.components.x_navbar.model.public_state = (function app$components$x_navbar$model$public_state(p__20881){
+var map__20882 = p__20881;
+var map__20882__$1 = cljs.core.__destructure_map(map__20882);
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var sticky = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"sticky","sticky",-2121213869));
+var elevated = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"elevated","elevated",-7323953));
+var breakpoint = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"breakpoint","breakpoint",1183378440));
+var alignment = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20882__$1,new cljs.core.Keyword(null,"alignment","alignment",1040093386));
 return new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"label","label",1718410804),((typeof label === 'string')?label:null),new cljs.core.Keyword(null,"orientation","orientation",623557579),app.components.x_navbar.model.normalize_orientation(orientation),new cljs.core.Keyword(null,"variant","variant",-424354234),app.components.x_navbar.model.normalize_variant(variant),new cljs.core.Keyword(null,"sticky","sticky",-2121213869),cljs.core.boolean$(sticky),new cljs.core.Keyword(null,"elevated","elevated",-7323953),cljs.core.boolean$(elevated),new cljs.core.Keyword(null,"breakpoint","breakpoint",1183378440),app.components.x_navbar.model.normalize_breakpoint(breakpoint),new cljs.core.Keyword(null,"alignment","alignment",1040093386),app.components.x_navbar.model.normalize_alignment(alignment)], null);
 });
-app.components.x_navbar.model.landmark_label = (function app$components$x_navbar$model$landmark_label(p__20961){
-var map__20968 = p__20961;
-var map__20968__$1 = cljs.core.__destructure_map(map__20968);
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20968__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_navbar.model.landmark_label = (function app$components$x_navbar$model$landmark_label(p__20884){
+var map__20885 = p__20884;
+var map__20885__$1 = cljs.core.__destructure_map(map__20885);
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20885__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 if(app.components.x_navbar.model.non_empty_string_QMARK_(label)){
 return label;
 } else {

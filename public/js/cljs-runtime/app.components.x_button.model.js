@@ -45,23 +45,23 @@ return app.components.x_button.model.normalize_enum(value,app.components.x_butto
 app.components.x_button.model.non_empty_string_QMARK_ = (function app$components$x_button$model$non_empty_string_QMARK_(value){
 return ((typeof value === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2("",value)));
 });
-app.components.x_button.model.public_state = (function app$components$x_button$model$public_state(p__20542){
-var map__20543 = p__20542;
-var map__20543__$1 = cljs.core.__destructure_map(map__20543);
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
-var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
-var pressed = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"pressed","pressed",1100937946));
-var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"type","type",1174270348));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20543__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_button.model.public_state = (function app$components$x_button$model$public_state(p__20450){
+var map__20451 = p__20450;
+var map__20451__$1 = cljs.core.__destructure_map(map__20451);
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
+var pressed = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"pressed","pressed",1100937946));
+var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"type","type",1174270348));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20451__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"disabled","disabled",-1529784218),cljs.core.boolean$(disabled),new cljs.core.Keyword(null,"loading","loading",-737050189),cljs.core.boolean$(loading),new cljs.core.Keyword(null,"pressed","pressed",1100937946),cljs.core.boolean$(pressed),new cljs.core.Keyword(null,"type","type",1174270348),app.components.x_button.model.normalize_type(type),new cljs.core.Keyword(null,"variant","variant",-424354234),app.components.x_button.model.normalize_variant(variant),new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_button.model.normalize_size(size),new cljs.core.Keyword(null,"label","label",1718410804),((typeof label === 'string')?label:null)], null);
 });
-app.components.x_button.model.interactive_QMARK_ = (function app$components$x_button$model$interactive_QMARK_(p__20544){
-var map__20545 = p__20544;
-var map__20545__$1 = cljs.core.__destructure_map(map__20545);
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20545__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
-var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20545__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
+app.components.x_button.model.interactive_QMARK_ = (function app$components$x_button$model$interactive_QMARK_(p__20469){
+var map__20474 = p__20469;
+var map__20474__$1 = cljs.core.__destructure_map(map__20474);
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20474__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20474__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
 return cljs.core.not((function (){var or__5142__auto__ = disabled;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -70,21 +70,21 @@ return loading;
 }
 })());
 });
-app.components.x_button.model.aria_busy = (function app$components$x_button$model$aria_busy(p__20551){
-var map__20552 = p__20551;
-var map__20552__$1 = cljs.core.__destructure_map(map__20552);
-var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20552__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
+app.components.x_button.model.aria_busy = (function app$components$x_button$model$aria_busy(p__20476){
+var map__20477 = p__20476;
+var map__20477__$1 = cljs.core.__destructure_map(map__20477);
+var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20477__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
 if(cljs.core.truth_(loading)){
 return "true";
 } else {
 return null;
 }
 });
-app.components.x_button.model.aria_label = (function app$components$x_button$model$aria_label(p__20554){
-var map__20555 = p__20554;
-var map__20555__$1 = cljs.core.__destructure_map(map__20555);
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20555__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var has_default_text_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20555__$1,new cljs.core.Keyword(null,"has-default-text?","has-default-text?",2021837624));
+app.components.x_button.model.aria_label = (function app$components$x_button$model$aria_label(p__20482){
+var map__20483 = p__20482;
+var map__20483__$1 = cljs.core.__destructure_map(map__20483);
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20483__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var has_default_text_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20483__$1,new cljs.core.Keyword(null,"has-default-text?","has-default-text?",2021837624));
 if(((cljs.core.not(has_default_text_QMARK_)) && (app.components.x_button.model.non_empty_string_QMARK_(label)))){
 return label;
 } else {

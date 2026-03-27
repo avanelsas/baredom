@@ -70,19 +70,19 @@ return Math.min(hi,Math.max(lo,n));
 /**
  * Produce a normalized view-model map from raw attribute values.
  */
-app.components.x_copy.model.normalize = (function app$components$x_copy$model$normalize(p__22385){
-var map__22386 = p__22385;
-var map__22386__$1 = cljs.core.__destructure_map(map__22386);
-var hotkey_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"hotkey-raw","hotkey-raw",1972404222));
-var tooltip_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"tooltip-ms-raw","tooltip-ms-raw",-1973326401));
-var from_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"from-raw","from-raw",-44462428));
-var text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"text-raw","text-raw",-124751068));
-var mode_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"mode-raw","mode-raw",-112711707));
-var error_message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"error-message-raw","error-message-raw",1910536231));
-var from_attr_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"from-attr-raw","from-attr-raw",761657416));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var success_message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"success-message-raw","success-message-raw",388691116));
-var show_tooltip_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22386__$1,new cljs.core.Keyword(null,"show-tooltip-raw","show-tooltip-raw",453600717));
+app.components.x_copy.model.normalize = (function app$components$x_copy$model$normalize(p__22410){
+var map__22411 = p__22410;
+var map__22411__$1 = cljs.core.__destructure_map(map__22411);
+var hotkey_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"hotkey-raw","hotkey-raw",1972404222));
+var tooltip_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"tooltip-ms-raw","tooltip-ms-raw",-1973326401));
+var from_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"from-raw","from-raw",-44462428));
+var text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"text-raw","text-raw",-124751068));
+var mode_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"mode-raw","mode-raw",-112711707));
+var error_message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"error-message-raw","error-message-raw",1910536231));
+var from_attr_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"from-attr-raw","from-attr-raw",761657416));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var success_message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"success-message-raw","success-message-raw",388691116));
+var show_tooltip_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22411__$1,new cljs.core.Keyword(null,"show-tooltip-raw","show-tooltip-raw",453600717));
 return cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"show-tooltip?","show-tooltip?",-1214081087),new cljs.core.Keyword(null,"mode","mode",654403691),new cljs.core.Keyword(null,"from-attr","from-attr",1217901743),new cljs.core.Keyword(null,"hotkey","hotkey",-329017295),new cljs.core.Keyword(null,"tooltip-ms","tooltip-ms",1062450417),new cljs.core.Keyword(null,"from","from",1815293044),new cljs.core.Keyword(null,"error-message","error-message",1756021561),new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),new cljs.core.Keyword(null,"success-message","success-message",-96541601),new cljs.core.Keyword(null,"text","text",-1790561697)],[app.components.x_copy.model.parse_bool_default_true(show_tooltip_raw),app.components.x_copy.model.parse_mode(mode_raw),((((typeof from_attr_raw === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(from_attr_raw.trim(),""))))?from_attr_raw.trim():null),((((typeof hotkey_raw === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(hotkey_raw.trim(),""))))?hotkey_raw.trim():null),app.components.x_copy.model.clamp(app.components.x_copy.model.parse_int_pos(tooltip_ms_raw,(1200)),(100),(10000)),((((typeof from_raw === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(from_raw.trim(),""))))?from_raw.trim():null),(function (){var or__5142__auto__ = (function (){var and__5140__auto__ = typeof error_message_raw === 'string';
 if(and__5140__auto__){
 var and__5140__auto____$1 = cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(error_message_raw,"");
@@ -122,13 +122,13 @@ return "Copied";
 /**
  * Build the x-copy-request CustomEvent detail object.
  */
-app.components.x_copy.model.request_detail = (function app$components$x_copy$model$request_detail(p__22419){
-var map__22420 = p__22419;
-var map__22420__$1 = cljs.core.__destructure_map(map__22420);
-var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22420__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
-var from = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22420__$1,new cljs.core.Keyword(null,"from","from",1815293044));
-var from_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22420__$1,new cljs.core.Keyword(null,"from-attr","from-attr",1217901743));
-var mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22420__$1,new cljs.core.Keyword(null,"mode","mode",654403691));
+app.components.x_copy.model.request_detail = (function app$components$x_copy$model$request_detail(p__22412){
+var map__22413 = p__22412;
+var map__22413__$1 = cljs.core.__destructure_map(map__22413);
+var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22413__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
+var from = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22413__$1,new cljs.core.Keyword(null,"from","from",1815293044));
+var from_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22413__$1,new cljs.core.Keyword(null,"from-attr","from-attr",1217901743));
+var mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22413__$1,new cljs.core.Keyword(null,"mode","mode",654403691));
 return ({"text": (function (){var or__5142__auto__ = text;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

@@ -96,16 +96,16 @@ return app.components.x_pagination.model.default_size;
 app.components.x_pagination.model.parse_bool_attr = (function app$components$x_pagination$model$parse_bool_attr(s){
 return (((!((s == null)))) && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(s,"false")));
 });
-app.components.x_pagination.model.normalize = (function app$components$x_pagination$model$normalize(p__22804){
-var map__22805 = p__22804;
-var map__22805__$1 = cljs.core.__destructure_map(map__22805);
-var page_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"page-raw","page-raw",-1198808870));
-var total_pages_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"total-pages-raw","total-pages-raw",430880208));
-var sibling_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"sibling-count-raw","sibling-count-raw",-620117200));
-var boundary_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"boundary-count-raw","boundary-count-raw",410083250));
-var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22805__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+app.components.x_pagination.model.normalize = (function app$components$x_pagination$model$normalize(p__22906){
+var map__22907 = p__22906;
+var map__22907__$1 = cljs.core.__destructure_map(map__22907);
+var page_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"page-raw","page-raw",-1198808870));
+var total_pages_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"total-pages-raw","total-pages-raw",430880208));
+var sibling_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"sibling-count-raw","sibling-count-raw",-620117200));
+var boundary_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"boundary-count-raw","boundary-count-raw",410083250));
+var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22907__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
 var total = app.components.x_pagination.model.parse_total_pages(total_pages_raw);
 return new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"page","page",849072397),app.components.x_pagination.model.parse_page(page_raw,total),new cljs.core.Keyword(null,"total-pages","total-pages",685894112),total,new cljs.core.Keyword(null,"sibling-count","sibling-count",1756034573),app.components.x_pagination.model.parse_sibling_count(sibling_count_raw),new cljs.core.Keyword(null,"boundary-count","boundary-count",1637925987),app.components.x_pagination.model.parse_boundary_count(boundary_count_raw),new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_pagination.model.parse_size(size_raw),new cljs.core.Keyword(null,"disabled","disabled",-1529784218),cljs.core.boolean$(disabled_present_QMARK_),new cljs.core.Keyword(null,"label","label",1718410804),(function (){var or__5142__auto__ = label_raw;
 if(cljs.core.truth_(or__5142__auto__)){
@@ -140,31 +140,31 @@ return result;
 } else {
 var n = cljs.core.nth.cljs$core$IFn$_invoke$arity$2(pages_vec,i);
 var prev = (((i > (0)))?cljs.core.nth.cljs$core$IFn$_invoke$arity$2(pages_vec,(i - (1))):null);
-var G__22901 = (function (){var G__22824 = result;
-var G__22824__$1 = (cljs.core.truth_((function (){var and__5140__auto__ = prev;
+var G__22914 = (function (){var G__22909 = result;
+var G__22909__$1 = (cljs.core.truth_((function (){var and__5140__auto__ = prev;
 if(cljs.core.truth_(and__5140__auto__)){
 return (n > (prev + (1)));
 } else {
 return and__5140__auto__;
 }
-})())?cljs.core.conj.cljs$core$IFn$_invoke$arity$2(G__22824,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738)], null)):G__22824);
-return cljs.core.conj.cljs$core$IFn$_invoke$arity$2(G__22824__$1,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"page","page",849072397),new cljs.core.Keyword(null,"n","n",562130025),n], null));
+})())?cljs.core.conj.cljs$core$IFn$_invoke$arity$2(G__22909,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738)], null)):G__22909);
+return cljs.core.conj.cljs$core$IFn$_invoke$arity$2(G__22909__$1,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"page","page",849072397),new cljs.core.Keyword(null,"n","n",562130025),n], null));
 
 })();
-var G__22902 = (i + (1));
-result = G__22901;
-i = G__22902;
+var G__22915 = (i + (1));
+result = G__22914;
+i = G__22915;
 continue;
 }
 break;
 }
 }
 });
-app.components.x_pagination.model.prev_disabled_QMARK_ = (function app$components$x_pagination$model$prev_disabled_QMARK_(p__22833){
-var map__22841 = p__22833;
-var map__22841__$1 = cljs.core.__destructure_map(map__22841);
-var page = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22841__$1,new cljs.core.Keyword(null,"page","page",849072397));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22841__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+app.components.x_pagination.model.prev_disabled_QMARK_ = (function app$components$x_pagination$model$prev_disabled_QMARK_(p__22910){
+var map__22911 = p__22910;
+var map__22911__$1 = cljs.core.__destructure_map(map__22911);
+var page = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22911__$1,new cljs.core.Keyword(null,"page","page",849072397));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22911__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
 var or__5142__auto__ = disabled;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -172,12 +172,12 @@ return or__5142__auto__;
 return (page <= (1));
 }
 });
-app.components.x_pagination.model.next_disabled_QMARK_ = (function app$components$x_pagination$model$next_disabled_QMARK_(p__22844){
-var map__22845 = p__22844;
-var map__22845__$1 = cljs.core.__destructure_map(map__22845);
-var page = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22845__$1,new cljs.core.Keyword(null,"page","page",849072397));
-var total_pages = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22845__$1,new cljs.core.Keyword(null,"total-pages","total-pages",685894112));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22845__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+app.components.x_pagination.model.next_disabled_QMARK_ = (function app$components$x_pagination$model$next_disabled_QMARK_(p__22912){
+var map__22913 = p__22912;
+var map__22913__$1 = cljs.core.__destructure_map(map__22913);
+var page = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22913__$1,new cljs.core.Keyword(null,"page","page",849072397));
+var total_pages = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22913__$1,new cljs.core.Keyword(null,"total-pages","total-pages",685894112));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22913__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
 var or__5142__auto__ = disabled;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

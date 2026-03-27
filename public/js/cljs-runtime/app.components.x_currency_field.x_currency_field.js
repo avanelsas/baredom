@@ -31,9 +31,9 @@ return app.components.x_currency_field.x_currency_field.remove_attr_BANG_(el,att
 app.components.x_currency_field.x_currency_field.currency_symbol = (function app$components$x_currency_field$x_currency_field$currency_symbol(currency,locale){
 try{var fmt = (new Intl.NumberFormat(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(locale,""))?"en-US":locale),({"style": "currency", "currency": currency})));
 var parts = fmt.formatToParts((0));
-var sym = cljs.core.some((function (p1__22720_SHARP_){
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2("currency",p1__22720_SHARP_.type)){
-return p1__22720_SHARP_.value;
+var sym = cljs.core.some((function (p1__22738_SHARP_){
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2("currency",p1__22738_SHARP_.type)){
+return p1__22738_SHARP_.value;
 } else {
 return null;
 }
@@ -44,7 +44,7 @@ return or__5142__auto__;
 } else {
 return currency;
 }
-}catch (e22721){var _ = e22721;
+}catch (e22739){var _ = e22739;
 return currency;
 }});
 app.components.x_currency_field.x_currency_field.format_display = (function app$components$x_currency_field$x_currency_field$format_display(value,currency,locale){
@@ -53,7 +53,7 @@ if(cljs.core.truth_(isNaN(num))){
 return value;
 } else {
 try{return (new Intl.NumberFormat(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(locale,""))?undefined:locale),({"minimumFractionDigits": (2), "maximumFractionDigits": (2)}))).format(num);
-}catch (e22722){var _ = e22722;
+}catch (e22740){var _ = e22740;
 return value;
 }}
 });
@@ -251,7 +251,7 @@ app.components.x_currency_field.x_currency_field.set_attr_BANG_(input_el,"aria-r
 
 app.components.x_currency_field.x_currency_field.set_attr_BANG_(input_el,"aria-invalid",(cljs.core.truth_(has_error_QMARK_)?"true":"false"));
 
-var describedby_22769 = (cljs.core.truth_((function (){var and__5140__auto__ = has_hint_QMARK_;
+var describedby_22751 = (cljs.core.truth_((function (){var and__5140__auto__ = has_hint_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return has_error_QMARK_;
 } else {
@@ -259,16 +259,16 @@ return and__5140__auto__;
 }
 })())?"hint error":(cljs.core.truth_(has_hint_QMARK_)?"hint":(cljs.core.truth_(has_error_QMARK_)?"error":null
 )));
-if(cljs.core.truth_(describedby_22769)){
-app.components.x_currency_field.x_currency_field.set_attr_BANG_(input_el,"aria-describedby",describedby_22769);
+if(cljs.core.truth_(describedby_22751)){
+app.components.x_currency_field.x_currency_field.set_attr_BANG_(input_el,"aria-describedby",describedby_22751);
 } else {
 app.components.x_currency_field.x_currency_field.remove_attr_BANG_(input_el,"aria-describedby");
 }
 
 if(app.components.x_currency_field.x_currency_field.is_focused_QMARK_(el,input_el)){
 } else {
-var raw_val_22770 = new cljs.core.Keyword(null,"value","value",305978217).cljs$core$IFn$_invoke$arity$1(m);
-(input_el.value = ((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(raw_val_22770,""))?"":app.components.x_currency_field.x_currency_field.format_display(raw_val_22770,currency,locale)));
+var raw_val_22752 = new cljs.core.Keyword(null,"value","value",305978217).cljs$core$IFn$_invoke$arity$1(m);
+(input_el.value = ((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(raw_val_22752,""))?"":app.components.x_currency_field.x_currency_field.format_display(raw_val_22752,currency,locale)));
 }
 
 (label_el.textContent = new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(m));
@@ -350,12 +350,12 @@ return or__5142__auto__;
 return "";
 }
 })();
-var temp__5823__auto___22771__$1 = app.components.x_currency_field.x_currency_field.goog$module$goog$object.get(el,app.components.x_currency_field.x_currency_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22771__$1)){
-var internals_22772 = temp__5823__auto___22771__$1;
-internals_22772.setFormValue(value);
+var temp__5823__auto___22760__$1 = app.components.x_currency_field.x_currency_field.goog$module$goog$object.get(el,app.components.x_currency_field.x_currency_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22760__$1)){
+var internals_22762 = temp__5823__auto___22760__$1;
+internals_22762.setFormValue(value);
 
-app.components.x_currency_field.x_currency_field.sync_validity_BANG_(el,internals_22772,input_el,value);
+app.components.x_currency_field.x_currency_field.sync_validity_BANG_(el,internals_22762,input_el,value);
 } else {
 }
 
@@ -383,12 +383,12 @@ return "";
 })();
 app.components.x_currency_field.x_currency_field.set_attr_BANG_(el,app.components.x_currency_field.model.attr_value,canonical);
 
-var temp__5823__auto___22773__$1 = app.components.x_currency_field.x_currency_field.goog$module$goog$object.get(el,app.components.x_currency_field.x_currency_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22773__$1)){
-var internals_22774 = temp__5823__auto___22773__$1;
-internals_22774.setFormValue(canonical);
+var temp__5823__auto___22765__$1 = app.components.x_currency_field.x_currency_field.goog$module$goog$object.get(el,app.components.x_currency_field.x_currency_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22765__$1)){
+var internals_22767 = temp__5823__auto___22765__$1;
+internals_22767.setFormValue(canonical);
 
-app.components.x_currency_field.x_currency_field.sync_validity_BANG_(el,internals_22774,input_el,canonical);
+app.components.x_currency_field.x_currency_field.sync_validity_BANG_(el,internals_22767,input_el,canonical);
 } else {
 }
 

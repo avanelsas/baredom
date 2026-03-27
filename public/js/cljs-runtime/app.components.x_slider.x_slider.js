@@ -80,21 +80,21 @@ var label_el = app.components.x_slider.x_slider.goog$module$goog$object.get(refs
 var value_el = app.components.x_slider.x_slider.goog$module$goog$object.get(refs,"value");
 var input_el = app.components.x_slider.x_slider.goog$module$goog$object.get(refs,"input");
 var m = app.components.x_slider.x_slider.read_model(el);
-var map__23068 = m;
-var map__23068__$1 = cljs.core.__destructure_map(map__23068);
-var aria_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var step = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"step","step",1288888124));
-var fill_percent = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"fill-percent","fill-percent",-1813848228));
-var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"min","min",444991522));
-var readonly_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"readonly?","readonly?",988057827));
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var aria_labelledby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667));
-var show_value_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"show-value?","show-value?",-1960833108));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var aria_describedby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23068__$1,new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471));
+var map__23066 = m;
+var map__23066__$1 = cljs.core.__destructure_map(map__23066);
+var aria_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var step = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"step","step",1288888124));
+var fill_percent = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"fill-percent","fill-percent",-1813848228));
+var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"min","min",444991522));
+var readonly_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"readonly?","readonly?",988057827));
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var aria_labelledby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667));
+var show_value_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"show-value?","show-value?",-1960833108));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var aria_describedby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23066__$1,new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471));
 var show_header_QMARK_ = (function (){var or__5142__auto__ = (!((label == null)));
 if(or__5142__auto__){
 return or__5142__auto__;
@@ -145,10 +145,10 @@ app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-valuenow",(""+clj
 
 app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-readonly",(cljs.core.truth_(readonly_QMARK_)?"true":"false"));
 
-var temp__5821__auto___23106 = aria_label;
-if(cljs.core.truth_(temp__5821__auto___23106)){
-var v_23107 = temp__5821__auto___23106;
-app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-label",v_23107);
+var temp__5821__auto___23104 = aria_label;
+if(cljs.core.truth_(temp__5821__auto___23104)){
+var v_23105 = temp__5821__auto___23104;
+app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-label",v_23105);
 } else {
 if((!((label == null)))){
 app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-label",label);
@@ -157,18 +157,18 @@ app.components.x_slider.x_slider.remove_attr_BANG_(input_el,"aria-label");
 }
 }
 
-var temp__5821__auto___23108 = aria_labelledby;
-if(cljs.core.truth_(temp__5821__auto___23108)){
-var v_23109 = temp__5821__auto___23108;
-app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-labelledby",v_23109);
+var temp__5821__auto___23106 = aria_labelledby;
+if(cljs.core.truth_(temp__5821__auto___23106)){
+var v_23107 = temp__5821__auto___23106;
+app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-labelledby",v_23107);
 } else {
 app.components.x_slider.x_slider.remove_attr_BANG_(input_el,"aria-labelledby");
 }
 
-var temp__5821__auto___23110 = aria_describedby;
-if(cljs.core.truth_(temp__5821__auto___23110)){
-var v_23111 = temp__5821__auto___23110;
-app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-describedby",v_23111);
+var temp__5821__auto___23108 = aria_describedby;
+if(cljs.core.truth_(temp__5821__auto___23108)){
+var v_23109 = temp__5821__auto___23108;
+app.components.x_slider.x_slider.set_attr_BANG_(input_el,"aria-describedby",v_23109);
 } else {
 app.components.x_slider.x_slider.remove_attr_BANG_(input_el,"aria-describedby");
 }

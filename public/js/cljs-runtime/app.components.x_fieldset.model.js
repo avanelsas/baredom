@@ -15,13 +15,13 @@ return (((!((s == null)))) && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(s
 /**
  * Derives a complete view-model map from raw attribute values.
  */
-app.components.x_fieldset.model.normalize = (function app$components$x_fieldset$model$normalize(p__22631){
-var map__22632 = p__22631;
-var map__22632__$1 = cljs.core.__destructure_map(map__22632);
-var legend_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22632__$1,new cljs.core.Keyword(null,"legend-raw","legend-raw",907427195));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22632__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22632__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
-var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22632__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
+app.components.x_fieldset.model.normalize = (function app$components$x_fieldset$model$normalize(p__22594){
+var map__22595 = p__22594;
+var map__22595__$1 = cljs.core.__destructure_map(map__22595);
+var legend_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22595__$1,new cljs.core.Keyword(null,"legend-raw","legend-raw",907427195));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22595__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22595__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
+var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22595__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
 var legend = (function (){var or__5142__auto__ = legend_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

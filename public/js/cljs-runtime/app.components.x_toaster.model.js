@@ -50,12 +50,12 @@ return null;
  *  :max-toasts number — positive integer (default 5)
  *  :label      string — aria-label for the region (default "Notifications")
  */
-app.components.x_toaster.model.normalize = (function app$components$x_toaster$model$normalize(p__23407){
-var map__23408 = p__23407;
-var map__23408__$1 = cljs.core.__destructure_map(map__23408);
-var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23408__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
-var max_toasts_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23408__$1,new cljs.core.Keyword(null,"max-toasts-raw","max-toasts-raw",-815087069));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23408__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+app.components.x_toaster.model.normalize = (function app$components$x_toaster$model$normalize(p__23478){
+var map__23479 = p__23478;
+var map__23479__$1 = cljs.core.__destructure_map(map__23479);
+var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23479__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
+var max_toasts_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23479__$1,new cljs.core.Keyword(null,"max-toasts-raw","max-toasts-raw",-815087069));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23479__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"position","position",-2011731912),app.components.x_toaster.model.parse_position(position_raw),new cljs.core.Keyword(null,"max-toasts","max-toasts",-1982289139),(function (){var or__5142__auto__ = app.components.x_toaster.model.parse_max_toasts(max_toasts_raw);
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

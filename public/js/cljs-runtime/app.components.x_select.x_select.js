@@ -154,15 +154,15 @@ var ph_opt_el = app.components.x_select.x_select.goog$module$goog$object.get(ref
 var slot_el = app.components.x_select.x_select.goog$module$goog$object.get(refs,"slot");
 var assigned = slot_el.assignedElements(({"flatten": true}));
 while(true){
-var last_child_23070 = select_el.lastChild;
-if(cljs.core.truth_((function (){var and__5140__auto__ = last_child_23070;
+var last_child_23067 = select_el.lastChild;
+if(cljs.core.truth_((function (){var and__5140__auto__ = last_child_23067;
 if(cljs.core.truth_(and__5140__auto__)){
-return (!((last_child_23070 === ph_opt_el)));
+return (!((last_child_23067 === ph_opt_el)));
 } else {
 return and__5140__auto__;
 }
 })())){
-select_el.removeChild(last_child_23070);
+select_el.removeChild(last_child_23067);
 
 continue;
 } else {
@@ -170,61 +170,61 @@ continue;
 break;
 }
 
-var seq__23054_23071 = cljs.core.seq(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(assigned));
-var chunk__23055_23072 = null;
-var count__23056_23073 = (0);
-var i__23057_23074 = (0);
+var seq__23040_23068 = cljs.core.seq(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(assigned));
+var chunk__23041_23069 = null;
+var count__23042_23070 = (0);
+var i__23043_23071 = (0);
 while(true){
-if((i__23057_23074 < count__23056_23073)){
-var node_23075 = chunk__23055_23072.cljs$core$IIndexed$_nth$arity$2(null,i__23057_23074);
-var tag_lower_23076 = node_23075.tagName.toLowerCase();
-if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23076,"option")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23076,"optgroup")))){
-select_el.appendChild(node_23075.cloneNode(true));
+if((i__23043_23071 < count__23042_23070)){
+var node_23072 = chunk__23041_23069.cljs$core$IIndexed$_nth$arity$2(null,i__23043_23071);
+var tag_lower_23073 = node_23072.tagName.toLowerCase();
+if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23073,"option")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23073,"optgroup")))){
+select_el.appendChild(node_23072.cloneNode(true));
 } else {
 }
 
 
-var G__23077 = seq__23054_23071;
-var G__23078 = chunk__23055_23072;
-var G__23079 = count__23056_23073;
-var G__23080 = (i__23057_23074 + (1));
-seq__23054_23071 = G__23077;
-chunk__23055_23072 = G__23078;
-count__23056_23073 = G__23079;
-i__23057_23074 = G__23080;
+var G__23074 = seq__23040_23068;
+var G__23075 = chunk__23041_23069;
+var G__23076 = count__23042_23070;
+var G__23077 = (i__23043_23071 + (1));
+seq__23040_23068 = G__23074;
+chunk__23041_23069 = G__23075;
+count__23042_23070 = G__23076;
+i__23043_23071 = G__23077;
 continue;
 } else {
-var temp__5823__auto___23081__$1 = cljs.core.seq(seq__23054_23071);
-if(temp__5823__auto___23081__$1){
-var seq__23054_23082__$1 = temp__5823__auto___23081__$1;
-if(cljs.core.chunked_seq_QMARK_(seq__23054_23082__$1)){
-var c__5673__auto___23083 = cljs.core.chunk_first(seq__23054_23082__$1);
-var G__23084 = cljs.core.chunk_rest(seq__23054_23082__$1);
-var G__23085 = c__5673__auto___23083;
-var G__23086 = cljs.core.count(c__5673__auto___23083);
-var G__23087 = (0);
-seq__23054_23071 = G__23084;
-chunk__23055_23072 = G__23085;
-count__23056_23073 = G__23086;
-i__23057_23074 = G__23087;
+var temp__5823__auto___23078__$1 = cljs.core.seq(seq__23040_23068);
+if(temp__5823__auto___23078__$1){
+var seq__23040_23079__$1 = temp__5823__auto___23078__$1;
+if(cljs.core.chunked_seq_QMARK_(seq__23040_23079__$1)){
+var c__5673__auto___23080 = cljs.core.chunk_first(seq__23040_23079__$1);
+var G__23081 = cljs.core.chunk_rest(seq__23040_23079__$1);
+var G__23082 = c__5673__auto___23080;
+var G__23083 = cljs.core.count(c__5673__auto___23080);
+var G__23084 = (0);
+seq__23040_23068 = G__23081;
+chunk__23041_23069 = G__23082;
+count__23042_23070 = G__23083;
+i__23043_23071 = G__23084;
 continue;
 } else {
-var node_23088 = cljs.core.first(seq__23054_23082__$1);
-var tag_lower_23089 = node_23088.tagName.toLowerCase();
-if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23089,"option")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23089,"optgroup")))){
-select_el.appendChild(node_23088.cloneNode(true));
+var node_23085 = cljs.core.first(seq__23040_23079__$1);
+var tag_lower_23086 = node_23085.tagName.toLowerCase();
+if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23086,"option")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_23086,"optgroup")))){
+select_el.appendChild(node_23085.cloneNode(true));
 } else {
 }
 
 
-var G__23090 = cljs.core.next(seq__23054_23082__$1);
-var G__23091 = null;
-var G__23092 = (0);
-var G__23093 = (0);
-seq__23054_23071 = G__23090;
-chunk__23055_23072 = G__23091;
-count__23056_23073 = G__23092;
-i__23057_23074 = G__23093;
+var G__23087 = cljs.core.next(seq__23040_23079__$1);
+var G__23088 = null;
+var G__23089 = (0);
+var G__23090 = (0);
+seq__23040_23068 = G__23087;
+chunk__23041_23069 = G__23088;
+count__23042_23070 = G__23089;
+i__23043_23071 = G__23090;
 continue;
 }
 } else {
@@ -285,11 +285,11 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_select.x_select.goog$module$goog$object.get(el,app.components.x_select.x_select.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var select_el_23094 = app.components.x_select.x_select.goog$module$goog$object.get(refs,"select");
-var slot_el_23095 = app.components.x_select.x_select.goog$module$goog$object.get(refs,"slot");
-select_el_23094.removeEventListener("change",app.components.x_select.x_select.goog$module$goog$object.get(handlers,"change"));
+var select_el_23091 = app.components.x_select.x_select.goog$module$goog$object.get(refs,"select");
+var slot_el_23092 = app.components.x_select.x_select.goog$module$goog$object.get(refs,"slot");
+select_el_23091.removeEventListener("change",app.components.x_select.x_select.goog$module$goog$object.get(handlers,"change"));
 
-slot_el_23095.removeEventListener("slotchange",app.components.x_select.x_select.goog$module$goog$object.get(handlers,"slotchange"));
+slot_el_23092.removeEventListener("slotchange",app.components.x_select.x_select.goog$module$goog$object.get(handlers,"slotchange"));
 
 return app.components.x_select.x_select.goog$module$goog$object.set(el,app.components.x_select.x_select.k_handlers,null);
 } else {

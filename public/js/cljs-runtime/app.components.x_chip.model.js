@@ -32,13 +32,13 @@ return label;
  * Converts raw attribute strings to a clean view model.
  * disabled-present? should be boolean: (.hasAttribute el attr-disabled)
  */
-app.components.x_chip.model.normalize = (function app$components$x_chip$model$normalize(p__22199){
-var map__22201 = p__22199;
-var map__22201__$1 = cljs.core.__destructure_map(map__22201);
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22201__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22201__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
-var removable_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22201__$1,new cljs.core.Keyword(null,"removable-raw","removable-raw",1718453796));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22201__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+app.components.x_chip.model.normalize = (function app$components$x_chip$model$normalize(p__22118){
+var map__22119 = p__22118;
+var map__22119__$1 = cljs.core.__destructure_map(map__22119);
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22119__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22119__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
+var removable_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22119__$1,new cljs.core.Keyword(null,"removable-raw","removable-raw",1718453796));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22119__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
 var label = (function (){var or__5142__auto__ = label_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -53,11 +53,11 @@ return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"la
 /**
  * True when the chip can be removed by the user: removable and not disabled.
  */
-app.components.x_chip.model.removal_eligible_QMARK_ = (function app$components$x_chip$model$removal_eligible_QMARK_(p__22205){
-var map__22206 = p__22205;
-var map__22206__$1 = cljs.core.__destructure_map(map__22206);
-var removable_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22206__$1,new cljs.core.Keyword(null,"removable?","removable?",1886800649));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22206__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_chip.model.removal_eligible_QMARK_ = (function app$components$x_chip$model$removal_eligible_QMARK_(p__22120){
+var map__22121 = p__22120;
+var map__22121__$1 = cljs.core.__destructure_map(map__22121);
+var removable_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22121__$1,new cljs.core.Keyword(null,"removable?","removable?",1886800649));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22121__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 var and__5140__auto__ = removable_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return cljs.core.not(disabled_QMARK_);
@@ -68,11 +68,11 @@ return and__5140__auto__;
 /**
  * Builds the JS detail object for x-chip-remove events.
  */
-app.components.x_chip.model.remove_detail = (function app$components$x_chip$model$remove_detail(p__22207){
-var map__22208 = p__22207;
-var map__22208__$1 = cljs.core.__destructure_map(map__22208);
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22208__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22208__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_chip.model.remove_detail = (function app$components$x_chip$model$remove_detail(p__22122){
+var map__22123 = p__22122;
+var map__22123__$1 = cljs.core.__destructure_map(map__22123);
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22123__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22123__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return ({"value": value, "label": label});
 });
 app.components.x_chip.model.property_api = new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"label","label",1718410804),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"value","value",305978217),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"removable","removable",1005575226),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"boolean","boolean",-278886877,null)], null),new cljs.core.Keyword(null,"disabled","disabled",-1529784218),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"boolean","boolean",-278886877,null)], null)], null);

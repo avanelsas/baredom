@@ -80,15 +80,15 @@ return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMP
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [total,(0)], null);
 }
 });
-app.components.x_avatar_group.model.normalize = (function app$components$x_avatar_group$model$normalize(p__21724){
-var map__21725 = p__21724;
-var map__21725__$1 = cljs.core.__destructure_map(map__21725);
-var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
-var overlap_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"overlap-raw","overlap-raw",1202229114));
-var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
-var direction_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"direction-raw","direction-raw",560730236));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21725__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+app.components.x_avatar_group.model.normalize = (function app$components$x_avatar_group$model$normalize(p__21463){
+var map__21464 = p__21463;
+var map__21464__$1 = cljs.core.__destructure_map(map__21464);
+var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
+var overlap_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"overlap-raw","overlap-raw",1202229114));
+var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
+var direction_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"direction-raw","direction-raw",560730236));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21464__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
 return new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_avatar_group.model.parse_size(size_raw),new cljs.core.Keyword(null,"overlap","overlap",-1673335644),app.components.x_avatar_group.model.parse_overlap(overlap_raw),new cljs.core.Keyword(null,"max","max",61366548),app.components.x_avatar_group.model.parse_max(max_raw),new cljs.core.Keyword(null,"direction","direction",-633359395),app.components.x_avatar_group.model.parse_direction(direction_raw),new cljs.core.Keyword(null,"disabled","disabled",-1529784218),cljs.core.boolean$(disabled_present_QMARK_),new cljs.core.Keyword(null,"label","label",1718410804),app.components.x_avatar_group.model.normalize_label(label_raw)], null);
 });
 app.components.x_avatar_group.model.property_api = new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"size","size",1098693007),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"overlap","overlap",-1673335644),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"max","max",61366548),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"number","number",-1084057331,null)], null),new cljs.core.Keyword(null,"direction","direction",-633359395),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"disabled","disabled",-1529784218),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"boolean","boolean",-278886877,null)], null),new cljs.core.Keyword(null,"label","label",1718410804),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null)], null);

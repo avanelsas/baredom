@@ -81,10 +81,10 @@ app.components.x_fieldset.x_fieldset.remove_attr_BANG_(legend_el,"hidden");
 app.components.x_fieldset.x_fieldset.set_attr_BANG_(legend_el,"hidden","");
 }
 
-var temp__5821__auto___22679 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___22679)){
-var aria_lbl_22680 = temp__5821__auto___22679;
-app.components.x_fieldset.x_fieldset.set_attr_BANG_(root_el,"aria-label",aria_lbl_22680);
+var temp__5821__auto___22653 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___22653)){
+var aria_lbl_22654 = temp__5821__auto___22653;
+app.components.x_fieldset.x_fieldset.set_attr_BANG_(root_el,"aria-label",aria_lbl_22654);
 
 app.components.x_fieldset.x_fieldset.remove_attr_BANG_(root_el,"aria-labelledby");
 } else {
@@ -97,10 +97,10 @@ app.components.x_fieldset.x_fieldset.remove_attr_BANG_(root_el,"aria-labelledby"
 }
 }
 
-var temp__5821__auto___22681 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___22681)){
-var v_22682 = temp__5821__auto___22681;
-app.components.x_fieldset.x_fieldset.set_attr_BANG_(root_el,"aria-describedby",v_22682);
+var temp__5821__auto___22655 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___22655)){
+var v_22656 = temp__5821__auto___22655;
+app.components.x_fieldset.x_fieldset.set_attr_BANG_(root_el,"aria-describedby",v_22656);
 } else {
 app.components.x_fieldset.x_fieldset.remove_attr_BANG_(root_el,"aria-describedby");
 }

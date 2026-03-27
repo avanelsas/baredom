@@ -61,13 +61,13 @@ return (((!((s == null)))) && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(s
  * :dot   — dot-only (no text)
  * :empty — hidden / no content
  */
-app.components.x_badge.model.compute_mode = (function app$components$x_badge$model$compute_mode(p__21811){
-var map__21812 = p__21811;
-var map__21812__$1 = cljs.core.__destructure_map(map__21812);
-var has_slot_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21812__$1,new cljs.core.Keyword(null,"has-slot?","has-slot?",181244965));
-var count = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21812__$1,new cljs.core.Keyword(null,"count","count",2139924085));
-var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21812__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
-var dot = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21812__$1,new cljs.core.Keyword(null,"dot","dot",1442709401));
+app.components.x_badge.model.compute_mode = (function app$components$x_badge$model$compute_mode(p__21861){
+var map__21862 = p__21861;
+var map__21862__$1 = cljs.core.__destructure_map(map__21862);
+var has_slot_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21862__$1,new cljs.core.Keyword(null,"has-slot?","has-slot?",181244965));
+var count = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21862__$1,new cljs.core.Keyword(null,"count","count",2139924085));
+var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21862__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
+var dot = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21862__$1,new cljs.core.Keyword(null,"dot","dot",1442709401));
 if(cljs.core.truth_(has_slot_QMARK_)){
 return new cljs.core.Keyword(null,"slot","slot",240229571);
 } else {
@@ -90,16 +90,16 @@ return new cljs.core.Keyword(null,"empty","empty",767870958);
 /**
  * Return the string to render in [part=label], or nil.
  */
-app.components.x_badge.model.display_text = (function app$components$x_badge$model$display_text(p__21813){
-var map__21814 = p__21813;
-var map__21814__$1 = cljs.core.__destructure_map(map__21814);
-var m = map__21814__$1;
-var count = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21814__$1,new cljs.core.Keyword(null,"count","count",2139924085));
-var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21814__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21814__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
-var G__21815 = app.components.x_badge.model.compute_mode(m);
-var G__21815__$1 = (((G__21815 instanceof cljs.core.Keyword))?G__21815.fqn:null);
-switch (G__21815__$1) {
+app.components.x_badge.model.display_text = (function app$components$x_badge$model$display_text(p__21866){
+var map__21867 = p__21866;
+var map__21867__$1 = cljs.core.__destructure_map(map__21867);
+var m = map__21867__$1;
+var count = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21867__$1,new cljs.core.Keyword(null,"count","count",2139924085));
+var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21867__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21867__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
+var G__21868 = app.components.x_badge.model.compute_mode(m);
+var G__21868__$1 = (((G__21868 instanceof cljs.core.Keyword))?G__21868.fqn:null);
+switch (G__21868__$1) {
 case "count":
 if((count > max)){
 return (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(max)+"+");
@@ -117,19 +117,19 @@ return null;
 
 }
 });
-app.components.x_badge.model.normalize = (function app$components$x_badge$model$normalize(p__21816){
-var map__21817 = p__21816;
-var map__21817__$1 = cljs.core.__destructure_map(map__21817);
-var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
-var dot_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"dot-raw","dot-raw",1754908187));
-var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
-var pill_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"pill-raw","pill-raw",-557846051));
-var variant_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250));
-var text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"text-raw","text-raw",-124751068));
-var has_slot_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"has-slot?","has-slot?",181244965));
-var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
-var count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"count-raw","count-raw",-952861839));
-var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21817__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
+app.components.x_badge.model.normalize = (function app$components$x_badge$model$normalize(p__21870){
+var map__21871 = p__21870;
+var map__21871__$1 = cljs.core.__destructure_map(map__21871);
+var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
+var dot_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"dot-raw","dot-raw",1754908187));
+var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
+var pill_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"pill-raw","pill-raw",-557846051));
+var variant_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250));
+var text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"text-raw","text-raw",-124751068));
+var has_slot_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"has-slot?","has-slot?",181244965));
+var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
+var count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"count-raw","count-raw",-952861839));
+var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21871__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
 var max_val = app.components.x_badge.model.parse_int_attr(max_raw,app.components.x_badge.model.default_max);
 var count_val = (cljs.core.truth_(count_raw)?(function (){var n = app.components.x_badge.model.parse_int_attr(count_raw,null);
 if((!((n == null)))){

@@ -25,17 +25,17 @@ return (!((s == null)));
 /**
  * Produce a normalized view-model map from raw attribute values.
  */
-app.components.x_cancel_dialogue.model.normalize = (function app$components$x_cancel_dialogue$model$normalize(p__21934){
-var map__21935 = p__21934;
-var map__21935__$1 = cljs.core.__destructure_map(map__21935);
-var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var headline_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"headline-raw","headline-raw",1141142757));
-var message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"message-raw","message-raw",952235685));
-var confirm_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"confirm-text-raw","confirm-text-raw",-1317418708));
-var cancel_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"cancel-text-raw","cancel-text-raw",615622099));
-var danger_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"danger-present?","danger-present?",-439648505));
-var portal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21935__$1,new cljs.core.Keyword(null,"portal-raw","portal-raw",2293766));
+app.components.x_cancel_dialogue.model.normalize = (function app$components$x_cancel_dialogue$model$normalize(p__21960){
+var map__21961 = p__21960;
+var map__21961__$1 = cljs.core.__destructure_map(map__21961);
+var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var headline_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"headline-raw","headline-raw",1141142757));
+var message_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"message-raw","message-raw",952235685));
+var confirm_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"confirm-text-raw","confirm-text-raw",-1317418708));
+var cancel_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"cancel-text-raw","cancel-text-raw",615622099));
+var danger_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"danger-present?","danger-present?",-439648505));
+var portal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21961__$1,new cljs.core.Keyword(null,"portal-raw","portal-raw",2293766));
 return new cljs.core.PersistentArrayMap(null, 8, [new cljs.core.Keyword(null,"open?","open?",1238443125),cljs.core.boolean$(open_present_QMARK_),new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),cljs.core.boolean$(disabled_present_QMARK_),new cljs.core.Keyword(null,"headline","headline",-157157727),(function (){var or__5142__auto__ = (function (){var and__5140__auto__ = typeof headline_raw === 'string';
 if(and__5140__auto__){
 var and__5140__auto____$1 = cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(headline_raw,"");

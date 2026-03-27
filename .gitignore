@@ -20,6 +20,7 @@ node_modules/
 
 # Clojure
 .cpcache/
+pom.xml
 
 # Claude
 .claude/

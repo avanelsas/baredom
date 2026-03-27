@@ -11,51 +11,51 @@ app.components.x_progress.x_progress.k_value_node = "__xProgressValue";
 app.components.x_progress.x_progress.k_completed = "__xProgressCompleted";
 app.components.x_progress.x_progress.style_text = (""+":host{"+"display:block;"+"color-scheme:light dark;"+"box-sizing:border-box;"+"--x-progress-border-radius:9999px;"+"--x-progress-track-color:rgba(0,0,0,0.10);"+"--x-progress-fill-color:#3b82f6;"+"--x-progress-label-color:rgba(0,0,0,0.60);"+"--x-progress-value-color:rgba(0,0,0,0.50);}"+"@media (prefers-color-scheme:dark){"+":host{"+"--x-progress-track-color:rgba(255,255,255,0.12);"+"--x-progress-label-color:rgba(255,255,255,0.60);"+"--x-progress-value-color:rgba(255,255,255,0.50);}}"+"[part=base][data-size='sm']{--x-progress-height:4px;}"+"[part=base][data-size='md']{--x-progress-height:8px;}"+"[part=base][data-size='lg']{--x-progress-height:12px;}"+"[part=base][data-variant='success']{--x-progress-fill-color:#22c55e;}"+"[part=base][data-variant='warning']{--x-progress-fill-color:#f59e0b;}"+"[part=base][data-variant='danger']{--x-progress-fill-color:#ef4444;}"+"[part=base]{"+"width:100%;"+"box-sizing:border-box;}"+"[part=header]{"+"display:flex;"+"justify-content:space-between;"+"align-items:baseline;"+"margin-bottom:4px;}"+"[part=label-text]{"+"font-size:0.875rem;"+"color:var(--x-progress-label-color);"+"font-weight:500;}"+"[part=value-text]{"+"font-size:0.8125rem;"+"color:var(--x-progress-value-color);}"+"[part=track]{"+"height:var(--x-progress-height,8px);"+"border-radius:var(--x-progress-border-radius,9999px);"+"background:var(--x-progress-track-color);"+"overflow:hidden;"+"position:relative;}"+"[part=fill]{"+"height:100%;"+"background:var(--x-progress-fill-color);"+"border-radius:var(--x-progress-border-radius,9999px);"+"transition:width 0.3s ease;"+"width:0%;}"+"@keyframes x-progress-indeterminate{"+"0%{transform:translateX(-100%) scaleX(0.5);}"+"50%{transform:translateX(60%) scaleX(0.8);}"+"100%{transform:translateX(200%) scaleX(0.5);}}"+"[part=base][data-indeterminate='true'] [part=fill]{"+"animation:x-progress-indeterminate 1.5s ease infinite;"+"width:40%;"+"transform-origin:left center;}"+"@media (prefers-reduced-motion:reduce){"+"[part=fill]{transition:none;}"+"[part=base][data-indeterminate='true'] [part=fill]{"+"animation:none;"+"width:50%;}}");
 app.components.x_progress.x_progress.init_dom_BANG_ = (function app$components$x_progress$x_progress$init_dom_BANG_(el){
-var root_22981 = el.attachShadow(({"mode": "open"}));
-var style_el_22982 = document.createElement("style");
-var base_22983 = document.createElement("div");
-var header_22984 = document.createElement("div");
-var label_node_22985 = document.createElement("span");
-var value_node_22986 = document.createElement("span");
-var track_22987 = document.createElement("div");
-var fill_22988 = document.createElement("div");
-(style_el_22982.textContent = app.components.x_progress.x_progress.style_text);
+var root_22973 = el.attachShadow(({"mode": "open"}));
+var style_el_22974 = document.createElement("style");
+var base_22975 = document.createElement("div");
+var header_22976 = document.createElement("div");
+var label_node_22977 = document.createElement("span");
+var value_node_22978 = document.createElement("span");
+var track_22979 = document.createElement("div");
+var fill_22980 = document.createElement("div");
+(style_el_22974.textContent = app.components.x_progress.x_progress.style_text);
 
-base_22983.setAttribute("part","base");
+base_22975.setAttribute("part","base");
 
-header_22984.setAttribute("part","header");
+header_22976.setAttribute("part","header");
 
-label_node_22985.setAttribute("part","label-text");
+label_node_22977.setAttribute("part","label-text");
 
-value_node_22986.setAttribute("part","value-text");
+value_node_22978.setAttribute("part","value-text");
 
-track_22987.setAttribute("part","track");
+track_22979.setAttribute("part","track");
 
-fill_22988.setAttribute("part","fill");
+fill_22980.setAttribute("part","fill");
 
-header_22984.appendChild(label_node_22985);
+header_22976.appendChild(label_node_22977);
 
-header_22984.appendChild(value_node_22986);
+header_22976.appendChild(value_node_22978);
 
-track_22987.appendChild(fill_22988);
+track_22979.appendChild(fill_22980);
 
-base_22983.appendChild(header_22984);
+base_22975.appendChild(header_22976);
 
-base_22983.appendChild(track_22987);
+base_22975.appendChild(track_22979);
 
-root_22981.appendChild(style_el_22982);
+root_22973.appendChild(style_el_22974);
 
-root_22981.appendChild(base_22983);
+root_22973.appendChild(base_22975);
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_base,base_22983);
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_base,base_22975);
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_header,header_22984);
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_header,header_22976);
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_fill,fill_22988);
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_fill,fill_22980);
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_label_node,label_node_22985);
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_label_node,label_node_22977);
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_value_node,value_node_22986);
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_value_node,value_node_22978);
 
 app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_initialized,true);
 
@@ -65,42 +65,42 @@ app.components.x_progress.x_progress.read_inputs = (function app$components$x_pr
 return new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"value","value",305978217),el.getAttribute(app.components.x_progress.model.attr_value),new cljs.core.Keyword(null,"max","max",61366548),el.getAttribute(app.components.x_progress.model.attr_max),new cljs.core.Keyword(null,"variant","variant",-424354234),el.getAttribute(app.components.x_progress.model.attr_variant),new cljs.core.Keyword(null,"size","size",1098693007),el.getAttribute(app.components.x_progress.model.attr_size),new cljs.core.Keyword(null,"label","label",1718410804),el.getAttribute(app.components.x_progress.model.attr_label),new cljs.core.Keyword(null,"show-value","show-value",-1560941240),el.hasAttribute(app.components.x_progress.model.attr_show_value),new cljs.core.Keyword(null,"indeterminate","indeterminate",-513040976),el.hasAttribute(app.components.x_progress.model.attr_indeterminate)], null);
 });
 app.components.x_progress.x_progress.render_BANG_ = (function app$components$x_progress$x_progress$render_BANG_(el){
-var map__22968_22989 = app.components.x_progress.model.derive_state(app.components.x_progress.x_progress.read_inputs(el));
-var map__22968_22990__$1 = cljs.core.__destructure_map(map__22968_22989);
-var percent_22991 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"percent","percent",2031453817));
-var variant_22992 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var show_value_22993 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
-var value_22994 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var size_22995 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var aria_valuetext_22996 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"aria-valuetext","aria-valuetext",-1020629328));
-var indeterminate_22997 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"indeterminate","indeterminate",-513040976));
-var label_22998 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var max_22999 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22968_22990__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var base_23000 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_base);
-var header_23001 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_header);
-var fill_23002 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_fill);
-var label_node_23003 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_label_node);
-var value_node_23004 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_value_node);
-var show_header_QMARK__23005 = (function (){var or__5142__auto__ = (!((label_22998 == null)));
+var map__22926_22990 = app.components.x_progress.model.derive_state(app.components.x_progress.x_progress.read_inputs(el));
+var map__22926_22991__$1 = cljs.core.__destructure_map(map__22926_22990);
+var percent_22992 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"percent","percent",2031453817));
+var variant_22993 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var show_value_22994 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
+var value_22995 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var size_22996 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var aria_valuetext_22997 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"aria-valuetext","aria-valuetext",-1020629328));
+var indeterminate_22998 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"indeterminate","indeterminate",-513040976));
+var label_22999 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var max_23000 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22926_22991__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var base_23001 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_base);
+var header_23002 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_header);
+var fill_23003 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_fill);
+var label_node_23004 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_label_node);
+var value_node_23005 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_value_node);
+var show_header_QMARK__23006 = (function (){var or__5142__auto__ = (!((label_22999 == null)));
 if(or__5142__auto__){
 return or__5142__auto__;
 } else {
-return show_value_22993;
+return show_value_22994;
 }
 })();
-var was_completed_23006 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_completed);
-var now_complete_23007 = ((cljs.core.not(indeterminate_22997)) && ((value_22994 >= max_22999)));
-base_23000.setAttribute("data-variant",variant_22992);
+var was_completed_23007 = app.components.x_progress.x_progress.goog$module$goog$object.get(el,app.components.x_progress.x_progress.k_completed);
+var now_complete_23008 = ((cljs.core.not(indeterminate_22998)) && ((value_22995 >= max_23000)));
+base_23001.setAttribute("data-variant",variant_22993);
 
-base_23000.setAttribute("data-size",size_22995);
+base_23001.setAttribute("data-size",size_22996);
 
-base_23000.setAttribute("data-indeterminate",(cljs.core.truth_(indeterminate_22997)?"true":"false"));
+base_23001.setAttribute("data-indeterminate",(cljs.core.truth_(indeterminate_22998)?"true":"false"));
 
-(fill_23002.style.width = (cljs.core.truth_(indeterminate_22997)?"40%":(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(percent_22991.toFixed((2)))+"%")));
+(fill_23003.style.width = (cljs.core.truth_(indeterminate_22998)?"40%":(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(percent_22992.toFixed((2)))+"%")));
 
-(header_23001.style.display = (cljs.core.truth_(show_header_QMARK__23005)?"flex":"none"));
+(header_23002.style.display = (cljs.core.truth_(show_header_QMARK__23006)?"flex":"none"));
 
-(label_node_23003.textContent = (function (){var or__5142__auto__ = label_22998;
+(label_node_23004.textContent = (function (){var or__5142__auto__ = label_22999;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -108,50 +108,50 @@ return "";
 }
 })());
 
-(label_node_23003.style.display = (((!((label_22998 == null))))?"":"none"));
+(label_node_23004.style.display = (((!((label_22999 == null))))?"":"none"));
 
-(value_node_23004.textContent = (cljs.core.truth_((function (){var and__5140__auto__ = show_value_22993;
+(value_node_23005.textContent = (cljs.core.truth_((function (){var and__5140__auto__ = show_value_22994;
 if(cljs.core.truth_(and__5140__auto__)){
-return cljs.core.not(indeterminate_22997);
+return cljs.core.not(indeterminate_22998);
 } else {
 return and__5140__auto__;
 }
-})())?(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(Math.round(percent_22991))+"%"):""));
+})())?(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(Math.round(percent_22992))+"%"):""));
 
-(value_node_23004.style.display = (cljs.core.truth_(show_value_22993)?"":"none"));
+(value_node_23005.style.display = (cljs.core.truth_(show_value_22994)?"":"none"));
 
 el.setAttribute("role","progressbar");
 
 el.setAttribute("aria-valuemin","0");
 
-if(cljs.core.truth_(indeterminate_22997)){
+if(cljs.core.truth_(indeterminate_22998)){
 el.removeAttribute("aria-valuenow");
 
 el.setAttribute("aria-busy","true");
 
-el.setAttribute("aria-valuetext",aria_valuetext_22996);
+el.setAttribute("aria-valuetext",aria_valuetext_22997);
 } else {
-el.setAttribute("aria-valuenow",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(value_22994)));
+el.setAttribute("aria-valuenow",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(value_22995)));
 
-el.setAttribute("aria-valuemax",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(max_22999)));
+el.setAttribute("aria-valuemax",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(max_23000)));
 
-el.setAttribute("aria-valuetext",aria_valuetext_22996);
+el.setAttribute("aria-valuetext",aria_valuetext_22997);
 
 el.removeAttribute("aria-busy");
 }
 
-if((!((label_22998 == null)))){
-el.setAttribute("aria-label",label_22998);
+if((!((label_22999 == null)))){
+el.setAttribute("aria-label",label_22999);
 } else {
 el.removeAttribute("aria-label");
 }
 
-if(((now_complete_23007) && (cljs.core.not(was_completed_23006)))){
-el.dispatchEvent((new CustomEvent(app.components.x_progress.model.event_complete,({"bubbles": true, "composed": true, "detail": ({"value": value_22994, "max": max_22999})}))));
+if(((now_complete_23008) && (cljs.core.not(was_completed_23007)))){
+el.dispatchEvent((new CustomEvent(app.components.x_progress.model.event_complete,({"bubbles": true, "composed": true, "detail": ({"value": value_22995, "max": max_23000})}))));
 } else {
 }
 
-app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_completed,cljs.core.boolean$(now_complete_23007));
+app.components.x_progress.x_progress.goog$module$goog$object.set(el,app.components.x_progress.x_progress.k_completed,cljs.core.boolean$(now_complete_23008));
 
 return null;
 });

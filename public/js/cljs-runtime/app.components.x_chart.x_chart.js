@@ -40,10 +40,10 @@ var x1 = (W - padding);
 var y1 = ((H - padding) - lh);
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"x0","x0",410843387),x0,new cljs.core.Keyword(null,"y0","y0",111454807),y0,new cljs.core.Keyword(null,"x1","x1",-1863922247),x1,new cljs.core.Keyword(null,"y1","y1",589123466),y1], null);
 });
-app.components.x_chart.x_chart.scale_y = (function app$components$x_chart$x_chart$scale_y(y,p__22213,y0,y1){
-var vec__22214 = p__22213;
-var mn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22214,(0),null);
-var mx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22214,(1),null);
+app.components.x_chart.x_chart.scale_y = (function app$components$x_chart$x_chart$scale_y(y,p__22095,y0,y1){
+var vec__22096 = p__22095;
+var mn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22096,(0),null);
+var mx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22096,(1),null);
 var span = (mx - mn);
 if((span === (0))){
 return ((y0 + y1) / (2));
@@ -51,10 +51,10 @@ return ((y0 + y1) / (2));
 return (y0 + ((y1 - y0) * ((mx - y) / span)));
 }
 });
-app.components.x_chart.x_chart.scale_x_numeric = (function app$components$x_chart$x_chart$scale_x_numeric(x,p__22217,x0,x1){
-var vec__22218 = p__22217;
-var mn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22218,(0),null);
-var mx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22218,(1),null);
+app.components.x_chart.x_chart.scale_x_numeric = (function app$components$x_chart$x_chart$scale_x_numeric(x,p__22099,x0,x1){
+var vec__22100 = p__22099;
+var mn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22100,(0),null);
+var mx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22100,(1),null);
 var span = (mx - mn);
 if((span === (0))){
 return ((x0 + x1) / (2));
@@ -118,12 +118,12 @@ return (""+"var(--x-chart-series-"+cljs.core.str.cljs$core$IFn$_invoke$arity$1((
 });
 app.components.x_chart.x_chart.build_line_d = (function app$components$x_chart$x_chart$build_line_d(pts){
 if(cljs.core.seq(pts)){
-var vec__22223 = pts;
-var seq__22224 = cljs.core.seq(vec__22223);
-var first__22225 = cljs.core.first(seq__22224);
-var seq__22224__$1 = cljs.core.next(seq__22224);
-var f = first__22225;
-var rest_pts = seq__22224__$1;
+var vec__22103 = pts;
+var seq__22104 = cljs.core.seq(vec__22103);
+var first__22105 = cljs.core.first(seq__22104);
+var seq__22104__$1 = cljs.core.next(seq__22104);
+var f = first__22105;
+var rest_pts = seq__22104__$1;
 return (""+"M "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(f))+","+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(f))+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.apply.cljs$core$IFn$_invoke$arity$2(cljs.core.str,cljs.core.map.cljs$core$IFn$_invoke$arity$2((function (p){
 return (""+" L "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(p))+","+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(p)));
 }),rest_pts))));
@@ -155,68 +155,68 @@ return null;
 break;
 }
 });
-app.components.x_chart.x_chart.draw_grid_BANG_ = (function app$components$x_chart$x_chart$draw_grid_BANG_(svg,p__22232,p__22233){
-var map__22234 = p__22232;
-var map__22234__$1 = cljs.core.__destructure_map(map__22234);
-var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22234__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
-var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22234__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
-var map__22235 = p__22233;
-var map__22235__$1 = cljs.core.__destructure_map(map__22235);
-var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22235__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
-var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22235__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
-var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22235__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
-var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22235__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
-var seq__22236 = cljs.core.seq(y_ticks);
-var chunk__22237 = null;
-var count__22238 = (0);
-var i__22239 = (0);
+app.components.x_chart.x_chart.draw_grid_BANG_ = (function app$components$x_chart$x_chart$draw_grid_BANG_(svg,p__22106,p__22107){
+var map__22108 = p__22106;
+var map__22108__$1 = cljs.core.__destructure_map(map__22108);
+var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22108__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
+var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22108__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
+var map__22109 = p__22107;
+var map__22109__$1 = cljs.core.__destructure_map(map__22109);
+var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22109__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
+var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22109__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
+var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22109__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
+var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22109__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
+var seq__22110 = cljs.core.seq(y_ticks);
+var chunk__22111 = null;
+var count__22112 = (0);
+var i__22113 = (0);
 while(true){
-if((i__22239 < count__22238)){
-var tick = chunk__22237.cljs$core$IIndexed$_nth$arity$2(null,i__22239);
-var py_22321 = app.components.x_chart.x_chart.scale_y(tick,y_domain,y0,y1);
-var line_22322 = app.components.x_chart.x_chart.svg_line_BANG_(x0,py_22321,x1,py_22321,"var(--x-chart-grid)",(1));
-svg.appendChild(line_22322);
+if((i__22113 < count__22112)){
+var tick = chunk__22111.cljs$core$IIndexed$_nth$arity$2(null,i__22113);
+var py_22305 = app.components.x_chart.x_chart.scale_y(tick,y_domain,y0,y1);
+var line_22306 = app.components.x_chart.x_chart.svg_line_BANG_(x0,py_22305,x1,py_22305,"var(--x-chart-grid)",(1));
+svg.appendChild(line_22306);
 
 
-var G__22323 = seq__22236;
-var G__22324 = chunk__22237;
-var G__22325 = count__22238;
-var G__22326 = (i__22239 + (1));
-seq__22236 = G__22323;
-chunk__22237 = G__22324;
-count__22238 = G__22325;
-i__22239 = G__22326;
+var G__22307 = seq__22110;
+var G__22308 = chunk__22111;
+var G__22309 = count__22112;
+var G__22310 = (i__22113 + (1));
+seq__22110 = G__22307;
+chunk__22111 = G__22308;
+count__22112 = G__22309;
+i__22113 = G__22310;
 continue;
 } else {
-var temp__5823__auto__ = cljs.core.seq(seq__22236);
+var temp__5823__auto__ = cljs.core.seq(seq__22110);
 if(temp__5823__auto__){
-var seq__22236__$1 = temp__5823__auto__;
-if(cljs.core.chunked_seq_QMARK_(seq__22236__$1)){
-var c__5673__auto__ = cljs.core.chunk_first(seq__22236__$1);
-var G__22327 = cljs.core.chunk_rest(seq__22236__$1);
-var G__22328 = c__5673__auto__;
-var G__22329 = cljs.core.count(c__5673__auto__);
-var G__22330 = (0);
-seq__22236 = G__22327;
-chunk__22237 = G__22328;
-count__22238 = G__22329;
-i__22239 = G__22330;
+var seq__22110__$1 = temp__5823__auto__;
+if(cljs.core.chunked_seq_QMARK_(seq__22110__$1)){
+var c__5673__auto__ = cljs.core.chunk_first(seq__22110__$1);
+var G__22311 = cljs.core.chunk_rest(seq__22110__$1);
+var G__22312 = c__5673__auto__;
+var G__22313 = cljs.core.count(c__5673__auto__);
+var G__22314 = (0);
+seq__22110 = G__22311;
+chunk__22111 = G__22312;
+count__22112 = G__22313;
+i__22113 = G__22314;
 continue;
 } else {
-var tick = cljs.core.first(seq__22236__$1);
-var py_22331 = app.components.x_chart.x_chart.scale_y(tick,y_domain,y0,y1);
-var line_22332 = app.components.x_chart.x_chart.svg_line_BANG_(x0,py_22331,x1,py_22331,"var(--x-chart-grid)",(1));
-svg.appendChild(line_22332);
+var tick = cljs.core.first(seq__22110__$1);
+var py_22315 = app.components.x_chart.x_chart.scale_y(tick,y_domain,y0,y1);
+var line_22316 = app.components.x_chart.x_chart.svg_line_BANG_(x0,py_22315,x1,py_22315,"var(--x-chart-grid)",(1));
+svg.appendChild(line_22316);
 
 
-var G__22333 = cljs.core.next(seq__22236__$1);
-var G__22334 = null;
-var G__22335 = (0);
-var G__22336 = (0);
-seq__22236 = G__22333;
-chunk__22237 = G__22334;
-count__22238 = G__22335;
-i__22239 = G__22336;
+var G__22317 = cljs.core.next(seq__22110__$1);
+var G__22318 = null;
+var G__22319 = (0);
+var G__22320 = (0);
+seq__22110 = G__22317;
+chunk__22111 = G__22318;
+count__22112 = G__22319;
+i__22113 = G__22320;
 continue;
 }
 } else {
@@ -226,74 +226,74 @@ return null;
 break;
 }
 });
-app.components.x_chart.x_chart.draw_axes_BANG_ = (function app$components$x_chart$x_chart$draw_axes_BANG_(svg,p__22259,p__22260,padding){
-var map__22261 = p__22259;
-var map__22261__$1 = cljs.core.__destructure_map(map__22261);
-var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
-var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
-var series = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"series","series",600710694));
-var x_kind = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"x-kind","x-kind",693167455));
-var y_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"y-fmt","y-fmt",2092412811));
-var x_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22261__$1,new cljs.core.Keyword(null,"x-fmt","x-fmt",2073358008));
-var map__22263 = p__22260;
-var map__22263__$1 = cljs.core.__destructure_map(map__22263);
-var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22263__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
-var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22263__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
-var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22263__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
-var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22263__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
-var seq__22264_22337 = cljs.core.seq(y_ticks);
-var chunk__22265_22338 = null;
-var count__22266_22339 = (0);
-var i__22267_22340 = (0);
+app.components.x_chart.x_chart.draw_axes_BANG_ = (function app$components$x_chart$x_chart$draw_axes_BANG_(svg,p__22114,p__22115,padding){
+var map__22116 = p__22114;
+var map__22116__$1 = cljs.core.__destructure_map(map__22116);
+var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
+var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
+var series = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"series","series",600710694));
+var x_kind = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"x-kind","x-kind",693167455));
+var y_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"y-fmt","y-fmt",2092412811));
+var x_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22116__$1,new cljs.core.Keyword(null,"x-fmt","x-fmt",2073358008));
+var map__22117 = p__22115;
+var map__22117__$1 = cljs.core.__destructure_map(map__22117);
+var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22117__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
+var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22117__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
+var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22117__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
+var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22117__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
+var seq__22124_22321 = cljs.core.seq(y_ticks);
+var chunk__22125_22322 = null;
+var count__22126_22323 = (0);
+var i__22127_22324 = (0);
 while(true){
-if((i__22267_22340 < count__22266_22339)){
-var tick_22341 = chunk__22265_22338.cljs$core$IIndexed$_nth$arity$2(null,i__22267_22340);
-var py_22342 = app.components.x_chart.x_chart.scale_y(tick_22341,y_domain,y0,y1);
-var lbl_22343 = app.components.x_chart.model.format_value(tick_22341,y_fmt);
-var txt_22344 = app.components.x_chart.x_chart.svg_text_BANG_((x0 - (4)),(py_22342 + (4)),lbl_22343,"end",(10),"var(--x-chart-axis-label)");
-svg.appendChild(txt_22344);
+if((i__22127_22324 < count__22126_22323)){
+var tick_22325 = chunk__22125_22322.cljs$core$IIndexed$_nth$arity$2(null,i__22127_22324);
+var py_22326 = app.components.x_chart.x_chart.scale_y(tick_22325,y_domain,y0,y1);
+var lbl_22327 = app.components.x_chart.model.format_value(tick_22325,y_fmt);
+var txt_22328 = app.components.x_chart.x_chart.svg_text_BANG_((x0 - (4)),(py_22326 + (4)),lbl_22327,"end",(10),"var(--x-chart-axis-label)");
+svg.appendChild(txt_22328);
 
 
-var G__22345 = seq__22264_22337;
-var G__22346 = chunk__22265_22338;
-var G__22347 = count__22266_22339;
-var G__22348 = (i__22267_22340 + (1));
-seq__22264_22337 = G__22345;
-chunk__22265_22338 = G__22346;
-count__22266_22339 = G__22347;
-i__22267_22340 = G__22348;
+var G__22329 = seq__22124_22321;
+var G__22330 = chunk__22125_22322;
+var G__22331 = count__22126_22323;
+var G__22332 = (i__22127_22324 + (1));
+seq__22124_22321 = G__22329;
+chunk__22125_22322 = G__22330;
+count__22126_22323 = G__22331;
+i__22127_22324 = G__22332;
 continue;
 } else {
-var temp__5823__auto___22349 = cljs.core.seq(seq__22264_22337);
-if(temp__5823__auto___22349){
-var seq__22264_22350__$1 = temp__5823__auto___22349;
-if(cljs.core.chunked_seq_QMARK_(seq__22264_22350__$1)){
-var c__5673__auto___22351 = cljs.core.chunk_first(seq__22264_22350__$1);
-var G__22352 = cljs.core.chunk_rest(seq__22264_22350__$1);
-var G__22353 = c__5673__auto___22351;
-var G__22354 = cljs.core.count(c__5673__auto___22351);
-var G__22355 = (0);
-seq__22264_22337 = G__22352;
-chunk__22265_22338 = G__22353;
-count__22266_22339 = G__22354;
-i__22267_22340 = G__22355;
+var temp__5823__auto___22333 = cljs.core.seq(seq__22124_22321);
+if(temp__5823__auto___22333){
+var seq__22124_22334__$1 = temp__5823__auto___22333;
+if(cljs.core.chunked_seq_QMARK_(seq__22124_22334__$1)){
+var c__5673__auto___22335 = cljs.core.chunk_first(seq__22124_22334__$1);
+var G__22336 = cljs.core.chunk_rest(seq__22124_22334__$1);
+var G__22337 = c__5673__auto___22335;
+var G__22338 = cljs.core.count(c__5673__auto___22335);
+var G__22339 = (0);
+seq__22124_22321 = G__22336;
+chunk__22125_22322 = G__22337;
+count__22126_22323 = G__22338;
+i__22127_22324 = G__22339;
 continue;
 } else {
-var tick_22356 = cljs.core.first(seq__22264_22350__$1);
-var py_22357 = app.components.x_chart.x_chart.scale_y(tick_22356,y_domain,y0,y1);
-var lbl_22358 = app.components.x_chart.model.format_value(tick_22356,y_fmt);
-var txt_22359 = app.components.x_chart.x_chart.svg_text_BANG_((x0 - (4)),(py_22357 + (4)),lbl_22358,"end",(10),"var(--x-chart-axis-label)");
-svg.appendChild(txt_22359);
+var tick_22340 = cljs.core.first(seq__22124_22334__$1);
+var py_22341 = app.components.x_chart.x_chart.scale_y(tick_22340,y_domain,y0,y1);
+var lbl_22342 = app.components.x_chart.model.format_value(tick_22340,y_fmt);
+var txt_22343 = app.components.x_chart.x_chart.svg_text_BANG_((x0 - (4)),(py_22341 + (4)),lbl_22342,"end",(10),"var(--x-chart-axis-label)");
+svg.appendChild(txt_22343);
 
 
-var G__22360 = cljs.core.next(seq__22264_22350__$1);
-var G__22361 = null;
-var G__22362 = (0);
-var G__22363 = (0);
-seq__22264_22337 = G__22360;
-chunk__22265_22338 = G__22361;
-count__22266_22339 = G__22362;
-i__22267_22340 = G__22363;
+var G__22344 = cljs.core.next(seq__22124_22334__$1);
+var G__22345 = null;
+var G__22346 = (0);
+var G__22347 = (0);
+seq__22124_22321 = G__22344;
+chunk__22125_22322 = G__22345;
+count__22126_22323 = G__22346;
+i__22127_22324 = G__22347;
 continue;
 }
 } else {
@@ -323,13 +323,13 @@ return null;
 return null;
 }
 });
-app.components.x_chart.x_chart.compute_series_pts = (function app$components$x_chart$x_chart$compute_series_pts(s,series_idx,kind,x_dom,p__22268,y_domain){
-var map__22269 = p__22268;
-var map__22269__$1 = cljs.core.__destructure_map(map__22269);
-var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22269__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
-var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22269__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
-var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22269__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
-var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22269__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
+app.components.x_chart.x_chart.compute_series_pts = (function app$components$x_chart$x_chart$compute_series_pts(s,series_idx,kind,x_dom,p__22135,y_domain){
+var map__22136 = p__22135;
+var map__22136__$1 = cljs.core.__destructure_map(map__22136);
+var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22136__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
+var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22136__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
+var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22136__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
+var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22136__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
 return cljs.core.map_indexed.cljs$core$IFn$_invoke$arity$2((function (i,pt){
 var px = ((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(kind,"category"))?(function (){var n = cljs.core.max.cljs$core$IFn$_invoke$arity$2((1),cljs.core.count(new cljs.core.Keyword(null,"data","data",-232669377).cljs$core$IFn$_invoke$arity$1(s)));
 return app.components.x_chart.x_chart.scale_x_category(i,(n - (1)),x0,x1);
@@ -384,95 +384,95 @@ return svg.appendChild(path);
 return null;
 }
 });
-app.components.x_chart.x_chart.draw_bar_series_BANG_ = (function app$components$x_chart$x_chart$draw_bar_series_BANG_(svg,series_idx,pts,color,p__22270,total_series){
-var map__22271 = p__22270;
-var map__22271__$1 = cljs.core.__destructure_map(map__22271);
-var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22271__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
-var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22271__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
+app.components.x_chart.x_chart.draw_bar_series_BANG_ = (function app$components$x_chart$x_chart$draw_bar_series_BANG_(svg,series_idx,pts,color,p__22137,total_series){
+var map__22138 = p__22137;
+var map__22138__$1 = cljs.core.__destructure_map(map__22138);
+var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22138__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
+var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22138__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
 var n = cljs.core.count(pts);
 var bw_raw = (((n === (0)))?(0):((x1 - x0) / n));
 var gap = (bw_raw * 0.08);
 var sw = ((bw_raw - (gap * (2))) / total_series);
 var offset = (series_idx * sw);
-var seq__22272 = cljs.core.seq(pts);
-var chunk__22273 = null;
-var count__22274 = (0);
-var i__22275 = (0);
+var seq__22139 = cljs.core.seq(pts);
+var chunk__22140 = null;
+var count__22141 = (0);
+var i__22142 = (0);
 while(true){
-if((i__22275 < count__22274)){
-var pt = chunk__22273.cljs$core$IIndexed$_nth$arity$2(null,i__22275);
-var bx_22365 = (((new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(pt) + (- (bw_raw / (2)))) + gap) + offset);
-var by_22366 = cljs.core.min.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt),new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt));
-var bh_22367 = Math.abs((new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt) - new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt)));
-var rect_22368 = app.components.x_chart.x_chart.make_svg_el("rect");
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(bx_22365)));
+if((i__22142 < count__22141)){
+var pt = chunk__22140.cljs$core$IIndexed$_nth$arity$2(null,i__22142);
+var bx_22348 = (((new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(pt) + (- (bw_raw / (2)))) + gap) + offset);
+var by_22349 = cljs.core.min.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt),new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt));
+var bh_22350 = Math.abs((new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt) - new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt)));
+var rect_22351 = app.components.x_chart.x_chart.make_svg_el("rect");
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(bx_22348)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(by_22366)));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(by_22349)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((1),sw))));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((1),sw))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),bh_22367))));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),bh_22350))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"fill",color);
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"fill",color);
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22368,"rx","2");
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22351,"rx","2");
 
-svg.appendChild(rect_22368);
+svg.appendChild(rect_22351);
 
 
-var G__22369 = seq__22272;
-var G__22370 = chunk__22273;
-var G__22371 = count__22274;
-var G__22372 = (i__22275 + (1));
-seq__22272 = G__22369;
-chunk__22273 = G__22370;
-count__22274 = G__22371;
-i__22275 = G__22372;
+var G__22353 = seq__22139;
+var G__22354 = chunk__22140;
+var G__22355 = count__22141;
+var G__22356 = (i__22142 + (1));
+seq__22139 = G__22353;
+chunk__22140 = G__22354;
+count__22141 = G__22355;
+i__22142 = G__22356;
 continue;
 } else {
-var temp__5823__auto__ = cljs.core.seq(seq__22272);
+var temp__5823__auto__ = cljs.core.seq(seq__22139);
 if(temp__5823__auto__){
-var seq__22272__$1 = temp__5823__auto__;
-if(cljs.core.chunked_seq_QMARK_(seq__22272__$1)){
-var c__5673__auto__ = cljs.core.chunk_first(seq__22272__$1);
-var G__22373 = cljs.core.chunk_rest(seq__22272__$1);
-var G__22374 = c__5673__auto__;
-var G__22375 = cljs.core.count(c__5673__auto__);
-var G__22376 = (0);
-seq__22272 = G__22373;
-chunk__22273 = G__22374;
-count__22274 = G__22375;
-i__22275 = G__22376;
+var seq__22139__$1 = temp__5823__auto__;
+if(cljs.core.chunked_seq_QMARK_(seq__22139__$1)){
+var c__5673__auto__ = cljs.core.chunk_first(seq__22139__$1);
+var G__22357 = cljs.core.chunk_rest(seq__22139__$1);
+var G__22358 = c__5673__auto__;
+var G__22359 = cljs.core.count(c__5673__auto__);
+var G__22360 = (0);
+seq__22139 = G__22357;
+chunk__22140 = G__22358;
+count__22141 = G__22359;
+i__22142 = G__22360;
 continue;
 } else {
-var pt = cljs.core.first(seq__22272__$1);
-var bx_22377 = (((new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(pt) + (- (bw_raw / (2)))) + gap) + offset);
-var by_22378 = cljs.core.min.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt),new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt));
-var bh_22379 = Math.abs((new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt) - new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt)));
-var rect_22380 = app.components.x_chart.x_chart.make_svg_el("rect");
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(bx_22377)));
+var pt = cljs.core.first(seq__22139__$1);
+var bx_22361 = (((new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(pt) + (- (bw_raw / (2)))) + gap) + offset);
+var by_22362 = cljs.core.min.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt),new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt));
+var bh_22363 = Math.abs((new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(pt) - new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610).cljs$core$IFn$_invoke$arity$1(pt)));
+var rect_22364 = app.components.x_chart.x_chart.make_svg_el("rect");
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(bx_22361)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(by_22378)));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(by_22362)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((1),sw))));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((1),sw))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),bh_22379))));
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),bh_22363))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"fill",color);
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"fill",color);
 
-app.components.x_chart.x_chart.set_attr_BANG_(rect_22380,"rx","2");
+app.components.x_chart.x_chart.set_attr_BANG_(rect_22364,"rx","2");
 
-svg.appendChild(rect_22380);
+svg.appendChild(rect_22364);
 
 
-var G__22381 = cljs.core.next(seq__22272__$1);
-var G__22382 = null;
-var G__22383 = (0);
-var G__22384 = (0);
-seq__22272 = G__22381;
-chunk__22273 = G__22382;
-count__22274 = G__22383;
-i__22275 = G__22384;
+var G__22365 = cljs.core.next(seq__22139__$1);
+var G__22366 = null;
+var G__22367 = (0);
+var G__22368 = (0);
+seq__22139 = G__22365;
+chunk__22140 = G__22366;
+count__22141 = G__22367;
+i__22142 = G__22368;
 continue;
 }
 } else {
@@ -517,13 +517,13 @@ return hover_data;
 return and__5140__auto__;
 }
 })())){
-var map__22281 = hover_data;
-var map__22281__$1 = cljs.core.__destructure_map(map__22281);
-var x_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22281__$1,new cljs.core.Keyword(null,"x-label","x-label",802517907));
-var rows = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22281__$1,new cljs.core.Keyword(null,"rows","rows",850049680));
-var px = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22281__$1,new cljs.core.Keyword(null,"px","px",281329899));
-var py = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22281__$1,new cljs.core.Keyword(null,"py","py",1397985916));
-var dot_pts = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22281__$1,new cljs.core.Keyword(null,"dot-pts","dot-pts",1732240900));
+var map__22163 = hover_data;
+var map__22163__$1 = cljs.core.__destructure_map(map__22163);
+var x_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22163__$1,new cljs.core.Keyword(null,"x-label","x-label",802517907));
+var rows = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22163__$1,new cljs.core.Keyword(null,"rows","rows",850049680));
+var px = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22163__$1,new cljs.core.Keyword(null,"px","px",281329899));
+var py = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22163__$1,new cljs.core.Keyword(null,"py","py",1397985916));
+var dot_pts = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22163__$1,new cljs.core.Keyword(null,"dot-pts","dot-pts",1732240900));
 var header = app.components.x_chart.x_chart.goog$module$goog$object.get(refs,"tooltip-header");
 var body = app.components.x_chart.x_chart.goog$module$goog$object.get(refs,"tooltip-body");
 var row_els = app.components.x_chart.x_chart.goog$module$goog$object.get(refs,"tooltip-rows");
@@ -541,42 +541,42 @@ return row_els;
 return and__5140__auto__;
 }
 })())){
-var n__5741__auto___22387 = app.components.x_chart.model.max_tooltip_rows;
-var i_22388 = (0);
+var n__5741__auto___22369 = app.components.x_chart.model.max_tooltip_rows;
+var i_22370 = (0);
 while(true){
-if((i_22388 < n__5741__auto___22387)){
-var row_el_22389 = (row_els[i_22388]);
-if(cljs.core.truth_(row_el_22389)){
-var temp__5821__auto___22390 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(rows,i_22388,null);
-if(cljs.core.truth_(temp__5821__auto___22390)){
-var row_22391 = temp__5821__auto___22390;
-app.components.x_chart.x_chart.set_attr_BANG_(row_el_22389,"data-hidden","false");
+if((i_22370 < n__5741__auto___22369)){
+var row_el_22371 = (row_els[i_22370]);
+if(cljs.core.truth_(row_el_22371)){
+var temp__5821__auto___22372 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(rows,i_22370,null);
+if(cljs.core.truth_(temp__5821__auto___22372)){
+var row_22373 = temp__5821__auto___22372;
+app.components.x_chart.x_chart.set_attr_BANG_(row_el_22371,"data-hidden","false");
 
-var swatch_22392 = row_el_22389.firstChild;
-var label_22393 = (cljs.core.truth_(swatch_22392)?swatch_22392.nextSibling:null);
-var value_22394 = (cljs.core.truth_(label_22393)?label_22393.nextSibling:null);
-if(cljs.core.truth_(swatch_22392)){
-(swatch_22392.style.backgroundColor = new cljs.core.Keyword(null,"color","color",1011675173).cljs$core$IFn$_invoke$arity$1(row_22391));
-} else {
-}
-
-if(cljs.core.truth_(label_22393)){
-(label_22393.textContent = new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(row_22391));
+var swatch_22374 = row_el_22371.firstChild;
+var label_22375 = (cljs.core.truth_(swatch_22374)?swatch_22374.nextSibling:null);
+var value_22376 = (cljs.core.truth_(label_22375)?label_22375.nextSibling:null);
+if(cljs.core.truth_(swatch_22374)){
+(swatch_22374.style.backgroundColor = new cljs.core.Keyword(null,"color","color",1011675173).cljs$core$IFn$_invoke$arity$1(row_22373));
 } else {
 }
 
-if(cljs.core.truth_(value_22394)){
-(value_22394.textContent = new cljs.core.Keyword(null,"value","value",305978217).cljs$core$IFn$_invoke$arity$1(row_22391));
+if(cljs.core.truth_(label_22375)){
+(label_22375.textContent = new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(row_22373));
+} else {
+}
+
+if(cljs.core.truth_(value_22376)){
+(value_22376.textContent = new cljs.core.Keyword(null,"value","value",305978217).cljs$core$IFn$_invoke$arity$1(row_22373));
 } else {
 }
 } else {
-app.components.x_chart.x_chart.set_attr_BANG_(row_el_22389,"data-hidden","true");
+app.components.x_chart.x_chart.set_attr_BANG_(row_el_22371,"data-hidden","true");
 }
 } else {
 }
 
-var G__22406 = (i_22388 + (1));
-i_22388 = G__22406;
+var G__22377 = (i_22370 + (1));
+i_22370 = G__22377;
 continue;
 } else {
 }
@@ -586,30 +586,30 @@ break;
 }
 
 if(cljs.core.truth_(dot_els)){
-var n__5741__auto___22407 = app.components.x_chart.model.max_tooltip_rows;
-var i_22408 = (0);
+var n__5741__auto___22378 = app.components.x_chart.model.max_tooltip_rows;
+var i_22379 = (0);
 while(true){
-if((i_22408 < n__5741__auto___22407)){
-var dot_22413 = (dot_els[i_22408]);
-if(cljs.core.truth_(dot_22413)){
-var temp__5821__auto___22414 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(dot_pts,i_22408,null);
-if(cljs.core.truth_(temp__5821__auto___22414)){
-var dp_22415 = temp__5821__auto___22414;
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22413,"cx",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(dp_22415))));
+if((i_22379 < n__5741__auto___22378)){
+var dot_22380 = (dot_els[i_22379]);
+if(cljs.core.truth_(dot_22380)){
+var temp__5821__auto___22381 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(dot_pts,i_22379,null);
+if(cljs.core.truth_(temp__5821__auto___22381)){
+var dp_22382 = temp__5821__auto___22381;
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22380,"cx",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(dp_22382))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22413,"cy",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(dp_22415))));
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22380,"cy",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"py","py",1397985916).cljs$core$IFn$_invoke$arity$1(dp_22382))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22413,"fill",new cljs.core.Keyword(null,"color","color",1011675173).cljs$core$IFn$_invoke$arity$1(dp_22415));
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22380,"fill",new cljs.core.Keyword(null,"color","color",1011675173).cljs$core$IFn$_invoke$arity$1(dp_22382));
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22413,"visibility","visible");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22380,"visibility","visible");
 } else {
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22413,"visibility","hidden");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22380,"visibility","hidden");
 }
 } else {
 }
 
-var G__22416 = (i_22408 + (1));
-i_22408 = G__22416;
+var G__22383 = (i_22379 + (1));
+i_22379 = G__22383;
 continue;
 } else {
 }
@@ -637,10 +637,10 @@ app.components.x_chart.x_chart.set_attr_BANG_(tooltip_el,"data-visible","true");
 
 var tw = tooltip_el.offsetWidth;
 var th = tooltip_el.offsetHeight;
-var map__22283 = app.components.x_chart.model.tooltip_position(px,py,tw,th,W,H,app.components.x_chart.model.tooltip_edge_pad,app.components.x_chart.model.tooltip_offset);
-var map__22283__$1 = cljs.core.__destructure_map(map__22283);
-var left = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22283__$1,new cljs.core.Keyword(null,"left","left",-399115937));
-var top = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22283__$1,new cljs.core.Keyword(null,"top","top",-1856271961));
+var map__22166 = app.components.x_chart.model.tooltip_position(px,py,tw,th,W,H,app.components.x_chart.model.tooltip_edge_pad,app.components.x_chart.model.tooltip_offset);
+var map__22166__$1 = cljs.core.__destructure_map(map__22166);
+var left = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22166__$1,new cljs.core.Keyword(null,"left","left",-399115937));
+var top = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22166__$1,new cljs.core.Keyword(null,"top","top",-1856271961));
 (tooltip_el.style.left = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(left)+"px"));
 
 return (tooltip_el.style.top = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(top)+"px"));
@@ -667,14 +667,14 @@ var n__5741__auto__ = app.components.x_chart.model.max_tooltip_rows;
 var i = (0);
 while(true){
 if((i < n__5741__auto__)){
-var dot_22421 = (dot_els[i]);
-if(cljs.core.truth_(dot_22421)){
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22421,"visibility","hidden");
+var dot_22384 = (dot_els[i]);
+if(cljs.core.truth_(dot_22384)){
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22384,"visibility","hidden");
 } else {
 }
 
-var G__22422 = (i + (1));
-i = G__22422;
+var G__22385 = (i + (1));
+i = G__22385;
 continue;
 } else {
 return null;
@@ -715,8 +715,8 @@ return null;
 var pt = cljs.core.first(pts);
 if(cljs.core.truth_(pt)){
 if(cljs.core.truth_(show_tooltip_QMARK_)){
-var hd_22423 = app.components.x_chart.x_chart.build_hover_data(pts,x_fmt,y_fmt,series);
-app.components.x_chart.x_chart.show_tooltip_BANG_(refs,hd_22423,W,H);
+var hd_22386 = app.components.x_chart.x_chart.build_hover_data(pts,x_fmt,y_fmt,series);
+app.components.x_chart.x_chart.show_tooltip_BANG_(refs,hd_22386,W,H);
 } else {
 }
 
@@ -762,32 +762,32 @@ if(cljs.core.truth_(refs)){
 var svg = app.components.x_chart.x_chart.goog$module$goog$object.get(refs,"svg");
 var sr_el = app.components.x_chart.x_chart.goog$module$goog$object.get(refs,"sr");
 var m = app.components.x_chart.x_chart.read_model(el);
-var map__22290 = m;
-var map__22290__$1 = cljs.core.__destructure_map(map__22290);
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
-var height = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"height","height",1025178622));
-var tooltip_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"tooltip?","tooltip?",-642753154));
-var grid_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"grid?","grid?",-288406689));
-var x_kind = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"x-kind","x-kind",693167455));
-var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
-var axes_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"axes?","axes?",1786285669));
-var series = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"series","series",600710694));
-var loading_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"loading?","loading?",1905707049));
-var y_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"y-fmt","y-fmt",2092412811));
-var cursor = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"cursor","cursor",1011937484));
-var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"type","type",1174270348));
-var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
-var x_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22290__$1,new cljs.core.Keyword(null,"x-fmt","x-fmt",2073358008));
+var map__22225 = m;
+var map__22225__$1 = cljs.core.__destructure_map(map__22225);
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var y_ticks = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722));
+var height = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"height","height",1025178622));
+var tooltip_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"tooltip?","tooltip?",-642753154));
+var grid_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"grid?","grid?",-288406689));
+var x_kind = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"x-kind","x-kind",693167455));
+var y_domain = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"y-domain","y-domain",-969203007));
+var axes_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"axes?","axes?",1786285669));
+var series = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"series","series",600710694));
+var loading_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"loading?","loading?",1905707049));
+var y_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"y-fmt","y-fmt",2092412811));
+var cursor = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"cursor","cursor",1011937484));
+var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"type","type",1174270348));
+var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
+var x_fmt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22225__$1,new cljs.core.Keyword(null,"x-fmt","x-fmt",2073358008));
 var W = app.components.x_chart.x_chart.chart_width(el,refs);
 var H = height;
 var bounds = app.components.x_chart.x_chart.plot_bounds(W,H,padding);
-var map__22291 = bounds;
-var map__22291__$1 = cljs.core.__destructure_map(map__22291);
-var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22291__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
-var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22291__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
-var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22291__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
-var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22291__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
+var map__22226 = bounds;
+var map__22226__$1 = cljs.core.__destructure_map(map__22226);
+var x0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22226__$1,new cljs.core.Keyword(null,"x0","x0",410843387));
+var y0 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22226__$1,new cljs.core.Keyword(null,"y0","y0",111454807));
+var x1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22226__$1,new cljs.core.Keyword(null,"x1","x1",-1863922247));
+var y1 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22226__$1,new cljs.core.Keyword(null,"y1","y1",589123466));
 var x_dom = app.components.x_chart.model.domain_x(series);
 var baseline_y = app.components.x_chart.x_chart.scale_y((0),y_domain,y0,y1);
 app.components.x_chart.x_chart.set_attr_BANG_(svg,"viewBox",(""+"0 0 "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(W)+" "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(H)));
@@ -809,7 +809,7 @@ app.components.x_chart.x_chart.draw_grid_BANG_(svg,m,bounds);
 } else {
 }
 
-var all_pts_22424 = cljs.core.vec(cljs.core.mapcat.cljs$core$IFn$_invoke$arity$variadic((function (s,i){
+var all_pts_22389 = cljs.core.vec(cljs.core.mapcat.cljs$core$IFn$_invoke$arity$variadic((function (s,i){
 var pts = app.components.x_chart.x_chart.compute_series_pts(s,i,x_kind,x_dom,bounds,y_domain);
 return cljs.core.map.cljs$core$IFn$_invoke$arity$2((function (pt){
 return cljs.core.assoc.cljs$core$IFn$_invoke$arity$variadic(pt,new cljs.core.Keyword(null,"id","id",-1388402092),new cljs.core.Keyword(null,"id","id",-1388402092).cljs$core$IFn$_invoke$arity$1(s),cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"label","label",1718410804),new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(s),new cljs.core.Keyword(null,"y0-baseline","y0-baseline",613579610),baseline_y], 0));
@@ -823,11 +823,11 @@ return or__5142__auto__;
 return app.components.x_chart.x_chart.series_color_var(i);
 }
 })();
-var pts = cljs.core.filter.cljs$core$IFn$_invoke$arity$2((function (p1__22286_SHARP_){
-return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"id","id",-1388402092).cljs$core$IFn$_invoke$arity$1(p1__22286_SHARP_),new cljs.core.Keyword(null,"id","id",-1388402092).cljs$core$IFn$_invoke$arity$1(s));
-}),all_pts_22424);
-var G__22295 = type;
-switch (G__22295) {
+var pts = cljs.core.filter.cljs$core$IFn$_invoke$arity$2((function (p1__22205_SHARP_){
+return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"id","id",-1388402092).cljs$core$IFn$_invoke$arity$1(p1__22205_SHARP_),new cljs.core.Keyword(null,"id","id",-1388402092).cljs$core$IFn$_invoke$arity$1(s));
+}),all_pts_22389);
+var G__22250 = type;
+switch (G__22250) {
 case "bar":
 return app.components.x_chart.x_chart.draw_bar_series_BANG_(svg,i,pts,color,bounds,cljs.core.count(series));
 
@@ -849,72 +849,72 @@ app.components.x_chart.x_chart.draw_axes_BANG_(svg,m,bounds,padding);
 } else {
 }
 
-var xhair_22426 = app.components.x_chart.x_chart.make_svg_el("line");
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"x1",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
+var xhair_22391 = app.components.x_chart.x_chart.make_svg_el("line");
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"x1",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"y1",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y0)));
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"y1",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y0)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"x2",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"x2",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"y2",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y1)));
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"y2",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y1)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"stroke","var(--x-chart-crosshair-color)");
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"stroke","var(--x-chart-crosshair-color)");
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"stroke-width","var(--x-chart-crosshair-width)");
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"stroke-width","var(--x-chart-crosshair-width)");
 
-app.components.x_chart.x_chart.set_attr_BANG_(xhair_22426,"visibility","hidden");
+app.components.x_chart.x_chart.set_attr_BANG_(xhair_22391,"visibility","hidden");
 
-svg.appendChild(xhair_22426);
+svg.appendChild(xhair_22391);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs,"crosshair",xhair_22426);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs,"crosshair",xhair_22391);
 
-var dot_arr_22427 = (new Array(app.components.x_chart.model.max_tooltip_rows));
-var n__5741__auto___22428 = app.components.x_chart.model.max_tooltip_rows;
-var i_22429 = (0);
+var dot_arr_22394 = (new Array(app.components.x_chart.model.max_tooltip_rows));
+var n__5741__auto___22395 = app.components.x_chart.model.max_tooltip_rows;
+var i_22396 = (0);
 while(true){
-if((i_22429 < n__5741__auto___22428)){
-var dot_22430 = app.components.x_chart.x_chart.make_svg_el("circle");
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22430,"r",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(app.components.x_chart.model.dot_r)));
+if((i_22396 < n__5741__auto___22395)){
+var dot_22398 = app.components.x_chart.x_chart.make_svg_el("circle");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22398,"r",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(app.components.x_chart.model.dot_r)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22430,"stroke","var(--x-chart-tooltip-bg)");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22398,"stroke","var(--x-chart-tooltip-bg)");
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22430,"stroke-width","2");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22398,"stroke-width","2");
 
-app.components.x_chart.x_chart.set_attr_BANG_(dot_22430,"visibility","hidden");
+app.components.x_chart.x_chart.set_attr_BANG_(dot_22398,"visibility","hidden");
 
-svg.appendChild(dot_22430);
+svg.appendChild(dot_22398);
 
-(dot_arr_22427[i_22429] = dot_22430);
+(dot_arr_22394[i_22396] = dot_22398);
 
-var G__22431 = (i_22429 + (1));
-i_22429 = G__22431;
+var G__22399 = (i_22396 + (1));
+i_22396 = G__22399;
 continue;
 } else {
 }
 break;
 }
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs,"dots",dot_arr_22427);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs,"dots",dot_arr_22394);
 
-var hit_22432 = app.components.x_chart.x_chart.make_svg_el("rect");
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
+var hit_22400 = app.components.x_chart.x_chart.make_svg_el("rect");
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"x",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(x0)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y0)));
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"y",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(y0)));
 
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),(x1 - x0)))));
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"width",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),(x1 - x0)))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),(y1 - y0)))));
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"height",(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.max.cljs$core$IFn$_invoke$arity$2((0),(y1 - y0)))));
 
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"fill","transparent");
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"fill","transparent");
 
-app.components.x_chart.x_chart.set_attr_BANG_(hit_22432,"style","cursor:crosshair;");
+app.components.x_chart.x_chart.set_attr_BANG_(hit_22400,"style","cursor:crosshair;");
 
 if(cljs.core.truth_(disabled_QMARK_)){
 } else {
-app.components.x_chart.x_chart.add_mouse_listeners_BANG_(el,hit_22432,all_pts_22424,refs,W,H,cursor,tooltip_QMARK_,x_fmt,y_fmt,series);
+app.components.x_chart.x_chart.add_mouse_listeners_BANG_(el,hit_22400,all_pts_22389,refs,W,H,cursor,tooltip_QMARK_,x_fmt,y_fmt,series);
 }
 
-svg.appendChild(hit_22432);
+svg.appendChild(hit_22400);
 
 (sr_el.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(cljs.core.count(series))+" series chart"));
 }
@@ -990,17 +990,17 @@ app.components.x_chart.x_chart.set_attr_BANG_(header_el,"part","tooltip-header")
 
 app.components.x_chart.x_chart.set_attr_BANG_(body_el,"part","tooltip-body");
 
-var n__5741__auto___22433 = app.components.x_chart.model.max_tooltip_rows;
-var i_22434 = (0);
+var n__5741__auto___22404 = app.components.x_chart.model.max_tooltip_rows;
+var i_22405 = (0);
 while(true){
-if((i_22434 < n__5741__auto___22433)){
-var row_22435 = app.components.x_chart.x_chart.make_tooltip_row_BANG_();
-body_el.appendChild(row_22435);
+if((i_22405 < n__5741__auto___22404)){
+var row_22406 = app.components.x_chart.x_chart.make_tooltip_row_BANG_();
+body_el.appendChild(row_22406);
 
-(row_arr[i_22434] = row_22435);
+(row_arr[i_22405] = row_22406);
 
-var G__22436 = (i_22434 + (1));
-i_22434 = G__22436;
+var G__22407 = (i_22405 + (1));
+i_22405 = G__22407;
 continue;
 } else {
 }
@@ -1021,28 +1021,28 @@ root.appendChild(style_el);
 
 root.appendChild(container);
 
-var refs_22437 = ({});
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"root",root);
+var refs_22408 = ({});
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"root",root);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"container",container);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"container",container);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"svg",svg);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"svg",svg);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"sr",sr_el);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"sr",sr_el);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"tooltip",tooltip_el);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"tooltip",tooltip_el);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"tooltip-header",header_el);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"tooltip-header",header_el);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"tooltip-body",body_el);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"tooltip-body",body_el);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"tooltip-rows",row_arr);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"tooltip-rows",row_arr);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"crosshair",null);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"crosshair",null);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22437,"dots",null);
+app.components.x_chart.x_chart.goog$module$goog$object.set(refs_22408,"dots",null);
 
-app.components.x_chart.x_chart.goog$module$goog$object.set(el,app.components.x_chart.x_chart.k_refs,refs_22437);
+app.components.x_chart.x_chart.goog$module$goog$object.set(el,app.components.x_chart.x_chart.k_refs,refs_22408);
 
 var ro = (new ResizeObserver((function (_){
 return app.components.x_chart.x_chart.render_BANG_(el);

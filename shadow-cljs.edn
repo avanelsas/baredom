@@ -3,7 +3,8 @@
 
  :dev-http
  {8000 "public"
-  8021 "out/test"}
+  8021 "out/test"
+  8080 "."}
 
  :builds
  {:app
@@ -26,6 +27,12 @@
   {:target :karma
    :output-to "out/karma/test.js"
    :ns-regexp "-test$"}
+
+  :bare-html
+  {:target     :browser
+   :output-dir "bare-html/js"
+   :asset-path "./js"
+   :modules    {:main {:init-fn app.exports.all/init}}}
 
   :lib
   {:target :esm

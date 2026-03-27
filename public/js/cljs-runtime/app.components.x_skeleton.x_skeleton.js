@@ -6,23 +6,23 @@ app.components.x_skeleton.x_skeleton.k_initialized = "__xSkeletonInit";
 app.components.x_skeleton.x_skeleton.k_base = "__xSkeletonBase";
 app.components.x_skeleton.x_skeleton.style_text = (""+":host{"+"display:block;"+"box-sizing:border-box;"+"color-scheme:light dark;"+"--x-skeleton-color:rgba(0,0,0,0.08);"+"--x-skeleton-highlight:rgba(255,255,255,0.65);"+"--x-skeleton-border-radius:4px;"+"--x-skeleton-duration:1.5s;}"+"@media (prefers-color-scheme:dark){"+":host{"+"--x-skeleton-color:rgba(255,255,255,0.10);"+"--x-skeleton-highlight:rgba(255,255,255,0.18);}}"+"[part=base]{"+"width:100%;"+"height:1rem;"+"position:relative;"+"overflow:hidden;"+"background:var(--x-skeleton-color);"+"border-radius:var(--x-skeleton-border-radius);}"+"[part=base][data-variant='text']{"+"height:1em;"+"border-radius:3px;}"+"[part=base][data-variant='circle']{"+"width:2.5rem;"+"height:2.5rem;"+"border-radius:50%;}"+"[part=shimmer]{"+"position:absolute;"+"inset:0;"+"background:linear-gradient("+"90deg,"+"transparent 0%,"+"var(--x-skeleton-highlight) 50%,"+"transparent 100%);"+"transform:translateX(-100%);"+"display:none;"+"pointer-events:none;}"+"@keyframes x-skeleton-pulse{"+"0%,100%{opacity:1;}"+"50%{opacity:0.4;}}"+"@keyframes x-skeleton-wave{"+"0%{transform:translateX(-100%);}"+"100%{transform:translateX(200%);}}"+"[part=base][data-animation='pulse']{"+"animation:x-skeleton-pulse var(--x-skeleton-duration,1.5s) ease-in-out infinite;}"+"[part=base][data-animation='wave'] [part=shimmer]{"+"display:block;"+"animation:x-skeleton-wave var(--x-skeleton-duration,1.5s) linear infinite;}"+"@media (prefers-reduced-motion:reduce){"+"[part=base][data-animation='pulse']{"+"animation:none;}"+"[part=base][data-animation='wave'] [part=shimmer]{"+"animation:none;}}");
 app.components.x_skeleton.x_skeleton.init_dom_BANG_ = (function app$components$x_skeleton$x_skeleton$init_dom_BANG_(el){
-var root_23041 = el.attachShadow(({"mode": "open"}));
-var style_el_23042 = document.createElement("style");
-var base_23043 = document.createElement("div");
-var shimmer_23044 = document.createElement("div");
-(style_el_23042.textContent = app.components.x_skeleton.x_skeleton.style_text);
+var root_23052 = el.attachShadow(({"mode": "open"}));
+var style_el_23053 = document.createElement("style");
+var base_23054 = document.createElement("div");
+var shimmer_23055 = document.createElement("div");
+(style_el_23053.textContent = app.components.x_skeleton.x_skeleton.style_text);
 
-base_23043.setAttribute("part","base");
+base_23054.setAttribute("part","base");
 
-shimmer_23044.setAttribute("part","shimmer");
+shimmer_23055.setAttribute("part","shimmer");
 
-base_23043.appendChild(shimmer_23044);
+base_23054.appendChild(shimmer_23055);
 
-root_23041.appendChild(style_el_23042);
+root_23052.appendChild(style_el_23053);
 
-root_23041.appendChild(base_23043);
+root_23052.appendChild(base_23054);
 
-app.components.x_skeleton.x_skeleton.goog$module$goog$object.set(el,app.components.x_skeleton.x_skeleton.k_base,base_23043);
+app.components.x_skeleton.x_skeleton.goog$module$goog$object.set(el,app.components.x_skeleton.x_skeleton.k_base,base_23054);
 
 app.components.x_skeleton.x_skeleton.goog$module$goog$object.set(el,app.components.x_skeleton.x_skeleton.k_initialized,true);
 
@@ -32,27 +32,27 @@ app.components.x_skeleton.x_skeleton.read_inputs = (function app$components$x_sk
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"variant","variant",-424354234),el.getAttribute(app.components.x_skeleton.model.attr_variant),new cljs.core.Keyword(null,"animation","animation",-1248293244),el.getAttribute(app.components.x_skeleton.model.attr_animation),new cljs.core.Keyword(null,"width","width",-384071477),el.getAttribute(app.components.x_skeleton.model.attr_width),new cljs.core.Keyword(null,"height","height",1025178622),el.getAttribute(app.components.x_skeleton.model.attr_height)], null);
 });
 app.components.x_skeleton.x_skeleton.render_BANG_ = (function app$components$x_skeleton$x_skeleton$render_BANG_(el){
-var map__23040_23045 = app.components.x_skeleton.model.derive_state(app.components.x_skeleton.x_skeleton.read_inputs(el));
-var map__23040_23046__$1 = cljs.core.__destructure_map(map__23040_23045);
-var variant_23047 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23040_23046__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var animation_23048 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23040_23046__$1,new cljs.core.Keyword(null,"animation","animation",-1248293244));
-var width_23049 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23040_23046__$1,new cljs.core.Keyword(null,"width","width",-384071477));
-var height_23050 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23040_23046__$1,new cljs.core.Keyword(null,"height","height",1025178622));
-var base_23051 = app.components.x_skeleton.x_skeleton.goog$module$goog$object.get(el,app.components.x_skeleton.x_skeleton.k_base);
-base_23051.setAttribute("data-variant",variant_23047);
+var map__23044_23056 = app.components.x_skeleton.model.derive_state(app.components.x_skeleton.x_skeleton.read_inputs(el));
+var map__23044_23057__$1 = cljs.core.__destructure_map(map__23044_23056);
+var variant_23058 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23044_23057__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var animation_23059 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23044_23057__$1,new cljs.core.Keyword(null,"animation","animation",-1248293244));
+var width_23060 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23044_23057__$1,new cljs.core.Keyword(null,"width","width",-384071477));
+var height_23061 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23044_23057__$1,new cljs.core.Keyword(null,"height","height",1025178622));
+var base_23063 = app.components.x_skeleton.x_skeleton.goog$module$goog$object.get(el,app.components.x_skeleton.x_skeleton.k_base);
+base_23063.setAttribute("data-variant",variant_23058);
 
-base_23051.setAttribute("data-animation",animation_23048);
+base_23063.setAttribute("data-animation",animation_23059);
 
-if(cljs.core.truth_(width_23049)){
-base_23051.style.setProperty("width",width_23049);
+if(cljs.core.truth_(width_23060)){
+base_23063.style.setProperty("width",width_23060);
 } else {
-base_23051.style.removeProperty("width");
+base_23063.style.removeProperty("width");
 }
 
-if(cljs.core.truth_(height_23050)){
-base_23051.style.setProperty("height",height_23050);
+if(cljs.core.truth_(height_23061)){
+base_23063.style.setProperty("height",height_23061);
 } else {
-base_23051.style.removeProperty("height");
+base_23063.style.removeProperty("height");
 }
 
 el.setAttribute("aria-hidden","true");

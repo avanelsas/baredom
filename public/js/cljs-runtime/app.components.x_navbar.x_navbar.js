@@ -86,8 +86,8 @@ return and__5140__auto__;
 })())){
 return true;
 } else {
-var G__21217 = (idx + (1));
-idx = G__21217;
+var G__20982 = (idx + (1));
+idx = G__20982;
 continue;
 }
 } else {
@@ -308,15 +308,15 @@ return (state["end-slot"]).addEventListener("slotchange",rerender);
 app.components.x_navbar.x_navbar.connected_BANG_ = (function app$components$x_navbar$x_navbar$connected_BANG_(el){
 if(cljs.core.truth_(app.components.x_navbar.x_navbar.get_el_state(el))){
 } else {
-var state_21242 = app.components.x_navbar.x_navbar.create_shadow_BANG_(el);
-var base_el_21243 = (state_21242["base"]);
+var state_21048 = app.components.x_navbar.x_navbar.create_shadow_BANG_(el);
+var base_el_21049 = (state_21048["base"]);
 app.components.x_navbar.x_navbar.set_focus_visible_BANG_(el,false);
 
-app.components.x_navbar.x_navbar.setup_delegated_events_BANG_(el,base_el_21243);
+app.components.x_navbar.x_navbar.setup_delegated_events_BANG_(el,base_el_21049);
 
-app.components.x_navbar.x_navbar.setup_slots_BANG_(el,state_21242);
+app.components.x_navbar.x_navbar.setup_slots_BANG_(el,state_21048);
 
-app.components.x_navbar.x_navbar.set_el_state_BANG_(el,state_21242);
+app.components.x_navbar.x_navbar.set_el_state_BANG_(el,state_21048);
 }
 
 return app.components.x_navbar.x_navbar.render_BANG_(el,app.components.x_navbar.x_navbar.get_el_state(el));

@@ -6,24 +6,24 @@ app.components.x_spinner.x_spinner.k_initialized = "__xSpinnerInit";
 app.components.x_spinner.x_spinner.k_ring = "__xSpinnerRing";
 app.components.x_spinner.x_spinner.style_text = (""+":host{"+"display:inline-flex;"+"align-items:center;"+"justify-content:center;"+"color-scheme:light dark;"+"--x-spinner-size:24px;"+"--x-spinner-color:currentColor;"+"--x-spinner-track-color:rgba(0,0,0,0.12);"+"--x-spinner-thickness:2px;"+"--x-spinner-duration:0.75s;}"+"@media (prefers-color-scheme:dark){"+":host{"+"--x-spinner-track-color:rgba(255,255,255,0.15);}}"+":host([data-size='xs']){--x-spinner-size:16px;}"+":host([data-size='sm']){--x-spinner-size:20px;}"+":host([data-size='md']){--x-spinner-size:24px;}"+":host([data-size='lg']){--x-spinner-size:32px;}"+":host([data-size='xl']){--x-spinner-size:48px;}"+":host([data-variant='primary']){--x-spinner-color:#3b82f6;}"+":host([data-variant='success']){--x-spinner-color:#22c55e;}"+":host([data-variant='warning']){--x-spinner-color:#f59e0b;}"+":host([data-variant='danger']){--x-spinner-color:#ef4444;}"+"[part=ring]{"+"display:block;"+"width:var(--x-spinner-size);"+"height:var(--x-spinner-size);"+"border-radius:50%;"+"border:var(--x-spinner-thickness) solid var(--x-spinner-track-color);"+"border-top-color:var(--x-spinner-color);"+"box-sizing:border-box;"+"animation:x-spinner-spin var(--x-spinner-duration) linear infinite;}"+"@keyframes x-spinner-spin{"+"to{transform:rotate(360deg);}}"+"@media (prefers-reduced-motion:reduce){"+"[part=ring]{animation-play-state:paused;}}");
 app.components.x_spinner.x_spinner.init_dom_BANG_ = (function app$components$x_spinner$x_spinner$init_dom_BANG_(el){
-var root_23114 = el.attachShadow(({"mode": "open"}));
-var style_23115 = document.createElement("style");
-var ring_23116 = document.createElement("span");
-(style_23115.textContent = app.components.x_spinner.x_spinner.style_text);
+var root_23120 = el.attachShadow(({"mode": "open"}));
+var style_23121 = document.createElement("style");
+var ring_23122 = document.createElement("span");
+(style_23121.textContent = app.components.x_spinner.x_spinner.style_text);
 
-ring_23116.setAttribute("part","ring");
+ring_23122.setAttribute("part","ring");
 
-ring_23116.setAttribute("aria-hidden","true");
+ring_23122.setAttribute("aria-hidden","true");
 
-root_23114.appendChild(style_23115);
+root_23120.appendChild(style_23121);
 
-root_23114.appendChild(ring_23116);
+root_23120.appendChild(ring_23122);
 
 el.setAttribute("role","status");
 
 el.setAttribute("aria-live","polite");
 
-app.components.x_spinner.x_spinner.goog$module$goog$object.set(el,app.components.x_spinner.x_spinner.k_ring,ring_23116);
+app.components.x_spinner.x_spinner.goog$module$goog$object.set(el,app.components.x_spinner.x_spinner.k_ring,ring_23122);
 
 app.components.x_spinner.x_spinner.goog$module$goog$object.set(el,app.components.x_spinner.x_spinner.k_initialized,true);
 
@@ -33,16 +33,16 @@ app.components.x_spinner.x_spinner.read_attrs = (function app$components$x_spinn
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size","size",1098693007),el.getAttribute(app.components.x_spinner.model.attr_size),new cljs.core.Keyword(null,"variant","variant",-424354234),el.getAttribute(app.components.x_spinner.model.attr_variant),new cljs.core.Keyword(null,"label","label",1718410804),el.getAttribute(app.components.x_spinner.model.attr_label)], null);
 });
 app.components.x_spinner.x_spinner.render_BANG_ = (function app$components$x_spinner$x_spinner$render_BANG_(el){
-var map__23113_23117 = app.components.x_spinner.model.derive_state(app.components.x_spinner.x_spinner.read_attrs(el));
-var map__23113_23118__$1 = cljs.core.__destructure_map(map__23113_23117);
-var size_23119 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23118__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var variant_23120 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23118__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var label_23121 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23118__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-el.setAttribute("data-size",size_23119);
+var map__23113_23123 = app.components.x_spinner.model.derive_state(app.components.x_spinner.x_spinner.read_attrs(el));
+var map__23113_23124__$1 = cljs.core.__destructure_map(map__23113_23123);
+var size_23125 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23124__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var variant_23126 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23124__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var label_23127 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23113_23124__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+el.setAttribute("data-size",size_23125);
 
-el.setAttribute("data-variant",variant_23120);
+el.setAttribute("data-variant",variant_23126);
 
-el.setAttribute("aria-label",label_23121);
+el.setAttribute("aria-label",label_23127);
 
 return null;
 });

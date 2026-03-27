@@ -31,16 +31,16 @@ return app.components.x_tab.model.valid_enum(v,app.components.x_tab.model.size_v
 app.components.x_tab.model.normalize_variant = (function app$components$x_tab$model$normalize_variant(v){
 return app.components.x_tab.model.valid_enum(v,app.components.x_tab.model.variant_values,"default");
 });
-app.components.x_tab.model.derive_state = (function app$components$x_tab$model$derive_state(p__21239){
-var map__21240 = p__21239;
-var map__21240__$1 = cljs.core.__destructure_map(map__21240);
-var selected = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"selected","selected",574897764));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
-var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var controls = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21240__$1,new cljs.core.Keyword(null,"controls","controls",1340701452));
+app.components.x_tab.model.derive_state = (function app$components$x_tab$model$derive_state(p__21019){
+var map__21020 = p__21019;
+var map__21020__$1 = cljs.core.__destructure_map(map__21020);
+var selected = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"selected","selected",574897764));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var controls = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21020__$1,new cljs.core.Keyword(null,"controls","controls",1340701452));
 var selected_STAR_ = cljs.core.boolean$(selected);
 var disabled_STAR_ = cljs.core.boolean$(disabled);
 var tabindex = ((disabled_STAR_)?"-1":((selected_STAR_)?"0":"-1"

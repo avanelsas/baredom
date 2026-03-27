@@ -73,26 +73,26 @@ app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-required",(cljs.c
 
 app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-readonly",(cljs.core.truth_(new cljs.core.Keyword(null,"readonly?","readonly?",988057827).cljs$core$IFn$_invoke$arity$1(m))?"true":"false"));
 
-var temp__5821__auto___23058 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___23058)){
-var v_23059 = temp__5821__auto___23058;
-app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-label",v_23059);
+var temp__5821__auto___23045 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___23045)){
+var v_23046 = temp__5821__auto___23045;
+app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-label",v_23046);
 } else {
 app.components.x_radio.x_radio.remove_attr_BANG_(control_el,"aria-label");
 }
 
-var temp__5821__auto___23060 = new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___23060)){
-var v_23061 = temp__5821__auto___23060;
-app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-labelledby",v_23061);
+var temp__5821__auto___23047 = new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___23047)){
+var v_23048 = temp__5821__auto___23047;
+app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-labelledby",v_23048);
 } else {
 app.components.x_radio.x_radio.remove_attr_BANG_(control_el,"aria-labelledby");
 }
 
-var temp__5821__auto___23062 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___23062)){
-var v_23063 = temp__5821__auto___23062;
-app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-describedby",v_23063);
+var temp__5821__auto___23049 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___23049)){
+var v_23050 = temp__5821__auto___23049;
+app.components.x_radio.x_radio.set_attr_BANG_(control_el,"aria-describedby",v_23050);
 } else {
 app.components.x_radio.x_radio.remove_attr_BANG_(control_el,"aria-describedby");
 }
@@ -204,8 +204,8 @@ app.components.x_radio.x_radio.set_attr_BANG_(el,app.components.x_radio.model.at
 
 app.components.x_radio.x_radio.render_BANG_(el);
 
-var radios_23064 = app.components.x_radio.x_radio.group_radios(el);
-radios_23064.forEach((function (r){
+var radios_23051 = app.components.x_radio.x_radio.group_radios(el);
+radios_23051.forEach((function (r){
 if(cljs.core.truth_((function (){var and__5140__auto__ = cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(r,el);
 if(and__5140__auto__){
 return app.components.x_radio.x_radio.has_attr_QMARK_(r,app.components.x_radio.model.attr_checked);
@@ -311,10 +311,10 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_radio.x_radio.goog$module$goog$object.get(el,app.components.x_radio.x_radio.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var control_el_23065 = app.components.x_radio.x_radio.goog$module$goog$object.get(refs,"control");
+var control_el_23062 = app.components.x_radio.x_radio.goog$module$goog$object.get(refs,"control");
 el.removeEventListener("click",app.components.x_radio.x_radio.goog$module$goog$object.get(handlers,"click"));
 
-control_el_23065.removeEventListener("keydown",app.components.x_radio.x_radio.goog$module$goog$object.get(handlers,"keydown"));
+control_el_23062.removeEventListener("keydown",app.components.x_radio.x_radio.goog$module$goog$object.get(handlers,"keydown"));
 
 return app.components.x_radio.x_radio.goog$module$goog$object.set(el,app.components.x_radio.x_radio.k_handlers,null);
 } else {

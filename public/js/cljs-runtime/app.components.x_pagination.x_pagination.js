@@ -46,29 +46,29 @@ li.appendChild(btn);
 return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"li","li",723558921),li,new cljs.core.Keyword(null,"btn","btn",1978294651),btn], null);
 });
 app.components.x_pagination.x_pagination.init_dom_BANG_ = (function app$components$x_pagination$x_pagination$init_dom_BANG_(el){
-var root_22924 = el.attachShadow(({"mode": "open"}));
-var style_22925 = document.createElement("style");
-var nav_22926 = document.createElement("nav");
-var ol_22927 = document.createElement("ol");
-var prev_22928 = app.components.x_pagination.x_pagination.make_prev_li_BANG_();
-var nxt_22929 = app.components.x_pagination.x_pagination.make_next_li_BANG_();
-(style_22925.textContent = app.components.x_pagination.x_pagination.style_text);
+var root_22928 = el.attachShadow(({"mode": "open"}));
+var style_22929 = document.createElement("style");
+var nav_22930 = document.createElement("nav");
+var ol_22931 = document.createElement("ol");
+var prev_22932 = app.components.x_pagination.x_pagination.make_prev_li_BANG_();
+var nxt_22933 = app.components.x_pagination.x_pagination.make_next_li_BANG_();
+(style_22929.textContent = app.components.x_pagination.x_pagination.style_text);
 
-nav_22926.setAttribute("part","nav");
+nav_22930.setAttribute("part","nav");
 
-ol_22927.setAttribute("part","list");
+ol_22931.setAttribute("part","list");
 
-ol_22927.appendChild(new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(prev_22928));
+ol_22931.appendChild(new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(prev_22932));
 
-ol_22927.appendChild(new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(nxt_22929));
+ol_22931.appendChild(new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(nxt_22933));
 
-nav_22926.appendChild(ol_22927);
+nav_22930.appendChild(ol_22931);
 
-root_22924.appendChild(style_22925);
+root_22928.appendChild(style_22929);
 
-root_22924.appendChild(nav_22926);
+root_22928.appendChild(nav_22930);
 
-app.components.x_pagination.x_pagination.goog$module$goog$object.set(el,app.components.x_pagination.x_pagination.k_refs,new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"nav","nav",719540477),nav_22926,new cljs.core.Keyword(null,"ol","ol",932524051),ol_22927,new cljs.core.Keyword(null,"prev-li","prev-li",940258334),new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(prev_22928),new cljs.core.Keyword(null,"prev-btn","prev-btn",-352689882),new cljs.core.Keyword(null,"btn","btn",1978294651).cljs$core$IFn$_invoke$arity$1(prev_22928),new cljs.core.Keyword(null,"next-li","next-li",648524823),new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(nxt_22929),new cljs.core.Keyword(null,"next-btn","next-btn",-286265938),new cljs.core.Keyword(null,"btn","btn",1978294651).cljs$core$IFn$_invoke$arity$1(nxt_22929)], null));
+app.components.x_pagination.x_pagination.goog$module$goog$object.set(el,app.components.x_pagination.x_pagination.k_refs,new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"nav","nav",719540477),nav_22930,new cljs.core.Keyword(null,"ol","ol",932524051),ol_22931,new cljs.core.Keyword(null,"prev-li","prev-li",940258334),new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(prev_22932),new cljs.core.Keyword(null,"prev-btn","prev-btn",-352689882),new cljs.core.Keyword(null,"btn","btn",1978294651).cljs$core$IFn$_invoke$arity$1(prev_22932),new cljs.core.Keyword(null,"next-li","next-li",648524823),new cljs.core.Keyword(null,"li","li",723558921).cljs$core$IFn$_invoke$arity$1(nxt_22933),new cljs.core.Keyword(null,"next-btn","next-btn",-286265938),new cljs.core.Keyword(null,"btn","btn",1978294651).cljs$core$IFn$_invoke$arity$1(nxt_22933)], null));
 
 return null;
 });
@@ -132,98 +132,98 @@ app.components.x_pagination.x_pagination.read_model = (function app$components$x
 return app.components.x_pagination.model.normalize(new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"page-raw","page-raw",-1198808870),el.getAttribute(app.components.x_pagination.model.attr_page),new cljs.core.Keyword(null,"total-pages-raw","total-pages-raw",430880208),el.getAttribute(app.components.x_pagination.model.attr_total_pages),new cljs.core.Keyword(null,"sibling-count-raw","sibling-count-raw",-620117200),el.getAttribute(app.components.x_pagination.model.attr_sibling_count),new cljs.core.Keyword(null,"boundary-count-raw","boundary-count-raw",410083250),el.getAttribute(app.components.x_pagination.model.attr_boundary_count),new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423),el.getAttribute(app.components.x_pagination.model.attr_size),new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496),el.hasAttribute(app.components.x_pagination.model.attr_disabled),new cljs.core.Keyword(null,"label-raw","label-raw",-83844350),el.getAttribute(app.components.x_pagination.model.attr_label)], null));
 });
 app.components.x_pagination.x_pagination.render_BANG_ = (function app$components$x_pagination$x_pagination$render_BANG_(el){
-var refs_22930 = app.components.x_pagination.x_pagination.ensure_refs_BANG_(el);
-var ol_22931 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var nav_22932 = new cljs.core.Keyword(null,"nav","nav",719540477).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var prev_btn_22933 = new cljs.core.Keyword(null,"prev-btn","prev-btn",-352689882).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var next_btn_22934 = new cljs.core.Keyword(null,"next-btn","next-btn",-286265938).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var prev_li_22935 = new cljs.core.Keyword(null,"prev-li","prev-li",940258334).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var next_li_22936 = new cljs.core.Keyword(null,"next-li","next-li",648524823).cljs$core$IFn$_invoke$arity$1(refs_22930);
-var m_22937 = app.components.x_pagination.x_pagination.read_model(el);
-var map__22915_22938 = m_22937;
-var map__22915_22939__$1 = cljs.core.__destructure_map(map__22915_22938);
-var page_22940 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"page","page",849072397));
-var total_pages_22941 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"total-pages","total-pages",685894112));
-var sibling_count_22942 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"sibling-count","sibling-count",1756034573));
-var boundary_count_22943 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"boundary-count","boundary-count",1637925987));
-var size_22944 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var label_22945 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22915_22939__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var items_22946 = app.components.x_pagination.model.build_page_items(page_22940,total_pages_22941,sibling_count_22942,boundary_count_22943);
-nav_22932.setAttribute("aria-label",label_22945);
+var refs_22934 = app.components.x_pagination.x_pagination.ensure_refs_BANG_(el);
+var ol_22935 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var nav_22936 = new cljs.core.Keyword(null,"nav","nav",719540477).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var prev_btn_22937 = new cljs.core.Keyword(null,"prev-btn","prev-btn",-352689882).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var next_btn_22938 = new cljs.core.Keyword(null,"next-btn","next-btn",-286265938).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var prev_li_22939 = new cljs.core.Keyword(null,"prev-li","prev-li",940258334).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var next_li_22940 = new cljs.core.Keyword(null,"next-li","next-li",648524823).cljs$core$IFn$_invoke$arity$1(refs_22934);
+var m_22941 = app.components.x_pagination.x_pagination.read_model(el);
+var map__22917_22942 = m_22941;
+var map__22917_22943__$1 = cljs.core.__destructure_map(map__22917_22942);
+var page_22944 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"page","page",849072397));
+var total_pages_22945 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"total-pages","total-pages",685894112));
+var sibling_count_22946 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"sibling-count","sibling-count",1756034573));
+var boundary_count_22947 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"boundary-count","boundary-count",1637925987));
+var size_22948 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var label_22949 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22917_22943__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var items_22950 = app.components.x_pagination.model.build_page_items(page_22944,total_pages_22945,sibling_count_22946,boundary_count_22947);
+nav_22936.setAttribute("aria-label",label_22949);
 
-el.setAttribute("data-size",size_22944);
+el.setAttribute("data-size",size_22948);
 
-if(cljs.core.truth_(app.components.x_pagination.model.prev_disabled_QMARK_(m_22937))){
-prev_btn_22933.setAttribute("disabled","");
+if(cljs.core.truth_(app.components.x_pagination.model.prev_disabled_QMARK_(m_22941))){
+prev_btn_22937.setAttribute("disabled","");
 } else {
-prev_btn_22933.removeAttribute("disabled");
+prev_btn_22937.removeAttribute("disabled");
 }
 
-if(cljs.core.truth_(app.components.x_pagination.model.next_disabled_QMARK_(m_22937))){
-next_btn_22934.setAttribute("disabled","");
+if(cljs.core.truth_(app.components.x_pagination.model.next_disabled_QMARK_(m_22941))){
+next_btn_22938.setAttribute("disabled","");
 } else {
-next_btn_22934.removeAttribute("disabled");
+next_btn_22938.removeAttribute("disabled");
 }
 
-(ol_22931.innerHTML = "");
+(ol_22935.innerHTML = "");
 
-ol_22931.appendChild(prev_li_22935);
+ol_22935.appendChild(prev_li_22939);
 
-var seq__22917_22947 = cljs.core.seq(items_22946);
-var chunk__22918_22948 = null;
-var count__22919_22949 = (0);
-var i__22920_22950 = (0);
+var seq__22918_22951 = cljs.core.seq(items_22950);
+var chunk__22919_22952 = null;
+var count__22920_22953 = (0);
+var i__22921_22954 = (0);
 while(true){
-if((i__22920_22950 < count__22919_22949)){
-var item_22951 = chunk__22918_22948.cljs$core$IIndexed$_nth$arity$2(null,i__22920_22950);
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738),new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(item_22951))){
-ol_22931.appendChild(app.components.x_pagination.x_pagination.make_ellipsis_li_BANG_());
+if((i__22921_22954 < count__22920_22953)){
+var item_22955 = chunk__22919_22952.cljs$core$IIndexed$_nth$arity$2(null,i__22921_22954);
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738),new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(item_22955))){
+ol_22935.appendChild(app.components.x_pagination.x_pagination.make_ellipsis_li_BANG_());
 } else {
-ol_22931.appendChild(app.components.x_pagination.x_pagination.make_page_button_BANG_(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22951),cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22951),page_22940),new cljs.core.Keyword(null,"disabled","disabled",-1529784218).cljs$core$IFn$_invoke$arity$1(m_22937)));
+ol_22935.appendChild(app.components.x_pagination.x_pagination.make_page_button_BANG_(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22955),cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22955),page_22944),new cljs.core.Keyword(null,"disabled","disabled",-1529784218).cljs$core$IFn$_invoke$arity$1(m_22941)));
 }
 
 
-var G__22952 = seq__22917_22947;
-var G__22953 = chunk__22918_22948;
-var G__22954 = count__22919_22949;
-var G__22955 = (i__22920_22950 + (1));
-seq__22917_22947 = G__22952;
-chunk__22918_22948 = G__22953;
-count__22919_22949 = G__22954;
-i__22920_22950 = G__22955;
+var G__22956 = seq__22918_22951;
+var G__22957 = chunk__22919_22952;
+var G__22958 = count__22920_22953;
+var G__22959 = (i__22921_22954 + (1));
+seq__22918_22951 = G__22956;
+chunk__22919_22952 = G__22957;
+count__22920_22953 = G__22958;
+i__22921_22954 = G__22959;
 continue;
 } else {
-var temp__5823__auto___22956 = cljs.core.seq(seq__22917_22947);
-if(temp__5823__auto___22956){
-var seq__22917_22957__$1 = temp__5823__auto___22956;
-if(cljs.core.chunked_seq_QMARK_(seq__22917_22957__$1)){
-var c__5673__auto___22958 = cljs.core.chunk_first(seq__22917_22957__$1);
-var G__22959 = cljs.core.chunk_rest(seq__22917_22957__$1);
-var G__22960 = c__5673__auto___22958;
-var G__22961 = cljs.core.count(c__5673__auto___22958);
-var G__22962 = (0);
-seq__22917_22947 = G__22959;
-chunk__22918_22948 = G__22960;
-count__22919_22949 = G__22961;
-i__22920_22950 = G__22962;
-continue;
-} else {
-var item_22963 = cljs.core.first(seq__22917_22957__$1);
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738),new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(item_22963))){
-ol_22931.appendChild(app.components.x_pagination.x_pagination.make_ellipsis_li_BANG_());
-} else {
-ol_22931.appendChild(app.components.x_pagination.x_pagination.make_page_button_BANG_(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22963),cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22963),page_22940),new cljs.core.Keyword(null,"disabled","disabled",-1529784218).cljs$core$IFn$_invoke$arity$1(m_22937)));
-}
-
-
-var G__22964 = cljs.core.next(seq__22917_22957__$1);
-var G__22965 = null;
+var temp__5823__auto___22960 = cljs.core.seq(seq__22918_22951);
+if(temp__5823__auto___22960){
+var seq__22918_22961__$1 = temp__5823__auto___22960;
+if(cljs.core.chunked_seq_QMARK_(seq__22918_22961__$1)){
+var c__5673__auto___22962 = cljs.core.chunk_first(seq__22918_22961__$1);
+var G__22963 = cljs.core.chunk_rest(seq__22918_22961__$1);
+var G__22964 = c__5673__auto___22962;
+var G__22965 = cljs.core.count(c__5673__auto___22962);
 var G__22966 = (0);
-var G__22967 = (0);
-seq__22917_22947 = G__22964;
-chunk__22918_22948 = G__22965;
-count__22919_22949 = G__22966;
-i__22920_22950 = G__22967;
+seq__22918_22951 = G__22963;
+chunk__22919_22952 = G__22964;
+count__22920_22953 = G__22965;
+i__22921_22954 = G__22966;
+continue;
+} else {
+var item_22967 = cljs.core.first(seq__22918_22961__$1);
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"ellipsis","ellipsis",998505738),new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(item_22967))){
+ol_22935.appendChild(app.components.x_pagination.x_pagination.make_ellipsis_li_BANG_());
+} else {
+ol_22935.appendChild(app.components.x_pagination.x_pagination.make_page_button_BANG_(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22967),cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"n","n",562130025).cljs$core$IFn$_invoke$arity$1(item_22967),page_22944),new cljs.core.Keyword(null,"disabled","disabled",-1529784218).cljs$core$IFn$_invoke$arity$1(m_22941)));
+}
+
+
+var G__22968 = cljs.core.next(seq__22918_22961__$1);
+var G__22969 = null;
+var G__22970 = (0);
+var G__22971 = (0);
+seq__22918_22951 = G__22968;
+chunk__22919_22952 = G__22969;
+count__22920_22953 = G__22970;
+i__22921_22954 = G__22971;
 continue;
 }
 } else {
@@ -232,7 +232,7 @@ continue;
 break;
 }
 
-ol_22931.appendChild(next_li_22936);
+ol_22935.appendChild(next_li_22940);
 
 return null;
 });
@@ -250,8 +250,8 @@ var tag = (cljs.core.truth_(node)?node.tagName:null);
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2("BUTTON",tag)){
 return node;
 } else {
-var G__22969 = (i + (1));
-i = G__22969;
+var G__22972 = (i + (1));
+i = G__22972;
 continue;
 }
 } else {
@@ -309,34 +309,34 @@ return null;
 }
 });
 app.components.x_pagination.x_pagination.add_listeners_BANG_ = (function app$components$x_pagination$x_pagination$add_listeners_BANG_(el){
-var refs_22970 = app.components.x_pagination.x_pagination.ensure_refs_BANG_(el);
-var ol_22971 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22970);
-var handler_22972 = (function (ev){
+var refs_22981 = app.components.x_pagination.x_pagination.ensure_refs_BANG_(el);
+var ol_22982 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22981);
+var handler_22983 = (function (ev){
 return app.components.x_pagination.x_pagination.on_click_BANG_(el,ev);
 });
-ol_22971.addEventListener("click",handler_22972);
+ol_22982.addEventListener("click",handler_22983);
 
-app.components.x_pagination.x_pagination.goog$module$goog$object.set(el,app.components.x_pagination.x_pagination.k_handlers,({"click": handler_22972}));
+app.components.x_pagination.x_pagination.goog$module$goog$object.set(el,app.components.x_pagination.x_pagination.k_handlers,({"click": handler_22983}));
 
 return null;
 });
 app.components.x_pagination.x_pagination.remove_listeners_BANG_ = (function app$components$x_pagination$x_pagination$remove_listeners_BANG_(el){
-var temp__5823__auto___22973 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(el,app.components.x_pagination.x_pagination.k_handlers);
-if(cljs.core.truth_(temp__5823__auto___22973)){
-var hs_22974 = temp__5823__auto___22973;
-var temp__5823__auto___22975__$1 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(el,app.components.x_pagination.x_pagination.k_refs);
-if(cljs.core.truth_(temp__5823__auto___22975__$1)){
-var refs_22976 = temp__5823__auto___22975__$1;
-var ol_22977 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22976);
-var on_click_22978 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(hs_22974,"click");
-if(cljs.core.truth_((function (){var and__5140__auto__ = ol_22977;
+var temp__5823__auto___22984 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(el,app.components.x_pagination.x_pagination.k_handlers);
+if(cljs.core.truth_(temp__5823__auto___22984)){
+var hs_22985 = temp__5823__auto___22984;
+var temp__5823__auto___22986__$1 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(el,app.components.x_pagination.x_pagination.k_refs);
+if(cljs.core.truth_(temp__5823__auto___22986__$1)){
+var refs_22987 = temp__5823__auto___22986__$1;
+var ol_22988 = new cljs.core.Keyword(null,"ol","ol",932524051).cljs$core$IFn$_invoke$arity$1(refs_22987);
+var on_click_22989 = app.components.x_pagination.x_pagination.goog$module$goog$object.get(hs_22985,"click");
+if(cljs.core.truth_((function (){var and__5140__auto__ = ol_22988;
 if(cljs.core.truth_(and__5140__auto__)){
-return on_click_22978;
+return on_click_22989;
 } else {
 return and__5140__auto__;
 }
 })())){
-ol_22977.removeEventListener("click",on_click_22978);
+ol_22988.removeEventListener("click",on_click_22989);
 } else {
 }
 } else {

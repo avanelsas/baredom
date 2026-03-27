@@ -42,8 +42,8 @@ app.components.x_text_area.model.event_schema = new cljs.core.PersistentArrayMap
 /**
  * Derives a complete view-model map from raw attribute values.
  */
-app.components.x_text_area.model.normalize = (function app$components$x_text_area$model$normalize(p__23275){
-var map__23277 = p__23275;
+app.components.x_text_area.model.normalize = (function app$components$x_text_area$model$normalize(p__23276){
+var map__23277 = p__23276;
 var map__23277__$1 = cljs.core.__destructure_map(map__23277);
 var minlength_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23277__$1,new cljs.core.Keyword(null,"minlength-raw","minlength-raw",-1245403779));
 var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23277__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));

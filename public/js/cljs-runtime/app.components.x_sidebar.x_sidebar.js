@@ -196,14 +196,14 @@ return null;
 }
 }
 });
-app.components.x_sidebar.x_sidebar.apply_host_state_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_host_state_BANG_(instance,p__21183){
-var map__21184 = p__21183;
-var map__21184__$1 = cljs.core.__destructure_map(map__21184);
-var effective_variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21184__$1,new cljs.core.Keyword(null,"effective-variant","effective-variant",-829495195));
-var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21184__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
-var open = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21184__$1,new cljs.core.Keyword(null,"open","open",-1763596448));
-var collapsed_applied = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21184__$1,new cljs.core.Keyword(null,"collapsed-applied","collapsed-applied",-1696231706));
-var reduced_motion = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21184__$1,new cljs.core.Keyword(null,"reduced-motion","reduced-motion",79621277));
+app.components.x_sidebar.x_sidebar.apply_host_state_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_host_state_BANG_(instance,p__20998){
+var map__20999 = p__20998;
+var map__20999__$1 = cljs.core.__destructure_map(map__20999);
+var effective_variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20999__$1,new cljs.core.Keyword(null,"effective-variant","effective-variant",-829495195));
+var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20999__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
+var open = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20999__$1,new cljs.core.Keyword(null,"open","open",-1763596448));
+var collapsed_applied = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20999__$1,new cljs.core.Keyword(null,"collapsed-applied","collapsed-applied",-1696231706));
+var reduced_motion = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20999__$1,new cljs.core.Keyword(null,"reduced-motion","reduced-motion",79621277));
 app.components.x_sidebar.x_sidebar.set_data_attr_BANG_(instance,"data-effective-variant",effective_variant);
 
 app.components.x_sidebar.x_sidebar.set_data_attr_BANG_(instance,"data-placement",placement);
@@ -214,11 +214,11 @@ app.components.x_sidebar.x_sidebar.set_data_attr_BANG_(instance,"data-collapsed"
 
 return app.components.x_sidebar.x_sidebar.set_data_attr_BANG_(instance,"data-reduced-motion",(cljs.core.truth_(reduced_motion)?"true":"false"));
 });
-app.components.x_sidebar.x_sidebar.apply_a11y_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_a11y_BANG_(instance,p__21188){
-var map__21189 = p__21188;
-var map__21189__$1 = cljs.core.__destructure_map(map__21189);
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21189__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var aria_hidden = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21189__$1,new cljs.core.Keyword(null,"aria-hidden","aria-hidden",399337029));
+app.components.x_sidebar.x_sidebar.apply_a11y_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_a11y_BANG_(instance,p__21008){
+var map__21015 = p__21008;
+var map__21015__$1 = cljs.core.__destructure_map(map__21015);
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21015__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var aria_hidden = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21015__$1,new cljs.core.Keyword(null,"aria-hidden","aria-hidden",399337029));
 var temp__5823__auto__ = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_sidebar");
 if(cljs.core.truth_(temp__5823__auto__)){
 var sidebar = temp__5823__auto__;
@@ -231,10 +231,10 @@ return sidebar.setAttribute("aria-hidden",(cljs.core.truth_(aria_hidden)?"true":
 return null;
 }
 });
-app.components.x_sidebar.x_sidebar.apply_backdrop_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_backdrop_BANG_(instance,p__21209){
-var map__21210 = p__21209;
-var map__21210__$1 = cljs.core.__destructure_map(map__21210);
-var show_backdrop = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21210__$1,new cljs.core.Keyword(null,"show-backdrop","show-backdrop",-532209910));
+app.components.x_sidebar.x_sidebar.apply_backdrop_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_backdrop_BANG_(instance,p__21024){
+var map__21025 = p__21024;
+var map__21025__$1 = cljs.core.__destructure_map(map__21025);
+var show_backdrop = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21025__$1,new cljs.core.Keyword(null,"show-backdrop","show-backdrop",-532209910));
 var temp__5823__auto__ = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_backdrop");
 if(cljs.core.truth_(temp__5823__auto__)){
 var backdrop = temp__5823__auto__;
@@ -251,13 +251,13 @@ return null;
 return null;
 }
 });
-app.components.x_sidebar.x_sidebar.apply_panel_state_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_panel_state_BANG_(instance,p__21213){
-var map__21214 = p__21213;
-var map__21214__$1 = cljs.core.__destructure_map(map__21214);
-var open = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21214__$1,new cljs.core.Keyword(null,"open","open",-1763596448));
-var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21214__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
-var effective_variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21214__$1,new cljs.core.Keyword(null,"effective-variant","effective-variant",-829495195));
-var collapsed_applied = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21214__$1,new cljs.core.Keyword(null,"collapsed-applied","collapsed-applied",-1696231706));
+app.components.x_sidebar.x_sidebar.apply_panel_state_BANG_ = (function app$components$x_sidebar$x_sidebar$apply_panel_state_BANG_(instance,p__21026){
+var map__21027 = p__21026;
+var map__21027__$1 = cljs.core.__destructure_map(map__21027);
+var open = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21027__$1,new cljs.core.Keyword(null,"open","open",-1763596448));
+var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21027__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
+var effective_variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21027__$1,new cljs.core.Keyword(null,"effective-variant","effective-variant",-829495195));
+var collapsed_applied = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21027__$1,new cljs.core.Keyword(null,"collapsed-applied","collapsed-applied",-1696231706));
 var temp__5823__auto__ = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_panel");
 if(cljs.core.truth_(temp__5823__auto__)){
 var panel = temp__5823__auto__;
@@ -341,11 +341,11 @@ return app.components.x_sidebar.x_sidebar.goog$module$goog$object.set(instance,"
 app.components.x_sidebar.x_sidebar.render_BANG_ = (function app$components$x_sidebar$x_sidebar$render_BANG_(instance){
 app.components.x_sidebar.x_sidebar.ensure_shadow_BANG_(instance);
 
-var prev_state = (function (){var or__5142__auto__ = (function (){var G__21245 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
-if((G__21245 == null)){
+var prev_state = (function (){var or__5142__auto__ = (function (){var G__21064 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
+if((G__21064 == null)){
 return null;
 } else {
-return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21245,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
+return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21064,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
 }
 })();
 if(cljs.core.truth_(or__5142__auto__)){
@@ -370,11 +370,11 @@ app.components.x_sidebar.x_sidebar.dispatch_state_events_BANG_(instance,prev_sta
 return app.components.x_sidebar.x_sidebar.goog$module$goog$object.set(instance,"_prevState",cljs.core.clj__GT_js(next_state));
 });
 app.components.x_sidebar.x_sidebar.on_backdrop_click = (function app$components$x_sidebar$x_sidebar$on_backdrop_click(instance,event){
-var state = (function (){var G__21260 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
-if((G__21260 == null)){
+var state = (function (){var G__21075 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
+if((G__21075 == null)){
 return null;
 } else {
-return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21260,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
+return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21075,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
 }
 })();
 var backdrop = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_backdrop");
@@ -404,11 +404,11 @@ return null;
 }
 });
 app.components.x_sidebar.x_sidebar.on_keydown = (function app$components$x_sidebar$x_sidebar$on_keydown(instance,event){
-var state = (function (){var G__21278 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
-if((G__21278 == null)){
+var state = (function (){var G__21077 = app.components.x_sidebar.x_sidebar.goog$module$goog$object.get(instance,"_prevState");
+if((G__21077 == null)){
 return null;
 } else {
-return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21278,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
+return cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$variadic(G__21077,cljs.core.prim_seq.cljs$core$IFn$_invoke$arity$2([new cljs.core.Keyword(null,"keywordize-keys","keywordize-keys",1310784252),true], 0));
 }
 })();
 var key = event.key;

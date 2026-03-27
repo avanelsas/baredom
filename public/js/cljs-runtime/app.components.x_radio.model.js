@@ -43,18 +43,18 @@ return true;
 /**
  * Derives a complete view-model map from raw attribute presence/values.
  */
-app.components.x_radio.model.normalize = (function app$components$x_radio$model$normalize(p__23008){
-var map__23009 = p__23008;
-var map__23009__$1 = cljs.core.__destructure_map(map__23009);
-var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
-var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
-var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
-var aria_labelledby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"aria-labelledby-raw","aria-labelledby-raw",-107265075));
-var checked_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"checked-present?","checked-present?",-1155676496));
-var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
-var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23009__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
+app.components.x_radio.model.normalize = (function app$components$x_radio$model$normalize(p__23009){
+var map__23010 = p__23009;
+var map__23010__$1 = cljs.core.__destructure_map(map__23010);
+var aria_label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103));
+var aria_describedby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"aria-describedby-raw","aria-describedby-raw",-1672877860));
+var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
+var aria_labelledby_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"aria-labelledby-raw","aria-labelledby-raw",-107265075));
+var checked_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"checked-present?","checked-present?",-1155676496));
+var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
+var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23010__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
 var checked_QMARK_ = cljs.core.boolean$(checked_present_QMARK_);
 var disabled_QMARK_ = cljs.core.boolean$(disabled_present_QMARK_);
 var readonly_QMARK_ = cljs.core.boolean$(readonly_present_QMARK_);

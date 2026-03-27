@@ -93,10 +93,10 @@ return "";
 })()}), "bubbles": true, "composed": true}))));
 });
 app.components.x_tab.x_tab.activate_BANG_ = (function app$components$x_tab$x_tab$activate_BANG_(el){
-var map__21315 = app.components.x_tab.model.derive_state(app.components.x_tab.x_tab.read_inputs(el));
-var map__21315__$1 = cljs.core.__destructure_map(map__21315);
-var selected = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21315__$1,new cljs.core.Keyword(null,"selected","selected",574897764));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21315__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var map__21085 = app.components.x_tab.model.derive_state(app.components.x_tab.x_tab.read_inputs(el));
+var map__21085__$1 = cljs.core.__destructure_map(map__21085);
+var selected = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21085__$1,new cljs.core.Keyword(null,"selected","selected",574897764));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21085__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
 if(((cljs.core.not(disabled)) && (cljs.core.not(selected)))){
 return app.components.x_tab.x_tab.dispatch_select_BANG_(el);
 } else {

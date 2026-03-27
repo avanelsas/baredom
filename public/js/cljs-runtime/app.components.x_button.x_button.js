@@ -95,8 +95,8 @@ var node = (nodes[idx]);
 if(((app.components.x_button.x_button.meaningful_text_node_QMARK_(node)) || (app.components.x_button.x_button.meaningful_element_node_QMARK_(node)))){
 return true;
 } else {
-var G__20762 = (idx + (1));
-idx = G__20762;
+var G__20611 = (idx + (1));
+idx = G__20611;
 continue;
 }
 } else {
@@ -207,10 +207,10 @@ return new cljs.core.Keyword(null,"loading","loading",-737050189).cljs$core$IFn$
 }
 })());
 
-var temp__5821__auto___20796 = app.components.x_button.model.aria_busy(public_state);
-if(cljs.core.truth_(temp__5821__auto___20796)){
-var v_20798 = temp__5821__auto___20796;
-button_el.setAttribute("aria-busy",v_20798);
+var temp__5821__auto___20668 = app.components.x_button.model.aria_busy(public_state);
+if(cljs.core.truth_(temp__5821__auto___20668)){
+var v_20669 = temp__5821__auto___20668;
+button_el.setAttribute("aria-busy",v_20669);
 } else {
 button_el.removeAttribute("aria-busy");
 }
@@ -438,8 +438,8 @@ return (state["spinner-slot"]).addEventListener("slotchange",rerender);
 app.components.x_button.x_button.connected_BANG_ = (function app$components$x_button$x_button$connected_BANG_(el){
 if(cljs.core.truth_(app.components.x_button.x_button.get_el_state(el))){
 } else {
-var state_20815 = app.components.x_button.x_button.create_shadow_BANG_(el);
-var button_el_20816 = (state_20815["button"]);
+var state_20689 = app.components.x_button.x_button.create_shadow_BANG_(el);
+var button_el_20690 = (state_20689["button"]);
 app.components.x_button.x_button.set_hover_BANG_(el,false);
 
 app.components.x_button.x_button.set_focus_visible_BANG_(el,false);
@@ -448,15 +448,15 @@ app.components.x_button.x_button.set_active_source_BANG_(el,null);
 
 app.components.x_button.x_button.set_last_activation_source_BANG_(el,null);
 
-app.components.x_button.x_button.setup_hover_BANG_(el,button_el_20816);
+app.components.x_button.x_button.setup_hover_BANG_(el,button_el_20690);
 
-app.components.x_button.x_button.setup_press_BANG_(el,button_el_20816);
+app.components.x_button.x_button.setup_press_BANG_(el,button_el_20690);
 
-app.components.x_button.x_button.setup_focus_BANG_(el,button_el_20816);
+app.components.x_button.x_button.setup_focus_BANG_(el,button_el_20690);
 
-app.components.x_button.x_button.setup_slots_BANG_(el,state_20815);
+app.components.x_button.x_button.setup_slots_BANG_(el,state_20689);
 
-app.components.x_button.x_button.set_el_state_BANG_(el,state_20815);
+app.components.x_button.x_button.set_el_state_BANG_(el,state_20689);
 }
 
 app.components.x_button.x_button.sync_noninteractive_state_BANG_(el);

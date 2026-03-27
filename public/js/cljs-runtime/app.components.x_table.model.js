@@ -78,17 +78,17 @@ return null;
  * 
  *   Output keys mirror the attribute semantics with parsed/normalised values.
  */
-app.components.x_table.model.normalize = (function app$components$x_table$model$normalize(p__23253){
-var map__23254 = p__23253;
-var map__23254__$1 = cljs.core.__destructure_map(map__23254);
-var columns_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"columns-raw","columns-raw",-2093994046));
-var caption_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"caption-raw","caption-raw",-375935083));
-var selectable_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"selectable-raw","selectable-raw",-1276314763));
-var striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"striped?","striped?",-797214979));
-var bordered_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"bordered?","bordered?",562358476));
-var full_width_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"full-width?","full-width?",1477288349));
-var compact_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"compact?","compact?",1216893298));
-var row_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23254__$1,new cljs.core.Keyword(null,"row-count-raw","row-count-raw",-1432781274));
+app.components.x_table.model.normalize = (function app$components$x_table$model$normalize(p__23262){
+var map__23263 = p__23262;
+var map__23263__$1 = cljs.core.__destructure_map(map__23263);
+var columns_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"columns-raw","columns-raw",-2093994046));
+var caption_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"caption-raw","caption-raw",-375935083));
+var selectable_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"selectable-raw","selectable-raw",-1276314763));
+var striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"striped?","striped?",-797214979));
+var bordered_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"bordered?","bordered?",562358476));
+var full_width_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"full-width?","full-width?",1477288349));
+var compact_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"compact?","compact?",1216893298));
+var row_count_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23263__$1,new cljs.core.Keyword(null,"row-count-raw","row-count-raw",-1432781274));
 return new cljs.core.PersistentArrayMap(null, 8, [new cljs.core.Keyword(null,"columns","columns",1998437288),app.components.x_table.model.parse_columns(columns_raw),new cljs.core.Keyword(null,"caption","caption",-855383902),(function (){var or__5142__auto__ = caption_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

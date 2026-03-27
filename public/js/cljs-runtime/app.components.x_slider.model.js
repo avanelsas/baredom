@@ -72,22 +72,22 @@ return cljs.core.min.cljs$core$IFn$_invoke$arity$2(cljs.core.max.cljs$core$IFn$_
 return 0.0;
 }
 });
-app.components.x_slider.model.derive_state = (function app$components$x_slider$model$derive_state(p__23052){
-var map__23053 = p__23052;
-var map__23053__$1 = cljs.core.__destructure_map(map__23053);
-var aria_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
-var step = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"step","step",1288888124));
-var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"min","min",444991522));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
-var show_value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var name = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"name","name",1843675177));
-var readonly = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"readonly","readonly",-1101398934));
-var aria_labelledby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var aria_describedby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23053__$1,new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471));
+app.components.x_slider.model.derive_state = (function app$components$x_slider$model$derive_state(p__23064){
+var map__23065 = p__23064;
+var map__23065__$1 = cljs.core.__destructure_map(map__23065);
+var aria_label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
+var step = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"step","step",1288888124));
+var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"min","min",444991522));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var show_value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var name = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"name","name",1843675177));
+var readonly = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"readonly","readonly",-1101398934));
+var aria_labelledby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var aria_describedby = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23065__$1,new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471));
 var norm_min = app.components.x_slider.model.normalize_min(min);
 var norm_max = app.components.x_slider.model.normalize_max(max);
 var norm_value = app.components.x_slider.model.normalize_value(value,norm_min,norm_max);

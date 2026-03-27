@@ -71,8 +71,8 @@ app.components.x_avatar.model.derive_initials = (function app$components$x_avata
 var temp__5823__auto__ = app.components.x_avatar.model.normalize_text(name_str);
 if(cljs.core.truth_(temp__5823__auto__)){
 var n = temp__5823__auto__;
-var parts = cljs.core.vec(cljs.core.remove.cljs$core$IFn$_invoke$arity$2((function (p1__21686_SHARP_){
-return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(p1__21686_SHARP_,"");
+var parts = cljs.core.vec(cljs.core.remove.cljs$core$IFn$_invoke$arity$2((function (p1__21311_SHARP_){
+return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(p1__21311_SHARP_,"");
 }),n.split(/\s+/)));
 if(cljs.core.seq(parts)){
 var a = (cljs.core.first(parts)[(0)]);
@@ -96,18 +96,18 @@ return null;
 return null;
 }
 });
-app.components.x_avatar.model.normalize = (function app$components$x_avatar$model$normalize(p__21718){
-var map__21719 = p__21718;
-var map__21719__$1 = cljs.core.__destructure_map(map__21719);
-var initials_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"initials-raw","initials-raw",1031756224));
-var variant_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250));
-var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
-var shape_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"shape-raw","shape-raw",1588938757));
-var status_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"status-raw","status-raw",-2121061147));
-var alt_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"alt-raw","alt-raw",-1423153400));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var src_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"src-raw","src-raw",-510472785));
-var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21719__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
+app.components.x_avatar.model.normalize = (function app$components$x_avatar$model$normalize(p__21327){
+var map__21328 = p__21327;
+var map__21328__$1 = cljs.core.__destructure_map(map__21328);
+var initials_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"initials-raw","initials-raw",1031756224));
+var variant_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250));
+var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
+var shape_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"shape-raw","shape-raw",1588938757));
+var status_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"status-raw","status-raw",-2121061147));
+var alt_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"alt-raw","alt-raw",-1423153400));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var src_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"src-raw","src-raw",-510472785));
+var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21328__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
 var src = app.components.x_avatar.model.normalize_text(src_raw);
 var alt = app.components.x_avatar.model.normalize_text(alt_raw);
 var nm = app.components.x_avatar.model.normalize_text(name_raw);
@@ -118,11 +118,11 @@ return cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"initi
 /**
  * Return the string to render in [part=initials], or nil (show fallback).
  */
-app.components.x_avatar.model.display_text = (function app$components$x_avatar$model$display_text(p__21720){
-var map__21721 = p__21720;
-var map__21721__$1 = cljs.core.__destructure_map(map__21721);
-var initials = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21721__$1,new cljs.core.Keyword(null,"initials","initials",-2130377215));
-var derived = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21721__$1,new cljs.core.Keyword(null,"derived","derived",1986040597));
+app.components.x_avatar.model.display_text = (function app$components$x_avatar$model$display_text(p__21352){
+var map__21353 = p__21352;
+var map__21353__$1 = cljs.core.__destructure_map(map__21353);
+var initials = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21353__$1,new cljs.core.Keyword(null,"initials","initials",-2130377215));
+var derived = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21353__$1,new cljs.core.Keyword(null,"derived","derived",1986040597));
 var or__5142__auto__ = initials;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -133,11 +133,11 @@ return derived;
 /**
  * Return the accessible label string, or nil (mark as aria-hidden).
  */
-app.components.x_avatar.model.label = (function app$components$x_avatar$model$label(p__21722){
-var map__21723 = p__21722;
-var map__21723__$1 = cljs.core.__destructure_map(map__21723);
-var alt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21723__$1,new cljs.core.Keyword(null,"alt","alt",-3214426));
-var name = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21723__$1,new cljs.core.Keyword(null,"name","name",1843675177));
+app.components.x_avatar.model.label = (function app$components$x_avatar$model$label(p__21354){
+var map__21355 = p__21354;
+var map__21355__$1 = cljs.core.__destructure_map(map__21355);
+var alt = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21355__$1,new cljs.core.Keyword(null,"alt","alt",-3214426));
+var name = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21355__$1,new cljs.core.Keyword(null,"name","name",1843675177));
 var or__5142__auto__ = alt;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

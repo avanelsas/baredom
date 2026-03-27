@@ -27,20 +27,20 @@ app.components.x_form_field.model.event_schema = new cljs.core.PersistentArrayMa
 /**
  * Derives a complete view-model map from raw attribute values.
  */
-app.components.x_form_field.model.normalize = (function app$components$x_form_field$model$normalize(p__22683){
-var map__22684 = p__22683;
-var map__22684__$1 = cljs.core.__destructure_map(map__22684);
-var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
-var error_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"error-raw","error-raw",-1164358971));
-var hint_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"hint-raw","hint-raw",-503443994));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
-var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
-var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
-var autocomplete_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"autocomplete-raw","autocomplete-raw",1742330710));
-var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22684__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
+app.components.x_form_field.model.normalize = (function app$components$x_form_field$model$normalize(p__22664){
+var map__22665 = p__22664;
+var map__22665__$1 = cljs.core.__destructure_map(map__22665);
+var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
+var error_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"error-raw","error-raw",-1164358971));
+var hint_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"hint-raw","hint-raw",-503443994));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
+var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
+var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
+var autocomplete_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"autocomplete-raw","autocomplete-raw",1742330710));
+var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22665__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
 var error = (function (){var or__5142__auto__ = error_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

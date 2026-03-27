@@ -12,39 +12,39 @@ app.components.x_chip.x_chip.set_attr_BANG_ = (function app$components$x_chip$x_
 return el.setAttribute(k,v);
 });
 app.components.x_chip.x_chip.make_shadow_BANG_ = (function app$components$x_chip$x_chip$make_shadow_BANG_(el){
-var root_22226 = el.attachShadow(({"mode": "open"}));
-var style_22227 = app.components.x_chip.x_chip.make_el("style");
-var container_22228 = app.components.x_chip.x_chip.make_el("span");
-var label_el_22229 = app.components.x_chip.x_chip.make_el("span");
-var remove_btn_22230 = app.components.x_chip.x_chip.make_el("button");
-var remove_x_22231 = app.components.x_chip.x_chip.make_el("span");
-(style_22227.textContent = app.components.x_chip.x_chip.style_text);
+var root_22167 = el.attachShadow(({"mode": "open"}));
+var style_22168 = app.components.x_chip.x_chip.make_el("style");
+var container_22169 = app.components.x_chip.x_chip.make_el("span");
+var label_el_22170 = app.components.x_chip.x_chip.make_el("span");
+var remove_btn_22171 = app.components.x_chip.x_chip.make_el("button");
+var remove_x_22172 = app.components.x_chip.x_chip.make_el("span");
+(style_22168.textContent = app.components.x_chip.x_chip.style_text);
 
-app.components.x_chip.x_chip.set_attr_BANG_(container_22228,"part","container");
+app.components.x_chip.x_chip.set_attr_BANG_(container_22169,"part","container");
 
-app.components.x_chip.x_chip.set_attr_BANG_(label_el_22229,"part","label");
+app.components.x_chip.x_chip.set_attr_BANG_(label_el_22170,"part","label");
 
-app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22230,"part","remove");
+app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22171,"part","remove");
 
-app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22230,"type","button");
+app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22171,"type","button");
 
-app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22230,"aria-label","Remove");
+app.components.x_chip.x_chip.set_attr_BANG_(remove_btn_22171,"aria-label","Remove");
 
-app.components.x_chip.x_chip.set_attr_BANG_(remove_x_22231,"aria-hidden","true");
+app.components.x_chip.x_chip.set_attr_BANG_(remove_x_22172,"aria-hidden","true");
 
-(remove_x_22231.textContent = "\u00D7");
+(remove_x_22172.textContent = "\u00D7");
 
-remove_btn_22230.appendChild(remove_x_22231);
+remove_btn_22171.appendChild(remove_x_22172);
 
-container_22228.appendChild(label_el_22229);
+container_22169.appendChild(label_el_22170);
 
-container_22228.appendChild(remove_btn_22230);
+container_22169.appendChild(remove_btn_22171);
 
-root_22226.appendChild(style_22227);
+root_22167.appendChild(style_22168);
 
-root_22226.appendChild(container_22228);
+root_22167.appendChild(container_22169);
 
-app.components.x_chip.x_chip.goog$module$goog$object.set(el,app.components.x_chip.x_chip.k_refs,new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"root","root",-448657453),root_22226,new cljs.core.Keyword(null,"container","container",-1736937707),container_22228,new cljs.core.Keyword(null,"label-el","label-el",-356062007),label_el_22229,new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290),remove_btn_22230], null));
+app.components.x_chip.x_chip.goog$module$goog$object.set(el,app.components.x_chip.x_chip.k_refs,new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"root","root",-448657453),root_22167,new cljs.core.Keyword(null,"container","container",-1736937707),container_22169,new cljs.core.Keyword(null,"label-el","label-el",-356062007),label_el_22170,new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290),remove_btn_22171], null));
 
 return null;
 });
@@ -86,40 +86,40 @@ return null;
 }
 });
 app.components.x_chip.x_chip.render_BANG_ = (function app$components$x_chip$x_chip$render_BANG_(el){
-var m_22240 = app.components.x_chip.model.normalize(new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"label-raw","label-raw",-83844350),el.getAttribute(app.components.x_chip.model.attr_label),new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133),el.getAttribute(app.components.x_chip.model.attr_value),new cljs.core.Keyword(null,"removable-raw","removable-raw",1718453796),el.getAttribute(app.components.x_chip.model.attr_removable),new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496),el.hasAttribute(app.components.x_chip.model.attr_disabled)], null));
-var map__22210_22241 = m_22240;
-var map__22210_22242__$1 = cljs.core.__destructure_map(map__22210_22241);
-var label_22243 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22210_22242__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var removable_QMARK__22244 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22210_22242__$1,new cljs.core.Keyword(null,"removable?","removable?",1886800649));
-var disabled_QMARK__22245 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22210_22242__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var refs_22246 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
-var label_el_22247 = new cljs.core.Keyword(null,"label-el","label-el",-356062007).cljs$core$IFn$_invoke$arity$1(refs_22246);
-var remove_btn_22248 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22246);
-var eligible_22249 = app.components.x_chip.model.removal_eligible_QMARK_(m_22240);
-if(cljs.core.truth_(label_el_22247)){
-(label_el_22247.textContent = label_22243);
+var m_22173 = app.components.x_chip.model.normalize(new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"label-raw","label-raw",-83844350),el.getAttribute(app.components.x_chip.model.attr_label),new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133),el.getAttribute(app.components.x_chip.model.attr_value),new cljs.core.Keyword(null,"removable-raw","removable-raw",1718453796),el.getAttribute(app.components.x_chip.model.attr_removable),new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496),el.hasAttribute(app.components.x_chip.model.attr_disabled)], null));
+var map__22143_22174 = m_22173;
+var map__22143_22175__$1 = cljs.core.__destructure_map(map__22143_22174);
+var label_22176 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22143_22175__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var removable_QMARK__22177 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22143_22175__$1,new cljs.core.Keyword(null,"removable?","removable?",1886800649));
+var disabled_QMARK__22178 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22143_22175__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var refs_22179 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
+var label_el_22180 = new cljs.core.Keyword(null,"label-el","label-el",-356062007).cljs$core$IFn$_invoke$arity$1(refs_22179);
+var remove_btn_22181 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22179);
+var eligible_22182 = app.components.x_chip.model.removal_eligible_QMARK_(m_22173);
+if(cljs.core.truth_(label_el_22180)){
+(label_el_22180.textContent = label_22176);
 } else {
 }
 
-if(cljs.core.truth_(removable_QMARK__22244)){
+if(cljs.core.truth_(removable_QMARK__22177)){
 el.setAttribute("data-removable","");
 } else {
 el.removeAttribute("data-removable");
 }
 
-(el.tabIndex = (cljs.core.truth_(eligible_22249)?(0):(-1)));
+(el.tabIndex = (cljs.core.truth_(eligible_22182)?(0):(-1)));
 
-if(cljs.core.truth_(eligible_22249)){
+if(cljs.core.truth_(eligible_22182)){
 el.setAttribute("aria-keyshortcuts","Backspace Delete");
 } else {
 el.removeAttribute("aria-keyshortcuts");
 }
 
-if(cljs.core.truth_(remove_btn_22248)){
-if(cljs.core.truth_(disabled_QMARK__22245)){
-remove_btn_22248.setAttribute("disabled","");
+if(cljs.core.truth_(remove_btn_22181)){
+if(cljs.core.truth_(disabled_QMARK__22178)){
+remove_btn_22181.setAttribute("disabled","");
 } else {
-remove_btn_22248.removeAttribute("disabled");
+remove_btn_22181.removeAttribute("disabled");
 }
 } else {
 }
@@ -127,12 +127,12 @@ remove_btn_22248.removeAttribute("disabled");
 return null;
 });
 app.components.x_chip.x_chip.add_listeners_BANG_ = (function app$components$x_chip$x_chip$add_listeners_BANG_(el){
-var refs_22250 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
-var remove_btn_22251 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22250);
-var on_click_22252 = (function (_ev){
+var refs_22183 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
+var remove_btn_22184 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22183);
+var on_click_22185 = (function (_ev){
 return app.components.x_chip.x_chip.try_remove_BANG_(el);
 });
-var on_keydown_22253 = (function (ev){
+var on_keydown_22186 = (function (ev){
 var key = ev.key;
 if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key,"Backspace")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key,"Delete")))){
 ev.preventDefault();
@@ -142,41 +142,41 @@ return app.components.x_chip.x_chip.try_remove_BANG_(el);
 return null;
 }
 });
-if(cljs.core.truth_(remove_btn_22251)){
-remove_btn_22251.addEventListener("click",on_click_22252);
+if(cljs.core.truth_(remove_btn_22184)){
+remove_btn_22184.addEventListener("click",on_click_22185);
 } else {
 }
 
-el.addEventListener("keydown",on_keydown_22253);
+el.addEventListener("keydown",on_keydown_22186);
 
-app.components.x_chip.x_chip.goog$module$goog$object.set(el,app.components.x_chip.x_chip.k_handlers,({"click": on_click_22252, "keydown": on_keydown_22253}));
+app.components.x_chip.x_chip.goog$module$goog$object.set(el,app.components.x_chip.x_chip.k_handlers,({"click": on_click_22185, "keydown": on_keydown_22186}));
 
 return null;
 });
 app.components.x_chip.x_chip.remove_listeners_BANG_ = (function app$components$x_chip$x_chip$remove_listeners_BANG_(el){
-var temp__5823__auto___22254 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_handlers);
-if(cljs.core.truth_(temp__5823__auto___22254)){
-var hs_22255 = temp__5823__auto___22254;
-var refs_22256 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
-var on_click_22257 = app.components.x_chip.x_chip.goog$module$goog$object.get(hs_22255,"click");
-var on_keydown_22258 = app.components.x_chip.x_chip.goog$module$goog$object.get(hs_22255,"keydown");
-if(cljs.core.truth_((function (){var and__5140__auto__ = refs_22256;
+var temp__5823__auto___22187 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_handlers);
+if(cljs.core.truth_(temp__5823__auto___22187)){
+var hs_22188 = temp__5823__auto___22187;
+var refs_22189 = app.components.x_chip.x_chip.goog$module$goog$object.get(el,app.components.x_chip.x_chip.k_refs);
+var on_click_22190 = app.components.x_chip.x_chip.goog$module$goog$object.get(hs_22188,"click");
+var on_keydown_22191 = app.components.x_chip.x_chip.goog$module$goog$object.get(hs_22188,"keydown");
+if(cljs.core.truth_((function (){var and__5140__auto__ = refs_22189;
 if(cljs.core.truth_(and__5140__auto__)){
-return on_click_22257;
+return on_click_22190;
 } else {
 return and__5140__auto__;
 }
 })())){
-var remove_btn_22262 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22256);
-if(cljs.core.truth_(remove_btn_22262)){
-remove_btn_22262.removeEventListener("click",on_click_22257);
+var remove_btn_22192 = new cljs.core.Keyword(null,"remove-btn","remove-btn",843430290).cljs$core$IFn$_invoke$arity$1(refs_22189);
+if(cljs.core.truth_(remove_btn_22192)){
+remove_btn_22192.removeEventListener("click",on_click_22190);
 } else {
 }
 } else {
 }
 
-if(cljs.core.truth_(on_keydown_22258)){
-el.removeEventListener("keydown",on_keydown_22258);
+if(cljs.core.truth_(on_keydown_22191)){
+el.removeEventListener("keydown",on_keydown_22191);
 } else {
 }
 } else {

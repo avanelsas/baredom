@@ -1,7 +1,11 @@
 # BareDOM
 
 <p align="left">
-  <img src="public/assets/baredom_lightmode.svg" alt="Baredom Logo" width="120">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/assets/baredom_darkmode.svg">
+    <source media="(prefers-color-scheme: light)" srcset="public/assets/baredom_lightmode.svg">
+    <img alt="Baredom Logo" src="apublic/assets/baredom_lightmode.svg" width="120">
+  </picture>
 </p>
 
 **Native web components. Zero runtime. No framework required.**
@@ -64,6 +68,94 @@ BareDOM has been created using Claude Code. The CLAUDE.md file is added to the r
 Then run `npm install`.
 
 **Step 2 — shadow-cljs:** no extra configuration needed. shadow-cljs resolves npm packages automatically via the `:npm-deps` or `node_modules` integration built into every shadow-cljs project.
+
+---
+
+## Using with plain HTML (no build step)
+
+BareDOM components are standard ES modules. Load them directly in any HTML page using a CDN — no npm, no bundler, no framework required.
+
+### Import and initialise
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My App</title>
+</head>
+<body>
+
+  <x-button variant="primary">Hello</x-button>
+  <x-alert type="success" text="It works!"></x-alert>
+
+  <script type="module">
+    import { init as initButton } from "https://esm.sh/@vanelsas/baredom/x-button";
+    import { init as initAlert }  from "https://esm.sh/@vanelsas/baredom/x-alert";
+
+    initButton();
+    initAlert();
+  </script>
+
+</body>
+</html>
+```
+
+`<script type="module">` is required because BareDOM components are ES modules. Each `init()` call registers the custom element with the browser. Only the components you import are loaded — unused components cost nothing.
+
+### Set attributes in HTML
+
+Every attribute can be set directly in markup:
+
+```html
+<x-button variant="secondary" size="sm" disabled>Cancel</x-button>
+<x-checkbox checked></x-checkbox>
+<x-alert type="warning" text="Check your input." dismissible></x-alert>
+<x-progress value="65" max="100"></x-progress>
+```
+
+Boolean attributes follow the HTML convention: presence means `true`, absence means `false`.
+
+### Handle events
+
+```html
+<x-button id="btn" variant="primary">Click me</x-button>
+<x-tabs id="tabs" value="home">
+  <x-tab value="home">Home</x-tab>
+  <x-tab value="settings">Settings</x-tab>
+</x-tabs>
+
+<script type="module">
+  import { init as initButton } from "https://esm.sh/@vanelsas/baredom/x-button";
+  import { init as initTabs }   from "https://esm.sh/@vanelsas/baredom/x-tabs";
+  import { init as initTab }    from "https://esm.sh/@vanelsas/baredom/x-tab";
+
+  initButton(); initTabs(); initTab();
+
+  document.getElementById("btn").addEventListener("click", () => {
+    console.log("button clicked");
+  });
+
+  document.getElementById("tabs").addEventListener("value-change", e => {
+    console.log("active tab:", e.detail.value);
+  });
+</script>
+```
+
+Custom events carry a `detail` payload — check the individual component docs for the event name and `detail` shape.
+
+### Theme with CSS custom properties
+
+```html
+<style>
+  :root {
+    --x-button-radius: 4px;
+    --x-button-bg-primary: #0a5c99;
+  }
+</style>
+```
+
+CSS custom properties cascade normally into the open Shadow DOM. No JavaScript required for theming.
 
 ---
 
@@ -420,6 +512,53 @@ npx shadow-cljs watch bare-demo
 Then open `http://localhost:8001`.
 
 See [`bare-demo/README.md`](./bare-demo/README.md) for a full walkthrough of the renderer, component registration, view syntax, state management, and theming.
+
+---
+
+## bare-reagent-demo — Reagent usage example
+
+The `bare-reagent-demo/` folder is visually identical to `bare-demo` but replaces the custom hiccup renderer with [Reagent](https://reagent-project.github.io/) — a minimalist ClojureScript wrapper around React. It demonstrates the integration patterns and trade-offs that arise when pairing a virtual-DOM framework with native Custom Elements.
+
+The key differences from `bare-demo`:
+
+- **`reagent.core/atom`** drives reactivity. Any component that dereferences a ratom with `@` re-renders automatically — no `add-watch` or manual render trigger required.
+- **Standard events** (`:on-click`) work transparently through React's synthetic event system.
+- **Custom events** (`x-modal-dismiss`, `toggle`) are not handled by React and must be wired imperatively. The demo uses `reagent/create-class` lifecycle hooks (`component-did-mount` / `component-will-unmount`) and `rdom/dom-node` to attach and clean up native event listeners on the real DOM element.
+
+**Run it:**
+
+```bash
+cd bare-reagent-demo
+npm install
+npm start
+```
+
+Then open `http://localhost:8002`.
+
+See [`bare-reagent-demo/README.md`](./bare-reagent-demo/README.md) for a full code walkthrough, the custom-event workaround, and a side-by-side comparison with `bare-demo`.
+
+---
+
+## bare-html — HTML/JS only demo
+
+The `bare-html/` folder contains the same demo — navbar, sidebar, modal, and event log — written entirely in plain HTML and JavaScript. There is no ClojureScript, no build step, and no bundler. Components are loaded by importing their pre-built ES modules directly from the `dist/` folder using a `<script type="module">` tag.
+
+The implementation uses three ideas:
+
+- **Declarative HTML markup.** All components are written as custom element tags in the HTML source. Attributes are set directly in markup or via `setAttribute` / `removeAttribute` from JavaScript.
+- **A plain state object and a `render()` function.** A simple JS object holds `sidebarOpen`, `modalOpen`, and `activeNav`. The `render()` function reads this object and reconciles attributes — open/close state is a single `setAttribute` or `removeAttribute` call.
+- **Native event listeners.** `x-button` fires a `press` event; `x-sidebar` fires `toggle` with `detail.open`; `x-modal` fires `x-modal-dismiss` on Escape or backdrop click. All are wired with standard `addEventListener`.
+
+**Run it:**
+
+```bash
+# From the project root
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000/bare-html/demo.html`. The demo must be served over HTTP — ES module imports are blocked by browsers on `file://` URLs.
+
+See [`bare-html/README.md`](./bare-html/README.md) for a full walkthrough and a comparison with `bare-demo`.
 
 ---
 

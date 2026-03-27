@@ -24,13 +24,13 @@ return app.components.x_dropdown.model.default_placement;
 /**
  * Derives a complete view-model map from raw attribute presence/values.
  */
-app.components.x_dropdown.model.normalize = (function app$components$x_dropdown$model$normalize(p__22523){
-var map__22524 = p__22523;
-var map__22524__$1 = cljs.core.__destructure_map(map__22524);
-var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22524__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22524__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22524__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var placement_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22524__$1,new cljs.core.Keyword(null,"placement-raw","placement-raw",-1500957198));
+app.components.x_dropdown.model.normalize = (function app$components$x_dropdown$model$normalize(p__22592){
+var map__22593 = p__22592;
+var map__22593__$1 = cljs.core.__destructure_map(map__22593);
+var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22593__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22593__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22593__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var placement_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22593__$1,new cljs.core.Keyword(null,"placement-raw","placement-raw",-1500957198));
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"open?","open?",1238443125),cljs.core.boolean$(open_present_QMARK_),new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),cljs.core.boolean$(disabled_present_QMARK_),new cljs.core.Keyword(null,"label","label",1718410804),(function (){var or__5142__auto__ = label_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

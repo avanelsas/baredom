@@ -147,7 +147,7 @@ return cljs.core.PersistentVector.EMPTY;
 
 }
 }
-}catch (e22055){var _e = e22055;
+}catch (e21978){var _e = e21978;
 return cljs.core.PersistentVector.EMPTY;
 }}
 });
@@ -155,13 +155,13 @@ return cljs.core.PersistentVector.EMPTY;
  * Returns "category" when x values are strings, otherwise "numeric".
  */
 app.components.x_chart.model.x_kind = (function app$components$x_chart$model$x_kind(series){
-var first_pt = (function (){var G__22081 = series;
-var G__22081__$1 = (((G__22081 == null))?null:cljs.core.first(G__22081));
-var G__22081__$2 = (((G__22081__$1 == null))?null:new cljs.core.Keyword(null,"data","data",-232669377).cljs$core$IFn$_invoke$arity$1(G__22081__$1));
-if((G__22081__$2 == null)){
+var first_pt = (function (){var G__21979 = series;
+var G__21979__$1 = (((G__21979 == null))?null:cljs.core.first(G__21979));
+var G__21979__$2 = (((G__21979__$1 == null))?null:new cljs.core.Keyword(null,"data","data",-232669377).cljs$core$IFn$_invoke$arity$1(G__21979__$1));
+if((G__21979__$2 == null)){
 return null;
 } else {
-return cljs.core.first(G__22081__$2);
+return cljs.core.first(G__21979__$2);
 }
 })();
 if(cljs.core.truth_((function (){var and__5140__auto__ = first_pt;
@@ -241,10 +241,10 @@ while(true){
 if((v > (end + (step * 1.0E-4)))){
 return acc;
 } else {
-var G__22211 = (v + step);
-var G__22212 = cljs.core.conj.cljs$core$IFn$_invoke$arity$2(acc,v);
-v = G__22211;
-acc = G__22212;
+var G__22090 = (v + step);
+var G__22091 = cljs.core.conj.cljs$core$IFn$_invoke$arity$2(acc,v);
+v = G__22090;
+acc = G__22091;
 continue;
 }
 break;
@@ -271,26 +271,26 @@ return null;
 return null;
 }
 });
-app.components.x_chart.model.normalize = (function app$components$x_chart$model$normalize(p__22098){
-var map__22099 = p__22098;
-var map__22099__$1 = cljs.core.__destructure_map(map__22099);
-var x_format_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"x-format-raw","x-format-raw",-1683657190));
-var selected_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"selected-raw","selected-raw",-1471626848));
-var padding_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"padding-raw","padding-raw",-847772255));
-var tooltip_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"tooltip-present?","tooltip-present?",-2098824029));
-var y_format_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"y-format-raw","y-format-raw",-1098541692));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var grid_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"grid-present?","grid-present?",-468948562));
-var axes_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"axes-raw","axes-raw",-839946224));
-var height_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"height-raw","height-raw",-867301006));
-var cursor_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"cursor-raw","cursor-raw",-1169819084));
-var loading_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"loading-present?","loading-present?",-1827648748));
-var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
-var data_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22099__$1,new cljs.core.Keyword(null,"data-raw","data-raw",822066711));
+app.components.x_chart.model.normalize = (function app$components$x_chart$model$normalize(p__21983){
+var map__21984 = p__21983;
+var map__21984__$1 = cljs.core.__destructure_map(map__21984);
+var x_format_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"x-format-raw","x-format-raw",-1683657190));
+var selected_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"selected-raw","selected-raw",-1471626848));
+var padding_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"padding-raw","padding-raw",-847772255));
+var tooltip_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"tooltip-present?","tooltip-present?",-2098824029));
+var y_format_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"y-format-raw","y-format-raw",-1098541692));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var grid_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"grid-present?","grid-present?",-468948562));
+var axes_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"axes-raw","axes-raw",-839946224));
+var height_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"height-raw","height-raw",-867301006));
+var cursor_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"cursor-raw","cursor-raw",-1169819084));
+var loading_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"loading-present?","loading-present?",-1827648748));
+var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
+var data_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21984__$1,new cljs.core.Keyword(null,"data-raw","data-raw",822066711));
 var series = app.components.x_chart.model.parse_series_data(data_raw);
-var vec__22100 = app.components.x_chart.model.domain_y(series);
-var ymn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22100,(0),null);
-var ymx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22100,(1),null);
+var vec__21985 = app.components.x_chart.model.domain_y(series);
+var ymn = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__21985,(0),null);
+var ymx = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__21985,(1),null);
 return cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"y-domain","y-domain",-969203007),new cljs.core.Keyword(null,"selected","selected",574897764),new cljs.core.Keyword(null,"axes?","axes?",1786285669),new cljs.core.Keyword(null,"series","series",600710694),new cljs.core.Keyword(null,"loading?","loading?",1905707049),new cljs.core.Keyword(null,"y-fmt","y-fmt",2092412811),new cljs.core.Keyword(null,"cursor","cursor",1011937484),new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"padding","padding",1660304693),new cljs.core.Keyword(null,"x-fmt","x-fmt",2073358008),new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),new cljs.core.Keyword(null,"tooltip?","tooltip?",-642753154),new cljs.core.Keyword(null,"y-ticks","y-ticks",-843622722),new cljs.core.Keyword(null,"height","height",1025178622),new cljs.core.Keyword(null,"x-kind","x-kind",693167455),new cljs.core.Keyword(null,"grid?","grid?",-288406689)],[new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [ymn,ymx], null),app.components.x_chart.model.parse_selected(selected_raw),(((axes_raw == null))?true:app.components.x_chart.model.parse_bool_attr(axes_raw)),series,app.components.x_chart.model.parse_bool_attr(loading_present_QMARK_),y_format_raw,app.components.x_chart.model.parse_cursor(cursor_raw),app.components.x_chart.model.parse_type(type_raw),app.components.x_chart.model.parse_int_pos(padding_raw,app.components.x_chart.model.default_padding),x_format_raw,app.components.x_chart.model.parse_bool_attr(disabled_present_QMARK_),app.components.x_chart.model.parse_bool_attr(tooltip_present_QMARK_),app.components.x_chart.model.ticks_y(ymn,ymx,(5)),app.components.x_chart.model.parse_int_pos(height_raw,app.components.x_chart.model.default_height),app.components.x_chart.model.x_kind(series),(((grid_present_QMARK_ == null))?true:app.components.x_chart.model.parse_bool_attr(grid_present_QMARK_))]);
 });
 /**
@@ -374,10 +374,10 @@ return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"le
  */
 app.components.x_chart.model.find_pts_at_x = (function app$components$x_chart$model$find_pts_at_x(all_pts,mx){
 var by_id = cljs.core.group_by(new cljs.core.Keyword(null,"id","id",-1388402092),all_pts);
-return cljs.core.vec(cljs.core.keep.cljs$core$IFn$_invoke$arity$2((function (p__22145){
-var vec__22146 = p__22145;
-var _id = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22146,(0),null);
-var pts = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22146,(1),null);
+return cljs.core.vec(cljs.core.keep.cljs$core$IFn$_invoke$arity$2((function (p__21994){
+var vec__21995 = p__21994;
+var _id = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__21995,(0),null);
+var pts = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__21995,(1),null);
 return cljs.core.reduce.cljs$core$IFn$_invoke$arity$3((function (best,pt){
 var d = Math.abs((new cljs.core.Keyword(null,"px","px",281329899).cljs$core$IFn$_invoke$arity$1(pt) - mx));
 if((((best == null)) || ((d < new cljs.core.Keyword(null,"d","d",1972142424).cljs$core$IFn$_invoke$arity$1(best))))){

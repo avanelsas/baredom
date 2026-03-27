@@ -202,8 +202,8 @@ return null;
 var doc_click_h = (function (evt){
 if(cljs.core.truth_(app.components.x_dropdown.x_dropdown.has_attr_QMARK_(el,app.components.x_dropdown.model.attr_open))){
 var path = cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(evt.composedPath());
-var inside_QMARK_ = cljs.core.some((function (p1__22633_SHARP_){
-return (p1__22633_SHARP_ === el);
+var inside_QMARK_ = cljs.core.some((function (p1__22596_SHARP_){
+return (p1__22596_SHARP_ === el);
 }),path);
 if(cljs.core.truth_(inside_QMARK_)){
 return null;

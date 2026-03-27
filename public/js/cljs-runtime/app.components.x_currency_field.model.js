@@ -35,22 +35,22 @@ app.components.x_currency_field.model.event_schema = new cljs.core.PersistentArr
 /**
  * Derives a complete view-model map from raw attribute values.
  */
-app.components.x_currency_field.model.normalize = (function app$components$x_currency_field$model$normalize(p__22696){
-var map__22697 = p__22696;
-var map__22697__$1 = cljs.core.__destructure_map(map__22697);
-var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var currency_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"currency-raw","currency-raw",1169887491));
-var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
-var error_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"error-raw","error-raw",-1164358971));
-var hint_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"hint-raw","hint-raw",-503443994));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var min_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"min-raw","min-raw",183137548));
-var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
-var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
-var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
-var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
-var locale_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22697__$1,new cljs.core.Keyword(null,"locale-raw","locale-raw",385401846));
+app.components.x_currency_field.model.normalize = (function app$components$x_currency_field$model$normalize(p__22702){
+var map__22703 = p__22702;
+var map__22703__$1 = cljs.core.__destructure_map(map__22703);
+var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var currency_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"currency-raw","currency-raw",1169887491));
+var name_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"name-raw","name-raw",1493628068));
+var error_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"error-raw","error-raw",-1164358971));
+var hint_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"hint-raw","hint-raw",-503443994));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var min_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"min-raw","min-raw",183137548));
+var required_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"required-present?","required-present?",-1253354196));
+var max_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"max-raw","max-raw",-434946611));
+var readonly_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"readonly-present?","readonly-present?",793625394));
+var value_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"value-raw","value-raw",-1649205133));
+var locale_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22703__$1,new cljs.core.Keyword(null,"locale-raw","locale-raw",385401846));
 var error = (function (){var or__5142__auto__ = error_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -114,12 +114,12 @@ return "";
  * Returns a computed validation error string or empty string.
  * Priority: badInput > rangeUnderflow > rangeOverflow.
  */
-app.components.x_currency_field.model.validation_message = (function app$components$x_currency_field$model$validation_message(p__22698){
-var map__22699 = p__22698;
-var map__22699__$1 = cljs.core.__destructure_map(map__22699);
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22699__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22699__$1,new cljs.core.Keyword(null,"min","min",444991522));
-var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22699__$1,new cljs.core.Keyword(null,"max","max",61366548));
+app.components.x_currency_field.model.validation_message = (function app$components$x_currency_field$model$validation_message(p__22718){
+var map__22719 = p__22718;
+var map__22719__$1 = cljs.core.__destructure_map(map__22719);
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22719__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22719__$1,new cljs.core.Keyword(null,"min","min",444991522));
+var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22719__$1,new cljs.core.Keyword(null,"max","max",61366548));
 var num = parseFloat(value);
 var has_num_QMARK_ = ((cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(value,"")) && (cljs.core.not(isNaN(num))));
 var min_num = ((cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(min,""))?parseFloat(min):null);

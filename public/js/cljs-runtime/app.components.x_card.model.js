@@ -42,15 +42,15 @@ return value;
 return null;
 }
 });
-app.components.x_card.model.derive_state = (function app$components$x_card$model$derive_state(p__20624){
-var map__20625 = p__20624;
-var map__20625__$1 = cljs.core.__destructure_map(map__20625);
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
-var radius = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"radius","radius",-2073122258));
-var interactive = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"interactive","interactive",-2024078362));
-var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20625__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_card.model.derive_state = (function app$components$x_card$model$derive_state(p__20571){
+var map__20572 = p__20571;
+var map__20572__$1 = cljs.core.__destructure_map(map__20572);
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
+var radius = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"radius","radius",-2073122258));
+var interactive = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"interactive","interactive",-2024078362));
+var disabled = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"disabled","disabled",-1529784218));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20572__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 var variant_STAR_ = app.components.x_card.model.normalize_variant(variant);
 var padding_STAR_ = app.components.x_card.model.normalize_padding(padding);
 var radius_STAR_ = app.components.x_card.model.normalize_radius(radius);

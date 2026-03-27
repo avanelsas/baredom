@@ -18,8 +18,8 @@ app.components.x_grid.model.default_min_column_size = "16rem";
 app.components.x_grid.model.property_api = cljs.core.PersistentArrayMap.EMPTY;
 app.components.x_grid.model.event_schema = cljs.core.PersistentArrayMap.EMPTY;
 app.components.x_grid.model.gap__GT_css = (function app$components$x_grid$model$gap__GT_css(v){
-var G__20844 = v;
-switch (G__20844) {
+var G__20833 = v;
+switch (G__20833) {
 case "none":
 return "0";
 
@@ -80,8 +80,8 @@ app.components.x_grid.model.normalize_flow = (function app$components$x_grid$mod
 return app.components.x_grid.model.valid_enum(v,app.components.x_grid.model.flow_values,"row");
 });
 app.components.x_grid.model.flow__GT_css = (function app$components$x_grid$model$flow__GT_css(v){
-var G__20851 = v;
-switch (G__20851) {
+var G__20841 = v;
+switch (G__20841) {
 case "row-dense":
 return "row dense";
 
@@ -121,18 +121,18 @@ return v;
 return app.components.x_grid.model.default_min_column_size;
 }
 });
-app.components.x_grid.model.derive_state = (function app$components$x_grid$model$derive_state(p__20854){
-var map__20855 = p__20854;
-var map__20855__$1 = cljs.core.__destructure_map(map__20855);
-var inline = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"inline","inline",1399884222));
-var justify_items = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"justify-items","justify-items",1638310783));
-var row_gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"row-gap","row-gap",-1809905537));
-var auto_flow = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"auto-flow","auto-flow",-1524521728));
-var align_items = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"align-items","align-items",-267946462));
-var columns = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"columns","columns",1998437288));
-var min_column_size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"min-column-size","min-column-size",-1066019378));
-var column_gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"column-gap","column-gap",384822863));
-var gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20855__$1,new cljs.core.Keyword(null,"gap","gap",80255254));
+app.components.x_grid.model.derive_state = (function app$components$x_grid$model$derive_state(p__20848){
+var map__20849 = p__20848;
+var map__20849__$1 = cljs.core.__destructure_map(map__20849);
+var inline = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"inline","inline",1399884222));
+var justify_items = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"justify-items","justify-items",1638310783));
+var row_gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"row-gap","row-gap",-1809905537));
+var auto_flow = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"auto-flow","auto-flow",-1524521728));
+var align_items = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"align-items","align-items",-267946462));
+var columns = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"columns","columns",1998437288));
+var min_column_size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"min-column-size","min-column-size",-1066019378));
+var column_gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"column-gap","column-gap",384822863));
+var gap = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20849__$1,new cljs.core.Keyword(null,"gap","gap",80255254));
 var columns_STAR_ = app.components.x_grid.model.normalize_columns(columns);
 var min_STAR_ = app.components.x_grid.model.normalize_min_size(min_column_size);
 var gap_STAR_ = app.components.x_grid.model.normalize_gap(gap);

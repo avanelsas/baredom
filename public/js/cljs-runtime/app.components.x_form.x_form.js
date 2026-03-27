@@ -70,21 +70,21 @@ return null;
 app.components.x_form.x_form.report_fields_validity_BANG_ = (function app$components$x_form$x_form$report_fields_validity_BANG_(el){
 var fields = el.querySelectorAll("[name]:not([disabled])");
 var result = ({"ok": true});
-var n__5741__auto___22723 = fields.length;
-var i_22724 = (0);
+var n__5741__auto___22720 = fields.length;
+var i_22721 = (0);
 while(true){
-if((i_22724 < n__5741__auto___22723)){
-var field_22725 = (fields[i_22724]);
-if(cljs.core.truth_(field_22725.reportValidity)){
-if(cljs.core.truth_(field_22725.reportValidity())){
+if((i_22721 < n__5741__auto___22720)){
+var field_22722 = (fields[i_22721]);
+if(cljs.core.truth_(field_22722.reportValidity)){
+if(cljs.core.truth_(field_22722.reportValidity())){
 } else {
 (result["ok"] = false);
 }
 } else {
 }
 
-var G__22726 = (i_22724 + (1));
-i_22724 = G__22726;
+var G__22723 = (i_22721 + (1));
+i_22721 = G__22723;
 continue;
 } else {
 }
@@ -96,25 +96,25 @@ return (result["ok"]);
 app.components.x_form.x_form.collect_values = (function app$components$x_form$x_form$collect_values(el){
 var fields = el.querySelectorAll("[name]:not([disabled])");
 var result = (new Object());
-var n__5741__auto___22727 = fields.length;
-var i_22728 = (0);
+var n__5741__auto___22724 = fields.length;
+var i_22725 = (0);
 while(true){
-if((i_22728 < n__5741__auto___22727)){
-var field_22729 = (fields[i_22728]);
-var field_name_22730 = field_22729.name;
-if(cljs.core.truth_((function (){var and__5140__auto__ = field_name_22730;
+if((i_22725 < n__5741__auto___22724)){
+var field_22726 = (fields[i_22725]);
+var field_name_22727 = field_22726.name;
+if(cljs.core.truth_((function (){var and__5140__auto__ = field_name_22727;
 if(cljs.core.truth_(and__5140__auto__)){
-return cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(field_name_22730,"");
+return cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(field_name_22727,"");
 } else {
 return and__5140__auto__;
 }
 })())){
-var tag_lower_22731 = field_22729.tagName.toLowerCase();
-var type_attr_22732 = field_22729.getAttribute("type");
-var checkbox_QMARK__22733 = ((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(type_attr_22732,"checkbox")) || (((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(type_attr_22732,"radio")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_22731,"x-checkbox")))));
-if(checkbox_QMARK__22733){
-if(cljs.core.truth_(field_22729.checked)){
-(result[field_name_22730] = (function (){var or__5142__auto__ = field_22729.value;
+var tag_lower_22728 = field_22726.tagName.toLowerCase();
+var type_attr_22729 = field_22726.getAttribute("type");
+var checkbox_QMARK__22730 = ((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(type_attr_22729,"checkbox")) || (((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(type_attr_22729,"radio")) || (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(tag_lower_22728,"x-checkbox")))));
+if(checkbox_QMARK__22730){
+if(cljs.core.truth_(field_22726.checked)){
+(result[field_name_22727] = (function (){var or__5142__auto__ = field_22726.value;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -124,7 +124,7 @@ return "on";
 } else {
 }
 } else {
-(result[field_name_22730] = (function (){var or__5142__auto__ = field_22729.value;
+(result[field_name_22727] = (function (){var or__5142__auto__ = field_22726.value;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -135,8 +135,8 @@ return "";
 } else {
 }
 
-var G__22734 = (i_22728 + (1));
-i_22728 = G__22734;
+var G__22731 = (i_22725 + (1));
+i_22725 = G__22731;
 continue;
 } else {
 }
@@ -171,19 +171,19 @@ return null;
 }
 });
 app.components.x_form.x_form.handle_reset_BANG_ = (function app$components$x_form$x_form$handle_reset_BANG_(el,_e){
-var fields_22735 = el.querySelectorAll("[name]");
-var n__5741__auto___22736 = fields_22735.length;
-var i_22737 = (0);
+var fields_22732 = el.querySelectorAll("[name]");
+var n__5741__auto___22733 = fields_22732.length;
+var i_22734 = (0);
 while(true){
-if((i_22737 < n__5741__auto___22736)){
-var field_22738 = (fields_22735[i_22737]);
-if(cljs.core.truth_(field_22738.formResetCallback)){
-field_22738.formResetCallback();
+if((i_22734 < n__5741__auto___22733)){
+var field_22735 = (fields_22732[i_22734]);
+if(cljs.core.truth_(field_22735.formResetCallback)){
+field_22735.formResetCallback();
 } else {
 }
 
-var G__22739 = (i_22737 + (1));
-i_22737 = G__22739;
+var G__22736 = (i_22734 + (1));
+i_22734 = G__22736;
 continue;
 } else {
 }
@@ -249,10 +249,10 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_form.x_form.goog$module$goog$object.get(el,app.components.x_form.x_form.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var form_el_22741 = app.components.x_form.x_form.goog$module$goog$object.get(refs,"form");
-form_el_22741.removeEventListener("submit",app.components.x_form.x_form.goog$module$goog$object.get(handlers,"submit"));
+var form_el_22737 = app.components.x_form.x_form.goog$module$goog$object.get(refs,"form");
+form_el_22737.removeEventListener("submit",app.components.x_form.x_form.goog$module$goog$object.get(handlers,"submit"));
 
-form_el_22741.removeEventListener("reset",app.components.x_form.x_form.goog$module$goog$object.get(handlers,"reset"));
+form_el_22737.removeEventListener("reset",app.components.x_form.x_form.goog$module$goog$object.get(handlers,"reset"));
 
 el.removeEventListener("click",app.components.x_form.x_form.goog$module$goog$object.get(handlers,"click"));
 
@@ -386,8 +386,8 @@ while(true){
 if((i < n__5741__auto__)){
 app.components.x_form.x_form.remove_attr_BANG_((fields[i]),"error");
 
-var G__22744 = (i + (1));
-i = G__22744;
+var G__22741 = (i + (1));
+i = G__22741;
 continue;
 } else {
 return null;

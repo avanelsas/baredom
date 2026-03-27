@@ -145,123 +145,123 @@ app.components.x_date_picker.x_date_picker.render_grid_BANG_ = (function app$com
 var state = app.components.x_date_picker.x_date_picker.goog$module$goog$object.get(el,app.components.x_date_picker.x_date_picker.k_state);
 var month = (cljs.core.truth_(state)?app.components.x_date_picker.x_date_picker.goog$module$goog$object.get(state,"month"):null);
 var items = app.components.x_date_picker.model.month_grid(month);
-var seq__22473 = cljs.core.seq(items);
-var chunk__22474 = null;
-var count__22475 = (0);
-var i__22476 = (0);
+var seq__22489 = cljs.core.seq(items);
+var chunk__22490 = null;
+var count__22491 = (0);
+var i__22492 = (0);
 while(true){
-if((i__22476 < count__22475)){
-var map__22481 = chunk__22474.cljs$core$IIndexed$_nth$arity$2(null,i__22476);
-var map__22481__$1 = cljs.core.__destructure_map(map__22481);
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22481__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
-var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22481__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
-var btn_22576 = app.components.x_date_picker.x_date_picker.make_el("button");
-var iso_22577 = app.components.x_date_picker.model.date__GT_iso(date);
-var day_22578 = date.getUTCDate();
-var disabled_QMARK__22579 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
-var map__22482_22580 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
-var map__22482_22581__$1 = cljs.core.__destructure_map(map__22482_22580);
-var selected_QMARK__22582 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22482_22581__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var in_range_QMARK__22583 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22482_22581__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
-var edge_QMARK__22584 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22482_22581__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
-btn_22576.setAttribute("part","day");
+if((i__22492 < count__22491)){
+var map__22507 = chunk__22490.cljs$core$IIndexed$_nth$arity$2(null,i__22492);
+var map__22507__$1 = cljs.core.__destructure_map(map__22507);
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22507__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22507__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
+var btn_22597 = app.components.x_date_picker.x_date_picker.make_el("button");
+var iso_22598 = app.components.x_date_picker.model.date__GT_iso(date);
+var day_22599 = date.getUTCDate();
+var disabled_QMARK__22600 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
+var map__22508_22601 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
+var map__22508_22602__$1 = cljs.core.__destructure_map(map__22508_22601);
+var selected_QMARK__22603 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var in_range_QMARK__22604 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
+var edge_QMARK__22605 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
+btn_22597.setAttribute("part","day");
 
-btn_22576.setAttribute("type","button");
+btn_22597.setAttribute("type","button");
 
-btn_22576.setAttribute("data-iso",iso_22577);
+btn_22597.setAttribute("data-iso",iso_22598);
 
-btn_22576.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
+btn_22597.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
 
-btn_22576.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22579)?"true":"false"));
+btn_22597.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22600)?"true":"false"));
 
-btn_22576.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22582)?"true":"false"));
+btn_22597.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22603)?"true":"false"));
 
-btn_22576.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22583)?"true":"false"));
+btn_22597.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22604)?"true":"false"));
 
-btn_22576.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22584)?"true":"false"));
+btn_22597.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22605)?"true":"false"));
 
-if(cljs.core.truth_(disabled_QMARK__22579)){
-btn_22576.setAttribute("disabled","");
+if(cljs.core.truth_(disabled_QMARK__22600)){
+btn_22597.setAttribute("disabled","");
 } else {
 }
 
-(btn_22576.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22578)));
+(btn_22597.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22599)));
 
-grid.appendChild(btn_22576);
+grid.appendChild(btn_22597);
 
 
-var G__22599 = seq__22473;
-var G__22600 = chunk__22474;
-var G__22601 = count__22475;
-var G__22602 = (i__22476 + (1));
-seq__22473 = G__22599;
-chunk__22474 = G__22600;
-count__22475 = G__22601;
-i__22476 = G__22602;
+var G__22606 = seq__22489;
+var G__22607 = chunk__22490;
+var G__22608 = count__22491;
+var G__22609 = (i__22492 + (1));
+seq__22489 = G__22606;
+chunk__22490 = G__22607;
+count__22491 = G__22608;
+i__22492 = G__22609;
 continue;
 } else {
-var temp__5823__auto__ = cljs.core.seq(seq__22473);
+var temp__5823__auto__ = cljs.core.seq(seq__22489);
 if(temp__5823__auto__){
-var seq__22473__$1 = temp__5823__auto__;
-if(cljs.core.chunked_seq_QMARK_(seq__22473__$1)){
-var c__5673__auto__ = cljs.core.chunk_first(seq__22473__$1);
-var G__22603 = cljs.core.chunk_rest(seq__22473__$1);
-var G__22604 = c__5673__auto__;
-var G__22605 = cljs.core.count(c__5673__auto__);
-var G__22606 = (0);
-seq__22473 = G__22603;
-chunk__22474 = G__22604;
-count__22475 = G__22605;
-i__22476 = G__22606;
+var seq__22489__$1 = temp__5823__auto__;
+if(cljs.core.chunked_seq_QMARK_(seq__22489__$1)){
+var c__5673__auto__ = cljs.core.chunk_first(seq__22489__$1);
+var G__22610 = cljs.core.chunk_rest(seq__22489__$1);
+var G__22611 = c__5673__auto__;
+var G__22612 = cljs.core.count(c__5673__auto__);
+var G__22613 = (0);
+seq__22489 = G__22610;
+chunk__22490 = G__22611;
+count__22491 = G__22612;
+i__22492 = G__22613;
 continue;
 } else {
-var map__22483 = cljs.core.first(seq__22473__$1);
-var map__22483__$1 = cljs.core.__destructure_map(map__22483);
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22483__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
-var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22483__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
-var btn_22607 = app.components.x_date_picker.x_date_picker.make_el("button");
-var iso_22608 = app.components.x_date_picker.model.date__GT_iso(date);
-var day_22609 = date.getUTCDate();
-var disabled_QMARK__22610 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
-var map__22484_22611 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
-var map__22484_22612__$1 = cljs.core.__destructure_map(map__22484_22611);
-var selected_QMARK__22613 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22484_22612__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var in_range_QMARK__22614 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22484_22612__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
-var edge_QMARK__22615 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22484_22612__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
-btn_22607.setAttribute("part","day");
+var map__22509 = cljs.core.first(seq__22489__$1);
+var map__22509__$1 = cljs.core.__destructure_map(map__22509);
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22509__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22509__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
+var btn_22614 = app.components.x_date_picker.x_date_picker.make_el("button");
+var iso_22615 = app.components.x_date_picker.model.date__GT_iso(date);
+var day_22616 = date.getUTCDate();
+var disabled_QMARK__22617 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
+var map__22510_22618 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
+var map__22510_22619__$1 = cljs.core.__destructure_map(map__22510_22618);
+var selected_QMARK__22620 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var in_range_QMARK__22621 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
+var edge_QMARK__22622 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
+btn_22614.setAttribute("part","day");
 
-btn_22607.setAttribute("type","button");
+btn_22614.setAttribute("type","button");
 
-btn_22607.setAttribute("data-iso",iso_22608);
+btn_22614.setAttribute("data-iso",iso_22615);
 
-btn_22607.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
+btn_22614.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
 
-btn_22607.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22610)?"true":"false"));
+btn_22614.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22617)?"true":"false"));
 
-btn_22607.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22613)?"true":"false"));
+btn_22614.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22620)?"true":"false"));
 
-btn_22607.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22614)?"true":"false"));
+btn_22614.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22621)?"true":"false"));
 
-btn_22607.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22615)?"true":"false"));
+btn_22614.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22622)?"true":"false"));
 
-if(cljs.core.truth_(disabled_QMARK__22610)){
-btn_22607.setAttribute("disabled","");
+if(cljs.core.truth_(disabled_QMARK__22617)){
+btn_22614.setAttribute("disabled","");
 } else {
 }
 
-(btn_22607.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22609)));
+(btn_22614.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22616)));
 
-grid.appendChild(btn_22607);
+grid.appendChild(btn_22614);
 
 
-var G__22616 = cljs.core.next(seq__22473__$1);
-var G__22617 = null;
-var G__22618 = (0);
-var G__22619 = (0);
-seq__22473 = G__22616;
-chunk__22474 = G__22617;
-count__22475 = G__22618;
-i__22476 = G__22619;
+var G__22623 = cljs.core.next(seq__22489__$1);
+var G__22624 = null;
+var G__22625 = (0);
+var G__22626 = (0);
+seq__22489 = G__22623;
+chunk__22490 = G__22624;
+count__22491 = G__22625;
+i__22492 = G__22626;
 continue;
 }
 } else {
@@ -282,17 +282,17 @@ var n__5741__auto__ = (7);
 var i = (0);
 while(true){
 if((i < n__5741__auto__)){
-var div_22620 = app.components.x_date_picker.x_date_picker.make_el("div");
-div_22620.setAttribute("part","weekday");
+var div_22627 = app.components.x_date_picker.x_date_picker.make_el("div");
+div_22627.setAttribute("part","weekday");
 
-div_22620.setAttribute("aria-hidden","true");
+div_22627.setAttribute("aria-hidden","true");
 
-(div_22620.textContent = (labels[i]));
+(div_22627.textContent = (labels[i]));
 
-weekdays_el.appendChild(div_22620);
+weekdays_el.appendChild(div_22627);
 
-var G__22621 = (i + (1));
-i = G__22621;
+var G__22628 = (i + (1));
+i = G__22628;
 continue;
 } else {
 return null;
@@ -479,32 +479,32 @@ el.removeAttribute(app.components.x_date_picker.model.attr_end);
 app.components.x_date_picker.x_date_picker.goog$module$goog$object.set(el,app.components.x_date_picker.x_date_picker.k_range_step,(1));
 } else {
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(step,(1))){
-var allow_same_QMARK__22624 = new cljs.core.Keyword(null,"allow-same-day?","allow-same-day?",-1971558934).cljs$core$IFn$_invoke$arity$1(canon);
-var cmp_22625 = app.components.x_date_picker.model.compare_date(d,cur_start);
-var valid_QMARK__22626 = (function (){var or__5142__auto__ = (cmp_22625 > (0));
+var allow_same_QMARK__22639 = new cljs.core.Keyword(null,"allow-same-day?","allow-same-day?",-1971558934).cljs$core$IFn$_invoke$arity$1(canon);
+var cmp_22640 = app.components.x_date_picker.model.compare_date(d,cur_start);
+var valid_QMARK__22641 = (function (){var or__5142__auto__ = (cmp_22640 > (0));
 if(or__5142__auto__){
 return or__5142__auto__;
 } else {
-var and__5140__auto__ = allow_same_QMARK__22624;
+var and__5140__auto__ = allow_same_QMARK__22639;
 if(cljs.core.truth_(and__5140__auto__)){
-return (cmp_22625 === (0));
+return (cmp_22640 === (0));
 } else {
 return and__5140__auto__;
 }
 }
 })();
-if(cljs.core.truth_(valid_QMARK__22626)){
-var final_start_22627 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.min_date(cur_start,d):cur_start);
-var final_end_22628 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.max_date(cur_start,d):d);
-el.setAttribute(app.components.x_date_picker.model.attr_start,app.components.x_date_picker.model.date__GT_iso(final_start_22627));
+if(cljs.core.truth_(valid_QMARK__22641)){
+var final_start_22642 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.min_date(cur_start,d):cur_start);
+var final_end_22643 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.max_date(cur_start,d):d);
+el.setAttribute(app.components.x_date_picker.model.attr_start,app.components.x_date_picker.model.date__GT_iso(final_start_22642));
 
-el.setAttribute(app.components.x_date_picker.model.attr_end,app.components.x_date_picker.model.date__GT_iso(final_end_22628));
+el.setAttribute(app.components.x_date_picker.model.attr_end,app.components.x_date_picker.model.date__GT_iso(final_end_22643));
 
 app.components.x_date_picker.x_date_picker.goog$module$goog$object.set(el,app.components.x_date_picker.x_date_picker.k_range_step,(0));
 
 if(cljs.core.truth_((function (){var and__5140__auto__ = el.hasAttribute(app.components.x_date_picker.model.attr_close_on_select);
 if(cljs.core.truth_(and__5140__auto__)){
-return (((!((final_start_22627 == null)))) && ((!((final_end_22628 == null)))));
+return (((!((final_start_22642 == null)))) && ((!((final_end_22643 == null)))));
 } else {
 return and__5140__auto__;
 }
@@ -547,10 +547,10 @@ var mode = new cljs.core.Keyword(null,"mode","mode",654403691).cljs$core$IFn$_in
 app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_input,false,({"value": val}));
 
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(mode,new cljs.core.Keyword(null,"single","single",1551466437))){
-var map__22501 = app.components.x_date_picker.model.parse_display__GT_single(val);
-var map__22501__$1 = cljs.core.__destructure_map(map__22501);
-var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22501__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22501__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var map__22562 = app.components.x_date_picker.model.parse_display__GT_single(val);
+var map__22562__$1 = cljs.core.__destructure_map(map__22562);
+var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22562__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22562__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
 if(cljs.core.truth_(ok_QMARK_)){
 var ev = app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_change_request,true,({"iso": app.components.x_date_picker.model.date__GT_iso(date), "reason": reason}));
 if(cljs.core.truth_(ev.defaultPrevented)){
@@ -568,11 +568,11 @@ return app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.componen
 return null;
 }
 } else {
-var map__22502 = app.components.x_date_picker.model.parse_display__GT_range(val,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"separator","separator",-1628749125),new cljs.core.Keyword(null,"separator","separator",-1628749125).cljs$core$IFn$_invoke$arity$1(canon)], null));
-var map__22502__$1 = cljs.core.__destructure_map(map__22502);
-var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22502__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
-var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22502__$1,new cljs.core.Keyword(null,"start","start",-355208981));
-var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22502__$1,new cljs.core.Keyword(null,"end","end",-268185958));
+var map__22563 = app.components.x_date_picker.model.parse_display__GT_range(val,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"separator","separator",-1628749125),new cljs.core.Keyword(null,"separator","separator",-1628749125).cljs$core$IFn$_invoke$arity$1(canon)], null));
+var map__22563__$1 = cljs.core.__destructure_map(map__22563);
+var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
+var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"start","start",-355208981));
+var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"end","end",-268185958));
 if(cljs.core.truth_(ok_QMARK_)){
 var ev = app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_change_request,true,({"start-iso": app.components.x_date_picker.model.date__GT_iso(start), "end-iso": app.components.x_date_picker.model.date__GT_iso(end), "reason": reason}));
 if(cljs.core.truth_(ev.defaultPrevented)){

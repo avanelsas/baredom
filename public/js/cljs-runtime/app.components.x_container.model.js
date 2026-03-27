@@ -34,15 +34,15 @@ return app.components.x_container.model.normalize_enum(value,app.components.x_co
 app.components.x_container.model.non_empty_string_QMARK_ = (function app$components$x_container$model$non_empty_string_QMARK_(value){
 return ((typeof value === 'string') && (cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(value,"")));
 });
-app.components.x_container.model.public_state = (function app$components$x_container$model$public_state(p__20811){
-var map__20813 = p__20811;
-var map__20813__$1 = cljs.core.__destructure_map(map__20813);
-var as = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"as","as",1148689641));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
-var center = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"center","center",-748944368));
-var fluid = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"fluid","fluid",-1823657759));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20813__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_container.model.public_state = (function app$components$x_container$model$public_state(p__20698){
+var map__20699 = p__20698;
+var map__20699__$1 = cljs.core.__destructure_map(map__20699);
+var as = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"as","as",1148689641));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var padding = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"padding","padding",1660304693));
+var center = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"center","center",-748944368));
+var fluid = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"fluid","fluid",-1823657759));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20699__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"as","as",1148689641),app.components.x_container.model.normalize_as(as),new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_container.model.normalize_size(size),new cljs.core.Keyword(null,"padding","padding",1660304693),app.components.x_container.model.normalize_padding(padding),new cljs.core.Keyword(null,"center","center",-748944368),cljs.core.boolean$(center),new cljs.core.Keyword(null,"fluid","fluid",-1823657759),cljs.core.boolean$(fluid),new cljs.core.Keyword(null,"label","label",1718410804),((app.components.x_container.model.non_empty_string_QMARK_(label))?label:null)], null);
 });
 

@@ -126,15 +126,15 @@ var m = app.components.x_search_field.model.normalize(new cljs.core.PersistentAr
 
 (input_el.autocomplete = new cljs.core.Keyword(null,"autocomplete","autocomplete",1041133913).cljs$core$IFn$_invoke$arity$1(m));
 
-var lbl_22740 = new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_((function (){var and__5140__auto__ = lbl_22740;
+var lbl_22744 = new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_((function (){var and__5140__auto__ = lbl_22744;
 if(cljs.core.truth_(and__5140__auto__)){
-return cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(lbl_22740,"");
+return cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(lbl_22744,"");
 } else {
 return and__5140__auto__;
 }
 })())){
-app.components.x_search_field.x_search_field.set_attr_BANG_(input_el,"aria-label",lbl_22740);
+app.components.x_search_field.x_search_field.set_attr_BANG_(input_el,"aria-label",lbl_22744);
 } else {
 app.components.x_search_field.x_search_field.remove_attr_BANG_(input_el,"aria-label");
 }
@@ -172,12 +172,12 @@ return or__5142__auto__;
 return "";
 }
 })();
-var temp__5823__auto___22742__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22742__$1)){
-var internals_22743 = temp__5823__auto___22742__$1;
-internals_22743.setFormValue(value);
+var temp__5823__auto___22745__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22745__$1)){
+var internals_22746 = temp__5823__auto___22745__$1;
+internals_22746.setFormValue(value);
 
-app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22743,input_el);
+app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22746,input_el);
 } else {
 }
 
@@ -203,12 +203,12 @@ return or__5142__auto__;
 return "";
 }
 })();
-var temp__5823__auto___22745__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22745__$1)){
-var internals_22746 = temp__5823__auto___22745__$1;
-internals_22746.setFormValue(value);
+var temp__5823__auto___22747__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22747__$1)){
+var internals_22748 = temp__5823__auto___22747__$1;
+internals_22748.setFormValue(value);
 
-app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22746,input_el);
+app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22748,input_el);
 } else {
 }
 
@@ -276,12 +276,12 @@ return "";
 })();
 (input_el.value = "");
 
-var temp__5823__auto___22747__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22747__$1)){
-var internals_22748 = temp__5823__auto___22747__$1;
-internals_22748.setFormValue("");
+var temp__5823__auto___22749__$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22749__$1)){
+var internals_22750 = temp__5823__auto___22749__$1;
+internals_22750.setFormValue("");
 
-app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22748,input_el);
+app.components.x_search_field.x_search_field.sync_validity_BANG_(el,internals_22750,input_el);
 } else {
 }
 
@@ -325,15 +325,15 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var input_el_22749 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs,"input");
-var clear_el_22750 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs,"clear");
-input_el_22749.removeEventListener("input",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"input"));
+var input_el_22753 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs,"input");
+var clear_el_22754 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs,"clear");
+input_el_22753.removeEventListener("input",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"input"));
 
-input_el_22749.removeEventListener("change",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"change"));
+input_el_22753.removeEventListener("change",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"change"));
 
-input_el_22749.removeEventListener("keydown",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"keydown"));
+input_el_22753.removeEventListener("keydown",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"keydown"));
 
-clear_el_22750.removeEventListener("click",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"click"));
+clear_el_22754.removeEventListener("click",app.components.x_search_field.x_search_field.goog$module$goog$object.get(handlers,"click"));
 
 return app.components.x_search_field.x_search_field.goog$module$goog$object.set(el,app.components.x_search_field.x_search_field.k_handlers,null);
 } else {
@@ -351,18 +351,18 @@ return app.components.x_search_field.x_search_field.render_BANG_(el);
 app.components.x_search_field.x_search_field.form_reset_BANG_ = (function app$components$x_search_field$x_search_field$form_reset_BANG_(el){
 app.components.x_search_field.x_search_field.remove_attr_BANG_(el,app.components.x_search_field.model.attr_value);
 
-var temp__5823__auto___22751 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
-if(cljs.core.truth_(temp__5823__auto___22751)){
-var refs_22752 = temp__5823__auto___22751;
-var input_el_22753 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22752,"input");
-(input_el_22753.value = "");
+var temp__5823__auto___22757 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
+if(cljs.core.truth_(temp__5823__auto___22757)){
+var refs_22758 = temp__5823__auto___22757;
+var input_el_22759 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22758,"input");
+(input_el_22759.value = "");
 } else {
 }
 
-var temp__5823__auto___22754 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22754)){
-var internals_22755 = temp__5823__auto___22754;
-internals_22755.setFormValue("");
+var temp__5823__auto___22761 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22761)){
+var internals_22763 = temp__5823__auto___22761;
+internals_22763.setFormValue("");
 } else {
 }
 
@@ -381,22 +381,22 @@ app.components.x_search_field.x_search_field.goog$module$goog$object.set(el,app.
 
 app.components.x_search_field.x_search_field.remove_listeners_BANG_(el);
 
-var temp__5823__auto___22756 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
-if(cljs.core.truth_(temp__5823__auto___22756)){
-var refs_22757 = temp__5823__auto___22756;
-var input_el_22758 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22757,"input");
-var val_attr_22759 = app.components.x_search_field.x_search_field.get_attr(el,app.components.x_search_field.model.attr_value);
-if(cljs.core.truth_(val_attr_22759)){
-(input_el_22758.value = val_attr_22759);
+var temp__5823__auto___22764 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
+if(cljs.core.truth_(temp__5823__auto___22764)){
+var refs_22766 = temp__5823__auto___22764;
+var input_el_22768 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22766,"input");
+var val_attr_22769 = app.components.x_search_field.x_search_field.get_attr(el,app.components.x_search_field.model.attr_value);
+if(cljs.core.truth_(val_attr_22769)){
+(input_el_22768.value = val_attr_22769);
 } else {
 }
 } else {
 }
 
-var temp__5823__auto___22760 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
-if(cljs.core.truth_(temp__5823__auto___22760)){
-var internals_22761 = temp__5823__auto___22760;
-internals_22761.setFormValue((function (){var or__5142__auto__ = app.components.x_search_field.x_search_field.get_attr(el,app.components.x_search_field.model.attr_value);
+var temp__5823__auto___22770 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_internals);
+if(cljs.core.truth_(temp__5823__auto___22770)){
+var internals_22771 = temp__5823__auto___22770;
+internals_22771.setFormValue((function (){var or__5142__auto__ = app.components.x_search_field.x_search_field.get_attr(el,app.components.x_search_field.model.attr_value);
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -415,12 +415,12 @@ return app.components.x_search_field.x_search_field.remove_listeners_BANG_(el);
 });
 app.components.x_search_field.x_search_field.attribute_changed_BANG_ = (function app$components$x_search_field$x_search_field$attribute_changed_BANG_(el,name,_old,new_val){
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(name,app.components.x_search_field.model.attr_value)){
-var temp__5823__auto___22762 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
-if(cljs.core.truth_(temp__5823__auto___22762)){
-var refs_22763 = temp__5823__auto___22762;
-var input_el_22765 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22763,"input");
-if(cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(input_el_22765.value,new_val)){
-(input_el_22765.value = (function (){var or__5142__auto__ = new_val;
+var temp__5823__auto___22772 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(el,app.components.x_search_field.x_search_field.k_refs);
+if(cljs.core.truth_(temp__5823__auto___22772)){
+var refs_22773 = temp__5823__auto___22772;
+var input_el_22774 = app.components.x_search_field.x_search_field.goog$module$goog$object.get(refs_22773,"input");
+if(cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(input_el_22774.value,new_val)){
+(input_el_22774.value = (function (){var or__5142__auto__ = new_val;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {

@@ -55,16 +55,16 @@ return value;
 return app.components.x_progress_circle.model.default_size;
 }
 });
-app.components.x_progress_circle.model.derive_state = (function app$components$x_progress_circle$model$derive_state(p__22979){
-var map__22980 = p__22979;
-var map__22980__$1 = cljs.core.__destructure_map(map__22980);
-var max_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var show_value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
-var indeterminate = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22980__$1,new cljs.core.Keyword(null,"indeterminate","indeterminate",-513040976));
+app.components.x_progress_circle.model.derive_state = (function app$components$x_progress_circle$model$derive_state(p__22924){
+var map__22925 = p__22924;
+var map__22925__$1 = cljs.core.__destructure_map(map__22925);
+var max_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var show_value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"show-value","show-value",-1560941240));
+var indeterminate = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22925__$1,new cljs.core.Keyword(null,"indeterminate","indeterminate",-513040976));
 var norm_max = app.components.x_progress_circle.model.normalize_max(max_attr);
 var norm_value = app.components.x_progress_circle.model.normalize_value(value,norm_max);
 var norm_variant = app.components.x_progress_circle.model.normalize_variant(variant);

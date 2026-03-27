@@ -100,10 +100,10 @@ return "";
 })();
 var value_str = ((typeof value === 'string')?value:"");
 var search_str = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(label)+" "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(kw_str)+" "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(group_str)+" "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(value_str)).toLowerCase();
-var G__23589 = (i + (1));
-var G__23590 = cljs.core.conj_BANG_.cljs$core$IFn$_invoke$arity$2(acc,new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"id","id",-1388402092),id,new cljs.core.Keyword(null,"label","label",1718410804),label,new cljs.core.Keyword(null,"group","group",582596132),group,new cljs.core.Keyword(null,"value","value",305978217),value,new cljs.core.Keyword(null,"icon","icon",1679606541),icon,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),disabled_QMARK_,new cljs.core.Keyword(null,"search-str","search-str",-821246171),search_str], null));
-i = G__23589;
-acc = G__23590;
+var G__22284 = (i + (1));
+var G__22285 = cljs.core.conj_BANG_.cljs$core$IFn$_invoke$arity$2(acc,new cljs.core.PersistentArrayMap(null, 7, [new cljs.core.Keyword(null,"id","id",-1388402092),id,new cljs.core.Keyword(null,"label","label",1718410804),label,new cljs.core.Keyword(null,"group","group",582596132),group,new cljs.core.Keyword(null,"value","value",305978217),value,new cljs.core.Keyword(null,"icon","icon",1679606541),icon,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),disabled_QMARK_,new cljs.core.Keyword(null,"search-str","search-str",-821246171),search_str], null));
+i = G__22284;
+acc = G__22285;
 continue;
 }
 break;
@@ -149,8 +149,8 @@ return and__5140__auto__;
 })())){
 return idx;
 } else {
-var G__23591 = (i + (1));
-i = G__23591;
+var G__22286 = (i + (1));
+i = G__22286;
 continue;
 }
 } else {
@@ -200,20 +200,20 @@ return (0);
 /**
  * Canonicalize raw attr strings to a stable model map.
  */
-app.components.x_command_palette.model.normalize = (function app$components$x_command_palette$model$normalize(p__23587){
-var map__23588 = p__23587;
-var map__23588__$1 = cljs.core.__destructure_map(map__23588);
-var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
-var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var empty_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"empty-text-raw","empty-text-raw",1477406757));
-var portal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"portal-raw","portal-raw",2293766));
-var close_on_scrim_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"close-on-scrim-raw","close-on-scrim-raw",159828234));
-var disabled_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"disabled-raw","disabled-raw",498098381));
-var close_on_escape_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"close-on-escape-raw","close-on-escape-raw",-1942646255));
-var no_scrim_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"no-scrim-raw","no-scrim-raw",-1344365743));
-var dismissible_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"dismissible-raw","dismissible-raw",947680658));
-var modal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23588__$1,new cljs.core.Keyword(null,"modal-raw","modal-raw",-263722282));
+app.components.x_command_palette.model.normalize = (function app$components$x_command_palette$model$normalize(p__22270){
+var map__22277 = p__22270;
+var map__22277__$1 = cljs.core.__destructure_map(map__22277);
+var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
+var placeholder_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"placeholder-raw","placeholder-raw",-986138657));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var empty_text_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"empty-text-raw","empty-text-raw",1477406757));
+var portal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"portal-raw","portal-raw",2293766));
+var close_on_scrim_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"close-on-scrim-raw","close-on-scrim-raw",159828234));
+var disabled_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"disabled-raw","disabled-raw",498098381));
+var close_on_escape_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"close-on-escape-raw","close-on-escape-raw",-1942646255));
+var no_scrim_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"no-scrim-raw","no-scrim-raw",-1344365743));
+var dismissible_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"dismissible-raw","dismissible-raw",947680658));
+var modal_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22277__$1,new cljs.core.Keyword(null,"modal-raw","modal-raw",-263722282));
 var modal_QMARK_ = app.components.x_command_palette.model.parse_bool_default_true(modal_raw);
 var dismissible_QMARK_ = app.components.x_command_palette.model.parse_bool_default_true(dismissible_raw);
 var no_scrim_QMARK_ = app.components.x_command_palette.model.parse_bool_attr(no_scrim_raw);

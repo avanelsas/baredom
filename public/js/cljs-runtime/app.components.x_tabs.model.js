@@ -24,14 +24,14 @@ return app.components.x_tabs.model.valid_enum(v,app.components.x_tabs.model.orie
 app.components.x_tabs.model.normalize_activation = (function app$components$x_tabs$model$normalize_activation(v){
 return app.components.x_tabs.model.valid_enum(v,app.components.x_tabs.model.activation_values,"auto");
 });
-app.components.x_tabs.model.derive_state = (function app$components$x_tabs$model$derive_state(p__21311){
-var map__21312 = p__21311;
-var map__21312__$1 = cljs.core.__destructure_map(map__21312);
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21312__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21312__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
-var activation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21312__$1,new cljs.core.Keyword(null,"activation","activation",2128521072));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21312__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var loop = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21312__$1,new cljs.core.Keyword(null,"loop","loop",-395552849));
+app.components.x_tabs.model.derive_state = (function app$components$x_tabs$model$derive_state(p__21129){
+var map__21130 = p__21129;
+var map__21130__$1 = cljs.core.__destructure_map(map__21130);
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21130__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var orientation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21130__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
+var activation = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21130__$1,new cljs.core.Keyword(null,"activation","activation",2128521072));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21130__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var loop = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21130__$1,new cljs.core.Keyword(null,"loop","loop",-395552849));
 return new cljs.core.PersistentArrayMap(null, 5, [new cljs.core.Keyword(null,"value","value",305978217),value,new cljs.core.Keyword(null,"orientation","orientation",623557579),app.components.x_tabs.model.normalize_orientation(orientation),new cljs.core.Keyword(null,"activation","activation",2128521072),app.components.x_tabs.model.normalize_activation(activation),new cljs.core.Keyword(null,"label","label",1718410804),label,new cljs.core.Keyword(null,"loop","loop",-395552849),cljs.core.boolean$(loop)], null);
 });
 

@@ -37,24 +37,24 @@ return null;
  * 
  *   Output keys mirror the attribute semantics with parsed/normalised values.
  */
-app.components.x_table_row.model.normalize = (function app$components$x_table_row$model$normalize(p__23171){
-var map__23172 = p__23171;
-var map__23172__$1 = cljs.core.__destructure_map(map__23172);
-var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23172__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23172__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23172__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
-var row_index_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23172__$1,new cljs.core.Keyword(null,"row-index-raw","row-index-raw",1490649093));
+app.components.x_table_row.model.normalize = (function app$components$x_table_row$model$normalize(p__23168){
+var map__23169 = p__23168;
+var map__23169__$1 = cljs.core.__destructure_map(map__23169);
+var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23169__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23169__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23169__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
+var row_index_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23169__$1,new cljs.core.Keyword(null,"row-index-raw","row-index-raw",1490649093));
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"selected?","selected?",-742502788),cljs.core.boolean$(selected_QMARK_),new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181),cljs.core.boolean$(disabled_QMARK_),new cljs.core.Keyword(null,"interactive?","interactive?",367617676),cljs.core.boolean$(interactive_QMARK_),new cljs.core.Keyword(null,"row-index","row-index",-828710296),app.components.x_table_row.model.parse_row_index(row_index_raw)], null);
 });
 /**
  * Returns true when the row should respond to user interaction
  *   (interactive attribute set and not disabled).
  */
-app.components.x_table_row.model.interactive_eligible_QMARK_ = (function app$components$x_table_row$model$interactive_eligible_QMARK_(p__23173){
-var map__23174 = p__23173;
-var map__23174__$1 = cljs.core.__destructure_map(map__23174);
-var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23174__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23174__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_table_row.model.interactive_eligible_QMARK_ = (function app$components$x_table_row$model$interactive_eligible_QMARK_(p__23170){
+var map__23171 = p__23170;
+var map__23171__$1 = cljs.core.__destructure_map(map__23171);
+var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23171__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23171__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 var and__5140__auto__ = interactive_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return cljs.core.not(disabled_QMARK_);
@@ -70,11 +70,11 @@ return and__5140__auto__;
  *   - interactive but not selected → "false" (row is in a selection context)
  *   - neither interactive nor selected → nil (row is not selectable, omit attribute)
  */
-app.components.x_table_row.model.aria_selected_value = (function app$components$x_table_row$model$aria_selected_value(p__23175){
-var map__23176 = p__23175;
-var map__23176__$1 = cljs.core.__destructure_map(map__23176);
-var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23176__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23176__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
+app.components.x_table_row.model.aria_selected_value = (function app$components$x_table_row$model$aria_selected_value(p__23172){
+var map__23173 = p__23172;
+var map__23173__$1 = cljs.core.__destructure_map(map__23173);
+var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23173__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23173__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
 if(cljs.core.truth_(selected_QMARK_)){
 return "true";
 } else {
@@ -89,13 +89,13 @@ return null;
 /**
  * Build the event detail map for x-table-row-connected.
  */
-app.components.x_table_row.model.connected_detail = (function app$components$x_table_row$model$connected_detail(p__23177){
-var map__23178 = p__23177;
-var map__23178__$1 = cljs.core.__destructure_map(map__23178);
-var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23178__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23178__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23178__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
-var row_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23178__$1,new cljs.core.Keyword(null,"row-index","row-index",-828710296));
+app.components.x_table_row.model.connected_detail = (function app$components$x_table_row$model$connected_detail(p__23174){
+var map__23175 = p__23174;
+var map__23175__$1 = cljs.core.__destructure_map(map__23175);
+var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23175__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23175__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var interactive_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23175__$1,new cljs.core.Keyword(null,"interactive?","interactive?",367617676));
+var row_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23175__$1,new cljs.core.Keyword(null,"row-index","row-index",-828710296));
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"rowIndex","rowIndex",-821650233),(function (){var or__5142__auto__ = row_index;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
@@ -107,12 +107,12 @@ return (0);
 /**
  * Build the event detail map for x-table-row-click.
  */
-app.components.x_table_row.model.click_detail = (function app$components$x_table_row$model$click_detail(p__23185){
-var map__23186 = p__23185;
-var map__23186__$1 = cljs.core.__destructure_map(map__23186);
-var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23186__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23186__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var row_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23186__$1,new cljs.core.Keyword(null,"row-index","row-index",-828710296));
+app.components.x_table_row.model.click_detail = (function app$components$x_table_row$model$click_detail(p__23176){
+var map__23177 = p__23176;
+var map__23177__$1 = cljs.core.__destructure_map(map__23177);
+var selected_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23177__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23177__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var row_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23177__$1,new cljs.core.Keyword(null,"row-index","row-index",-828710296));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"rowIndex","rowIndex",-821650233),(function (){var or__5142__auto__ = row_index;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

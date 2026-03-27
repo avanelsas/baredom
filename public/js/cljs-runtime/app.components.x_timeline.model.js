@@ -34,8 +34,8 @@ return "start";
  *   :alternating → even index → "start", odd index → "end"
  */
 app.components.x_timeline.model.item_position = (function app$components$x_timeline$model$item_position(position,index){
-var G__23368 = position;
-switch (G__23368) {
+var G__23366 = position;
+switch (G__23366) {
 case "start":
 return "start";
 
@@ -70,12 +70,12 @@ return "start";
  *  :position  string  — "start" | "end" | "alternating"
  *  :striped?  boolean
  */
-app.components.x_timeline.model.normalize = (function app$components$x_timeline$model$normalize(p__23370){
-var map__23371 = p__23370;
-var map__23371__$1 = cljs.core.__destructure_map(map__23371);
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23371__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23371__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
-var striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23371__$1,new cljs.core.Keyword(null,"striped?","striped?",-797214979));
+app.components.x_timeline.model.normalize = (function app$components$x_timeline$model$normalize(p__23367){
+var map__23368 = p__23367;
+var map__23368__$1 = cljs.core.__destructure_map(map__23368);
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23368__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23368__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
+var striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23368__$1,new cljs.core.Keyword(null,"striped?","striped?",-797214979));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"label","label",1718410804),(function (){var or__5142__auto__ = label_raw;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;

@@ -34,12 +34,12 @@ return null;
 }
 });
 app.components.x_sidebar.model.parse_number = (function app$components$x_sidebar$model$parse_number(value,fallback){
-var raw = (function (){var G__20996 = value;
-var G__20996__$1 = (((G__20996 == null))?null:(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(G__20996)));
-if((G__20996__$1 == null)){
+var raw = (function (){var G__20923 = value;
+var G__20923__$1 = (((G__20923 == null))?null:(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(G__20923)));
+if((G__20923__$1 == null)){
 return null;
 } else {
-return clojure.string.trim(G__20996__$1);
+return clojure.string.trim(G__20923__$1);
 }
 })();
 if(cljs.core.seq(raw)){
@@ -78,23 +78,23 @@ return or__5142__auto__;
 return new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(app.components.x_sidebar.model.defaults);
 }
 });
-app.components.x_sidebar.model.compute_open = (function app$components$x_sidebar$model$compute_open(p__21000){
-var map__21002 = p__21000;
-var map__21002__$1 = cljs.core.__destructure_map(map__21002);
-var open_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21002__$1,new cljs.core.Keyword(null,"open-attr","open-attr",-1772289801));
+app.components.x_sidebar.model.compute_open = (function app$components$x_sidebar$model$compute_open(p__20942){
+var map__20943 = p__20942;
+var map__20943__$1 = cljs.core.__destructure_map(map__20943);
+var open_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20943__$1,new cljs.core.Keyword(null,"open-attr","open-attr",-1772289801));
 return cljs.core.boolean$(open_attr);
 });
-app.components.x_sidebar.model.compute_state = (function app$components$x_sidebar$model$compute_state(p__21006){
-var map__21007 = p__21006;
-var map__21007__$1 = cljs.core.__destructure_map(map__21007);
-var open_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"open-attr","open-attr",-1772289801));
-var collapsed_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"collapsed-attr","collapsed-attr",-1535396832));
-var placement_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"placement-attr","placement-attr",-1321967286));
-var variant_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"variant-attr","variant-attr",-1143729279));
-var breakpoint_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"breakpoint-attr","breakpoint-attr",-250275627));
-var label_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"label-attr","label-attr",-571749887));
-var viewport_width = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"viewport-width","viewport-width",-1146235948));
-var prefers_reduced_motion = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21007__$1,new cljs.core.Keyword(null,"prefers-reduced-motion","prefers-reduced-motion",-2023150975));
+app.components.x_sidebar.model.compute_state = (function app$components$x_sidebar$model$compute_state(p__20945){
+var map__20946 = p__20945;
+var map__20946__$1 = cljs.core.__destructure_map(map__20946);
+var open_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"open-attr","open-attr",-1772289801));
+var collapsed_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"collapsed-attr","collapsed-attr",-1535396832));
+var placement_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"placement-attr","placement-attr",-1321967286));
+var variant_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"variant-attr","variant-attr",-1143729279));
+var breakpoint_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"breakpoint-attr","breakpoint-attr",-250275627));
+var label_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"label-attr","label-attr",-571749887));
+var viewport_width = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"viewport-width","viewport-width",-1146235948));
+var prefers_reduced_motion = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20946__$1,new cljs.core.Keyword(null,"prefers-reduced-motion","prefers-reduced-motion",-2023150975));
 var placement = app.components.x_sidebar.model.normalize_placement(placement_attr);
 var declared_variant = app.components.x_sidebar.model.normalize_variant(variant_attr);
 var breakpoint = app.components.x_sidebar.model.normalize_breakpoint(breakpoint_attr);

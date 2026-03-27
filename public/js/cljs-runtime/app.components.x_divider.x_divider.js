@@ -12,23 +12,23 @@ app.components.x_divider.x_divider.set_attr_BANG_ = (function app$components$x_d
 return el.setAttribute(k,v);
 });
 app.components.x_divider.x_divider.make_shadow_BANG_ = (function app$components$x_divider$x_divider$make_shadow_BANG_(el){
-var root_22525 = el.attachShadow(({"mode": "open"}));
-var style_22526 = app.components.x_divider.x_divider.make_el("style");
-var container_22527 = app.components.x_divider.x_divider.make_el("div");
-(style_22526.textContent = app.components.x_divider.x_divider.style_text);
+var root_22564 = el.attachShadow(({"mode": "open"}));
+var style_22565 = app.components.x_divider.x_divider.make_el("style");
+var container_22566 = app.components.x_divider.x_divider.make_el("div");
+(style_22565.textContent = app.components.x_divider.x_divider.style_text);
 
-app.components.x_divider.x_divider.set_attr_BANG_(container_22527,"part","container");
+app.components.x_divider.x_divider.set_attr_BANG_(container_22566,"part","container");
 
-var line_22532 = app.components.x_divider.x_divider.make_el("div");
-app.components.x_divider.x_divider.set_attr_BANG_(line_22532,"part","line");
+var line_22567 = app.components.x_divider.x_divider.make_el("div");
+app.components.x_divider.x_divider.set_attr_BANG_(line_22567,"part","line");
 
-container_22527.appendChild(line_22532);
+container_22566.appendChild(line_22567);
 
-root_22525.appendChild(style_22526);
+root_22564.appendChild(style_22565);
 
-root_22525.appendChild(container_22527);
+root_22564.appendChild(container_22566);
 
-app.components.x_divider.x_divider.goog$module$goog$object.set(el,app.components.x_divider.x_divider.k_refs,({"root": root_22525, "container": container_22527, "mode": "no-label"}));
+app.components.x_divider.x_divider.goog$module$goog$object.set(el,app.components.x_divider.x_divider.k_refs,({"root": root_22564, "container": container_22566, "mode": "no-label"}));
 
 return null;
 });
@@ -51,41 +51,41 @@ app.components.x_divider.x_divider.ensure_label_dom_BANG_ = (function app$compon
 var refs = app.components.x_divider.x_divider.goog$module$goog$object.get(el,app.components.x_divider.x_divider.k_refs);
 var cur_mode = app.components.x_divider.x_divider.goog$module$goog$object.get(refs,"mode");
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(cur_mode,"no-label")){
-var container_22543 = app.components.x_divider.x_divider.goog$module$goog$object.get(refs,"container");
-app.components.x_divider.x_divider.remove_all_children_BANG_(container_22543);
+var container_22568 = app.components.x_divider.x_divider.goog$module$goog$object.get(refs,"container");
+app.components.x_divider.x_divider.remove_all_children_BANG_(container_22568);
 
-var line_left_22548 = app.components.x_divider.x_divider.make_el("div");
-var label_wrap_22549 = app.components.x_divider.x_divider.make_el("span");
-var slot_el_22550 = app.components.x_divider.x_divider.make_el("slot");
-var label_text_22551 = app.components.x_divider.x_divider.make_el("span");
-var line_right_22552 = app.components.x_divider.x_divider.make_el("div");
-app.components.x_divider.x_divider.set_attr_BANG_(line_left_22548,"part","line-left");
+var line_left_22569 = app.components.x_divider.x_divider.make_el("div");
+var label_wrap_22570 = app.components.x_divider.x_divider.make_el("span");
+var slot_el_22571 = app.components.x_divider.x_divider.make_el("slot");
+var label_text_22572 = app.components.x_divider.x_divider.make_el("span");
+var line_right_22573 = app.components.x_divider.x_divider.make_el("div");
+app.components.x_divider.x_divider.set_attr_BANG_(line_left_22569,"part","line-left");
 
-app.components.x_divider.x_divider.set_attr_BANG_(label_wrap_22549,"part","label");
+app.components.x_divider.x_divider.set_attr_BANG_(label_wrap_22570,"part","label");
 
-app.components.x_divider.x_divider.set_attr_BANG_(slot_el_22550,"name","label");
+app.components.x_divider.x_divider.set_attr_BANG_(slot_el_22571,"name","label");
 
-app.components.x_divider.x_divider.set_attr_BANG_(label_text_22551,"part","label-text");
+app.components.x_divider.x_divider.set_attr_BANG_(label_text_22572,"part","label-text");
 
-app.components.x_divider.x_divider.set_attr_BANG_(line_right_22552,"part","line-right");
+app.components.x_divider.x_divider.set_attr_BANG_(line_right_22573,"part","line-right");
 
-label_wrap_22549.appendChild(slot_el_22550);
+label_wrap_22570.appendChild(slot_el_22571);
 
-label_wrap_22549.appendChild(label_text_22551);
+label_wrap_22570.appendChild(label_text_22572);
 
-container_22543.appendChild(line_left_22548);
+container_22568.appendChild(line_left_22569);
 
-container_22543.appendChild(label_wrap_22549);
+container_22568.appendChild(label_wrap_22570);
 
-container_22543.appendChild(line_right_22552);
+container_22568.appendChild(line_right_22573);
 
-app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"line-left",line_left_22548);
+app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"line-left",line_left_22569);
 
-app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"label-wrap",label_wrap_22549);
+app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"label-wrap",label_wrap_22570);
 
-app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"label-text",label_text_22551);
+app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"label-text",label_text_22572);
 
-app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"line-right",line_right_22552);
+app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"line-right",line_right_22573);
 
 app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"mode","label");
 } else {
@@ -121,27 +121,27 @@ app.components.x_divider.x_divider.goog$module$goog$object.set(refs,"mode","no-l
 return null;
 });
 app.components.x_divider.x_divider.render_BANG_ = (function app$components$x_divider$x_divider$render_BANG_(el){
-var m_22585 = app.components.x_divider.model.normalize(cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250),new cljs.core.Keyword(null,"label-raw","label-raw",-83844350),new cljs.core.Keyword(null,"align-raw","align-raw",-723387357),new cljs.core.Keyword(null,"length-raw","length-raw",-1832244116),new cljs.core.Keyword(null,"thickness-raw","thickness-raw",1843812655),new cljs.core.Keyword(null,"color-raw","color-raw",1277647215),new cljs.core.Keyword(null,"inset-raw","inset-raw",89351124),new cljs.core.Keyword(null,"orientation-raw","orientation-raw",-471053928),new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103),new cljs.core.Keyword(null,"role-raw","role-raw",777951354)],[el.getAttribute(app.components.x_divider.model.attr_variant),el.getAttribute(app.components.x_divider.model.attr_label),el.getAttribute(app.components.x_divider.model.attr_align),el.getAttribute(app.components.x_divider.model.attr_length),el.getAttribute(app.components.x_divider.model.attr_thickness),el.getAttribute(app.components.x_divider.model.attr_color),el.getAttribute(app.components.x_divider.model.attr_inset),el.getAttribute(app.components.x_divider.model.attr_orientation),el.getAttribute(app.components.x_divider.model.attr_aria_label),el.getAttribute(app.components.x_divider.model.attr_role)]));
-var map__22513_22586 = m_22585;
-var map__22513_22587__$1 = cljs.core.__destructure_map(map__22513_22586);
-var aria_label_22588 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
-var align_22589 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"align","align",1964212802));
-var thickness_22590 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"thickness","thickness",-940175454));
-var inset_22591 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"inset","inset",-396367740));
-var color_22592 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"color","color",1011675173));
-var variant_22593 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var orientation_22594 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
-var label_22595 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var length_22596 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22513_22587__$1,new cljs.core.Keyword(null,"length","length",588987862));
-var has_lbl_22597 = app.components.x_divider.model.has_label_QMARK_(label_22595);
-var style_22598 = el.style;
-el.setAttribute("data-orientation",orientation_22594);
+var m_22576 = app.components.x_divider.model.normalize(cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"variant-raw","variant-raw",1353213250),new cljs.core.Keyword(null,"label-raw","label-raw",-83844350),new cljs.core.Keyword(null,"align-raw","align-raw",-723387357),new cljs.core.Keyword(null,"length-raw","length-raw",-1832244116),new cljs.core.Keyword(null,"thickness-raw","thickness-raw",1843812655),new cljs.core.Keyword(null,"color-raw","color-raw",1277647215),new cljs.core.Keyword(null,"inset-raw","inset-raw",89351124),new cljs.core.Keyword(null,"orientation-raw","orientation-raw",-471053928),new cljs.core.Keyword(null,"aria-label-raw","aria-label-raw",-412828103),new cljs.core.Keyword(null,"role-raw","role-raw",777951354)],[el.getAttribute(app.components.x_divider.model.attr_variant),el.getAttribute(app.components.x_divider.model.attr_label),el.getAttribute(app.components.x_divider.model.attr_align),el.getAttribute(app.components.x_divider.model.attr_length),el.getAttribute(app.components.x_divider.model.attr_thickness),el.getAttribute(app.components.x_divider.model.attr_color),el.getAttribute(app.components.x_divider.model.attr_inset),el.getAttribute(app.components.x_divider.model.attr_orientation),el.getAttribute(app.components.x_divider.model.attr_aria_label),el.getAttribute(app.components.x_divider.model.attr_role)]));
+var map__22559_22577 = m_22576;
+var map__22559_22578__$1 = cljs.core.__destructure_map(map__22559_22577);
+var aria_label_22579 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"aria-label","aria-label",455891514));
+var align_22580 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"align","align",1964212802));
+var thickness_22581 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"thickness","thickness",-940175454));
+var inset_22582 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"inset","inset",-396367740));
+var color_22583 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"color","color",1011675173));
+var variant_22584 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var orientation_22585 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"orientation","orientation",623557579));
+var label_22586 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var length_22587 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22559_22578__$1,new cljs.core.Keyword(null,"length","length",588987862));
+var has_lbl_22588 = app.components.x_divider.model.has_label_QMARK_(label_22586);
+var style_22589 = el.style;
+el.setAttribute("data-orientation",orientation_22585);
 
-el.setAttribute("data-variant",variant_22593);
+el.setAttribute("data-variant",variant_22584);
 
-el.setAttribute("data-align",align_22589);
+el.setAttribute("data-align",align_22580);
 
-style_22598.setProperty("--x-divider-thickness",(function (){var or__5142__auto__ = thickness_22590;
+style_22589.setProperty("--x-divider-thickness",(function (){var or__5142__auto__ = thickness_22581;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -149,7 +149,7 @@ return "1px";
 }
 })());
 
-style_22598.setProperty("--x-divider-inset",(function (){var or__5142__auto__ = inset_22591;
+style_22589.setProperty("--x-divider-inset",(function (){var or__5142__auto__ = inset_22582;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -157,7 +157,7 @@ return "0px";
 }
 })());
 
-style_22598.setProperty("--x-divider-length",(function (){var or__5142__auto__ = length_22596;
+style_22589.setProperty("--x-divider-length",(function (){var or__5142__auto__ = length_22587;
 if(cljs.core.truth_(or__5142__auto__)){
 return or__5142__auto__;
 } else {
@@ -165,43 +165,43 @@ return "auto";
 }
 })());
 
-if(cljs.core.truth_(color_22592)){
-style_22598.setProperty("--x-divider-color",color_22592);
+if(cljs.core.truth_(color_22583)){
+style_22589.setProperty("--x-divider-color",color_22583);
 } else {
-style_22598.removeProperty("--x-divider-color");
+style_22589.removeProperty("--x-divider-color");
 }
 
-if(app.components.x_divider.model.separator_role_QMARK_(new cljs.core.Keyword(null,"role","role",-736691072).cljs$core$IFn$_invoke$arity$1(m_22585))){
+if(app.components.x_divider.model.separator_role_QMARK_(new cljs.core.Keyword(null,"role","role",-736691072).cljs$core$IFn$_invoke$arity$1(m_22576))){
 el.setAttribute("role","separator");
 } else {
 el.setAttribute("role","presentation");
 }
 
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(orientation_22594,"vertical")){
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(orientation_22585,"vertical")){
 el.setAttribute("aria-orientation","vertical");
 } else {
 el.removeAttribute("aria-orientation");
 }
 
-if(cljs.core.truth_((function (){var and__5140__auto__ = aria_label_22588;
+if(cljs.core.truth_((function (){var and__5140__auto__ = aria_label_22579;
 if(cljs.core.truth_(and__5140__auto__)){
-return (aria_label_22588.length > (0));
+return (aria_label_22579.length > (0));
 } else {
 return and__5140__auto__;
 }
 })())){
-el.setAttribute("aria-label",aria_label_22588);
+el.setAttribute("aria-label",aria_label_22579);
 } else {
 el.removeAttribute("aria-label");
 }
 
-if(has_lbl_22597){
+if(has_lbl_22588){
 app.components.x_divider.x_divider.ensure_label_dom_BANG_(el);
 
-var refs_22629 = app.components.x_divider.x_divider.goog$module$goog$object.get(el,app.components.x_divider.x_divider.k_refs);
-var label_text_22630 = app.components.x_divider.x_divider.goog$module$goog$object.get(refs_22629,"label-text");
-if(cljs.core.truth_(label_text_22630)){
-(label_text_22630.textContent = label_22595);
+var refs_22590 = app.components.x_divider.x_divider.goog$module$goog$object.get(el,app.components.x_divider.x_divider.k_refs);
+var label_text_22591 = app.components.x_divider.x_divider.goog$module$goog$object.get(refs_22590,"label-text");
+if(cljs.core.truth_(label_text_22591)){
+(label_text_22591.textContent = label_22586);
 } else {
 }
 } else {

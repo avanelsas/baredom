@@ -263,11 +263,11 @@ return null;
 /**
  * Format a JS Date for display.  Uses Intl.DateTimeFormat when available.
  */
-app.components.x_date_picker.model.format_date = (function app$components$x_date_picker$model$format_date(d,p__22438){
-var map__22439 = p__22438;
-var map__22439__$1 = cljs.core.__destructure_map(map__22439);
-var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22439__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
-var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22439__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
+app.components.x_date_picker.model.format_date = (function app$components$x_date_picker$model$format_date(d,p__22445){
+var map__22446 = p__22445;
+var map__22446__$1 = cljs.core.__destructure_map(map__22446);
+var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22446__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
+var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22446__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
 if(cljs.core.truth_(d)){
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(format,new cljs.core.Keyword(null,"localized","localized",1722109655))){
 var opts = ({"year": "numeric", "month": "long", "day": "numeric", "timeZone": "UTC"});
@@ -299,10 +299,10 @@ return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"ok
  * Try to parse a display string that may contain a separator.
  * Returns {:ok? boolean :start js/Date|nil :end js/Date|nil}.
  */
-app.components.x_date_picker.model.parse_display__GT_range = (function app$components$x_date_picker$model$parse_display__GT_range(display,p__22440){
-var map__22441 = p__22440;
-var map__22441__$1 = cljs.core.__destructure_map(map__22441);
-var separator = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22441__$1,new cljs.core.Keyword(null,"separator","separator",-1628749125));
+app.components.x_date_picker.model.parse_display__GT_range = (function app$components$x_date_picker$model$parse_display__GT_range(display,p__22447){
+var map__22448 = p__22447;
+var map__22448__$1 = cljs.core.__destructure_map(map__22448);
+var separator = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22448__$1,new cljs.core.Keyword(null,"separator","separator",-1628749125));
 var sep = ((((typeof separator === 'string') && ((separator.length > (0)))))?separator:" - ");
 var s = app.components.x_date_picker.model.normalize_str(display);
 if((s == null)){
@@ -310,10 +310,10 @@ return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"ok
 } else {
 var idx = s.indexOf(sep);
 if((idx < (0))){
-var map__22442 = app.components.x_date_picker.model.parse_display__GT_single(s);
-var map__22442__$1 = cljs.core.__destructure_map(map__22442);
-var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22442__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22442__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var map__22449 = app.components.x_date_picker.model.parse_display__GT_single(s);
+var map__22449__$1 = cljs.core.__destructure_map(map__22449);
+var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22449__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22449__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"ok?","ok?",447310304),ok_QMARK_,new cljs.core.Keyword(null,"start","start",-355208981),date,new cljs.core.Keyword(null,"end","end",-268185958),null], null);
 } else {
 var s1 = s.substring((0),idx).trim();
@@ -327,20 +327,20 @@ return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"ok
 /**
  * Build stable model from raw attr strings.
  */
-app.components.x_date_picker.model.canonicalize = (function app$components$x_date_picker$model$canonicalize(p__22443){
-var map__22444 = p__22443;
-var map__22444__$1 = cljs.core.__destructure_map(map__22444);
-var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"end","end",-268185958));
-var separator = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"separator","separator",-1628749125));
-var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"min","min",444991522));
-var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
-var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
-var range_allow_same_day_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"range-allow-same-day?","range-allow-same-day?",-714516856));
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"mode","mode",654403691));
-var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"start","start",-355208981));
-var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"max","max",61366548));
-var auto_swap_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22444__$1,new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411));
+app.components.x_date_picker.model.canonicalize = (function app$components$x_date_picker$model$canonicalize(p__22463){
+var map__22464 = p__22463;
+var map__22464__$1 = cljs.core.__destructure_map(map__22464);
+var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"end","end",-268185958));
+var separator = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"separator","separator",-1628749125));
+var min = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"min","min",444991522));
+var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
+var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
+var range_allow_same_day_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"range-allow-same-day?","range-allow-same-day?",-714516856));
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"mode","mode",654403691));
+var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"start","start",-355208981));
+var max = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"max","max",61366548));
+var auto_swap_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22464__$1,new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411));
 var m = app.components.x_date_picker.model.parse_mode(mode);
 var fmt = app.components.x_date_picker.model.parse_format(format);
 var loc = app.components.x_date_picker.model.normalize_str(locale);
@@ -405,11 +405,11 @@ return null;
 /**
  * Compute the input display string from canonicalized state.
  */
-app.components.x_date_picker.model.display_value = (function app$components$x_date_picker$model$display_value(canon,p__22445){
-var map__22446 = p__22445;
-var map__22446__$1 = cljs.core.__destructure_map(map__22446);
-var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22446__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
-var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22446__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
+app.components.x_date_picker.model.display_value = (function app$components$x_date_picker$model$display_value(canon,p__22484){
+var map__22485 = p__22484;
+var map__22485__$1 = cljs.core.__destructure_map(map__22485);
+var format = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22485__$1,new cljs.core.Keyword(null,"format","format",-1306924766));
+var locale = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22485__$1,new cljs.core.Keyword(null,"locale","locale",-2115712697));
 var config = new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"format","format",-1306924766),format,new cljs.core.Keyword(null,"locale","locale",-2115712697),locale], null);
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Keyword(null,"mode","mode",654403691).cljs$core$IFn$_invoke$arity$1(canon),new cljs.core.Keyword(null,"single","single",1551466437))){
 if(cljs.core.truth_(new cljs.core.Keyword(null,"value-d","value-d",-1768534876).cljs$core$IFn$_invoke$arity$1(canon))){

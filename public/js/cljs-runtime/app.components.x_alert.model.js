@@ -120,16 +120,16 @@ return cljs.core.get.cljs$core$IFn$_invoke$arity$2(app.components.x_alert.model.
  *  :disabled?    boolean
  *  :timeout-ms   int | nil
  */
-app.components.x_alert.model.normalize = (function app$components$x_alert$model$normalize(p__21357){
-var map__21358 = p__21357;
-var map__21358__$1 = cljs.core.__destructure_map(map__21358);
-var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
-var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
-var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
-var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
-var dismissible_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"dismissible-attr","dismissible-attr",-2012325753));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var timeout_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21358__$1,new cljs.core.Keyword(null,"timeout-ms-raw","timeout-ms-raw",-1969949623));
+app.components.x_alert.model.normalize = (function app$components$x_alert$model$normalize(p__21270){
+var map__21271 = p__21270;
+var map__21271__$1 = cljs.core.__destructure_map(map__21271);
+var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
+var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
+var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
+var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
+var dismissible_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"dismissible-attr","dismissible-attr",-2012325753));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var timeout_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21271__$1,new cljs.core.Keyword(null,"timeout-ms-raw","timeout-ms-raw",-1969949623));
 var t = app.components.x_alert.model.parse_type(type_raw);
 var icon_STAR_ = app.components.x_alert.model.normalize_icon(icon_raw);
 var icon_mode = (cljs.core.truth_((function (){var and__5140__auto__ = icon_present_QMARK_;
@@ -151,11 +151,11 @@ return "";
 /**
  * Return true when the alert can currently be dismissed (dismissible and not disabled).
  */
-app.components.x_alert.model.dismiss_eligible_QMARK_ = (function app$components$x_alert$model$dismiss_eligible_QMARK_(p__21361){
-var map__21362 = p__21361;
-var map__21362__$1 = cljs.core.__destructure_map(map__21362);
-var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21362__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21362__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_alert.model.dismiss_eligible_QMARK_ = (function app$components$x_alert$model$dismiss_eligible_QMARK_(p__21278){
+var map__21279 = p__21278;
+var map__21279__$1 = cljs.core.__destructure_map(map__21279);
+var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21279__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21279__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 var and__5140__auto__ = dismissible_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return cljs.core.not(disabled_QMARK_);
@@ -166,11 +166,11 @@ return and__5140__auto__;
 /**
  * Build the event detail map for an x-alert-dismiss event.
  */
-app.components.x_alert.model.dismiss_detail = (function app$components$x_alert$model$dismiss_detail(p__21363,reason){
-var map__21364 = p__21363;
-var map__21364__$1 = cljs.core.__destructure_map(map__21364);
-var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21364__$1,new cljs.core.Keyword(null,"type","type",1174270348));
-var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21364__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
+app.components.x_alert.model.dismiss_detail = (function app$components$x_alert$model$dismiss_detail(p__21288,reason){
+var map__21289 = p__21288;
+var map__21289__$1 = cljs.core.__destructure_map(map__21289);
+var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21289__$1,new cljs.core.Keyword(null,"type","type",1174270348));
+var text = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21289__$1,new cljs.core.Keyword(null,"text","text",-1790561697));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"type","type",1174270348),app.components.x_alert.model.type__GT_attr(type),new cljs.core.Keyword(null,"reason","reason",-2070751759),reason,new cljs.core.Keyword(null,"text","text",-1790561697),text], null);
 });
 

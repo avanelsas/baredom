@@ -39,12 +39,12 @@ return app.components.x_drawer.model.default_label;
 /**
  * Produce a normalized view-model map from raw attribute values.
  */
-app.components.x_drawer.model.normalize = (function app$components$x_drawer$model$normalize(p__22514){
-var map__22515 = p__22514;
-var map__22515__$1 = cljs.core.__destructure_map(map__22515);
-var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22515__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
-var placement_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22515__$1,new cljs.core.Keyword(null,"placement-raw","placement-raw",-1500957198));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22515__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+app.components.x_drawer.model.normalize = (function app$components$x_drawer$model$normalize(p__22560){
+var map__22561 = p__22560;
+var map__22561__$1 = cljs.core.__destructure_map(map__22561);
+var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22561__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
+var placement_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22561__$1,new cljs.core.Keyword(null,"placement-raw","placement-raw",-1500957198));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22561__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"open?","open?",1238443125),cljs.core.boolean$(open_present_QMARK_),new cljs.core.Keyword(null,"placement","placement",768366651),app.components.x_drawer.model.normalize_placement(placement_raw),new cljs.core.Keyword(null,"label","label",1718410804),app.components.x_drawer.model.normalize_label(label_raw)], null);
 });
 /**

@@ -77,26 +77,26 @@ app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-required",(
 
 app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-readonly",(cljs.core.truth_(new cljs.core.Keyword(null,"readonly?","readonly?",988057827).cljs$core$IFn$_invoke$arity$1(m))?"true":"false"));
 
-var temp__5821__auto___22195 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___22195)){
-var v_22196 = temp__5821__auto___22195;
-app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-label",v_22196);
+var temp__5821__auto___22128 = new cljs.core.Keyword(null,"aria-label","aria-label",455891514).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___22128)){
+var v_22129 = temp__5821__auto___22128;
+app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-label",v_22129);
 } else {
 app.components.x_checkbox.x_checkbox.remove_attr_BANG_(control_el,"aria-label");
 }
 
-var temp__5821__auto___22197 = new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___22197)){
-var v_22198 = temp__5821__auto___22197;
-app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-labelledby",v_22198);
+var temp__5821__auto___22130 = new cljs.core.Keyword(null,"aria-labelledby","aria-labelledby",1817118667).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___22130)){
+var v_22131 = temp__5821__auto___22130;
+app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-labelledby",v_22131);
 } else {
 app.components.x_checkbox.x_checkbox.remove_attr_BANG_(control_el,"aria-labelledby");
 }
 
-var temp__5821__auto___22200 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
-if(cljs.core.truth_(temp__5821__auto___22200)){
-var v_22202 = temp__5821__auto___22200;
-app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-describedby",v_22202);
+var temp__5821__auto___22132 = new cljs.core.Keyword(null,"aria-describedby","aria-describedby",1826540471).cljs$core$IFn$_invoke$arity$1(m);
+if(cljs.core.truth_(temp__5821__auto___22132)){
+var v_22133 = temp__5821__auto___22132;
+app.components.x_checkbox.x_checkbox.set_attr_BANG_(control_el,"aria-describedby",v_22133);
 } else {
 app.components.x_checkbox.x_checkbox.remove_attr_BANG_(control_el,"aria-describedby");
 }
@@ -244,10 +244,10 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(el,app.components.x_checkbox.x_checkbox.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var control_el_22209 = app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(refs,"control");
-control_el_22209.removeEventListener("click",app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(handlers,"click"));
+var control_el_22134 = app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(refs,"control");
+control_el_22134.removeEventListener("click",app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(handlers,"click"));
 
-control_el_22209.removeEventListener("keydown",app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(handlers,"keydown"));
+control_el_22134.removeEventListener("keydown",app.components.x_checkbox.x_checkbox.goog$module$goog$object.get(handlers,"keydown"));
 
 return app.components.x_checkbox.x_checkbox.goog$module$goog$object.set(el,app.components.x_checkbox.x_checkbox.k_handlers,null);
 } else {

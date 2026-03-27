@@ -35,13 +35,13 @@ return cljs.core.max.cljs$core$IFn$_invoke$arity$2(lo,cljs.core.min.cljs$core$IF
 /**
  * Derives a complete view-model map from raw attribute presence/values.
  */
-app.components.x_collapse.model.normalize = (function app$components$x_collapse$model$normalize(p__22221){
-var map__22222 = p__22221;
-var map__22222__$1 = cljs.core.__destructure_map(map__22222);
-var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22222__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22222__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var header_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22222__$1,new cljs.core.Keyword(null,"header-raw","header-raw",41484));
-var duration_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22222__$1,new cljs.core.Keyword(null,"duration-ms-raw","duration-ms-raw",-2138819526));
+app.components.x_collapse.model.normalize = (function app$components$x_collapse$model$normalize(p__22144){
+var map__22145 = p__22144;
+var map__22145__$1 = cljs.core.__destructure_map(map__22145);
+var open_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22145__$1,new cljs.core.Keyword(null,"open-present?","open-present?",965047899));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22145__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var header_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22145__$1,new cljs.core.Keyword(null,"header-raw","header-raw",41484));
+var duration_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22145__$1,new cljs.core.Keyword(null,"duration-ms-raw","duration-ms-raw",-2138819526));
 var open_QMARK_ = cljs.core.boolean$(open_present_QMARK_);
 var disabled_QMARK_ = cljs.core.boolean$(disabled_present_QMARK_);
 var header = (function (){var or__5142__auto__ = header_raw;

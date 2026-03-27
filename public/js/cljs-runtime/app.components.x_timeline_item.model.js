@@ -160,21 +160,21 @@ return (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(index_str)+cljs.core.str.
  *  :marker-icon       string | nil
  *  :marker-aria       string
  */
-app.components.x_timeline_item.model.normalize = (function app$components$x_timeline_item$model$normalize(p__23287){
-var map__23289 = p__23287;
-var map__23289__$1 = cljs.core.__destructure_map(map__23289);
-var data_index_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"data-index-raw","data-index-raw",491574874));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
-var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
-var data_striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"data-striped?","data-striped?",906911587));
-var connector_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"connector-raw","connector-raw",106333796));
-var data_position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"data-position-raw","data-position-raw",256144356));
-var status_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"status-raw","status-raw",-2121061147));
-var data_last_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"data-last?","data-last?",-1110326839));
-var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
-var title_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"title-raw","title-raw",976469452));
-var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23289__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
+app.components.x_timeline_item.model.normalize = (function app$components$x_timeline_item$model$normalize(p__23334){
+var map__23337 = p__23334;
+var map__23337__$1 = cljs.core.__destructure_map(map__23337);
+var data_index_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"data-index-raw","data-index-raw",491574874));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"position-raw","position-raw",248130625));
+var label_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"label-raw","label-raw",-83844350));
+var data_striped_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"data-striped?","data-striped?",906911587));
+var connector_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"connector-raw","connector-raw",106333796));
+var data_position_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"data-position-raw","data-position-raw",256144356));
+var status_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"status-raw","status-raw",-2121061147));
+var data_last_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"data-last?","data-last?",-1110326839));
+var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
+var title_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"title-raw","title-raw",976469452));
+var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23337__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
 var status = app.components.x_timeline_item.model.parse_status(status_raw);
 var icon_STAR_ = app.components.x_timeline_item.model.normalize_icon(icon_raw);
 var icon_mode = (cljs.core.truth_((function (){var and__5140__auto__ = icon_present_QMARK_;
@@ -185,9 +185,9 @@ return and__5140__auto__;
 }
 })())?new cljs.core.Keyword(null,"hidden","hidden",-312506092):(((!((icon_STAR_ == null))))?new cljs.core.Keyword(null,"custom","custom",340151948):new cljs.core.Keyword(null,"default","default",-1987822328)
 ));
-var marker_icon = (function (){var G__23302 = icon_mode;
-var G__23302__$1 = (((G__23302 instanceof cljs.core.Keyword))?G__23302.fqn:null);
-switch (G__23302__$1) {
+var marker_icon = (function (){var G__23347 = icon_mode;
+var G__23347__$1 = (((G__23347 instanceof cljs.core.Keyword))?G__23347.fqn:null);
+switch (G__23347__$1) {
 case "default":
 return app.components.x_timeline_item.model.icon_for_status(status);
 
@@ -201,7 +201,7 @@ return null;
 
 break;
 default:
-throw (new Error((""+"No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(G__23302__$1))));
+throw (new Error((""+"No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(G__23347__$1))));
 
 }
 })();
@@ -226,42 +226,42 @@ return cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"conne
 /**
  * Return true when the item can receive click/keyboard interactions.
  */
-app.components.x_timeline_item.model.interactive_eligible_QMARK_ = (function app$components$x_timeline_item$model$interactive_eligible_QMARK_(p__23316){
-var map__23317 = p__23316;
-var map__23317__$1 = cljs.core.__destructure_map(map__23317);
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23317__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_timeline_item.model.interactive_eligible_QMARK_ = (function app$components$x_timeline_item$model$interactive_eligible_QMARK_(p__23352){
+var map__23353 = p__23352;
+var map__23353__$1 = cljs.core.__destructure_map(map__23353);
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23353__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 return cljs.core.not(disabled_QMARK_);
 });
 /**
  * Build the event detail map for an x-timeline-item-connected event.
  */
-app.components.x_timeline_item.model.connected_detail = (function app$components$x_timeline_item$model$connected_detail(p__23323){
-var map__23324 = p__23323;
-var map__23324__$1 = cljs.core.__destructure_map(map__23324);
-var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23324__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23324__$1,new cljs.core.Keyword(null,"label","label",1718410804));
-var effective_position = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23324__$1,new cljs.core.Keyword(null,"effective-position","effective-position",840072317));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23324__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_timeline_item.model.connected_detail = (function app$components$x_timeline_item$model$connected_detail(p__23354){
+var map__23356 = p__23354;
+var map__23356__$1 = cljs.core.__destructure_map(map__23356);
+var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23356__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23356__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+var effective_position = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23356__$1,new cljs.core.Keyword(null,"effective-position","effective-position",840072317));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23356__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"status","status",-1997798413),app.components.x_timeline_item.model.status__GT_attr(status),new cljs.core.Keyword(null,"label","label",1718410804),label,new cljs.core.Keyword(null,"position","position",-2011731912),cljs.core.name(effective_position),new cljs.core.Keyword(null,"disabled","disabled",-1529784218),cljs.core.boolean$(disabled_QMARK_)], null);
 });
 /**
  * Build the event detail map for an x-timeline-item-disconnected event.
  */
-app.components.x_timeline_item.model.disconnected_detail = (function app$components$x_timeline_item$model$disconnected_detail(p__23335){
-var map__23336 = p__23335;
-var map__23336__$1 = cljs.core.__destructure_map(map__23336);
-var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23336__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23336__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_timeline_item.model.disconnected_detail = (function app$components$x_timeline_item$model$disconnected_detail(p__23360){
+var map__23361 = p__23360;
+var map__23361__$1 = cljs.core.__destructure_map(map__23361);
+var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23361__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23361__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"status","status",-1997798413),app.components.x_timeline_item.model.status__GT_attr(status),new cljs.core.Keyword(null,"label","label",1718410804),label], null);
 });
 /**
  * Build the event detail map for an x-timeline-item-click event.
  */
-app.components.x_timeline_item.model.click_detail = (function app$components$x_timeline_item$model$click_detail(p__23340){
-var map__23341 = p__23340;
-var map__23341__$1 = cljs.core.__destructure_map(map__23341);
-var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23341__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23341__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_timeline_item.model.click_detail = (function app$components$x_timeline_item$model$click_detail(p__23363){
+var map__23364 = p__23363;
+var map__23364__$1 = cljs.core.__destructure_map(map__23364);
+var status = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23364__$1,new cljs.core.Keyword(null,"status","status",-1997798413));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23364__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"status","status",-1997798413),app.components.x_timeline_item.model.status__GT_attr(status),new cljs.core.Keyword(null,"label","label",1718410804),label], null);
 });
 

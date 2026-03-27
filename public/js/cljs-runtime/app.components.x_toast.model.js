@@ -136,18 +136,18 @@ return cljs.core.get.cljs$core$IFn$_invoke$arity$2(app.components.x_toast.model.
  *  :timeout-ms     int | nil
  *  :show-progress? boolean
  */
-app.components.x_toast.model.normalize = (function app$components$x_toast$model$normalize(p__23377){
-var map__23378 = p__23377;
-var map__23378__$1 = cljs.core.__destructure_map(map__23378);
-var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"message","message",-406056002));
-var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
-var dismissible_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"dismissible-attr","dismissible-attr",-2012325753));
-var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
-var timeout_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"timeout-ms-raw","timeout-ms-raw",-1969949623));
-var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
-var show_progress_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"show-progress-attr","show-progress-attr",1680262066));
-var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
-var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23378__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
+app.components.x_toast.model.normalize = (function app$components$x_toast$model$normalize(p__23451){
+var map__23453 = p__23451;
+var map__23453__$1 = cljs.core.__destructure_map(map__23453);
+var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"message","message",-406056002));
+var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
+var dismissible_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"dismissible-attr","dismissible-attr",-2012325753));
+var disabled_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"disabled-present?","disabled-present?",-1165473496));
+var timeout_ms_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"timeout-ms-raw","timeout-ms-raw",-1969949623));
+var icon_present_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"icon-present?","icon-present?",2040576778));
+var show_progress_attr = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"show-progress-attr","show-progress-attr",1680262066));
+var type_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"type-raw","type-raw",-967209994));
+var icon_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23453__$1,new cljs.core.Keyword(null,"icon-raw","icon-raw",480816214));
 var t = app.components.x_toast.model.parse_type(type_raw);
 var icon_STAR_ = app.components.x_toast.model.normalize_icon(icon_raw);
 var icon_mode = (cljs.core.truth_((function (){var and__5140__auto__ = icon_present_QMARK_;
@@ -175,11 +175,11 @@ return "";
 /**
  * Return true when the toast can currently be dismissed (dismissible and not disabled).
  */
-app.components.x_toast.model.dismiss_eligible_QMARK_ = (function app$components$x_toast$model$dismiss_eligible_QMARK_(p__23379){
-var map__23380 = p__23379;
-var map__23380__$1 = cljs.core.__destructure_map(map__23380);
-var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23380__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23380__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+app.components.x_toast.model.dismiss_eligible_QMARK_ = (function app$components$x_toast$model$dismiss_eligible_QMARK_(p__23476){
+var map__23477 = p__23476;
+var map__23477__$1 = cljs.core.__destructure_map(map__23477);
+var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23477__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23477__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
 var and__5140__auto__ = dismissible_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return cljs.core.not(disabled_QMARK_);
@@ -190,22 +190,22 @@ return and__5140__auto__;
 /**
  * Build the event detail map for an x-toast-dismiss event.
  */
-app.components.x_toast.model.dismiss_detail = (function app$components$x_toast$model$dismiss_detail(p__23381,reason){
-var map__23382 = p__23381;
-var map__23382__$1 = cljs.core.__destructure_map(map__23382);
-var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23382__$1,new cljs.core.Keyword(null,"type","type",1174270348));
-var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23382__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
-var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23382__$1,new cljs.core.Keyword(null,"message","message",-406056002));
+app.components.x_toast.model.dismiss_detail = (function app$components$x_toast$model$dismiss_detail(p__23480,reason){
+var map__23481 = p__23480;
+var map__23481__$1 = cljs.core.__destructure_map(map__23481);
+var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23481__$1,new cljs.core.Keyword(null,"type","type",1174270348));
+var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23481__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
+var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23481__$1,new cljs.core.Keyword(null,"message","message",-406056002));
 return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"type","type",1174270348),app.components.x_toast.model.type__GT_attr(type),new cljs.core.Keyword(null,"reason","reason",-2070751759),reason,new cljs.core.Keyword(null,"heading","heading",-1312171873),heading,new cljs.core.Keyword(null,"message","message",-406056002),message], null);
 });
 /**
  * Return true when both show-progress is set and timeout-ms is a valid positive integer.
  */
-app.components.x_toast.model.progress_eligible_QMARK_ = (function app$components$x_toast$model$progress_eligible_QMARK_(p__23400){
-var map__23401 = p__23400;
-var map__23401__$1 = cljs.core.__destructure_map(map__23401);
-var show_progress_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23401__$1,new cljs.core.Keyword(null,"show-progress?","show-progress?",-1681518912));
-var timeout_ms = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23401__$1,new cljs.core.Keyword(null,"timeout-ms","timeout-ms",754221406));
+app.components.x_toast.model.progress_eligible_QMARK_ = (function app$components$x_toast$model$progress_eligible_QMARK_(p__23484){
+var map__23485 = p__23484;
+var map__23485__$1 = cljs.core.__destructure_map(map__23485);
+var show_progress_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23485__$1,new cljs.core.Keyword(null,"show-progress?","show-progress?",-1681518912));
+var timeout_ms = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23485__$1,new cljs.core.Keyword(null,"timeout-ms","timeout-ms",754221406));
 return cljs.core.boolean$((function (){var and__5140__auto__ = show_progress_QMARK_;
 if(cljs.core.truth_(and__5140__auto__)){
 return (((!((timeout_ms == null)))) && ((timeout_ms > (0))));

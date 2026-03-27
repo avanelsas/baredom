@@ -118,29 +118,29 @@ return null;
 });
 });
 app.components.x_file_download.x_file_download.add_listeners_BANG_ = (function app$components$x_file_download$x_file_download$add_listeners_BANG_(el){
-var refs_22685 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_refs);
-var anchor_22686 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(refs_22685,"anchor-el");
-var click_h_22687 = app.components.x_file_download.x_file_download.make_click_handler(el);
-anchor_22686.addEventListener("click",click_h_22687);
+var refs_22657 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_refs);
+var anchor_22658 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(refs_22657,"anchor-el");
+var click_h_22659 = app.components.x_file_download.x_file_download.make_click_handler(el);
+anchor_22658.addEventListener("click",click_h_22659);
 
-app.components.x_file_download.x_file_download.goog$module$goog$object.set(el,app.components.x_file_download.x_file_download.k_handlers,({"click": click_h_22687}));
+app.components.x_file_download.x_file_download.goog$module$goog$object.set(el,app.components.x_file_download.x_file_download.k_handlers,({"click": click_h_22659}));
 
 return null;
 });
 app.components.x_file_download.x_file_download.remove_listeners_BANG_ = (function app$components$x_file_download$x_file_download$remove_listeners_BANG_(el){
-var hs_22688 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_handlers);
-var refs_22689 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_refs);
-if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22688;
+var hs_22660 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_handlers);
+var refs_22661 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(el,app.components.x_file_download.x_file_download.k_refs);
+if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22660;
 if(cljs.core.truth_(and__5140__auto__)){
-return refs_22689;
+return refs_22661;
 } else {
 return and__5140__auto__;
 }
 })())){
-var anchor_22690 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(refs_22689,"anchor-el");
-var click_h_22691 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(hs_22688,"click");
-if(cljs.core.truth_(click_h_22691)){
-anchor_22690.removeEventListener("click",click_h_22691);
+var anchor_22662 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(refs_22661,"anchor-el");
+var click_h_22663 = app.components.x_file_download.x_file_download.goog$module$goog$object.get(hs_22660,"click");
+if(cljs.core.truth_(click_h_22663)){
+anchor_22662.removeEventListener("click",click_h_22663);
 } else {
 }
 } else {

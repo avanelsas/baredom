@@ -49,12 +49,12 @@ return app.components.x_spacer.model.default_size;
  *  :axis   string   — 'vertical' | 'horizontal'
  *  :grow?  boolean  — true when grow attribute is present
  */
-app.components.x_spacer.model.normalize = (function app$components$x_spacer$model$normalize(p__23066){
-var map__23067 = p__23066;
-var map__23067__$1 = cljs.core.__destructure_map(map__23067);
-var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23067__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
-var axis_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23067__$1,new cljs.core.Keyword(null,"axis-raw","axis-raw",291213231));
-var grow_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23067__$1,new cljs.core.Keyword(null,"grow-raw","grow-raw",441172903));
+app.components.x_spacer.model.normalize = (function app$components$x_spacer$model$normalize(p__23093){
+var map__23094 = p__23093;
+var map__23094__$1 = cljs.core.__destructure_map(map__23094);
+var size_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23094__$1,new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423));
+var axis_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23094__$1,new cljs.core.Keyword(null,"axis-raw","axis-raw",291213231));
+var grow_raw = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23094__$1,new cljs.core.Keyword(null,"grow-raw","grow-raw",441172903));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_spacer.model.parse_size(size_raw),new cljs.core.Keyword(null,"axis","axis",-1215390822),app.components.x_spacer.model.parse_axis(axis_raw),new cljs.core.Keyword(null,"grow?","grow?",2124334580),app.components.x_spacer.model.parse_grow(grow_raw)], null);
 });
 app.components.x_spacer.model.property_api = new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size","size",1098693007),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"axis","axis",-1215390822),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"string","string",-349010059,null)], null),new cljs.core.Keyword(null,"grow","grow",-524118895),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Symbol(null,"boolean","boolean",-278886877,null)], null)], null);

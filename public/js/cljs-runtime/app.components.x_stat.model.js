@@ -60,18 +60,18 @@ return v;
 return null;
 }
 });
-app.components.x_stat.model.derive_state = (function app$components$x_stat$model$derive_state(p__21108){
-var map__21109 = p__21108;
-var map__21109__$1 = cljs.core.__destructure_map(map__21109);
-var emphasis = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"emphasis","emphasis",293543451));
-var trend = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"trend","trend",54563841));
-var align = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"align","align",1964212802));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"value","value",305978217));
-var hint = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"hint","hint",439639918));
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__21109__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_stat.model.derive_state = (function app$components$x_stat$model$derive_state(p__20948){
+var map__20949 = p__20948;
+var map__20949__$1 = cljs.core.__destructure_map(map__20949);
+var emphasis = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"emphasis","emphasis",293543451));
+var trend = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"trend","trend",54563841));
+var align = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"align","align",1964212802));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var value = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"value","value",305978217));
+var hint = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"hint","hint",439639918));
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var loading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"loading","loading",-737050189));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__20949__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 var variant_STAR_ = app.components.x_stat.model.normalize_variant(variant);
 var align_STAR_ = app.components.x_stat.model.normalize_align(align);
 var size_STAR_ = app.components.x_stat.model.normalize_size(size);

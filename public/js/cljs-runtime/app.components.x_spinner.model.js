@@ -53,12 +53,12 @@ return app.components.x_spinner.model.default_label;
  *  :variant string  — valid variant enum value
  *  :label   string  — accessible label text
  */
-app.components.x_spinner.model.derive_state = (function app$components$x_spinner$model$derive_state(p__23096){
-var map__23097 = p__23096;
-var map__23097__$1 = cljs.core.__destructure_map(map__23097);
-var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23097__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23097__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
-var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23097__$1,new cljs.core.Keyword(null,"label","label",1718410804));
+app.components.x_spinner.model.derive_state = (function app$components$x_spinner$model$derive_state(p__23110){
+var map__23111 = p__23110;
+var map__23111__$1 = cljs.core.__destructure_map(map__23111);
+var size = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23111__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var variant = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23111__$1,new cljs.core.Keyword(null,"variant","variant",-424354234));
+var label = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23111__$1,new cljs.core.Keyword(null,"label","label",1718410804));
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size","size",1098693007),app.components.x_spinner.model.normalize_size(size),new cljs.core.Keyword(null,"variant","variant",-424354234),app.components.x_spinner.model.normalize_variant(variant),new cljs.core.Keyword(null,"label","label",1718410804),app.components.x_spinner.model.normalize_label(label)], null);
 });
 

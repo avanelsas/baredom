@@ -13,55 +13,55 @@ app.components.x_modal.x_modal.make_el = (function app$components$x_modal$x_moda
 return document.createElement(tag);
 });
 app.components.x_modal.x_modal.init_dom_BANG_ = (function app$components$x_modal$x_modal$init_dom_BANG_(el){
-var root_22847 = el.attachShadow(({"mode": "open"}));
-var style_22848 = app.components.x_modal.x_modal.make_el("style");
-var backdrop_22849 = app.components.x_modal.x_modal.make_el("div");
-var dialog_22850 = app.components.x_modal.x_modal.make_el("div");
-var header_22851 = app.components.x_modal.x_modal.make_el("div");
-var hslot_22852 = app.components.x_modal.x_modal.make_el("slot");
-var body_22853 = app.components.x_modal.x_modal.make_el("div");
-var bslot_22854 = app.components.x_modal.x_modal.make_el("slot");
-var footer_22855 = app.components.x_modal.x_modal.make_el("div");
-var fslot_22856 = app.components.x_modal.x_modal.make_el("slot");
-(style_22848.textContent = app.components.x_modal.x_modal.style_text);
+var root_22804 = el.attachShadow(({"mode": "open"}));
+var style_22805 = app.components.x_modal.x_modal.make_el("style");
+var backdrop_22806 = app.components.x_modal.x_modal.make_el("div");
+var dialog_22807 = app.components.x_modal.x_modal.make_el("div");
+var header_22808 = app.components.x_modal.x_modal.make_el("div");
+var hslot_22809 = app.components.x_modal.x_modal.make_el("slot");
+var body_22810 = app.components.x_modal.x_modal.make_el("div");
+var bslot_22811 = app.components.x_modal.x_modal.make_el("slot");
+var footer_22812 = app.components.x_modal.x_modal.make_el("div");
+var fslot_22813 = app.components.x_modal.x_modal.make_el("slot");
+(style_22805.textContent = app.components.x_modal.x_modal.style_text);
 
-backdrop_22849.setAttribute("part",app.components.x_modal.model.part_backdrop);
+backdrop_22806.setAttribute("part",app.components.x_modal.model.part_backdrop);
 
-dialog_22850.setAttribute("part",app.components.x_modal.model.part_dialog);
+dialog_22807.setAttribute("part",app.components.x_modal.model.part_dialog);
 
-dialog_22850.setAttribute("role","dialog");
+dialog_22807.setAttribute("role","dialog");
 
-dialog_22850.setAttribute("aria-modal","true");
+dialog_22807.setAttribute("aria-modal","true");
 
-header_22851.setAttribute("part",app.components.x_modal.model.part_header);
+header_22808.setAttribute("part",app.components.x_modal.model.part_header);
 
-hslot_22852.setAttribute("name","header");
+hslot_22809.setAttribute("name","header");
 
-body_22853.setAttribute("part",app.components.x_modal.model.part_body);
+body_22810.setAttribute("part",app.components.x_modal.model.part_body);
 
-footer_22855.setAttribute("part",app.components.x_modal.model.part_footer);
+footer_22812.setAttribute("part",app.components.x_modal.model.part_footer);
 
-fslot_22856.setAttribute("name","footer");
+fslot_22813.setAttribute("name","footer");
 
-header_22851.appendChild(hslot_22852);
+header_22808.appendChild(hslot_22809);
 
-body_22853.appendChild(bslot_22854);
+body_22810.appendChild(bslot_22811);
 
-footer_22855.appendChild(fslot_22856);
+footer_22812.appendChild(fslot_22813);
 
-dialog_22850.appendChild(header_22851);
+dialog_22807.appendChild(header_22808);
 
-dialog_22850.appendChild(body_22853);
+dialog_22807.appendChild(body_22810);
 
-dialog_22850.appendChild(footer_22855);
+dialog_22807.appendChild(footer_22812);
 
-root_22847.appendChild(style_22848);
+root_22804.appendChild(style_22805);
 
-root_22847.appendChild(backdrop_22849);
+root_22804.appendChild(backdrop_22806);
 
-root_22847.appendChild(dialog_22850);
+root_22804.appendChild(dialog_22807);
 
-app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_refs,({"root": root_22847, "backdrop": backdrop_22849, "dialog": dialog_22850, "header": header_22851, "body": body_22853, "footer": footer_22855}));
+app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_refs,({"root": root_22804, "backdrop": backdrop_22806, "dialog": dialog_22807, "header": header_22808, "body": body_22810, "footer": footer_22812}));
 
 return null;
 });
@@ -104,25 +104,25 @@ return children;
 return cljs.core.vec(cljs.core.concat.cljs$core$IFn$_invoke$arity$2(shadow_els,slotted_els));
 });
 app.components.x_modal.x_modal.activate_focus_trap_BANG_ = (function app$components$x_modal$x_modal$activate_focus_trap_BANG_(el){
-var refs_22881 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
-var dialog_22882 = (cljs.core.truth_(refs_22881)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22881,"dialog"):null);
-var tabbables_22883 = (cljs.core.truth_(refs_22881)?app.components.x_modal.x_modal.collect_tabbables(refs_22881):null);
+var refs_22814 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
+var dialog_22815 = (cljs.core.truth_(refs_22814)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22814,"dialog"):null);
+var tabbables_22816 = (cljs.core.truth_(refs_22814)?app.components.x_modal.x_modal.collect_tabbables(refs_22814):null);
 app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_restore,document.activeElement);
 
-app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_tabbables,(cljs.core.truth_(tabbables_22883)?cljs.core.clj__GT_js(tabbables_22883):null));
+app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_tabbables,(cljs.core.truth_(tabbables_22816)?cljs.core.clj__GT_js(tabbables_22816):null));
 
-if(cljs.core.seq(tabbables_22883)){
-cljs.core.first(tabbables_22883).focus();
+if(cljs.core.seq(tabbables_22816)){
+cljs.core.first(tabbables_22816).focus();
 } else {
-if(cljs.core.truth_(dialog_22882)){
-if(cljs.core.truth_(dialog_22882.hasAttribute("tabindex"))){
+if(cljs.core.truth_(dialog_22815)){
+if(cljs.core.truth_(dialog_22815.hasAttribute("tabindex"))){
 } else {
-dialog_22882.setAttribute("tabindex","-1");
+dialog_22815.setAttribute("tabindex","-1");
 
 app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_dialog_tab,true);
 }
 
-dialog_22882.focus();
+dialog_22815.focus();
 } else {
 }
 }
@@ -130,72 +130,72 @@ dialog_22882.focus();
 return null;
 });
 app.components.x_modal.x_modal.deactivate_focus_trap_BANG_ = (function app$components$x_modal$x_modal$deactivate_focus_trap_BANG_(el){
-var refs_22884 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
-var dialog_22885 = (cljs.core.truth_(refs_22884)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22884,"dialog"):null);
-var restore_22886 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_restore);
-var dialog_tab_added_22887 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_dialog_tab) === true;
+var refs_22817 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
+var dialog_22818 = (cljs.core.truth_(refs_22817)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22817,"dialog"):null);
+var restore_22819 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_restore);
+var dialog_tab_added_22820 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_dialog_tab) === true;
 app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_tabbables,null);
 
 app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_restore,null);
 
-if(cljs.core.truth_((function (){var and__5140__auto__ = dialog_22885;
+if(cljs.core.truth_((function (){var and__5140__auto__ = dialog_22818;
 if(cljs.core.truth_(and__5140__auto__)){
-return dialog_tab_added_22887;
+return dialog_tab_added_22820;
 } else {
 return and__5140__auto__;
 }
 })())){
-dialog_22885.removeAttribute("tabindex");
+dialog_22818.removeAttribute("tabindex");
 
 app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_dialog_tab,false);
 } else {
 }
 
-if(cljs.core.truth_((function (){var and__5140__auto__ = restore_22886;
+if(cljs.core.truth_((function (){var and__5140__auto__ = restore_22819;
 if(cljs.core.truth_(and__5140__auto__)){
-return restore_22886.isConnected;
+return restore_22819.isConnected;
 } else {
 return and__5140__auto__;
 }
 })())){
-restore_22886.focus();
+restore_22819.focus();
 } else {
 }
 
 return null;
 });
 app.components.x_modal.x_modal.cycle_focus_BANG_ = (function app$components$x_modal$x_modal$cycle_focus_BANG_(el,e){
-var tabbables_js_22888 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_tabbables);
-var tabbables_22889 = (cljs.core.truth_(tabbables_js_22888)?cljs.core.vec(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(tabbables_js_22888)):cljs.core.PersistentVector.EMPTY);
-var refs_22890 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
-var dialog_22891 = (cljs.core.truth_(refs_22890)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22890,"dialog"):null);
-if(cljs.core.empty_QMARK_(tabbables_22889)){
+var tabbables_js_22821 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_tabbables);
+var tabbables_22822 = (cljs.core.truth_(tabbables_js_22821)?cljs.core.vec(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(tabbables_js_22821)):cljs.core.PersistentVector.EMPTY);
+var refs_22823 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
+var dialog_22824 = (cljs.core.truth_(refs_22823)?app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22823,"dialog"):null);
+if(cljs.core.empty_QMARK_(tabbables_22822)){
 e.preventDefault();
 
-if(cljs.core.truth_(dialog_22891)){
-dialog_22891.focus();
+if(cljs.core.truth_(dialog_22824)){
+dialog_22824.focus();
 } else {
 }
 } else {
-var active_22892 = document.activeElement;
-var first_el_22893 = cljs.core.first(tabbables_22889);
-var last_el_22894 = cljs.core.last(tabbables_22889);
-var shift_QMARK__22895 = e.shiftKey;
-if(cljs.core.truth_((function (){var and__5140__auto__ = shift_QMARK__22895;
+var active_22825 = document.activeElement;
+var first_el_22826 = cljs.core.first(tabbables_22822);
+var last_el_22827 = cljs.core.last(tabbables_22822);
+var shift_QMARK__22828 = e.shiftKey;
+if(cljs.core.truth_((function (){var and__5140__auto__ = shift_QMARK__22828;
 if(cljs.core.truth_(and__5140__auto__)){
-return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22892,first_el_22893);
+return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22825,first_el_22826);
 } else {
 return and__5140__auto__;
 }
 })())){
 e.preventDefault();
 
-last_el_22894.focus();
+last_el_22827.focus();
 } else {
-if(((cljs.core.not(shift_QMARK__22895)) && (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22892,last_el_22894)))){
+if(((cljs.core.not(shift_QMARK__22828)) && (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22825,last_el_22827)))){
 e.preventDefault();
 
-first_el_22893.focus();
+first_el_22826.focus();
 } else {
 
 }
@@ -234,23 +234,23 @@ app.components.x_modal.x_modal.do_show_BANG_(el);
 return null;
 });
 app.components.x_modal.x_modal.render_BANG_ = (function app$components$x_modal$x_modal$render_BANG_(el){
-var refs_22896 = app.components.x_modal.x_modal.ensure_refs_BANG_(el);
-var dialog_22897 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22896,"dialog");
-var m_22898 = app.components.x_modal.x_modal.read_model(el);
-var open_QMARK__22899 = new cljs.core.Keyword(null,"open?","open?",1238443125).cljs$core$IFn$_invoke$arity$1(m_22898);
-var prev_open_22900 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_prev_open);
-el.setAttribute("data-open",(cljs.core.truth_(open_QMARK__22899)?"true":"false"));
+var refs_22829 = app.components.x_modal.x_modal.ensure_refs_BANG_(el);
+var dialog_22830 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22829,"dialog");
+var m_22831 = app.components.x_modal.x_modal.read_model(el);
+var open_QMARK__22832 = new cljs.core.Keyword(null,"open?","open?",1238443125).cljs$core$IFn$_invoke$arity$1(m_22831);
+var prev_open_22833 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_prev_open);
+el.setAttribute("data-open",(cljs.core.truth_(open_QMARK__22832)?"true":"false"));
 
-el.setAttribute("data-size",new cljs.core.Keyword(null,"size","size",1098693007).cljs$core$IFn$_invoke$arity$1(m_22898));
+el.setAttribute("data-size",new cljs.core.Keyword(null,"size","size",1098693007).cljs$core$IFn$_invoke$arity$1(m_22831));
 
-dialog_22897.setAttribute("aria-label",new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(m_22898));
+dialog_22830.setAttribute("aria-label",new cljs.core.Keyword(null,"label","label",1718410804).cljs$core$IFn$_invoke$arity$1(m_22831));
 
-if(cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(prev_open_22900,open_QMARK__22899)){
-app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_prev_open,open_QMARK__22899);
+if(cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(prev_open_22833,open_QMARK__22832)){
+app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_prev_open,open_QMARK__22832);
 
-app.components.x_modal.x_modal.dispatch_BANG_(el,app.components.x_modal.model.event_toggle,app.components.x_modal.model.toggle_event_detail(open_QMARK__22899));
+app.components.x_modal.x_modal.dispatch_BANG_(el,app.components.x_modal.model.event_toggle,app.components.x_modal.model.toggle_event_detail(open_QMARK__22832));
 
-if(cljs.core.truth_(open_QMARK__22899)){
+if(cljs.core.truth_(open_QMARK__22832)){
 setTimeout((function (){
 return app.components.x_modal.x_modal.activate_focus_trap_BANG_(el);
 }),(0));
@@ -263,13 +263,13 @@ app.components.x_modal.x_modal.deactivate_focus_trap_BANG_(el);
 return null;
 });
 app.components.x_modal.x_modal.on_keydown_BANG_ = (function app$components$x_modal$x_modal$on_keydown_BANG_(el,e){
-var key_22903 = e.key;
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22903,"Escape")){
+var key_22837 = e.key;
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22837,"Escape")){
 e.preventDefault();
 
 app.components.x_modal.x_modal.do_dismiss_BANG_(el,app.components.x_modal.model.reason_escape);
 } else {
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22903,"Tab")){
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22837,"Tab")){
 app.components.x_modal.x_modal.cycle_focus_BANG_(el,e);
 } else {
 }
@@ -278,44 +278,44 @@ app.components.x_modal.x_modal.cycle_focus_BANG_(el,e);
 return null;
 });
 app.components.x_modal.x_modal.add_listeners_BANG_ = (function app$components$x_modal$x_modal$add_listeners_BANG_(el){
-var refs_22904 = app.components.x_modal.x_modal.ensure_refs_BANG_(el);
-var backdrop_22905 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22904,"backdrop");
-var dialog_22906 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22904,"dialog");
-var backdrop_h_22907 = (function (_){
+var refs_22840 = app.components.x_modal.x_modal.ensure_refs_BANG_(el);
+var backdrop_22841 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22840,"backdrop");
+var dialog_22842 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22840,"dialog");
+var backdrop_h_22843 = (function (_){
 return app.components.x_modal.x_modal.do_dismiss_BANG_(el,app.components.x_modal.model.reason_backdrop);
 });
-var keydown_h_22908 = (function (e){
+var keydown_h_22844 = (function (e){
 return app.components.x_modal.x_modal.on_keydown_BANG_(el,e);
 });
-backdrop_22905.addEventListener("click",backdrop_h_22907);
+backdrop_22841.addEventListener("click",backdrop_h_22843);
 
-dialog_22906.addEventListener("keydown",keydown_h_22908);
+dialog_22842.addEventListener("keydown",keydown_h_22844);
 
-app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_handlers,({"backdrop": backdrop_h_22907, "keydown": keydown_h_22908}));
+app.components.x_modal.x_modal.goog$module$goog$object.set(el,app.components.x_modal.x_modal.k_handlers,({"backdrop": backdrop_h_22843, "keydown": keydown_h_22844}));
 
 return null;
 });
 app.components.x_modal.x_modal.remove_listeners_BANG_ = (function app$components$x_modal$x_modal$remove_listeners_BANG_(el){
-var hs_22909 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_handlers);
-var refs_22910 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
-if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22909;
+var hs_22854 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_handlers);
+var refs_22855 = app.components.x_modal.x_modal.goog$module$goog$object.get(el,app.components.x_modal.x_modal.k_refs);
+if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22854;
 if(cljs.core.truth_(and__5140__auto__)){
-return refs_22910;
+return refs_22855;
 } else {
 return and__5140__auto__;
 }
 })())){
-var backdrop_22911 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22910,"backdrop");
-var dialog_22912 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22910,"dialog");
-var backdrop_h_22913 = app.components.x_modal.x_modal.goog$module$goog$object.get(hs_22909,"backdrop");
-var keydown_h_22914 = app.components.x_modal.x_modal.goog$module$goog$object.get(hs_22909,"keydown");
-if(cljs.core.truth_(backdrop_h_22913)){
-backdrop_22911.removeEventListener("click",backdrop_h_22913);
+var backdrop_22856 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22855,"backdrop");
+var dialog_22857 = app.components.x_modal.x_modal.goog$module$goog$object.get(refs_22855,"dialog");
+var backdrop_h_22858 = app.components.x_modal.x_modal.goog$module$goog$object.get(hs_22854,"backdrop");
+var keydown_h_22859 = app.components.x_modal.x_modal.goog$module$goog$object.get(hs_22854,"keydown");
+if(cljs.core.truth_(backdrop_h_22858)){
+backdrop_22856.removeEventListener("click",backdrop_h_22858);
 } else {
 }
 
-if(cljs.core.truth_(keydown_h_22914)){
-dialog_22912.removeEventListener("keydown",keydown_h_22914);
+if(cljs.core.truth_(keydown_h_22859)){
+dialog_22857.removeEventListener("keydown",keydown_h_22859);
 } else {
 }
 } else {
@@ -416,27 +416,27 @@ return app.components.x_modal.x_modal.do_toggle_BANG_(this$);
 app.components.x_modal.x_modal.define_element_BANG_ = (function app$components$x_modal$x_modal$define_element_BANG_(){
 if(cljs.core.truth_(customElements.get(app.components.x_modal.model.tag_name))){
 } else {
-var klass_22916 = (class extends HTMLElement {});
-(klass_22916.observedAttributes = app.components.x_modal.model.observed_attributes);
+var klass_22867 = (class extends HTMLElement {});
+(klass_22867.observedAttributes = app.components.x_modal.model.observed_attributes);
 
-(klass_22916.prototype.connectedCallback = (function (){
+(klass_22867.prototype.connectedCallback = (function (){
 var this$ = this;
 return app.components.x_modal.x_modal.connected_BANG_(this$);
 }));
 
-(klass_22916.prototype.disconnectedCallback = (function (){
+(klass_22867.prototype.disconnectedCallback = (function (){
 var this$ = this;
 return app.components.x_modal.x_modal.disconnected_BANG_(this$);
 }));
 
-(klass_22916.prototype.attributeChangedCallback = (function (n,o,v){
+(klass_22867.prototype.attributeChangedCallback = (function (n,o,v){
 var this$ = this;
 return app.components.x_modal.x_modal.attribute_changed_BANG_(this$,n,o,v);
 }));
 
-app.components.x_modal.x_modal.install_properties_BANG_(klass_22916.prototype);
+app.components.x_modal.x_modal.install_properties_BANG_(klass_22867.prototype);
 
-customElements.define(app.components.x_modal.model.tag_name,klass_22916);
+customElements.define(app.components.x_modal.model.tag_name,klass_22867);
 }
 
 return null;

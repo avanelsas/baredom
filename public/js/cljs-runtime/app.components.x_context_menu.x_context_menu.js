@@ -110,11 +110,11 @@ return layer.shadowRoot.querySelector("[part=panel]");
 return null;
 }
 });
-app.components.x_context_menu.x_context_menu.position_layer_BANG_ = (function app$components$x_context_menu$x_context_menu$position_layer_BANG_(layer,x,y,p__22315){
-var map__22316 = p__22315;
-var map__22316__$1 = cljs.core.__destructure_map(map__22316);
-var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22316__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
-var max_height = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22316__$1,new cljs.core.Keyword(null,"max-height","max-height",-612563804));
+app.components.x_context_menu.x_context_menu.position_layer_BANG_ = (function app$components$x_context_menu$x_context_menu$position_layer_BANG_(layer,x,y,p__22414){
+var map__22415 = p__22414;
+var map__22415__$1 = cljs.core.__destructure_map(map__22415);
+var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22415__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
+var max_height = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22415__$1,new cljs.core.Keyword(null,"max-height","max-height",-612563804));
 (layer.style.zIndex = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(z_index)));
 
 var panel = app.components.x_context_menu.x_context_menu.get_panel(layer);
@@ -129,53 +129,53 @@ return null;
 }
 });
 app.components.x_context_menu.x_context_menu.clone_children_to_panel_BANG_ = (function app$components$x_context_menu$x_context_menu$clone_children_to_panel_BANG_(el,panel){
-var seq__22317 = cljs.core.seq(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(el.children));
-var chunk__22318 = null;
-var count__22319 = (0);
-var i__22320 = (0);
+var seq__22416 = cljs.core.seq(cljs.core.array_seq.cljs$core$IFn$_invoke$arity$1(el.children));
+var chunk__22417 = null;
+var count__22418 = (0);
+var i__22419 = (0);
 while(true){
-if((i__22320 < count__22319)){
-var child = chunk__22318.cljs$core$IIndexed$_nth$arity$2(null,i__22320);
+if((i__22419 < count__22418)){
+var child = chunk__22417.cljs$core$IIndexed$_nth$arity$2(null,i__22419);
 panel.appendChild(child.cloneNode(true));
 
 
-var G__22447 = seq__22317;
-var G__22448 = chunk__22318;
-var G__22449 = count__22319;
-var G__22450 = (i__22320 + (1));
-seq__22317 = G__22447;
-chunk__22318 = G__22448;
-count__22319 = G__22449;
-i__22320 = G__22450;
+var G__22468 = seq__22416;
+var G__22469 = chunk__22417;
+var G__22470 = count__22418;
+var G__22471 = (i__22419 + (1));
+seq__22416 = G__22468;
+chunk__22417 = G__22469;
+count__22418 = G__22470;
+i__22419 = G__22471;
 continue;
 } else {
-var temp__5823__auto__ = cljs.core.seq(seq__22317);
+var temp__5823__auto__ = cljs.core.seq(seq__22416);
 if(temp__5823__auto__){
-var seq__22317__$1 = temp__5823__auto__;
-if(cljs.core.chunked_seq_QMARK_(seq__22317__$1)){
-var c__5673__auto__ = cljs.core.chunk_first(seq__22317__$1);
-var G__22451 = cljs.core.chunk_rest(seq__22317__$1);
-var G__22452 = c__5673__auto__;
-var G__22453 = cljs.core.count(c__5673__auto__);
-var G__22454 = (0);
-seq__22317 = G__22451;
-chunk__22318 = G__22452;
-count__22319 = G__22453;
-i__22320 = G__22454;
+var seq__22416__$1 = temp__5823__auto__;
+if(cljs.core.chunked_seq_QMARK_(seq__22416__$1)){
+var c__5673__auto__ = cljs.core.chunk_first(seq__22416__$1);
+var G__22472 = cljs.core.chunk_rest(seq__22416__$1);
+var G__22473 = c__5673__auto__;
+var G__22474 = cljs.core.count(c__5673__auto__);
+var G__22475 = (0);
+seq__22416 = G__22472;
+chunk__22417 = G__22473;
+count__22418 = G__22474;
+i__22419 = G__22475;
 continue;
 } else {
-var child = cljs.core.first(seq__22317__$1);
+var child = cljs.core.first(seq__22416__$1);
 panel.appendChild(child.cloneNode(true));
 
 
-var G__22455 = cljs.core.next(seq__22317__$1);
-var G__22456 = null;
-var G__22457 = (0);
-var G__22458 = (0);
-seq__22317 = G__22455;
-chunk__22318 = G__22456;
-count__22319 = G__22457;
-i__22320 = G__22458;
+var G__22476 = cljs.core.next(seq__22416__$1);
+var G__22477 = null;
+var G__22478 = (0);
+var G__22479 = (0);
+seq__22416 = G__22476;
+chunk__22417 = G__22477;
+count__22418 = G__22478;
+i__22419 = G__22479;
 continue;
 }
 } else {
@@ -302,8 +302,8 @@ var proceed_QMARK_ = app.components.x_context_menu.x_context_menu.dispatch_BANG_
 if(proceed_QMARK_){
 el.removeAttribute(app.components.x_context_menu.model.attr_open);
 
-var layer_22459 = app.components.x_context_menu.x_context_menu.goog$module$goog$object.get(el,app.components.x_context_menu.x_context_menu.k_layer);
-app.components.x_context_menu.x_context_menu.remove_layer_BANG_(layer_22459);
+var layer_22480 = app.components.x_context_menu.x_context_menu.goog$module$goog$object.get(el,app.components.x_context_menu.x_context_menu.k_layer);
+app.components.x_context_menu.x_context_menu.remove_layer_BANG_(layer_22480);
 
 app.components.x_context_menu.x_context_menu.goog$module$goog$object.set(el,app.components.x_context_menu.x_context_menu.k_layer,null);
 
@@ -322,11 +322,11 @@ return null;
 var proceed_QMARK_ = app.components.x_context_menu.x_context_menu.dispatch_BANG_(el,app.components.x_context_menu.model.event_open_request,true,({"reason": reason}));
 if(proceed_QMARK_){
 var m = app.components.x_context_menu.x_context_menu.read_model(el);
-var map__22364 = m;
-var map__22364__$1 = cljs.core.__destructure_map(map__22364);
-var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22364__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
-var offset = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22364__$1,new cljs.core.Keyword(null,"offset","offset",296498311));
-var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22364__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
+var map__22436 = m;
+var map__22436__$1 = cljs.core.__destructure_map(map__22436);
+var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22436__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
+var offset = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22436__$1,new cljs.core.Keyword(null,"offset","offset",296498311));
+var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22436__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
 var vw = window.innerWidth;
 var vh = window.innerHeight;
 var anchor_rect = new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"x","x",2099068185),x,new cljs.core.Keyword(null,"y","y",-1757859776),y,new cljs.core.Keyword(null,"width","width",-384071477),(1),new cljs.core.Keyword(null,"height","height",1025178622),(1)], null);
@@ -346,10 +346,10 @@ app.components.x_context_menu.x_context_menu.goog$module$goog$object.set(el,app.
 requestAnimationFrame((function (){
 var panel = app.components.x_context_menu.x_context_menu.get_panel(layer);
 if(cljs.core.truth_(panel)){
-var pw_22460 = panel.offsetWidth;
-var ph_22461 = panel.offsetHeight;
-var pos2_22462 = app.components.x_context_menu.model.compute_position(placement,offset,anchor_rect,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),pw_22460,new cljs.core.Keyword(null,"height","height",1025178622),ph_22461], null),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),vw,new cljs.core.Keyword(null,"height","height",1025178622),vh], null),(8));
-app.components.x_context_menu.x_context_menu.position_layer_BANG_(layer,new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(pos2_22462),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(pos2_22462),cljs.core.assoc.cljs$core$IFn$_invoke$arity$3(pos2_22462,new cljs.core.Keyword(null,"z-index","z-index",1892827090),z_index));
+var pw_22481 = panel.offsetWidth;
+var ph_22482 = panel.offsetHeight;
+var pos2_22483 = app.components.x_context_menu.model.compute_position(placement,offset,anchor_rect,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),pw_22481,new cljs.core.Keyword(null,"height","height",1025178622),ph_22482], null),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),vw,new cljs.core.Keyword(null,"height","height",1025178622),vh], null),(8));
+app.components.x_context_menu.x_context_menu.position_layer_BANG_(layer,new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(pos2_22483),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(pos2_22483),cljs.core.assoc.cljs$core$IFn$_invoke$arity$3(pos2_22483,new cljs.core.Keyword(null,"z-index","z-index",1892827090),z_index));
 
 return app.components.x_context_menu.x_context_menu.focus_first_BANG_(panel);
 } else {
@@ -366,11 +366,11 @@ return null;
 app.components.x_context_menu.x_context_menu.open_for_element_BANG_ = (function app$components$x_context_menu$x_context_menu$open_for_element_BANG_(el,anchor_el,reason){
 var rect = anchor_el.getBoundingClientRect();
 var m = app.components.x_context_menu.x_context_menu.read_model(el);
-var map__22395 = m;
-var map__22395__$1 = cljs.core.__destructure_map(map__22395);
-var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22395__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
-var offset = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22395__$1,new cljs.core.Keyword(null,"offset","offset",296498311));
-var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22395__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
+var map__22437 = m;
+var map__22437__$1 = cljs.core.__destructure_map(map__22437);
+var placement = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22437__$1,new cljs.core.Keyword(null,"placement","placement",768366651));
+var offset = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22437__$1,new cljs.core.Keyword(null,"offset","offset",296498311));
+var z_index = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22437__$1,new cljs.core.Keyword(null,"z-index","z-index",1892827090));
 var vw = window.innerWidth;
 var vh = window.innerHeight;
 var anchor = new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"x","x",2099068185),rect.left,new cljs.core.Keyword(null,"y","y",-1757859776),rect.top,new cljs.core.Keyword(null,"width","width",-384071477),rect.width,new cljs.core.Keyword(null,"height","height",1025178622),rect.height], null);
@@ -392,10 +392,10 @@ app.components.x_context_menu.x_context_menu.goog$module$goog$object.set(el,app.
 requestAnimationFrame((function (){
 var panel = app.components.x_context_menu.x_context_menu.get_panel(layer);
 if(cljs.core.truth_(panel)){
-var pw_22466 = panel.offsetWidth;
-var ph_22467 = panel.offsetHeight;
-var pos2_22468 = app.components.x_context_menu.model.compute_position(placement,offset,anchor,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),pw_22466,new cljs.core.Keyword(null,"height","height",1025178622),ph_22467], null),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),vw,new cljs.core.Keyword(null,"height","height",1025178622),vh], null),(8));
-app.components.x_context_menu.x_context_menu.position_layer_BANG_(layer,new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(pos2_22468),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(pos2_22468),cljs.core.assoc.cljs$core$IFn$_invoke$arity$3(pos2_22468,new cljs.core.Keyword(null,"z-index","z-index",1892827090),z_index));
+var pw_22486 = panel.offsetWidth;
+var ph_22487 = panel.offsetHeight;
+var pos2_22488 = app.components.x_context_menu.model.compute_position(placement,offset,anchor,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),pw_22486,new cljs.core.Keyword(null,"height","height",1025178622),ph_22487], null),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"width","width",-384071477),vw,new cljs.core.Keyword(null,"height","height",1025178622),vh], null),(8));
+app.components.x_context_menu.x_context_menu.position_layer_BANG_(layer,new cljs.core.Keyword(null,"x","x",2099068185).cljs$core$IFn$_invoke$arity$1(pos2_22488),new cljs.core.Keyword(null,"y","y",-1757859776).cljs$core$IFn$_invoke$arity$1(pos2_22488),cljs.core.assoc.cljs$core$IFn$_invoke$arity$3(pos2_22488,new cljs.core.Keyword(null,"z-index","z-index",1892827090),z_index));
 
 return app.components.x_context_menu.x_context_menu.focus_first_BANG_(panel);
 } else {

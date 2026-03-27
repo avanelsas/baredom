@@ -131,29 +131,29 @@ return el.setAttribute("aria-keyshortcuts","Escape");
 return el.removeAttribute("aria-keyshortcuts");
 }
 });
-app.components.x_toast.x_toast.apply_model_BANG_ = (function app$components$x_toast$x_toast$apply_model_BANG_(el,p__23489){
-var map__23490 = p__23489;
-var map__23490__$1 = cljs.core.__destructure_map(map__23490);
-var m = map__23490__$1;
-var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"type","type",1174270348));
-var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
-var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"message","message",-406056002));
-var icon_mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"icon-mode","icon-mode",-2015012071));
-var icon = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"icon","icon",1679606541));
-var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
-var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
-var timeout_ms = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23490__$1,new cljs.core.Keyword(null,"timeout-ms","timeout-ms",754221406));
-var map__23491_23531 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
-var map__23491_23532__$1 = cljs.core.__destructure_map(map__23491_23531);
-var icon_slot_23533 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"icon-slot","icon-slot",1874301182));
-var heading_el_23534 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"heading-el","heading-el",-1277272161));
-var progress_bar_23535 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"progress-bar","progress-bar",-123877022));
-var default_icon_23536 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"default-icon","default-icon",491415788));
-var message_el_23537 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"message-el","message-el",-683533234));
-var dismiss_btn_23538 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"dismiss-btn","dismiss-btn",-346928));
-var container_23539 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"container","container",-1736937707));
-var progress_el_23540 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"progress-el","progress-el",-184081515));
-var icon_wrap_23541 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23491_23532__$1,new cljs.core.Keyword(null,"icon-wrap","icon-wrap",-438741928));
+app.components.x_toast.x_toast.apply_model_BANG_ = (function app$components$x_toast$x_toast$apply_model_BANG_(el,p__23487){
+var map__23488 = p__23487;
+var map__23488__$1 = cljs.core.__destructure_map(map__23488);
+var m = map__23488__$1;
+var type = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"type","type",1174270348));
+var heading = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"heading","heading",-1312171873));
+var message = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"message","message",-406056002));
+var icon_mode = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"icon-mode","icon-mode",-2015012071));
+var icon = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"icon","icon",1679606541));
+var dismissible_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"dismissible?","dismissible?",1270419178));
+var disabled_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181));
+var timeout_ms = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23488__$1,new cljs.core.Keyword(null,"timeout-ms","timeout-ms",754221406));
+var map__23489_23531 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
+var map__23489_23532__$1 = cljs.core.__destructure_map(map__23489_23531);
+var icon_slot_23533 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"icon-slot","icon-slot",1874301182));
+var heading_el_23534 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"heading-el","heading-el",-1277272161));
+var progress_bar_23535 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"progress-bar","progress-bar",-123877022));
+var default_icon_23536 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"default-icon","default-icon",491415788));
+var message_el_23537 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"message-el","message-el",-683533234));
+var dismiss_btn_23538 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"dismiss-btn","dismiss-btn",-346928));
+var container_23539 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"container","container",-1736937707));
+var progress_el_23540 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"progress-el","progress-el",-184081515));
+var icon_wrap_23541 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23489_23532__$1,new cljs.core.Keyword(null,"icon-wrap","icon-wrap",-438741928));
 var container_23542__$1 = container_23539;
 var icon_wrap_23543__$1 = icon_wrap_23541;
 var icon_slot_23544__$1 = icon_slot_23533;
@@ -386,9 +386,9 @@ var dur_23564 = app.components.x_toast.x_toast.exit_duration_ms(el);
 if((((dur_23564 === (0))) || (app.components.x_toast.x_toast.prefers_reduced_motion_QMARK_()))){
 el.remove();
 } else {
-var map__23498_23565 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
-var map__23498_23566__$1 = cljs.core.__destructure_map(map__23498_23565);
-var container_23567 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23498_23566__$1,new cljs.core.Keyword(null,"container","container",-1736937707));
+var map__23493_23565 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
+var map__23493_23566__$1 = cljs.core.__destructure_map(map__23493_23565);
+var container_23567 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23493_23566__$1,new cljs.core.Keyword(null,"container","container",-1736937707));
 var container_23568__$1 = container_23567;
 var on_end = (function app$components$x_toast$x_toast$start_exit_and_remove_BANG__$_on_end(e){
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(e.target,container_23568__$1)){
@@ -506,9 +506,9 @@ app.components.x_toast.x_toast.dispatch_dismiss_BANG_(el,"keyboard");
 return null;
 });
 app.components.x_toast.x_toast.add_listeners_BANG_ = (function app$components$x_toast$x_toast$add_listeners_BANG_(el){
-var map__23516_23573 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
-var map__23516_23574__$1 = cljs.core.__destructure_map(map__23516_23573);
-var dismiss_btn_23575 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23516_23574__$1,new cljs.core.Keyword(null,"dismiss-btn","dismiss-btn",-346928));
+var map__23497_23573 = app.components.x_toast.x_toast.ensure_refs_BANG_(el);
+var map__23497_23574__$1 = cljs.core.__destructure_map(map__23497_23573);
+var dismiss_btn_23575 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23497_23574__$1,new cljs.core.Keyword(null,"dismiss-btn","dismiss-btn",-346928));
 var dismiss_btn_23576__$1 = dismiss_btn_23575;
 var click_h_23577 = (function (e){
 return app.components.x_toast.x_toast.on_dismiss_click(el,e);

@@ -8,28 +8,28 @@ app.components.x_spacer.x_spacer.make_el = (function app$components$x_spacer$x_s
 return document.createElement(tag);
 });
 app.components.x_spacer.x_spacer.make_shadow_BANG_ = (function app$components$x_spacer$x_spacer$make_shadow_BANG_(el){
-var root_23098 = el.attachShadow(({"mode": "open"}));
-var style_23099 = app.components.x_spacer.x_spacer.make_el("style");
-(style_23099.textContent = app.components.x_spacer.x_spacer.style_text);
+var root_23096 = el.attachShadow(({"mode": "open"}));
+var style_23097 = app.components.x_spacer.x_spacer.make_el("style");
+(style_23097.textContent = app.components.x_spacer.x_spacer.style_text);
 
-root_23098.appendChild(style_23099);
+root_23096.appendChild(style_23097);
 
-app.components.x_spacer.x_spacer.goog$module$goog$object.set(el,app.components.x_spacer.x_spacer.k_refs,({"root": root_23098}));
+app.components.x_spacer.x_spacer.goog$module$goog$object.set(el,app.components.x_spacer.x_spacer.k_refs,({"root": root_23096}));
 
 return null;
 });
 app.components.x_spacer.x_spacer.render_BANG_ = (function app$components$x_spacer$x_spacer$render_BANG_(el){
-var map__23069_23100 = app.components.x_spacer.model.normalize(new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423),el.getAttribute(app.components.x_spacer.model.attr_size),new cljs.core.Keyword(null,"axis-raw","axis-raw",291213231),el.getAttribute(app.components.x_spacer.model.attr_axis),new cljs.core.Keyword(null,"grow-raw","grow-raw",441172903),el.getAttribute(app.components.x_spacer.model.attr_grow)], null));
-var map__23069_23101__$1 = cljs.core.__destructure_map(map__23069_23100);
-var size_23102 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23069_23101__$1,new cljs.core.Keyword(null,"size","size",1098693007));
-var axis_23103 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23069_23101__$1,new cljs.core.Keyword(null,"axis","axis",-1215390822));
-var grow_QMARK__23104 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23069_23101__$1,new cljs.core.Keyword(null,"grow?","grow?",2124334580));
-var style_23105 = el.style;
-el.setAttribute("data-axis",axis_23103);
+var map__23095_23098 = app.components.x_spacer.model.normalize(new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"size-raw","size-raw",-2036217423),el.getAttribute(app.components.x_spacer.model.attr_size),new cljs.core.Keyword(null,"axis-raw","axis-raw",291213231),el.getAttribute(app.components.x_spacer.model.attr_axis),new cljs.core.Keyword(null,"grow-raw","grow-raw",441172903),el.getAttribute(app.components.x_spacer.model.attr_grow)], null));
+var map__23095_23099__$1 = cljs.core.__destructure_map(map__23095_23098);
+var size_23100 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23095_23099__$1,new cljs.core.Keyword(null,"size","size",1098693007));
+var axis_23101 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23095_23099__$1,new cljs.core.Keyword(null,"axis","axis",-1215390822));
+var grow_QMARK__23102 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__23095_23099__$1,new cljs.core.Keyword(null,"grow?","grow?",2124334580));
+var style_23103 = el.style;
+el.setAttribute("data-axis",axis_23101);
 
-el.setAttribute("data-grow",(cljs.core.truth_(grow_QMARK__23104)?"true":"false"));
+el.setAttribute("data-grow",(cljs.core.truth_(grow_QMARK__23102)?"true":"false"));
 
-style_23105.setProperty("--x-spacer-size",size_23102);
+style_23103.setProperty("--x-spacer-size",size_23100);
 
 el.setAttribute("role","none");
 

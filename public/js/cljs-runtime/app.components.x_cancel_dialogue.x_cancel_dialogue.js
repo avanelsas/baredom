@@ -16,81 +16,81 @@ app.components.x_cancel_dialogue.x_cancel_dialogue.make_el = (function app$compo
 return document.createElement(tag);
 });
 app.components.x_cancel_dialogue.x_cancel_dialogue.init_dom_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$init_dom_BANG_(el){
-var headline_id_22084 = app.components.x_cancel_dialogue.x_cancel_dialogue.next_id_BANG_();
-var root_22085 = el.attachShadow(({"mode": "open"}));
-var style_22086 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("style");
-var backdrop_22087 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var dialog_22088 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var panel_22089 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var header_22090 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var headline_22091 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("h2");
-var body_22092 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var body_slot_22093 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("slot");
-var message_el_22094 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("p");
-var actions_22095 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
-var cancel_btn_22096 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("button");
-var confirm_btn_22097 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("button");
-(style_22086.textContent = app.components.x_cancel_dialogue.x_cancel_dialogue.style_text);
+var headline_id_22146 = app.components.x_cancel_dialogue.x_cancel_dialogue.next_id_BANG_();
+var root_22147 = el.attachShadow(({"mode": "open"}));
+var style_22148 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("style");
+var backdrop_22149 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var dialog_22150 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var panel_22151 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var header_22152 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var headline_22153 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("h2");
+var body_22154 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var body_slot_22155 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("slot");
+var message_el_22156 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("p");
+var actions_22157 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("div");
+var cancel_btn_22158 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("button");
+var confirm_btn_22159 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_el("button");
+(style_22148.textContent = app.components.x_cancel_dialogue.x_cancel_dialogue.style_text);
 
-backdrop_22087.setAttribute("part","backdrop");
+backdrop_22149.setAttribute("part","backdrop");
 
-dialog_22088.setAttribute("part","dialog");
+dialog_22150.setAttribute("part","dialog");
 
-dialog_22088.setAttribute("role","dialog");
+dialog_22150.setAttribute("role","dialog");
 
-dialog_22088.setAttribute("aria-modal","true");
+dialog_22150.setAttribute("aria-modal","true");
 
-dialog_22088.setAttribute("aria-labelledby",headline_id_22084);
+dialog_22150.setAttribute("aria-labelledby",headline_id_22146);
 
-panel_22089.setAttribute("part","panel");
+panel_22151.setAttribute("part","panel");
 
-header_22090.setAttribute("part","header");
+header_22152.setAttribute("part","header");
 
-headline_22091.setAttribute("part","headline");
+headline_22153.setAttribute("part","headline");
 
-headline_22091.setAttribute("id",headline_id_22084);
+headline_22153.setAttribute("id",headline_id_22146);
 
-body_22092.setAttribute("part","body");
+body_22154.setAttribute("part","body");
 
-body_slot_22093.setAttribute("name","body");
+body_slot_22155.setAttribute("name","body");
 
-message_el_22094.setAttribute("part","message");
+message_el_22156.setAttribute("part","message");
 
-actions_22095.setAttribute("part","actions");
+actions_22157.setAttribute("part","actions");
 
-cancel_btn_22096.setAttribute("part","cancel-btn");
+cancel_btn_22158.setAttribute("part","cancel-btn");
 
-cancel_btn_22096.setAttribute("type","button");
+cancel_btn_22158.setAttribute("type","button");
 
-confirm_btn_22097.setAttribute("part","confirm-btn");
+confirm_btn_22159.setAttribute("part","confirm-btn");
 
-confirm_btn_22097.setAttribute("type","button");
+confirm_btn_22159.setAttribute("type","button");
 
-header_22090.appendChild(headline_22091);
+header_22152.appendChild(headline_22153);
 
-body_22092.appendChild(body_slot_22093);
+body_22154.appendChild(body_slot_22155);
 
-body_22092.appendChild(message_el_22094);
+body_22154.appendChild(message_el_22156);
 
-actions_22095.appendChild(cancel_btn_22096);
+actions_22157.appendChild(cancel_btn_22158);
 
-actions_22095.appendChild(confirm_btn_22097);
+actions_22157.appendChild(confirm_btn_22159);
 
-panel_22089.appendChild(header_22090);
+panel_22151.appendChild(header_22152);
 
-panel_22089.appendChild(body_22092);
+panel_22151.appendChild(body_22154);
 
-panel_22089.appendChild(actions_22095);
+panel_22151.appendChild(actions_22157);
 
-dialog_22088.appendChild(panel_22089);
+dialog_22150.appendChild(panel_22151);
 
-root_22085.appendChild(style_22086);
+root_22147.appendChild(style_22148);
 
-root_22085.appendChild(backdrop_22087);
+root_22147.appendChild(backdrop_22149);
 
-root_22085.appendChild(dialog_22088);
+root_22147.appendChild(dialog_22150);
 
-app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.set(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs,({"headline": headline_22091, "confirmBtn": confirm_btn_22097, "panel": panel_22089, "bodySlot": body_slot_22093, "root": root_22085, "dialog": dialog_22088, "backdrop": backdrop_22087, "cancelBtn": cancel_btn_22096, "message": message_el_22094}));
+app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.set(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs,({"headline": headline_22153, "confirmBtn": confirm_btn_22159, "panel": panel_22151, "bodySlot": body_slot_22155, "root": root_22147, "dialog": dialog_22150, "backdrop": backdrop_22149, "cancelBtn": cancel_btn_22158, "message": message_el_22156}));
 
 return null;
 });
@@ -119,10 +119,10 @@ if(cljs.core.truth_(el.hasAttribute(app.components.x_cancel_dialogue.model.attr_
 el.setAttribute(app.components.x_cancel_dialogue.model.attr_open,"");
 }
 
-var refs_22103 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
-var confirm_22104 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22103,"confirmBtn");
+var refs_22160 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
+var confirm_22161 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22160,"confirmBtn");
 setTimeout((function (){
-return confirm_22104.focus();
+return confirm_22161.focus();
 }),(0));
 
 return null;
@@ -135,8 +135,8 @@ return null;
 app.components.x_cancel_dialogue.x_cancel_dialogue.do_cancel_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$do_cancel_BANG_(el,reason){
 if(cljs.core.truth_(el.hasAttribute(app.components.x_cancel_dialogue.model.attr_disabled))){
 } else {
-var req_ev_22105 = app.components.x_cancel_dialogue.x_cancel_dialogue.dispatch_BANG_(el,app.components.x_cancel_dialogue.model.event_cancel_request,app.components.x_cancel_dialogue.model.cancel_request_detail(reason),true);
-if(cljs.core.truth_(req_ev_22105.defaultPrevented)){
+var req_ev_22162 = app.components.x_cancel_dialogue.x_cancel_dialogue.dispatch_BANG_(el,app.components.x_cancel_dialogue.model.event_cancel_request,app.components.x_cancel_dialogue.model.cancel_request_detail(reason),true);
+if(cljs.core.truth_(req_ev_22162.defaultPrevented)){
 } else {
 app.components.x_cancel_dialogue.x_cancel_dialogue.do_close_BANG_(el);
 
@@ -149,8 +149,8 @@ return null;
 app.components.x_cancel_dialogue.x_cancel_dialogue.do_confirm_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$do_confirm_BANG_(el){
 if(cljs.core.truth_(el.hasAttribute(app.components.x_cancel_dialogue.model.attr_disabled))){
 } else {
-var req_ev_22106 = app.components.x_cancel_dialogue.x_cancel_dialogue.dispatch_BANG_(el,app.components.x_cancel_dialogue.model.event_confirm_request,app.components.x_cancel_dialogue.model.confirm_request_detail(),true);
-if(cljs.core.truth_(req_ev_22106.defaultPrevented)){
+var req_ev_22164 = app.components.x_cancel_dialogue.x_cancel_dialogue.dispatch_BANG_(el,app.components.x_cancel_dialogue.model.event_confirm_request,app.components.x_cancel_dialogue.model.confirm_request_detail(),true);
+if(cljs.core.truth_(req_ev_22164.defaultPrevented)){
 } else {
 app.components.x_cancel_dialogue.x_cancel_dialogue.do_close_BANG_(el);
 
@@ -161,33 +161,33 @@ app.components.x_cancel_dialogue.x_cancel_dialogue.dispatch_BANG_(el,app.compone
 return null;
 });
 app.components.x_cancel_dialogue.x_cancel_dialogue.on_keydown = (function app$components$x_cancel_dialogue$x_cancel_dialogue$on_keydown(el,e){
-var key_22107 = e.key;
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22107,"Escape")){
+var key_22165 = e.key;
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22165,"Escape")){
 e.preventDefault();
 
 app.components.x_cancel_dialogue.x_cancel_dialogue.do_cancel_BANG_(el,"escape");
 } else {
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22107,"Tab")){
-var refs_22108 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
-var cancel_22109 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22108,"cancelBtn");
-var confirm_22110 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22108,"confirmBtn");
-var shift_QMARK__22111 = e.shiftKey;
-var active_22112 = el.shadowRoot.activeElement;
-if(cljs.core.truth_((function (){var and__5140__auto__ = shift_QMARK__22111;
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(key_22165,"Tab")){
+var refs_22193 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
+var cancel_22194 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22193,"cancelBtn");
+var confirm_22195 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22193,"confirmBtn");
+var shift_QMARK__22196 = e.shiftKey;
+var active_22197 = el.shadowRoot.activeElement;
+if(cljs.core.truth_((function (){var and__5140__auto__ = shift_QMARK__22196;
 if(cljs.core.truth_(and__5140__auto__)){
-return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22112,cancel_22109);
+return cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22197,cancel_22194);
 } else {
 return and__5140__auto__;
 }
 })())){
 e.preventDefault();
 
-confirm_22110.focus();
+confirm_22195.focus();
 } else {
-if(((cljs.core.not(shift_QMARK__22111)) && (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22112,confirm_22110)))){
+if(((cljs.core.not(shift_QMARK__22196)) && (cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(active_22197,confirm_22195)))){
 e.preventDefault();
 
-cancel_22109.focus();
+cancel_22194.focus();
 } else {
 }
 }
@@ -198,108 +198,108 @@ cancel_22109.focus();
 return null;
 });
 app.components.x_cancel_dialogue.x_cancel_dialogue.render_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$render_BANG_(el){
-var refs_22113 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
-var headline_22114 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22113,"headline");
-var message_22115 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22113,"message");
-var cancel_22116 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22113,"cancelBtn");
-var confirm_22117 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22113,"confirmBtn");
-var m_22118 = app.components.x_cancel_dialogue.x_cancel_dialogue.read_model(el);
-(headline_22114.textContent = new cljs.core.Keyword(null,"headline","headline",-157157727).cljs$core$IFn$_invoke$arity$1(m_22118));
+var refs_22198 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
+var headline_22199 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22198,"headline");
+var message_22200 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22198,"message");
+var cancel_22201 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22198,"cancelBtn");
+var confirm_22202 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22198,"confirmBtn");
+var m_22203 = app.components.x_cancel_dialogue.x_cancel_dialogue.read_model(el);
+(headline_22199.textContent = new cljs.core.Keyword(null,"headline","headline",-157157727).cljs$core$IFn$_invoke$arity$1(m_22203));
 
-(cancel_22116.textContent = new cljs.core.Keyword(null,"cancel-text","cancel-text",1885137831).cljs$core$IFn$_invoke$arity$1(m_22118));
+(cancel_22201.textContent = new cljs.core.Keyword(null,"cancel-text","cancel-text",1885137831).cljs$core$IFn$_invoke$arity$1(m_22203));
 
-(confirm_22117.textContent = new cljs.core.Keyword(null,"confirm-text","confirm-text",-1839494031).cljs$core$IFn$_invoke$arity$1(m_22118));
+(confirm_22202.textContent = new cljs.core.Keyword(null,"confirm-text","confirm-text",-1839494031).cljs$core$IFn$_invoke$arity$1(m_22203));
 
-if(cljs.core.truth_(new cljs.core.Keyword(null,"message","message",-406056002).cljs$core$IFn$_invoke$arity$1(m_22118))){
-(message_22115.textContent = new cljs.core.Keyword(null,"message","message",-406056002).cljs$core$IFn$_invoke$arity$1(m_22118));
+if(cljs.core.truth_(new cljs.core.Keyword(null,"message","message",-406056002).cljs$core$IFn$_invoke$arity$1(m_22203))){
+(message_22200.textContent = new cljs.core.Keyword(null,"message","message",-406056002).cljs$core$IFn$_invoke$arity$1(m_22203));
 
-(message_22115.style.display = "block");
+(message_22200.style.display = "block");
 } else {
-(message_22115.textContent = "");
+(message_22200.textContent = "");
 
-(message_22115.style.display = "none");
+(message_22200.style.display = "none");
 }
 
-if(cljs.core.truth_(new cljs.core.Keyword(null,"danger?","danger?",181682216).cljs$core$IFn$_invoke$arity$1(m_22118))){
-confirm_22117.setAttribute("data-danger","");
+if(cljs.core.truth_(new cljs.core.Keyword(null,"danger?","danger?",181682216).cljs$core$IFn$_invoke$arity$1(m_22203))){
+confirm_22202.setAttribute("data-danger","");
 } else {
-confirm_22117.removeAttribute("data-danger");
+confirm_22202.removeAttribute("data-danger");
 }
 
-(cancel_22116.disabled = cljs.core.boolean$(new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181).cljs$core$IFn$_invoke$arity$1(m_22118)));
+(cancel_22201.disabled = cljs.core.boolean$(new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181).cljs$core$IFn$_invoke$arity$1(m_22203)));
 
-(confirm_22117.disabled = cljs.core.boolean$(new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181).cljs$core$IFn$_invoke$arity$1(m_22118)));
+(confirm_22202.disabled = cljs.core.boolean$(new cljs.core.Keyword(null,"disabled?","disabled?",-1523234181).cljs$core$IFn$_invoke$arity$1(m_22203)));
 
-var dialog_22119 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22113,"dialog");
-dialog_22119.setAttribute("aria-modal","true");
+var dialog_22204 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22198,"dialog");
+dialog_22204.setAttribute("aria-modal","true");
 
 return null;
 });
 app.components.x_cancel_dialogue.x_cancel_dialogue.add_listeners_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$add_listeners_BANG_(el){
-var refs_22120 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
-var backdrop_22121 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22120,"backdrop");
-var cancel_22122 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22120,"cancelBtn");
-var confirm_22123 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22120,"confirmBtn");
-var dialog_22124 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22120,"dialog");
-var backdrop_h_22125 = (function (_){
+var refs_22206 = app.components.x_cancel_dialogue.x_cancel_dialogue.ensure_refs_BANG_(el);
+var backdrop_22207 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22206,"backdrop");
+var cancel_22208 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22206,"cancelBtn");
+var confirm_22209 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22206,"confirmBtn");
+var dialog_22210 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22206,"dialog");
+var backdrop_h_22211 = (function (_){
 return app.components.x_cancel_dialogue.x_cancel_dialogue.do_cancel_BANG_(el,"backdrop");
 });
-var cancel_h_22126 = (function (_){
+var cancel_h_22212 = (function (_){
 return app.components.x_cancel_dialogue.x_cancel_dialogue.do_cancel_BANG_(el,"cancel-button");
 });
-var confirm_h_22127 = (function (_){
+var confirm_h_22213 = (function (_){
 return app.components.x_cancel_dialogue.x_cancel_dialogue.do_confirm_BANG_(el);
 });
-var keydown_h_22128 = (function (e){
+var keydown_h_22214 = (function (e){
 return app.components.x_cancel_dialogue.x_cancel_dialogue.on_keydown(el,e);
 });
-backdrop_22121.addEventListener("click",backdrop_h_22125);
+backdrop_22207.addEventListener("click",backdrop_h_22211);
 
-cancel_22122.addEventListener("click",cancel_h_22126);
+cancel_22208.addEventListener("click",cancel_h_22212);
 
-confirm_22123.addEventListener("click",confirm_h_22127);
+confirm_22209.addEventListener("click",confirm_h_22213);
 
-dialog_22124.addEventListener("keydown",keydown_h_22128);
+dialog_22210.addEventListener("keydown",keydown_h_22214);
 
-app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.set(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_handlers,({"backdrop": backdrop_h_22125, "cancel": cancel_h_22126, "confirm": confirm_h_22127, "keydown": keydown_h_22128}));
+app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.set(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_handlers,({"backdrop": backdrop_h_22211, "cancel": cancel_h_22212, "confirm": confirm_h_22213, "keydown": keydown_h_22214}));
 
 return null;
 });
 app.components.x_cancel_dialogue.x_cancel_dialogue.remove_listeners_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$remove_listeners_BANG_(el){
-var hs_22129 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_handlers);
-var refs_22130 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs);
-if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22129;
+var hs_22215 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_handlers);
+var refs_22216 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs);
+if(cljs.core.truth_((function (){var and__5140__auto__ = hs_22215;
 if(cljs.core.truth_(and__5140__auto__)){
-return refs_22130;
+return refs_22216;
 } else {
 return and__5140__auto__;
 }
 })())){
-var backdrop_22131 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22130,"backdrop");
-var cancel_22132 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22130,"cancelBtn");
-var confirm_22133 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22130,"confirmBtn");
-var dialog_22134 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22130,"dialog");
-var backdrop_h_22135 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22129,"backdrop");
-var cancel_h_22136 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22129,"cancel");
-var confirm_h_22137 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22129,"confirm");
-var keydown_h_22138 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22129,"keydown");
-if(cljs.core.truth_(backdrop_h_22135)){
-backdrop_22131.removeEventListener("click",backdrop_h_22135);
+var backdrop_22217 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22216,"backdrop");
+var cancel_22218 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22216,"cancelBtn");
+var confirm_22219 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22216,"confirmBtn");
+var dialog_22220 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22216,"dialog");
+var backdrop_h_22221 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22215,"backdrop");
+var cancel_h_22222 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22215,"cancel");
+var confirm_h_22223 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22215,"confirm");
+var keydown_h_22224 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(hs_22215,"keydown");
+if(cljs.core.truth_(backdrop_h_22221)){
+backdrop_22217.removeEventListener("click",backdrop_h_22221);
 } else {
 }
 
-if(cljs.core.truth_(cancel_h_22136)){
-cancel_22132.removeEventListener("click",cancel_h_22136);
+if(cljs.core.truth_(cancel_h_22222)){
+cancel_22218.removeEventListener("click",cancel_h_22222);
 } else {
 }
 
-if(cljs.core.truth_(confirm_h_22137)){
-confirm_22133.removeEventListener("click",confirm_h_22137);
+if(cljs.core.truth_(confirm_h_22223)){
+confirm_22219.removeEventListener("click",confirm_h_22223);
 } else {
 }
 
-if(cljs.core.truth_(keydown_h_22138)){
-dialog_22134.removeEventListener("keydown",keydown_h_22138);
+if(cljs.core.truth_(keydown_h_22224)){
+dialog_22220.removeEventListener("keydown",keydown_h_22224);
 } else {
 }
 } else {
@@ -330,11 +330,11 @@ if(cljs.core.not_EQ_.cljs$core$IFn$_invoke$arity$2(old_val,new_val)){
 app.components.x_cancel_dialogue.x_cancel_dialogue.render_BANG_(el);
 
 if(((cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(attr_name,app.components.x_cancel_dialogue.model.attr_open)) && ((((!((new_val == null)))) && ((old_val == null)))))){
-var refs_22139 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs);
-var confirm_22140 = (cljs.core.truth_(refs_22139)?app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22139,"confirmBtn"):null);
-if(cljs.core.truth_(confirm_22140)){
+var refs_22227 = app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(el,app.components.x_cancel_dialogue.x_cancel_dialogue.k_refs);
+var confirm_22228 = (cljs.core.truth_(refs_22227)?app.components.x_cancel_dialogue.x_cancel_dialogue.goog$module$goog$object.get(refs_22227,"confirmBtn"):null);
+if(cljs.core.truth_(confirm_22228)){
 setTimeout((function (){
-return confirm_22140.focus();
+return confirm_22228.focus();
 }),(0));
 } else {
 }
@@ -358,85 +358,85 @@ return app.components.x_cancel_dialogue.x_cancel_dialogue.do_close_BANG_(this$);
 }
 }), "enumerable": true, "configurable": true}));
 
-var seq__22048_22141 = cljs.core.seq(new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["disabled",app.components.x_cancel_dialogue.model.attr_disabled], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["danger",app.components.x_cancel_dialogue.model.attr_danger], null)], null));
-var chunk__22049_22142 = null;
-var count__22050_22143 = (0);
-var i__22051_22144 = (0);
+var seq__22014_22229 = cljs.core.seq(new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["disabled",app.components.x_cancel_dialogue.model.attr_disabled], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["danger",app.components.x_cancel_dialogue.model.attr_danger], null)], null));
+var chunk__22015_22230 = null;
+var count__22016_22231 = (0);
+var i__22017_22232 = (0);
 while(true){
-if((i__22051_22144 < count__22050_22143)){
-var vec__22059_22149 = chunk__22049_22142.cljs$core$IIndexed$_nth$arity$2(null,i__22051_22144);
-var js_prop_22150 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22059_22149,(0),null);
-var attr_name_22151 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22059_22149,(1),null);
-Object.defineProperty(proto,js_prop_22150,({"get": ((function (seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22059_22149,js_prop_22150,attr_name_22151){
+if((i__22017_22232 < count__22016_22231)){
+var vec__22071_22233 = chunk__22015_22230.cljs$core$IIndexed$_nth$arity$2(null,i__22017_22232);
+var js_prop_22234 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22071_22233,(0),null);
+var attr_name_22235 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22071_22233,(1),null);
+Object.defineProperty(proto,js_prop_22234,({"get": ((function (seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22071_22233,js_prop_22234,attr_name_22235){
 return (function (){
 var this$ = this;
-return this$.hasAttribute(attr_name_22151);
-});})(seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22059_22149,js_prop_22150,attr_name_22151))
-, "set": ((function (seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22059_22149,js_prop_22150,attr_name_22151){
+return this$.hasAttribute(attr_name_22235);
+});})(seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22071_22233,js_prop_22234,attr_name_22235))
+, "set": ((function (seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22071_22233,js_prop_22234,attr_name_22235){
 return (function (v){
 var this$ = this;
 if(cljs.core.truth_(v)){
-return this$.setAttribute(attr_name_22151,"");
+return this$.setAttribute(attr_name_22235,"");
 } else {
-return this$.removeAttribute(attr_name_22151);
+return this$.removeAttribute(attr_name_22235);
 }
-});})(seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22059_22149,js_prop_22150,attr_name_22151))
+});})(seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22071_22233,js_prop_22234,attr_name_22235))
 , "enumerable": true, "configurable": true}));
 
 
-var G__22152 = seq__22048_22141;
-var G__22153 = chunk__22049_22142;
-var G__22154 = count__22050_22143;
-var G__22155 = (i__22051_22144 + (1));
-seq__22048_22141 = G__22152;
-chunk__22049_22142 = G__22153;
-count__22050_22143 = G__22154;
-i__22051_22144 = G__22155;
+var G__22236 = seq__22014_22229;
+var G__22237 = chunk__22015_22230;
+var G__22238 = count__22016_22231;
+var G__22239 = (i__22017_22232 + (1));
+seq__22014_22229 = G__22236;
+chunk__22015_22230 = G__22237;
+count__22016_22231 = G__22238;
+i__22017_22232 = G__22239;
 continue;
 } else {
-var temp__5823__auto___22156 = cljs.core.seq(seq__22048_22141);
-if(temp__5823__auto___22156){
-var seq__22048_22157__$1 = temp__5823__auto___22156;
-if(cljs.core.chunked_seq_QMARK_(seq__22048_22157__$1)){
-var c__5673__auto___22158 = cljs.core.chunk_first(seq__22048_22157__$1);
-var G__22159 = cljs.core.chunk_rest(seq__22048_22157__$1);
-var G__22160 = c__5673__auto___22158;
-var G__22161 = cljs.core.count(c__5673__auto___22158);
-var G__22162 = (0);
-seq__22048_22141 = G__22159;
-chunk__22049_22142 = G__22160;
-count__22050_22143 = G__22161;
-i__22051_22144 = G__22162;
+var temp__5823__auto___22240 = cljs.core.seq(seq__22014_22229);
+if(temp__5823__auto___22240){
+var seq__22014_22241__$1 = temp__5823__auto___22240;
+if(cljs.core.chunked_seq_QMARK_(seq__22014_22241__$1)){
+var c__5673__auto___22242 = cljs.core.chunk_first(seq__22014_22241__$1);
+var G__22243 = cljs.core.chunk_rest(seq__22014_22241__$1);
+var G__22244 = c__5673__auto___22242;
+var G__22245 = cljs.core.count(c__5673__auto___22242);
+var G__22246 = (0);
+seq__22014_22229 = G__22243;
+chunk__22015_22230 = G__22244;
+count__22016_22231 = G__22245;
+i__22017_22232 = G__22246;
 continue;
 } else {
-var vec__22062_22163 = cljs.core.first(seq__22048_22157__$1);
-var js_prop_22164 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22062_22163,(0),null);
-var attr_name_22165 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22062_22163,(1),null);
-Object.defineProperty(proto,js_prop_22164,({"get": ((function (seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22062_22163,js_prop_22164,attr_name_22165,seq__22048_22157__$1,temp__5823__auto___22156){
+var vec__22074_22247 = cljs.core.first(seq__22014_22241__$1);
+var js_prop_22248 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22074_22247,(0),null);
+var attr_name_22249 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22074_22247,(1),null);
+Object.defineProperty(proto,js_prop_22248,({"get": ((function (seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22074_22247,js_prop_22248,attr_name_22249,seq__22014_22241__$1,temp__5823__auto___22240){
 return (function (){
 var this$ = this;
-return this$.hasAttribute(attr_name_22165);
-});})(seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22062_22163,js_prop_22164,attr_name_22165,seq__22048_22157__$1,temp__5823__auto___22156))
-, "set": ((function (seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22062_22163,js_prop_22164,attr_name_22165,seq__22048_22157__$1,temp__5823__auto___22156){
+return this$.hasAttribute(attr_name_22249);
+});})(seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22074_22247,js_prop_22248,attr_name_22249,seq__22014_22241__$1,temp__5823__auto___22240))
+, "set": ((function (seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22074_22247,js_prop_22248,attr_name_22249,seq__22014_22241__$1,temp__5823__auto___22240){
 return (function (v){
 var this$ = this;
 if(cljs.core.truth_(v)){
-return this$.setAttribute(attr_name_22165,"");
+return this$.setAttribute(attr_name_22249,"");
 } else {
-return this$.removeAttribute(attr_name_22165);
+return this$.removeAttribute(attr_name_22249);
 }
-});})(seq__22048_22141,chunk__22049_22142,count__22050_22143,i__22051_22144,vec__22062_22163,js_prop_22164,attr_name_22165,seq__22048_22157__$1,temp__5823__auto___22156))
+});})(seq__22014_22229,chunk__22015_22230,count__22016_22231,i__22017_22232,vec__22074_22247,js_prop_22248,attr_name_22249,seq__22014_22241__$1,temp__5823__auto___22240))
 , "enumerable": true, "configurable": true}));
 
 
-var G__22166 = cljs.core.next(seq__22048_22157__$1);
-var G__22167 = null;
-var G__22168 = (0);
-var G__22169 = (0);
-seq__22048_22141 = G__22166;
-chunk__22049_22142 = G__22167;
-count__22050_22143 = G__22168;
-i__22051_22144 = G__22169;
+var G__22251 = cljs.core.next(seq__22014_22241__$1);
+var G__22252 = null;
+var G__22253 = (0);
+var G__22254 = (0);
+seq__22014_22229 = G__22251;
+chunk__22015_22230 = G__22252;
+count__22016_22231 = G__22253;
+i__22017_22232 = G__22254;
 continue;
 }
 } else {
@@ -445,85 +445,85 @@ continue;
 break;
 }
 
-var seq__22065_22170 = cljs.core.seq(new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["headline",app.components.x_cancel_dialogue.model.attr_headline], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["message",app.components.x_cancel_dialogue.model.attr_message], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["confirmText",app.components.x_cancel_dialogue.model.attr_confirm_text], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["cancelText",app.components.x_cancel_dialogue.model.attr_cancel_text], null)], null));
-var chunk__22066_22171 = null;
-var count__22067_22172 = (0);
-var i__22068_22173 = (0);
+var seq__22077_22255 = cljs.core.seq(new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["headline",app.components.x_cancel_dialogue.model.attr_headline], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["message",app.components.x_cancel_dialogue.model.attr_message], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["confirmText",app.components.x_cancel_dialogue.model.attr_confirm_text], null),new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["cancelText",app.components.x_cancel_dialogue.model.attr_cancel_text], null)], null));
+var chunk__22078_22256 = null;
+var count__22079_22257 = (0);
+var i__22080_22258 = (0);
 while(true){
-if((i__22068_22173 < count__22067_22172)){
-var vec__22075_22174 = chunk__22066_22171.cljs$core$IIndexed$_nth$arity$2(null,i__22068_22173);
-var js_prop_22175 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22075_22174,(0),null);
-var attr_name_22176 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22075_22174,(1),null);
-Object.defineProperty(proto,js_prop_22175,({"get": ((function (seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22075_22174,js_prop_22175,attr_name_22176){
+if((i__22080_22258 < count__22079_22257)){
+var vec__22087_22259 = chunk__22078_22256.cljs$core$IIndexed$_nth$arity$2(null,i__22080_22258);
+var js_prop_22260 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22087_22259,(0),null);
+var attr_name_22261 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22087_22259,(1),null);
+Object.defineProperty(proto,js_prop_22260,({"get": ((function (seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22087_22259,js_prop_22260,attr_name_22261){
 return (function (){
 var this$ = this;
-return this$.getAttribute(attr_name_22176);
-});})(seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22075_22174,js_prop_22175,attr_name_22176))
-, "set": ((function (seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22075_22174,js_prop_22175,attr_name_22176){
+return this$.getAttribute(attr_name_22261);
+});})(seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22087_22259,js_prop_22260,attr_name_22261))
+, "set": ((function (seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22087_22259,js_prop_22260,attr_name_22261){
 return (function (v){
 var this$ = this;
 if((v == null)){
-return this$.removeAttribute(attr_name_22176);
+return this$.removeAttribute(attr_name_22261);
 } else {
-return this$.setAttribute(attr_name_22176,(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(v)));
+return this$.setAttribute(attr_name_22261,(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(v)));
 }
-});})(seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22075_22174,js_prop_22175,attr_name_22176))
+});})(seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22087_22259,js_prop_22260,attr_name_22261))
 , "enumerable": true, "configurable": true}));
 
 
-var G__22177 = seq__22065_22170;
-var G__22178 = chunk__22066_22171;
-var G__22179 = count__22067_22172;
-var G__22180 = (i__22068_22173 + (1));
-seq__22065_22170 = G__22177;
-chunk__22066_22171 = G__22178;
-count__22067_22172 = G__22179;
-i__22068_22173 = G__22180;
+var G__22262 = seq__22077_22255;
+var G__22263 = chunk__22078_22256;
+var G__22264 = count__22079_22257;
+var G__22265 = (i__22080_22258 + (1));
+seq__22077_22255 = G__22262;
+chunk__22078_22256 = G__22263;
+count__22079_22257 = G__22264;
+i__22080_22258 = G__22265;
 continue;
 } else {
-var temp__5823__auto___22181 = cljs.core.seq(seq__22065_22170);
-if(temp__5823__auto___22181){
-var seq__22065_22182__$1 = temp__5823__auto___22181;
-if(cljs.core.chunked_seq_QMARK_(seq__22065_22182__$1)){
-var c__5673__auto___22183 = cljs.core.chunk_first(seq__22065_22182__$1);
-var G__22184 = cljs.core.chunk_rest(seq__22065_22182__$1);
-var G__22185 = c__5673__auto___22183;
-var G__22186 = cljs.core.count(c__5673__auto___22183);
-var G__22187 = (0);
-seq__22065_22170 = G__22184;
-chunk__22066_22171 = G__22185;
-count__22067_22172 = G__22186;
-i__22068_22173 = G__22187;
+var temp__5823__auto___22266 = cljs.core.seq(seq__22077_22255);
+if(temp__5823__auto___22266){
+var seq__22077_22267__$1 = temp__5823__auto___22266;
+if(cljs.core.chunked_seq_QMARK_(seq__22077_22267__$1)){
+var c__5673__auto___22268 = cljs.core.chunk_first(seq__22077_22267__$1);
+var G__22269 = cljs.core.chunk_rest(seq__22077_22267__$1);
+var G__22271 = c__5673__auto___22268;
+var G__22272 = cljs.core.count(c__5673__auto___22268);
+var G__22273 = (0);
+seq__22077_22255 = G__22269;
+chunk__22078_22256 = G__22271;
+count__22079_22257 = G__22272;
+i__22080_22258 = G__22273;
 continue;
 } else {
-var vec__22078_22188 = cljs.core.first(seq__22065_22182__$1);
-var js_prop_22189 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22078_22188,(0),null);
-var attr_name_22190 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22078_22188,(1),null);
-Object.defineProperty(proto,js_prop_22189,({"get": ((function (seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22078_22188,js_prop_22189,attr_name_22190,seq__22065_22182__$1,temp__5823__auto___22181){
+var vec__22092_22274 = cljs.core.first(seq__22077_22267__$1);
+var js_prop_22275 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22092_22274,(0),null);
+var attr_name_22276 = cljs.core.nth.cljs$core$IFn$_invoke$arity$3(vec__22092_22274,(1),null);
+Object.defineProperty(proto,js_prop_22275,({"get": ((function (seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22092_22274,js_prop_22275,attr_name_22276,seq__22077_22267__$1,temp__5823__auto___22266){
 return (function (){
 var this$ = this;
-return this$.getAttribute(attr_name_22190);
-});})(seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22078_22188,js_prop_22189,attr_name_22190,seq__22065_22182__$1,temp__5823__auto___22181))
-, "set": ((function (seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22078_22188,js_prop_22189,attr_name_22190,seq__22065_22182__$1,temp__5823__auto___22181){
+return this$.getAttribute(attr_name_22276);
+});})(seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22092_22274,js_prop_22275,attr_name_22276,seq__22077_22267__$1,temp__5823__auto___22266))
+, "set": ((function (seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22092_22274,js_prop_22275,attr_name_22276,seq__22077_22267__$1,temp__5823__auto___22266){
 return (function (v){
 var this$ = this;
 if((v == null)){
-return this$.removeAttribute(attr_name_22190);
+return this$.removeAttribute(attr_name_22276);
 } else {
-return this$.setAttribute(attr_name_22190,(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(v)));
+return this$.setAttribute(attr_name_22276,(""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(v)));
 }
-});})(seq__22065_22170,chunk__22066_22171,count__22067_22172,i__22068_22173,vec__22078_22188,js_prop_22189,attr_name_22190,seq__22065_22182__$1,temp__5823__auto___22181))
+});})(seq__22077_22255,chunk__22078_22256,count__22079_22257,i__22080_22258,vec__22092_22274,js_prop_22275,attr_name_22276,seq__22077_22267__$1,temp__5823__auto___22266))
 , "enumerable": true, "configurable": true}));
 
 
-var G__22191 = cljs.core.next(seq__22065_22182__$1);
-var G__22192 = null;
-var G__22193 = (0);
-var G__22194 = (0);
-seq__22065_22170 = G__22191;
-chunk__22066_22171 = G__22192;
-count__22067_22172 = G__22193;
-i__22068_22173 = G__22194;
+var G__22278 = cljs.core.next(seq__22077_22267__$1);
+var G__22279 = null;
+var G__22280 = (0);
+var G__22281 = (0);
+seq__22077_22255 = G__22278;
+chunk__22078_22256 = G__22279;
+count__22079_22257 = G__22280;
+i__22080_22258 = G__22281;
 continue;
 }
 } else {
@@ -565,34 +565,34 @@ return ctor;
 app.components.x_cancel_dialogue.x_cancel_dialogue.register_BANG_ = (function app$components$x_cancel_dialogue$x_cancel_dialogue$register_BANG_(){
 if(cljs.core.truth_(customElements.get(app.components.x_cancel_dialogue.model.tag_name))){
 } else {
-var proto_22203 = Object.create(HTMLElement.prototype);
-var ctor_22204 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_constructor();
-Object.setPrototypeOf(ctor_22204,HTMLElement);
+var proto_22282 = Object.create(HTMLElement.prototype);
+var ctor_22283 = app.components.x_cancel_dialogue.x_cancel_dialogue.make_constructor();
+Object.setPrototypeOf(ctor_22283,HTMLElement);
 
-(proto_22203["constructor"] = ctor_22204);
+(proto_22282["constructor"] = ctor_22283);
 
-app.components.x_cancel_dialogue.x_cancel_dialogue.install_properties_BANG_(proto_22203);
+app.components.x_cancel_dialogue.x_cancel_dialogue.install_properties_BANG_(proto_22282);
 
-(proto_22203["connectedCallback"] = (function (){
+(proto_22282["connectedCallback"] = (function (){
 var this$ = this;
 return app.components.x_cancel_dialogue.x_cancel_dialogue.connected_BANG_(this$);
 }));
 
-(proto_22203["disconnectedCallback"] = (function (){
+(proto_22282["disconnectedCallback"] = (function (){
 var this$ = this;
 return app.components.x_cancel_dialogue.x_cancel_dialogue.disconnected_BANG_(this$);
 }));
 
-(proto_22203["attributeChangedCallback"] = (function (n,o,v){
+(proto_22282["attributeChangedCallback"] = (function (n,o,v){
 var this$ = this;
 return app.components.x_cancel_dialogue.x_cancel_dialogue.attribute_changed_BANG_(this$,n,o,v);
 }));
 
-(ctor_22204["observedAttributes"] = app.components.x_cancel_dialogue.model.observed_attributes);
+(ctor_22283["observedAttributes"] = app.components.x_cancel_dialogue.model.observed_attributes);
 
-(ctor_22204["prototype"] = proto_22203);
+(ctor_22283["prototype"] = proto_22282);
 
-customElements.define(app.components.x_cancel_dialogue.model.tag_name,ctor_22204);
+customElements.define(app.components.x_cancel_dialogue.model.tag_name,ctor_22283);
 }
 
 return null;

@@ -285,10 +285,10 @@ var refs = temp__5823__auto__;
 var temp__5823__auto____$1 = app.components.x_collapse.x_collapse.goog$module$goog$object.get(el,app.components.x_collapse.x_collapse.k_handlers);
 if(cljs.core.truth_(temp__5823__auto____$1)){
 var handlers = temp__5823__auto____$1;
-var trigger_el_22280 = app.components.x_collapse.x_collapse.goog$module$goog$object.get(refs,"trigger");
-trigger_el_22280.removeEventListener("click",app.components.x_collapse.x_collapse.goog$module$goog$object.get(handlers,"click"));
+var trigger_el_22288 = app.components.x_collapse.x_collapse.goog$module$goog$object.get(refs,"trigger");
+trigger_el_22288.removeEventListener("click",app.components.x_collapse.x_collapse.goog$module$goog$object.get(handlers,"click"));
 
-trigger_el_22280.removeEventListener("keydown",app.components.x_collapse.x_collapse.goog$module$goog$object.get(handlers,"keydown"));
+trigger_el_22288.removeEventListener("keydown",app.components.x_collapse.x_collapse.goog$module$goog$object.get(handlers,"keydown"));
 
 return app.components.x_collapse.x_collapse.goog$module$goog$object.set(el,app.components.x_collapse.x_collapse.k_handlers,null);
 } else {
