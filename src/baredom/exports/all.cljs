@@ -1,0 +1,121 @@
+(ns baredom.exports.all
+  (:require
+   [baredom.exports.x-button :as x-button]
+   [baredom.exports.x-card :as x-card]
+   [baredom.exports.x-container :as x-container]
+   [baredom.exports.x-grid :as x-grid]
+   [baredom.exports.x-navbar :as x-navbar]
+   [baredom.exports.x-sidebar :as x-sidebar]
+   [baredom.exports.x-stat :as x-stat]
+   [baredom.exports.x-tab :as x-tab]
+   [baredom.exports.x-tabs :as x-tabs]
+   [baredom.exports.x-alert        :as x-alert]
+   [baredom.exports.x-avatar       :as x-avatar]
+   [baredom.exports.x-avatar-group :as x-avatar-group]
+   [baredom.exports.x-badge        :as x-badge]
+   [baredom.exports.x-breadcrumbs  :as x-breadcrumbs]
+   [baredom.exports.x-cancel-dialogue  :as x-cancel-dialogue]
+   [baredom.exports.x-chart            :as x-chart]
+   [baredom.exports.x-checkbox         :as x-checkbox]
+   [baredom.exports.x-chip             :as x-chip]
+   [baredom.exports.x-collapse         :as x-collapse]
+   [baredom.exports.x-command-palette  :as x-command-palette]
+   [baredom.exports.x-context-menu     :as x-context-menu]
+   [baredom.exports.x-copy             :as x-copy]
+   [baredom.exports.x-date-picker      :as x-date-picker]
+   [baredom.exports.x-divider          :as x-divider]
+   [baredom.exports.x-drawer           :as x-drawer]
+   [baredom.exports.x-dropdown         :as x-dropdown]
+   [baredom.exports.x-fieldset         :as x-fieldset]
+   [baredom.exports.x-file-download    :as x-file-download]
+   [baredom.exports.x-form-field       :as x-form-field]
+   [baredom.exports.x-form             :as x-form]
+   [baredom.exports.x-search-field     :as x-search-field]
+   [baredom.exports.x-currency-field   :as x-currency-field]
+   [baredom.exports.x-menu             :as x-menu]
+   [baredom.exports.x-menu-item        :as x-menu-item]
+   [baredom.exports.x-modal            :as x-modal]
+   [baredom.exports.x-notification-center :as x-notification-center]
+   [baredom.exports.x-pagination          :as x-pagination]
+   [baredom.exports.x-popover             :as x-popover]
+   [baredom.exports.x-progress            :as x-progress]
+   [baredom.exports.x-progress-circle     :as x-progress-circle]
+   [baredom.exports.x-radio               :as x-radio]
+   [baredom.exports.x-select              :as x-select]
+   [baredom.exports.x-skeleton            :as x-skeleton]
+   [baredom.exports.x-slider              :as x-slider]
+   [baredom.exports.x-spacer              :as x-spacer]
+   [baredom.exports.x-spinner             :as x-spinner]
+   [baredom.exports.x-stepper             :as x-stepper]
+   [baredom.exports.x-switch              :as x-switch]
+   [baredom.exports.x-table-cell          :as x-table-cell]
+   [baredom.exports.x-table-row           :as x-table-row]
+   [baredom.exports.x-table               :as x-table]
+   [baredom.exports.x-text-area           :as x-textarea]
+   [baredom.exports.x-timeline-item       :as x-timeline-item]
+   [baredom.exports.x-timeline            :as x-timeline]
+   [baredom.exports.x-toast               :as x-toast]
+   [baredom.exports.x-toaster             :as x-toaster]))
+
+(defn register!
+  []
+  (x-alert/register!)
+  (x-avatar/register!)
+  (x-avatar-group/register!)
+  (x-badge/register!)
+  (x-breadcrumbs/register!)
+  (x-button/register!)
+  (x-card/register!)
+  (x-container/register!)
+  (x-grid/register!)
+  (x-navbar/register!)
+  (x-sidebar/register!)
+  (x-stat/register!)
+  (x-tab/register!)
+  (x-tabs/register!)
+  (x-cancel-dialogue/register!)
+  (x-chart/register!)
+  (x-checkbox/register!)
+  (x-chip/register!)
+  (x-collapse/register!)
+  (x-command-palette/register!)
+  (x-context-menu/register!)
+  (x-copy/register!)
+  (x-date-picker/register!)
+  (x-divider/register!)
+  (x-drawer/register!)
+  (x-dropdown/register!)
+  (x-fieldset/register!)
+  (x-file-download/register!)
+  (x-form-field/register!)
+  (x-form/register!)
+  (x-search-field/register!)
+  (x-currency-field/register!)
+  (x-menu/register!)
+  (x-menu-item/register!)
+  (x-modal/register!)
+  (x-notification-center/register!)
+  (x-pagination/register!)
+  (x-popover/register!)
+  (x-progress/register!)
+  (x-progress-circle/register!)
+  (x-radio/register!)
+  (x-select/register!)
+  (x-skeleton/register!)
+  (x-slider/register!)
+  (x-spacer/register!)
+  (x-spinner/register!)
+  (x-stepper/register!)
+  (x-switch/register!)
+  (x-table-cell/register!)
+  (x-table-row/register!)
+  (x-table/register!)
+  (x-textarea/register!)
+  (x-timeline-item/register!)
+  (x-timeline/register!)
+  (x-toast/register!)
+  (x-toaster/register!))
+
+(defn ^:export init
+  []
+  (register!))
