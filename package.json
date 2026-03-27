@@ -16,6 +16,10 @@
     "pack:local" : "npm pack",
     "test" : "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run"
   },
+  "publishConfig" : {
+    "access" : "public",
+    "tag" : "alpha"
+  },
   "type" : "module",
   "bugs" : {
     "url" : "https://github.com/vanelsas/baredom/issues"
@@ -255,10 +259,6 @@
     "shadow-cljs" : "^3.3.6"
   },
   "files" : [ "dist", "README.md", "LICENSE", "CHANGELOG.md" ],
-  "version" : "0.1.4-alpha",
-  "publishConfig": {
-    "access": "public",
-    "tag": "alpha"
-  },
+  "version" : "0.1.5-alpha",
   "sideEffects" : [ "./dist/*.js" ]
 }
