@@ -2,6 +2,12 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.1.4-alpha] - 2026-03-27
+
+## Fixed
+
+- renames Release in yml to release
+
 ## [0.1.3-alpha] - 2026-03-27
 
 ## Fixed
