@@ -2,6 +2,12 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.1.9-alpha] - 2026-03-27
+
+## Fixed
+
+- Updates build.clj and README.md
+
 ## [0.1.8-alpha] - 2026-03-27
 
 ## Fixed
