@@ -94,13 +94,13 @@ This is a ClojureScript library that compiles to standalone native Web Component
 
 ### Three-layer pattern per component
 
-Every component under `src/app/components/<name>/` follows:
+Every component under `src/baredom/components/<name>/` follows:
 
 1. **`model.cljs`** — Pure functions only. Defines tag name, attribute names, event names, slot names, allowed enum values with normalization, and derived view-model logic. No DOM or side effects. All types described with ClojureScript predicates (`string?`, `boolean?`, etc.) — never TypeScript syntax.
 
 2. **`<name>.cljs`** — DOM and lifecycle layer. Implements shadow DOM creation, imperative `render!`, event wiring, and lifecycle callbacks (`connected!`, `disconnected!`, `attribute-changed!`, `define-element!`, `init!`). All browser interop must be Closure Advanced safe.
 
-3. **`src/app/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init` (called by the `:lib` shadow-cljs build) and `register!`. Also exposes `public-api` metadata derived from the model.
+3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init` (called by the `:lib` shadow-cljs build) and `register!`. Also exposes `public-api` metadata derived from the model.
 
 ### Additional files per component
 
@@ -142,7 +142,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 ## Performance & Context Management
 To minimize token usage and latency:
-1. **Reference Implementation:** Use `src/app/components/x-alert/` as the "Golden Sample" for all patterns.
+1. **Reference Implementation:** Use `src/baredom/components/x-alert/` as the "Golden Sample" for all patterns.
 2. **No-Scan Folders:** Ignore `dist/`, `target/`, and `.shadow-cljs/`.
 
 **If information is missing that affects the public API shape (attributes, properties, events, methods, slots), do not assume — list it as an open question. Never invent API surface.**

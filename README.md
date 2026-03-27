@@ -41,7 +41,7 @@ I started working on BareDOM after going though all the motions that Clojure dev
 
 I wondered if there would be a better way to do this, and I ended up reading about web components. It seemed like a good idea to try that. For me it as a research exercise, trying to understand how it all works. I tried to build a few, and had to learn how to do that in Clojurescript. Building a larger set of web components is quite a bit of work.
 
-When Claude Code appeared, Iw as thinking about a project to try it out with, and web components seemed like a good fit.  I picked up the project again and started to build Clojurescript based web components assisted by Claude. A good experiment to work with AI tooling and build something I find interesting myself.
+When Claude Code appeared, I was thinking about a project to try it out with, and web components seemed like a good fit.  I picked up the project again and started to build Clojurescript based web components assisted by Claude. A good experiment to work with AI tooling and build something I find interesting myself.
 
 The project is still in an alpha state. The components and demo's work, but there are bound to be some things not working properly yet. Feel free to give it a spin.
 
@@ -63,7 +63,53 @@ The project is still in an alpha state. The components and demo's work, but ther
 
 ## Installation
 
-**Step 1 — Add the npm dependency to your `package.json`:**
+BareDOM can be consumed in three ways. Pick the one that matches your stack.
+
+---
+
+### Option 1 — ClojureScript via Clojars
+
+This is the primary distribution for ClojureScript projects. Add the dependency to your `deps.edn`:
+
+```clojure
+{:deps {com.github.avanelsas/baredom {:mvn/version "0.1.10-alpha"}}}
+```
+
+Or, if you use Leiningen, add to `:dependencies` in `project.clj`:
+
+```clojure
+[com.github.avanelsas/baredom "0.1.10-alpha"]
+```
+
+Components live under the `app.exports` namespace. Require only what you use — unused namespaces are eliminated by the Closure compiler:
+
+```clojure
+(ns my-app.core
+  (:require [app.exports.x-button  :as x-button]
+            [app.exports.x-alert   :as x-alert]
+            [app.exports.x-toaster :as x-toaster]
+            [app.exports.x-toast   :as x-toast]))
+
+(defn- register-components! []
+  (x-button/register!)
+  (x-alert/register!)
+  (x-toaster/register!)
+  (x-toast/register!))
+```
+
+Call `register-components!` once in your `init!` entry point. Registration is idempotent — calling `register!` on an already-registered element is a no-op.
+
+---
+
+### Option 2 — npm (JavaScript / TypeScript projects)
+
+If your project uses npm, install the package:
+
+```bash
+npm install @vanelsas/baredom
+```
+
+Or add it manually to `package.json`:
 
 ```json
 {
@@ -73,17 +119,25 @@ The project is still in an alpha state. The components and demo's work, but ther
 }
 ```
 
-Then run `npm install`.
+Each component is a separate ES module — import only what you need:
 
-**Step 2 — shadow-cljs:** no extra configuration needed. shadow-cljs resolves npm packages automatically via the `:npm-deps` or `node_modules` integration built into every shadow-cljs project.
+```js
+import { init as initButton } from "@vanelsas/baredom/x-button";
+import { init as initAlert }  from "@vanelsas/baredom/x-alert";
+
+initButton();
+initAlert();
+```
+
+> **shadow-cljs users using npm:** no extra configuration needed. shadow-cljs resolves npm packages from `node_modules` automatically. You can use `["@vanelsas/baredom/x-button" :as x-button]` in `:require` and call `(.init x-button)`.
 
 ---
 
-## Using with plain HTML (no build step)
+### Option 3 — CDN (no build step)
 
 BareDOM components are standard ES modules. Load them directly in any HTML page using a CDN — no npm, no bundler, no framework required.
 
-### Import and initialise
+#### Import and initialise
 
 ```html
 <!DOCTYPE html>
@@ -111,7 +165,7 @@ BareDOM components are standard ES modules. Load them directly in any HTML page 
 
 `<script type="module">` is required because BareDOM components are ES modules. Each `init()` call registers the custom element with the browser. Only the components you import are loaded — unused components cost nothing.
 
-### Set attributes in HTML
+#### Set attributes in HTML
 
 Every attribute can be set directly in markup:
 
@@ -124,7 +178,7 @@ Every attribute can be set directly in markup:
 
 Boolean attributes follow the HTML convention: presence means `true`, absence means `false`.
 
-### Handle events
+#### Handle events
 
 ```html
 <x-button id="btn" variant="primary">Click me</x-button>
@@ -152,7 +206,7 @@ Boolean attributes follow the HTML convention: presence means `true`, absence me
 
 Custom events carry a `detail` payload — check the individual component docs for the event name and `detail` shape.
 
-### Theme with CSS custom properties
+#### Theme with CSS custom properties
 
 ```html
 <style>
@@ -167,28 +221,30 @@ CSS custom properties cascade normally into the open Shadow DOM. No JavaScript r
 
 ---
 
-## Usage
+## Usage (ClojureScript)
+
+The examples below use the Clojars distribution. If you installed via npm, replace the `app.exports.*` requires with `["@vanelsas/baredom/x-button" :as x-button]` etc., and call `(.init x-button)` instead of `(x-button/register!)`.
 
 ### 1. Register components
 
-Require each component module you need and call `.init` on it once, before any rendering. Only the components you require are included in your bundle.
+Require each component namespace you need and call `register!` on it once, before any rendering. Only the components you require are included in your build.
 
 ```clojure
 (ns my-app.core
   (:require
-   ["@vanelsas/baredom/x-button"  :as x-button]
-   ["@vanelsas/baredom/x-alert"   :as x-alert]
-   ["@vanelsas/baredom/x-toaster" :as x-toaster]
-   ["@vanelsas/baredom/x-toast"   :as x-toast]))
+   [app.exports.x-button  :as x-button]
+   [app.exports.x-alert   :as x-alert]
+   [app.exports.x-toaster :as x-toaster]
+   [app.exports.x-toast   :as x-toast]))
 
 (defn- register-components! []
-  (.init x-button)
-  (.init x-alert)
-  (.init x-toaster)
-  (.init x-toast))
+  (x-button/register!)
+  (x-alert/register!)
+  (x-toaster/register!)
+  (x-toast/register!))
 ```
 
-Call `register-components!` once in your `init!` entry point. Registration is idempotent — calling `.init` on an already-registered element is a no-op.
+Call `register-components!` once in your `init!` entry point. Registration is idempotent — calling `register!` on an already-registered element is a no-op.
 
 ### 2. Add a renderer
 
