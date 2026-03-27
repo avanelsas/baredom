@@ -2,6 +2,7 @@
 dist/
 out/
 target/
+public/js/
 
 # Shadow-cljs cache
 .shadow-cljs/
