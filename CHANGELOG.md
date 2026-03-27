@@ -2,6 +2,12 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.2.1-alpha] - 2026-03-27
+
+### Fixed
+
+-Fixes tests for x-file-download
+
 ## [0.2.0-alpha] - 2026-03-27
 
 ### Fixed
