@@ -36,13 +36,13 @@
    "}"
    "@media(prefers-color-scheme:dark){"
    ":host{"
-   "--x-context-menu-bg:rgba(30,30,35,0.97);"
-   "--x-context-menu-border:rgba(255,255,255,0.1);"
-   "--x-context-menu-shadow:0 8px 32px rgba(0,0,0,0.55),0 2px 8px rgba(0,0,0,0.35);"
-   "--x-context-menu-item-hover:rgba(255,255,255,0.07);"
-   "--x-context-menu-item-active:rgba(255,255,255,0.12);"
-   "--x-context-menu-item-fg:rgba(255,255,255,0.87);"
-   "--x-context-menu-separator:rgba(255,255,255,0.1);"
+   "--x-context-menu-bg:#1e293b;"
+   "--x-context-menu-border:rgba(255,255,255,0.12);"
+   "--x-context-menu-shadow:0 8px 32px rgba(0,0,0,0.7),0 2px 8px rgba(0,0,0,0.4);"
+   "--x-context-menu-item-hover:rgba(255,255,255,0.08);"
+   "--x-context-menu-item-active:rgba(255,255,255,0.14);"
+   "--x-context-menu-item-fg:rgba(255,255,255,0.9);"
+   "--x-context-menu-separator:rgba(255,255,255,0.12);"
    "}"
    "}"
    "[part=panel]{"
@@ -59,7 +59,9 @@
    "@media(prefers-reduced-motion:no-preference){"
    "transition:opacity 120ms ease,transform 120ms ease;"
    "}"
-   "}"))
+   "}"
+   "[role=menuitem]{color:var(--x-context-menu-item-fg);}"
+   "[role=menuitem]:hover{background:var(--x-context-menu-item-hover);}"))
 
 ;; ---- Read model ----
 

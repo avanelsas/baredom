@@ -2,6 +2,13 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.2.0-alpha] - 2026-03-27
+
+### Fixed
+
+- Fixes design issues x-context-menu and x-modal
+- Fixes small bugs in x-file-download, x-fieldset, x-date-picker, x-button
+
 ## [0.1.11-alpha] - 2026-03-27
 
 ### Changed
