@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, Test & Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}"         >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing: ${VERSION}"
+
+      - name: Verify version consistency
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          PKG=$(node -p "require('./package.json').version")
+          BUILD=$(grep '(def version' build.clj | sed 's/.*"\(.*\)".*/\1/')
+          DEPS=$(grep 'baredom-.*\.jar' deps.edn | sed 's/.*baredom-\(.*\)\.jar.*/\1/')
+          echo "Tag: $V  |  package.json: $PKG  |  build.clj: $BUILD  |  deps.edn: $DEPS"
+          [[ "$PKG" == "$V" && "$BUILD" == "$V" && "$DEPS" == "$V" ]] \
+            || { echo "::error::Version mismatch — run bb release locally first"; exit 1; }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('deps.edn') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Cache shadow-cljs
+        uses: actions/cache@v4
+        with:
+          path: .shadow-cljs
+          key: ${{ runner.os }}-shadow-${{ hashFiles('shadow-cljs.edn', 'package-lock.json') }}
+          restore-keys: ${{ runner.os }}-shadow-
+
+      - run: npm ci
+
+      - name: Build ESM library
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+        env:
+          CHROMIUM_FLAGS: "--no-sandbox"
+
+      - name: Build Clojars JAR
+        run: clojure -T:build jar
+
+      - name: Publish to NPM
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to Clojars
+        run: clojure -X:deploy
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+
+      - name: Extract CHANGELOG excerpt
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          awk "/^## \[${V}\]/{found=1; next} found && /^## \[/{exit} found{print}" \
+            CHANGELOG.md > /tmp/release-notes.md
+          [ -s /tmp/release-notes.md ] || echo "See CHANGELOG.md for details." > /tmp/release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "v${{ steps.version.outputs.version }}"
+          body_path: /tmp/release-notes.md
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

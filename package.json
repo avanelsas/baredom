@@ -264,8 +264,7 @@
     "clean": "rm -rf dist .shadow-cljs",
     "build": "npm run clean && npx shadow-cljs release lib",
     "pack:local": "npm pack",
-    "test": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run",
-    "postversion": "git push && git push --tags"
+    "test": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run"
   },
   "devDependencies": {
     "karma": "^6.4.4",

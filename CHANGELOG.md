@@ -2,6 +2,17 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.1.1-alpha] - 2026-03-27
+
+## Fixed
+
+- Fixes x-date-picker disabled
+- Fixes loading of logo in darkmode/lightmode in main demo
+
+## Adds
+
+- Pure HTML/JS demo + README.md
+
 ## [0.1.0-alpha] - 2026-03-25
 
 Initial alpha release of BareDome — 54 native Web Components built with ClojureScript and compiled to zero-dependency ESM modules.
