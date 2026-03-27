@@ -256,5 +256,9 @@
   },
   "files" : [ "dist", "README.md", "LICENSE", "CHANGELOG.md" ],
   "version" : "0.1.4-alpha",
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "sideEffects" : [ "./dist/*.js" ]
 }
