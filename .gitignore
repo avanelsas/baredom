@@ -6,6 +6,9 @@ target/
 # Shadow-cljs cache
 .shadow-cljs/
 
+# reports
+report.html
+
 # Node
 node_modules/
 *.tgz

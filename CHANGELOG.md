@@ -2,6 +2,13 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.1.10-alpha] - 2026-03-27
+
+## Fixed
+
+- Updates package.json to ensure the latest alpha version is also the latest version on NPM
+- Add report.html to .gitignore
+
 ## [0.1.9-alpha] - 2026-03-27
 
 ## Fixed
