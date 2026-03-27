@@ -206,6 +206,11 @@
             aria-desc   (.getAttribute el model/attr-aria-describedby)
             open?       (.hasAttribute el "open")]
 
+        (when btn
+          (if disabled?
+            (.setAttribute btn "disabled" "")
+            (.removeAttribute btn "disabled")))
+
         (when inp
           (if disabled?
             (do (.setAttribute inp "disabled" "")
@@ -390,6 +395,7 @@
    "}"
    "[part=input]:focus{border-color:var(--x-date-picker-focus,#60a5fa);box-shadow:0 0 0 3px rgba(96,165,250,0.25);}"
    "[part=input][disabled]{opacity:0.5;cursor:default;}"
+   "[part=btn][disabled]{opacity:0.5;cursor:default;pointer-events:none;}"
    "[part=input]::placeholder{color:var(--x-date-picker-placeholder,#94a3b8);}"
    "[part=btn]{"
    "all:unset;cursor:pointer;flex:0 0 auto;width:42px;height:42px;"

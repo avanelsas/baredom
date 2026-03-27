@@ -145,123 +145,123 @@ app.components.x_date_picker.x_date_picker.render_grid_BANG_ = (function app$com
 var state = app.components.x_date_picker.x_date_picker.goog$module$goog$object.get(el,app.components.x_date_picker.x_date_picker.k_state);
 var month = (cljs.core.truth_(state)?app.components.x_date_picker.x_date_picker.goog$module$goog$object.get(state,"month"):null);
 var items = app.components.x_date_picker.model.month_grid(month);
-var seq__22489 = cljs.core.seq(items);
-var chunk__22490 = null;
-var count__22491 = (0);
-var i__22492 = (0);
+var seq__12310 = cljs.core.seq(items);
+var chunk__12311 = null;
+var count__12312 = (0);
+var i__12313 = (0);
 while(true){
-if((i__22492 < count__22491)){
-var map__22507 = chunk__22490.cljs$core$IIndexed$_nth$arity$2(null,i__22492);
-var map__22507__$1 = cljs.core.__destructure_map(map__22507);
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22507__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
-var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22507__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
-var btn_22597 = app.components.x_date_picker.x_date_picker.make_el("button");
-var iso_22598 = app.components.x_date_picker.model.date__GT_iso(date);
-var day_22599 = date.getUTCDate();
-var disabled_QMARK__22600 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
-var map__22508_22601 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
-var map__22508_22602__$1 = cljs.core.__destructure_map(map__22508_22601);
-var selected_QMARK__22603 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var in_range_QMARK__22604 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
-var edge_QMARK__22605 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22508_22602__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
-btn_22597.setAttribute("part","day");
+if((i__12313 < count__12312)){
+var map__12318 = chunk__12311.cljs$core$IIndexed$_nth$arity$2(null,i__12313);
+var map__12318__$1 = cljs.core.__destructure_map(map__12318);
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12318__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12318__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
+var btn_12324 = app.components.x_date_picker.x_date_picker.make_el("button");
+var iso_12325 = app.components.x_date_picker.model.date__GT_iso(date);
+var day_12326 = date.getUTCDate();
+var disabled_QMARK__12327 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
+var map__12319_12328 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
+var map__12319_12329__$1 = cljs.core.__destructure_map(map__12319_12328);
+var selected_QMARK__12330 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12319_12329__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var in_range_QMARK__12331 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12319_12329__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
+var edge_QMARK__12332 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12319_12329__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
+btn_12324.setAttribute("part","day");
 
-btn_22597.setAttribute("type","button");
+btn_12324.setAttribute("type","button");
 
-btn_22597.setAttribute("data-iso",iso_22598);
+btn_12324.setAttribute("data-iso",iso_12325);
 
-btn_22597.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
+btn_12324.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
 
-btn_22597.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22600)?"true":"false"));
+btn_12324.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__12327)?"true":"false"));
 
-btn_22597.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22603)?"true":"false"));
+btn_12324.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__12330)?"true":"false"));
 
-btn_22597.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22604)?"true":"false"));
+btn_12324.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__12331)?"true":"false"));
 
-btn_22597.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22605)?"true":"false"));
+btn_12324.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__12332)?"true":"false"));
 
-if(cljs.core.truth_(disabled_QMARK__22600)){
-btn_22597.setAttribute("disabled","");
+if(cljs.core.truth_(disabled_QMARK__12327)){
+btn_12324.setAttribute("disabled","");
 } else {
 }
 
-(btn_22597.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22599)));
+(btn_12324.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_12326)));
 
-grid.appendChild(btn_22597);
+grid.appendChild(btn_12324);
 
 
-var G__22606 = seq__22489;
-var G__22607 = chunk__22490;
-var G__22608 = count__22491;
-var G__22609 = (i__22492 + (1));
-seq__22489 = G__22606;
-chunk__22490 = G__22607;
-count__22491 = G__22608;
-i__22492 = G__22609;
+var G__12333 = seq__12310;
+var G__12334 = chunk__12311;
+var G__12335 = count__12312;
+var G__12336 = (i__12313 + (1));
+seq__12310 = G__12333;
+chunk__12311 = G__12334;
+count__12312 = G__12335;
+i__12313 = G__12336;
 continue;
 } else {
-var temp__5823__auto__ = cljs.core.seq(seq__22489);
+var temp__5823__auto__ = cljs.core.seq(seq__12310);
 if(temp__5823__auto__){
-var seq__22489__$1 = temp__5823__auto__;
-if(cljs.core.chunked_seq_QMARK_(seq__22489__$1)){
-var c__5673__auto__ = cljs.core.chunk_first(seq__22489__$1);
-var G__22610 = cljs.core.chunk_rest(seq__22489__$1);
-var G__22611 = c__5673__auto__;
-var G__22612 = cljs.core.count(c__5673__auto__);
-var G__22613 = (0);
-seq__22489 = G__22610;
-chunk__22490 = G__22611;
-count__22491 = G__22612;
-i__22492 = G__22613;
+var seq__12310__$1 = temp__5823__auto__;
+if(cljs.core.chunked_seq_QMARK_(seq__12310__$1)){
+var c__5673__auto__ = cljs.core.chunk_first(seq__12310__$1);
+var G__12337 = cljs.core.chunk_rest(seq__12310__$1);
+var G__12338 = c__5673__auto__;
+var G__12339 = cljs.core.count(c__5673__auto__);
+var G__12340 = (0);
+seq__12310 = G__12337;
+chunk__12311 = G__12338;
+count__12312 = G__12339;
+i__12313 = G__12340;
 continue;
 } else {
-var map__22509 = cljs.core.first(seq__22489__$1);
-var map__22509__$1 = cljs.core.__destructure_map(map__22509);
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22509__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
-var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22509__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
-var btn_22614 = app.components.x_date_picker.x_date_picker.make_el("button");
-var iso_22615 = app.components.x_date_picker.model.date__GT_iso(date);
-var day_22616 = date.getUTCDate();
-var disabled_QMARK__22617 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
-var map__22510_22618 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
-var map__22510_22619__$1 = cljs.core.__destructure_map(map__22510_22618);
-var selected_QMARK__22620 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
-var in_range_QMARK__22621 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
-var edge_QMARK__22622 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22510_22619__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
-btn_22614.setAttribute("part","day");
+var map__12320 = cljs.core.first(seq__12310__$1);
+var map__12320__$1 = cljs.core.__destructure_map(map__12320);
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12320__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var in_month_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12320__$1,new cljs.core.Keyword(null,"in-month?","in-month?",-1630426251));
+var btn_12341 = app.components.x_date_picker.x_date_picker.make_el("button");
+var iso_12342 = app.components.x_date_picker.model.date__GT_iso(date);
+var day_12343 = date.getUTCDate();
+var disabled_QMARK__12344 = app.components.x_date_picker.x_date_picker.day_out_of_range_QMARK_(date,canon);
+var map__12321_12345 = app.components.x_date_picker.x_date_picker.compute_flags(date,canon);
+var map__12321_12346__$1 = cljs.core.__destructure_map(map__12321_12345);
+var selected_QMARK__12347 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12321_12346__$1,new cljs.core.Keyword(null,"selected?","selected?",-742502788));
+var in_range_QMARK__12348 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12321_12346__$1,new cljs.core.Keyword(null,"in-range?","in-range?",-291779262));
+var edge_QMARK__12349 = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12321_12346__$1,new cljs.core.Keyword(null,"edge?","edge?",203916303));
+btn_12341.setAttribute("part","day");
 
-btn_22614.setAttribute("type","button");
+btn_12341.setAttribute("type","button");
 
-btn_22614.setAttribute("data-iso",iso_22615);
+btn_12341.setAttribute("data-iso",iso_12342);
 
-btn_22614.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
+btn_12341.setAttribute("data-outside",(cljs.core.truth_(in_month_QMARK_)?"false":"true"));
 
-btn_22614.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__22617)?"true":"false"));
+btn_12341.setAttribute("data-disabled",(cljs.core.truth_(disabled_QMARK__12344)?"true":"false"));
 
-btn_22614.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__22620)?"true":"false"));
+btn_12341.setAttribute("data-selected",(cljs.core.truth_(selected_QMARK__12347)?"true":"false"));
 
-btn_22614.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__22621)?"true":"false"));
+btn_12341.setAttribute("data-in-range",(cljs.core.truth_(in_range_QMARK__12348)?"true":"false"));
 
-btn_22614.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__22622)?"true":"false"));
+btn_12341.setAttribute("data-range-edge",(cljs.core.truth_(edge_QMARK__12349)?"true":"false"));
 
-if(cljs.core.truth_(disabled_QMARK__22617)){
-btn_22614.setAttribute("disabled","");
+if(cljs.core.truth_(disabled_QMARK__12344)){
+btn_12341.setAttribute("disabled","");
 } else {
 }
 
-(btn_22614.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_22616)));
+(btn_12341.textContent = (""+cljs.core.str.cljs$core$IFn$_invoke$arity$1(day_12343)));
 
-grid.appendChild(btn_22614);
+grid.appendChild(btn_12341);
 
 
-var G__22623 = cljs.core.next(seq__22489__$1);
-var G__22624 = null;
-var G__22625 = (0);
-var G__22626 = (0);
-seq__22489 = G__22623;
-chunk__22490 = G__22624;
-count__22491 = G__22625;
-i__22492 = G__22626;
+var G__12350 = cljs.core.next(seq__12310__$1);
+var G__12351 = null;
+var G__12352 = (0);
+var G__12353 = (0);
+seq__12310 = G__12350;
+chunk__12311 = G__12351;
+count__12312 = G__12352;
+i__12313 = G__12353;
 continue;
 }
 } else {
@@ -282,17 +282,17 @@ var n__5741__auto__ = (7);
 var i = (0);
 while(true){
 if((i < n__5741__auto__)){
-var div_22627 = app.components.x_date_picker.x_date_picker.make_el("div");
-div_22627.setAttribute("part","weekday");
+var div_12354 = app.components.x_date_picker.x_date_picker.make_el("div");
+div_12354.setAttribute("part","weekday");
 
-div_22627.setAttribute("aria-hidden","true");
+div_12354.setAttribute("aria-hidden","true");
 
-(div_22627.textContent = (labels[i]));
+(div_12354.textContent = (labels[i]));
 
-weekdays_el.appendChild(div_22627);
+weekdays_el.appendChild(div_12354);
 
-var G__22628 = (i + (1));
-i = G__22628;
+var G__12355 = (i + (1));
+i = G__12355;
 continue;
 } else {
 return null;
@@ -381,6 +381,15 @@ var placeholder = el.getAttribute(app.components.x_date_picker.model.attr_placeh
 var aria_label = el.getAttribute(app.components.x_date_picker.model.attr_aria_label);
 var aria_desc = el.getAttribute(app.components.x_date_picker.model.attr_aria_describedby);
 var open_QMARK_ = el.hasAttribute("open");
+if(cljs.core.truth_(btn)){
+if(cljs.core.truth_(disabled_QMARK_)){
+btn.setAttribute("disabled","");
+} else {
+btn.removeAttribute("disabled");
+}
+} else {
+}
+
 if(cljs.core.truth_(inp)){
 if(cljs.core.truth_(disabled_QMARK_)){
 inp.setAttribute("disabled","");
@@ -479,32 +488,32 @@ el.removeAttribute(app.components.x_date_picker.model.attr_end);
 app.components.x_date_picker.x_date_picker.goog$module$goog$object.set(el,app.components.x_date_picker.x_date_picker.k_range_step,(1));
 } else {
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(step,(1))){
-var allow_same_QMARK__22639 = new cljs.core.Keyword(null,"allow-same-day?","allow-same-day?",-1971558934).cljs$core$IFn$_invoke$arity$1(canon);
-var cmp_22640 = app.components.x_date_picker.model.compare_date(d,cur_start);
-var valid_QMARK__22641 = (function (){var or__5142__auto__ = (cmp_22640 > (0));
+var allow_same_QMARK__12356 = new cljs.core.Keyword(null,"allow-same-day?","allow-same-day?",-1971558934).cljs$core$IFn$_invoke$arity$1(canon);
+var cmp_12357 = app.components.x_date_picker.model.compare_date(d,cur_start);
+var valid_QMARK__12358 = (function (){var or__5142__auto__ = (cmp_12357 > (0));
 if(or__5142__auto__){
 return or__5142__auto__;
 } else {
-var and__5140__auto__ = allow_same_QMARK__22639;
+var and__5140__auto__ = allow_same_QMARK__12356;
 if(cljs.core.truth_(and__5140__auto__)){
-return (cmp_22640 === (0));
+return (cmp_12357 === (0));
 } else {
 return and__5140__auto__;
 }
 }
 })();
-if(cljs.core.truth_(valid_QMARK__22641)){
-var final_start_22642 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.min_date(cur_start,d):cur_start);
-var final_end_22643 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.max_date(cur_start,d):d);
-el.setAttribute(app.components.x_date_picker.model.attr_start,app.components.x_date_picker.model.date__GT_iso(final_start_22642));
+if(cljs.core.truth_(valid_QMARK__12358)){
+var final_start_12359 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.min_date(cur_start,d):cur_start);
+var final_end_12360 = (cljs.core.truth_(new cljs.core.Keyword(null,"auto-swap?","auto-swap?",-1675454411).cljs$core$IFn$_invoke$arity$1(canon))?app.components.x_date_picker.model.max_date(cur_start,d):d);
+el.setAttribute(app.components.x_date_picker.model.attr_start,app.components.x_date_picker.model.date__GT_iso(final_start_12359));
 
-el.setAttribute(app.components.x_date_picker.model.attr_end,app.components.x_date_picker.model.date__GT_iso(final_end_22643));
+el.setAttribute(app.components.x_date_picker.model.attr_end,app.components.x_date_picker.model.date__GT_iso(final_end_12360));
 
 app.components.x_date_picker.x_date_picker.goog$module$goog$object.set(el,app.components.x_date_picker.x_date_picker.k_range_step,(0));
 
 if(cljs.core.truth_((function (){var and__5140__auto__ = el.hasAttribute(app.components.x_date_picker.model.attr_close_on_select);
 if(cljs.core.truth_(and__5140__auto__)){
-return (((!((final_start_22642 == null)))) && ((!((final_end_22643 == null)))));
+return (((!((final_start_12359 == null)))) && ((!((final_end_12360 == null)))));
 } else {
 return and__5140__auto__;
 }
@@ -547,10 +556,10 @@ var mode = new cljs.core.Keyword(null,"mode","mode",654403691).cljs$core$IFn$_in
 app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_input,false,({"value": val}));
 
 if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(mode,new cljs.core.Keyword(null,"single","single",1551466437))){
-var map__22562 = app.components.x_date_picker.model.parse_display__GT_single(val);
-var map__22562__$1 = cljs.core.__destructure_map(map__22562);
-var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22562__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
-var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22562__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
+var map__12322 = app.components.x_date_picker.model.parse_display__GT_single(val);
+var map__12322__$1 = cljs.core.__destructure_map(map__12322);
+var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12322__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
+var date = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12322__$1,new cljs.core.Keyword(null,"date","date",-1463434462));
 if(cljs.core.truth_(ok_QMARK_)){
 var ev = app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_change_request,true,({"iso": app.components.x_date_picker.model.date__GT_iso(date), "reason": reason}));
 if(cljs.core.truth_(ev.defaultPrevented)){
@@ -568,11 +577,11 @@ return app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.componen
 return null;
 }
 } else {
-var map__22563 = app.components.x_date_picker.model.parse_display__GT_range(val,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"separator","separator",-1628749125),new cljs.core.Keyword(null,"separator","separator",-1628749125).cljs$core$IFn$_invoke$arity$1(canon)], null));
-var map__22563__$1 = cljs.core.__destructure_map(map__22563);
-var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
-var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"start","start",-355208981));
-var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__22563__$1,new cljs.core.Keyword(null,"end","end",-268185958));
+var map__12323 = app.components.x_date_picker.model.parse_display__GT_range(val,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"separator","separator",-1628749125),new cljs.core.Keyword(null,"separator","separator",-1628749125).cljs$core$IFn$_invoke$arity$1(canon)], null));
+var map__12323__$1 = cljs.core.__destructure_map(map__12323);
+var ok_QMARK_ = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12323__$1,new cljs.core.Keyword(null,"ok?","ok?",447310304));
+var start = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12323__$1,new cljs.core.Keyword(null,"start","start",-355208981));
+var end = cljs.core.get.cljs$core$IFn$_invoke$arity$2(map__12323__$1,new cljs.core.Keyword(null,"end","end",-268185958));
 if(cljs.core.truth_(ok_QMARK_)){
 var ev = app.components.x_date_picker.x_date_picker.dispatch_BANG_(el,app.components.x_date_picker.model.event_change_request,true,({"start-iso": app.components.x_date_picker.model.date__GT_iso(start), "end-iso": app.components.x_date_picker.model.date__GT_iso(end), "reason": reason}));
 if(cljs.core.truth_(ev.defaultPrevented)){
@@ -625,7 +634,7 @@ return el.removeAttribute("open");
 return null;
 }
 });
-app.components.x_date_picker.x_date_picker.style_text = (""+":host{display:block;color-scheme:light dark;}"+"[part=container]{position:relative;display:flex;align-items:stretch;gap:8px;width:100%;}"+"[part=input]{"+"flex:1;min-width:0;appearance:none;box-sizing:border-box;"+"border:1px solid var(--x-date-picker-border,#cbd5e1);"+"border-radius:var(--x-date-picker-radius,8px);"+"padding:8px 12px;font-size:0.9375rem;"+"background:var(--x-date-picker-input-bg,#fff);"+"color:var(--x-date-picker-text,inherit);"+"outline:none;"+"}"+"[part=input]:focus{border-color:var(--x-date-picker-focus,#60a5fa);box-shadow:0 0 0 3px rgba(96,165,250,0.25);}"+"[part=input][disabled]{opacity:0.5;cursor:default;}"+"[part=input]::placeholder{color:var(--x-date-picker-placeholder,#94a3b8);}"+"[part=btn]{"+"all:unset;cursor:pointer;flex:0 0 auto;width:42px;height:42px;"+"display:inline-flex;align-items:center;justify-content:center;"+"border:1px solid var(--x-date-picker-border,#cbd5e1);"+"border-radius:var(--x-date-picker-radius,8px);"+"background:var(--x-date-picker-btn-bg,#f8fafc);"+"color:var(--x-date-picker-text,inherit);"+"box-sizing:border-box;"+"}"+"[part=btn]:hover{background:var(--x-date-picker-btn-hover,#f1f5f9);}"+"[part=btn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=popover]{"+"display:none;position:absolute;z-index:1000;"+"top:calc(100% + 8px);left:0;"+"background:var(--x-date-picker-popover-bg,#fff);"+"border:1px solid var(--x-date-picker-border,#e2e8f0);"+"border-radius:var(--x-date-picker-popover-radius,12px);"+"box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);"+"padding:16px;"+"width:var(--x-date-picker-popover-width,304px);"+"box-sizing:border-box;"+"}"+":host([open]) [part=popover]{display:block;}"+"[part=nav]{"+"display:flex;align-items:center;justify-content:space-between;"+"margin-bottom:12px;"+"}"+"[part=navbtn]{"+"all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"+"width:32px;height:32px;border-radius:6px;"+"color:var(--x-date-picker-text,inherit);"+"}"+"[part=navbtn]:hover{background:var(--x-date-picker-nav-hover,#f1f5f9);}"+"[part=navbtn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=monthlabel]{font-weight:600;font-size:0.9375rem;}"+"[part=weekdays]{"+"display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;"+"}"+"[part=weekday]{"+"text-align:center;font-size:0.75rem;font-weight:600;"+"color:var(--x-date-picker-weekday,#94a3b8);padding:4px 0;"+"}"+"[part=grid]{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}"+"[part=day]{"+"all:unset;cursor:pointer;box-sizing:border-box;"+"display:flex;align-items:center;justify-content:center;"+"height:36px;border-radius:6px;"+"font-size:0.875rem;"+"color:var(--x-date-picker-day-text,inherit);"+"}"+"[part=day]:hover:not([disabled]){background:var(--x-date-picker-day-hover,#f1f5f9);}"+"[part=day]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=day][data-outside=true]{opacity:0.4;}"+"[part=day][data-disabled=true]{opacity:0.3;cursor:default;pointer-events:none;}"+"[part=day][data-selected=true]{"+"background:var(--x-date-picker-selected-bg,#2563eb);"+"color:var(--x-date-picker-selected-text,#fff);"+"font-weight:600;"+"}"+"[part=day][data-in-range=true]:not([data-range-edge=true]){"+"background:var(--x-date-picker-range-bg,#dbeafe);"+"color:var(--x-date-picker-range-text,#1e40af);"+"border-radius:0;"+"}"+"[part=day][data-range-edge=true]{"+"background:var(--x-date-picker-selected-bg,#2563eb);"+"color:var(--x-date-picker-selected-text,#fff);"+"font-weight:600;"+"}"+"[part=sr-status]{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}"+"@media (prefers-color-scheme:dark){"+":host{"+"--x-date-picker-border:#334155;"+"--x-date-picker-input-bg:#0f172a;"+"--x-date-picker-btn-bg:#1e293b;"+"--x-date-picker-btn-hover:#334155;"+"--x-date-picker-popover-bg:#1e293b;"+"--x-date-picker-day-hover:#334155;"+"--x-date-picker-selected-bg:#3b82f6;"+"--x-date-picker-range-bg:#1e3a8a;"+"--x-date-picker-range-text:#93c5fd;"+"--x-date-picker-nav-hover:#334155;"+"}"+"}"+"@media (prefers-reduced-motion:reduce){"+"[part=popover]{transition:none;}"+"}");
+app.components.x_date_picker.x_date_picker.style_text = (""+":host{display:block;color-scheme:light dark;}"+"[part=container]{position:relative;display:flex;align-items:stretch;gap:8px;width:100%;}"+"[part=input]{"+"flex:1;min-width:0;appearance:none;box-sizing:border-box;"+"border:1px solid var(--x-date-picker-border,#cbd5e1);"+"border-radius:var(--x-date-picker-radius,8px);"+"padding:8px 12px;font-size:0.9375rem;"+"background:var(--x-date-picker-input-bg,#fff);"+"color:var(--x-date-picker-text,inherit);"+"outline:none;"+"}"+"[part=input]:focus{border-color:var(--x-date-picker-focus,#60a5fa);box-shadow:0 0 0 3px rgba(96,165,250,0.25);}"+"[part=input][disabled]{opacity:0.5;cursor:default;}"+"[part=btn][disabled]{opacity:0.5;cursor:default;pointer-events:none;}"+"[part=input]::placeholder{color:var(--x-date-picker-placeholder,#94a3b8);}"+"[part=btn]{"+"all:unset;cursor:pointer;flex:0 0 auto;width:42px;height:42px;"+"display:inline-flex;align-items:center;justify-content:center;"+"border:1px solid var(--x-date-picker-border,#cbd5e1);"+"border-radius:var(--x-date-picker-radius,8px);"+"background:var(--x-date-picker-btn-bg,#f8fafc);"+"color:var(--x-date-picker-text,inherit);"+"box-sizing:border-box;"+"}"+"[part=btn]:hover{background:var(--x-date-picker-btn-hover,#f1f5f9);}"+"[part=btn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=popover]{"+"display:none;position:absolute;z-index:1000;"+"top:calc(100% + 8px);left:0;"+"background:var(--x-date-picker-popover-bg,#fff);"+"border:1px solid var(--x-date-picker-border,#e2e8f0);"+"border-radius:var(--x-date-picker-popover-radius,12px);"+"box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);"+"padding:16px;"+"width:var(--x-date-picker-popover-width,304px);"+"box-sizing:border-box;"+"}"+":host([open]) [part=popover]{display:block;}"+"[part=nav]{"+"display:flex;align-items:center;justify-content:space-between;"+"margin-bottom:12px;"+"}"+"[part=navbtn]{"+"all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"+"width:32px;height:32px;border-radius:6px;"+"color:var(--x-date-picker-text,inherit);"+"}"+"[part=navbtn]:hover{background:var(--x-date-picker-nav-hover,#f1f5f9);}"+"[part=navbtn]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=monthlabel]{font-weight:600;font-size:0.9375rem;}"+"[part=weekdays]{"+"display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;"+"}"+"[part=weekday]{"+"text-align:center;font-size:0.75rem;font-weight:600;"+"color:var(--x-date-picker-weekday,#94a3b8);padding:4px 0;"+"}"+"[part=grid]{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}"+"[part=day]{"+"all:unset;cursor:pointer;box-sizing:border-box;"+"display:flex;align-items:center;justify-content:center;"+"height:36px;border-radius:6px;"+"font-size:0.875rem;"+"color:var(--x-date-picker-day-text,inherit);"+"}"+"[part=day]:hover:not([disabled]){background:var(--x-date-picker-day-hover,#f1f5f9);}"+"[part=day]:focus-visible{outline:2px solid var(--x-date-picker-focus,#60a5fa);}"+"[part=day][data-outside=true]{opacity:0.4;}"+"[part=day][data-disabled=true]{opacity:0.3;cursor:default;pointer-events:none;}"+"[part=day][data-selected=true]{"+"background:var(--x-date-picker-selected-bg,#2563eb);"+"color:var(--x-date-picker-selected-text,#fff);"+"font-weight:600;"+"}"+"[part=day][data-in-range=true]:not([data-range-edge=true]){"+"background:var(--x-date-picker-range-bg,#dbeafe);"+"color:var(--x-date-picker-range-text,#1e40af);"+"border-radius:0;"+"}"+"[part=day][data-range-edge=true]{"+"background:var(--x-date-picker-selected-bg,#2563eb);"+"color:var(--x-date-picker-selected-text,#fff);"+"font-weight:600;"+"}"+"[part=sr-status]{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}"+"@media (prefers-color-scheme:dark){"+":host{"+"--x-date-picker-border:#334155;"+"--x-date-picker-input-bg:#0f172a;"+"--x-date-picker-btn-bg:#1e293b;"+"--x-date-picker-btn-hover:#334155;"+"--x-date-picker-popover-bg:#1e293b;"+"--x-date-picker-day-hover:#334155;"+"--x-date-picker-selected-bg:#3b82f6;"+"--x-date-picker-range-bg:#1e3a8a;"+"--x-date-picker-range-text:#93c5fd;"+"--x-date-picker-nav-hover:#334155;"+"}"+"}"+"@media (prefers-reduced-motion:reduce){"+"[part=popover]{transition:none;}"+"}");
 app.components.x_date_picker.x_date_picker.make_shadow_BANG_ = (function app$components$x_date_picker$x_date_picker$make_shadow_BANG_(el){
 var root = el.attachShadow(({"mode": "open"}));
 var style = app.components.x_date_picker.x_date_picker.make_el("style");
