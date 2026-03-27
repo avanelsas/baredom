@@ -18,12 +18,12 @@
                 :version   version
                 :basis     @basis
                 :src-dirs  ["src"]
-                :scm       {:url                "https://github.com/vanelsas/baredom"
-                            :connection          "scm:git:git://github.com/vanelsas/baredom.git"
-                            :developerConnection "scm:git:ssh://git@github.com/vanelsas/baredom.git"
+                :scm       {:url                "https://github.com/avanelsas/baredom"
+                            :connection          "scm:git:git://github.com/avanelsas/baredom.git"
+                            :developerConnection "scm:git:ssh://git@github.com/avanelsas/baredom.git"
                             :tag                (str "v" version)}
                 :pom-data  [[:description "54 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM."]
-                            [:url "https://github.com/vanelsas/baredom"]
+                            [:url "https://github.com/avanelsas/baredom"]
                             [:licenses
                              [:license
                               [:name "MIT License"]

@@ -37,6 +37,14 @@ BareDOM has been created using Claude Code. The CLAUDE.md file is added to the r
 
 ## Why BareDOM?
 
+I started working on BareDOM after going though all the motions that Clojure developers often go through when deciding to build a UI. I worked with Reagent and Re-frame and in general the experience was pretty good. At some point I was building larger UI's with reusable components that were pretty basic (e.g. inputs, buttons etc). For complex UI's the bundle size became larger and larger.
+
+I wondered if there would be a better way to do this, and I ended up reading about web components. It seemed like a good idea to try that. For me it as a research exercise, trying to understand how it all works. I tried to build a few, and had to learn how to do that in Clojurescript. Building a larger set of web components is quite a bit of work.
+
+When Claude Code appeared, Iw as thinking about a project to try it out with, and web components seemed like a good fit.  I picked up the project again and started to build Clojurescript based web components assisted by Claude. A good experiment to work with AI tooling and build something I find interesting myself.
+
+The project is still in an alpha state. The components and demo's work, but there are bound to be some things not working properly yet. Feel free to give it a spin.
+
 **Works in any stack.** Because components are native HTML elements, they work wherever HTML works — vanilla JavaScript, React, Vue, Svelte, Angular, server-rendered HTML, or a static page. No adapter layer, no wrapper library.
 
 **No framework lock-in.** Your components are not tied to the framework you are building with today. Migrate your app, keep your components.
