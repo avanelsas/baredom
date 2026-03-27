@@ -31,6 +31,9 @@
   "Derives a complete view-model map from raw attribute values."
   [{:keys [href-raw filename-raw disabled-present? aria-label-raw]}]
   {:href       (or href-raw "")
-   :filename   (or filename-raw "")
+   :filename   filename-raw
    :disabled?  (boolean disabled-present?)
    :aria-label aria-label-raw})
+
+(defn data-url? [href]
+  (and (string? href) (.startsWith ^string href "data:")))

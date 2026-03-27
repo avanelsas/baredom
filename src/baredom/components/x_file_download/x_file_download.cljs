@@ -168,9 +168,17 @@
       ;; Set href on anchor
       (set! (.-href anchor-el) href)
 
-      ;; Set or remove download attribute
-      (if (and (string? filename) (not= filename ""))
+      ;; Set or remove download attribute.
+      ;; data: URLs must always carry the download attribute — browsers block
+      ;; top-frame navigation to data URLs, so without it clicking fails.
+      (cond
+        (and (string? filename) (not= filename ""))
         (set-attr! anchor-el "download" filename)
+
+        (model/data-url? href)
+        (set-attr! anchor-el "download" "")
+
+        :else
         (remove-attr! anchor-el "download"))
 
       ;; aria-disabled on anchor
