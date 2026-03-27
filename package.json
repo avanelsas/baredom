@@ -5,10 +5,10 @@
   },
   "repository" : {
     "type" : "git",
-    "url" : "git+https://github.com/vanelsas/baredom.git"
+    "url" : "https://github.com/avanelsas/baredom.git"
   },
   "license" : "MIT",
-  "homepage" : "https://github.com/vanelsas/baredom#readme",
+  "homepage" : "https://github.com/avanelsas/baredom#readme",
   "name" : "@vanelsas/baredom",
   "scripts" : {
     "clean" : "rm -rf dist .shadow-cljs",
@@ -22,7 +22,7 @@
   },
   "type" : "module",
   "bugs" : {
-    "url" : "https://github.com/vanelsas/baredom/issues"
+    "url" : "https://github.com/avanelsas/baredom/issues"
   },
   "keywords" : [ "web-components", "custom-elements", "baredom", "ui-library", "clojurescript", "esm", "framework-agnostic" ],
   "author" : "Alexander van Elsas",
