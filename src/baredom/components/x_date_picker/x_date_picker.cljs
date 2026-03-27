@@ -211,6 +211,9 @@
             (.setAttribute btn "disabled" "")
             (.removeAttribute btn "disabled")))
 
+        (when (and disabled? open?)
+          (.removeAttribute el "open"))
+
         (when inp
           (if disabled?
             (do (.setAttribute inp "disabled" "")
@@ -593,14 +596,15 @@
 
 (defn- on-input-keydown!
   [^js el ^js e]
-  (let [key (.-key e)]
-    (cond
-      (= key "Enter")
-      (do (.preventDefault e)
-          (commit-display! el "keyboard"))
+  (when-not (.hasAttribute el model/attr-disabled)
+    (let [key (.-key e)]
+      (cond
+        (= key "Enter")
+        (do (.preventDefault e)
+            (commit-display! el "keyboard"))
 
-      (= key "Escape")
-      (close-popover! el))))
+        (= key "Escape")
+        (close-popover! el)))))
 
 (defn- on-input-focus!
   [^js el ^js _e]
@@ -609,31 +613,35 @@
 (defn- on-input-blur!
   [^js el ^js _e]
   (gobj/set el k-focused false)
-  (commit-display! el "blur")
+  (when-not (.hasAttribute el model/attr-disabled)
+    (commit-display! el "blur"))
   (sync-input-display! el))
 
 (defn- on-btn-click!
   [^js el ^js _e]
-  (if (.hasAttribute el "open")
-    (close-popover! el)
-    (open-popover! el)))
+  (when-not (.hasAttribute el model/attr-disabled)
+    (if (.hasAttribute el "open")
+      (close-popover! el)
+      (open-popover! el))))
 
 (defn- on-nav-click!
   [^js el ^js e]
-  (let [^js target (.-currentTarget e)
-        dir        (.getAttribute target "data-nav")]
-    (if (= dir "prev")
-      (navigate-month! el :prev)
-      (navigate-month! el :next))))
+  (when-not (.hasAttribute el model/attr-disabled)
+    (let [^js target (.-currentTarget e)
+          dir        (.getAttribute target "data-nav")]
+      (if (= dir "prev")
+        (navigate-month! el :prev)
+        (navigate-month! el :next)))))
 
 (defn- on-grid-click!
   [^js el ^js e]
-  (let [^js target (.-target e)
-        ^js btn    (.closest target "button[data-iso]")]
-    (when (and btn (not (.hasAttribute btn "disabled")))
-      (let [iso (. btn getAttribute "data-iso")
-            ^js d (model/iso->date iso)]
-        (when d (do-select-date! el d "click"))))))
+  (when-not (.hasAttribute el model/attr-disabled)
+    (let [^js target (.-target e)
+          ^js btn    (.closest target "button[data-iso]")]
+      (when (and btn (not (.hasAttribute btn "disabled")))
+        (let [iso (. btn getAttribute "data-iso")
+              ^js d (model/iso->date iso)]
+          (when d (do-select-date! el d "click")))))))
 
 (defn- on-popover-mousedown!
   [^js _el ^js e]

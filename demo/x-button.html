@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>x-button demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="../js/main.js"></script>
     <style>
       *, *::before, *::after { box-sizing: border-box; }
 
@@ -153,11 +154,10 @@
       ].forEach((name) => {
         btn.addEventListener(name, (event) => {
           log.textContent =
-            name + " " + JSON.stringify(event.detail ?? {});
+            name + " " + JSON.stringify(event.detail ?? {}) + "\n" + log.textContent;
         });
       });
     </script>
 
-    <script src="../js/main.js"></script>
   </body>
 </html>

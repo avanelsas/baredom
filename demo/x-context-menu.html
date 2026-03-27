@@ -45,6 +45,18 @@
       }
       .menu-item:hover { background: rgba(0,0,0,0.06); }
       .menu-item.danger { color: #dc2626; }
+      .trigger-btn {
+        font-size: 13px; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+        border: 1px solid var(--surface-border); background: var(--surface-bg); color: var(--page-fg);
+      }
+      .trigger-btn:hover { background: var(--input-bg); }
+      .trigger-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .rightclick-area {
+        display: flex; align-items: center; justify-content: center;
+        width: 280px; height: 80px; border-radius: 10px; font-size: 13px;
+        border: 1.5px dashed var(--surface-border); color: var(--muted);
+        cursor: context-menu; user-select: none;
+      }
       .log {
         margin-top: 24px; padding: 12px; border-radius: 8px;
         background: #111827; color: #f9fafb; min-height: 72px;
@@ -58,6 +70,7 @@
 
     <h2>Basic (bottom-start)</h2>
     <div class="row">
+      <button class="trigger-btn" id="btn-basic">Open menu ▾</button>
       <x-context-menu id="menu-basic">
         <div class="menu-item" role="menuitem">Edit</div>
         <div class="menu-item" role="menuitem">Duplicate</div>
@@ -65,28 +78,52 @@
       </x-context-menu>
     </div>
 
+    <h2>Right-click target</h2>
+    <div class="row">
+      <div class="rightclick-area" id="rightclick-area">Right-click anywhere in this area</div>
+      <x-context-menu id="menu-rightclick">
+        <div class="menu-item" role="menuitem">Copy</div>
+        <div class="menu-item" role="menuitem">Paste</div>
+        <div class="menu-item" role="menuitem">Select All</div>
+        <div class="menu-item danger" role="menuitem">Clear</div>
+      </x-context-menu>
+    </div>
+
     <h2>Placement variants</h2>
     <div class="row">
-      <x-context-menu placement="bottom-start">
-        <div class="menu-item" role="menuitem">bottom-start</div>
-        <div class="menu-item" role="menuitem">Option 2</div>
-      </x-context-menu>
-      <x-context-menu placement="bottom-end">
-        <div class="menu-item" role="menuitem">bottom-end</div>
-        <div class="menu-item" role="menuitem">Option 2</div>
-      </x-context-menu>
-      <x-context-menu placement="top-start">
-        <div class="menu-item" role="menuitem">top-start</div>
-        <div class="menu-item" role="menuitem">Option 2</div>
-      </x-context-menu>
-      <x-context-menu placement="right-start">
-        <div class="menu-item" role="menuitem">right-start</div>
-        <div class="menu-item" role="menuitem">Option 2</div>
-      </x-context-menu>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <button class="trigger-btn" data-placement="bottom-start">bottom-start ▾</button>
+        <x-context-menu class="placement-menu" placement="bottom-start">
+          <div class="menu-item" role="menuitem">bottom-start</div>
+          <div class="menu-item" role="menuitem">Option 2</div>
+        </x-context-menu>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <button class="trigger-btn" data-placement="bottom-end">bottom-end ▾</button>
+        <x-context-menu class="placement-menu" placement="bottom-end">
+          <div class="menu-item" role="menuitem">bottom-end</div>
+          <div class="menu-item" role="menuitem">Option 2</div>
+        </x-context-menu>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <button class="trigger-btn" data-placement="top-start">top-start ▴</button>
+        <x-context-menu class="placement-menu" placement="top-start">
+          <div class="menu-item" role="menuitem">top-start</div>
+          <div class="menu-item" role="menuitem">Option 2</div>
+        </x-context-menu>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <button class="trigger-btn" data-placement="right-start">right-start ▶</button>
+        <x-context-menu class="placement-menu" placement="right-start">
+          <div class="menu-item" role="menuitem">right-start</div>
+          <div class="menu-item" role="menuitem">Option 2</div>
+        </x-context-menu>
+      </div>
     </div>
 
     <h2>Disabled</h2>
     <div class="row">
+      <button class="trigger-btn" disabled>Open menu ▾ (disabled)</button>
       <x-context-menu disabled>
         <div class="menu-item" role="menuitem">Edit</div>
         <div class="menu-item" role="menuitem">Delete</div>
@@ -111,6 +148,7 @@
       <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
     </div>
     <div class="row">
+      <button class="trigger-btn" id="btn-live">Open menu ▾</button>
       <x-context-menu id="menu-live">
         <div class="menu-item" role="menuitem">Edit</div>
         <div class="menu-item" role="menuitem">Duplicate</div>
@@ -124,28 +162,61 @@
     <script>
       const log = document.getElementById("log");
       function logEvent(id, name, detail) {
-        log.textContent = `${id}:${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+        const display = (detail && detail.item instanceof Element)
+          ? { item: detail.item.textContent.trim() }
+          : detail;
+        log.textContent = `${id}:${name}  ${JSON.stringify(display)}\n` + log.textContent;
       }
 
-      ["menu-basic", "menu-live"].forEach(id => {
+      // Basic trigger
+      document.getElementById("btn-basic").addEventListener("click", function () {
+        document.getElementById("menu-basic").openForElement(this);
+      });
+
+      // Right-click target
+      document.getElementById("rightclick-area").addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        document.getElementById("menu-rightclick").openAt(e.clientX, e.clientY);
+      });
+
+      // Placement variant triggers
+      document.querySelectorAll("[data-placement]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const menu = btn.nextElementSibling;
+          menu.openForElement(btn);
+        });
+      });
+
+      // Live trigger
+      document.getElementById("btn-live").addEventListener("click", function () {
+        document.getElementById("menu-live").openForElement(this);
+      });
+
+      // Event logging
+      ["menu-basic", "menu-live", "menu-rightclick"].forEach(id => {
         const menu = document.getElementById(id);
         ["x-context-menu-open", "x-context-menu-close", "x-context-menu-select"].forEach(evt => {
           menu.addEventListener(evt, e => logEvent(id, evt, e.detail || {}));
         });
       });
 
-      document.querySelectorAll("[placement]").forEach(menu => {
+      document.querySelectorAll(".placement-menu").forEach(menu => {
         ["x-context-menu-open", "x-context-menu-close"].forEach(evt =>
           menu.addEventListener(evt, e => logEvent(menu.getAttribute("placement"), evt, {})));
       });
 
       const liveMen = document.getElementById("menu-live");
+      const btnLive = document.getElementById("btn-live");
       function updateLive() {
         liveMen.setAttribute("placement", document.getElementById("ctrl-placement").value);
         liveMen.setAttribute("offset",    document.getElementById("ctrl-offset").value);
-        if (document.getElementById("ctrl-disabled").checked)
+        if (document.getElementById("ctrl-disabled").checked) {
           liveMen.setAttribute("disabled", "");
-        else liveMen.removeAttribute("disabled");
+          btnLive.disabled = true;
+        } else {
+          liveMen.removeAttribute("disabled");
+          btnLive.disabled = false;
+        }
       }
       document.querySelectorAll(".controls select, .controls input").forEach(el => {
         el.addEventListener("change", updateLive);

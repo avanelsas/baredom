@@ -659,46 +659,30 @@
                (this-as this
                         (set-bool-attr! this attr-name (boolean value))))}))
 
-(defn make-constructor
-  []
-  (let [ctor-ref (atom nil)
-        ctor (fn []
-               (js/Reflect.construct js/HTMLElement #js [] @ctor-ref))]
-    (reset! ctor-ref ctor)
-    ctor))
+(defn- element-class []
+  (let [klass (js* "(class extends HTMLElement {})")]
+
+    (set! (.-observedAttributes klass) model/observed-attributes)
+
+    (set! (.-connectedCallback (.-prototype klass))
+          (fn [] (this-as ^js this (connected! this))))
+
+    (set! (.-disconnectedCallback (.-prototype klass))
+          (fn [] (this-as ^js this (disconnected! this))))
+
+    (set! (.-attributeChangedCallback (.-prototype klass))
+          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
+
+    (define-bool-prop! (.-prototype klass) "disabled" model/attr-disabled)
+    (define-bool-prop! (.-prototype klass) "loading"  model/attr-loading)
+    (define-bool-prop! (.-prototype klass) "pressed"  model/attr-pressed)
+
+    klass))
 
 (defn define-element!
   []
   (when-not (.get js/customElements model/tag-name)
-    (let [proto (js/Object.create (.-prototype js/HTMLElement))
-          ctor (make-constructor)]
-
-      (js/Object.setPrototypeOf ctor js/HTMLElement)
-      (aset proto "constructor" ctor)
-
-      (define-bool-prop! proto "disabled" model/attr-disabled)
-      (define-bool-prop! proto "loading" model/attr-loading)
-      (define-bool-prop! proto "pressed" model/attr-pressed)
-
-      (aset proto "connectedCallback"
-            (fn []
-              (this-as this
-                       (connected! this))))
-
-      (aset proto "disconnectedCallback"
-            (fn []
-              (this-as this
-                       (disconnected! this))))
-
-      (aset proto "attributeChangedCallback"
-            (fn [name old-value new-value]
-              (this-as this
-                       (attribute-changed! this name old-value new-value))))
-
-      (aset ctor "observedAttributes" model/observed-attributes)
-      (aset ctor "prototype" proto)
-
-      (.define js/customElements model/tag-name ctor))))
+    (.define js/customElements model/tag-name (element-class))))
 
 (defn init!
   []

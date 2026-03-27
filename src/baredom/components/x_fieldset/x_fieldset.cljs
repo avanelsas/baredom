@@ -133,9 +133,10 @@
 ;; ---------------------------------------------------------------------------
 (defn- render! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js root-el   (gobj/get refs "root-el")
-          ^js legend-el (gobj/get refs "legend-el")
-          m             (read-model el)
+    (let [^js root-el    (gobj/get refs "root-el")
+          ^js legend-el  (gobj/get refs "legend-el")
+          ^js content-el (gobj/get refs "content-el")
+          m              (read-model el)
           legend        (:legend m)
           visible?      (:legend-visible? m)
           disabled?     (:disabled? m)]
@@ -163,7 +164,9 @@
         (remove-attr! root-el "aria-describedby"))
 
       ;; data-disabled on host for CSS hooks
-      (set-bool-attr! el "data-disabled" disabled?))))
+      (set-bool-attr! el "data-disabled" disabled?)
+      ;; inert on content-el blocks all interaction with slotted children
+      (set-bool-attr! content-el "inert" disabled?))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
