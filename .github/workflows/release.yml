@@ -25,6 +25,13 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+      # Added this step to fix UnsupportedClassVersionError
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -35,8 +42,14 @@ jobs:
           cli: 'latest'
 
       - run: npm ci
-      - run: npm run build
-      - run: npm test
+
+      - name: Build ESM library
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+        env:
+          CHROMIUM_FLAGS: "--no-sandbox"
 
       - name: Publish to NPM
         run: |
