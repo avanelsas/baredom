@@ -2,6 +2,13 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.1.11-alpha] - 2026-03-27
+
+### Changed
+
+- Renamed internal ClojureScript namespace root from `app` to `baredom` to match the published npm package name `@vanelsas/baredom`. No public API
+changes.
+
 ## [0.1.10-alpha] - 2026-03-27
 
 ## Fixed
