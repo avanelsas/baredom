@@ -2,11 +2,18 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [0.2.2-alpha] - 2026-03-27
+
+### Fixed
+
+- Code updates to x-button, x-alert, x-drawer, x-form, x-form-field to improve quality
+- Accompanying docs updated if needed
+
 ## [0.2.1-alpha] - 2026-03-27
 
 ### Fixed
 
--Fixes tests for x-file-download
+- Fixes tests for x-file-download
 
 ## [0.2.0-alpha] - 2026-03-27
 
