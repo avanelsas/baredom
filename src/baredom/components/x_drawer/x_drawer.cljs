@@ -102,6 +102,15 @@
    "}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=panel]{transition:none;}"
+   "}"
+   "@media (prefers-color-scheme:dark){"
+   ":host{"
+   "--x-drawer-bg:#1c1d24;"
+   "--x-drawer-fg:#e2e4ef;"
+   "--x-drawer-border:rgb(255 255 255/0.08);"
+   "--x-drawer-shadow:0 8px 40px rgb(0 0 0/0.55);"
+   "--x-drawer-backdrop:rgb(0 0 0/0.55);"
+   "}"
    "}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────────
@@ -180,11 +189,14 @@
                         :cancelable false})))
 
 ;; ── Focus trap ────────────────────────────────────────────────────────────────
-(defn- collect-tabbables [^js panel]
+(defn- collect-tabbables [^js el]
+  ;; Query the host element's light DOM — slotted content lives there,
+  ;; not inside the shadow tree, so querying the shadow panel div would
+  ;; always return [].
   (let [sel (str "a[href],button:not([disabled]),input:not([disabled]),"
                  "select:not([disabled]),textarea:not([disabled]),"
                  "[tabindex]:not([tabindex='-1'])")]
-    (->> (array-seq (.querySelectorAll panel sel))
+    (->> (array-seq (.querySelectorAll el sel))
          (filter (fn [^js node]
                    (let [^js s (.getComputedStyle js/window node)]
                      (and (not= "none" (.-display s))
@@ -196,7 +208,7 @@
 (defn- activate-focus-trap! [^js el]
   (let [refs      (gobj/get el k-refs)
         ^js panel (when refs (gobj/get refs "panel"))
-        tabbables (when panel (collect-tabbables panel))]
+        tabbables (collect-tabbables el)]
     (gobj/set el k-restore (.-activeElement js/document))
     (gobj/set el k-tabbables (when tabbables (clj->js tabbables)))
     (if (seq tabbables)
@@ -280,6 +292,12 @@
 
     ;; aria-label on panel
     (.setAttribute panel "aria-label" (:label m))
+
+    ;; Hide panel from AT when closed so screen readers cannot navigate
+    ;; into off-screen drawer content (CSS transform alone is insufficient)
+    (if open?
+      (.removeAttribute panel "aria-hidden")
+      (.setAttribute    panel "aria-hidden" "true"))
 
     ;; Detect open state transition
     (when (not= prev-open open?)

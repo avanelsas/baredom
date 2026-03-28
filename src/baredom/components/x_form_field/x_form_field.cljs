@@ -432,6 +432,8 @@
     (define-value-prop! proto)
 
     ;; String properties
+    (define-string-prop! proto "label"        model/attr-label)
+    (define-string-prop! proto "type"         model/attr-type)
     (define-string-prop! proto "name"         model/attr-name)
     (define-string-prop! proto "placeholder"  model/attr-placeholder)
     (define-string-prop! proto "autocomplete" model/attr-autocomplete)

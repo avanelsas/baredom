@@ -86,3 +86,82 @@
        (reset! seen (js->clj (.-detail event) :keywordize-keys true))))
     (.click (shadow-button el))
     (is (= {:source "programmatic"} @seen))))
+
+(deftest disabled-blocks-press-test
+  (let [el (append! (make-el))
+        btn (shadow-button el)
+        seen (atom nil)]
+    (.setAttribute el model/attr-disabled "")
+    (.addEventListener el model/event-press (fn [e] (reset! seen e)))
+    (.click btn)
+    (is (nil? @seen))))
+
+(deftest loading-blocks-press-test
+  (let [el (append! (make-el))
+        btn (shadow-button el)
+        seen (atom nil)]
+    (.setAttribute el model/attr-loading "")
+    (.addEventListener el model/event-press (fn [e] (reset! seen e)))
+    (.click btn)
+    (is (nil? @seen))))
+
+(deftest hover-events-test
+  (let [el (append! (make-el))
+        btn (shadow-button el)
+        hover-start-seen (atom false)
+        hover-end-seen (atom false)]
+    (.addEventListener el model/event-hover-start (fn [_] (reset! hover-start-seen true)))
+    (.addEventListener el model/event-hover-end (fn [_] (reset! hover-end-seen true)))
+    (.dispatchEvent btn (js/PointerEvent. "pointerenter" #js {:bubbles false}))
+    (is @hover-start-seen)
+    (.dispatchEvent btn (js/PointerEvent. "pointerleave" #js {:bubbles false}))
+    (is @hover-end-seen)))
+
+(deftest hover-suppressed-when-disabled-test
+  (let [el (append! (make-el))
+        btn (shadow-button el)
+        seen (atom false)]
+    (.setAttribute el model/attr-disabled "")
+    (.addEventListener el model/event-hover-start (fn [_] (reset! seen true)))
+    (.dispatchEvent btn (js/PointerEvent. "pointerenter" #js {:bubbles false}))
+    (is (not @seen))))
+
+(deftest press-lifecycle-test
+  (let [el (append! (make-el))
+        btn (shadow-button el)
+        press-start-seen (atom nil)
+        press-end-seen (atom nil)]
+    (.addEventListener el model/event-press-start
+                       (fn [e] (reset! press-start-seen
+                                       (js->clj (.-detail e) :keywordize-keys true))))
+    (.addEventListener el model/event-press-end
+                       (fn [e] (reset! press-end-seen
+                                       (js->clj (.-detail e) :keywordize-keys true))))
+    (.dispatchEvent btn (js/PointerEvent. "pointerdown" #js {:bubbles true}))
+    (is (= {:source "pointer"} @press-start-seen))
+    (.dispatchEvent btn (js/PointerEvent. "pointerup" #js {:bubbles true}))
+    (is (= {:source "pointer"} @press-end-seen))))
+
+(deftest form-submit-test
+  (let [form (.createElement js/document "form")
+        el (make-el)
+        submitted (atom false)]
+    (.setAttribute el model/attr-type "submit")
+    (.appendChild form el)
+    (.appendChild (.-body js/document) form)
+    (.addEventListener form "submit" (fn [e] (.preventDefault e) (reset! submitted true)))
+    (.click (shadow-button el))
+    (is @submitted)
+    (.remove form)))
+
+(deftest form-reset-test
+  (let [form (.createElement js/document "form")
+        el (make-el)
+        reset-fired (atom false)]
+    (.setAttribute el model/attr-type "reset")
+    (.appendChild form el)
+    (.appendChild (.-body js/document) form)
+    (.addEventListener form "reset" (fn [_] (reset! reset-fired true)))
+    (.click (shadow-button el))
+    (is @reset-fired)
+    (.remove form)))

@@ -250,6 +250,111 @@
     (is (.hasAttribute el model/attr-required)
         "setting required=true should set attribute")))
 
+(deftest label-property-reflects-test
+  (let [el (append! (make-el))]
+    (set! (.-label el) "Email")
+    (is (= "Email" (.getAttribute el model/attr-label))
+        "setting label property should reflect to attribute")
+    (is (= "Email" (.-label el))
+        "label property getter should read from attribute")))
+
+(deftest type-property-reflects-test
+  (let [el (append! (make-el))]
+    (set! (.-type el) "email")
+    (is (= "email" (.getAttribute el model/attr-type))
+        "setting type property should reflect to attribute")
+    (is (= "email" (.-type el))
+        "type property getter should read from attribute")))
+
+(deftest name-property-reflects-test
+  (let [el (append! (make-el))]
+    (set! (.-name el) "username")
+    (is (= "username" (.getAttribute el model/attr-name))
+        "setting name property should reflect to attribute")
+    (is (= "username" (.-name el))
+        "name property getter should read from attribute")))
+
+(deftest placeholder-property-reflects-test
+  (let [el (append! (make-el))]
+    (set! (.-placeholder el) "Enter text")
+    (is (= "Enter text" (.getAttribute el model/attr-placeholder))
+        "setting placeholder property should reflect to attribute")
+    (is (= "Enter text" (.-placeholder el))
+        "placeholder property getter should read from attribute")))
+
+(deftest autocomplete-property-reflects-test
+  (let [el (append! (make-el))]
+    (set! (.-autocomplete el) "email")
+    (is (= "email" (.getAttribute el model/attr-autocomplete))
+        "setting autocomplete property should reflect to attribute")
+    (is (= "email" (.-autocomplete el))
+        "autocomplete property getter should read from attribute")))
+
+;; ---------------------------------------------------------------------------
+;; aria-describedby conditional logic
+;; ---------------------------------------------------------------------------
+
+(deftest aria-describedby-hint-only-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-hint "Helper text")
+    (is (= "hint" (.getAttribute input-el "aria-describedby"))
+        "aria-describedby should be 'hint' when only hint is present")))
+
+(deftest aria-describedby-error-only-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-error "Something wrong")
+    (is (= "error" (.getAttribute input-el "aria-describedby"))
+        "aria-describedby should be 'error' when only error is present")))
+
+(deftest aria-describedby-hint-and-error-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-hint "Helper text")
+    (.setAttribute el model/attr-error "Something wrong")
+    (is (= "hint error" (.getAttribute input-el "aria-describedby"))
+        "aria-describedby should be 'hint error' when both are present")))
+
+(deftest aria-describedby-absent-when-neither-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (is (not (.hasAttribute input-el "aria-describedby"))
+        "aria-describedby should be absent when neither hint nor error is present")))
+
+;; ---------------------------------------------------------------------------
+;; formResetCallback
+;; ---------------------------------------------------------------------------
+
+(deftest form-reset-callback-clears-value-test
+  (let [el       (append! (make-el))
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-value "some value")
+    (.formResetCallback el)
+    (is (not (.hasAttribute el model/attr-value))
+        "formResetCallback should remove the value attribute")
+    (is (= "" (.-value input-el))
+        "formResetCallback should clear the shadow input value")))
+
+;; ---------------------------------------------------------------------------
+;; ElementInternals validity
+;; ---------------------------------------------------------------------------
+
+(deftest validity-custom-error-when-error-set-test
+  ;; form-associated elements expose .validity directly on the element
+  (let [el (append! (make-el))]
+    (when (.-validity el)
+      (.setAttribute el model/attr-error "Invalid email")
+      (is (.-customError (.-validity el))
+          "validity.customError should be true when error attribute is set"))))
+
+(deftest validity-value-missing-when-required-and-empty-test
+  (let [el (append! (make-el))]
+    (when (.-validity el)
+      (.setAttribute el model/attr-required "")
+      (is (.-valueMissing (.-validity el))
+          "validity.valueMissing should be true when required and value is empty"))))
+
 ;; ---------------------------------------------------------------------------
 ;; Events
 ;; ---------------------------------------------------------------------------

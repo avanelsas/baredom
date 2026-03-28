@@ -71,6 +71,16 @@
   (is (= "alert"  (model/role-for-type :warning)))
   (is (= "alert"  (model/role-for-type :error))))
 
+;; ── default-icon-for-type ────────────────────────────────────────────────────
+(deftest default-icon-for-type-test
+  (is (string? (model/default-icon-for-type :info)))
+  (is (string? (model/default-icon-for-type :success)))
+  (is (string? (model/default-icon-for-type :warning)))
+  (is (string? (model/default-icon-for-type :error)))
+  ;; Unknown type falls back to info glyph
+  (is (= (model/default-icon-for-type :info)
+         (model/default-icon-for-type :unknown))))
+
 ;; ── normalize ────────────────────────────────────────────────────────────────
 (deftest normalize-defaults-test
   (let [m (model/normalize {})]

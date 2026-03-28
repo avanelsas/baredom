@@ -43,13 +43,13 @@ It supports:
 The component is registered through the export namespace:
 
 ```clojure
-(ns app.exports.x-button
-  (:require [app.components.x-button.model :as model]
-            [app.components.x-button.x-button]))
+(ns baredom.exports.x-button
+  (:require [baredom.components.x-button.model :as model]
+            [baredom.components.x-button.x-button]))
 
 (defn register!
   []
-  (app.components.x-button.x-button/init!))
+  (baredom.components.x-button.x-button/init!))
 
 (def public-api
   {:tag-name model/tag-name
@@ -65,27 +65,27 @@ The component is registered through the export namespace:
 ### Expected export path
 
 ```text
-src/app/exports/x_button.cljs
+src/baredom/exports/x_button.cljs
 ```
 
 ### Expected component path
 
 ```text
-src/app/components/x_button/x_button.cljs
+src/baredom/components/x_button/x_button.cljs
 ```
 
 ### Expected model path
 
 ```text
-src/app/components/x_button/model.cljs
+src/baredom/components/x_button/model.cljs
 ```
 
 ### Runtime registration
 
-If your compiled bundle exposes `app.exports.x-button.init`, register the element by calling:
+If your compiled bundle exposes `baredom.exports.x-button.init`, register the element by calling:
 
 ```js
-app.exports.x_button.init();
+baredom.exports.x_button.init();
 ```
 
 Or ensure your compiled application calls the exported `init` function during startup.
@@ -219,7 +219,7 @@ Behavior:
 
 When absent:
 
-* `aria-pressed="false"`
+* `aria-pressed` is removed — the button is not treated as a toggle control
 
 ---
 
@@ -600,9 +600,10 @@ This gives it:
 
 * native button semantics
 * native keyboard behavior
-* native form behavior for `type=submit` and `type=reset`
 * predictable disabled behavior
 * proper focus participation
+
+Form submission and reset are handled explicitly via `ElementInternals` — see [Form Behavior](#form-behavior).
 
 ### Disabled behavior
 
@@ -628,7 +629,7 @@ When `pressed` is present:
 
 When `pressed` is absent:
 
-* `aria-pressed="false"` is set
+* `aria-pressed` is removed (the button is treated as a regular action button, not a toggle)
 
 ### Accessible name rules
 
@@ -714,12 +715,14 @@ You can override these variables from outside the component.
 * `--x-button-font-size-sm`
 * `--x-button-font-size-md`
 * `--x-button-font-size-lg`
+* `--x-button-font-weight`
 * `--x-button-icon-size-sm`
 * `--x-button-icon-size-md`
 * `--x-button-icon-size-lg`
 * `--x-button-spinner-size`
+* `--x-button-spinner-stroke`
 
-#### Colors
+#### Colors — primary variant
 
 * `--x-button-bg`
 * `--x-button-bg-hover`
@@ -731,8 +734,41 @@ You can override these variables from outside the component.
 * `--x-button-border-hover`
 * `--x-button-border-active`
 * `--x-button-focus-ring`
+
+#### Colors — secondary variant
+
+* `--x-button-secondary-bg`
+* `--x-button-secondary-bg-hover`
+* `--x-button-secondary-bg-active`
+* `--x-button-secondary-fg`
+* `--x-button-secondary-border`
+
+#### Colors — tertiary variant
+
+* `--x-button-tertiary-bg`
+* `--x-button-tertiary-bg-hover`
+* `--x-button-tertiary-bg-active`
+* `--x-button-tertiary-fg`
+
+#### Colors — ghost variant
+
+* `--x-button-ghost-bg`
+* `--x-button-ghost-bg-hover`
+* `--x-button-ghost-bg-active`
+* `--x-button-ghost-fg`
+
+#### Colors — danger variant
+
 * `--x-button-danger-bg`
+* `--x-button-danger-bg-hover`
+* `--x-button-danger-bg-active`
 * `--x-button-danger-fg`
+
+#### Shadows
+
+* `--x-button-shadow`
+* `--x-button-shadow-hover`
+* `--x-button-shadow-active`
 
 #### Motion
 
@@ -751,6 +787,8 @@ The following shadow parts are exposed:
 * `icon-start`
 * `icon-end`
 * `spinner`
+* `spinner-slot`
+* `spinner-fallback`
 
 Example:
 
@@ -812,7 +850,15 @@ In reduced motion environments, transitions are removed.
 
 ## Form Behavior
 
-The internal native button honors the `type` attribute.
+`x-button` sets `static formAssociated = true` so the browser tracks form association. The internal shadow DOM `<button>` cannot submit or reset a light DOM form on its own (shadow DOM is a separate tree), so form participation is implemented explicitly in the click handler.
+
+The host element is searched for a form owner using the standard HTML algorithm:
+1. If the `form` attribute is present, the form with that `id` is used.
+2. Otherwise, the nearest ancestor `<form>` is used.
+
+* `type="submit"` → calls `form.requestSubmit()`, which runs constraint validation and fires the `submit` event
+* `type="reset"` → calls `form.reset()`
+* `type="button"` → no form interaction
 
 ### `type="button"`
 
@@ -820,17 +866,17 @@ No form submission.
 
 ### `type="submit"`
 
-Submits the nearest form.
+Submits the nearest ancestor form, running constraint validation.
 
 ### `type="reset"`
 
-Resets the nearest form.
+Resets the nearest ancestor form.
 
 Example:
 
 ```html
 <form>
-  <input type="text" />
+  <input type="text" required />
   <x-button type="submit">Submit</x-button>
   <x-button type="reset" variant="secondary">Reset</x-button>
 </form>
@@ -920,7 +966,7 @@ The export namespace exposes:
 
 ```text
 src/
-  app/
+  baredom/
     components/
       x_button/
         model.cljs
@@ -929,17 +975,17 @@ src/
       x_button.cljs
 
 docs/
-  x_button.md
+  x-button.md
 
 test/
-  app/
+  baredom/
     components/
       x_button/
         model_test.cljs
         x_button_test.cljs
 
 demo/
-  x_button.html
+  x-button.html
 ```
 
 ---

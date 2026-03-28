@@ -168,7 +168,8 @@
     (is (= 1 (count @events)))
     (let [^js d (first @events)]
       (is (= "info"   (.-type d)))
-      (is (= "button" (.-reason d))))))
+      (is (= "button" (.-reason d)))
+      (is (= "A message" (.-text d))))))
 
 (deftest dismiss-event-is-cancelable-test
   (let [^js el (append! (make-el))]

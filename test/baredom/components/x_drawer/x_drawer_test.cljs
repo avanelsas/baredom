@@ -215,3 +215,108 @@
                        (fn [^js e] (swap! events conj e)))
     (.setAttribute el model/attr-label "New label")
     (is (= 0 (count @events)))))
+
+;; ── aria-hidden on panel ──────────────────────────────────────────────────────
+(deftest panel-aria-hidden-when-closed-test
+  (let [^js el    (append! (make-el))
+        ^js panel (shadow-part el "[part=panel]")]
+    (is (= "true" (.getAttribute panel "aria-hidden")))))
+
+(deftest panel-no-aria-hidden-when-open-test
+  (let [^js el    (append! (make-el))
+        ^js panel (shadow-part el "[part=panel]")]
+    (.setAttribute el model/attr-open "")
+    (is (nil? (.getAttribute panel "aria-hidden")))))
+
+(deftest panel-aria-hidden-restored-on-close-test
+  (let [^js el    (append! (make-el))
+        ^js panel (shadow-part el "[part=panel]")]
+    (.setAttribute el model/attr-open "")
+    (.removeAttribute el model/attr-open)
+    (is (= "true" (.getAttribute panel "aria-hidden")))))
+
+;; ── Escape key dismissal ──────────────────────────────────────────────────────
+(deftest escape-key-dismiss-test
+  (let [^js el  (append! (make-el))
+        events  (atom [])]
+    (.setAttribute el model/attr-open "")
+    (.addEventListener el model/event-dismiss
+                       (fn [^js e] (swap! events conj e)))
+    (let [^js panel (shadow-part el "[part=panel]")
+          ^js ev    (js/KeyboardEvent. "keydown" #js {:key "Escape" :bubbles true})]
+      (.dispatchEvent panel ev))
+    (is (= 1 (count @events)))
+    (is (= "escape" (.-reason (.-detail (first @events)))))
+    (is (not (.hasAttribute el model/attr-open)))))
+
+;; ── Focus trap: first focusable element gets focus on open ───────────────────
+(deftest focus-trap-focuses-first-element-test
+  (async done
+    (let [^js el  (append! (make-el))
+          ^js btn (.createElement js/document "button")]
+      (set! (.-textContent btn) "Close")
+      (.appendChild el btn)
+      (.setAttribute el model/attr-open "")
+      ;; activate-focus-trap! defers via setTimeout 0
+      (js/setTimeout
+       (fn []
+         (is (= btn (.-activeElement js/document)))
+         (done))
+       50))))
+
+;; ── Focus trap: Tab wraps from last to first ──────────────────────────────────
+(deftest focus-trap-tab-wraps-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js btn1 (.createElement js/document "button")
+          ^js btn2 (.createElement js/document "button")]
+      (.appendChild el btn1)
+      (.appendChild el btn2)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         ;; Focus the last button, then send Tab — should wrap to first
+         (.focus btn2)
+         (let [^js panel (shadow-part el "[part=panel]")
+               ^js ev    (js/KeyboardEvent. "keydown" #js {:key "Tab" :shiftKey false :bubbles true :cancelable true})]
+           (.dispatchEvent panel ev))
+         (is (= btn1 (.-activeElement js/document)))
+         (done))
+       50))))
+
+;; ── Focus trap: Shift+Tab wraps from first to last ────────────────────────────
+(deftest focus-trap-shift-tab-wraps-test
+  (async done
+    (let [^js el   (append! (make-el))
+          ^js btn1 (.createElement js/document "button")
+          ^js btn2 (.createElement js/document "button")]
+      (.appendChild el btn1)
+      (.appendChild el btn2)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (.focus btn1)
+         (let [^js panel (shadow-part el "[part=panel]")
+               ^js ev    (js/KeyboardEvent. "keydown" #js {:key "Tab" :shiftKey true :bubbles true :cancelable true})]
+           (.dispatchEvent panel ev))
+         (is (= btn2 (.-activeElement js/document)))
+         (done))
+       50))))
+
+;; ── Focus trap: focus restored on close ───────────────────────────────────────
+(deftest focus-trap-restores-focus-on-close-test
+  (async done
+    (let [^js trigger (.createElement js/document "button")
+          _           (.appendChild (.-body js/document) trigger)
+          ^js el      (append! (make-el))
+          ^js btn     (.createElement js/document "button")]
+      (.appendChild el btn)
+      (.focus trigger)
+      (.setAttribute el model/attr-open "")
+      (js/setTimeout
+       (fn []
+         (.removeAttribute el model/attr-open)
+         (is (= trigger (.-activeElement js/document)))
+         (.remove trigger)
+         (done))
+       50))))

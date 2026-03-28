@@ -46,7 +46,7 @@ A themeable, accessible alert banner that supports four semantic variants, an op
 |-------------------|---------|----------|------------|--------------------------------------------|
 | `x-alert-dismiss` | yes     | yes      | **yes**    | `{ type, reason, text }` |
 
-`detail.reason` is `"button"` (user click or Escape key) or `"timeout"` (auto-dismiss).
+`detail.reason` is `"button"` (dismiss button click), `"keyboard"` (Escape key), or `"timeout"` (auto-dismiss).
 
 Calling `event.preventDefault()` cancels the removal — the alert stays in the DOM.
 
@@ -99,6 +99,18 @@ Calling `event.preventDefault()` cancels the removal — the alert stays in the 
 | `--x-alert-motion-fast`     | `120ms` | Transition speed          |
 | `--x-alert-motion-ease`     | cubic-bezier | Easing function      |
 | `--x-alert-press-scale`     | `0.98`  | Dismiss button press scale |
+| `--x-motion-exit-duration`  | —       | Global design-token override for exit duration; takes effect only when `--x-alert-exit-duration` is unset |
+
+### Dismiss button & state
+
+| Variable                       | Default (light)          | Description                              |
+|--------------------------------|--------------------------|------------------------------------------|
+| `--x-alert-disabled-opacity`   | `0.55`                   | Opacity when `disabled`                  |
+| `--x-alert-focus-ring`         | `rgba(0,0,0,0.6)`        | Focus outline colour on dismiss button   |
+| `--x-alert-dismiss-color`      | `rgba(0,0,0,0.62)`       | Dismiss × icon colour                    |
+| `--x-alert-dismiss-hover-bg`   | `rgba(0,0,0,0.06)`       | Dismiss button hover background          |
+
+Dark-mode overrides for these tokens are set automatically via `@media (prefers-color-scheme: dark)`.
 
 ### Semantic colour tokens (light)
 

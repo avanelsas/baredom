@@ -69,6 +69,12 @@
   [el value]
   (set-prop! el last-activation-source-key value))
 
+(defn find-owner-form
+  [^js el]
+  (or (when-let [form-id (.getAttribute el "form")]
+        (.getElementById js/document form-id))
+      (.closest el "form")))
+
 (defn read-public-state
   [el]
   (model/public-state
@@ -584,7 +590,13 @@
      (when (interactive-el? el)
        (let [source (or (get-last-activation-source el) "programmatic")]
          (dispatch! el model/event-press #js {:source source})
-         (set-last-activation-source! el nil))))))
+         (set-last-activation-source! el nil)
+         (let [btn-type (:type (read-public-state el))
+               form (find-owner-form el)]
+           (when form
+             (cond
+               (= btn-type "submit") (.requestSubmit form)
+               (= btn-type "reset")  (.reset form)))))))))
 
 (defn setup-focus!
   [el button-el]
@@ -662,6 +674,7 @@
 (defn- element-class []
   (let [klass (js* "(class extends HTMLElement {})")]
 
+    (set! (.-formAssociated klass) true)
     (set! (.-observedAttributes klass) model/observed-attributes)
 
     (set! (.-connectedCallback (.-prototype klass))

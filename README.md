@@ -2,8 +2,8 @@
 
 <p align="left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/assets/baredom_darkmode.svg">
-    <source media="(prefers-color-scheme: light)" srcset="public/assets/baredom_lightmode.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/avanelsas/baredom/main/public/assets/baredom_darkmode.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/avanelsas/baredom/main/public/assets/baredom_lightmode.svg">
     <img alt="Baredom Logo" src="apublic/assets/baredom_lightmode.svg" width="120">
   </picture>
 </p>

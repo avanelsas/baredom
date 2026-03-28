@@ -41,10 +41,15 @@
     "text"))
 
 (def property-api
-  {:value    {:type 'string  :reflects-attribute attr-value}
-   :disabled {:type 'boolean :reflects-attribute attr-disabled}
-   :readonly {:type 'boolean :reflects-attribute attr-readonly}
-   :required {:type 'boolean :reflects-attribute attr-required}})
+  {:value        {:type 'string  :reflects-attribute attr-value}
+   :label        {:type 'string  :reflects-attribute attr-label}
+   :type         {:type 'string  :reflects-attribute attr-type}
+   :name         {:type 'string  :reflects-attribute attr-name}
+   :placeholder  {:type 'string  :reflects-attribute attr-placeholder}
+   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
+   :disabled     {:type 'boolean :reflects-attribute attr-disabled}
+   :readonly     {:type 'boolean :reflects-attribute attr-readonly}
+   :required     {:type 'boolean :reflects-attribute attr-required}})
 
 (def event-schema
   {:input  {:name event-input  :cancelable false :detail #{:name :value}}
