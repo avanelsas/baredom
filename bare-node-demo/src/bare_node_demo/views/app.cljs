@@ -1,5 +1,5 @@
-(ns bare-demo.views.app
-  (:require [bare-demo.state :as state]))
+(ns bare-node-demo.views.app
+  (:require [bare-node-demo.state :as state]))
 
 (defn- navbar [_s]
   [:x-navbar {:label "BareDOM Demo" :elevated true}

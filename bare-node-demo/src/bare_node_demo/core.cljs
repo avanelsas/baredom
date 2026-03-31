@@ -1,23 +1,23 @@
-(ns bare-demo.core
+(ns bare-node-demo.core
   (:require
-   [baredom.exports.x-navbar    :as x-navbar]
-   [baredom.exports.x-sidebar   :as x-sidebar]
-   [baredom.exports.x-button    :as x-button]
-   [baredom.exports.x-modal     :as x-modal]
-   [baredom.exports.x-container :as x-container]
-   [baredom.exports.x-card      :as x-card]
+   ["@vanelsas/baredom/x-navbar"    :as x-navbar]
+   ["@vanelsas/baredom/x-sidebar"   :as x-sidebar]
+   ["@vanelsas/baredom/x-button"    :as x-button]
+   ["@vanelsas/baredom/x-modal"     :as x-modal]
+   ["@vanelsas/baredom/x-container" :as x-container]
+   ["@vanelsas/baredom/x-card"      :as x-card]
    [clojure.string :as str]
-   [bare-demo.renderer :as renderer]
-   [bare-demo.state    :as state]
-   [bare-demo.views.app :as app-view]))
+   [bare-node-demo.renderer :as renderer]
+   [bare-node-demo.state    :as state]
+   [bare-node-demo.views.app :as app-view]))
 
 (defn- register-components! []
-  (x-navbar/init)
-  (x-sidebar/init)
-  (x-button/init)
-  (x-modal/init)
-  (x-container/init)
-  (x-card/init))
+  (.init x-navbar)
+  (.init x-sidebar)
+  (.init x-button)
+  (.init x-modal)
+  (.init x-container)
+  (.init x-card))
 
 ;;; ── Event log ─────────────────────────────────────────────────────────────
 

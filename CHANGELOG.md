@@ -2,7 +2,7 @@
 
 All notable changes to BareDome will be documented in this file.
 
-## [1.0.0-rc.3] - 2026-03-31
+## [1.0.0-rc.4] - 2026-03-31
 
 Release candidate — all components audited and stable.
 

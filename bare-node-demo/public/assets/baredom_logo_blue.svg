@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="background_color" data-name="background color" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 561 167.76">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0f121a;
+        stroke: #231f20;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        font-family: JetBrainsMono-Regular, 'JetBrains Mono';
+        font-size: 144px;
+        font-variation-settings: 'wght' 400;
+      }
+
+      .cls-3 {
+        fill: #79bde8;
+      }
+
+      .cls-4 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x=".5" y="3.88" width="560" height="160"/>
+  <text class="cls-2" transform="translate(21.3 124.56)"><tspan class="cls-3" x="0" y="0">&lt;</tspan><tspan class="cls-4" x="86.4" y="0">bare</tspan><tspan class="cls-3" x="431.99" y="0">&gt;</tspan></text>
+</svg>

@@ -1,12 +1,8 @@
-# bare-demo — starter template for ClojureScript web apps
+# bare-node-demo — Node/NPM variant of the ClojureScript starter template
 
-A minimal ClojureScript application that demonstrates how to build a web app with BareDOM's native web components — **no framework, no virtual DOM, no reactive runtime, no Node.js**. The stack is a ~120-line hiccup renderer with DOM reconciliation, a single state atom, and pure view functions.
+A minimal ClojureScript application that demonstrates how to build a web app with BareDOM's native web components — **no framework, no virtual DOM, no reactive runtime**. This variant consumes BareDOM via NPM (`@vanelsas/baredom`).
 
-BareDOM is consumed as a **Clojars source dependency** via `deps.edn`. No `package.json`, no `node_modules`, no npm.
-
-Use this as a starting point for your own ClojureScript web application.
-
-> **Prefer NPM?** See [`bare-node-demo/`](../bare-node-demo/) for the same demo consuming BareDOM via npm.
+> **Prefer no Node.js?** See [`bare-demo/`](../bare-demo/) for the same demo using only Clojars and the Clojure CLI — no NPM required.
 
 ---
 
@@ -25,38 +21,37 @@ Use this as a starting point for your own ClojureScript web application.
 
 ## Prerequisites
 
-- [Java](https://adoptium.net/) >= 11 (required by ClojureScript compiler)
-- [Clojure CLI](https://clojure.org/guides/install_clojure) (`clj` / `clojure`)
-
-No Node.js required.
+- [Node.js](https://nodejs.org/) >= 18
+- [Java](https://adoptium.net/) >= 11 (required by shadow-cljs / ClojureScript compiler)
 
 ---
 
 ## Install and run
 
 ```bash
-cd bare-demo
-clj -M:dev
+cd bare-node-demo
+npm install
+npm start
 ```
 
-Then open `http://localhost:8001`. The page hot-reloads on every source change.
+Then open `http://localhost:8003`. The page hot-reloads on every source change.
 
-`clj -M:dev` launches shadow-cljs (via Clojure CLI), compiles the ClojureScript sources, and starts the dev server.
+`npm start` runs `npx shadow-cljs watch app`, which compiles the ClojureScript sources and starts the dev server.
 
 ---
 
 ## Project structure
 
 ```
-bare-demo/
-├── deps.edn                    # Clojars deps: baredom + shadow-cljs
-├── shadow-cljs.edn             # Build config (:deps true — reads deps.edn)
+bare-node-demo/
+├── shadow-cljs.edn             # Standalone shadow-cljs build config
+├── package.json                # NPM deps: @vanelsas/baredom + shadow-cljs
 ├── public/
 │   ├── index.html              # HTML shell + all CSS (including custom property overrides)
 │   └── assets/
 │       ├── baredom_lightmode.svg   # Logo for light mode
 │       └── baredom_darkmode.svg    # Logo for dark mode
-└── src/bare_demo/
+└── src/bare_node_demo/
     ├── core.cljs               # Entry point — registers components, mounts app
     ├── renderer.cljs           # Hiccup → DOM renderer with reconciliation (~120 lines)
     ├── state.cljs              # Single state atom
@@ -104,33 +99,33 @@ Event listeners are stored on each element and properly cleaned up when the hand
 
 ## Registering components
 
-Require each component's export namespace from the `baredom` library (Clojars) and call `init` once in your `init!` function. Registration is idempotent — calling it on an already-registered element is a no-op.
+Import each component from the `@vanelsas/baredom` package and call `.init` once in your `init!` function. Registration is idempotent — calling it on an already-registered element is a no-op.
 
 ```clojure
 (ns my-app.core
   (:require
-   [baredom.exports.x-navbar    :as x-navbar]
-   [baredom.exports.x-sidebar   :as x-sidebar]
-   [baredom.exports.x-button    :as x-button]
-   [baredom.exports.x-modal     :as x-modal]
-   [baredom.exports.x-container :as x-container]
+   ["@vanelsas/baredom/x-navbar"    :as x-navbar]
+   ["@vanelsas/baredom/x-sidebar"   :as x-sidebar]
+   ["@vanelsas/baredom/x-button"    :as x-button]
+   ["@vanelsas/baredom/x-modal"     :as x-modal]
+   ["@vanelsas/baredom/x-container" :as x-container]
    [my-app.renderer :as renderer]
    [my-app.state    :as state]
    [my-app.views.app :as app-view]))
 
 (defn- register-components! []
-  (x-navbar/init)
-  (x-sidebar/init)
-  (x-button/init)
-  (x-modal/init)
-  (x-container/init))
+  (.init x-navbar)
+  (.init x-sidebar)
+  (.init x-button)
+  (.init x-modal)
+  (.init x-container))
 
 (defn init! []
   (register-components!)
   (renderer/mount! (.getElementById js/document "app") view state/app))
 ```
 
-Each namespace (`baredom.exports.x-navbar` etc.) is a ClojureScript source namespace from the BareDOM library. The `init` function registers the custom element with the browser's Custom Elements registry.
+Each import path (`"@vanelsas/baredom/x-navbar"` etc.) is a separate ESM module in the package. The `init` named export registers the custom element with the browser's Custom Elements registry.
 
 ---
 
@@ -243,7 +238,6 @@ Because the components use open Shadow DOM, custom properties pierce the shadow 
 
 ## Key takeaways
 
-- **No Node.js required.** BareDOM is consumed as a Clojars source dependency. The only prerequisites are Java and the Clojure CLI.
 - **No framework required.** BareDOM components are native HTML elements. The renderer is ~120 lines of ClojureScript with no dependencies beyond the standard library. Copy it into any project.
 - **DOM reconciliation respects Web Components.** Elements stay in the DOM across state changes. Lifecycle callbacks run once, shadow DOM is preserved, and CSS transitions are never interrupted.
 - **Scales to real apps.** The declarative hiccup + atom + reconciler pattern handles any number of views, state values, and components without manual DOM wiring.

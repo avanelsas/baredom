@@ -1,4 +1,4 @@
-(ns bare-demo.renderer
+(ns bare-node-demo.renderer
   (:require [clojure.string :as str]))
 
 ;;; ── Prop helpers ──────────────────────────────────────────────────────────

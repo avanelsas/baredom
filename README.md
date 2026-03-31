@@ -47,27 +47,82 @@ BareDOM has been created using Claude Code. The CLAUDE.md file is added to the r
 
 ## Installation
 
-**Step 1 — Add the npm dependency to your `package.json`:**
+BareDOM can be consumed three ways: as a **ClojureScript source dependency** (Clojars), as **standalone ES module files** (no build tool required), or as an **npm package**.
+
+### Option A — ClojureScript via Clojars
+
+Add BareDOM to your `deps.edn`:
+
+```clojure
+{:deps {com.github.avanelsas/baredom {:mvn/version "1.0.0-rc.4"}}}
+```
+
+Or in your `shadow-cljs.edn` dependencies:
+
+```clojure
+:dependencies [[com.github.avanelsas/baredom "1.0.0-rc.4"]]
+```
+
+Then require component namespaces directly and call their `init!` function once at startup:
+
+```clojure
+(ns my-app.core
+  (:require
+   [baredom.exports.x-button  :as x-button]
+   [baredom.exports.x-alert   :as x-alert]
+   [baredom.exports.x-toaster :as x-toaster]
+   [baredom.exports.x-toast   :as x-toast]))
+
+(defn- register-components! []
+  (x-button/init)
+  (x-alert/init)
+  (x-toaster/init)
+  (x-toast/init))
+```
+
+Call `register-components!` once in your `init!` entry point. Registration is idempotent — calling `init` on an already-registered element is a no-op.
+
+### Option B — Vanilla HTML/JS via ES modules
+
+No build tool, no npm, no ClojureScript required. Copy the `dist/` folder (from a release or after running `npm run build`) to your web server and load components directly with `<script type="module">`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BareDOM Example</title>
+</head>
+<body>
+  <x-button variant="primary">Click me</x-button>
+  <x-alert type="success" text="It works!"></x-alert>
+
+  <script type="module">
+    import { init as initButton } from './dist/x-button.js';
+    import { init as initAlert }  from './dist/x-alert.js';
+
+    initButton();
+    initAlert();
+  </script>
+</body>
+</html>
+```
+
+Each component is a separate ES module. Import only the components you use — the browser loads only those files plus the shared `base.js` runtime.
+
+### Option C — npm
+
+Add the npm package to your `package.json`:
 
 ```json
 {
   "dependencies": {
-    "@vanelsas/baredom": "^1.0.0-rc.3"
+    "@vanelsas/baredom": "^1.0.0-rc.4"
   }
 }
 ```
 
-Then run `npm install`.
-
-**Step 2 — shadow-cljs:** no extra configuration needed. shadow-cljs resolves npm packages automatically via the `:npm-deps` or `node_modules` integration built into every shadow-cljs project.
-
----
-
-## Usage
-
-### 1. Register components
-
-Require each component module you need and call `.init` on it once, before any rendering. Only the components you require are included in your bundle.
+Then `npm install`. shadow-cljs resolves npm packages automatically via `node_modules`. From ClojureScript:
 
 ```clojure
 (ns my-app.core
@@ -86,77 +141,26 @@ Require each component module you need and call `.init` on it once, before any r
 
 Call `register-components!` once in your `init!` entry point. Registration is idempotent — calling `.init` on an already-registered element is a no-op.
 
+---
+
+## Usage
+
+### 1. Register components
+
+Whichever installation method you chose above, the pattern is the same: require/import each component you need and call its `init` function once before any rendering. Only the components you register are active on the page.
+
 ### 2. Add a renderer
 
-BareDOM components are plain DOM elements. You need no framework to use them — only a small helper that turns ClojureScript data structures into DOM nodes. Copy the following into your project as `renderer.cljs`:
+BareDOM components are plain DOM elements. You need no framework to use them — only a small renderer that turns ClojureScript hiccup vectors into DOM nodes and keeps them in sync with your state.
 
-```clojure
-(ns my-app.renderer
-  (:require [clojure.string :as str]))
+The `bare-demo/` project includes a complete renderer (~120 lines) with DOM reconciliation that you can copy into any ClojureScript project. See [`bare-demo/src/bare_demo/renderer.cljs`](./bare-demo/src/bare_demo/renderer.cljs). No Node.js required — just Java and the Clojure CLI.
 
-;;; ── Prop helpers ──────────────────────────────────────────────────────────
+What the renderer provides:
 
-(defn- on-key? [k]
-  (str/starts-with? (name k) "on-"))
-
-(defn- event-name [k]
-  ;; :on-click → "click"   :on-value-change → "value-change"
-  (subs (name k) 3))
-
-(defn- set-prop! [el k v]
-  (let [attr (name k)]
-    (cond
-      (on-key? k)  (.addEventListener el (event-name k) v)
-      (nil? v)     (.removeAttribute el attr)
-      (true? v)    (.setAttribute el attr "")
-      (false? v)   (.removeAttribute el attr)
-      :else        (.setAttribute el attr (str v)))))
-
-;;; ── DOM creation ──────────────────────────────────────────────────────────
-
-(declare create-nodes)
-
-(defn- create-element [[tag & args]]
-  (let [has-props? (and (seq args) (map? (first args)))
-        props      (when has-props? (first args))
-        children   (if has-props? (rest args) args)
-        el         (.createElement js/document (name tag))]
-    (doseq [[k v] props]
-      (set-prop! el k v))
-    (doseq [node (mapcat create-nodes children)]
-      (.appendChild el node))
-    el))
-
-(defn create-nodes [x]
-  (cond
-    (nil? x)    []
-    (false? x)  []
-    (string? x) [(.createTextNode js/document x)]
-    (number? x) [(.createTextNode js/document (str x))]
-    (vector? x) [(create-element x)]
-    (seq? x)    (mapcat create-nodes x)
-    :else       []))
-
-;;; ── Mount ─────────────────────────────────────────────────────────────────
-
-(defn render! [container view-fn]
-  (set! (.-innerHTML container) "")
-  (doseq [node (create-nodes (view-fn))]
-    (.appendChild container node)))
-
-(defn mount! [container view-fn state-atom]
-  (render! container view-fn)
-  (add-watch state-atom ::render
-             (fn [_ _ _ _]
-               (render! container view-fn))))
-```
-
-What it does:
-
-- `set-prop!` — routes `:on-*` keys to `addEventListener`; boolean `true` sets the attribute to `""`; `false` / `nil` removes it; everything else calls `setAttribute`
-- `create-nodes` / `create-element` — recursively turns hiccup vectors into DOM nodes
-- `render!` — clears a container element and mounts the result of calling a view function
-- `mount!` — same as `render!`, and also `add-watch`es a state atom so the view re-renders on every state change
+- **Hiccup syntax** — describe UI as nested vectors: `[:tag {:attr val} children]`
+- **Prop handling** — `:on-*` keys become event listeners; `true`/`false` toggle boolean attributes; everything else calls `setAttribute`
+- **DOM reconciliation** — on re-render, the existing DOM is patched in place. Elements are never destroyed and recreated, so Web Components keep their lifecycle, shadow DOM, focus state, and animations intact.
+- **`mount!`** — renders the view and attaches `add-watch` to a state atom so every `swap!` triggers a reconciliation pass
 
 ### 3. Write views with hiccup syntax
 
@@ -245,7 +249,7 @@ Wire everything together in your `init!`:
   (renderer/mount! (.getElementById js/document "app") view app-state))
 ```
 
-`mount!` calls `view` immediately and re-calls it on every `swap!` or `reset!` to `app-state`. The entire view is re-created from scratch on each render — no diffing, no virtual DOM, just plain DOM construction driven by the current value of the atom.
+`mount!` calls `view` immediately and re-calls it on every `swap!` or `reset!` to `app-state`. On each re-render the reconciler diffs the new hiccup tree against the live DOM and applies only the changes needed — attribute updates, text changes, children added or removed. Existing elements stay in place.
 
 ### Theming
 
@@ -397,25 +401,30 @@ Then open `http://localhost:8000`. The dev server serves `public/index.html` and
 
 ---
 
-## bare-demo — framework-free usage example
+## bare-demo — starter template for ClojureScript web apps
 
-The `bare-demo/` folder contains a focused ClojureScript application that shows how to consume five BareDOM components — `x-navbar`, `x-sidebar`, `x-button`, `x-modal`, and `x-container` — with **zero framework overhead**.
+The `bare-demo/` folder is a ready-to-use ClojureScript application that consumes BareDOM components with **zero framework dependency and no Node.js**. It is designed as a starting point for developers building new web apps on top of BareDOM.
 
-The demo is built on three ideas:
+The architecture is built on three ideas:
 
-- **A ~55-line hiccup renderer.** A small `renderer.cljs` file converts nested ClojureScript vectors into real DOM nodes. There is no virtual DOM, no diffing, and no reactive runtime — just `document.createElement`, `setAttribute`, and `addEventListener`.
-- **A single state atom.** All UI state (`sidebar-open`, `modal-open`, `active-nav`) lives in one `defonce` atom. `mount!` attaches `add-watch` so every `swap!` triggers a full re-render.
-- **CSS custom properties for theming.** Component visuals are overridden entirely in `public/index.html` using `--x-<component>-<property>` rules — no JavaScript involved.
+- **Declarative hiccup views.** UI is described as nested ClojureScript vectors — the same syntax used by Reagent and Hiccup. Views are plain functions, easy to compose and reason about.
+- **A single state atom with reactive rendering.** All UI state lives in one `defonce` atom. `mount!` attaches `add-watch` so every `swap!` triggers a re-render automatically.
+- **DOM reconciliation, not rebuild.** On state changes the renderer patches the existing DOM in place — updating attributes, text, and children without destroying elements. Web Components keep their lifecycle, shadow DOM, focus state, and animations intact.
+
+This approach scales naturally: add more state, more views, more components — no manual wiring, no framework overhead, no impedance mismatch with the Web Component model.
 
 **Run it:**
 
 ```bash
-npx shadow-cljs watch bare-demo
+cd bare-demo
+clj -M:dev
 ```
 
 Then open `http://localhost:8001`.
 
 See [`bare-demo/README.md`](./bare-demo/README.md) for a full walkthrough of the renderer, component registration, view syntax, state management, and theming.
+
+> **Prefer NPM?** The `bare-node-demo/` folder contains the same demo consuming BareDOM via npm. Run it with `cd bare-node-demo && npm install && npm start` (opens on `http://localhost:8003`).
 
 ---
 
