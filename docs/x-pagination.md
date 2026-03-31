@@ -28,15 +28,23 @@ A stateless native Web Component that renders a numbered page control with prev/
 
 ## Reflected Properties
 
-| Property   | Type    | Reflects attribute |
-|------------|---------|--------------------|
-| `page`     | number  | `page`             |
-| `disabled` | boolean | `disabled`         |
+| Property        | Type    | Reflects attribute  |
+|-----------------|---------|---------------------|
+| `page`          | number  | `page`              |
+| `total-pages`   | number  | `total-pages`       |
+| `sibling-count` | number  | `sibling-count`     |
+| `boundary-count`| number  | `boundary-count`    |
+| `size`          | string  | `size`              |
+| `disabled`      | boolean | `disabled`          |
+| `label`         | string  | `label`             |
 
 ```js
 const el = document.querySelector('x-pagination');
-el.page = 3;        // sets attribute page="3"
-el.disabled = true; // sets attribute disabled=""
+el.page = 3;            // sets attribute page="3"
+el.totalPages = 20;     // sets attribute total-pages="20"
+el.size = "lg";         // sets attribute size="lg"
+el.disabled = true;     // sets attribute disabled=""
+el.label = "Go to page"; // sets attribute label="Go to page"
 ```
 
 ---

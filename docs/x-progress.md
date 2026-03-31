@@ -26,6 +26,9 @@ A linear progress bar web component with variant colors, optional value label, i
 |-----------------|---------|---------------------|
 | `value`         | string  | `value`             |
 | `max`           | string  | `max`               |
+| `variant`       | string  | `variant`           |
+| `size`          | string  | `size`              |
+| `label`         | string  | `label`             |
 | `indeterminate` | boolean | `indeterminate`     |
 | `showValue`     | boolean | `show-value`        |
 

@@ -21,7 +21,7 @@
 ```clojure
 {:open {:predicate boolean?
         :kind :boolean-attribute
-        :default true}
+        :default false}
  :collapsed {:predicate boolean?
              :kind :boolean-attribute
              :default false}
@@ -110,7 +110,6 @@ The component exposes semantic CSS variables:
 ```clojure
 {:--x-sidebar-bg string?
  :--x-sidebar-fg string?
- :--x-sidebar-border string?
  :--x-sidebar-backdrop string?
  :--x-sidebar-shadow string?
  :--x-sidebar-width string?
@@ -138,7 +137,7 @@ Import the export namespace and call `init`.
 
 ```clojure
 (ns app.main
-  (:require [app.components.x-sidebar.exports.x-sidebar :as x-sidebar]))
+  (:require [baredom.exports.x-sidebar :as x-sidebar]))
 
 (x-sidebar/init)
 ```

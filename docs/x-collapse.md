@@ -40,12 +40,12 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 
 | Event | Bubbles | Composed | Cancelable | Detail |
 |-------|---------|----------|------------|--------|
-| `x-collapse-toggle` | yes | yes | **yes** | `{ open: boolean, source: "trigger" \| "api" }` |
+| `x-collapse-toggle` | yes | yes | **yes** | `{ open: boolean, source: "pointer" \| "keyboard" \| "programmatic" }` |
 | `x-collapse-change` | yes | yes | no | `{ open: boolean }` |
 
 `x-collapse-toggle` fires before the state change. If it is cancelled (`preventDefault()`), the state change and the subsequent `x-collapse-change` event are both suppressed.
 
-`source` is `"trigger"` when the user activates the button, or `"api"` when `toggle()` is called programmatically.
+`source` is `"pointer"` for mouse/touch clicks, `"keyboard"` for Space or Enter key activation, or `"programmatic"` when `toggle()` is called from JavaScript.
 
 ---
 
@@ -74,8 +74,18 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--x-collapse-duration` | `300ms` (or from `duration-ms` attr) | Overrides the transition duration set by `duration-ms` when both are present. The CSS variable wins. |
-| `--x-collapse-ease` | `ease-in-out` | Timing function for the height transition. |
+| `--x-collapse-border-radius` | `8px` | Corner radius of the outer container. |
+| `--x-collapse-border` | `1px solid #e2e8f0` | Border of the outer container. |
+| `--x-collapse-bg` | `#ffffff` | Background of the outer container. |
+| `--x-collapse-trigger-bg` | `#f8fafc` | Background of the trigger button. |
+| `--x-collapse-trigger-bg-hover` | `#f1f5f9` | Trigger background on hover. |
+| `--x-collapse-trigger-color` | `#0f172a` | Trigger text colour. |
+| `--x-collapse-trigger-padding` | `0.75rem 1rem` | Padding inside the trigger button. |
+| `--x-collapse-content-padding` | `1rem` | Padding inside the content panel. |
+| `--x-collapse-font-size` | `0.9375rem` | Font size of the trigger label. |
+| `--x-collapse-font-weight` | `600` | Font weight of the trigger label. |
+| `--x-collapse-chevron-color` | `#64748b` | Colour of the chevron indicator. |
+| `--x-collapse-focus-ring` | `#60a5fa` | Inset focus ring colour on the trigger. |
 
 ---
 
@@ -83,9 +93,9 @@ A disclosure widget that shows or hides a content panel via an animated toggle. 
 
 - The trigger is a native `<button>` element — fully keyboard accessible by default.
 - `aria-expanded` on the trigger reflects the current open state (`"true"` / `"false"`).
-- `aria-controls` on the trigger points to the `id` of the content panel.
+- `aria-controls="panel"` on the trigger points to the id of the content panel (scoped inside shadow DOM).
 - `aria-disabled="true"` is set on the trigger when the `disabled` attribute is present; the button also gains the `disabled` HTML attribute so it is skipped by tab order.
-- The content panel has `role="region"` and `aria-labelledby` pointing to the trigger.
+- The content panel has `role="region"` and `aria-labelledby="trigger"` pointing back to the trigger (scoped inside shadow DOM).
 - When `prefers-reduced-motion: reduce` is in effect, the height transition duration is forced to `0ms`.
 
 ---

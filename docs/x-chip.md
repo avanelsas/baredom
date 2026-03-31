@@ -60,17 +60,17 @@ A compact, themeable chip component for displaying tags, filters, or selection t
 
 ## CSS Custom Properties
 
-| Variable                  | Default          | Description                    |
-|---------------------------|------------------|--------------------------------|
-| `--x-chip-bg`             | theme-dependent  | Chip background color          |
-| `--x-chip-color`          | theme-dependent  | Chip text color                |
-| `--x-chip-border`         | theme-dependent  | Chip border color              |
-| `--x-chip-radius`         | `9999px`         | Border radius (pill by default)|
-| `--x-chip-font-size`      | `0.8125rem`      | Label font size                |
-| `--x-chip-padding-x`      | `10px`           | Horizontal padding             |
-| `--x-chip-padding-y`      | `4px`            | Vertical padding               |
-| `--x-chip-remove-size`    | `16px`           | Remove button size             |
-| `--x-chip-exit-duration`  | `160ms`          | Exit animation duration        |
+| Variable                  | Default (light)              | Default (dark)               | Description                    |
+|---------------------------|------------------------------|------------------------------|--------------------------------|
+| `--x-chip-bg`             | `rgba(0,0,0,0.08)`           | `rgba(255,255,255,0.10)`     | Chip background color          |
+| `--x-chip-color`          | `rgba(0,0,0,0.80)`           | `rgba(255,255,255,0.88)`     | Chip text color                |
+| `--x-chip-border`         | `rgba(0,0,0,0.12)`           | `rgba(255,255,255,0.16)`     | Chip border color              |
+| `--x-chip-radius`         | `9999px`                     | `9999px`                     | Border radius (pill by default)|
+| `--x-chip-font-size`      | `0.875rem`                   | `0.875rem`                   | Label font size                |
+| `--x-chip-padding-x`      | `0.625rem`                   | `0.625rem`                   | Horizontal padding             |
+| `--x-chip-padding-y`      | `0.25rem`                    | `0.25rem`                    | Vertical padding               |
+| `--x-chip-remove-size`    | `1rem`                       | `1rem`                       | Remove button size             |
+| `--x-chip-exit-duration`  | `300ms`                      | `300ms`                      | Exit animation duration        |
 
 Dark-mode defaults are set automatically via `@media (prefers-color-scheme: dark)`.
 

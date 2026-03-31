@@ -69,7 +69,7 @@ Fired after the open state has changed. **Not cancelable.**
 |------|-------------|
 | `trigger` | The trigger element. Click toggles the panel. Any focusable element is valid. |
 | *(default)* | Main body content of the panel. |
-| `footer` | Optional footer content. The footer is hidden via CSS when empty. |
+| `footer` | Optional footer content. The footer is automatically hidden when no elements are slotted. |
 
 ## Shadow parts
 
@@ -151,7 +151,7 @@ Fired after the open state has changed. **Not cancelable.**
 
 ## Accessibility
 
-- The panel has `role="dialog"` and `aria-hidden` toggled between `"true"` (closed) and `"false"` (open).
+- The panel has `role="dialog"` and is marked `inert` when closed (blocks interaction and assistive-technology exposure).
 - When `heading` is non-empty, `aria-labelledby="popover-heading"` is set on the panel.
 - The close button has `aria-label` set to the `close-label` attribute value (default `"Close"`).
 - `Escape` closes the panel when it is open.

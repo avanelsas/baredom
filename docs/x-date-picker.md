@@ -27,7 +27,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `separator`            | string  | `" - "`    | String placed between start and end in range display                 |
 | `auto-swap`            | boolean | `false`    | Automatically swap start/end when end is selected before start       |
 | `range-allow-same-day` | boolean | `false`    | Allow start and end to be the same date in range mode                |
-| `close-on-select`      | boolean | `false`    | Close the calendar after a date is selected (single mode)            |
+| `close-on-select`      | boolean | `false`    | Close the calendar after a date is selected (or range is complete)   |
 | `placeholder`          | string  | —          | Input placeholder text                                               |
 | `disabled`             | boolean | `false`    | Disables the input and calendar                                       |
 | `readonly`             | boolean | `false`    | Input is read-only; calendar can still open but not select           |
@@ -56,11 +56,13 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 ## Events
 
-| Event                       | Cancelable | Detail                                     | Description                              |
-|-----------------------------|------------|--------------------------------------------|------------------------------------------|
-| `x-date-picker-input`       | no         | `{ value?, start?, end?, mode }`           | Fired on each user interaction           |
-| `x-date-picker-change-request` | **yes** | `{ value?, start?, end?, mode }`           | Fired before committing a date selection |
-| `x-date-picker-change`      | no         | `{ value?, start?, end?, mode }`           | Fired after the selection is committed   |
+| Event                       | Cancelable | Detail                                              | Description                              |
+|-----------------------------|------------|------------------------------------------------------|------------------------------------------|
+| `x-date-picker-input`       | no         | `{ value, mode }`                                   | Fired on each user text input            |
+| `x-date-picker-change-request` | **yes** | `{ value?, date?, start?, end?, mode, reason }`     | Fired before committing a date selection |
+| `x-date-picker-change`      | no         | `{ value?, start?, end?, mode, reason }`            | Fired after the selection is committed   |
+
+`reason` is one of `"click"`, `"keyboard"`, `"blur"`, or `"programmatic"`. In single mode, `value` contains the ISO date string. In range mode, `start` and `end` contain the ISO date strings (either may be absent if the range is incomplete).
 
 ---
 
@@ -74,10 +76,12 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 ## Accessibility
 
-- The text input has `role="combobox"` with `aria-expanded` and `aria-haspopup="dialog"`.
+- The text input has `role="combobox"` with `aria-expanded` (synced to open state) and `aria-haspopup="dialog"`.
 - The calendar panel has `role="dialog"` with `aria-modal="true"`.
-- Calendar cells have `role="gridcell"` with `aria-selected` and `aria-disabled`.
-- Full keyboard navigation within the calendar grid.
+- The month label has `aria-live="polite"` for screen reader announcements.
+- Calendar day cells have `role="gridcell"` with `aria-selected` and `aria-disabled`.
+- A screen-reader status region (`aria-live="polite"`, `aria-atomic="true"`) is provided.
+- Full keyboard navigation within the calendar grid with roving tabindex.
 
 ---
 

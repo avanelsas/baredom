@@ -70,7 +70,7 @@
         </label>
       </x-fieldset>
 
-      <h2>Disabled (visual only)</h2>
+      <h2>Disabled</h2>
       <x-fieldset legend="Payment Details" disabled>
         <label>
           Card number
@@ -91,6 +91,21 @@
         <label>
           City
           <input type="text" placeholder="Springfield" />
+        </label>
+      </x-fieldset>
+
+      <h2>With aria-describedby</h2>
+      <p id="contact-desc" style="font-size:13px;color:var(--muted);margin:0 0 8px">
+        We only use this information to confirm your identity.
+      </p>
+      <x-fieldset legend="Contact Details" aria-describedby="contact-desc">
+        <label>
+          Phone
+          <input type="text" placeholder="+1 555-0100" />
+        </label>
+        <label>
+          Email
+          <input type="email" placeholder="you@example.com" />
         </label>
       </x-fieldset>
 
@@ -128,11 +143,8 @@
       const liveFs = document.getElementById("live-fs");
 
       function updateLive() {
-        const legend   = document.getElementById("ctrl-legend").value;
-        const disabled = document.getElementById("ctrl-disabled").checked;
-        liveFs.setAttribute("legend", legend);
-        if (disabled) liveFs.setAttribute("disabled", "");
-        else          liveFs.removeAttribute("disabled");
+        liveFs.legend   = document.getElementById("ctrl-legend").value;
+        liveFs.disabled = document.getElementById("ctrl-disabled").checked;
       }
 
       document.querySelectorAll(".controls input").forEach(el => {

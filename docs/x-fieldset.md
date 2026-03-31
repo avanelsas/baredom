@@ -11,7 +11,7 @@ A semantic form-grouping container that visually and semantically groups related
 | Attribute           | Type    | Default | Description                                       |
 |---------------------|---------|---------|---------------------------------------------------|
 | `legend`            | string  | `""`    | Title text rendered above the grouped content     |
-| `disabled`          | boolean | false   | Visually dims the component (opacity only)        |
+| `disabled`          | boolean | false   | Dims the component and makes content inert        |
 | `aria-label`        | string  | —       | Accessible label (overrides legend-based label)   |
 | `aria-describedby`  | string  | —       | ID ref for an element that describes this group   |
 
@@ -64,7 +64,7 @@ None. `x-fieldset` is a structural container with no user interactions.
 - When `legend` is non-empty, `aria-labelledby` references the legend element providing an accessible name.
 - When `aria-label` is provided it takes precedence over `aria-labelledby`.
 - `aria-describedby` is forwarded to `[part=root]` for supplemental descriptions.
-- `disabled` is visual-only (opacity dimming); it does not propagate `disabled` to child controls. Use the `disabled` attribute on individual controls for form submission behavior.
+- `disabled` dims the component (opacity) and sets the `inert` attribute on `[part=content]`, preventing focus and interaction on all slotted children. Note that `inert` does not set the HTML `disabled` attribute on child controls, so form submission behavior should still be managed via `disabled` on individual controls.
 - Respects `prefers-color-scheme` for dark mode theming.
 
 ## Usage examples

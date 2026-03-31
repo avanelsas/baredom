@@ -23,7 +23,6 @@ A confirmation modal dialog with headline, optional message, and confirm/cancel 
 | `confirm-text` | string  | `"Discard"`       | Label for the confirm button                             |
 | `cancel-text`  | string  | `"Keep editing"`  | Label for the cancel button                              |
 | `danger`       | boolean | `false`           | Styles the confirm button in the danger (red) variant    |
-| `portal`       | string  | —                 | CSS selector of the element to portal the dialog into    |
 
 ---
 
@@ -56,7 +55,7 @@ All events bubble and are composed.
 
 | Reason       | Trigger                       |
 |--------------|-------------------------------|
-| `"button"`   | User clicked the cancel button |
+| `"cancel-button"` | User clicked the cancel button |
 | `"backdrop"` | User clicked the backdrop      |
 | `"escape"`   | User pressed Escape            |
 
@@ -64,10 +63,9 @@ All events bubble and are composed.
 
 ## Accessibility
 
-- Renders a native `<dialog>` element opened with `showModal()`.
-- The dialog receives `aria-labelledby` pointing to the headline element.
-- When `message` is present, `aria-describedby` points to the message element.
-- Focus is trapped inside the dialog while open.
+- Renders a `div` with `role="dialog"` and `aria-modal="true"`.
+- The dialog receives `aria-labelledby` pointing to the unique headline element.
+- Focus is trapped inside the dialog while open (Tab cycles between the two buttons).
 - Escape key fires `cancel-request` with `reason: "escape"`.
 
 ---
@@ -102,13 +100,10 @@ All events bubble and are composed.
 ```js
 const dialog = document.querySelector('x-cancel-dialogue');
 
+// The dialog closes itself before firing confirm/cancel.
+// No need to remove the open attribute manually.
 dialog.addEventListener('x-cancel-dialogue-confirm', () => {
-  dialog.removeAttribute('open');
   performDelete();
-});
-
-dialog.addEventListener('x-cancel-dialogue-cancel', () => {
-  dialog.removeAttribute('open');
 });
 ```
 

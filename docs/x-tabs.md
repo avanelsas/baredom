@@ -19,7 +19,7 @@ It manages:
 ## Installation
 
 ```javascript
-import { init } from "app.exports.x-tabs";
+import { init } from "@vanelsas/baredom/x-tabs";
 
 init();
 ```
@@ -175,9 +175,6 @@ Most visual styling is handled by `x-tab`.
 
 ```css
 --x-tabs-gap
---x-tabs-panel-gap
---x-tabs-transition-duration
---x-tabs-transition-timing
 ```
 
 ---

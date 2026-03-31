@@ -26,7 +26,6 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 | `placeholder`     | string  | `"Search…"`   | Input placeholder text                                              |
 | `empty-text`      | string  | `"No results"`| Text shown when no items match the query                            |
 | `label`           | string  | —             | `aria-label` on the dialog element                                  |
-| `portal`          | string  | —             | CSS selector of element to portal the overlay into                  |
 
 †Default-true boolean: absent = `true`; `attribute="false"` = `false`.
 
@@ -83,10 +82,11 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 
 ## Accessibility
 
-- Renders a `<dialog>` element.
-- Input has `role="combobox"` with `aria-expanded`, `aria-controls`, `aria-activedescendant`.
+- Renders a `<div>` with `role="dialog"` and `aria-modal="true"`.
+- Input has `role="combobox"` with `aria-expanded`, `aria-controls` (linked to the listbox), and `aria-activedescendant` (tracks the highlighted item).
 - The list has `role="listbox"`; each item has `role="option"`.
 - Disabled items have `aria-disabled="true"`.
+- Group headers are hidden from the accessibility tree via `aria-hidden="true"`.
 
 ---
 

@@ -16,7 +16,7 @@ An accessible, themeable checkbox control that supports checked, indeterminate, 
 
 | Attribute           | Type    | Default | Description                                                         |
 |---------------------|---------|---------|---------------------------------------------------------------------|
-| `checked`           | boolean | `false` | Whether the checkbox is checked                                     |
+| `checked`           | boolean | `false` | Whether the checkbox is checked. Setting `checked="false"` is treated as absent (unchecked). |
 | `indeterminate`     | boolean | `false` | Indeterminate (mixed) state — overrides `checked` visually          |
 | `disabled`          | boolean | `false` | Disables interaction                                                |
 | `readonly`          | boolean | `false` | Prevents user toggling (still focusable)                            |
@@ -60,15 +60,22 @@ Both events bubble and are composed.
 - When checked, clicking transitions to `checked=false, indeterminate=false`.
 - When unchecked, clicking transitions to `checked=true, indeterminate=false`.
 
+## Form behaviour
+
+- `formAssociated` is `true`; the element participates in form submission.
+- The submitted value is the `value` attribute (default `"on"`) when checked; nothing is submitted when unchecked.
+- On form reset, `checked` and `indeterminate` attributes are removed. The `value` attribute is not restored by reset (matching native `<input type="checkbox">` behaviour).
+
 ---
 
 ## Accessibility
 
-- The host element has `role="checkbox"` and `aria-checked` set to `"true"`, `"false"`, or `"mixed"`.
-- `tabindex="0"` when enabled; `tabindex="-1"` when disabled.
-- `aria-disabled="true"` when disabled.
-- `aria-required="true"` when required.
-- `aria-readonly="true"` when readonly.
+- The internal `<button part="control">` carries `role="checkbox"` and `aria-checked` set to `"true"`, `"false"`, or `"mixed"`.
+- `tabindex="0"` on the control when enabled; `tabindex="-1"` when disabled.
+- `aria-disabled="true"` on the control when disabled.
+- `aria-required="true"` on the control when required.
+- `aria-readonly="true"` on the control when readonly.
+- `aria-label`, `aria-labelledby`, and `aria-describedby` are forwarded from the host attribute to the control.
 - Keyboard: `Space` toggles; `Enter` toggles (unless readonly/disabled).
 
 ---

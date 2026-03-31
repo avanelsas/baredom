@@ -37,7 +37,7 @@ A fixed-position stack that manages a collection of `x-alert` notifications, exp
 
 | Method  | Signature | Notes |
 |---------|-----------|-------|
-| `push`  | `push(options)` | Creates and appends an `x-alert`; ignored when `count >= max` |
+| `push`  | `push(options)` → `string \| undefined` | Creates and appends an `x-alert`; returns the notification ID string, or `undefined` when `count >= max` |
 | `clear` | `clear()` | Immediately removes all current `x-alert` elements (bypasses exit animation) |
 
 ### push(options)
@@ -87,6 +87,16 @@ All events bubble and are composed. None are cancelable.
 
 ---
 
+## Notification Identification
+
+Each pushed `x-alert` receives a `data-notification-id` attribute containing its ID (auto-generated or the `id` passed to `push()`). Use this to query or target a specific notification:
+
+```js
+const alert = nc.shadowRoot.querySelector('[data-notification-id="my-id"]');
+```
+
+---
+
 ## Shadow DOM Structure
 
 ```
@@ -101,8 +111,8 @@ All events bubble and are composed. None are cancelable.
 
 ## Accessibility
 
-- `x-notification-center` itself has no interactive content; all accessibility is delegated to the individual `x-alert` elements.
-- `x-alert` elements use `role="alert"` (assertive) for `warning`/`error` types and `role="status"` (polite) for `info`/`success`.
+- The notification container has `role="log"` and `aria-live="polite"`, forming a live region so screen readers announce new notifications as they appear.
+- Individual `x-alert` elements use `role="alert"` (assertive) for `warning`/`error` types and `role="status"` (polite) for `info`/`success`.
 
 ---
 

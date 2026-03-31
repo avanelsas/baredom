@@ -290,22 +290,30 @@
       }
 
       .event-log {
-        display: grid;
-        gap: 8px;
-        max-height: 260px;
+        min-height: 72px;
+        max-height: 320px;
         overflow: auto;
+        padding: 12px;
+        border-radius: 12px;
+        background: #111827;
+        color: #f9fafb;
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.6;
       }
 
-      .event-item {
-        border: 1px solid var(--demo-border);
-        border-radius: 10px;
-        padding: 10px 12px;
-        background: var(--demo-bg);
+      .event-log .ev-time {
+        color: #6b7280;
       }
 
-      .event-item strong {
-        display: inline-block;
-        min-width: 80px;
+      .event-log .ev-name {
+        color: #a5b4fc;
+        font-weight: 700;
+      }
+
+      .event-log .ev-detail {
+        color: #d1d5db;
       }
 
       .status-grid {
@@ -423,7 +431,6 @@
                 <label>Utilities</label>
                 <div class="button-row">
                   <button id="reset-button" type="button">Reset demo</button>
-                  <button id="clear-log-button" type="button">Clear event log</button>
                 </div>
               </div>
             </div>
@@ -435,8 +442,16 @@
           </section>
 
           <section class="card">
-            <h2>Event log</h2>
-            <div id="event-log" class="event-log"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <h2 style="margin:0">Events</h2>
+              <button id="clear-event-log-button" type="button" style="font-size:0.8rem;padding:6px 10px">Clear</button>
+            </div>
+            <p>
+              All <code>toggle</code> and <code>dismiss</code> events fired by
+              the <code>x-sidebar</code> element appear here with a timestamp
+              and detail payload.
+            </p>
+            <div id="event-log" class="event-log">Waiting for events…</div>
           </section>
 
           <section class="card">
@@ -553,7 +568,7 @@
         var setCollapsedTrueButton = document.getElementById("set-collapsed-true");
         var setCollapsedFalseButton = document.getElementById("set-collapsed-false");
         var resetButton = document.getElementById("reset-button");
-        var clearLogButton = document.getElementById("clear-log-button");
+        var clearLogButton = document.getElementById("clear-event-log-button");
         var toggleButton = document.getElementById("main-toggle-button");
         var modalButton = document.getElementById("main-modal-button");
         var dockedButton = document.getElementById("main-docked-button");
@@ -579,18 +594,26 @@
           return item;
         }
 
-        function addEventLog(name, detail) {
-          var item = document.createElement("div");
-          item.className = "event-item";
-          item.innerHTML =
-            "<strong>" +
-            name +
-            "</strong> <code>" +
-            escapeHtml(JSON.stringify(detail)) +
-            "</code>";
+        var eventLines = [];
+        var MAX_EVENT_LINES = 30;
 
-          eventLog.prepend(item);
-          console.log("[x-sidebar demo event]", name, detail);
+        function addEventLog(name, detail) {
+          var ts = new Date().toLocaleTimeString();
+          var line = '<span class="ev-time">' + ts + '</span>  ' +
+                     '<span class="ev-name">' + name + '</span>  ' +
+                     '<span class="ev-detail">' + escapeHtml(JSON.stringify(detail)) + '</span>';
+          eventLines.push(line);
+          if (eventLines.length > MAX_EVENT_LINES) {
+            eventLines = eventLines.slice(-MAX_EVENT_LINES);
+          }
+          eventLog.innerHTML = eventLines.join("\n");
+          eventLog.scrollTop = eventLog.scrollHeight;
+          console.log("[x-sidebar event]", name, detail);
+        }
+
+        function clearEventLog() {
+          eventLines = [];
+          eventLog.innerHTML = "Waiting for events\u2026";
         }
 
         function escapeHtml(value) {
@@ -693,10 +716,6 @@
           sidebar.setAttribute("breakpoint", "768");
           sidebar.setAttribute("label", "Sidebar");
           syncControlsFromElement();
-          addEventLog("demo-reset", {
-            open: sidebar.open,
-            collapsed: sidebar.collapsed
-          });
         }
 
         labelInput.addEventListener("input", applyControlsToElement);
@@ -728,9 +747,7 @@
 
         resetButton.addEventListener("click", resetDemo);
 
-        clearLogButton.addEventListener("click", function () {
-          eventLog.innerHTML = "";
-        });
+        clearLogButton.addEventListener("click", clearEventLog);
 
         toggleButton.addEventListener("click", function () {
           sidebar.open = !sidebar.open;
@@ -765,11 +782,6 @@
         });
 
         syncControlsFromElement();
-        addEventLog("demo-ready", {
-          tagName: "x-sidebar",
-          open: sidebar.open,
-          collapsed: sidebar.collapsed
-        });
       })();
     </script>
   </body>

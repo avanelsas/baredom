@@ -54,9 +54,11 @@ All properties reflect to their corresponding attributes. Setting a property upd
 
 The `x-format` and `y-format` attributes accept a format spec string that controls how axis tick labels **and tooltip values** are rendered:
 
+When the attribute is omitted, values are auto-formatted: integers are shown as-is, values ≥ 1 000 are abbreviated with K/M suffixes, and decimals are shown to one decimal place.
+
 | Spec        | Example output | Description |
 |-------------|----------------|-------------|
-| `"raw"`     | `42.5`         | Raw value, no transformation (default) |
+| `"raw"`     | `42.5`         | Raw value converted to string, no transformation |
 | `"int"`     | `42`           | Integer, rounded |
 | `"fixed:2"` | `42.50`        | Fixed decimal places (N after the colon) |
 | `"pct"`     | `42.5%`        | Percentage suffix |
@@ -133,7 +135,7 @@ The `data` attribute accepts a JSON string representing an array of series objec
 |-------------------|-------------|
 | `container`       | Outermost div wrapping the SVG. Has `tabindex="0"` for keyboard focus. |
 | `svg`             | The `<svg>` element that contains all chart drawing. |
-| `sr-only`         | Visually-hidden region with `aria-live="polite"` for screen-reader announcements. |
+| `sr-only`         | Visually-hidden region with `role="status"` and `aria-live="polite"` for screen-reader announcements. |
 | `tooltip`         | The floating tooltip card shown on hover when `tooltip` attribute is set. |
 | `tooltip-header`  | The x-axis label row at the top of the tooltip card. |
 | `tooltip-body`    | Container for the per-series rows. |
@@ -193,9 +195,9 @@ Dark mode values are applied automatically via `@media (prefers-color-scheme: da
 ## Accessibility
 
 - `[part=container]` is a `<div>` with `tabindex="0"`, making the chart keyboard-focusable.
-- When focused, arrow keys move the selection across data points within a series; Tab moves between series.
+- When focused: ArrowLeft/ArrowRight move the selection across data points within the current series; ArrowUp/ArrowDown switch between series; Enter/Space fires `x-chart-select` for the current selection.
 - The currently selected data point is announced via `[part=sr-only]` which has `role="status"` and `aria-live="polite"`.
-- Chart SVG elements use `<title>` and `<desc>` children for basic SVG accessibility.
+- The chart SVG is marked `aria-hidden="true"`; all screen-reader content is conveyed through `[part=sr-only]`.
 - All animations respect `@media (prefers-reduced-motion: reduce)` — transitions and skeleton animations are disabled when the user has requested reduced motion.
 - The `disabled` attribute sets `aria-disabled="true"` on the container and removes `tabindex`.
 
@@ -298,6 +300,5 @@ x-chart {
   --x-chart-series-1: #7c3aed;
   --x-chart-series-2: #db2777;
   --x-chart-radius: 6px;
-  --x-chart-line-width: 3;
 }
 ```

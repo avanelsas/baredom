@@ -1,0 +1,5 @@
+{:paths ["scripts"]
+ :tasks
+ {release {:doc "Cut a new release. Usage: bb release :patch|:minor|:major"
+           :requires ([release])
+           :task (release/-main *command-line-args*)}}}

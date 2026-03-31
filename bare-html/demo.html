@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BareDOM Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    x-navbar {
+      --x-navbar-radius: 0;
+    }
+
+    x-sidebar {
+      --x-sidebar-bg: #1e293b;
+      --x-sidebar-fg: #e2e8f0;
+      --x-sidebar-border: rgba(255, 255, 255, 0.06);
+    }
+
+    x-modal {
+      --x-modal-bg: #1e293b;
+      --x-modal-fg: #e2e8f0;
+      --x-modal-border: rgba(255, 255, 255, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      x-sidebar {
+        --x-sidebar-bg: #0d1628;
+        --x-sidebar-border: rgba(255, 255, 255, 0.04);
+      }
+      x-modal {
+        --x-modal-bg: #0d1628;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      color-scheme: light dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #f8fafc; }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-main {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .welcome {
+      padding: 64px 0 32px;
+    }
+
+    .welcome h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0 0 16px;
+      line-height: 1.2;
+    }
+
+    .welcome p {
+      font-size: 1.0625rem;
+      color: #64748b;
+      margin: 0 0 32px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .welcome p { color: #94a3b8; }
+    }
+
+    .sidebar-inner {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 240px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      flex-shrink: 0;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+    }
+
+    .sidebar-heading {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      padding: 12px 12px 6px;
+      margin: 0;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #e2e8f0;
+    }
+
+    .sidebar-item--active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+
+    .sidebar-item--active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: #818cf8;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Modal body content ── */
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-intro {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #94a3b8;
+    }
+
+    .modal-formula {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    .modal-formula-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .modal-formula-code {
+      margin: 0;
+      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 14px;
+      color: #a5b4fc;
+    }
+
+    .modal-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .modal-feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px;
+      background: rgba(0, 0, 0, 0.15);
+      gap: 4px;
+    }
+
+    .modal-feature-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #a5b4fc;
+      line-height: 1;
+    }
+
+    .modal-feature-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .modal-note {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #64748b;
+    }
+
+    /* ── Event log panel ── */
+
+    #event-log {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 340px;
+      z-index: 9999;
+    }
+
+    #event-log x-card {
+      --x-card-background: #ffffff;
+      --x-card-color: #0f172a;
+      --x-card-border-color: rgba(0, 0, 0, 0.1);
+      --x-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #event-log x-card {
+        --x-card-background: #1e293b;
+        --x-card-color: #e2e8f0;
+        --x-card-border-color: rgba(255, 255, 255, 0.08);
+        --x-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    .event-log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .event-log-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-title { color: #94a3b8; }
+    }
+
+    .event-log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: baseline;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-size: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-entry { border-bottom-color: rgba(255, 255, 255, 0.05); }
+    }
+
+    .event-log-time {
+      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 10px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .event-log-type {
+      font-weight: 600;
+      color: #6366f1;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .event-log-type { color: #a5b4fc; }
+    }
+
+    .event-log-source {
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .event-log-empty {
+      margin: 0;
+      padding: 12px 0 4px;
+      font-size: 12px;
+      font-style: italic;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── App shell ── -->
+  <div class="app-shell">
+
+    <!-- Navbar -->
+    <x-navbar label="BareDOM Demo" elevated>
+      <picture slot="brand">
+        <source srcset="../bare-demo/public/assets/baredom_darkmode.svg" media="(prefers-color-scheme: dark)">
+        <img src="../bare-demo/public/assets/baredom_lightmode.svg" height="32" alt="BareDOM">
+      </picture>
+      <div slot="actions">
+        <x-button id="menu-btn" variant="ghost" size="sm">Menu</x-button>
+      </div>
+    </x-navbar>
+
+    <!-- Sidebar -->
+    <x-sidebar id="sidebar" placement="left" variant="modal" label="Navigation">
+      <div class="sidebar-inner">
+        <div class="sidebar-header">
+          <picture>
+            <source srcset="../bare-demo/public/assets/baredom_darkmode.svg" media="(prefers-color-scheme: dark)">
+            <img src="../bare-demo/public/assets/baredom_lightmode.svg" height="28" alt="BareDOM">
+          </picture>
+        </div>
+        <div class="sidebar-content">
+          <p class="sidebar-heading">Menu</p>
+          <button class="sidebar-item sidebar-item--active" data-nav="home">Home</button>
+          <button class="sidebar-item" data-nav="components">Components</button>
+          <button class="sidebar-item" data-nav="documentation">Documentation</button>
+          <button class="sidebar-item" data-nav="github">GitHub</button>
+        </div>
+      </div>
+    </x-sidebar>
+
+    <!-- Main content -->
+    <div class="app-main">
+      <x-container size="md" padding="lg">
+        <div class="welcome">
+          <h1>Welcome to BareDOM</h1>
+          <p>Native web components. Zero runtime. No framework required.
+            Set an attribute — the DOM updates. Remove it — the DOM updates back.</p>
+          <x-button id="learn-more-btn" variant="primary">Learn more</x-button>
+        </div>
+      </x-container>
+    </div>
+
+    <!-- Modal -->
+    <x-modal id="about-modal" label="About BareDOM" size="md">
+      <span slot="header">About BareDOM</span>
+      <div class="modal-body">
+        <p class="modal-intro">
+          BareDOM is a library of 56 native UI components built entirely on web standards —
+          Custom Elements v1, Shadow DOM, and ES modules. No framework. No runtime. No virtual DOM.
+        </p>
+        <div class="modal-formula">
+          <span class="modal-formula-label">Core rendering model</span>
+          <pre class="modal-formula-code">DOM = f(attributes, properties)</pre>
+        </div>
+        <div class="modal-features">
+          <div class="modal-feature">
+            <span class="modal-feature-value">56</span>
+            <span class="modal-feature-label">Components</span>
+          </div>
+          <div class="modal-feature">
+            <span class="modal-feature-value">0</span>
+            <span class="modal-feature-label">Runtime deps</span>
+          </div>
+          <div class="modal-feature">
+            <span class="modal-feature-value">100%</span>
+            <span class="modal-feature-label">Stateless</span>
+          </div>
+        </div>
+        <p class="modal-note">
+          Every component compiles to a tree-shakeable ES module via Google Closure's
+          advanced compilation pass. Import only what you use.
+        </p>
+      </div>
+      <div slot="footer" style="display:flex;justify-content:flex-end;gap:8px">
+        <x-button id="modal-close-btn" variant="ghost">Close</x-button>
+        <x-button id="modal-start-btn" variant="primary">Get started</x-button>
+      </div>
+    </x-modal>
+
+  </div>
+
+  <!-- ── Event log ── -->
+  <div id="event-log"></div>
+
+  <script type="module">
+    import { init as initNavbar }    from '../dist/x-navbar.js';
+    import { init as initSidebar }   from '../dist/x-sidebar.js';
+    import { init as initButton }    from '../dist/x-button.js';
+    import { init as initModal }     from '../dist/x-modal.js';
+    import { init as initContainer } from '../dist/x-container.js';
+    import { init as initCard }      from '../dist/x-card.js';
+
+    initNavbar();
+    initSidebar();
+    initButton();
+    initModal();
+    initContainer();
+    initCard();
+
+    // ── Refs ─────────────────────────────────────────────────────────────────
+
+    const sidebar      = document.getElementById('sidebar');
+    const modal        = document.getElementById('about-modal');
+    const menuBtn      = document.getElementById('menu-btn');
+    const learnMoreBtn = document.getElementById('learn-more-btn');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalStartBtn = document.getElementById('modal-start-btn');
+    const navItems     = document.querySelectorAll('[data-nav]');
+
+    // ── State + render ────────────────────────────────────────────────────────
+
+    let sidebarOpen = false;
+    let modalOpen   = false;
+    let activeNav   = 'home';
+
+    function render() {
+      if (sidebarOpen) { sidebar.setAttribute('open', ''); }
+      else             { sidebar.removeAttribute('open'); }
+
+      if (modalOpen) { modal.setAttribute('open', ''); }
+      else           { modal.removeAttribute('open'); }
+
+      navItems.forEach(btn => {
+        const active = btn.dataset.nav === activeNav;
+        btn.className = active ? 'sidebar-item sidebar-item--active' : 'sidebar-item';
+      });
+    }
+
+    // ── Event wiring ──────────────────────────────────────────────────────────
+
+    menuBtn.addEventListener('press', () => {
+      sidebarOpen = !sidebarOpen;
+      render();
+    });
+
+    sidebar.addEventListener('toggle', e => {
+      sidebarOpen = e.detail.open;
+      render();
+    });
+
+    navItems.forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeNav   = btn.dataset.nav;
+        sidebarOpen = false;
+        render();
+      });
+    });
+
+    learnMoreBtn.addEventListener('press', () => {
+      modalOpen = true;
+      render();
+    });
+
+    modalCloseBtn.addEventListener('press', () => {
+      modalOpen = false;
+      render();
+    });
+
+    modalStartBtn.addEventListener('press', () => {
+      modalOpen = false;
+      render();
+    });
+
+    modal.addEventListener('x-modal-dismiss', () => {
+      modalOpen = false;
+      render();
+    });
+
+    // ── Event log ─────────────────────────────────────────────────────────────
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function pad3(n) { return String(n).padStart(3, '0'); }
+
+    function formatTime(d) {
+      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}.${pad3(d.getMilliseconds())}`;
+    }
+
+    const logContainer = document.getElementById('event-log');
+    const card         = document.createElement('x-card');
+    const logHeader    = document.createElement('div');
+    const logTitle     = document.createElement('span');
+    const clearBtn     = document.createElement('x-button');
+    const logList      = document.createElement('div');
+    const emptyMsg     = document.createElement('p');
+
+    card.setAttribute('variant', 'elevated');
+    card.setAttribute('padding', 'sm');
+
+    logHeader.className  = 'event-log-header';
+    logTitle.className   = 'event-log-title';
+    logTitle.textContent = 'Event Log';
+
+    clearBtn.setAttribute('variant', 'ghost');
+    clearBtn.setAttribute('size', 'sm');
+    clearBtn.textContent = 'Clear';
+
+    logList.className    = 'event-log-list';
+    emptyMsg.className   = 'event-log-empty';
+    emptyMsg.textContent = 'No events yet';
+
+    logHeader.appendChild(logTitle);
+    logHeader.appendChild(clearBtn);
+    card.appendChild(logHeader);
+    card.appendChild(logList);
+    card.appendChild(emptyMsg);
+    logContainer.appendChild(card);
+
+    clearBtn.addEventListener('click', () => {
+      logList.innerHTML      = '';
+      emptyMsg.style.display = '';
+    });
+
+    function logEvent(e) {
+      const timeEl = document.createElement('span');
+      const typeEl = document.createElement('span');
+      const srcEl  = document.createElement('span');
+      const entry  = document.createElement('div');
+
+      timeEl.className   = 'event-log-time';
+      timeEl.textContent = formatTime(new Date());
+      typeEl.className   = 'event-log-type';
+      typeEl.textContent = e.type;
+      srcEl.className    = 'event-log-source';
+      srcEl.textContent  = e.target.tagName.toLowerCase();
+      entry.className    = 'event-log-entry';
+
+      entry.appendChild(timeEl);
+      entry.appendChild(typeEl);
+      entry.appendChild(srcEl);
+
+      // newest on top
+      logList.insertBefore(entry, logList.firstChild);
+      emptyMsg.style.display = 'none';
+
+      // cap at 50 entries
+      if (logList.childElementCount > 50) {
+        logList.removeChild(logList.lastChild);
+      }
+    }
+
+    ['press', 'toggle', 'x-modal-dismiss'].forEach(name => {
+      document.addEventListener(name, logEvent);
+    });
+
+    document.addEventListener('click', e => {
+      if (e.target.tagName.toLowerCase().startsWith('x-')) {
+        logEvent(e);
+      }
+    });
+
+    // ── Initial render ────────────────────────────────────────────────────────
+    render();
+  </script>
+</body>
+</html>

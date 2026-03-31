@@ -17,6 +17,8 @@ A styled, accessible button-like anchor that initiates a native browser file dow
 | `disabled`   | boolean | false   | Prevents click interaction and dims the component    |
 | `aria-label` | string  | —       | Accessible label when slot content is absent         |
 
+When `href` is a `data:` URL and no `filename` is provided, the component automatically sets the `download` attribute on the inner anchor. This is required because browsers block top-level navigation to `data:` URLs — without the `download` attribute the link would do nothing.
+
 ## Properties
 
 | Property   | Type    | Reflects   | Description                        |

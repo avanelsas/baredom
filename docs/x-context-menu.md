@@ -38,24 +38,25 @@ A positioned dropdown overlay that opens on a trigger click. Items are placed in
 
 ## Events
 
-| Event                        | Cancelable | Detail       | Description                           |
-|------------------------------|------------|--------------|---------------------------------------|
-| `x-context-menu-open-request`  | **yes**  | `{}`         | Fired before opening                  |
-| `x-context-menu-open`          | no       | `{}`         | Fired after opening                   |
-| `x-context-menu-close-request` | **yes**  | `{}`         | Fired before closing                  |
-| `x-context-menu-close`         | no       | `{}`         | Fired after closing                   |
-| `x-context-menu-select`        | no       | `{ item }`   | Fired when a menu item is selected    |
+| Event                        | Cancelable | Detail          | Description                           |
+|------------------------------|------------|-----------------|---------------------------------------|
+| `x-context-menu-open-request`  | **yes**  | `{ reason }`    | Fired before opening                  |
+| `x-context-menu-open`          | no       | `{ reason }`    | Fired after opening                   |
+| `x-context-menu-close-request` | **yes**  | `{ reason }`    | Fired before closing                  |
+| `x-context-menu-close`         | no       | `{ reason }`    | Fired after closing                   |
+| `x-context-menu-select`        | no       | `{ item }`      | Fired when a menu item is selected    |
 
 ---
 
 ## Slots
 
-| Slot      | Description                         |
-|-----------|-------------------------------------|
-| `trigger` | The element that opens the menu     |
-| *(default)* | Menu item elements                |
+| Slot        | Description       |
+|-------------|-------------------|
+| *(default)* | Menu item elements |
 
 Slotted items with `role="menuitem"` are keyboard-navigable via `ArrowUp` / `ArrowDown` and selectable with `Enter` / `Space`.
+
+The component does not own a trigger element. Use `openAt(x, y)` or `openForElement(el)` to open the menu from your own trigger handler.
 
 ---
 
@@ -82,7 +83,7 @@ The panel is positioned using pure DOM geometry. When the preferred placement ov
 
 - The panel has `role="menu"`.
 - Each `role="menuitem"` item is keyboard navigable.
-- The trigger receives `aria-haspopup="menu"` and `aria-expanded`.
+- Set `aria-haspopup="menu"` and toggle `aria-expanded` on your own trigger element in response to the `x-context-menu-open` and `x-context-menu-close` events.
 
 ---
 

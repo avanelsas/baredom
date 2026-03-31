@@ -324,7 +324,10 @@
 
 <header>
   <div class="row">
-    <img src="./assets/baredom_logo_transparent.svg" width=140 height=40/>
+    <picture>
+      <source srcset="./assets/baredom_darkmode.svg" media="(prefers-color-scheme: dark)"/>
+      <img src="./assets/baredom_lightmode.svg" width=140 height=40/>
+    </picture>
     <div class="header-eyebrow">Web Components</div>
   </div>
   <h1>Library demo</h1>

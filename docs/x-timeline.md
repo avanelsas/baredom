@@ -1,6 +1,6 @@
 # x-timeline
 
-A coordinator component that wraps `x-timeline-item` children. Manages item indexing, last-item tracking, position assignment, and stripe alternation. Works together with [`x-timeline-item`](../../x_timeline_item/docs/x_timeline_item.md).
+A coordinator component that wraps `x-timeline-item` children. Manages item indexing, last-item tracking, position assignment, and stripe alternation. Works together with [`x-timeline-item`](./x-timeline-item.md).
 
 ## Tag name
 

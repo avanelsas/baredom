@@ -2,9 +2,13 @@
 dist/
 out/
 target/
+public/js/
 
 # Shadow-cljs cache
 .shadow-cljs/
+
+# reports
+report.html
 
 # Node
 node_modules/
@@ -20,6 +24,7 @@ node_modules/
 
 # Clojure
 .cpcache/
+pom.xml
 
 # Claude
 .claude/

@@ -3,6 +3,8 @@
  :aliases
  {:build  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.5"}}
            :ns-default build}
-  :deploy {:deps       {slipset/deps-deploy {:mvn/version "0.2.2"}}
-           :exec-fn    deps-deploy.deploy/deploy
-           :exec-args  {:artifact "target/baredom-0.1.0-alpha.jar"}}}}
+  :deploy {:deps       {slipset/deps-deploy {:mvn/version "0.2.1"}}
+           :mvn/repos  {"clojars" {:url "https://repo.clojars.org/"}}
+           :exec-fn    deps-deploy.deps-deploy/deploy
+           :exec-args  {:artifact  "target/baredom-1.0.0-rc.3.jar"
+                        :installer :remote}}}}

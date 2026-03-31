@@ -3,7 +3,7 @@
 
  :dev-http
  {8000 "public"
-  8021 "out/test"}
+  8080 "."}
 
  :builds
  {:app
@@ -11,9 +11,9 @@
    :output-dir "public/js"
    :asset-path "/js"
    :modules
-   {:main {:init-fn app.core/init!}}
+   {:main {:init-fn baredom.core/init!}}
    :devtools
-   {:after-load app.core/start!}}
+   {:after-load baredom.core/start!}}
 
   :test
   {:target :browser-test
@@ -27,6 +27,12 @@
    :output-to "out/karma/test.js"
    :ns-regexp "-test$"}
 
+  :bare-html
+  {:target     :browser
+   :output-dir "bare-html/js"
+   :asset-path "./js"
+   :modules    {:main {:init-fn baredom.exports.all/init}}}
+
   :lib
   {:target :esm
    :output-dir "dist"
@@ -36,283 +42,282 @@
 
     :x-button
     {:exports
-     {init app.exports.x-button/init}
+     {init baredom.exports.x-button/init}
      :depends-on #{:base}}
 
     :x-card
     {:exports
-     {init app.exports.x-card/init}
+     {init baredom.exports.x-card/init}
      :depends-on #{:base}}
 
     :x-container
     {:exports
-     {init app.exports.x-container/init}
+     {init baredom.exports.x-container/init}
      :depends-on #{:base}}
 
     :x-grid
     {:exports
-     {init app.exports.x-grid/init}
+     {init baredom.exports.x-grid/init}
      :depends-on #{:base}}
 
     :x-navbar
     {:exports
-     {init app.exports.x-navbar/init}
+     {init baredom.exports.x-navbar/init}
      :depends-on #{:base}}
 
     :x-sidebar
     {:exports
-     {init app.exports.x-sidebar/init}
+     {init baredom.exports.x-sidebar/init}
      :depends-on #{:base}}
 
     :x-stat
     {:exports
-     {init app.exports.x-stat/init}
+     {init baredom.exports.x-stat/init}
      :depends-on #{:base}}
 
     :x-tab
     {:exports
-     {init app.exports.x-tab/init}
+     {init baredom.exports.x-tab/init}
      :depends-on #{:base}}
 
     :x-tabs
     {:exports
-     {init app.exports.x-tabs/init}
+     {init baredom.exports.x-tabs/init}
      :depends-on #{:base}}
 
     :x-alert
     {:exports
-     {init app.exports.x-alert/init}
+     {init baredom.exports.x-alert/init}
      :depends-on #{:base}}
 
     :x-avatar
     {:exports
-     {init app.exports.x-avatar/init}
+     {init baredom.exports.x-avatar/init}
      :depends-on #{:base}}
 
     :x-avatar-group
     {:exports
-     {init app.exports.x-avatar-group/init}
+     {init baredom.exports.x-avatar-group/init}
      :depends-on #{:base}}
 
     :x-badge
     {:exports
-     {init app.exports.x-badge/init}
+     {init baredom.exports.x-badge/init}
      :depends-on #{:base}}
 
     :x-breadcrumbs
     {:exports
-     {init app.exports.x-breadcrumbs/init}
+     {init baredom.exports.x-breadcrumbs/init}
      :depends-on #{:base}}
 
     :x-chart
     {:exports
-     {init app.exports.x-chart/init}
+     {init baredom.exports.x-chart/init}
      :depends-on #{:base}}
 
     :x-context-menu
     {:exports
-     {init app.exports.x-context-menu/init}
+     {init baredom.exports.x-context-menu/init}
      :depends-on #{:base}}
 
     :x-cancel-dialogue
     {:exports
-     {init app.exports.x-cancel-dialogue/init}
+     {init baredom.exports.x-cancel-dialogue/init}
      :depends-on #{:base}}
 
     :x-checkbox
     {:exports
-     {init app.exports.x-checkbox/init}
+     {init baredom.exports.x-checkbox/init}
      :depends-on #{:base}}
 
     :x-chip
     {:exports
-     {init app.exports.x-chip/init}
+     {init baredom.exports.x-chip/init}
      :depends-on #{:base}}
 
     :x-collapse
     {:exports
-     {init app.exports.x-collapse/init}
+     {init baredom.exports.x-collapse/init}
      :depends-on #{:base}}
 
     :x-command-palette
     {:exports
-     {init app.exports.x-command-palette/init}
+     {init baredom.exports.x-command-palette/init}
      :depends-on #{:base}}
 
     :x-copy
     {:exports
-     {init app.exports.x-copy/init}
+     {init baredom.exports.x-copy/init}
      :depends-on #{:base}}
 
     :x-date-picker
     {:exports
-     {init app.exports.x-date-picker/init}
+     {init baredom.exports.x-date-picker/init}
      :depends-on #{:base}}
 
     :x-divider
     {:exports
-     {init app.exports.x-divider/init}
+     {init baredom.exports.x-divider/init}
      :depends-on #{:base}}
 
     :x-drawer
     {:exports
-     {init app.exports.x-drawer/init}
+     {init baredom.exports.x-drawer/init}
      :depends-on #{:base}}
 
     :x-dropdown
     {:exports
-     {init app.exports.x-dropdown/init}
+     {init baredom.exports.x-dropdown/init}
      :depends-on #{:base}}
 
     :x-fieldset
     {:exports
-     {init app.exports.x-fieldset/init}
+     {init baredom.exports.x-fieldset/init}
      :depends-on #{:base}}
 
     :x-file-download
     {:exports
-     {init app.exports.x-file-download/init}
+     {init baredom.exports.x-file-download/init}
      :depends-on #{:base}}
 
     :x-form-field
     {:exports
-     {init app.exports.x-form-field/init}
+     {init baredom.exports.x-form-field/init}
      :depends-on #{:base}}
 
     :x-form
     {:exports
-     {init app.exports.x-form/init}
+     {init baredom.exports.x-form/init}
      :depends-on #{:base}}
 
     :x-search-field
     {:exports
-     {init app.exports.x-search-field/init}
+     {init baredom.exports.x-search-field/init}
      :depends-on #{:base}}
 
     :x-currency-field
     {:exports
-     {init app.exports.x-currency-field/init}
+     {init baredom.exports.x-currency-field/init}
      :depends-on #{:base}}
 
     :x-menu
     {:exports
-     {init app.exports.x-menu/init}
+     {init baredom.exports.x-menu/init}
      :depends-on #{:base}}
 
     :x-menu-item
     {:exports
-     {init app.exports.x-menu-item/init}
+     {init baredom.exports.x-menu-item/init}
      :depends-on #{:base}}
 
     :x-modal
     {:exports
-     {init app.exports.x-modal/init}
+     {init baredom.exports.x-modal/init}
      :depends-on #{:base}}
 
     :x-notification-center
     {:exports
-     {init app.exports.x-notification-center/init}
+     {init baredom.exports.x-notification-center/init}
      :depends-on #{:base}}
 
     :x-pagination
     {:exports
-     {init app.exports.x-pagination/init}
+     {init baredom.exports.x-pagination/init}
      :depends-on #{:base}}
 
     :x-popover
     {:exports
-     {init app.exports.x-popover/init}
+     {init baredom.exports.x-popover/init}
      :depends-on #{:base}}
 
     :x-progress
     {:exports
-     {init app.exports.x-progress/init}
+     {init baredom.exports.x-progress/init}
      :depends-on #{:base}}
 
     :x-progress-circle
     {:exports
-     {init app.exports.x-progress-circle/init}
+     {init baredom.exports.x-progress-circle/init}
      :depends-on #{:base}}
 
     :x-radio
     {:exports
-     {init app.exports.x-radio/init}
+     {init baredom.exports.x-radio/init}
      :depends-on #{:base}}
 
     :x-select
     {:exports
-     {init app.exports.x-select/init}
+     {init baredom.exports.x-select/init}
      :depends-on #{:base}}
 
     :x-skeleton
     {:exports
-     {init app.exports.x-skeleton/init}
+     {init baredom.exports.x-skeleton/init}
      :depends-on #{:base}}
 
     :x-slider
     {:exports
-     {init app.exports.x-slider/init}
+     {init baredom.exports.x-slider/init}
      :depends-on #{:base}}
 
     :x-spacer
     {:exports
-     {init app.exports.x-spacer/init}
+     {init baredom.exports.x-spacer/init}
      :depends-on #{:base}}
 
     :x-spinner
     {:exports
-     {init app.exports.x-spinner/init}
+     {init baredom.exports.x-spinner/init}
      :depends-on #{:base}}
 
     :x-stepper
     {:exports
-     {init app.exports.x-stepper/init}
+     {init baredom.exports.x-stepper/init}
      :depends-on #{:base}}
 
     :x-switch
     {:exports
-     {init app.exports.x-switch/init}
+     {init baredom.exports.x-switch/init}
      :depends-on #{:base}}
 
     :x-table-cell
     {:exports
-     {init app.exports.x-table-cell/init}
+     {init baredom.exports.x-table-cell/init}
      :depends-on #{:base}}
 
     :x-table-row
     {:exports
-     {init app.exports.x-table-row/init}
+     {init baredom.exports.x-table-row/init}
      :depends-on #{:base}}
 
     :x-table
     {:exports
-     {init app.exports.x-table/init}
+     {init baredom.exports.x-table/init}
      :depends-on #{:base}}
 
     :x-text-area
     {:exports
-     {init app.exports.x-text-area/init}
+     {init baredom.exports.x-text-area/init}
      :depends-on #{:base}}
 
     :x-timeline-item
     {:exports
-     {init app.exports.x-timeline-item/init}
+     {init baredom.exports.x-timeline-item/init}
      :depends-on #{:base}}
 
     :x-timeline
     {:exports
-     {init app.exports.x-timeline/init}
+     {init baredom.exports.x-timeline/init}
      :depends-on #{:base}}
 
     :x-toast
     {:exports
-     {init app.exports.x-toast/init}
+     {init baredom.exports.x-toast/init}
      :depends-on #{:base}}
 
     :x-toaster
     {:exports
-     {init app.exports.x-toaster/init}
+     {init baredom.exports.x-toaster/init}
      :depends-on #{:base}}
 
     }}}}
-

@@ -1,8 +1,3 @@
-Below is a regenerated **`docs/x_navbar.md`** based on the current library architecture and the files you provided (`model.cljs` and `x_navbar.cljs`).
-It follows the same documentation style used for your other components.
-
----
-
 # x-navbar
 
 ## Overview
@@ -24,29 +19,17 @@ The component is framework-agnostic and works with plain HTML, React, Reagent, o
 
 ---
 
-# Purpose
-
-Provide a structured, accessible navigation bar that:
-
-* organizes brand, navigation, and action elements
-* supports responsive layouts
-* integrates with theme systems
-* works in both light and dark mode
-* keeps behavior external to the component
-
----
-
 # Attributes
 
-| Attribute     | Type    | Description                                       |
-| ------------- | ------- | ------------------------------------------------- |
-| `sticky`      | boolean | Makes the navbar stick to the top of the viewport |
-| `elevated`    | boolean | Adds elevation shadow styling                     |
-| `variant`     | enum    | Visual style variant                              |
-| `orientation` | enum    | Layout direction                                  |
-| `alignment`   | enum    | Content alignment behavior                        |
-| `breakpoint`  | string  | Responsive breakpoint token                       |
-| `label`       | string  | Accessible label for the navigation landmark      |
+| Attribute     | Type    | Default           | Description                                       |
+| ------------- | ------- | ----------------- | ------------------------------------------------- |
+| `label`       | string  | —                 | Accessible label for the navigation landmark      |
+| `variant`     | enum    | `"default"`       | Visual style variant                              |
+| `orientation` | enum    | `"horizontal"`    | Layout direction                                  |
+| `alignment`   | enum    | `"space-between"` | Content alignment behavior                        |
+| `breakpoint`  | string  | `"md"`            | Responsive breakpoint token                       |
+| `sticky`      | boolean | `false`           | Makes the navbar stick to the top of the viewport |
+| `elevated`    | boolean | `false`           | Adds elevation shadow styling                     |
 
 ---
 
@@ -54,14 +37,12 @@ Provide a structured, accessible navigation bar that:
 
 ## variant
 
-| Value         | Description             |
-| ------------- | ----------------------- |
-| `default`     | Standard navigation bar |
-| `subtle`      | Transparent background  |
-| `inverted`    | Dark inverted style     |
-| `transparent` | Fully transparent       |
-
----
+| Value         | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `default`     | Standard navigation bar with backdrop blur      |
+| `subtle`      | Transparent background, no blur                 |
+| `inverted`    | Dark inverted style                             |
+| `transparent` | Fully transparent, no border, no shadow         |
 
 ## orientation
 
@@ -70,97 +51,109 @@ Provide a structured, accessible navigation bar that:
 | `horizontal` | Default horizontal navigation layout |
 | `vertical`   | Vertical stacked layout              |
 
----
-
 ## alignment
 
-| Value           | Description                |
-| --------------- | -------------------------- |
-| `start`         | Left aligned               |
-| `center`        | Centered content           |
-| `space-between` | Default distributed layout |
+| Value           | Description                          |
+| --------------- | ------------------------------------ |
+| `start`         | Left aligned                         |
+| `center`        | Centered content                     |
+| `space-between` | Default distributed layout (default) |
+
+## breakpoint
+
+| Value | Description |
+| ----- | ----------- |
+| `sm`  | Small       |
+| `md`  | Medium      |
+| `lg`  | Large       |
+| `xl`  | Extra large |
+
+Invalid attribute values are normalized to their defaults internally (the host attribute is not rewritten).
 
 ---
 
 # Properties
 
-These properties reflect the corresponding attributes.
+These JavaScript properties reflect the corresponding attributes.
 
-| Property      | Type    | Description           |
-| ------------- | ------- | --------------------- |
-| `sticky`      | boolean | Sticky positioning    |
-| `elevated`    | boolean | Elevated visual style |
-| `variant`     | string  | Visual variant        |
-| `orientation` | string  | Layout direction      |
-| `alignment`   | string  | Alignment strategy    |
+| Property      | Type    | Reflects attribute |
+| ------------- | ------- | ------------------ |
+| `sticky`      | boolean | `sticky`           |
+| `elevated`    | boolean | `elevated`         |
+| `label`       | string  | `label`            |
+| `variant`     | string  | `variant`          |
+| `orientation` | string  | `orientation`      |
+| `alignment`   | string  | `alignment`        |
+| `breakpoint`  | string  | `breakpoint`       |
 
 ---
 
 # Events
 
-`x-navbar` does **not emit custom events**.
+| Event            | Detail                          | Description                                              |
+| ---------------- | ------------------------------- | -------------------------------------------------------- |
+| `navigate`       | `{ href: string, source: string }` | Dispatched when a link (`<a>`) inside the navbar is clicked |
+| `brand-activate` | `{ source: string }`           | Dispatched when the brand slot content is clicked         |
+| `focus-visible`  | `{}`                           | Dispatched when keyboard focus is detected within the bar |
 
-Interactive elements inside the navbar (such as `x-button`) are expected to emit their own events.
+All events bubble, are composed, and are **not** cancelable.
+
+The `source` field is `"pointer"` for mouse/pointer clicks, `"keyboard"` for keyboard activation, or `"programmatic"` otherwise.
 
 ---
 
 # Slots
 
-`x-navbar` uses named slots to define layout zones.
-
 | Slot      | Description                     |
 | --------- | ------------------------------- |
 | `brand`   | Branding element such as a logo |
 | `start`   | Content placed after the brand  |
-| `default` | Navigation links                |
+| (default) | Navigation links                |
 | `actions` | Right aligned action buttons    |
 | `toggle`  | Optional menu toggle control    |
 | `end`     | Content placed at the far end   |
+
+Unused slot regions collapse automatically.
 
 ---
 
 # Layout structure
 
 ```
-x-navbar
- └─ nav
-     └─ bar
-         ├─ brand
-         ├─ start
-         ├─ nav
-         ├─ actions
-         ├─ toggle
-         └─ end
+x-navbar (host)
+ └─ nav [part="base"]
+     └─ div [part="bar"]
+         ├─ div [part="brand"]   → slot[name="brand"]
+         ├─ div [part="start"]   → slot[name="start"]
+         ├─ div [part="nav"]     → slot (default)
+         ├─ div [part="actions"] → slot[name="actions"]
+         ├─ div [part="toggle"]  → slot[name="toggle"]
+         └─ div [part="end"]     → slot[name="end"]
 ```
-
-Unused slot regions collapse automatically.
 
 ---
 
 # Accessibility
 
-The component implements standard navigation landmark semantics.
+## Landmark role
 
-### Landmark role
+The shadow root contains a `<nav>` element, providing a navigation landmark.
 
-```
-<nav role="navigation">
-```
+## Label
 
-### Label
+When the `label` attribute is set to a non-empty string, it is applied as `aria-label` on the inner `<nav>`:
 
-If provided:
-
-```
-aria-label="Main navigation"
+```html
+<x-navbar label="Main navigation">
 ```
 
-### Focus behavior
+## Focus behavior
 
-* Focus styles appear when keyboard navigation is detected.
-* Focus rings are controlled via CSS tokens.
+* Focus styles appear when keyboard navigation is detected (`focus-visible`).
+* A `data-focus-visible-within` attribute is set on the host for external styling hooks.
+* Focus rings are controlled via the `--x-navbar-focus-ring` CSS token.
 
-### Screen readers
+## Screen readers
 
 * Slot content is exposed normally.
 * The component does not alter semantic meaning of slotted elements.
@@ -169,27 +162,27 @@ aria-label="Main navigation"
 
 # Styling
 
-The component exposes CSS custom properties for theming.
+## CSS custom properties
 
-## Core tokens
-
-| Variable                    | Description              |
-| --------------------------- | ------------------------ |
-| `--x-navbar-height`         | Navbar height            |
-| `--x-navbar-padding-inline` | Horizontal padding       |
-| `--x-navbar-gap`            | Spacing between elements |
-| `--x-navbar-bg`             | Background color         |
-| `--x-navbar-color`          | Text color               |
-| `--x-navbar-border`         | Border color             |
-| `--x-navbar-shadow`         | Shadow when elevated     |
-| `--x-navbar-focus-ring`     | Focus outline            |
-| `--x-navbar-radius`         | Border radius            |
-
----
+| Variable                           | Default                          | Description              |
+| ---------------------------------- | -------------------------------- | ------------------------ |
+| `--x-navbar-height`                | `4rem`                           | Navbar height            |
+| `--x-navbar-padding-inline`        | `1rem`                           | Horizontal padding       |
+| `--x-navbar-gap`                   | `0.75rem`                        | Spacing between elements |
+| `--x-navbar-bg`                    | `rgba(255,255,255,0.88)`         | Background color         |
+| `--x-navbar-color`                 | `#0f172a`                        | Text color               |
+| `--x-navbar-border`                | `rgba(148,163,184,0.22)`         | Border color             |
+| `--x-navbar-shadow`                | `0 8px 24px rgba(15,23,42,0.08)` | Shadow when elevated     |
+| `--x-navbar-focus-ring`            | `#60a5fa`                        | Focus outline color      |
+| `--x-navbar-z-index`               | `40`                             | Z-index when sticky      |
+| `--x-navbar-radius`                | `1rem`                           | Border radius            |
+| `--x-navbar-transition-duration`   | `180ms`                          | Transition duration      |
+| `--x-navbar-transition-easing`     | `cubic-bezier(0.2,0,0,1)`       | Transition easing        |
+| `--x-navbar-align-items`           | `center`                         | Vertical alignment       |
 
 ## Example override
 
-```
+```css
 x-navbar {
   --x-navbar-height: 4.5rem;
   --x-navbar-bg: var(--surface);
@@ -200,35 +193,19 @@ x-navbar {
 
 # Light / Dark mode
 
-`x-navbar` supports automatic theme switching using:
-
-```
-@media (prefers-color-scheme: dark)
-```
-
-Consumers may override theme tokens for custom themes.
+`x-navbar` supports automatic theme switching using `@media (prefers-color-scheme: dark)`. Consumers may override theme tokens for custom themes.
 
 ---
 
 # Motion
 
-The component includes minimal transitions.
+Animated properties: `background`, `border-color`, `box-shadow`.
 
-Animated properties:
-
-* background
-* border
-* box-shadow
-
-Motion respects:
-
-```
-prefers-reduced-motion
-```
+All transitions respect `@media (prefers-reduced-motion: reduce)` by disabling transitions entirely.
 
 ---
 
-# Example
+# Examples
 
 ## Basic navbar
 
@@ -247,9 +224,7 @@ prefers-reduced-motion
 </x-navbar>
 ```
 
----
-
-# Example with sidebar toggle
+## With sidebar toggle
 
 ```html
 <x-navbar sticky elevated label="Main navigation">
@@ -270,19 +245,39 @@ document.getElementById("menu-button")
 </script>
 ```
 
----
+## Listening for events
 
-# Integration with Reagent
+```html
+<x-navbar id="nav" label="Main">
+  <a slot="brand" href="/">Acme</a>
+  <a href="/docs">Docs</a>
+  <a href="/about">About</a>
+</x-navbar>
 
-Example using the helper wrapper used in the demo application.
+<script>
+const nav = document.getElementById("nav")
 
+nav.addEventListener("navigate", (e) => {
+  console.log("Navigate to:", e.detail.href)
+})
+
+nav.addEventListener("brand-activate", (e) => {
+  console.log("Brand clicked:", e.detail.source)
+})
+</script>
 ```
+
+## Reagent integration
+
+```clojure
 [wc/wc
  :x-navbar
  {:class "topbar"
   :sticky true
   :elevated true
-  :label "Main navigation"}
+  :label "Main navigation"
+  :wc/events {"navigate"       #(rf/dispatch [:nav/navigate (.. % -detail -href)])
+              "brand-activate" #(rf/dispatch [:nav/home])}}
 
  [:a {:slot "brand"} "Van Elsas"]
 
@@ -293,23 +288,3 @@ Example using the helper wrapper used in the demo application.
     :wc/events {"press" #(rf/dispatch [:navigation/menu-clicked])}}
    "Menu"]]]
 ```
-
----
-
-# Design philosophy
-
-`x-navbar` intentionally avoids application logic.
-
-It focuses on:
-
-* layout
-* accessibility
-* themeability
-
-Application logic such as:
-
-* opening sidebars
-* routing
-* menu state
-
-should remain in the consumer application.

@@ -32,16 +32,18 @@ A navigation trail that renders slotted anchor elements as breadcrumb items sepa
 
 ## Properties
 
-| Property       | Type    | Reflects attribute    |
-|----------------|---------|-----------------------|
-| `separator`    | string  | `separator`           |
-| `size`         | string  | `size`                |
-| `variant`      | string  | `variant`             |
-| `wrap`         | boolean | `wrap`                |
-| `maxItems`     | number  | `max-items`           |
-| `itemsBefore`  | number  | `items-before`        |
-| `itemsAfter`   | number  | `items-after`         |
-| `disabled`     | boolean | `disabled`            |
+| Property            | Type    | Reflects attribute    |
+|---------------------|---------|-----------------------|
+| `separator`         | string  | `separator`           |
+| `size`              | string  | `size`                |
+| `variant`           | string  | `variant`             |
+| `wrap`              | boolean | `wrap`                |
+| `maxItems`          | number  | `max-items`           |
+| `itemsBefore`       | number  | `items-before`        |
+| `itemsAfter`        | number  | `items-after`         |
+| `disabled`          | boolean | `disabled`            |
+| `aria-label`        | string  | `aria-label`          |
+| `aria-describedby`  | string  | `aria-describedby`    |
 
 ---
 
@@ -64,6 +66,12 @@ When `max-items` is set and the total item count exceeds it:
 3. The last `items-after` items remain visible.
 
 The algorithm clamps both values to avoid overlapping.
+
+---
+
+## Events
+
+This component does not emit custom events. It is a read-only navigation landmark.
 
 ---
 

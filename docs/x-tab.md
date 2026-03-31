@@ -16,7 +16,7 @@ The component implements the **WAI-ARIA tab trigger semantics** and dispatches e
 Register the component:
 
 ```javascript
-import { init } from "app.exports.x-tab";
+import { init } from "@vanelsas/baredom/x-tab";
 
 init();
 ```
@@ -24,7 +24,7 @@ init();
 Or if using the provided export API:
 
 ```javascript
-import { register } from "app.exports.x-tab";
+import { register } from "@vanelsas/baredom/x-tab";
 
 register();
 ```

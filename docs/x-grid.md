@@ -47,6 +47,47 @@ A layout primitive that renders a CSS Grid container. Drop any content into the 
 
 ---
 
+## Parts
+
+| Part   | Description              |
+|--------|--------------------------|
+| `base` | Grid container `<div>`   |
+
+---
+
+## CSS Custom Properties
+
+Set by the component based on attribute values. Can be overridden in CSS.
+
+| Variable                   | Description                                |
+|----------------------------|--------------------------------------------|
+| `--x-grid-columns`        | Computed `grid-template-columns` value     |
+| `--x-grid-row-gap`        | Row gap in CSS units (from gap tokens)     |
+| `--x-grid-column-gap`     | Column gap in CSS units (from gap tokens)  |
+| `--x-grid-align-items`    | `align-items` value                        |
+| `--x-grid-justify-items`  | `justify-items` value                      |
+| `--x-grid-auto-flow`      | `grid-auto-flow` value                     |
+
+---
+
+## Properties
+
+This component exposes an attribute-only API. No JavaScript property accessors are defined.
+
+---
+
+## Events
+
+None. `x-grid` is a layout primitive and does not emit custom events.
+
+---
+
+## Accessibility
+
+As a layout primitive with no interactive behavior, `x-grid` does not add ARIA attributes or keyboard handling. Content accessibility is the responsibility of child elements.
+
+---
+
 ## Template logic
 
 When `columns` is absent the grid template is:

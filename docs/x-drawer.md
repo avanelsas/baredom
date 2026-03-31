@@ -69,20 +69,20 @@ There is no built-in close button. Provide a close affordance in the `header` sl
 
 ## CSS Custom Properties
 
-| Property                    | Default                                              | Description                                       |
-|-----------------------------|------------------------------------------------------|---------------------------------------------------|
-| `--x-drawer-size`           | `20rem`                                              | Panel width (left/right) or height (top/bottom)   |
-| `--x-drawer-bg`             | `Canvas`                                             | Panel background                                  |
-| `--x-drawer-fg`             | `CanvasText`                                         | Panel foreground                                  |
-| `--x-drawer-backdrop`       | `rgb(0 0 0 / 0.4)`                                   | Scrim color                                       |
-| `--x-drawer-shadow`         | `0 8px 24px rgb(0 0 0 / 0.18)`                       | Panel box shadow                                  |
-| `--x-drawer-duration`       | `200ms`                                              | Slide animation duration                          |
-| `--x-drawer-easing`         | `ease`                                               | Slide animation easing                            |
-| `--x-drawer-z`              | `1000`                                               | z-index base (panel is z+1)                       |
-| `--x-drawer-header-padding` | `1rem 1.25rem`                                       | Header slot wrapper padding                       |
-| `--x-drawer-body-padding`   | `1rem 1.25rem`                                       | Body slot wrapper padding                         |
-| `--x-drawer-footer-padding` | `0.75rem 1.25rem`                                    | Footer slot wrapper padding                       |
-| `--x-drawer-border`         | `color-mix(in srgb, currentColor 12%, transparent)`  | Separator border between header/body/footer       |
+| Property                    | Light default                                        | Dark default                    | Description                                       |
+|-----------------------------|------------------------------------------------------|---------------------------------|---------------------------------------------------|
+| `--x-drawer-size`           | `20rem`                                              | *(same)*                        | Panel width (left/right) or height (top/bottom)   |
+| `--x-drawer-bg`             | `Canvas`                                             | `#1c1d24`                       | Panel background                                  |
+| `--x-drawer-fg`             | `CanvasText`                                         | `#e2e4ef`                       | Panel foreground                                  |
+| `--x-drawer-backdrop`       | `rgb(0 0 0 / 0.4)`                                   | `rgb(0 0 0 / 0.55)`             | Scrim color                                       |
+| `--x-drawer-shadow`         | `0 8px 24px rgb(0 0 0 / 0.18)`                       | `0 8px 40px rgb(0 0 0 / 0.55)`  | Panel box shadow                                  |
+| `--x-drawer-duration`       | `200ms`                                              | *(same)*                        | Slide animation duration                          |
+| `--x-drawer-easing`         | `ease`                                               | *(same)*                        | Slide animation easing                            |
+| `--x-drawer-z`              | `1000`                                               | *(same)*                        | z-index base (panel is z+1)                       |
+| `--x-drawer-header-padding` | `1rem 1.25rem`                                       | *(same)*                        | Header slot wrapper padding                       |
+| `--x-drawer-body-padding`   | `1rem 1.25rem`                                       | *(same)*                        | Body slot wrapper padding                         |
+| `--x-drawer-footer-padding` | `0.75rem 1.25rem`                                    | *(same)*                        | Footer slot wrapper padding                       |
+| `--x-drawer-border`         | `color-mix(in srgb, currentColor 12%, transparent)`  | `rgb(255 255 255 / 0.08)`       | Separator border between header/body/footer       |
 
 ## Animation
 
@@ -97,14 +97,15 @@ Animation is disabled when `prefers-reduced-motion: reduce` is set.
 
 ## Theming
 
-Default colors use the CSS system colors `Canvas` and `CanvasText`, which automatically adapt to the OS light/dark mode preference. Override via CSS custom properties on the element or any ancestor.
+In light mode, the panel uses the CSS system colors `Canvas` and `CanvasText`. In dark mode, the component overrides those with curated values: a deep blue-gray surface (`#1c1d24`), a warm off-white foreground (`#e2e4ef`), a deeper backdrop scrim, and a stronger box shadow for elevation. All values can be overridden via CSS custom properties on the element or any ancestor.
 
 ## Accessibility
 
 - The panel has `role="dialog"` and `aria-modal="true"`.
 - `aria-label` on the panel is set from the `label` attribute.
+- The panel has `aria-hidden="true"` when closed, so assistive technology cannot navigate into off-screen drawer content. `aria-hidden` is removed when the drawer opens.
 - Focus is trapped inside the panel while it is open: Tab cycles forward through focusable elements, Shift+Tab cycles backward.
-- On open, focus moves to the first focusable element in the panel (or the panel itself if none exist).
+- On open, focus moves to the first focusable element in the drawer (or the panel itself if none exist).
 - On close, focus returns to the element that was focused before the drawer opened.
 - Pressing Escape closes the drawer.
 - Clicking the backdrop closes the drawer.

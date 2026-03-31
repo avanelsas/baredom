@@ -35,12 +35,14 @@ A self-contained, form-associated text-input field with a label, optional hint, 
 | Property      | Type    | Reflects attribute |
 |---------------|---------|--------------------|
 | `value`       | string  | `value`            |
-| `disabled`    | boolean | `disabled`         |
-| `readOnly`    | boolean | `readonly`         |
-| `required`    | boolean | `required`         |
+| `label`       | string  | `label`            |
+| `type`        | string  | `type`             |
 | `name`        | string  | `name`             |
 | `placeholder` | string  | `placeholder`      |
 | `autocomplete`| string  | `autocomplete`     |
+| `disabled`    | boolean | `disabled`         |
+| `readOnly`    | boolean | `readonly`         |
+| `required`    | boolean | `required`         |
 
 ### Value sync note
 
@@ -111,7 +113,8 @@ Dark-mode defaults are applied automatically via `@media (prefers-color-scheme: 
 
 Validity is set via `setValidity`:
 - `error` attribute non-empty → `{ customError: true }` with the error message
-- `error` attribute empty/absent → `{}` (valid)
+- `required` attribute set + empty value → `{ valueMissing: true }` with `"Please fill in this field."`
+- otherwise → `{}` (valid)
 
 ---
 

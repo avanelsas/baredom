@@ -52,7 +52,7 @@ BareDOM has been created using Claude Code. The CLAUDE.md file is added to the r
 ```json
 {
   "dependencies": {
-    "@vanelsas/baredom": "^0.1.0-alpha"
+    "@vanelsas/baredom": "^1.0.0-rc.3"
   }
 }
 ```
