@@ -55,7 +55,8 @@
    [baredom.exports.x-timeline-item       :as x-timeline-item]
    [baredom.exports.x-timeline            :as x-timeline]
    [baredom.exports.x-toast               :as x-toast]
-   [baredom.exports.x-toaster             :as x-toaster]))
+   [baredom.exports.x-toaster             :as x-toaster]
+   [baredom.exports.x-organic-shape       :as x-organic-shape]))
 
 (defn ^:dev/after-load start!
   []
@@ -114,7 +115,8 @@
   (x-timeline-item/register!)
   (x-timeline/register!)
   (x-toast/register!)
-  (x-toaster/register!))
+  (x-toaster/register!)
+  (x-organic-shape/register!))
 
 (defn init!
   []

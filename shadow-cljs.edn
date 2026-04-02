@@ -320,4 +320,9 @@
      {init baredom.exports.x-toaster/init}
      :depends-on #{:base}}
 
+    :x-organic-shape
+    {:exports
+     {init baredom.exports.x-organic-shape/init}
+     :depends-on #{:base}}
+
     }}}}

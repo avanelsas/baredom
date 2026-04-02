@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-organic-shape demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 900px; }
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin: 12px 0; }
+      .grid x-organic-shape { width: 140px; }
+      .label { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .controls input[type=checkbox] { margin: 0; }
+      code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
+      .content-demo { color: white; font-weight: 600; font-size: 0.875rem; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-organic-shape demo</h1>
+
+    <h2>All presets</h2>
+    <div class="grid">
+      <div>
+        <x-organic-shape shape="blob-1"></x-organic-shape>
+        <div class="label">blob-1 (default)</div>
+      </div>
+      <div>
+        <x-organic-shape shape="blob-2"></x-organic-shape>
+        <div class="label">blob-2</div>
+      </div>
+      <div>
+        <x-organic-shape shape="blob-3"></x-organic-shape>
+        <div class="label">blob-3</div>
+      </div>
+      <div>
+        <x-organic-shape shape="pebble"></x-organic-shape>
+        <div class="label">pebble</div>
+      </div>
+      <div>
+        <x-organic-shape shape="leaf"></x-organic-shape>
+        <div class="label">leaf</div>
+      </div>
+      <div>
+        <x-organic-shape shape="droplet"></x-organic-shape>
+        <div class="label">droplet</div>
+      </div>
+      <div>
+        <x-organic-shape shape="cloud"></x-organic-shape>
+        <div class="label">cloud</div>
+      </div>
+      <div>
+        <x-organic-shape shape="wave" ratio="2/1"></x-organic-shape>
+        <div class="label">wave (2/1)</div>
+      </div>
+    </div>
+
+    <h2>Animation styles</h2>
+    <div class="row">
+      <div>
+        <x-organic-shape shape="blob-1" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(139,92,246,0.2);"></x-organic-shape>
+        <div class="label">morph</div>
+      </div>
+      <div>
+        <x-organic-shape shape="pebble" animation="pulse" style="width:140px;--x-organic-shape-fill:rgba(236,72,153,0.2);"></x-organic-shape>
+        <div class="label">pulse</div>
+      </div>
+      <div>
+        <x-organic-shape shape="leaf" animation="float" style="width:140px;--x-organic-shape-fill:rgba(34,197,94,0.2);"></x-organic-shape>
+        <div class="label">float</div>
+      </div>
+      <div>
+        <x-organic-shape shape="droplet" animation="spin" style="width:140px;--x-organic-shape-fill:rgba(251,191,36,0.2);--x-organic-shape-animate-duration:12s;"></x-organic-shape>
+        <div class="label">spin</div>
+      </div>
+    </div>
+
+    <h2>Custom animation timing</h2>
+    <div class="row">
+      <div>
+        <x-organic-shape shape="blob-2" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(99,102,241,0.2);--x-organic-shape-animate-duration:3s;"></x-organic-shape>
+        <div class="label">fast (3s)</div>
+      </div>
+      <div>
+        <x-organic-shape shape="blob-2" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(99,102,241,0.2);--x-organic-shape-animate-duration:12s;"></x-organic-shape>
+        <div class="label">slow (12s)</div>
+      </div>
+      <div>
+        <x-organic-shape shape="cloud" animation="float" style="width:140px;--x-organic-shape-fill:rgba(59,130,246,0.2);--x-organic-shape-animate-direction:alternate-reverse;"></x-organic-shape>
+        <div class="label">reverse float</div>
+      </div>
+      <div>
+        <x-organic-shape shape="leaf" animation="pulse" style="width:140px;--x-organic-shape-fill:rgba(16,185,129,0.2);--x-organic-shape-animate-delay:2s;"></x-organic-shape>
+        <div class="label">delayed (2s)</div>
+      </div>
+    </div>
+
+    <h2>As content container</h2>
+    <div class="row">
+      <x-organic-shape shape="blob-2" style="width:200px;--x-organic-shape-fill:linear-gradient(135deg,#667eea,#764ba2);">
+        <div class="content-demo" style="text-align:center;padding:24px;">Hello World</div>
+      </x-organic-shape>
+      <x-organic-shape shape="droplet" style="width:200px;--x-organic-shape-fill:linear-gradient(135deg,#f093fb,#f5576c);">
+        <div class="content-demo" style="text-align:center;padding:24px;">Content</div>
+      </x-organic-shape>
+    </div>
+
+    <h2>Custom path</h2>
+    <div class="row">
+      <x-organic-shape path="circle(50%)" style="width:140px;--x-organic-shape-fill:rgba(251,191,36,0.25);"></x-organic-shape>
+      <x-organic-shape path="polygon(50% 0%,100% 100%,0% 100%)" style="width:140px;--x-organic-shape-fill:rgba(59,130,246,0.2);"></x-organic-shape>
+      <x-organic-shape path="ellipse(50% 35% at 50% 50%)" ratio="2/1" style="width:200px;--x-organic-shape-fill:rgba(16,185,129,0.2);"></x-organic-shape>
+    </div>
+
+    <h2>Explicit sizes</h2>
+    <div class="row">
+      <x-organic-shape shape="blob-1" width="100px" height="100px"></x-organic-shape>
+      <x-organic-shape shape="pebble" width="200px" height="120px" style="--x-organic-shape-fill:rgba(236,72,153,0.15);"></x-organic-shape>
+      <x-organic-shape shape="leaf" width="80px" height="160px" style="--x-organic-shape-fill:rgba(34,197,94,0.15);"></x-organic-shape>
+      <x-organic-shape shape="cloud" width="250px" height="100px" style="--x-organic-shape-fill:rgba(251,191,36,0.15);"></x-organic-shape>
+    </div>
+
+    <h2>Different aspect ratios</h2>
+    <div class="row">
+      <x-organic-shape shape="blob-1" ratio="1/1" style="width:120px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
+      <x-organic-shape shape="blob-1" ratio="4/3" style="width:160px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
+      <x-organic-shape shape="blob-1" ratio="16/9" style="width:200px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
+    </div>
+
+    <h2>Custom theming</h2>
+    <div class="row">
+      <x-organic-shape
+        shape="blob-2"
+        animation="morph"
+        style="
+          width: 180px;
+          --x-organic-shape-fill: linear-gradient(135deg, #667eea, #764ba2);
+          --x-organic-shape-shadow: drop-shadow(0 4px 12px rgba(102,126,234,0.4));
+          --x-organic-shape-animate-duration: 6s;
+        ">
+      </x-organic-shape>
+      <x-organic-shape
+        shape="pebble"
+        style="
+          width: 180px;
+          --x-organic-shape-fill: rgba(251,191,36,0.15);
+          --x-organic-shape-stroke: rgba(251,191,36,0.5);
+          --x-organic-shape-stroke-width: 2px;
+        ">
+      </x-organic-shape>
+    </div>
+
+    <h2>Live control</h2>
+    <div class="controls">
+      <label>shape
+        <select id="ctrl-shape">
+          <option value="blob-1" selected>blob-1</option>
+          <option value="blob-2">blob-2</option>
+          <option value="blob-3">blob-3</option>
+          <option value="pebble">pebble</option>
+          <option value="leaf">leaf</option>
+          <option value="droplet">droplet</option>
+          <option value="cloud">cloud</option>
+          <option value="wave">wave</option>
+        </select>
+      </label>
+      <label>ratio
+        <select id="ctrl-ratio">
+          <option value="1/1" selected>1/1</option>
+          <option value="4/3">4/3</option>
+          <option value="3/2">3/2</option>
+          <option value="16/9">16/9</option>
+          <option value="auto">auto</option>
+        </select>
+      </label>
+      <label>animation
+        <select id="ctrl-animation">
+          <option value="none" selected>none</option>
+          <option value="morph">morph</option>
+          <option value="pulse">pulse</option>
+          <option value="float">float</option>
+          <option value="spin">spin</option>
+        </select>
+      </label>
+      <label>speed
+        <select id="ctrl-speed">
+          <option value="">default (8s)</option>
+          <option value="2s">fast (2s)</option>
+          <option value="4s">medium (4s)</option>
+          <option value="12s">slow (12s)</option>
+          <option value="20s">very slow (20s)</option>
+        </select>
+      </label>
+      <label>width
+        <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:80px">
+      </label>
+      <label>height
+        <input type="text" id="ctrl-height" value="" placeholder="e.g. 150px" style="width:80px">
+      </label>
+      <label>path
+        <input type="text" id="ctrl-path" placeholder="e.g. circle(50%)" style="width:160px">
+      </label>
+      <label>image url
+        <input type="text" id="ctrl-image" placeholder="https://..." style="width:220px">
+      </label>
+    </div>
+    <x-organic-shape id="live"></x-organic-shape>
+
+    <script>
+      const live = document.getElementById('live');
+
+      function update() {
+        const shape   = document.getElementById('ctrl-shape').value;
+        const ratio   = document.getElementById('ctrl-ratio').value;
+        const animation = document.getElementById('ctrl-animation').value;
+        const speed   = document.getElementById('ctrl-speed').value;
+        const width   = document.getElementById('ctrl-width').value.trim();
+        const height  = document.getElementById('ctrl-height').value.trim();
+        const path    = document.getElementById('ctrl-path').value.trim();
+        const imgUrl  = document.getElementById('ctrl-image').value.trim();
+
+        live.setAttribute('shape', shape);
+        live.setAttribute('ratio', ratio);
+
+        if (animation && animation !== 'none') live.setAttribute('animation', animation);
+        else live.removeAttribute('animation');
+
+        if (speed) live.style.setProperty('--x-organic-shape-animate-duration', speed);
+        else       live.style.removeProperty('--x-organic-shape-animate-duration');
+
+        if (width)  live.setAttribute('width',  width);
+        else        live.removeAttribute('width');
+
+        if (height) live.setAttribute('height', height);
+        else        live.removeAttribute('height');
+
+        if (path) live.setAttribute('path', path);
+        else      live.removeAttribute('path');
+
+        // Slot an <img> element when a URL is provided
+        const existing = live.querySelector('img[data-live-img]');
+        if (imgUrl) {
+          if (existing) {
+            existing.src = imgUrl;
+          } else {
+            const img = document.createElement('img');
+            img.setAttribute('data-live-img', '');
+            img.src = imgUrl;
+            img.alt = 'User-provided image';
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+            live.appendChild(img);
+          }
+        } else if (existing) {
+          existing.remove();
+        }
+      }
+
+      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+        el.addEventListener('change', update);
+        el.addEventListener('input',  update);
+      });
+    </script>
+  </body>
+</html>
