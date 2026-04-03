@@ -56,7 +56,13 @@
    [baredom.exports.x-timeline            :as x-timeline]
    [baredom.exports.x-toast               :as x-toast]
    [baredom.exports.x-toaster             :as x-toaster]
-   [baredom.exports.x-organic-shape       :as x-organic-shape]))
+   [baredom.exports.x-organic-shape       :as x-organic-shape]
+   [baredom.exports.x-typography          :as x-typography]
+   [baredom.exports.x-kinetic-typography :as x-kinetic-typography]
+   [baredom.exports.x-organic-divider   :as x-organic-divider]
+   [baredom.exports.x-ripple-effect    :as x-ripple-effect]
+   [baredom.exports.x-gaussian-blur   :as x-gaussian-blur]
+   [baredom.exports.x-scroll          :as x-scroll]))
 
 (defn ^:dev/after-load start!
   []
@@ -116,7 +122,13 @@
   (x-timeline/register!)
   (x-toast/register!)
   (x-toaster/register!)
-  (x-organic-shape/register!))
+  (x-organic-shape/register!)
+  (x-typography/register!)
+  (x-kinetic-typography/register!)
+  (x-organic-divider/register!)
+  (x-ripple-effect/register!)
+  (x-gaussian-blur/register!)
+  (x-scroll/register!))
 
 (defn init!
   []

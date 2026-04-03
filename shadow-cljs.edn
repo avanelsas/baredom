@@ -325,4 +325,34 @@
      {init baredom.exports.x-organic-shape/init}
      :depends-on #{:base}}
 
+    :x-typography
+    {:exports
+     {init baredom.exports.x-typography/init}
+     :depends-on #{:base}}
+
+    :x-kinetic-typography
+    {:exports
+     {init baredom.exports.x-kinetic-typography/init}
+     :depends-on #{:base}}
+
+    :x-organic-divider
+    {:exports
+     {init baredom.exports.x-organic-divider/init}
+     :depends-on #{:base}}
+
+    :x-ripple-effect
+    {:exports
+     {init baredom.exports.x-ripple-effect/init}
+     :depends-on #{:base}}
+
+    :x-gaussian-blur
+    {:exports
+     {init baredom.exports.x-gaussian-blur/init}
+     :depends-on #{:base}}
+
+    :x-scroll
+    {:exports
+     {init baredom.exports.x-scroll/init}
+     :depends-on #{:base}}
+
     }}}}

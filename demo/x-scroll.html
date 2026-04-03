@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-scroll demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; }
+
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+      #scroller {
+        width: 100%;
+        height: 300px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        --x-scroll-slide-size: 25%;
+      }
+
+      .slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        min-height: 100%;
+      }
+      .slide:nth-child(1)  { background: #3b82f6; }
+      .slide:nth-child(2)  { background: #ef4444; }
+      .slide:nth-child(3)  { background: #10b981; }
+      .slide:nth-child(4)  { background: #f59e0b; }
+      .slide:nth-child(5)  { background: #8b5cf6; }
+      .slide:nth-child(6)  { background: #ec4899; }
+      .slide:nth-child(7)  { background: #06b6d4; }
+      .slide:nth-child(8)  { background: #84cc16; }
+      .slide:nth-child(9)  { background: #f97316; }
+      .slide:nth-child(10) { background: #6366f1; }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px 24px;
+        padding: 16px;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        margin: 16px 0;
+      }
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .control-group label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+      .control-group select,
+      .control-group input[type="number"] {
+        background: var(--input-bg);
+        color: var(--input-fg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 13px;
+      }
+      .control-group input[type="range"] {
+        width: 100%;
+      }
+      .radio-group {
+        display: flex;
+        gap: 12px;
+        font-size: 13px;
+      }
+      .radio-group label {
+        font-size: 13px;
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--page-fg);
+        font-weight: normal;
+      }
+
+      .nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        grid-column: 1 / -1;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .nav-row button {
+        padding: 4px 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--input-bg);
+        color: var(--input-fg);
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .nav-row button:hover {
+        background: var(--border);
+      }
+      .nav-row input[type="number"] {
+        width: 60px;
+        background: var(--input-bg);
+        color: var(--input-fg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 13px;
+      }
+
+      .log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .log-header button {
+        font-size: 11px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--input-bg);
+        color: var(--input-fg);
+        cursor: pointer;
+      }
+      #log {
+        height: 200px;
+        overflow-y: auto;
+        background: #111827;
+        color: #f9fafb;
+        font-family: ui-monospace, "SF Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        line-height: 1.6;
+      }
+      #log .change  { color: #60a5fa; }
+      #log .start   { color: #34d399; }
+      #log .end     { color: #fbbf24; }
+      #log .loop    { color: #f472b6; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-scroll demo</h1>
+
+    <h2>Component</h2>
+
+    <x-scroll id="scroller" snap="center" show-indicators gap="16" label="Demo carousel">
+      <div class="slide">1</div>
+      <div class="slide">2</div>
+      <div class="slide">3</div>
+      <div class="slide">4</div>
+      <div class="slide">5</div>
+      <div class="slide">6</div>
+      <div class="slide">7</div>
+      <div class="slide">8</div>
+      <div class="slide">9</div>
+      <div class="slide">10</div>
+    </x-scroll>
+
+    <h2>Controls</h2>
+
+    <div class="controls">
+      <!-- Mode -->
+      <div class="control-group">
+        <label>Mode</label>
+        <div class="radio-group">
+          <label><input type="radio" name="mode" value="horizontal" checked> Horizontal</label>
+          <label><input type="radio" name="mode" value="vertical"> Vertical</label>
+        </div>
+      </div>
+
+      <!-- Snap -->
+      <div class="control-group">
+        <label>Snap</label>
+        <select id="ctrl-snap">
+          <option value="none">none</option>
+          <option value="start">start</option>
+          <option value="center" selected>center</option>
+          <option value="end">end</option>
+        </select>
+      </div>
+
+      <!-- Loop -->
+      <div class="control-group">
+        <label><input type="checkbox" id="ctrl-loop"> Loop (infinite)</label>
+      </div>
+
+      <!-- Auto-play -->
+      <div class="control-group">
+        <label><input type="checkbox" id="ctrl-autoplay"> Auto-play</label>
+      </div>
+
+      <!-- Interval -->
+      <div class="control-group">
+        <label>Interval (ms)</label>
+        <input type="number" id="ctrl-interval" value="5000" min="500" step="500">
+      </div>
+
+      <!-- Show controls -->
+      <div class="control-group">
+        <label><input type="checkbox" id="ctrl-show-controls" checked> Show controls</label>
+      </div>
+
+      <!-- Show indicators -->
+      <div class="control-group">
+        <label><input type="checkbox" id="ctrl-show-indicators" checked> Show indicators</label>
+      </div>
+
+      <!-- Disabled -->
+      <div class="control-group">
+        <label><input type="checkbox" id="ctrl-disabled"> Disabled</label>
+      </div>
+
+      <!-- Gap -->
+      <div class="control-group">
+        <label>Gap: <span id="gap-val">16</span>px</label>
+        <input type="range" id="ctrl-gap" min="0" max="32" value="16">
+      </div>
+
+      <!-- Animation speed -->
+      <div class="control-group">
+        <label>Animation: <span id="speed-val">300</span>ms</label>
+        <input type="range" id="ctrl-speed" min="100" max="1000" step="50" value="300">
+      </div>
+
+      <!-- Padding -->
+      <div class="control-group">
+        <label>Padding: <span id="pad-val">0</span>px</label>
+        <input type="range" id="ctrl-padding" min="0" max="32" value="0">
+      </div>
+
+      <!-- Border radius -->
+      <div class="control-group">
+        <label>Radius: <span id="rad-val">0</span>px</label>
+        <input type="range" id="ctrl-radius" min="0" max="24" value="0">
+      </div>
+
+      <!-- Slide size -->
+      <div class="control-group">
+        <label>Slide size: <span id="size-val">25</span>%</label>
+        <input type="range" id="ctrl-slide-size" min="10" max="100" value="25">
+      </div>
+
+      <!-- Control button size -->
+      <div class="control-group">
+        <label>Button size: <span id="btn-size-val">36</span>px</label>
+        <input type="range" id="ctrl-btn-size" min="24" max="56" value="36">
+      </div>
+
+      <!-- Indicator size -->
+      <div class="control-group">
+        <label>Dot size: <span id="dot-size-val">8</span>px</label>
+        <input type="range" id="ctrl-dot-size" min="4" max="16" value="8">
+      </div>
+
+      <!-- Indicator gap -->
+      <div class="control-group">
+        <label>Dot gap: <span id="dot-gap-val">6</span>px</label>
+        <input type="range" id="ctrl-dot-gap" min="2" max="16" value="6">
+      </div>
+
+      <!-- Manual navigation -->
+      <div class="nav-row">
+        <button id="btn-prev">Prev</button>
+        <button id="btn-next">Next</button>
+        <span style="color:var(--muted);font-size:13px;">Go to:</span>
+        <input type="number" id="goto-idx" min="0" max="9" value="0">
+        <button id="btn-goto">Go</button>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:12px;margin:8px 0 0;">
+      Keyboard: Arrow Left/Right (or Up/Down in vertical) to navigate, Home/End to jump to first/last slide.
+    </p>
+
+    <h2>Auto-play + Loop</h2>
+    <x-scroll loop auto-play interval="2000" show-indicators gap="12" label="Auto-play demo"
+              style="width:100%;height:200px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:33%;">
+      <div class="slide">A</div>
+      <div class="slide">B</div>
+      <div class="slide">C</div>
+      <div class="slide">D</div>
+      <div class="slide">E</div>
+    </x-scroll>
+
+    <h2>Vertical Mode</h2>
+    <x-scroll mode="vertical" show-indicators snap="center" label="Vertical demo"
+              style="width:100%;height:300px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:25%;">
+      <div class="slide" style="width:25%;margin:0 auto;">1</div>
+      <div class="slide" style="width:25%;margin:0 auto;">2</div>
+      <div class="slide" style="width:25%;margin:0 auto;">3</div>
+      <div class="slide" style="width:25%;margin:0 auto;">4</div>
+    </x-scroll>
+
+    <div class="log-header">
+      <h2 style="margin:0;">Event Log</h2>
+      <button id="btn-clear">Clear</button>
+    </div>
+    <div id="log"></div>
+
+    <script>
+      const scroller = document.getElementById('scroller');
+      const log = document.getElementById('log');
+
+      // ── Mode ──
+      document.querySelectorAll('input[name=mode]').forEach(r => {
+        r.addEventListener('change', () => {
+          scroller.mode = r.value;
+          if (r.value === 'vertical') {
+            scroller.style.height = '400px';
+          } else {
+            scroller.style.height = '300px';
+          }
+        });
+      });
+
+      // ── Snap ──
+      document.getElementById('ctrl-snap').addEventListener('change', e => {
+        scroller.snap = e.target.value;
+      });
+
+      // ── Loop ──
+      document.getElementById('ctrl-loop').addEventListener('change', e => {
+        scroller.loop = e.target.checked;
+      });
+
+      // ── Auto-play ──
+      document.getElementById('ctrl-autoplay').addEventListener('change', e => {
+        scroller.autoPlay = e.target.checked;
+      });
+
+      // ── Interval ──
+      document.getElementById('ctrl-interval').addEventListener('change', e => {
+        scroller.interval = parseInt(e.target.value, 10);
+      });
+
+      // ── Show controls ──
+      document.getElementById('ctrl-show-controls').addEventListener('change', e => {
+        scroller.showControls = e.target.checked;
+      });
+
+      // ── Show indicators ──
+      document.getElementById('ctrl-show-indicators').addEventListener('change', e => {
+        scroller.showIndicators = e.target.checked;
+      });
+
+      // ── Disabled ──
+      document.getElementById('ctrl-disabled').addEventListener('change', e => {
+        scroller.disabled = e.target.checked;
+      });
+
+      // ── Gap ──
+      const gapSlider = document.getElementById('ctrl-gap');
+      gapSlider.addEventListener('input', () => {
+        document.getElementById('gap-val').textContent = gapSlider.value;
+        scroller.gap = parseInt(gapSlider.value, 10);
+      });
+
+      // ── Animation speed (CSS custom property) ──
+      const speedSlider = document.getElementById('ctrl-speed');
+      speedSlider.addEventListener('input', () => {
+        document.getElementById('speed-val').textContent = speedSlider.value;
+        scroller.style.setProperty('--x-scroll-transition-duration', speedSlider.value + 'ms');
+      });
+
+      // ── Padding (CSS custom property) ──
+      const padSlider = document.getElementById('ctrl-padding');
+      padSlider.addEventListener('input', () => {
+        document.getElementById('pad-val').textContent = padSlider.value;
+        scroller.style.setProperty('--x-scroll-padding', padSlider.value + 'px');
+      });
+
+      // ── Border radius (CSS custom property) ──
+      const radSlider = document.getElementById('ctrl-radius');
+      radSlider.addEventListener('input', () => {
+        document.getElementById('rad-val').textContent = radSlider.value;
+        scroller.style.setProperty('--x-scroll-border-radius', radSlider.value + 'px');
+      });
+
+      // ── Slide size (CSS custom property) ──
+      const sizeSlider = document.getElementById('ctrl-slide-size');
+      sizeSlider.addEventListener('input', () => {
+        document.getElementById('size-val').textContent = sizeSlider.value;
+        scroller.style.setProperty('--x-scroll-slide-size', sizeSlider.value + '%');
+      });
+
+      // ── Button size (CSS custom property) ──
+      const btnSizeSlider = document.getElementById('ctrl-btn-size');
+      btnSizeSlider.addEventListener('input', () => {
+        document.getElementById('btn-size-val').textContent = btnSizeSlider.value;
+        scroller.style.setProperty('--x-scroll-control-size', btnSizeSlider.value + 'px');
+      });
+
+      // ── Dot size (CSS custom property) ──
+      const dotSizeSlider = document.getElementById('ctrl-dot-size');
+      dotSizeSlider.addEventListener('input', () => {
+        document.getElementById('dot-size-val').textContent = dotSizeSlider.value;
+        scroller.style.setProperty('--x-scroll-indicator-size', dotSizeSlider.value + 'px');
+      });
+
+      // ── Dot gap (CSS custom property) ──
+      const dotGapSlider = document.getElementById('ctrl-dot-gap');
+      dotGapSlider.addEventListener('input', () => {
+        document.getElementById('dot-gap-val').textContent = dotGapSlider.value;
+        scroller.style.setProperty('--x-scroll-indicator-gap', dotGapSlider.value + 'px');
+      });
+
+      // ── Manual navigation ──
+      document.getElementById('btn-prev').addEventListener('click', () => scroller.prev());
+      document.getElementById('btn-next').addEventListener('click', () => scroller.next());
+      document.getElementById('btn-goto').addEventListener('click', () => {
+        scroller.goTo(parseInt(document.getElementById('goto-idx').value, 10));
+      });
+
+      // ── Event logging ──
+      function logEvent(type, detail) {
+        const line = document.createElement('div');
+        const shortType = type.replace('x-scroll-', '');
+        line.className = shortType;
+        const now = new Date();
+        const time = now.toLocaleTimeString('en', { hour12: false, fractionalSecondDigits: 3 });
+        line.textContent = '[' + time + '] ' + type + '  ' + JSON.stringify(detail);
+        log.prepend(line);
+      }
+
+      ['x-scroll-change', 'x-scroll-start', 'x-scroll-end', 'x-scroll-loop'].forEach(evt => {
+        scroller.addEventListener(evt, e => logEvent(evt, e.detail));
+      });
+
+      document.getElementById('btn-clear').addEventListener('click', () => {
+        log.innerHTML = '';
+      });
+    </script>
+  </body>
+</html>

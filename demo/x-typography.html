@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-typography demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      /* ── Layout ──────────────────────────────────────────── */
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 2rem;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+      }
+
+      @media (max-width: 780px) {
+        .layout { grid-template-columns: 1fr; }
+        .panel  { position: static !important; order: -1; }
+      }
+
+      /* ── Main ────────────────────────────────────────────── */
+      .main h1 { margin: 0 0 0.25rem; }
+      .main > p:first-of-type { margin: 0 0 1.5rem; color: var(--muted); }
+
+      h2 {
+        margin: 2.5rem 0 1rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+      }
+
+      h2:first-of-type { margin-top: 0; }
+
+      .stack { display: flex; flex-direction: column; gap: 0.75rem; }
+
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0.5rem 0;
+      }
+
+      /* ── Side panel ──────────────────────────────────────── */
+      .panel {
+        position: sticky;
+        top: 1.5rem;
+        align-self: start;
+        padding: 1.25rem;
+        border: 1px solid var(--surface-border);
+        border-radius: 10px;
+        background: var(--surface-bg);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: calc(100vh - 3rem);
+        overflow-y: auto;
+      }
+
+      .panel-section {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 0.75rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel-section:first-child { margin-top: 0; }
+
+      .field { display: flex; flex-direction: column; gap: 0.15rem; }
+
+      .field label {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .field select,
+      .field input[type="number"],
+      .field input[type="text"],
+      .field input[type="color"] {
+        width: 100%;
+        padding: 0.3rem 0.45rem;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--input-bg);
+        color: var(--input-fg);
+        font-size: 0.8125rem;
+      }
+
+      .field input[type="color"] {
+        height: 30px;
+        padding: 2px;
+        cursor: pointer;
+      }
+
+      .checkbox-field {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox-field input { margin: 0; }
+
+      .checkbox-field label {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .panel button {
+        margin-top: 0.5rem;
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--surface-bg);
+        color: var(--page-fg);
+        font-size: 0.8125rem;
+        cursor: pointer;
+      }
+
+      .panel button:hover { background: var(--input-bg); }
+    </style>
+  </head>
+
+  <body>
+    <div class="layout">
+      <!-- ── Main content ──────────────────────────────────── -->
+      <div class="main" id="main">
+        <h1>x-typography</h1>
+        <p>A text styling wrapper with variant-based typographic styles.</p>
+
+        <div class="stack" id="showcase">
+          <x-typography variant="h1">Heading 1 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="h2">Heading 2 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="h3">Heading 3 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="h4">Heading 4 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="h5">Heading 5 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="h6">Heading 6 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="subtitle1">Subtitle 1 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="subtitle2">Subtitle 2 — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="body1">Body 1 — The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump. Sphinx of black quartz, judge my vow.</x-typography>
+          <x-typography variant="body2">Body 2 — The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump. Sphinx of black quartz, judge my vow.</x-typography>
+          <x-typography variant="caption">Caption — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="overline">Overline — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="small">Small — The quick brown fox jumps over the lazy dog.</x-typography>
+          <x-typography variant="blockquote">The only way to do great work is to love what you do. — Steve Jobs</x-typography>
+          <x-typography variant="code">const greeting = "Hello, world!"; function add(a, b) { return a + b; }</x-typography>
+          <x-typography variant="kbd">Ctrl + Shift + P</x-typography>
+        </div>
+
+        <h2>Property API</h2>
+        <div class="stack" id="prop-demo">
+          <x-typography id="prop-el">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump. Sphinx of black quartz, judge my vow. The five boxing wizards jump quickly. Jackdaws love my big sphinx of quartz.</x-typography>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button id="prop-h2" type="button">variant = 'h2'</button>
+            <button id="prop-center" type="button">align = 'center'</button>
+            <button id="prop-trunc" type="button">truncate = true</button>
+            <button id="prop-clamp" type="button">lineClamp = 2</button>
+            <button id="prop-reset" type="button">Reset</button>
+          </div>
+        </div>
+
+        <p id="filter-hint" style="color:var(--muted);font-size:0.8125rem;margin-top:1rem;display:none;"></p>
+      </div>
+
+      <!-- ── Side panel ────────────────────────────────────── -->
+      <aside class="panel">
+
+        <div class="panel-section">Attributes</div>
+
+        <div class="field">
+          <label for="ctl-variant">variant</label>
+          <select id="ctl-variant">
+            <option value="">— per element —</option>
+            <option value="h1">h1</option>
+            <option value="h2">h2</option>
+            <option value="h3">h3</option>
+            <option value="h4">h4</option>
+            <option value="h5">h5</option>
+            <option value="h6">h6</option>
+            <option value="subtitle1">subtitle1</option>
+            <option value="subtitle2">subtitle2</option>
+            <option value="body1">body1</option>
+            <option value="body2">body2</option>
+            <option value="caption">caption</option>
+            <option value="overline">overline</option>
+            <option value="small">small</option>
+            <option value="blockquote">blockquote</option>
+            <option value="code">code</option>
+            <option value="kbd">kbd</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ctl-align">align</label>
+          <select id="ctl-align">
+            <option value="">— per element —</option>
+            <option value="left">left</option>
+            <option value="center">center</option>
+            <option value="right">right</option>
+            <option value="justify">justify</option>
+          </select>
+        </div>
+
+        <div class="checkbox-field">
+          <input id="ctl-truncate" type="checkbox" />
+          <label for="ctl-truncate">truncate</label>
+        </div>
+
+        <div class="field">
+          <label for="ctl-lineclamp">line-clamp</label>
+          <input id="ctl-lineclamp" type="number" min="0" max="20" value="" placeholder="none" />
+        </div>
+
+        <div class="panel-section">Font</div>
+
+        <div class="field">
+          <label for="ctl-font-family">--x-typography-font-family</label>
+          <select id="ctl-font-family">
+            <option value="">default</option>
+            <option value="system-ui, -apple-system, sans-serif">System UI</option>
+            <option value="Georgia, 'Times New Roman', serif">Serif</option>
+            <option value="ui-monospace, 'SFMono-Regular', Menlo, monospace">Monospace</option>
+            <option value="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">Segoe / Roboto</option>
+            <option value="Garamond, Baskerville, 'Baskerville Old Face', serif">Garamond</option>
+            <option value="Futura, 'Trebuchet MS', Arial, sans-serif">Futura</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ctl-font-scale">font-size scale</label>
+          <select id="ctl-font-scale">
+            <option value="">default (1x)</option>
+            <option value="0.75">0.75x</option>
+            <option value="0.875">0.875x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+
+        <div class="panel-section">Color</div>
+
+        <div class="field">
+          <label for="ctl-color">--x-typography-color</label>
+          <select id="ctl-color">
+            <option value="">inherit (default)</option>
+            <option value="#0f172a">Slate 900</option>
+            <option value="#334155">Slate 700</option>
+            <option value="#64748b">Slate 500</option>
+            <option value="#dc2626">Red 600</option>
+            <option value="#2563eb">Blue 600</option>
+            <option value="#16a34a">Green 600</option>
+            <option value="#9333ea">Purple 600</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+
+        <div class="field" id="custom-color-field" style="display:none;">
+          <label for="ctl-color-picker">pick color</label>
+          <input id="ctl-color-picker" type="color" value="#0f172a" />
+        </div>
+
+        <div class="panel-section">Variant Theming</div>
+
+        <div class="field">
+          <label for="ctl-code-bg">--x-typography-code-bg</label>
+          <select id="ctl-code-bg">
+            <option value="">default</option>
+            <option value="rgba(0,0,0,0.04)">Lighter</option>
+            <option value="rgba(0,0,0,0.1)">Darker</option>
+            <option value="rgba(59,130,246,0.1)">Blue tint</option>
+            <option value="rgba(16,185,129,0.1)">Green tint</option>
+            <option value="rgba(168,85,247,0.1)">Purple tint</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ctl-bq-border">--x-typography-blockquote-border-color</label>
+          <select id="ctl-bq-border">
+            <option value="">default</option>
+            <option value="rgba(0,0,0,0.4)">Darker</option>
+            <option value="#2563eb">Blue</option>
+            <option value="#16a34a">Green</option>
+            <option value="#dc2626">Red</option>
+            <option value="#9333ea">Purple</option>
+          </select>
+        </div>
+
+        <button id="ctl-reset" type="button">Reset all</button>
+      </aside>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+      // ── All elements & originals ─────────────────────────────────────────
+      const allEls = Array.from(document.querySelectorAll('#showcase x-typography'));
+      const originals = new Map();
+      allEls.forEach(el => {
+        originals.set(el, { variant: el.getAttribute('variant') });
+      });
+
+      const ctl = id => document.getElementById(id);
+      const filterHint = ctl('filter-hint');
+
+      // ── Visible elements (filtered by variant dropdown) ──────────────────
+      function visibleEls() {
+        return allEls.filter(el => el.style.display !== 'none');
+      }
+
+      // ── Variant filter: show/hide elements ──────────────────────────────
+      function applyVariantFilter() {
+        const v = ctl('ctl-variant').value;
+        allEls.forEach(el => {
+          const orig = originals.get(el);
+          const match = !v || orig.variant === v;
+          el.style.display = match ? '' : 'none';
+        });
+        if (v) {
+          const count = visibleEls().length;
+          filterHint.textContent = `Showing ${count} element${count !== 1 ? 's' : ''} with variant="${v}"`;
+          filterHint.style.display = '';
+        } else {
+          filterHint.style.display = 'none';
+        }
+        // Re-apply current control state to newly visible elements
+        reapplyControls();
+      }
+
+      // ── Apply all current control values to visible elements ─────────────
+      function reapplyControls() {
+        const els = visibleEls();
+
+        // Align
+        const align = ctl('ctl-align').value;
+        els.forEach(el => {
+          if (align) el.setAttribute('align', align);
+          else el.removeAttribute('align');
+        });
+
+        // Truncate
+        const trunc = ctl('ctl-truncate').checked;
+        els.forEach(el => {
+          if (trunc) el.setAttribute('truncate', '');
+          else el.removeAttribute('truncate');
+        });
+
+        // Line-clamp
+        const lc = parseInt(ctl('ctl-lineclamp').value, 10);
+        els.forEach(el => {
+          if (lc > 0) el.setAttribute('line-clamp', String(lc));
+          else el.removeAttribute('line-clamp');
+        });
+
+        // Font family
+        const ff = ctl('ctl-font-family').value;
+        els.forEach(el => {
+          if (ff) el.style.setProperty('--x-typography-font-family', ff);
+          else el.style.removeProperty('--x-typography-font-family');
+        });
+
+        // Font scale
+        const scale = ctl('ctl-font-scale').value;
+        els.forEach(el => {
+          if (scale) el.style.fontSize = scale + 'em';
+          else el.style.removeProperty('font-size');
+        });
+
+        // Color
+        const colorSel = ctl('ctl-color');
+        const colorVal = colorSel.value === 'custom'
+          ? ctl('ctl-color-picker').value
+          : colorSel.value;
+        els.forEach(el => {
+          if (colorVal) el.style.setProperty('--x-typography-color', colorVal);
+          else el.style.removeProperty('--x-typography-color');
+        });
+
+        // Code bg
+        const codeBg = ctl('ctl-code-bg').value;
+        els.forEach(el => {
+          if (codeBg) el.style.setProperty('--x-typography-code-bg', codeBg);
+          else el.style.removeProperty('--x-typography-code-bg');
+        });
+
+        // Blockquote border
+        const bqBd = ctl('ctl-bq-border').value;
+        els.forEach(el => {
+          if (bqBd) el.style.setProperty('--x-typography-blockquote-border-color', bqBd);
+          else el.style.removeProperty('--x-typography-blockquote-border-color');
+        });
+      }
+
+      // ── Wire up controls ─────────────────────────────────────────────────
+      ctl('ctl-variant').addEventListener('change', applyVariantFilter);
+
+      // All other controls: apply to visible elements only
+      ['ctl-align'].forEach(id => {
+        ctl(id).addEventListener('change', reapplyControls);
+      });
+
+      ctl('ctl-truncate').addEventListener('change', reapplyControls);
+      ctl('ctl-lineclamp').addEventListener('input', reapplyControls);
+      ctl('ctl-font-family').addEventListener('change', reapplyControls);
+      ctl('ctl-font-scale').addEventListener('change', reapplyControls);
+
+      // Color
+      const customColorField = ctl('custom-color-field');
+
+      ctl('ctl-color').addEventListener('change', () => {
+        if (ctl('ctl-color').value === 'custom') {
+          customColorField.style.display = '';
+        } else {
+          customColorField.style.display = 'none';
+        }
+        reapplyControls();
+      });
+
+      ctl('ctl-color-picker').addEventListener('input', reapplyControls);
+
+      // Variant theming
+      ctl('ctl-code-bg').addEventListener('change', reapplyControls);
+      ctl('ctl-bq-border').addEventListener('change', reapplyControls);
+
+      // ── Property API demo ──────────────────────────────────────────────────
+      const propEl = document.getElementById('prop-el');
+      document.getElementById('prop-h2').addEventListener('click', () => {
+        propEl.variant = 'h2';
+      });
+      document.getElementById('prop-center').addEventListener('click', () => {
+        propEl.align = 'center';
+      });
+      document.getElementById('prop-trunc').addEventListener('click', () => {
+        propEl.truncate = !propEl.truncate;
+      });
+      document.getElementById('prop-clamp').addEventListener('click', () => {
+        propEl.lineClamp = propEl.lineClamp ? null : 2;
+      });
+      document.getElementById('prop-reset').addEventListener('click', () => {
+        propEl.variant = null;
+        propEl.align = null;
+        propEl.truncate = false;
+        propEl.lineClamp = null;
+      });
+
+      // Reset
+      ctl('ctl-reset').addEventListener('click', () => {
+        ctl('ctl-variant').value      = '';
+        ctl('ctl-align').value        = '';
+        ctl('ctl-truncate').checked   = false;
+        ctl('ctl-lineclamp').value    = '';
+        ctl('ctl-font-family').value  = '';
+        ctl('ctl-font-scale').value   = '';
+        ctl('ctl-color').value        = '';
+        ctl('ctl-color-picker').value = '#0f172a';
+        ctl('ctl-code-bg').value      = '';
+        ctl('ctl-bq-border').value    = '';
+        customColorField.style.display = 'none';
+
+        // Restore all elements
+        allEls.forEach(el => {
+          const orig = originals.get(el);
+          if (orig && orig.variant) el.setAttribute('variant', orig.variant);
+          el.removeAttribute('align');
+          el.removeAttribute('truncate');
+          el.removeAttribute('line-clamp');
+          el.style.cssText = '';
+        });
+
+        filterHint.style.display = 'none';
+      });
+    </script>
+  </body>
+</html>

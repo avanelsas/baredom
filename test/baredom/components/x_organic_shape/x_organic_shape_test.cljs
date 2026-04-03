@@ -5,12 +5,11 @@
 
 (x-organic-shape/init!)
 
-(defn cleanup-fixture [f]
-  (f)
+(defn cleanup-dom! []
   (doseq [node (.querySelectorAll js/document model/tag-name)]
     (.remove node)))
 
-(use-fixtures :each cleanup-fixture)
+(use-fixtures :each {:before cleanup-dom! :after cleanup-dom!})
 
 (defn make-el [] (.createElement js/document model/tag-name))
 

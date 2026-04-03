@@ -250,6 +250,18 @@
     "./x-copy" : {
       "import" : "./dist/x-copy.js",
       "default" : "./dist/x-copy.js"
+    },
+    "./x-typography" : {
+      "import" : "./dist/x-typography.js",
+      "default" : "./dist/x-typography.js"
+    },
+    "./x-kinetic-typography" : {
+      "import" : "./dist/x-kinetic-typography.js",
+      "default" : "./dist/x-kinetic-typography.js"
+    },
+    "./x-scroll" : {
+      "import" : "./dist/x-scroll.js",
+      "default" : "./dist/x-scroll.js"
     }
   },
   "devDependencies" : {
