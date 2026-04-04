@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-gaussian-blur — Demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --surface-bg: #ffffff;
+      --surface-border: #e2e8f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f1f5f9;
+        --muted: #94a3b8;
+        --surface-bg: #1e293b;
+        --surface-border: #334155;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--page-bg); color: var(--page-fg); }
+    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 32px; max-width: 1100px; margin: 0 auto; }
+
+    h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 8px; }
+    h2 { font-size: 1.25rem; font-weight: 600; margin: 32px 0 12px; }
+    p.muted { color: var(--muted); margin: 0 0 32px; }
+    code { font-family: ui-monospace, monospace; font-size: 0.875em; background: var(--surface-bg); padding: 2px 6px; border-radius: 4px; }
+
+    .demo-box {
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .demo-box x-gaussian-blur {
+      height: 300px;
+      display: block;
+    }
+
+    /* ── Controls ─────────────────────────────────── */
+    .controls {
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .control-group { display: flex; flex-direction: column; gap: 4px; }
+    .control-group label { font-size: 0.8125rem; font-weight: 600; color: var(--muted); }
+    .control-group input,
+    .control-group select {
+      padding: 6px 10px;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      font-size: 0.875rem;
+    }
+
+    .overlay-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      font-size: 2rem;
+      font-weight: 700;
+    }
+  </style>
+  <script src="../js/main.js"></script>
+</head>
+<body>
+
+<h1>x-gaussian-blur</h1>
+<p class="muted">Animated blurred color blobs as a decorative background.</p>
+
+<!-- ── Default ──────────────────────────────────── -->
+<h2>Default</h2>
+<div class="demo-box">
+  <x-gaussian-blur></x-gaussian-blur>
+</div>
+
+<!-- ── Custom colors ───────────────────────────── -->
+<h2>Custom colors (warm palette)</h2>
+<div class="demo-box">
+  <x-gaussian-blur colors="#ff6b6b, #feca57, #ff9ff3, #f368e0"></x-gaussian-blur>
+</div>
+
+<!-- ── With content overlay ────────────────────── -->
+<h2>With content overlay</h2>
+<div class="demo-box">
+  <x-gaussian-blur colors="#667eea, #764ba2, #f093fb" blur="70">
+    <div class="overlay-text">Hello World</div>
+  </x-gaussian-blur>
+</div>
+
+<!-- ── Pulse animation ─────────────────────────── -->
+<h2>Pulse animation + screen blend</h2>
+<div class="demo-box">
+  <x-gaussian-blur animation="pulse" blend="screen" colors="#00d2ff, #3a7bd5, #00b09b, #96c93d"></x-gaussian-blur>
+</div>
+
+<!-- ── Large blobs, heavy blur ─────────────────── -->
+<h2>Large blobs, heavy blur, slow</h2>
+<div class="demo-box">
+  <x-gaussian-blur size="large" blur="100" speed="slow" count="3" colors="#e91e63, #9c27b0, #2196f3"></x-gaussian-blur>
+</div>
+
+<!-- ── Static (no animation) ───────────────────── -->
+<h2>No animation</h2>
+<div class="demo-box">
+  <x-gaussian-blur animation="none" colors="#10b981, #3b82f6, #8b5cf6, #f59e0b" count="8" size="small"></x-gaussian-blur>
+</div>
+
+<!-- ── Interactive controls ────────────────────── -->
+<h2>Interactive</h2>
+
+<div class="controls">
+  <div class="control-group">
+    <label for="ctl-colors">colors</label>
+    <input id="ctl-colors" type="text" value="#6366f1, #ec4899, #14b8a6, #f59e0b" />
+  </div>
+  <div class="control-group">
+    <label for="ctl-blur">blur</label>
+    <input id="ctl-blur" type="range" min="5" max="150" value="60" />
+  </div>
+  <div class="control-group">
+    <label for="ctl-speed">speed</label>
+    <select id="ctl-speed">
+      <option value="slow">slow</option>
+      <option value="medium" selected>medium</option>
+      <option value="fast">fast</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="ctl-count">count</label>
+    <input id="ctl-count" type="range" min="1" max="12" value="5" />
+  </div>
+  <div class="control-group">
+    <label for="ctl-size">size</label>
+    <select id="ctl-size">
+      <option value="small">small</option>
+      <option value="medium" selected>medium</option>
+      <option value="large">large</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="ctl-opacity">opacity</label>
+    <input id="ctl-opacity" type="range" min="0" max="1" step="0.05" value="0.7" />
+  </div>
+  <div class="control-group">
+    <label for="ctl-animation">animation</label>
+    <select id="ctl-animation">
+      <option value="float" selected>float</option>
+      <option value="pulse">pulse</option>
+      <option value="none">none</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="ctl-blend">blend</label>
+    <select id="ctl-blend">
+      <option value="normal" selected>normal</option>
+      <option value="multiply">multiply</option>
+      <option value="screen">screen</option>
+      <option value="overlay">overlay</option>
+      <option value="soft-light">soft-light</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="ctl-paused">paused</label>
+    <input id="ctl-paused" type="checkbox" />
+  </div>
+</div>
+
+<div class="demo-box">
+  <x-gaussian-blur id="interactive"></x-gaussian-blur>
+</div>
+
+<script>
+  const el = document.getElementById('interactive');
+  const ids = ['colors','blur','speed','count','size','opacity','animation','blend','paused'];
+
+  ids.forEach(id => {
+    const ctl = document.getElementById('ctl-' + id);
+    ctl.addEventListener(id === 'paused' ? 'change' : 'input', () => {
+      if (id === 'paused') {
+        if (ctl.checked) el.setAttribute('paused', '');
+        else el.removeAttribute('paused');
+      } else {
+        el.setAttribute(id, ctl.value);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "description" : "54 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
+  "description" : "55 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
   "engines" : {
     "node" : ">=18"
   },
@@ -250,6 +250,46 @@
     "./x-copy" : {
       "import" : "./dist/x-copy.js",
       "default" : "./dist/x-copy.js"
+    },
+    "./x-typography" : {
+      "import" : "./dist/x-typography.js",
+      "default" : "./dist/x-typography.js"
+    },
+    "./x-kinetic-typography" : {
+      "import" : "./dist/x-kinetic-typography.js",
+      "default" : "./dist/x-kinetic-typography.js"
+    },
+    "./x-scroll" : {
+      "import" : "./dist/x-scroll.js",
+      "default" : "./dist/x-scroll.js"
+    },
+    "./x-scroll-parallax" : {
+      "import" : "./dist/x-scroll-parallax.js",
+      "default" : "./dist/x-scroll-parallax.js"
+    },
+    "./x-scroll-story" : {
+      "import" : "./dist/x-scroll-story.js",
+      "default" : "./dist/x-scroll-story.js"
+    },
+    "./x-scroll-timeline" : {
+      "import" : "./dist/x-scroll-timeline.js",
+      "default" : "./dist/x-scroll-timeline.js"
+    },
+    "./x-organic-shape" : {
+      "import" : "./dist/x-organic-shape.js",
+      "default" : "./dist/x-organic-shape.js"
+    },
+    "./x-organic-divider" : {
+      "import" : "./dist/x-organic-divider.js",
+      "default" : "./dist/x-organic-divider.js"
+    },
+    "./x-ripple-effect" : {
+      "import" : "./dist/x-ripple-effect.js",
+      "default" : "./dist/x-ripple-effect.js"
+    },
+    "./x-gaussian-blur" : {
+      "import" : "./dist/x-gaussian-blur.js",
+      "default" : "./dist/x-gaussian-blur.js"
     }
   },
   "devDependencies" : {

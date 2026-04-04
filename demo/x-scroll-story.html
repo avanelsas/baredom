@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-scroll-story demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 1100px; }
+
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+      .spacer { height: 40vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
+
+      /* ── Controls panel ─────────────────────────────────────── */
+      .controls {
+        position: fixed; top: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 12px 16px; font-size: 13px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        max-width: 280px;
+      }
+      .controls label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+      .controls select, .controls input { accent-color: #3b82f6; }
+      .controls select, .controls input[type="range"] { background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
+      .controls .value { min-width: 2.5em; text-align: right; font-variant-numeric: tabular-nums; }
+
+      /* ── Media panel styling ────────────────────────────────── */
+      .media-panel {
+        width: 100%; height: 100%;
+        min-height: 100vh;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: 700; color: white;
+        transition: background 0.5s ease;
+      }
+      .media-panel[data-step="0"] { background: linear-gradient(135deg, #1e3a5f, #2d5a87); }
+      .media-panel[data-step="1"] { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+      .media-panel[data-step="2"] { background: linear-gradient(135deg, #059669, #10b981); }
+      .media-panel[data-step="3"] { background: linear-gradient(135deg, #dc2626, #f87171); }
+
+      /* ── Step styling ───────────────────────────────────────── */
+      .step {
+        display: flex; flex-direction: column; justify-content: center;
+      }
+      .step h3 { margin: 0 0 8px; font-size: 1.3rem; }
+      .step p { margin: 0; color: var(--muted); max-width: 40ch; }
+
+      /* ── Event log ──────────────────────────────────────────── */
+      .event-log {
+        position: fixed; bottom: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 8px 12px; font-size: 11px;
+        max-width: 340px; max-height: 200px; overflow-y: auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        font-family: ui-monospace, monospace;
+      }
+      .event-log div { padding: 2px 0; border-bottom: 1px solid var(--border); }
+      .event-log .label { color: #3b82f6; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>&lt;x-scroll-story&gt;</h1>
+    <p style="color:var(--muted);margin:0 0 16px;">Scrollytelling: sticky media + scrolling steps</p>
+
+    <!-- ── Controls ──────────────────────────────────────────── -->
+    <div class="controls">
+      <strong>Controls</strong>
+      <label>
+        Layout
+        <select id="ctl-layout">
+          <option value="left" selected>left</option>
+          <option value="right">right</option>
+          <option value="top">top</option>
+        </select>
+      </label>
+      <label>
+        Threshold
+        <input id="ctl-threshold" type="range" min="0" max="1" step="0.05" value="0.5" />
+        <span class="value" id="ctl-threshold-val">0.5</span>
+      </label>
+      <label>
+        Split
+        <input id="ctl-split" type="range" min="0.1" max="0.9" step="0.05" value="0.4" />
+        <span class="value" id="ctl-split-val">0.4</span>
+      </label>
+      <label>
+        <input id="ctl-disabled" type="checkbox" />
+        Disabled
+      </label>
+      <h2 style="margin:12px 0 6px;">Autoplay</h2>
+      <label>
+        <input id="ctl-autoplay" type="checkbox" />
+        Autoplay
+      </label>
+      <label>
+        Speed (px/s)
+        <input id="ctl-speed" type="range" min="1" max="200" step="1" value="50" />
+        <span class="value" id="ctl-speed-val">50</span>
+      </label>
+      <label>
+        <input id="ctl-loop" type="checkbox" />
+        Loop
+      </label>
+      <label>
+        <input id="ctl-indicator" type="checkbox" />
+        Pause indicator
+      </label>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+        Active: <span id="ctl-active">-1</span> &middot;
+        Progress: <span id="ctl-progress">0</span> &middot;
+        Paused: <span id="ctl-paused">false</span>
+      </div>
+    </div>
+
+    <div class="spacer">Scroll down to begin the story</div>
+
+    <!-- ── Scrollytelling component ──────────────────────────── -->
+    <x-scroll-story id="story" layout="left" threshold="0.5" split="0.4" label="Product journey">
+      <div slot="media">
+        <div class="media-panel" id="media" data-step="0">
+          Step 1
+        </div>
+      </div>
+
+      <section class="step" id="step-intro">
+        <h3>Introduction</h3>
+        <p>Welcome to our product story. Scroll down to discover each chapter. The media panel on the left stays pinned while these text sections scroll past.</p>
+      </section>
+
+      <section class="step" id="step-features">
+        <h3>Key Features</h3>
+        <p>Our product offers powerful features designed for modern workflows. Each step in this story highlights a different aspect of the experience.</p>
+      </section>
+
+      <section class="step" id="step-details">
+        <h3>Under the Hood</h3>
+        <p>Built with web standards, zero framework runtime, and progressive enhancement. Works everywhere, loads fast, stays accessible.</p>
+      </section>
+
+      <section class="step" id="step-conclusion">
+        <h3>Get Started</h3>
+        <p>Ready to try it? The scrollytelling pattern lets you tell compelling visual stories with minimal code. Just add content and listen for events.</p>
+      </section>
+    </x-scroll-story>
+
+    <div class="spacer">End of story</div>
+
+    <!-- ── Event log ─────────────────────────────────────────── -->
+    <div class="event-log" id="log">
+      <div style="color:var(--muted);">Events will appear here...</div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+      const story  = document.getElementById('story');
+      const media  = document.getElementById('media');
+      const log    = document.getElementById('log');
+      const labels = ['Step 1', 'Step 2', 'Step 3', 'Step 4'];
+
+      // ── Controls ────────────────────────────────────────────
+      document.getElementById('ctl-layout').addEventListener('change', e => {
+        story.layout = e.target.value;
+      });
+
+      const thresholdSlider = document.getElementById('ctl-threshold');
+      const thresholdVal    = document.getElementById('ctl-threshold-val');
+      thresholdSlider.addEventListener('input', e => {
+        story.threshold = parseFloat(e.target.value);
+        thresholdVal.textContent = e.target.value;
+      });
+
+      const splitSlider = document.getElementById('ctl-split');
+      const splitVal    = document.getElementById('ctl-split-val');
+      splitSlider.addEventListener('input', e => {
+        story.split = parseFloat(e.target.value);
+        splitVal.textContent = e.target.value;
+      });
+
+      document.getElementById('ctl-disabled').addEventListener('change', e => {
+        story.disabled = e.target.checked;
+      });
+
+      document.getElementById('ctl-autoplay').addEventListener('change', e => {
+        story.autoplay = e.target.checked;
+      });
+
+      const speedSlider = document.getElementById('ctl-speed');
+      const speedVal    = document.getElementById('ctl-speed-val');
+      speedSlider.addEventListener('input', e => {
+        story.autoplaySpeed = parseFloat(e.target.value);
+        speedVal.textContent = e.target.value;
+      });
+
+      document.getElementById('ctl-loop').addEventListener('change', e => {
+        story.autoplayLoop = e.target.checked;
+      });
+
+      document.getElementById('ctl-indicator').addEventListener('change', e => {
+        story.autoplayIndicator = e.target.checked;
+      });
+
+      // ── Event handling ──────────────────────────────────────
+      function logEvent(name, detail) {
+        const div = document.createElement('div');
+        const short = name.replace('x-scroll-story-', '');
+        div.innerHTML = '<span class="label">' + short + '</span> ' + JSON.stringify(detail);
+        log.prepend(div);
+        // Keep log short
+        while (log.children.length > 50) log.lastChild.remove();
+      }
+
+      story.addEventListener('x-scroll-story-step-change', e => {
+        const { index } = e.detail;
+        media.dataset.step = index;
+        media.textContent = labels[index] || '—';
+        document.getElementById('ctl-active').textContent = index;
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-progress', e => {
+        document.getElementById('ctl-progress').textContent = e.detail.progress.toFixed(2);
+      });
+
+      story.addEventListener('x-scroll-story-step-enter', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-step-leave', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-enter', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-leave', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-autoplay-pause', e => {
+        document.getElementById('ctl-paused').textContent = 'true';
+        logEvent(e.type, e.detail);
+      });
+
+      story.addEventListener('x-scroll-story-autoplay-resume', e => {
+        document.getElementById('ctl-paused').textContent = 'false';
+        logEvent(e.type, e.detail);
+      });
+    </script>
+  </body>
+</html>

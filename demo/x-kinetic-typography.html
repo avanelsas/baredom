@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-kinetic-typography demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 900px; }
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+      .row { display: flex; gap: 16px; align-items: start; flex-wrap: wrap; margin: 12px 0; }
+      .label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+      .card {
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--surface-bg);
+      }
+      .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls select, .controls input[type=text], .controls input[type=number] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .controls input[type=range] { width: 100px; }
+      code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
+      x-kinetic-typography { display: block; width: 100%; height: 150px; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-kinetic-typography demo</h1>
+
+    <h2>Path presets</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Flowing text along a wave path" preset="wave" animation="scroll"></x-kinetic-typography>
+        <div class="label">wave (default)</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Spinning around a circle" preset="circle" animation="scroll" repeat="2"></x-kinetic-typography>
+        <div class="label">circle</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Arching across the sky" preset="arc" animation="bounce"></x-kinetic-typography>
+        <div class="label">arc</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Infinite loop of text" preset="infinity" animation="scroll" speed="0.7"></x-kinetic-typography>
+        <div class="label">infinity</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Spiralling inward and outward" preset="spiral" animation="scroll" speed="0.5"></x-kinetic-typography>
+        <div class="label">spiral</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Sinusoidal motion" preset="sine" animation="scroll" repeat="2"></x-kinetic-typography>
+        <div class="label">sine</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Simple scrolling marquee" preset="line" animation="scroll"></x-kinetic-typography>
+        <div class="label">line</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Custom SVG path data" path="M10,80 Q95,10 180,80 T350,80 T520,80 T690,80" animation="oscillate"></x-kinetic-typography>
+        <div class="label">custom path</div>
+      </div>
+    </div>
+
+    <h2>Animation types</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Scrolling continuously along the path" preset="wave" animation="scroll"></x-kinetic-typography>
+        <div class="label">scroll</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Bouncing back and forth" preset="wave" animation="bounce"></x-kinetic-typography>
+        <div class="label">bounce</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Oscillating with overshoot" preset="wave" animation="oscillate"></x-kinetic-typography>
+        <div class="label">oscillate</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Static text on a wave path" preset="wave" animation="none"></x-kinetic-typography>
+        <div class="label">none (static)</div>
+      </div>
+    </div>
+
+    <h2>Visual effects</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Fading in and out" preset="wave" animation="scroll" effect="opacity-wave"></x-kinetic-typography>
+        <div class="label">opacity-wave</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Shifting colors" preset="wave" animation="scroll" effect="color-shift"
+          style="--x-kinetic-typography-color-shift-from:#6366f1;--x-kinetic-typography-color-shift-to:#ec4899;">
+        </x-kinetic-typography>
+        <div class="label">color-shift</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Breathing letter spacing" preset="wave" animation="scroll" effect="spacing-breathe"></x-kinetic-typography>
+        <div class="label">spacing-breathe</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Pulsing text size" preset="wave" animation="scroll" effect="size-pulse"></x-kinetic-typography>
+        <div class="label">size-pulse</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Growing from small to large" preset="arc" animation="bounce" start-size="12px" end-size="48px"></x-kinetic-typography>
+        <div class="label">size-gradient (12px to 48px)</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Multiple effects combined" preset="circle" animation="scroll" effect="opacity-wave color-shift"
+          style="--x-kinetic-typography-color-shift-from:#f59e0b;--x-kinetic-typography-color-shift-to:#10b981;">
+        </x-kinetic-typography>
+        <div class="label">opacity-wave + color-shift</div>
+      </div>
+    </div>
+
+    <h2>Color wave</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Rainbow ripple across characters" preset="wave" animation="scroll" effect="color-wave"
+          style="--x-kinetic-typography-color-shift-from:#6366f1;--x-kinetic-typography-color-shift-to:#ec4899;">
+        </x-kinetic-typography>
+        <div class="label">color-wave (purple to pink)</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Color wave on a circle" preset="circle" animation="scroll" effect="color-wave" repeat="2"
+          style="--x-kinetic-typography-color-shift-from:#f59e0b;--x-kinetic-typography-color-shift-to:#10b981;">
+        </x-kinetic-typography>
+        <div class="label">color-wave (amber to green)</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Size gradient + color wave" preset="arc" animation="bounce" effect="color-wave" start-size="14px" end-size="40px"
+          style="--x-kinetic-typography-color-shift-from:#3b82f6;--x-kinetic-typography-color-shift-to:#ef4444;">
+        </x-kinetic-typography>
+        <div class="label">color-wave + size-gradient combined</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Slow wave on infinity path" preset="infinity" animation="scroll" effect="color-wave" speed="0.5"
+          style="--x-kinetic-typography-color-shift-from:#8b5cf6;--x-kinetic-typography-color-shift-to:#06b6d4;">
+        </x-kinetic-typography>
+        <div class="label">slow color-wave on infinity</div>
+      </div>
+    </div>
+
+    <h2>Echo / trail effect</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Text with trailing echoes" preset="wave" animation="scroll" echo-count="2"></x-kinetic-typography>
+        <div class="label">2 echoes, default settings</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="More echoes, wider delay" preset="wave" animation="scroll" echo-count="4" echo-delay="0.5"></x-kinetic-typography>
+        <div class="label">4 echoes, delay=0.5s</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Bouncing with trail" preset="arc" animation="bounce" echo-count="3" echo-delay="0.2" echo-opacity="0.6"></x-kinetic-typography>
+        <div class="label">bounce + 3 echoes</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Shrinking echoes" preset="circle" animation="scroll" echo-count="3" echo-scale="0.7" echo-opacity="0.4" repeat="2"></x-kinetic-typography>
+        <div class="label">circle, scale=0.7, opacity=0.4</div>
+      </div>
+    </div>
+
+    <h2>Star Wars crawl</h2>
+    <div class="row">
+      <div class="card" style="flex:1;">
+        <x-kinetic-typography
+          preset="crawl"
+          animation="scroll"
+          speed="0.3"
+          text="It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire planet."
+          style="height:300px;
+                 --x-kinetic-typography-font-family:'Georgia',serif;
+                 --x-kinetic-typography-font-size:18px;
+                 --x-kinetic-typography-color:#fbbf24;
+                 --x-kinetic-typography-duration:30s;">
+        </x-kinetic-typography>
+        <div class="label">preset=crawl, classic Star Wars style</div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography
+          preset="crawl"
+          animation="scroll"
+          text="A simple crawl with default styling and shorter text to demonstrate the effect."
+          style="height:200px;">
+        </x-kinetic-typography>
+        <div class="label">crawl, default styling</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography
+          preset="crawl"
+          animation="scroll"
+          effect="color-shift"
+          text="Color shifting crawl text that morphs between two colors as it scrolls upward into the distance."
+          style="height:200px;
+                 --x-kinetic-typography-color-shift-from:#6366f1;
+                 --x-kinetic-typography-color-shift-to:#ec4899;">
+        </x-kinetic-typography>
+        <div class="label">crawl + color-shift</div>
+      </div>
+    </div>
+
+    <h2>Custom theming</h2>
+    <div class="row">
+      <div class="card" style="flex:1;">
+        <x-kinetic-typography
+          text="Beautifully styled kinetic typography"
+          preset="wave"
+          animation="scroll"
+          effect="color-wave"
+          echo-count="2"
+          style="--x-kinetic-typography-color:#6366f1;
+                 --x-kinetic-typography-font-family:'Georgia',serif;
+                 --x-kinetic-typography-font-size:36px;
+                 --x-kinetic-typography-font-weight:700;
+                 --x-kinetic-typography-duration:15s;
+                 --x-kinetic-typography-color-shift-from:#6366f1;
+                 --x-kinetic-typography-color-shift-to:#ec4899;
+                 --x-kinetic-typography-path-stroke:rgba(99,102,241,0.15);
+                 --x-kinetic-typography-path-stroke-width:2;
+                 height:180px;">
+        </x-kinetic-typography>
+        <div class="label">Georgia serif, bold, color-wave, 2 echoes, visible path</div>
+      </div>
+    </div>
+
+    <h2>Direction &amp; speed</h2>
+    <div class="grid">
+      <div class="card">
+        <x-kinetic-typography text="Forward at normal speed" preset="wave" animation="scroll" direction="normal" speed="1"></x-kinetic-typography>
+        <div class="label">normal, speed=1</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Reverse direction" preset="wave" animation="scroll" direction="reverse" speed="1"></x-kinetic-typography>
+        <div class="label">reverse, speed=1</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Fast forward" preset="wave" animation="scroll" speed="3"></x-kinetic-typography>
+        <div class="label">normal, speed=3</div>
+      </div>
+      <div class="card">
+        <x-kinetic-typography text="Slow and steady" preset="wave" animation="scroll" speed="0.3"></x-kinetic-typography>
+        <div class="label">normal, speed=0.3</div>
+      </div>
+    </div>
+
+    <h2>Live control</h2>
+    <div class="controls">
+      <label>text
+        <input type="text" id="ctrl-text" value="Edit me with the controls" style="width:200px">
+      </label>
+      <label>preset
+        <select id="ctrl-preset">
+          <option value="wave" selected>wave</option>
+          <option value="circle">circle</option>
+          <option value="arc">arc</option>
+          <option value="infinity">infinity</option>
+          <option value="spiral">spiral</option>
+          <option value="sine">sine</option>
+          <option value="line">line</option>
+          <option value="crawl">crawl</option>
+        </select>
+      </label>
+      <label>animation
+        <select id="ctrl-animation">
+          <option value="scroll" selected>scroll</option>
+          <option value="bounce">bounce</option>
+          <option value="oscillate">oscillate</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <label>direction
+        <select id="ctrl-direction">
+          <option value="normal" selected>normal</option>
+          <option value="reverse">reverse</option>
+        </select>
+      </label>
+    </div>
+    <div class="controls">
+      <label>speed
+        <input type="range" id="ctrl-speed" min="0.1" max="5" step="0.1" value="1">
+        <span id="speed-val">1</span>
+      </label>
+      <label>repeat
+        <input type="number" id="ctrl-repeat" value="1" min="1" max="10" style="width:50px">
+      </label>
+      <label>effect
+        <input type="text" id="ctrl-effect" value="" placeholder="opacity-wave color-wave ..." style="width:200px">
+      </label>
+      <label>font-size
+        <input type="text" id="ctrl-font-size" value="" placeholder="e.g. 32px" style="width:70px">
+      </label>
+    </div>
+    <div class="controls">
+      <label>echo-count
+        <input type="number" id="ctrl-echo-count" value="0" min="0" max="5" style="width:50px">
+      </label>
+      <label>echo-delay
+        <input type="text" id="ctrl-echo-delay" value="" placeholder="0.3" style="width:50px">
+      </label>
+      <label>echo-opacity
+        <input type="text" id="ctrl-echo-opacity" value="" placeholder="0.5" style="width:50px">
+      </label>
+      <label>echo-scale
+        <input type="text" id="ctrl-echo-scale" value="" placeholder="0.85" style="width:50px">
+      </label>
+    </div>
+    <div class="controls">
+      <label>custom path
+        <input type="text" id="ctrl-path" value="" placeholder="M0,0 L100,100 ..." style="width:260px">
+      </label>
+      <label>start-size
+        <input type="text" id="ctrl-start-size" value="" placeholder="12px" style="width:60px">
+      </label>
+      <label>end-size
+        <input type="text" id="ctrl-end-size" value="" placeholder="48px" style="width:60px">
+      </label>
+    </div>
+    <x-kinetic-typography id="live" text="Edit me with the controls" preset="wave" animation="scroll" style="height:200px;"></x-kinetic-typography>
+
+    <script>
+      const live = document.getElementById('live');
+
+      function setOrRemove(attr, val) {
+        if (val) live.setAttribute(attr, val);
+        else     live.removeAttribute(attr);
+      }
+
+      function update() {
+        document.getElementById('speed-val').textContent = document.getElementById('ctrl-speed').value;
+
+        live.setAttribute('text', document.getElementById('ctrl-text').value);
+        live.setAttribute('preset', document.getElementById('ctrl-preset').value);
+        live.setAttribute('animation', document.getElementById('ctrl-animation').value);
+        live.setAttribute('direction', document.getElementById('ctrl-direction').value);
+        live.setAttribute('speed', document.getElementById('ctrl-speed').value);
+        live.setAttribute('repeat', document.getElementById('ctrl-repeat').value);
+
+        setOrRemove('effect', document.getElementById('ctrl-effect').value.trim());
+        setOrRemove('font-size', document.getElementById('ctrl-font-size').value.trim());
+        setOrRemove('path', document.getElementById('ctrl-path').value.trim());
+        setOrRemove('start-size', document.getElementById('ctrl-start-size').value.trim());
+        setOrRemove('end-size', document.getElementById('ctrl-end-size').value.trim());
+
+        const echoCount = document.getElementById('ctrl-echo-count').value;
+        if (echoCount && echoCount !== '0') live.setAttribute('echo-count', echoCount);
+        else live.removeAttribute('echo-count');
+
+        setOrRemove('echo-delay', document.getElementById('ctrl-echo-delay').value.trim());
+        setOrRemove('echo-opacity', document.getElementById('ctrl-echo-opacity').value.trim());
+        setOrRemove('echo-scale', document.getElementById('ctrl-echo-scale').value.trim());
+      }
+
+      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+        el.addEventListener('change', update);
+        el.addEventListener('input',  update);
+      });
+    </script>
+  </body>
+</html>

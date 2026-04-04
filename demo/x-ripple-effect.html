@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-ripple-effect demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .demos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        max-width: 900px;
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+        width: 260px;
+        text-align: center;
+        user-select: none;
+      }
+
+      .card h3 { margin: 0 0 8px; font-size: 16px; }
+      .card p { margin: 0; font-size: 13px; color: var(--muted); }
+
+      .image-box {
+        width: 300px;
+        height: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        user-select: none;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row input {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      .row input[type=checkbox] { width: auto; }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-ripple-effect demo</h1>
+    <p style="color:var(--muted);font-size:14px;">Click anywhere on the content below to see the water distortion ripple.</p>
+
+    <h2>Basic usage</h2>
+    <div class="demos">
+      <x-ripple-effect>
+        <div class="card">
+          <h3>Click me</h3>
+          <p>Default settings: intensity 25, duration 800ms</p>
+        </div>
+      </x-ripple-effect>
+
+      <x-ripple-effect>
+        <div class="image-box">Gradient Box</div>
+      </x-ripple-effect>
+    </div>
+
+    <h2>Custom intensity</h2>
+    <div class="demos">
+      <x-ripple-effect intensity="10">
+        <div class="card">
+          <h3>Subtle</h3>
+          <p>intensity="10"</p>
+        </div>
+      </x-ripple-effect>
+
+      <x-ripple-effect intensity="60">
+        <div class="card">
+          <h3>Strong</h3>
+          <p>intensity="60"</p>
+        </div>
+      </x-ripple-effect>
+
+      <x-ripple-effect intensity="100">
+        <div class="card">
+          <h3>Maximum</h3>
+          <p>intensity="100"</p>
+        </div>
+      </x-ripple-effect>
+    </div>
+
+    <h2>Custom duration</h2>
+    <div class="demos">
+      <x-ripple-effect duration="200">
+        <div class="card">
+          <h3>Fast</h3>
+          <p>duration="200"</p>
+        </div>
+      </x-ripple-effect>
+
+      <x-ripple-effect duration="2000">
+        <div class="card">
+          <h3>Slow</h3>
+          <p>duration="2000"</p>
+        </div>
+      </x-ripple-effect>
+    </div>
+
+    <h2>Custom frequency</h2>
+    <div class="demos">
+      <x-ripple-effect frequency="0.01">
+        <div class="card">
+          <h3>Low frequency</h3>
+          <p>frequency="0.01" — large waves</p>
+        </div>
+      </x-ripple-effect>
+
+      <x-ripple-effect frequency="0.15">
+        <div class="card">
+          <h3>High frequency</h3>
+          <p>frequency="0.15" — small waves</p>
+        </div>
+      </x-ripple-effect>
+    </div>
+
+    <h2>Disabled</h2>
+    <div class="demos">
+      <x-ripple-effect disabled>
+        <div class="card">
+          <h3>Disabled</h3>
+          <p>No ripple effect on click</p>
+        </div>
+      </x-ripple-effect>
+    </div>
+
+    <h2>Interactive controls</h2>
+    <div class="row">
+      <label>intensity <input type="range" id="ctrl-intensity" min="1" max="100" value="25"></label>
+      <label>duration <input type="range" id="ctrl-duration" min="100" max="3000" value="800"></label>
+      <label>frequency (<span id="ctrl-frequency-val">0.04</span>) <input type="range" id="ctrl-frequency" min="5" max="200" value="40"></label>
+      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+    </div>
+    <x-ripple-effect id="interactive-demo">
+      <div class="card" style="width:400px;">
+        <h3>Interactive</h3>
+        <p>Adjust the controls above and click here</p>
+      </div>
+    </x-ripple-effect>
+
+    <h2>Event log</h2>
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+
+      function logEvent(e) {
+        const d = e.detail;
+        const name = e.type;
+        log.textContent =
+          `${name}  x=${d.x}  y=${d.y}\n` + log.textContent;
+      }
+
+      document.querySelectorAll("x-ripple-effect").forEach(el => {
+        el.addEventListener("x-ripple-effect-start", logEvent);
+        el.addEventListener("x-ripple-effect-end", logEvent);
+      });
+
+      // Interactive controls
+      const demo = document.getElementById("interactive-demo");
+
+      document.getElementById("ctrl-intensity").addEventListener("input", e => {
+        demo.setAttribute("intensity", e.target.value);
+      });
+      document.getElementById("ctrl-duration").addEventListener("input", e => {
+        demo.setAttribute("duration", e.target.value);
+      });
+      document.getElementById("ctrl-frequency").addEventListener("input", e => {
+        const val = (parseInt(e.target.value) / 1000).toString();
+        demo.setAttribute("frequency", val);
+        document.getElementById("ctrl-frequency-val").textContent = val;
+      });
+      document.getElementById("ctrl-disabled").addEventListener("change", e => {
+        if (e.target.checked) {
+          demo.setAttribute("disabled", "");
+        } else {
+          demo.removeAttribute("disabled");
+        }
+      });
+    </script>
+  </body>
+</html>

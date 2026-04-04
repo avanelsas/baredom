@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-scroll-parallax demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; }
+
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+      .spacer { height: 60vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
+
+      /* ── Controls panel ─────────────────────────────────────── */
+      .controls {
+        position: fixed; top: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 12px 16px; font-size: 13px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        max-width: 260px;
+      }
+      .controls label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+      .controls select, .controls input[type="checkbox"] { accent-color: #3b82f6; }
+      .controls select { background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
+
+      /* ── Parallax sections ──────────────────────────────────── */
+      .parallax-section {
+        position: relative;
+        height: 500px;
+        overflow: hidden;
+        border-radius: 12px;
+        margin: 20px 0;
+      }
+
+      .layer {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        border-radius: 12px;
+      }
+      .layer.bg  { background: linear-gradient(135deg, #1e3a5f, #2d5a87); }
+      .layer.mid { background: rgba(59, 130, 246, 0.6); inset: 40px; border-radius: 16px; }
+      .layer.fg  { background: rgba(255, 255, 255, 0.15); inset: 80px; border-radius: 20px; backdrop-filter: blur(4px); }
+
+      .card-layer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+      }
+      .card-layer .card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        box-shadow: 0 4px 24px rgba(0,0,0,.1);
+        max-width: 400px;
+      }
+      .card-layer .card h3 { margin: 0 0 8px; font-size: 1.5rem; }
+      .card-layer .card p { margin: 0; color: var(--muted); }
+
+      /* ── Event log ──────────────────────────────────────────── */
+      #event-log {
+        position: fixed; bottom: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 8px 12px; font-size: 11px;
+        font-family: ui-monospace, monospace;
+        max-width: 320px; max-height: 160px; overflow-y: auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+      }
+      #event-log div { padding: 1px 0; border-bottom: 1px solid var(--border); }
+      #event-log .label { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>x-scroll-parallax</h1>
+    <p style="color: var(--muted); margin: 0 0 16px;">Scroll down to see parallax effects in action.</p>
+
+    <!-- Controls -->
+    <div class="controls">
+      <strong>Controls</strong>
+      <label>
+        Direction
+        <select id="ctrl-direction">
+          <option value="vertical" selected>vertical</option>
+          <option value="horizontal">horizontal</option>
+        </select>
+      </label>
+      <label>
+        Easing
+        <select id="ctrl-easing">
+          <option value="none" selected>none</option>
+          <option value="smooth">smooth</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="ctrl-disabled" />
+        Disabled
+      </label>
+    </div>
+
+    <div class="spacer">Scroll down</div>
+
+    <!-- ── Section 1: Three-layer depth ───────────────────── -->
+    <h2>Three-layer depth</h2>
+    <x-scroll-parallax id="demo1" class="parallax-section" label="Depth demo">
+      <div class="layer bg" data-speed="0.3">Background (0.3)</div>
+      <div class="layer mid" data-speed="0.7">Midground (0.7)</div>
+      <div class="layer fg" data-speed="1.2">Foreground (1.2)</div>
+    </x-scroll-parallax>
+
+    <div class="spacer">Keep scrolling</div>
+
+    <!-- ── Section 2: Fade + scale ────────────────────────── -->
+    <h2>Fade + scale effects</h2>
+    <x-scroll-parallax id="demo2" label="Card reveal" easing="smooth">
+      <div class="card-layer" data-speed="0.6" data-opacity="fade" data-scale="grow">
+        <div class="card">
+          <h3>Reveal Card</h3>
+          <p>This card fades in and scales up as you scroll into view.</p>
+        </div>
+      </div>
+    </x-scroll-parallax>
+
+    <div class="spacer">Keep scrolling</div>
+
+    <!-- ── Section 3: Mixed speeds ────────────────────────── -->
+    <h2>Mixed speeds</h2>
+    <x-scroll-parallax id="demo3" class="parallax-section" label="Mixed speeds">
+      <div class="layer bg" data-speed="0" style="font-size:1.2rem;">Fixed (0) - stays in place</div>
+      <div class="layer mid" data-speed="0.5" data-opacity="fade">Half speed (0.5) + fade</div>
+      <div class="layer fg" data-speed="2">Double speed (2)</div>
+    </x-scroll-parallax>
+
+    <!-- ── Section 4: Offset demo ──────────────────────────── -->
+    <h2>Offset positioning</h2>
+    <x-scroll-parallax id="demo4" class="parallax-section" label="Offset demo">
+      <div class="layer bg" data-speed="0.5" data-offset="-40">Offset -40px (starts higher)</div>
+      <div class="layer mid" data-speed="0.5" data-offset="0">No offset (default)</div>
+      <div class="layer fg" data-speed="0.5" data-offset="40">Offset +40px (starts lower)</div>
+    </x-scroll-parallax>
+
+    <div class="spacer">End of demo</div>
+
+    <!-- Event log -->
+    <div id="event-log">
+      <strong>Events</strong>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+      const log = document.getElementById('event-log');
+      const maxEntries = 15;
+
+      function addLog(type, detail) {
+        const d = document.createElement('div');
+        const progress = detail.progress != null ? detail.progress.toFixed(3) : '—';
+        d.innerHTML = `<span class="label">${type}</span> progress: ${progress}`;
+        log.appendChild(d);
+        while (log.children.length > maxEntries + 1) log.removeChild(log.children[1]);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      // Listen on all demo elements
+      document.querySelectorAll('x-scroll-parallax').forEach(el => {
+        el.addEventListener('x-scroll-parallax-enter', e => addLog('enter', e.detail));
+        el.addEventListener('x-scroll-parallax-leave', e => addLog('leave', e.detail));
+        el.addEventListener('x-scroll-parallax-progress', e => addLog('progress', e.detail));
+      });
+
+      // Controls
+      const demos = document.querySelectorAll('x-scroll-parallax');
+
+      document.getElementById('ctrl-direction').addEventListener('change', e => {
+        demos.forEach(el => el.setAttribute('direction', e.target.value));
+      });
+      document.getElementById('ctrl-easing').addEventListener('change', e => {
+        demos.forEach(el => el.setAttribute('easing', e.target.value));
+      });
+      document.getElementById('ctrl-disabled').addEventListener('change', e => {
+        demos.forEach(el => {
+          if (e.target.checked) el.setAttribute('disabled', '');
+          else el.removeAttribute('disabled');
+        });
+      });
+    </script>
+  </body>
+</html>

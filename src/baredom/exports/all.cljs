@@ -55,7 +55,17 @@
    [baredom.exports.x-timeline-item       :as x-timeline-item]
    [baredom.exports.x-timeline            :as x-timeline]
    [baredom.exports.x-toast               :as x-toast]
-   [baredom.exports.x-toaster             :as x-toaster]))
+   [baredom.exports.x-toaster             :as x-toaster]
+   [baredom.exports.x-organic-shape       :as x-organic-shape]
+   [baredom.exports.x-typography          :as x-typography]
+   [baredom.exports.x-kinetic-typography :as x-kinetic-typography]
+   [baredom.exports.x-organic-divider   :as x-organic-divider]
+   [baredom.exports.x-ripple-effect    :as x-ripple-effect]
+   [baredom.exports.x-gaussian-blur   :as x-gaussian-blur]
+   [baredom.exports.x-scroll          :as x-scroll]
+   [baredom.exports.x-scroll-parallax :as x-scroll-parallax]
+   [baredom.exports.x-scroll-story    :as x-scroll-story]
+   [baredom.exports.x-scroll-timeline :as x-scroll-timeline]))
 
 (defn register!
   []
@@ -114,7 +124,17 @@
   (x-timeline-item/register!)
   (x-timeline/register!)
   (x-toast/register!)
-  (x-toaster/register!))
+  (x-toaster/register!)
+  (x-organic-shape/register!)
+  (x-typography/register!)
+  (x-kinetic-typography/register!)
+  (x-organic-divider/register!)
+  (x-ripple-effect/register!)
+  (x-gaussian-blur/register!)
+  (x-scroll/register!)
+  (x-scroll-parallax/register!)
+  (x-scroll-story/register!)
+  (x-scroll-timeline/register!))
 
 (defn ^:export init
   []

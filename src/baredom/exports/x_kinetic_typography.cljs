@@ -1,0 +1,17 @@
+(ns baredom.exports.x-kinetic-typography
+  (:require [baredom.components.x-kinetic-typography.model :as model]
+            [baredom.components.x-kinetic-typography.x-kinetic-typography]))
+
+(defn register!
+  []
+  (baredom.components.x-kinetic-typography.x-kinetic-typography/init!))
+
+(def public-api
+  {:tag-name            model/tag-name
+   :properties          model/property-api
+   :events              model/event-schema
+   :observed-attributes model/observed-attributes})
+
+(defn ^:export init
+  []
+  (register!))
