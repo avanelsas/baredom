@@ -65,7 +65,8 @@
    [baredom.exports.x-scroll          :as x-scroll]
    [baredom.exports.x-scroll-parallax :as x-scroll-parallax]
    [baredom.exports.x-scroll-story    :as x-scroll-story]
-   [baredom.exports.x-scroll-timeline :as x-scroll-timeline]))
+   [baredom.exports.x-scroll-timeline :as x-scroll-timeline]
+   [baredom.dev.hot-reload             :as hot-reload]))
 
 (defn ^:dev/after-load start!
   []
@@ -134,7 +135,8 @@
   (x-scroll/register!)
   (x-scroll-parallax/register!)
   (x-scroll-story/register!)
-  (x-scroll-timeline/register!))
+  (x-scroll-timeline/register!)
+  (hot-reload/refresh-styles!))
 
 (defn init!
   []
