@@ -27,6 +27,12 @@
    :output-to "out/karma/test.js"
    :ns-regexp "-test$"}
 
+  :demo
+  {:target :browser
+   :output-dir "public/js"
+   :asset-path "/js"
+   :modules {:main {:init-fn baredom.core/init!}}}
+
   :bare-html
   {:target     :browser
    :output-dir "bare-html/js"
