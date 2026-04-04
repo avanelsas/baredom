@@ -2,6 +2,16 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [1.0.0] - 2026-04-04
+
+Stable release — promoted from 1.0.0-rc.4 with no code changes.
+
+### Summary
+
+- All 54 components audited, tested, and stable
+- Full API consistency, accessibility, theming, and Closure Advanced compilation safety
+- Published to NPM, Clojars, and GitHub Releases
+
 ## [1.0.0-rc.4] - 2026-03-31
 
 Release candidate — all components audited and stable.
