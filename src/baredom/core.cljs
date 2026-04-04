@@ -62,7 +62,10 @@
    [baredom.exports.x-organic-divider   :as x-organic-divider]
    [baredom.exports.x-ripple-effect    :as x-ripple-effect]
    [baredom.exports.x-gaussian-blur   :as x-gaussian-blur]
-   [baredom.exports.x-scroll          :as x-scroll]))
+   [baredom.exports.x-scroll          :as x-scroll]
+   [baredom.exports.x-scroll-parallax :as x-scroll-parallax]
+   [baredom.exports.x-scroll-story    :as x-scroll-story]
+   [baredom.exports.x-scroll-timeline :as x-scroll-timeline]))
 
 (defn ^:dev/after-load start!
   []
@@ -128,7 +131,10 @@
   (x-organic-divider/register!)
   (x-ripple-effect/register!)
   (x-gaussian-blur/register!)
-  (x-scroll/register!))
+  (x-scroll/register!)
+  (x-scroll-parallax/register!)
+  (x-scroll-story/register!)
+  (x-scroll-timeline/register!))
 
 (defn init!
   []

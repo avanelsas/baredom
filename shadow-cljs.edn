@@ -355,4 +355,19 @@
      {init baredom.exports.x-scroll/init}
      :depends-on #{:base}}
 
+    :x-scroll-parallax
+    {:exports
+     {init baredom.exports.x-scroll-parallax/init}
+     :depends-on #{:base}}
+
+    :x-scroll-story
+    {:exports
+     {init baredom.exports.x-scroll-story/init}
+     :depends-on #{:base}}
+
+    :x-scroll-timeline
+    {:exports
+     {init baredom.exports.x-scroll-timeline/init}
+     :depends-on #{:base}}
+
     }}}}

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-scroll-timeline demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; margin: 0 auto; }
+
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+
+      .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
+
+      /* ── Controls panel ─────────────────────────────────────── */
+      .controls {
+        position: fixed; top: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 12px 16px; font-size: 13px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        max-width: 280px;
+      }
+      .controls label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+      .controls select, .controls input { accent-color: #3b82f6; }
+      .controls select, .controls input[type="range"] { background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
+      .controls .value { min-width: 2.5em; text-align: right; font-variant-numeric: tabular-nums; }
+
+      /* ── Timeline entry styling ─────────────────────────────── */
+      .entry {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      }
+      .entry h3 { margin: 0 0 6px; font-size: 1.1rem; }
+      .entry p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+      /* ── Event log ──────────────────────────────────────────── */
+      .event-log {
+        position: fixed; bottom: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 8px 12px; font-size: 11px;
+        max-width: 340px; max-height: 200px; overflow-y: auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        font-family: ui-monospace, monospace;
+      }
+      .event-log div { padding: 2px 0; border-bottom: 1px solid var(--border); }
+      .event-log .label { color: #3b82f6; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>&lt;x-scroll-timeline&gt;</h1>
+    <p style="color:var(--muted);margin:0 0 16px;">Scroll-driven timeline with markers, progress track, and curved path support</p>
+
+    <!-- ── Controls ──────────────────────────────────────────── -->
+    <div class="controls">
+      <strong>Controls</strong>
+      <label>
+        Layout
+        <select id="ctl-layout">
+          <option value="alternating" selected>alternating</option>
+          <option value="left">left</option>
+          <option value="right">right</option>
+        </select>
+      </label>
+      <label>
+        Track
+        <select id="ctl-track">
+          <option value="straight" selected>straight</option>
+          <option value="curved">curved</option>
+        </select>
+      </label>
+      <label>
+        Marker
+        <select id="ctl-marker">
+          <option value="dot" selected>dot</option>
+          <option value="ring">ring</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <label>
+        Threshold
+        <input id="ctl-threshold" type="range" min="0" max="1" step="0.05" value="0.5" />
+        <span class="value" id="ctl-threshold-val">0.5</span>
+      </label>
+      <label>
+        <input id="ctl-no-progress" type="checkbox" />
+        No Progress
+      </label>
+      <label>
+        <input id="ctl-disabled" type="checkbox" />
+        Disabled
+      </label>
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0;" />
+      <label>
+        <input id="ctl-autoplay" type="checkbox" />
+        Autoplay
+      </label>
+      <label>
+        Speed
+        <input id="ctl-autoplay-speed" type="range" min="1" max="200" step="1" value="50" />
+        <span class="value" id="ctl-autoplay-speed-val">50</span>
+      </label>
+      <label>
+        <input id="ctl-autoplay-loop" type="checkbox" />
+        Autoplay Loop
+      </label>
+      <label>
+        <input id="ctl-autoplay-indicator" type="checkbox" />
+        Autoplay Indicator
+      </label>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+        Active: <span id="ctl-active">-1</span> &middot;
+        Progress: <span id="ctl-progress">0</span>
+      </div>
+    </div>
+
+    <div class="spacer">Scroll down to view the timeline</div>
+
+    <!-- ── Timeline component ────────────────────────────────── -->
+    <x-scroll-timeline id="timeline" layout="alternating" track="straight" threshold="0.5" label="Product roadmap">
+      <div class="entry" id="entry-q1" data-date="Q1 2024">
+        <h3>Foundation</h3>
+        <p>Established the core architecture, selected technologies, and built the initial prototype. Set up CI/CD pipelines and testing infrastructure.</p>
+      </div>
+
+      <div class="entry" id="entry-q2" data-date="Q2 2024">
+        <h3>Alpha Release</h3>
+        <p>Launched the alpha version to internal testers. Collected feedback, fixed critical bugs, and refined the user interface based on real-world usage.</p>
+      </div>
+
+      <div class="entry" id="entry-q3" data-date="Q3 2024">
+        <h3>Beta Program</h3>
+        <p>Opened the beta to external users. Added key features like dark mode, accessibility improvements, and performance optimizations.</p>
+      </div>
+
+      <div class="entry" id="entry-q4" data-date="Q4 2024">
+        <h3>Public Launch</h3>
+        <p>Official 1.0 release. Published documentation, created onboarding tutorials, and established community channels for support.</p>
+      </div>
+
+      <div class="entry" id="entry-q1-25" data-date="Q1 2025">
+        <h3>Growth Phase</h3>
+        <p>Expanded the component library, added internationalization support, and began integrating with third-party design systems.</p>
+      </div>
+
+      <div class="entry" id="entry-q2-25" data-date="Q2 2025">
+        <h3>Enterprise Ready</h3>
+        <p>Released enterprise features including SSO integration, audit logging, and advanced theming capabilities for large-scale deployments.</p>
+      </div>
+    </x-scroll-timeline>
+
+    <div class="spacer">End of timeline</div>
+
+    <!-- ── Event log ─────────────────────────────────────────── -->
+    <div class="event-log" id="log">
+      <div style="color:var(--muted);">Events will appear here...</div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+      const tl  = document.getElementById('timeline');
+      const log = document.getElementById('log');
+
+      // ── Controls ────────────────────────────────────────────
+      document.getElementById('ctl-layout').addEventListener('change', e => {
+        tl.layout = e.target.value;
+      });
+
+      document.getElementById('ctl-track').addEventListener('change', e => {
+        tl.track = e.target.value;
+      });
+
+      document.getElementById('ctl-marker').addEventListener('change', e => {
+        tl.marker = e.target.value;
+      });
+
+      const thresholdSlider = document.getElementById('ctl-threshold');
+      const thresholdVal    = document.getElementById('ctl-threshold-val');
+      thresholdSlider.addEventListener('input', e => {
+        tl.threshold = parseFloat(e.target.value);
+        thresholdVal.textContent = e.target.value;
+      });
+
+      document.getElementById('ctl-no-progress').addEventListener('change', e => {
+        tl.noProgress = e.target.checked;
+      });
+
+      document.getElementById('ctl-disabled').addEventListener('change', e => {
+        tl.disabled = e.target.checked;
+      });
+
+      document.getElementById('ctl-autoplay').addEventListener('change', e => {
+        tl.autoplay = e.target.checked;
+      });
+
+      const speedSlider = document.getElementById('ctl-autoplay-speed');
+      const speedVal    = document.getElementById('ctl-autoplay-speed-val');
+      speedSlider.addEventListener('input', e => {
+        tl.autoplaySpeed = parseFloat(e.target.value);
+        speedVal.textContent = e.target.value;
+      });
+
+      document.getElementById('ctl-autoplay-loop').addEventListener('change', e => {
+        tl.autoplayLoop = e.target.checked;
+      });
+
+      document.getElementById('ctl-autoplay-indicator').addEventListener('change', e => {
+        tl.autoplayIndicator = e.target.checked;
+      });
+
+      // ── Event handling ──────────────────────────────────────
+      function logEvent(name, detail) {
+        const div = document.createElement('div');
+        const short = name.replace('x-scroll-timeline-', '');
+        div.innerHTML = '<span class="label">' + short + '</span> ' + JSON.stringify(detail);
+        log.prepend(div);
+        while (log.children.length > 50) log.lastChild.remove();
+      }
+
+      tl.addEventListener('x-scroll-timeline-entry-change', e => {
+        document.getElementById('ctl-active').textContent = e.detail.index;
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-progress', e => {
+        document.getElementById('ctl-progress').textContent = e.detail.progress.toFixed(2);
+      });
+
+      tl.addEventListener('x-scroll-timeline-entry-enter', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-entry-leave', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-enter', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-leave', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-autoplay-pause', e => {
+        logEvent(e.type, e.detail);
+      });
+
+      tl.addEventListener('x-scroll-timeline-autoplay-resume', e => {
+        logEvent(e.type, e.detail);
+      });
+    </script>
+  </body>
+</html>
