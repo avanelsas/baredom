@@ -25,9 +25,17 @@ BareDOM is authored in ClojureScript and compiled to optimised, minified ES modu
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
+All web components—including new, modern, and exciting ones such as x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-typography, x-organic-shape, and x-gaussian-blur—can be seen [here](https://avanelsas.github.io/baredom/)
+
 ---
 
 ## Why BareDOM?
+
+Like most Clojure/ClojureScript developers starting out with UIs, I went through the common phases of using Reagent and Re-frame—which are great utilities in their own right. However, as my UIs became larger and more complex, bundle sizes increased, and I found myself spending too much time rebuilding generic, reusable components from scratch.
+
+I started looking for a different approach and discovered Web Components. I built a few, but didn't have the spare time to develop a comprehensive set that could be used in any project. Then AI arrived. While experimenting with Claude Code, I realised that 1 + 1 = 3. That is how Baredom, my first open-source project, was born.
+
+# Why web components?
 
 **Works in any stack.** Because components are native HTML elements, they work wherever HTML works — vanilla JavaScript, React, Vue, Svelte, Angular, server-rendered HTML, or a static page. No adapter layer, no wrapper library.
 
