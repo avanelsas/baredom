@@ -376,4 +376,9 @@
      {init baredom.exports.x-scroll-timeline/init}
      :depends-on #{:base}}
 
+    :x-scroll-stack
+    {:exports
+     {init baredom.exports.x-scroll-stack/init}
+     :depends-on #{:base}}
+
     }}}}

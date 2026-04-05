@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-scroll-stack demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; margin: 0 auto; }
+
+      h1 { font-size: 1.25rem; margin: 0 0 4px; }
+      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+      .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
+
+      /* ── Controls panel ─────────────────────────────────────── */
+      .controls {
+        position: fixed; top: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 12px 16px; font-size: 13px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        max-width: 280px;
+      }
+      .controls label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+      .controls select, .controls input { accent-color: #3b82f6; }
+      .controls input[type=range] { flex: 1; }
+      .controls .value { font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; color: var(--muted); }
+
+      /* ── Card styles ───────────────────────────────────────── */
+      .stack-card {
+        width: 320px;
+        padding: 24px 28px;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 500;
+        box-shadow: 0 4px 24px rgba(0,0,0,.12), 0 1px 4px rgba(0,0,0,.08);
+        border: 1px solid rgba(255,255,255,.15);
+      }
+      .stack-card:nth-child(1) { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+      .stack-card:nth-child(2) { background: linear-gradient(135deg, #f093fb, #f5576c); color: #fff; }
+      .stack-card:nth-child(3) { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; }
+      .stack-card:nth-child(4) { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a3a2a; }
+      .stack-card:nth-child(5) { background: linear-gradient(135deg, #fa709a, #fee140); color: #3a1a1a; }
+      .stack-card:nth-child(6) { background: linear-gradient(135deg, #a18cd1, #fbc2eb); color: #2a1a3a; }
+
+      .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+      .card-body { font-size: 0.85rem; opacity: 0.85; }
+
+      /* ── Event log ─────────────────────────────────────────── */
+      .log {
+        position: fixed; bottom: 12px; right: 12px; z-index: 100;
+        background: var(--surface-bg); border: 1px solid var(--surface-border);
+        border-radius: 8px; padding: 8px 12px; font-size: 11px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        max-width: 320px; max-height: 180px; overflow-y: auto;
+        font-family: ui-monospace, monospace;
+      }
+      .log-entry { padding: 2px 0; border-bottom: 1px solid var(--border); }
+      .log-label { color: #3b82f6; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>x-scroll-stack</h1>
+    <p style="color: var(--muted); margin: 0 0 12px;">Scroll down to see cards stack on top of each other. Scroll back to unstack.</p>
+
+    <!-- Controls -->
+    <div class="controls">
+      <strong>Controls</strong>
+      <label>
+        Peek
+        <input type="range" id="ctrl-peek" min="2" max="20" value="6" step="1">
+        <span class="value" id="val-peek">6</span>px
+      </label>
+      <label>
+        Rotation
+        <input type="range" id="ctrl-rotation" min="0" max="10" value="3" step="0.5">
+        <span class="value" id="val-rotation">3</span>&deg;
+      </label>
+      <label>
+        Scroll dist
+        <input type="range" id="ctrl-sd" min="50" max="400" value="150" step="10">
+        <span class="value" id="val-sd">150</span>px
+      </label>
+      <label>
+        Align
+        <select id="ctrl-align">
+          <option value="top">top</option>
+          <option value="center" selected>center</option>
+          <option value="bottom">bottom</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="ctrl-disabled">
+        Disabled
+      </label>
+    </div>
+
+    <!-- Event log -->
+    <div class="log" id="log">
+      <div style="color:var(--muted)">Events will appear here&hellip;</div>
+    </div>
+
+    <div class="spacer">&darr; Scroll down to enter the stack &darr;</div>
+
+    <x-scroll-stack id="stack" peek="6" rotation="3" scroll-distance="150">
+      <div class="stack-card">
+        <div class="card-title">Design System</div>
+        <div class="card-body">Tokens, typography, and spacing foundations for consistent UI.</div>
+      </div>
+      <div class="stack-card">
+        <div class="card-title">Component Library</div>
+        <div class="card-body">Reusable web components built with zero framework dependencies.</div>
+      </div>
+      <div class="stack-card">
+        <div class="card-title">Accessibility</div>
+        <div class="card-body">WCAG 2.1 AA compliance with keyboard nav and screen reader support.</div>
+      </div>
+      <div class="stack-card">
+        <div class="card-title">Performance</div>
+        <div class="card-body">Lazy loading, tree-shaking, and sub-50ms render times.</div>
+      </div>
+      <div class="stack-card">
+        <div class="card-title">Motion Design</div>
+        <div class="card-body">Smooth, purposeful animations that respect user preferences.</div>
+      </div>
+      <div class="stack-card">
+        <div class="card-title">Dark Mode</div>
+        <div class="card-body">Automatic theme switching via CSS custom properties.</div>
+      </div>
+    </x-scroll-stack>
+
+    <div class="spacer">&uarr; Scroll back up to unstack &uarr;</div>
+
+    <script src="../js/main.js"></script>
+    <script>
+      const stack = document.getElementById('stack');
+      const log = document.getElementById('log');
+      let logCount = 0;
+
+      function addLog(type, detail) {
+        logCount++;
+        if (logCount > 50) {
+          log.innerHTML = '';
+          logCount = 1;
+        }
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        const shortProgress = detail.progress !== undefined ? detail.progress.toFixed(2) : '?';
+        entry.innerHTML = '<span class="log-label">' + type.replace('x-scroll-stack-', '') +
+          '</span> stacked=' + (detail.stackedCount || 0) +
+          '/' + (detail.totalCount || 0) +
+          ' prog=' + shortProgress;
+        log.prepend(entry);
+      }
+
+      stack.addEventListener('x-scroll-stack-change', function(e) {
+        addLog('change', e.detail);
+      });
+      stack.addEventListener('x-scroll-stack-progress', function(e) {
+        addLog('progress', e.detail);
+      });
+
+      // ── Wire up controls ──
+      function wire(id, valId, attr, transform) {
+        const input = document.getElementById(id);
+        const valEl = document.getElementById(valId);
+        input.addEventListener('input', function() {
+          const v = transform ? transform(input.value) : input.value;
+          stack.setAttribute(attr, v);
+          if (valEl) valEl.textContent = v;
+        });
+      }
+
+      wire('ctrl-peek', 'val-peek', 'peek');
+      wire('ctrl-rotation', 'val-rotation', 'rotation');
+      wire('ctrl-sd', 'val-sd', 'scroll-distance');
+
+      document.getElementById('ctrl-align').addEventListener('change', function(e) {
+        stack.setAttribute('align', e.target.value);
+      });
+
+      document.getElementById('ctrl-disabled').addEventListener('change', function(e) {
+        if (e.target.checked) stack.setAttribute('disabled', '');
+        else stack.removeAttribute('disabled');
+      });
+    </script>
+  </body>
+</html>

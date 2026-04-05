@@ -276,6 +276,10 @@
       "import" : "./dist/x-scroll-timeline.js",
       "default" : "./dist/x-scroll-timeline.js"
     },
+    "./x-scroll-stack" : {
+      "import" : "./dist/x-scroll-stack.js",
+      "default" : "./dist/x-scroll-stack.js"
+    },
     "./x-organic-shape" : {
       "import" : "./dist/x-organic-shape.js",
       "default" : "./dist/x-organic-shape.js"
