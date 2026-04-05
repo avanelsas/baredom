@@ -1,6 +1,6 @@
 {
   "name": "baredom-node-demo",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Framework-free ClojureScript demo consuming BareDOM via NPM (Node.js variant)",
   "private": true,
   "type": "module",

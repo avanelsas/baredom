@@ -2,6 +2,17 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [1.1.0] - 2026-04-05
+
+### Added
+
+Nine new components:
+
+- **Effects** — x-ripple-effect, x-gaussian-blur
+- **Scroll** — x-scroll-parallax, x-scroll-timeline, x-scroll-story
+- **Typography** — x-typography, x-kinetic-typography
+- **Decorative** — x-organic-divider, x-organic-shape
+
 ## [1.0.0] - 2026-04-04
 
 Stable release — promoted from 1.0.0-rc.4 with no code changes.

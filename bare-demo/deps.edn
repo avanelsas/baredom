@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps  {com.github.avanelsas/baredom {:mvn/version "1.0.0-rc.4"}
+ :deps  {com.github.avanelsas/baredom {:mvn/version "1.1.0"}
          thheller/shadow-cljs         {:mvn/version "2.28.20"}}
  :aliases
  {:dev {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app"]}}}

@@ -6,5 +6,5 @@
   :deploy {:deps       {slipset/deps-deploy {:mvn/version "0.2.1"}}
            :mvn/repos  {"clojars" {:url "https://repo.clojars.org/"}}
            :exec-fn    deps-deploy.deps-deploy/deploy
-           :exec-args  {:artifact  "target/baredom-1.0.0.jar"
+           :exec-args  {:artifact  "target/baredom-1.1.0.jar"
                         :installer :remote}}}}
