@@ -1,14 +1,11 @@
 # x-button
 
-`x-button` is an accessible, themeable button web component implemented in pure ClojureScript with direct JavaScript interop and Custom Elements V1.
+Accessible, themeable button web component built on Custom Elements V1.
 
-It is designed to be:
-
-- Closure Advanced Compilation safe
-- stateless at render time
-- framework-free
-- themeable via semantic CSS custom properties
-- accessible by default through a native internal `<button>`
+- Stateless at render time
+- Framework-free
+- Themeable via semantic CSS custom properties
+- Accessible by default through a native internal `<button>`
 
 ---
 
@@ -40,55 +37,12 @@ It supports:
 
 ## Installation / Registration
 
-The component is registered through the export namespace:
-
-```clojure
-(ns baredom.exports.x-button
-  (:require [baredom.components.x-button.model :as model]
-            [baredom.components.x-button.x-button]))
-
-(defn register!
-  []
-  (baredom.components.x-button.x-button/init!))
-
-(def public-api
-  {:tag-name model/tag-name
-   :properties model/property-api
-   :events model/event-schema
-   :observed-attributes model/observed-attributes})
-
-(defn ^:export init
-  []
-  (register!))
-```
-
-### Expected export path
-
-```text
-src/baredom/exports/x_button.cljs
-```
-
-### Expected component path
-
-```text
-src/baredom/components/x_button/x_button.cljs
-```
-
-### Expected model path
-
-```text
-src/baredom/components/x_button/model.cljs
-```
-
-### Runtime registration
-
-If your compiled bundle exposes `baredom.exports.x-button.init`, register the element by calling:
-
 ```js
-baredom.exports.x_button.init();
+import { init } from '@vanelsas/baredom/x-button';
+init();
 ```
 
-Or ensure your compiled application calls the exported `init` function during startup.
+Registration is idempotent — calling `init()` on an already-registered element is a no-op.
 
 ---
 
@@ -926,83 +880,6 @@ These behave as if written:
 
 ---
 
-## Public API Metadata
-
-The export namespace exposes:
-
-```clojure
-(def public-api
-  {:tag-name model/tag-name
-   :properties model/property-api
-   :events model/event-schema
-   :observed-attributes model/observed-attributes})
-```
-
-### Expected model definitions
-
-```clojure
-(def property-api
-  {:disabled {:type 'boolean
-              :reflects-attribute attr-disabled}
-   :loading {:type 'boolean
-             :reflects-attribute attr-loading}
-   :pressed {:type 'boolean
-             :reflects-attribute attr-pressed}})
-```
-
-```clojure
-(def event-schema
-  {event-press {:detail {:source 'string}}
-   event-press-start {:detail {:source 'string}}
-   event-press-end {:detail {:source 'string}}
-   event-hover-start {:detail {}}
-   event-hover-end {:detail {}}
-   event-focus-visible {:detail {}}})
-```
-
----
-
-## Recommended File Layout
-
-```text
-src/
-  baredom/
-    components/
-      x_button/
-        model.cljs
-        x_button.cljs
-    exports/
-      x_button.cljs
-
-docs/
-  x-button.md
-
-test/
-  baredom/
-    components/
-      x_button/
-        model_test.cljs
-        x_button_test.cljs
-
-demo/
-  x-button.html
-```
-
----
-
-## Testing Guidance
-
-Recommended tests include:
-
-* registration works
-* boolean properties reflect to attributes
-* invalid enums normalize to defaults
-* `loading` disables the internal button
-* `pressed` maps to `aria-pressed`
-* `label` becomes `aria-label` when default slot lacks meaningful text
-* `press` emits expected detail
-* hover lifecycle emits correctly
-* focus-visible event is dispatched for keyboard-visible focus
 
 ---
 
@@ -1115,4 +992,4 @@ Avoid:
 * reduced-motion support
 * stable exported metadata through `public-api`
 
-It is intended to be a simple, robust, Closure Advanced safe foundation for action controls in a ClojureScript design system.
+It is intended to be a simple, robust foundation for action controls in any web application.

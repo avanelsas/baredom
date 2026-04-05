@@ -2,6 +2,18 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [1.2.0] - 2026-04-05
+
+### Added
+
+- **Scroll** — x-scroll-stack (card-stack with scroll-driven align support)
+- **Documentation** — JavaScript Developer Guide (`docs/javascript-guide.md`) for npm/ESM setup, event handling, theming, and framework integration
+
+### Changed
+
+- Cleaned up x-button.md for JavaScript developer readability
+- Added JavaScript guide link to README Installation section
+
 ## [1.1.0] - 2026-04-05
 
 ### Added
