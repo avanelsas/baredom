@@ -1,6 +1,6 @@
 # `<x-neural-glow>`
 
-A WebGL-powered bioluminescent neural network background. Renders soft glowing orbs connected by faint pulsing lines that respond to user activity. When idle, pulses decay to a resting "heartbeat" rhythm. Deep-sea aesthetic with midnight backgrounds and electric accent colors.
+A WebGL-powered bioluminescent neural network background. Renders soft glowing orbs connected by faint pulsing lines that respond to user activity. When idle, pulses decay to a resting "heartbeat" rhythm. Automatically adapts its blending strategy to work on both dark and light backgrounds.
 
 ## Tag
 
@@ -86,6 +86,16 @@ Renders via WebGL 1 with a single fragment shader. If WebGL is unavailable, the 
 3. Pulse modulation driven by the activity level uniform
 4. Sum-of-sines pseudo-noise for organic per-orb drift
 
+## Adaptive Background Blending
+
+The shader automatically adapts its rendering strategy based on the perceived luminance of `color-background`:
+
+- **Dark backgrounds** (luminance < 0.3) — additive blending produces the classic glow effect where orbs brighten the background.
+- **Light backgrounds** (luminance > 0.6) — multiply blending darkens and saturates the background with the orb colors, producing a stained-glass / watercolor effect.
+- **Mid-range backgrounds** — a smooth blend of both strategies via `smoothstep`.
+
+No configuration is needed. Set `color-background` to any color and the component adapts automatically. For best results, choose orb colors that contrast with the background.
+
 ## Examples
 
 ### Basic usage
@@ -114,6 +124,16 @@ Renders via WebGL 1 with a single fragment shader. If WebGL is unavailable, the 
   color-background="#050520"
   orb-count="25"
   connection-distance="0.2">
+</x-neural-glow>
+```
+
+### Light background
+
+```html
+<x-neural-glow
+  color-primary="#2563eb"
+  color-secondary="#059669"
+  color-background="#f0f0f5">
 </x-neural-glow>
 ```
 

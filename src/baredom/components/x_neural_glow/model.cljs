@@ -140,7 +140,7 @@
   [raw]
   (if (nil? raw)
     true
-    (not= "false" (.trim raw))))
+    (not= "false" (.toLowerCase (.trim raw)))))
 
 ;; ── Normalize ───────────────────────────────────────────────────────────────
 (defn normalize
@@ -221,6 +221,10 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
     float aspect = u_resolution.x / u_resolution.y;
 
+    // Auto-detect light vs dark background
+    float bg_lum = dot(u_color_background, vec3(0.2126, 0.7152, 0.0722));
+    float is_light = smoothstep(0.3, 0.6, bg_lum);
+
     // Pulse speed interpolates between rest and active rate
     float active_speed = u_pulse_speed * 3.0;
     float speed = mix(6.2831853 / u_rest_rate, active_speed, u_activity);
@@ -246,7 +250,9 @@ void main() {
 
         // Alternate primary/secondary by index
         vec3 orb_color = mix(u_color_primary, u_color_secondary, step(1.0, mod(float(i), 2.0)));
-        color += orb_color * glow;
+        vec3 additive = color + orb_color * glow;
+        vec3 multiply = color * mix(vec3(1.0), orb_color, glow);
+        color = mix(additive, multiply, is_light);
     }
 
     // Connection line layer
@@ -277,7 +283,10 @@ void main() {
                 line_glow *= (0.3 + 0.7 * u_activity + 0.3);
 
                 vec3 line_color = mix(u_color_primary, u_color_secondary, 0.5);
-                color += line_color * line_glow * 0.4;
+                float line_str = line_glow * 0.4;
+                vec3 line_add = color + line_color * line_str;
+                vec3 line_mul = color * mix(vec3(1.0), line_color, line_str);
+                color = mix(line_add, line_mul, is_light);
             }
         }
     }

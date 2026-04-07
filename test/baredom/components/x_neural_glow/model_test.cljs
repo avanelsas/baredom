@@ -124,7 +124,11 @@
 
 (deftest parse-interactive-false-test
   (is (false? (model/parse-interactive "false"))
-      "interactive='false' → false"))
+      "interactive='false' → false")
+  (is (false? (model/parse-interactive "FALSE"))
+      "interactive='FALSE' → false (case-insensitive)")
+  (is (false? (model/parse-interactive "False"))
+      "interactive='False' → false (case-insensitive)"))
 
 (deftest parse-interactive-explicit-true-test
   (is (true? (model/parse-interactive ""))

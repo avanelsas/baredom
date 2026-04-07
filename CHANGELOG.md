@@ -11,6 +11,10 @@ Six new components:
 - **Effects** — x-splash, x-metaball-cursor, x-neural-glow, x-organic-progress
 - **Layout** — x-bento-grid, x-bento-item
 
+### Changed
+
+- **x-neural-glow** — automatic light/dark background adaptation via shader luminance detection
+
 ## [1.2.0] - 2026-04-05
 
 ### Added

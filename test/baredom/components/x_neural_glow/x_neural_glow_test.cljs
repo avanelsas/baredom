@@ -110,6 +110,17 @@
     (is (= "true" (.getAttribute el "aria-hidden")))
     (is (= "presentation" (.getAttribute el "role")))))
 
+;; ── Light background renders ────────────────────────────────────────────────
+(deftest light-background-renders-test
+  (let [^js el (make-el)]
+    (.setAttribute el "color-background" "#ffffff")
+    (.setAttribute el "color-primary" "#2563eb")
+    (append! el)
+    (is (some? (shadow-part el "[part=canvas]")))
+    (is (= "#ffffff" (.getAttribute el "color-background")))
+    (is (= "#2563eb" (.-colorPrimary el)))
+    (is (= "#ffffff" (.-colorBackground el)))))
+
 ;; ── Reconnect: no duplicate canvases ────────────────────────────────────────
 (deftest reconnect-no-duplicates-test
   (let [^js el (make-el)]

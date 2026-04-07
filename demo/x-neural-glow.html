@@ -19,6 +19,12 @@
     h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: #9ca3af; }
     p  { color: #9ca3af; margin-bottom: 1rem; }
 
+    @media (prefers-color-scheme: light) {
+      body { background: #f5f5f7; color: #1a1a2e; }
+      h2 { color: #6b7280; }
+      p  { color: #6b7280; }
+    }
+
     .header {
       padding: 2rem;
       text-align: center;
@@ -46,6 +52,10 @@
       border-radius: 12px;
       overflow: hidden;
       height: 300px;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .demo-card { border-color: rgba(0,0,0,0.12); }
     }
 
     .demo-card x-neural-glow {
@@ -90,6 +100,11 @@
     .fullpage-demo .content h2 { color: #fff; font-size: 2rem; }
     .fullpage-demo .content p  { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
 
+    @media (prefers-color-scheme: light) {
+      .fullpage-demo .content h2 { color: #1a1a2e; }
+      .fullpage-demo .content p  { color: rgba(0,0,0,0.6); }
+    }
+
     /* ── Scroll activity demo ──────────────────────────────────────── */
     .scroll-demo {
       position: relative;
@@ -110,6 +125,10 @@
       color: rgba(255,255,255,0.5);
       font-size: 0.875rem;
       z-index: 1;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .scroll-hint { color: rgba(0,0,0,0.4); }
     }
 
     /* ── Control panel ─────────────────────────────────────────────── */
@@ -139,6 +158,10 @@
       letter-spacing: 0.05em;
     }
 
+    @media (prefers-color-scheme: light) {
+      .control-group label { color: #6b7280; }
+    }
+
     .control-group input[type="range"] {
       width: 100%;
       accent-color: #4f8bff;
@@ -151,6 +174,10 @@
       border-radius: 4px;
       background: transparent;
       cursor: pointer;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .control-group input[type="color"] { border-color: rgba(0,0,0,0.2); }
     }
 
     .control-group .value {
@@ -173,6 +200,10 @@
       margin-top: 1rem;
     }
 
+    @media (prefers-color-scheme: light) {
+      .interactive-panel { border-color: rgba(0,0,0,0.12); }
+    }
+
     .interactive-panel x-neural-glow {
       position: absolute;
       inset: 0;
@@ -183,32 +214,39 @@
 
   <div class="header">
     <h1>x-neural-glow</h1>
-    <p>Bioluminescent Neural Network — WebGL-powered background that breathes with your activity</p>
+    <p>Bioluminescent Neural Network — WebGL-powered background that adapts to light and dark mode</p>
   </div>
 
   <!-- ── Showcase grid ────────────────────────────────────────────── -->
+  <!-- NOTE: data-dark-* / data-light-* attributes below are NOT part of
+       the x-neural-glow API. They are used by the demo's applyScheme()
+       script to swap colours when the system colour-scheme changes. -->
   <div class="section">
     <h2>Variants</h2>
     <div class="demo-grid">
       <div class="demo-card">
-        <x-neural-glow></x-neural-glow>
-        <span class="label">Default (electric blue + cyan)</span>
-      </div>
-
-      <div class="demo-card">
-        <x-neural-glow
-          color-primary="#ff006e"
-          color-secondary="#fb5607"
-          color-background="#1a0010">
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#050a18" data-light-bg="#f0f0f5"
+          data-dark-primary="#4f8bff" data-light-primary="#2563eb"
+          data-dark-secondary="#00e5cc" data-light-secondary="#059669">
         </x-neural-glow>
-        <span class="label">Magenta + Orange</span>
+        <span class="label">Default (blue + cyan/green)</span>
       </div>
 
       <div class="demo-card">
-        <x-neural-glow
-          color-primary="#7b2ff7"
-          color-secondary="#00ff87"
-          color-background="#050520"
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#1a0010" data-light-bg="#fff0f5"
+          data-dark-primary="#ff006e" data-light-primary="#dc2626"
+          data-dark-secondary="#fb5607" data-light-secondary="#e11d48">
+        </x-neural-glow>
+        <span class="label">Magenta + Orange / Red + Rose</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#050520" data-light-bg="#f5f3ff"
+          data-dark-primary="#7b2ff7" data-light-primary="#7c3aed"
+          data-dark-secondary="#00ff87" data-light-secondary="#059669"
           orb-count="25"
           connection-distance="0.2">
         </x-neural-glow>
@@ -216,32 +254,35 @@
       </div>
 
       <div class="demo-card">
-        <x-neural-glow
-          color-primary="#ffd700"
-          color-secondary="#ff4500"
-          color-background="#0d0800"
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#0d0800" data-light-bg="#fffbeb"
+          data-dark-primary="#ffd700" data-light-primary="#b45309"
+          data-dark-secondary="#ff4500" data-light-secondary="#dc2626"
           orb-count="8"
           orb-size="80"
           pulse-speed="0.5"
           rest-rate="6">
         </x-neural-glow>
-        <span class="label">Gold + Red, large slow orbs</span>
+        <span class="label">Gold + Red / Amber + Red, large slow orbs</span>
       </div>
 
       <div class="demo-card">
-        <x-neural-glow
-          color-primary="#00ffff"
-          color-secondary="#0080ff"
-          color-background="#000510"
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#000510" data-light-bg="#ecfeff"
+          data-dark-primary="#00ffff" data-light-primary="#0891b2"
+          data-dark-secondary="#0080ff" data-light-secondary="#2563eb"
           orb-count="40"
           orb-size="20"
           connection-distance="0.1">
         </x-neural-glow>
-        <span class="label">Deep sea, 40 small orbs</span>
+        <span class="label">Deep sea / Ocean, 40 small orbs</span>
       </div>
 
       <div class="demo-card">
-        <x-neural-glow
+        <x-neural-glow class="adaptive"
+          data-dark-bg="#050a18" data-light-bg="#f0f0f5"
+          data-dark-primary="#4f8bff" data-light-primary="#2563eb"
+          data-dark-secondary="#00e5cc" data-light-secondary="#059669"
           interactive="false"
           pulse-speed="0.3"
           rest-rate="8">
@@ -255,10 +296,10 @@
   <div class="section">
     <h2>Full-Page Background</h2>
     <div class="fullpage-demo">
-      <x-neural-glow
-        color-primary="#4f8bff"
-        color-secondary="#a855f7"
-        color-background="#030712"
+      <x-neural-glow class="adaptive"
+        data-dark-bg="#030712" data-light-bg="#f8fafc"
+        data-dark-primary="#4f8bff" data-light-primary="#3b82f6"
+        data-dark-secondary="#a855f7" data-light-secondary="#8b5cf6"
         orb-count="20"
         opacity="0.9">
       </x-neural-glow>
@@ -274,10 +315,10 @@
     <h2>Scroll Activity Response</h2>
     <p>Scroll this area to see the network respond to scroll speed.</p>
     <div class="scroll-demo">
-      <x-neural-glow
-        color-primary="#22d3ee"
-        color-secondary="#34d399"
-        color-background="#021a1a"
+      <x-neural-glow class="adaptive"
+        data-dark-bg="#021a1a" data-light-bg="#ecfdf5"
+        data-dark-primary="#22d3ee" data-light-primary="#0891b2"
+        data-dark-secondary="#34d399" data-light-secondary="#059669"
         orb-count="18">
       </x-neural-glow>
       <span class="scroll-hint">Scroll down to activate the neural network...</span>
@@ -337,6 +378,36 @@
   </div>
 
   <script>
+    // ── System color-scheme adaptation ──────────────────────────────
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+
+    function applyScheme(isLight) {
+      document.querySelectorAll('x-neural-glow.adaptive').forEach(el => {
+        const bg   = el.getAttribute(isLight ? 'data-light-bg'        : 'data-dark-bg');
+        const pri  = el.getAttribute(isLight ? 'data-light-primary'   : 'data-dark-primary');
+        const sec  = el.getAttribute(isLight ? 'data-light-secondary' : 'data-dark-secondary');
+        if (bg)  el.setAttribute('color-background', bg);
+        if (pri) el.setAttribute('color-primary', pri);
+        if (sec) el.setAttribute('color-secondary', sec);
+      });
+
+      // Sync the interactive control panel defaults
+      const ctrl = document.getElementById('controlled');
+      const bgInput  = document.getElementById('c-color-background');
+      const priInput = document.getElementById('c-color-primary');
+      const secInput = document.getElementById('c-color-secondary');
+      const bg  = isLight ? '#f0f0f5' : '#050a18';
+      const pri = isLight ? '#2563eb' : '#4f8bff';
+      const sec = isLight ? '#059669' : '#00e5cc';
+      bgInput.value  = bg;  ctrl.setAttribute('color-background', bg);
+      priInput.value = pri; ctrl.setAttribute('color-primary', pri);
+      secInput.value = sec; ctrl.setAttribute('color-secondary', sec);
+    }
+
+    mq.addEventListener('change', e => applyScheme(e.matches));
+    applyScheme(mq.matches);
+
+    // ── Interactive controls ────────────────────────────────────────
     const el = document.getElementById('controlled');
 
     function bind(inputId, attr, valueId) {
