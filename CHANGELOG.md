@@ -2,6 +2,15 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [1.3.0] - 2026-04-07
+
+### Added
+
+Six new components:
+
+- **Effects** — x-splash, x-metaball-cursor, x-neural-glow, x-organic-progress
+- **Layout** — x-bento-grid, x-bento-item
+
 ## [1.2.0] - 2026-04-05
 
 ### Added

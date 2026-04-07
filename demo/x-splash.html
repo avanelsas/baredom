@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-splash demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;
+    }
+    .controls button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .controls button { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+    }
+    .controls button:hover { background: #f1f5f9; }
+    @media (prefers-color-scheme: dark) {
+      .controls button:hover { background: #334155; }
+    }
+    .controls label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+    #event-log {
+      background: #1e293b; color: #a5f3fc; padding: 1rem;
+      border-radius: 8px; font-family: monospace; font-size: 0.8rem;
+      max-height: 200px; overflow-y: auto; margin-top: 1rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      #event-log { background: #0c1322; }
+    }
+    .splash-custom-content {
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      color: inherit;
+    }
+    .splash-custom-content h2 {
+      margin: 0; border: none; padding: 0; font-size: 1.25rem;
+    }
+    .splash-custom-content p {
+      margin: 0; opacity: 0.7; font-size: 0.875rem;
+    }
+    .demo-close-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 10000;
+      display: none; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(128,128,128,0.3);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      color: inherit; font-size: 1.25rem; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .demo-close-btn:hover { background: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+  <h1>&lt;x-splash&gt; Demo</h1>
+  <p>A full-viewport loading screen overlay with optional spinner, progress bar, and custom content.</p>
+
+  <!-- ── Basic splash ───────────────────────────────────────────── -->
+  <h2>Basic Splash</h2>
+  <p>Default splash with spinner. Click "Show" to activate, "Hide" to dismiss.</p>
+  <div class="controls">
+    <button onclick="showSplash('basic')">Show</button>
+    <button onclick="hideSplash('basic')">Hide</button>
+  </div>
+  <x-splash id="basic"></x-splash>
+
+  <!-- ── With progress ──────────────────────────────────────────── -->
+  <h2>With Progress Bar</h2>
+  <p>Shows a progress bar that fills over 3 seconds, then auto-hides.</p>
+  <div class="controls">
+    <button onclick="showProgressSplash()">Start Loading</button>
+  </div>
+  <x-splash id="progress-splash" spinner="false"></x-splash>
+
+  <!-- ── Custom content ─────────────────────────────────────────── -->
+  <h2>Custom Content (Slot)</h2>
+  <p>Uses the default slot for a logo and message.</p>
+  <div class="controls">
+    <button onclick="showSplash('custom')">Show</button>
+    <button onclick="hideSplash('custom')">Hide</button>
+  </div>
+  <x-splash id="custom">
+    <div class="splash-custom-content">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+        <circle cx="24" cy="24" r="10" fill="currentColor" opacity="0.6"/>
+      </svg>
+      <h2>MyApp</h2>
+      <p>Loading your workspace...</p>
+    </div>
+  </x-splash>
+
+  <!-- ── Variant + Overlay combos ───────────────────────────────── -->
+  <h2>Variants &amp; Overlays</h2>
+  <div class="controls">
+    <button onclick="showCombo('minimal', 'transparent')">Minimal + Transparent</button>
+    <button onclick="showCombo('branded', 'solid')">Branded + Solid</button>
+    <button onclick="showCombo('default', 'blur')">Default + Blur</button>
+    <button onclick="hideSplash('combo')">Hide</button>
+  </div>
+  <x-splash id="combo"></x-splash>
+
+  <!-- Demo-only close button (floats above the splash overlay) -->
+  <button class="demo-close-btn" id="demo-close" title="Close splash (demo only)">&times;</button>
+
+  <!-- ── Event log ──────────────────────────────────────────────── -->
+  <h2>Event Log</h2>
+  <div id="event-log">Waiting for events...</div>
+
+  <script>
+    const log = document.getElementById('event-log');
+    let logCount = 0;
+
+    function logEvent(name, detail) {
+      logCount++;
+      const line = document.createElement('div');
+      line.textContent = `[${logCount}] ${name} ${JSON.stringify(detail)}`;
+      log.prepend(line);
+    }
+
+    // Demo-only close button
+    const closeBtn = document.getElementById('demo-close');
+    let activeSplashId = null;
+
+    function showCloseBtn(id) {
+      activeSplashId = id;
+      closeBtn.style.display = 'flex';
+    }
+
+    function hideCloseBtn() {
+      activeSplashId = null;
+      closeBtn.style.display = 'none';
+    }
+
+    closeBtn.addEventListener('click', () => {
+      if (activeSplashId) hideSplash(activeSplashId);
+    });
+
+    // Listen for x-splash-hidden on all splash elements
+    document.querySelectorAll('x-splash').forEach(el => {
+      el.addEventListener('x-splash-hidden', (e) => {
+        logEvent('x-splash-hidden', { id: e.target.id });
+        hideCloseBtn();
+      });
+    });
+
+    function showSplash(id) {
+      const el = document.getElementById(id);
+      el.setAttribute('active', '');
+      showCloseBtn(id);
+      logEvent('show', { id, variant: el.getAttribute('variant') || 'default', overlay: el.getAttribute('overlay') || 'solid' });
+    }
+
+    function hideSplash(id) {
+      document.getElementById(id).removeAttribute('active');
+      logEvent('hide (active removed)', { id });
+    }
+
+    function showCombo(variant, overlay) {
+      const el = document.getElementById('combo');
+      el.setAttribute('variant', variant);
+      el.setAttribute('overlay', overlay);
+      el.setAttribute('active', '');
+      showCloseBtn('combo');
+      logEvent('show', { id: 'combo', variant, overlay });
+    }
+
+    // Progress demo
+    let progressTimer = null;
+    function showProgressSplash() {
+      const el = document.getElementById('progress-splash');
+      el.setAttribute('progress', '0');
+      el.setAttribute('active', '');
+      showCloseBtn('progress-splash');
+      logEvent('show', { id: 'progress-splash', mode: 'progress' });
+      let p = 0;
+      if (progressTimer) clearInterval(progressTimer);
+      progressTimer = setInterval(() => {
+        p += 2;
+        el.setAttribute('progress', String(Math.min(p, 100)));
+        if (p >= 100) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+          setTimeout(() => el.removeAttribute('active'), 500);
+        }
+      }, 60);
+    }
+  </script>
+</body>
+</html>

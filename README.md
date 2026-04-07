@@ -11,7 +11,7 @@
 
 ## What is BareDOM?
 
-BareDOM is a library of more than 60 UI components built entirely on web standards — Custom Elements v1, Shadow DOM, and ES modules. There is no framework runtime, no virtual DOM, and no JavaScript framework peer dependency. Every component is a native HTML element that you register once and use anywhere.
+BareDOM is a library of more than 70 UI components built entirely on web standards — Custom Elements v1, Shadow DOM, and ES modules. There is no framework runtime, no virtual DOM, and no JavaScript framework peer dependency. Every component is a native HTML element that you register once and use anywhere.
 
 The core rendering model is deliberately simple:
 
@@ -25,7 +25,7 @@ BareDOM is authored in ClojureScript and compiled to optimised, minified ES modu
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
-All web components—including new, modern, and exciting ones such as x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-typography, x-organic-shape, and x-gaussian-blur—can be seen [here](https://avanelsas.github.io/baredom/)
+All web components—including new, modern, and exciting ones such as x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, and x-organic-progress—can be seen [here](https://avanelsas.github.io/baredom/)
 
 ---
 

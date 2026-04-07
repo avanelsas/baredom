@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-neural-glow — Bioluminescent Neural Network</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: #9ca3af; }
+    p  { color: #9ca3af; margin-bottom: 1rem; }
+
+    .header {
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Showcase sections ─────────────────────────────────────────── */
+    .section {
+      padding: 1.5rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .demo-card {
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      height: 300px;
+    }
+
+    .demo-card x-neural-glow {
+      position: absolute;
+      inset: 0;
+    }
+
+    .demo-card .label {
+      position: absolute;
+      bottom: 0.75rem;
+      left: 0.75rem;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      z-index: 1;
+    }
+
+    /* ── Full-page background demo ─────────────────────────────────── */
+    .fullpage-demo {
+      position: relative;
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullpage-demo x-neural-glow {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .fullpage-demo .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .fullpage-demo .content h2 { color: #fff; font-size: 2rem; }
+    .fullpage-demo .content p  { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+
+    /* ── Scroll activity demo ──────────────────────────────────────── */
+    .scroll-demo {
+      position: relative;
+      height: 200vh;
+    }
+
+    .scroll-demo x-neural-glow {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.875rem;
+      z-index: 1;
+    }
+
+    /* ── Control panel ─────────────────────────────────────────────── */
+    .controls {
+      padding: 1.5rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .control-group label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .control-group input[type="range"] {
+      width: 100%;
+      accent-color: #4f8bff;
+    }
+
+    .control-group input[type="color"] {
+      width: 100%;
+      height: 2rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .control-group .value {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-align: right;
+    }
+
+    .control-group select,
+    .control-group input[type="checkbox"] {
+      accent-color: #4f8bff;
+    }
+
+    .interactive-panel {
+      position: relative;
+      height: 400px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+
+    .interactive-panel x-neural-glow {
+      position: absolute;
+      inset: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>x-neural-glow</h1>
+    <p>Bioluminescent Neural Network — WebGL-powered background that breathes with your activity</p>
+  </div>
+
+  <!-- ── Showcase grid ────────────────────────────────────────────── -->
+  <div class="section">
+    <h2>Variants</h2>
+    <div class="demo-grid">
+      <div class="demo-card">
+        <x-neural-glow></x-neural-glow>
+        <span class="label">Default (electric blue + cyan)</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow
+          color-primary="#ff006e"
+          color-secondary="#fb5607"
+          color-background="#1a0010">
+        </x-neural-glow>
+        <span class="label">Magenta + Orange</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow
+          color-primary="#7b2ff7"
+          color-secondary="#00ff87"
+          color-background="#050520"
+          orb-count="25"
+          connection-distance="0.2">
+        </x-neural-glow>
+        <span class="label">Purple + Green, 25 orbs</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow
+          color-primary="#ffd700"
+          color-secondary="#ff4500"
+          color-background="#0d0800"
+          orb-count="8"
+          orb-size="80"
+          pulse-speed="0.5"
+          rest-rate="6">
+        </x-neural-glow>
+        <span class="label">Gold + Red, large slow orbs</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow
+          color-primary="#00ffff"
+          color-secondary="#0080ff"
+          color-background="#000510"
+          orb-count="40"
+          orb-size="20"
+          connection-distance="0.1">
+        </x-neural-glow>
+        <span class="label">Deep sea, 40 small orbs</span>
+      </div>
+
+      <div class="demo-card">
+        <x-neural-glow
+          interactive="false"
+          pulse-speed="0.3"
+          rest-rate="8">
+        </x-neural-glow>
+        <span class="label">Non-interactive, slow ambient</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Full-page background demo ─────────────────────────────────── -->
+  <div class="section">
+    <h2>Full-Page Background</h2>
+    <div class="fullpage-demo">
+      <x-neural-glow
+        color-primary="#4f8bff"
+        color-secondary="#a855f7"
+        color-background="#030712"
+        orb-count="20"
+        opacity="0.9">
+      </x-neural-glow>
+      <div class="content">
+        <h2>Content Over Neural Glow</h2>
+        <p>The network pulses behind your content, responding to mouse movement, scrolling, and typing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scroll activity demo ─────────────────────────────────────── -->
+  <div class="section">
+    <h2>Scroll Activity Response</h2>
+    <p>Scroll this area to see the network respond to scroll speed.</p>
+    <div class="scroll-demo">
+      <x-neural-glow
+        color-primary="#22d3ee"
+        color-secondary="#34d399"
+        color-background="#021a1a"
+        orb-count="18">
+      </x-neural-glow>
+      <span class="scroll-hint">Scroll down to activate the neural network...</span>
+    </div>
+  </div>
+
+  <!-- ── Interactive control panel ─────────────────────────────────── -->
+  <div class="controls">
+    <h2>Interactive Controls</h2>
+    <div class="control-grid">
+      <div class="control-group">
+        <label>Orb Count: <span id="v-orb-count">15</span></label>
+        <input type="range" id="c-orb-count" min="3" max="50" value="15" step="1">
+      </div>
+      <div class="control-group">
+        <label>Orb Size: <span id="v-orb-size">40</span></label>
+        <input type="range" id="c-orb-size" min="10" max="200" value="40" step="5">
+      </div>
+      <div class="control-group">
+        <label>Pulse Speed: <span id="v-pulse-speed">1.0</span></label>
+        <input type="range" id="c-pulse-speed" min="0.1" max="5.0" value="1.0" step="0.1">
+      </div>
+      <div class="control-group">
+        <label>Rest Rate: <span id="v-rest-rate">4.0</span></label>
+        <input type="range" id="c-rest-rate" min="1.0" max="10.0" value="4.0" step="0.5">
+      </div>
+      <div class="control-group">
+        <label>Connection Distance: <span id="v-connection-distance">0.15</span></label>
+        <input type="range" id="c-connection-distance" min="0.05" max="0.5" value="0.15" step="0.01">
+      </div>
+      <div class="control-group">
+        <label>Opacity: <span id="v-opacity">0.8</span></label>
+        <input type="range" id="c-opacity" min="0" max="1" value="0.8" step="0.05">
+      </div>
+      <div class="control-group">
+        <label>Primary Color</label>
+        <input type="color" id="c-color-primary" value="#4f8bff">
+      </div>
+      <div class="control-group">
+        <label>Secondary Color</label>
+        <input type="color" id="c-color-secondary" value="#00e5cc">
+      </div>
+      <div class="control-group">
+        <label>Background Color</label>
+        <input type="color" id="c-color-background" value="#050a18">
+      </div>
+      <div class="control-group">
+        <label>
+          <input type="checkbox" id="c-interactive" checked> Interactive
+        </label>
+      </div>
+    </div>
+
+    <div class="interactive-panel">
+      <x-neural-glow id="controlled"></x-neural-glow>
+    </div>
+  </div>
+
+  <script>
+    const el = document.getElementById('controlled');
+
+    function bind(inputId, attr, valueId) {
+      const input = document.getElementById(inputId);
+      const display = valueId ? document.getElementById(valueId) : null;
+      input.addEventListener('input', () => {
+        el.setAttribute(attr, input.value);
+        if (display) display.textContent = input.value;
+      });
+    }
+
+    bind('c-orb-count', 'orb-count', 'v-orb-count');
+    bind('c-orb-size', 'orb-size', 'v-orb-size');
+    bind('c-pulse-speed', 'pulse-speed', 'v-pulse-speed');
+    bind('c-rest-rate', 'rest-rate', 'v-rest-rate');
+    bind('c-connection-distance', 'connection-distance', 'v-connection-distance');
+    bind('c-opacity', 'opacity', 'v-opacity');
+    bind('c-color-primary', 'color-primary');
+    bind('c-color-secondary', 'color-secondary');
+    bind('c-color-background', 'color-background');
+
+    document.getElementById('c-interactive').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        el.removeAttribute('interactive');
+      } else {
+        el.setAttribute('interactive', 'false');
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -60,6 +60,7 @@
    [baredom.exports.x-typography          :as x-typography]
    [baredom.exports.x-kinetic-typography :as x-kinetic-typography]
    [baredom.exports.x-organic-divider   :as x-organic-divider]
+   [baredom.exports.x-organic-progress   :as x-organic-progress]
    [baredom.exports.x-ripple-effect    :as x-ripple-effect]
    [baredom.exports.x-gaussian-blur   :as x-gaussian-blur]
    [baredom.exports.x-scroll          :as x-scroll]
@@ -67,6 +68,11 @@
    [baredom.exports.x-scroll-story    :as x-scroll-story]
    [baredom.exports.x-scroll-timeline :as x-scroll-timeline]
    [baredom.exports.x-scroll-stack    :as x-scroll-stack]
+   [baredom.exports.x-splash          :as x-splash]
+   [baredom.exports.x-metaball-cursor :as x-metaball-cursor]
+   [baredom.exports.x-neural-glow    :as x-neural-glow]
+   [baredom.exports.x-bento-grid     :as x-bento-grid]
+   [baredom.exports.x-bento-item     :as x-bento-item]
    [baredom.dev.hot-reload             :as hot-reload]))
 
 (defn ^:dev/after-load start!
@@ -131,6 +137,7 @@
   (x-typography/register!)
   (x-kinetic-typography/register!)
   (x-organic-divider/register!)
+  (x-organic-progress/register!)
   (x-ripple-effect/register!)
   (x-gaussian-blur/register!)
   (x-scroll/register!)
@@ -138,6 +145,11 @@
   (x-scroll-story/register!)
   (x-scroll-timeline/register!)
   (x-scroll-stack/register!)
+  (x-splash/register!)
+  (x-metaball-cursor/register!)
+  (x-neural-glow/register!)
+  (x-bento-grid/register!)
+  (x-bento-item/register!)
   (hot-reload/refresh-styles!))
 
 (defn init!

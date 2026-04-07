@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-organic-progress demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
+    }
+    .controls button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .controls button { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+    }
+    .controls button:hover { background: #f1f5f9; }
+    @media (prefers-color-scheme: dark) {
+      .controls button:hover { background: #334155; }
+    }
+    .controls label {
+      display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+    }
+    .controls select, .controls input[type=range] {
+      padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .controls select, .controls input { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+    }
+    .demo-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      .demo-box { background: #1e293b; border-color: #334155; }
+    }
+    x-organic-progress {
+      height: 100px;
+    }
+    #event-log {
+      background: #1e293b; color: #a5f3fc; padding: 1rem;
+      border-radius: 8px; font-family: monospace; font-size: 0.8rem;
+      max-height: 200px; overflow-y: auto; margin-top: 1rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      #event-log { background: #0c1322; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>&lt;x-organic-progress&gt;</h1>
+<p>A progress indicator that grows a vine or honeycomb lattice structure.</p>
+
+<!-- ── Interactive demo ──────────────────────────────────────────────── -->
+<h2>Interactive</h2>
+
+<div class="controls">
+  <label>Progress:
+    <input type="range" id="progress-slider" min="0" max="100" value="0" step="1">
+    <span id="progress-value">0%</span>
+  </label>
+  <label>Variant:
+    <select id="variant-select">
+      <option value="vine">vine</option>
+      <option value="honeycomb">honeycomb</option>
+    </select>
+  </label>
+  <label>Density:
+    <select id="density-select">
+      <option value="sparse">sparse</option>
+      <option value="normal" selected>normal</option>
+      <option value="dense">dense</option>
+    </select>
+  </label>
+  <label>Seed:
+    <input type="number" id="seed-input" value="42" min="1" max="9999" style="width:5rem;">
+  </label>
+  <label>
+    <input type="checkbox" id="bloom-check" checked>
+    Bloom
+  </label>
+  <button id="btn-indeterminate">Indeterminate</button>
+  <button id="btn-reset">Reset</button>
+</div>
+
+<div class="demo-box">
+  <x-organic-progress id="main-demo" label="Demo progress"></x-organic-progress>
+</div>
+
+<!-- ── Vine variant ──────────────────────────────────────────────────── -->
+<h2>Vine (default)</h2>
+<div class="demo-box">
+  <x-organic-progress progress="65" variant="vine" label="Vine progress"></x-organic-progress>
+</div>
+
+<!-- ── Honeycomb variant ──────────────────────────────────────────────── -->
+<h2>Honeycomb</h2>
+<div class="demo-box">
+  <x-organic-progress progress="55" variant="honeycomb" label="Honeycomb progress"></x-organic-progress>
+</div>
+
+<!-- ── Indeterminate ─────────────────────────────────────────────────── -->
+<h2>Indeterminate</h2>
+<div class="demo-box">
+  <x-organic-progress label="Loading..."></x-organic-progress>
+</div>
+
+<!-- ── Dense ─────────────────────────────────────────────────────────── -->
+<h2>Dense</h2>
+<div class="demo-box">
+  <x-organic-progress progress="70" density="dense" label="Dense progress"></x-organic-progress>
+</div>
+
+<!-- ── Custom colors ─────────────────────────────────────────────────── -->
+<h2>Custom Colors</h2>
+<div class="demo-box">
+  <x-organic-progress
+    progress="80"
+    label="Custom color progress"
+    style="--x-organic-progress-color-primary: #818cf8;
+           --x-organic-progress-color-secondary: #6366f1;
+           --x-organic-progress-bloom-color: #fbbf24;">
+  </x-organic-progress>
+</div>
+
+<!-- ── Event log ─────────────────────────────────────────────────────── -->
+<h2>Events</h2>
+<div id="event-log">Waiting for events...</div>
+
+<script>
+  const main = document.getElementById('main-demo');
+  const slider = document.getElementById('progress-slider');
+  const valueLabel = document.getElementById('progress-value');
+  const variantSelect = document.getElementById('variant-select');
+  const densitySelect = document.getElementById('density-select');
+  const seedInput = document.getElementById('seed-input');
+  const bloomCheck = document.getElementById('bloom-check');
+  const log = document.getElementById('event-log');
+
+  function logEvent(name, detail) {
+    const line = document.createElement('div');
+    line.textContent = new Date().toLocaleTimeString() + ' ' + name + ' ' + JSON.stringify(detail);
+    log.prepend(line);
+  }
+
+  slider.addEventListener('input', () => {
+    main.setAttribute('progress', slider.value);
+    valueLabel.textContent = slider.value + '%';
+  });
+
+  variantSelect.addEventListener('change', () => {
+    main.setAttribute('variant', variantSelect.value);
+  });
+
+  densitySelect.addEventListener('change', () => {
+    main.setAttribute('density', densitySelect.value);
+  });
+
+  seedInput.addEventListener('change', () => {
+    main.setAttribute('seed', seedInput.value);
+  });
+
+  bloomCheck.addEventListener('change', () => {
+    if (bloomCheck.checked) {
+      main.removeAttribute('bloom');
+    } else {
+      main.setAttribute('bloom', 'false');
+    }
+  });
+
+  document.getElementById('btn-indeterminate').addEventListener('click', () => {
+    main.removeAttribute('progress');
+    slider.value = 0;
+    valueLabel.textContent = 'indeterminate';
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    main.setAttribute('progress', '0');
+    slider.value = 0;
+    valueLabel.textContent = '0%';
+  });
+
+  // Listen for events on all x-organic-progress elements
+  document.querySelectorAll('x-organic-progress').forEach(el => {
+    el.addEventListener('x-organic-progress-complete', e => {
+      logEvent('complete', e.detail);
+    });
+    el.addEventListener('x-organic-progress-bloom-end', e => {
+      logEvent('bloom-end', e.detail);
+    });
+  });
+</script>
+
+</body>
+</html>

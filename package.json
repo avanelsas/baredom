@@ -1,5 +1,5 @@
 {
-  "description" : "67 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
+  "description" : "73 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
   "engines" : {
     "node" : ">=18"
   },
@@ -295,6 +295,30 @@
     "./x-gaussian-blur" : {
       "import" : "./dist/x-gaussian-blur.js",
       "default" : "./dist/x-gaussian-blur.js"
+    },
+    "./x-splash" : {
+      "import" : "./dist/x-splash.js",
+      "default" : "./dist/x-splash.js"
+    },
+    "./x-metaball-cursor" : {
+      "import" : "./dist/x-metaball-cursor.js",
+      "default" : "./dist/x-metaball-cursor.js"
+    },
+    "./x-neural-glow" : {
+      "import" : "./dist/x-neural-glow.js",
+      "default" : "./dist/x-neural-glow.js"
+    },
+    "./x-organic-progress" : {
+      "import" : "./dist/x-organic-progress.js",
+      "default" : "./dist/x-organic-progress.js"
+    },
+    "./x-bento-grid" : {
+      "import" : "./dist/x-bento-grid.js",
+      "default" : "./dist/x-bento-grid.js"
+    },
+    "./x-bento-item" : {
+      "import" : "./dist/x-bento-item.js",
+      "default" : "./dist/x-bento-item.js"
     }
   },
   "devDependencies" : {
@@ -304,6 +328,6 @@
     "shadow-cljs" : "^3.3.6"
   },
   "files" : [ "dist", "README.md", "LICENSE", "CHANGELOG.md" ],
-  "version" : "1.2.0",
+  "version" : "1.3.0",
   "sideEffects" : [ "./dist/*.js" ]
 }

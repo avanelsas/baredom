@@ -381,4 +381,34 @@
      {init baredom.exports.x-scroll-stack/init}
      :depends-on #{:base}}
 
+    :x-splash
+    {:exports
+     {init baredom.exports.x-splash/init}
+     :depends-on #{:base}}
+
+    :x-metaball-cursor
+    {:exports
+     {init baredom.exports.x-metaball-cursor/init}
+     :depends-on #{:base}}
+
+    :x-neural-glow
+    {:exports
+     {init baredom.exports.x-neural-glow/init}
+     :depends-on #{:base}}
+
+    :x-organic-progress
+    {:exports
+     {init baredom.exports.x-organic-progress/init}
+     :depends-on #{:base}}
+
+    :x-bento-grid
+    {:exports
+     {init baredom.exports.x-bento-grid/init}
+     :depends-on #{:base}}
+
+    :x-bento-item
+    {:exports
+     {init baredom.exports.x-bento-item/init}
+     :depends-on #{:base}}
+
     }}}}

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-metaball-cursor demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+      }
+
+      h1 { font-size: 1.5rem; margin: 0 0 8px; }
+      .subtitle { color: var(--muted); margin: 0 0 32px; }
+
+      section {
+        margin-bottom: 40px;
+      }
+      section h2 {
+        font-size: 1.1rem;
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+
+      .demo-box {
+        position: relative;
+        height: 300px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface-bg);
+      }
+
+      .demo-box x-metaball-cursor {
+        pointer-events: none;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-bg);
+      }
+      .controls label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .controls input[type="range"],
+      .controls input[type="color"] {
+        width: 100%;
+      }
+      .controls .value {
+        font-weight: 600;
+        color: var(--page-fg);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>&lt;x-metaball-cursor&gt;</h1>
+      <p class="subtitle">Organic blobs that follow the cursor with metaball fusion.</p>
+
+      <!-- ── Basic ────────────────────────────────────────── -->
+      <section>
+        <h2>Default (5 blobs)</h2>
+        <div class="demo-box">
+          <x-metaball-cursor></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── Custom color ─────────────────────────────��───── -->
+      <section>
+        <h2>Custom color</h2>
+        <div class="demo-box">
+          <x-metaball-cursor color="#ec4899"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── Fewer blobs ──────────────────────────────────── -->
+      <section>
+        <h2>2 blobs</h2>
+        <div class="demo-box">
+          <x-metaball-cursor blob-count="2" blob-size="60"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── With noise ───────────────────────────────────── -->
+      <section>
+        <h2>With Perlin noise shimmer</h2>
+        <div class="demo-box">
+          <x-metaball-cursor noise noise-intensity="10"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── Palette presets ─────────────────────────────── -->
+      <section>
+        <h2>Palette: rainbow</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="rainbow"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <section>
+        <h2>Palette: ocean</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="ocean"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <section>
+        <h2>Palette: sunset</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="sunset"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <section>
+        <h2>Palette: neon</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="neon"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <section>
+        <h2>Palette: ember</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="ember"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <section>
+        <h2>Custom palette</h2>
+        <div class="demo-box">
+          <x-metaball-cursor palette="hotpink, cyan, gold"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── Many blobs ───────────────────────────────────── -->
+      <section>
+        <h2>10 blobs, small</h2>
+        <div class="demo-box">
+          <x-metaball-cursor blob-count="10" blob-size="25"></x-metaball-cursor>
+        </div>
+      </section>
+
+      <!-- ── Interactive controls ─────────────────────────── -->
+      <section>
+        <h2>Interactive</h2>
+        <div class="demo-box" id="interactive-box" style="display:grid;place-items:center;">
+          <div style="text-align:center;padding:24px;pointer-events:none;user-select:none;">
+            <div style="font-size:2.5rem;font-weight:700;line-height:1.2;">Move your cursor</div>
+            <div style="font-size:1rem;color:var(--muted);margin-top:8px;">
+              The blobs follow with varying latency and fuse when they overlap.
+              <br>Lower the opacity to see this text through the effect.
+            </div>
+          </div>
+          <x-metaball-cursor id="interactive" style="position:absolute;inset:0;"></x-metaball-cursor>
+        </div>
+        <div class="controls" style="margin-top: 12px;">
+          <label>
+            Blob count: <span class="value" id="v-count">5</span>
+            <input type="range" id="c-count" min="2" max="10" value="5" />
+          </label>
+          <label>
+            Blob size: <span class="value" id="v-size">40</span>
+            <input type="range" id="c-size" min="10" max="120" value="40" />
+          </label>
+          <label>
+            Blur: <span class="value" id="v-blur">12</span>
+            <input type="range" id="c-blur" min="4" max="40" value="12" />
+          </label>
+          <label>
+            Opacity: <span class="value" id="v-opacity">1</span>
+            <input type="range" id="c-opacity" min="0" max="1" step="0.05" value="1" />
+          </label>
+          <label>
+            Palette
+            <select id="c-palette">
+              <option value="">(none — single color)</option>
+              <option value="rainbow">rainbow</option>
+              <option value="ocean">ocean</option>
+              <option value="sunset">sunset</option>
+              <option value="neon">neon</option>
+              <option value="ember">ember</option>
+            </select>
+          </label>
+          <label>
+            Color (when no palette)
+            <input type="color" id="c-color" value="#6366f1" />
+          </label>
+          <label>
+            <input type="checkbox" id="c-noise" /> Enable noise shimmer
+          </label>
+          <label>
+            Noise intensity: <span class="value" id="v-ni">6</span>
+            <input type="range" id="c-ni" min="1" max="30" value="6" />
+          </label>
+          <label>
+            Noise scale: <span class="value" id="v-ns">3</span>
+            <input type="range" id="c-ns" min="1" max="20" value="3" step="0.5" />
+          </label>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const el = document.getElementById('interactive');
+
+      function bind(inputId, valueId, attr, fmt) {
+        const input = document.getElementById(inputId);
+        const vSpan = document.getElementById(valueId);
+        input.addEventListener('input', () => {
+          el.setAttribute(attr, input.value);
+          if (vSpan) vSpan.textContent = fmt ? fmt(input.value) : input.value;
+        });
+      }
+
+      bind('c-count', 'v-count', 'blob-count');
+      bind('c-size',  'v-size',  'blob-size');
+      bind('c-blur',  'v-blur',  'blur');
+      bind('c-ni',    'v-ni',    'noise-intensity');
+      bind('c-ns',    'v-ns',    'noise-scale');
+
+      document.getElementById('c-opacity').addEventListener('input', (e) => {
+        el.style.setProperty('--x-metaball-cursor-opacity', e.target.value);
+        document.getElementById('v-opacity').textContent = e.target.value;
+      });
+
+      document.getElementById('c-palette').addEventListener('change', (e) => {
+        if (e.target.value) {
+          el.setAttribute('palette', e.target.value);
+        } else {
+          el.removeAttribute('palette');
+        }
+      });
+
+      document.getElementById('c-color').addEventListener('input', (e) => {
+        el.setAttribute('color', e.target.value);
+      });
+
+      document.getElementById('c-noise').addEventListener('change', (e) => {
+        if (e.target.checked) {
+          el.setAttribute('noise', '');
+        } else {
+          el.removeAttribute('noise');
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-bento-grid demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
+    }
+    .controls label {
+      display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+    }
+    .controls select, .controls input {
+      padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .controls select, .controls input { background: #1e293b; border-color: #475569; color: #e2e8f0; }
+    }
+    .demo-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      .demo-box { background: #1e293b; border-color: #334155; }
+    }
+    /* Visual placeholder for bento items */
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      min-height: 100px;
+    }
+    .cell-1 { background: #dbeafe; color: #1e40af; }
+    .cell-2 { background: #fce7f3; color: #9d174d; }
+    .cell-3 { background: #d1fae5; color: #065f46; }
+    .cell-4 { background: #fef3c7; color: #92400e; }
+    .cell-5 { background: #e0e7ff; color: #3730a3; }
+    .cell-6 { background: #ede9fe; color: #5b21b6; }
+    .cell-7 { background: #fecaca; color: #991b1b; }
+    .cell-8 { background: #ccfbf1; color: #134e4a; }
+    @media (prefers-color-scheme: dark) {
+      .cell-1 { background: #1e3a5f; color: #93c5fd; }
+      .cell-2 { background: #4a1942; color: #f9a8d4; }
+      .cell-3 { background: #064e3b; color: #6ee7b7; }
+      .cell-4 { background: #451a03; color: #fcd34d; }
+      .cell-5 { background: #312e81; color: #a5b4fc; }
+      .cell-6 { background: #3b0764; color: #c4b5fd; }
+      .cell-7 { background: #450a0a; color: #fca5a5; }
+      .cell-8 { background: #042f2e; color: #5eead4; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>&lt;x-bento-grid&gt; + &lt;x-bento-item&gt;</h1>
+<p>Asymmetric bento-style grid layout with dense auto-placement.</p>
+
+<!-- ── Interactive demo ──────────────────────────────────────────────── -->
+<h2>Interactive</h2>
+
+<div class="controls">
+  <label>Columns:
+    <select id="columns-select">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4" selected>4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+    </select>
+  </label>
+  <label>Gap:
+    <select id="gap-select">
+      <option value="none">none</option>
+      <option value="xs">xs</option>
+      <option value="sm">sm</option>
+      <option value="md" selected>md</option>
+      <option value="lg">lg</option>
+      <option value="xl">xl</option>
+    </select>
+  </label>
+  <label>Row height:
+    <select id="row-height-select">
+      <option value="" selected>auto</option>
+      <option value="100px">100px</option>
+      <option value="120px">120px</option>
+      <option value="150px">150px</option>
+    </select>
+  </label>
+</div>
+
+<div class="demo-box">
+  <x-bento-grid id="main-demo" columns="4" gap="md">
+    <x-bento-item col-span="2" row-span="2">
+      <div class="cell cell-1">Hero<br>2 &times; 2</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-2">1 &times; 1</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-3">1 &times; 1</div>
+    </x-bento-item>
+    <x-bento-item col-span="2">
+      <div class="cell cell-4">2 &times; 1</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-5">1 &times; 1</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-6">1 &times; 1</div>
+    </x-bento-item>
+    <x-bento-item col-span="2">
+      <div class="cell cell-7">2 &times; 1</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<!-- ── Classic Apple-style bento ─────────────────────────────────────── -->
+<h2>Classic 4-column bento</h2>
+<div class="demo-box">
+  <x-bento-grid columns="4" gap="md" row-height="120px">
+    <x-bento-item col-span="2" row-span="2">
+      <div class="cell cell-1" style="height:100%">Featured</div>
+    </x-bento-item>
+    <x-bento-item row-span="2">
+      <div class="cell cell-3" style="height:100%">Tall</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-2">Small A</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-4">Small B</div>
+    </x-bento-item>
+    <x-bento-item col-span="3">
+      <div class="cell cell-5">Wide banner</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-6">End</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<!-- ── 3-column compact ──────────────────────────────────────────────── -->
+<h2>3-column compact</h2>
+<div class="demo-box">
+  <x-bento-grid columns="3" gap="sm" row-height="100px">
+    <x-bento-item col-span="2">
+      <div class="cell cell-8" style="height:100%">Wide</div>
+    </x-bento-item>
+    <x-bento-item row-span="2">
+      <div class="cell cell-6" style="height:100%">Tall</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-2">A</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-4">B</div>
+    </x-bento-item>
+    <x-bento-item col-span="3">
+      <div class="cell cell-1">Full width</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<!-- ── With x-card children ──────────────────────────────────────────── -->
+<h2>Composed with x-card</h2>
+<div class="demo-box">
+  <x-bento-grid columns="4" gap="md" row-height="120px">
+    <x-bento-item col-span="2" row-span="2">
+      <x-card variant="elevated" padding="lg" style="height:100%">
+        <h3 style="margin:0 0 0.5rem">Revenue</h3>
+        <p style="margin:0;font-size:2rem;font-weight:700">$48.2k</p>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;opacity:0.7">+12% from last month</p>
+      </x-card>
+    </x-bento-item>
+    <x-bento-item>
+      <x-card variant="outlined" padding="md" style="height:100%">
+        <h4 style="margin:0 0 0.25rem">Users</h4>
+        <p style="margin:0;font-size:1.5rem;font-weight:700">1,842</p>
+      </x-card>
+    </x-bento-item>
+    <x-bento-item>
+      <x-card variant="outlined" padding="md" style="height:100%">
+        <h4 style="margin:0 0 0.25rem">Orders</h4>
+        <p style="margin:0;font-size:1.5rem;font-weight:700">324</p>
+      </x-card>
+    </x-bento-item>
+    <x-bento-item col-span="2">
+      <x-card variant="filled" padding="md" style="height:100%">
+        <h4 style="margin:0 0 0.25rem">Activity</h4>
+        <p style="margin:0;font-size:0.875rem;opacity:0.7">Session data from the last 7 days</p>
+      </x-card>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<script>
+  const grid = document.getElementById('main-demo');
+
+  document.getElementById('columns-select').addEventListener('change', function() {
+    grid.setAttribute('columns', this.value);
+  });
+
+  document.getElementById('gap-select').addEventListener('change', function() {
+    grid.setAttribute('gap', this.value);
+  });
+
+  document.getElementById('row-height-select').addEventListener('change', function() {
+    if (this.value) {
+      grid.setAttribute('row-height', this.value);
+    } else {
+      grid.removeAttribute('row-height');
+    }
+  });
+</script>
+
+</body>
+</html>
