@@ -331,6 +331,10 @@
     "./x-liquid-dock" : {
       "import" : "./dist/x-liquid-dock.js",
       "default" : "./dist/x-liquid-dock.js"
+    },
+    "./x-liquid-fill" : {
+      "import" : "./dist/x-liquid-fill.js",
+      "default" : "./dist/x-liquid-fill.js"
     }
   },
   "devDependencies" : {

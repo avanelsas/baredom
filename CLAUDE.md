@@ -133,6 +133,8 @@ Tests run in a real browser environment (headless Chrome via shadow-cljs). Do no
 
 ## Development Pipeline for New Components
 
+Each new component must be developed on a dedicated feature branch named `feature/x-<name>`. Create the branch from `main` before starting work and merge back into `main` once the component passes verification.
+
 Follow these stages in order. **Do not skip or merge stages.**
 
 1. **Architecture** — define tag name, shadow DOM structure, rendering strategy, attributes, properties, events, theming, accessibility, open questions

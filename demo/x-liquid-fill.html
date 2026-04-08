@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-liquid-fill demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+
+    .theme-row {
+      display: flex; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0;
+    }
+    .theme-card {
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    }
+    .theme-card span { font-size: 0.85rem; font-weight: 600; opacity: 0.7; }
+
+    .scroll-container {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      position: relative;
+    }
+    @media (prefers-color-scheme: dark) {
+      .scroll-container { border-color: #334155; }
+    }
+    .scroll-content {
+      height: 1500px;
+      padding: 1rem;
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.02));
+    }
+    .scroll-content p { margin: 0 0 1rem; opacity: 0.6; }
+
+    .sidebar-layout {
+      display: flex; gap: 1rem; height: 300px;
+    }
+    .sidebar-fill {
+      width: 60px; flex-shrink: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    @media (prefers-color-scheme: dark) {
+      .sidebar-fill { border-color: #334155; }
+    }
+
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; align-items: end;
+    }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .control-group label {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; opacity: 0.7;
+    }
+    .control-group input[type=range] { width: 140px; }
+    .control-group select { padding: 0.25rem; }
+    .val { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+
+    #event-log {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 0.75rem;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      #event-log { background: #1e293b; }
+    }
+
+    .circle-fill {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #e2e8f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      .circle-fill { border-color: #475569; }
+    }
+    .pct-label {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%;
+      font-size: 1.5rem; font-weight: bold;
+      color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-liquid-fill</h1>
+<p>Scroll progress indicator with animated liquid fill, organic wave motion, and metallic sheen.</p>
+
+<h2>Theme Showcase</h2>
+<p>Scroll the box below to fill all four themes. Scroll fast and stop to see the splash!</p>
+<div class="theme-row">
+  <div class="theme-card">
+    <x-liquid-fill target="#theme-scroll-box" theme="gold"
+                   style="width:120px;height:180px;border:1px solid #d4af37;border-radius:8px;"
+                   wave-intensity="0.6" splash-intensity="0.8">
+    </x-liquid-fill>
+    <span>Gold</span>
+  </div>
+  <div class="theme-card">
+    <x-liquid-fill target="#theme-scroll-box" theme="water"
+                   style="width:120px;height:180px;border:1px solid #00b4d8;border-radius:8px;"
+                   wave-intensity="0.6" splash-intensity="0.8">
+    </x-liquid-fill>
+    <span>Water</span>
+  </div>
+  <div class="theme-card">
+    <x-liquid-fill target="#theme-scroll-box" theme="lava"
+                   style="width:120px;height:180px;border:1px solid #ff4500;border-radius:8px;"
+                   wave-intensity="0.6" splash-intensity="0.8">
+    </x-liquid-fill>
+    <span>Lava</span>
+  </div>
+  <div class="theme-card">
+    <x-liquid-fill target="#theme-scroll-box" theme="custom"
+                   style="width:120px;height:180px;border:1px solid #7c3aed;border-radius:8px;
+      --x-liquid-fill-color-1:#2d1b69;--x-liquid-fill-color-2:#7c3aed;--x-liquid-fill-color-3:#c4b5fd;
+      --x-liquid-fill-specular-color:rgba(255,255,255,0.4);"
+                   wave-intensity="0.6" splash-intensity="0.8">
+    </x-liquid-fill>
+    <span>Custom (Purple)</span>
+  </div>
+</div>
+<div class="scroll-container" id="theme-scroll-box" style="height:200px;margin-top:1rem;">
+  <div class="scroll-content" style="height:2000px;">
+    <p>Scroll me to fill the themes above...</p>
+    <p>Try scrolling fast, then stop suddenly!</p>
+    <p style="margin-top:600px;">Keep going...</p>
+    <p style="margin-top:600px;">Almost there...</p>
+    <p style="margin-top:200px;">Bottom!</p>
+  </div>
+</div>
+
+<h2>Scroll Container Fill</h2>
+<p>Scroll the box below. The liquid fill on the right tracks scroll progress.</p>
+<div class="sidebar-layout">
+  <div class="scroll-container" id="scroll-box" style="flex:1;">
+    <div class="scroll-content">
+      <p>Scroll down to fill the liquid indicator...</p>
+      <p>The wave intensity increases with scroll speed.</p>
+      <p>Stop suddenly to see the splash effect!</p>
+      <p>Keep scrolling...</p>
+      <p>Almost there...</p>
+      <p style="margin-top:800px;">You're getting close to the bottom.</p>
+      <p style="margin-top:200px;">Almost done!</p>
+    </div>
+  </div>
+  <div class="sidebar-fill">
+    <x-liquid-fill id="sidebar-fill" target="#scroll-box" theme="gold"
+                   style="width:100%;height:100%;" wave-intensity="0.7" splash-intensity="0.8">
+    </x-liquid-fill>
+  </div>
+</div>
+
+<h2>Bar Mode</h2>
+<p>A thin progress bar with liquid surface, tracking the same scroll container.</p>
+<x-liquid-fill id="bar-fill" target="#scroll-box" mode="bar" theme="water"
+               style="width:100%;border-radius:3px;" wave-intensity="0.5">
+</x-liquid-fill>
+
+<h2>Circle Fill with Percentage</h2>
+<x-liquid-fill id="circle-fill" target="#scroll-box" theme="lava"
+               style="width:120px;height:120px;border-radius:50%;border:2px solid #e2e8f0;
+                      --x-liquid-fill-radius:50%;"
+               wave-intensity="0.5" layers="2">
+  <span class="pct-label" id="pct-label">0%</span>
+</x-liquid-fill>
+
+<h2>Interactive Controls</h2>
+<div class="controls">
+  <div class="control-group">
+    <label>Theme</label>
+    <select id="ctrl-theme">
+      <option value="gold" selected>Gold</option>
+      <option value="water">Water</option>
+      <option value="lava">Lava</option>
+      <option value="custom">Custom</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Mode</label>
+    <select id="ctrl-mode">
+      <option value="fill" selected>Fill</option>
+      <option value="bar">Bar</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Wave Intensity <span class="val" id="wave-val">0.5</span></label>
+    <input type="range" id="ctrl-wave" min="0" max="1" value="0.5" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Splash Intensity <span class="val" id="splash-val">0.7</span></label>
+    <input type="range" id="ctrl-splash" min="0" max="1" value="0.7" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Layers <span class="val" id="layers-val">3</span></label>
+    <input type="range" id="ctrl-layers" min="2" max="5" value="3" step="1">
+  </div>
+  <div class="control-group">
+    <label>Disabled</label>
+    <input type="checkbox" id="ctrl-disabled">
+  </div>
+</div>
+<div class="controls" id="custom-colors" style="display:none;">
+  <div class="control-group">
+    <label>Color 1</label>
+    <input type="color" id="ctrl-c1" value="#2d1b69">
+  </div>
+  <div class="control-group">
+    <label>Color 2</label>
+    <input type="color" id="ctrl-c2" value="#7c3aed">
+  </div>
+  <div class="control-group">
+    <label>Color 3</label>
+    <input type="color" id="ctrl-c3" value="#c4b5fd">
+  </div>
+</div>
+
+<div class="scroll-container" id="scroll-box-2" style="margin-top:1rem;">
+  <div class="scroll-content">
+    <p>Scroll this box and watch the interactive fill below respond.</p>
+    <p>Adjust the controls above to change wave/splash parameters in real time.</p>
+    <p style="margin-top:600px;">Keep scrolling...</p>
+    <p style="margin-top:400px;">Bottom!</p>
+  </div>
+</div>
+<x-liquid-fill id="interactive-fill" target="#scroll-box-2"
+               style="width:100%;height:100px;margin-top:0.5rem;border:1px solid #e2e8f0;border-radius:8px;">
+</x-liquid-fill>
+
+<h2>Event Log</h2>
+<div id="event-log">Events will appear here...</div>
+
+<script>
+  // ── Circle percentage label ──
+  document.getElementById('circle-fill')
+    .addEventListener('x-liquid-fill-progress', function(e) {
+      document.getElementById('pct-label').textContent =
+        Math.round(e.detail.progress * 100) + '%';
+    });
+
+  // ── Interactive controls ──
+  const fill = document.getElementById('interactive-fill');
+
+  var customPanel = document.getElementById('custom-colors');
+
+  document.getElementById('ctrl-theme').addEventListener('change', function(e) {
+    fill.setAttribute('theme', e.target.value);
+    customPanel.style.display = e.target.value === 'custom' ? 'flex' : 'none';
+    if (e.target.value === 'custom') {
+      // Apply current picker values
+      fill.style.setProperty('--x-liquid-fill-color-1', document.getElementById('ctrl-c1').value);
+      fill.style.setProperty('--x-liquid-fill-color-2', document.getElementById('ctrl-c2').value);
+      fill.style.setProperty('--x-liquid-fill-color-3', document.getElementById('ctrl-c3').value);
+    }
+  });
+
+  document.getElementById('ctrl-c1').addEventListener('input', function() {
+    fill.style.setProperty('--x-liquid-fill-color-1', this.value);
+  });
+  document.getElementById('ctrl-c2').addEventListener('input', function() {
+    fill.style.setProperty('--x-liquid-fill-color-2', this.value);
+  });
+  document.getElementById('ctrl-c3').addEventListener('input', function() {
+    fill.style.setProperty('--x-liquid-fill-color-3', this.value);
+  });
+
+  document.getElementById('ctrl-mode').addEventListener('change', function(e) {
+    fill.setAttribute('mode', e.target.value);
+    // Adjust inline height so CSS :host([mode=bar]) can take effect
+    fill.style.height = e.target.value === 'bar' ? '14px' : '100px';
+  });
+
+  document.getElementById('ctrl-wave').addEventListener('input', function() {
+    fill.setAttribute('wave-intensity', this.value);
+    document.getElementById('wave-val').textContent = this.value;
+  });
+
+  document.getElementById('ctrl-splash').addEventListener('input', function() {
+    fill.setAttribute('splash-intensity', this.value);
+    document.getElementById('splash-val').textContent = this.value;
+  });
+
+  document.getElementById('ctrl-layers').addEventListener('input', function() {
+    fill.setAttribute('layers', this.value);
+    document.getElementById('layers-val').textContent = this.value;
+  });
+
+  document.getElementById('ctrl-disabled').addEventListener('change', function() {
+    if (this.checked) {
+      fill.setAttribute('disabled', '');
+    } else {
+      fill.removeAttribute('disabled');
+    }
+  });
+
+  // ── Event log ──
+  const log = document.getElementById('event-log');
+  let logCount = 0;
+
+  fill.addEventListener('x-liquid-fill-progress', function(e) {
+    logCount++;
+    if (logCount > 200) {
+      log.textContent = '';
+      logCount = 1;
+    }
+    const d = e.detail;
+    const line = document.createElement('div');
+    line.textContent = 'progress=' + d.progress.toFixed(3) +
+                       ' velocity=' + d.velocity.toFixed(3);
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  });
+
+</script>
+
+</body>
+</html>
