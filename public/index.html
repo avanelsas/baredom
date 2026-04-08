@@ -22,6 +22,10 @@
       --tag-fg: #475569;
       --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
       --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+      --style-bg: #f3e8ff;
+      --style-fg: #7c3aed;
+      --style-accent: #7c3aed;
+      --style-subtle: #f3e8ff;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -40,6 +44,10 @@
         --tag-fg: #94a3b8;
         --shadow-sm: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
         --shadow-md: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.2);
+        --style-bg: #2e1065;
+        --style-fg: #c4b5fd;
+        --style-accent: #a78bfa;
+        --style-subtle: #2e1065;
       }
     }
 
@@ -199,6 +207,34 @@
       .filter-chip.active { color: #0f172a; }
     }
 
+    .style-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-bg);
+      color: var(--muted);
+      transition: background .12s, color .12s, border-color .12s;
+      user-select: none;
+    }
+
+    .style-chip:hover {
+      background: var(--style-subtle);
+      color: var(--style-fg);
+    }
+
+    .style-chip.active {
+      background: var(--style-accent);
+      border-color: var(--style-accent);
+      color: #fff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .style-chip.active { color: #0f172a; }
+    }
+
     /* ── Section label ───────────────────────────────────── */
     .section-label {
       max-width: 1100px;
@@ -284,8 +320,14 @@
       margin-bottom: 10px;
     }
 
-    .comp-category {
+    .comp-tags {
       margin-top: auto;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .comp-category {
       display: inline-block;
       padding: 2px 8px;
       border-radius: 10px;
@@ -295,6 +337,18 @@
       text-transform: uppercase;
       background: var(--tag-bg);
       color: var(--tag-fg);
+    }
+
+    .comp-style {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--style-subtle);
+      color: var(--style-fg);
     }
 
     /* ── Empty state ─────────────────────────────────────── */
@@ -370,6 +424,7 @@
     <button class="filter-chip" data-cat="data">Data</button>
     <button class="filter-chip" data-cat="overlay">Overlay</button>
   </div>
+  <div class="filter-chips" id="style-chips"></div>
 </div>
 
 <div class="section-label" id="section-label">All components</div>
@@ -408,27 +463,27 @@
     { name: "File Download",       tag: "x-file-download",        file: "x-file-download",        cat: "form"       },
     { name: "Form",                tag: "x-form",                 file: "x-form",                 cat: "form"       },
     { name: "Form Field",          tag: "x-form-field",           file: "x-form-field",           cat: "form"       },
-    { name: "Bento Grid",          tag: "x-bento-grid",           file: "x-bento-grid",           cat: "layout"     },
-    { name: "Bento Item",          tag: "x-bento-item",           file: "x-bento-grid",           cat: "layout"     },
+    { name: "Bento Grid",          tag: "x-bento-grid",           file: "x-bento-grid",           cat: "layout",     style: "bento"   },
+    { name: "Bento Item",          tag: "x-bento-item",           file: "x-bento-grid",           cat: "layout",     style: "bento"   },
     { name: "Grid",                tag: "x-grid",                 file: "x-grid",                 cat: "layout"     },
-    { name: "Kinetic Typography", tag: "x-kinetic-typography",   file: "x-kinetic-typography",   cat: "layout"     },
+    { name: "Kinetic Typography", tag: "x-kinetic-typography",   file: "x-kinetic-typography",   cat: "layout",     style: "kinetic" },
     { name: "Menu",                tag: "x-menu",                 file: "x-menu",                 cat: "navigation" },
     { name: "Menu Item",           tag: "x-menu-item",            file: "x-menu-item",            cat: "navigation" },
     { name: "Modal",               tag: "x-modal",                file: "x-modal",                cat: "overlay"    },
     { name: "Navbar",              tag: "x-navbar",               file: "x-navbar",               cat: "navigation" },
     { name: "Notification Center", tag: "x-notification-center",  file: "x-notification-center",  cat: "feedback"   },
-    { name: "Organic Divider",      tag: "x-organic-divider",       file: "x-organic-divider",       cat: "layout"     },
-    { name: "Organic Shape",        tag: "x-organic-shape",         file: "x-organic-shape",         cat: "layout"     },
+    { name: "Organic Divider",      tag: "x-organic-divider",       file: "x-organic-divider",       cat: "layout",     style: "organic" },
+    { name: "Organic Shape",        tag: "x-organic-shape",         file: "x-organic-shape",         cat: "layout",     style: "organic" },
     { name: "Pagination",          tag: "x-pagination",           file: "x-pagination",           cat: "navigation" },
     { name: "Popover",             tag: "x-popover",              file: "x-popover",              cat: "overlay"    },
     { name: "Progress",            tag: "x-progress",             file: "x-progress",             cat: "feedback"   },
     { name: "Progress Circle",     tag: "x-progress-circle",      file: "x-progress-circle",      cat: "feedback"   },
     { name: "Radio",               tag: "x-radio",                file: "x-radio",                cat: "form"       },
-    { name: "Scroll",              tag: "x-scroll",               file: "x-scroll",               cat: "navigation" },
-    { name: "Scroll Parallax",     tag: "x-scroll-parallax",      file: "x-scroll-parallax",      cat: "layout"     },
-    { name: "Scroll Story",        tag: "x-scroll-story",         file: "x-scroll-story",         cat: "layout"     },
-    { name: "Scroll Stack",       tag: "x-scroll-stack",          file: "x-scroll-stack",          cat: "layout"     },
-    { name: "Scroll Timeline",    tag: "x-scroll-timeline",      file: "x-scroll-timeline",      cat: "data"       },
+    { name: "Scroll",              tag: "x-scroll",               file: "x-scroll",               cat: "navigation", style: "scroll"  },
+    { name: "Scroll Parallax",     tag: "x-scroll-parallax",      file: "x-scroll-parallax",      cat: "layout",     style: "scroll"  },
+    { name: "Scroll Story",        tag: "x-scroll-story",         file: "x-scroll-story",         cat: "layout",     style: "scroll"  },
+    { name: "Scroll Stack",       tag: "x-scroll-stack",          file: "x-scroll-stack",          cat: "layout",     style: "scroll"  },
+    { name: "Scroll Timeline",    tag: "x-scroll-timeline",      file: "x-scroll-timeline",      cat: "data",       style: "scroll"  },
     { name: "Search Field",        tag: "x-search-field",         file: "x-search-field",         cat: "form"       },
     { name: "Select",              tag: "x-select",               file: "x-select",               cat: "form"       },
     { name: "Sidebar",             tag: "x-sidebar",              file: "x-sidebar",              cat: "navigation" },
@@ -450,16 +505,16 @@
     { name: "Toast",               tag: "x-toast",                file: "x-toast",                cat: "feedback"   },
     { name: "Toaster",             tag: "x-toaster",              file: "x-toaster",              cat: "feedback"   },
     { name: "Typography",          tag: "x-typography",            file: "x-typography",            cat: "layout"     },
-    { name: "Ripple Effect",       tag: "x-ripple-effect",          file: "x-ripple-effect",          cat: "feedback"   },
-    { name: "Gaussian Blur",      tag: "x-gaussian-blur",          file: "x-gaussian-blur",          cat: "layout"     },
-    { name: "Splash",             tag: "x-splash",                 file: "x-splash",                 cat: "feedback"   },
-    { name: "Metaball Cursor",   tag: "x-metaball-cursor",        file: "x-metaball-cursor",        cat: "feedback"   },
-    { name: "Neural Glow",      tag: "x-neural-glow",            file: "x-neural-glow",            cat: "feedback"   },
-    { name: "Organic Progress", tag: "x-organic-progress",       file: "x-organic-progress",       cat: "feedback"   },
-    { name: "Soft Body",       tag: "x-soft-body",              file: "x-soft-body",              cat: "feedback"   },
-    { name: "Liquid Glass",   tag: "x-liquid-glass",            file: "x-liquid-glass",            cat: "layout"     },
-    { name: "Liquid Dock",   tag: "x-liquid-dock",             file: "x-liquid-dock",             cat: "navigation" },
-    { name: "Liquid Fill",   tag: "x-liquid-fill",             file: "x-liquid-fill",             cat: "feedback"   },
+    { name: "Ripple Effect",       tag: "x-ripple-effect",          file: "x-ripple-effect",          cat: "feedback",   style: "effect"  },
+    { name: "Gaussian Blur",      tag: "x-gaussian-blur",          file: "x-gaussian-blur",          cat: "layout",     style: "effect"  },
+    { name: "Splash",             tag: "x-splash",                 file: "x-splash",                 cat: "feedback",   style: "effect"  },
+    { name: "Metaball Cursor",   tag: "x-metaball-cursor",        file: "x-metaball-cursor",        cat: "feedback",   style: "effect"  },
+    { name: "Neural Glow",      tag: "x-neural-glow",            file: "x-neural-glow",            cat: "feedback",   style: "effect"  },
+    { name: "Organic Progress", tag: "x-organic-progress",       file: "x-organic-progress",       cat: "feedback",   style: "organic" },
+    { name: "Soft Body",       tag: "x-soft-body",              file: "x-soft-body",              cat: "feedback",   style: "effect"  },
+    { name: "Liquid Glass",   tag: "x-liquid-glass",            file: "x-liquid-glass",            cat: "layout",     style: "liquid"  },
+    { name: "Liquid Dock",   tag: "x-liquid-dock",             file: "x-liquid-dock",             cat: "navigation", style: "liquid"  },
+    { name: "Liquid Fill",   tag: "x-liquid-fill",             file: "x-liquid-fill",             cat: "feedback",   style: "liquid"  },
   ];
 
   const catIcons = {
@@ -472,14 +527,23 @@
   };
 
   let activeCategory = "all";
+  let activeStyle = "all";
   let searchQuery = "";
+
+  // Auto-generate style chips from data
+  const styles = [...new Set(components.filter(c => c.style).map(c => c.style))].sort();
+  const styleChipsEl = document.getElementById("style-chips");
+  styleChipsEl.innerHTML =
+    `<button class="style-chip active" data-style="all">All styles</button>` +
+    styles.map(s => `<button class="style-chip" data-style="${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</button>`).join("");
 
   function render() {
     const filtered = components.filter(c => {
       const matchesCat = activeCategory === "all" || c.cat === activeCategory;
+      const matchesStyle = activeStyle === "all" || c.style === activeStyle;
       const q = searchQuery.toLowerCase();
-      const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.tag.includes(q) || c.cat.includes(q);
-      return matchesCat && matchesSearch;
+      const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.tag.includes(q) || c.cat.includes(q) || (c.style && c.style.includes(q));
+      return matchesCat && matchesStyle && matchesSearch;
     });
 
     document.getElementById("count-label").textContent = `${components.length} components`;
@@ -505,7 +569,10 @@
         <div class="comp-icon">${catIcons[c.cat]}</div>
         <div class="comp-name">${c.name}</div>
         <div class="comp-tag">&lt;${c.tag}&gt;</div>
-        <span class="comp-category">${c.cat}</span>
+        <div class="comp-tags">
+          <span class="comp-category">${c.cat}</span>
+          ${c.style ? `<span class="comp-style">${c.style}</span>` : ""}
+        </div>
       </a>
     `).join("");
   }
@@ -519,12 +586,24 @@
     render();
   });
 
+  document.getElementById("style-chips").addEventListener("click", e => {
+    const chip = e.target.closest(".style-chip");
+    if (!chip) return;
+    activeStyle = chip.dataset.style;
+    document.querySelectorAll(".style-chip").forEach(el =>
+      el.classList.toggle("active", el === chip));
+    render();
+  });
+
   document.getElementById("search").addEventListener("input", e => {
     searchQuery = e.target.value.trim();
     if (searchQuery) {
       activeCategory = "all";
+      activeStyle = "all";
       document.querySelectorAll(".filter-chip").forEach(el =>
         el.classList.toggle("active", el.dataset.cat === "all"));
+      document.querySelectorAll(".style-chip").forEach(el =>
+        el.classList.toggle("active", el.dataset.style === "all"));
     }
     render();
   });
