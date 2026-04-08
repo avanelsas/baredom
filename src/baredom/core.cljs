@@ -75,6 +75,7 @@
    [baredom.exports.x-bento-item     :as x-bento-item]
    [baredom.exports.x-soft-body      :as x-soft-body]
    [baredom.exports.x-liquid-glass   :as x-liquid-glass]
+   [baredom.exports.x-liquid-dock    :as x-liquid-dock]
    [baredom.dev.hot-reload             :as hot-reload]))
 
 (defn ^:dev/after-load start!
@@ -154,6 +155,7 @@
   (x-bento-item/register!)
   (x-soft-body/register!)
   (x-liquid-glass/register!)
+  (x-liquid-dock/register!)
   (hot-reload/refresh-styles!))
 
 (defn init!

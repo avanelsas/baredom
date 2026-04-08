@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-liquid-dock demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --input-bg: #ffffff;
+        --input-fg: #0f172a;
+        --surface-bg: #ffffff;
+        --surface-border: #e2e8f0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --input-bg: #1e293b;
+          --input-fg: #f8fafc;
+          --surface-bg: #1e293b;
+          --surface-border: #334155;
+        }
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px 200px;
+      }
+
+      h1 { font-size: 1.5rem; margin: 0 0 8px; }
+      .subtitle { color: var(--muted); margin: 0 0 32px; }
+
+      section {
+        margin-bottom: 40px;
+      }
+      section h2 {
+        font-size: 1.1rem;
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-bg);
+      }
+      .controls label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .controls input[type="range"],
+      .controls input[type="color"] {
+        width: 100%;
+      }
+      .controls .value {
+        font-weight: 600;
+        color: var(--page-fg);
+      }
+
+      .dock-icon {
+        font-size: 1.4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--page-fg);
+        padding: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+      }
+      .event-log {
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-bg);
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 200px;
+        overflow-y: auto;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>&lt;x-liquid-dock&gt;</h1>
+      <p class="subtitle">A viscous floating navigation dock with gooey liquid effects.</p>
+
+      <section>
+        <h2>Description</h2>
+        <p>The dock uses a "Magnetic Buoy" design. Icons stay crisp while liquid stretches a viscous neck up to meet them on hover. Moving between items creates gooey bridges. Icons bob and tilt toward the cursor. Clicking triggers a ripple burst across the liquid surface.</p>
+      </section>
+
+      <!-- ── Interactive controls ─────────────────────────── -->
+      <section>
+        <h2>Interactive controls</h2>
+        <div class="controls">
+          <label>
+            Position
+            <select id="c-position">
+              <option value="bottom" selected>bottom</option>
+              <option value="top">top</option>
+              <option value="left">left</option>
+              <option value="right">right</option>
+            </select>
+          </label>
+          <label>
+            Blur: <span class="value" id="v-blur">10</span>
+            <input type="range" id="c-blur" min="2" max="30" value="10" />
+          </label>
+          <label>
+            Ripple scale: <span class="value" id="v-ripple">8</span>
+            <input type="range" id="c-ripple" min="0" max="40" value="8" />
+          </label>
+          <label>
+            Magnet radius: <span class="value" id="v-magnet-r">150</span>
+            <input type="range" id="c-magnet-r" min="40" max="400" value="150" />
+          </label>
+          <label>
+            Magnet strength: <span class="value" id="v-magnet-s">0.6</span>
+            <input type="range" id="c-magnet-s" min="0" max="2" step="0.1" value="0.6" />
+          </label>
+          <label>
+            Gap: <span class="value" id="v-gap">8</span>
+            <input type="range" id="c-gap" min="0" max="40" value="8" />
+          </label>
+          <label>
+            Bob intensity: <span class="value" id="v-bob">1.0</span>
+            <input type="range" id="c-bob" min="0" max="2" step="0.1" value="1.0" />
+          </label>
+          <label>
+            Ripple speed: <span class="value" id="v-ripple-speed">0.03</span>
+            <input type="range" id="c-ripple-speed" min="0.005" max="0.15" step="0.005" value="0.03" />
+          </label>
+          <label>
+            Color
+            <input type="color" id="c-color" value="#6366f1" />
+          </label>
+          <label>
+            <input type="checkbox" id="c-disabled" /> Disabled
+          </label>
+        </div>
+      </section>
+
+      <!-- ── Event log ────────────────────────────────────── -->
+      <section>
+        <h2>Event log</h2>
+        <div class="event-log" id="event-log">Waiting for events...</div>
+      </section>
+    </main>
+
+    <!-- ── The dock ──────────────────────────────────────── -->
+    <x-liquid-dock id="dock">
+      <button class="dock-icon" aria-label="Home">&#x1F3E0;</button>
+      <button class="dock-icon" aria-label="Search">&#x1F50D;</button>
+      <button class="dock-icon" aria-label="Messages">&#x1F4AC;</button>
+      <button class="dock-icon" aria-label="Notifications">&#x1F514;</button>
+      <button class="dock-icon" aria-label="Profile">&#x1F464;</button>
+      <button class="dock-icon" aria-label="Settings">&#x2699;&#xFE0F;</button>
+    </x-liquid-dock>
+
+    <script>
+      const dock = document.getElementById('dock');
+      const log = document.getElementById('event-log');
+
+      // Event logging
+      dock.addEventListener('x-liquid-dock-select', (e) => {
+        const entry = document.createElement('div');
+        entry.textContent =
+          `[select] index=${e.detail.index} source=${e.detail.source}`;
+        log.prepend(entry);
+      });
+
+      // Controls
+      function bind(controlId, valueId, attr, transform) {
+        const ctrl = document.getElementById(controlId);
+        const display = valueId ? document.getElementById(valueId) : null;
+        ctrl.addEventListener('input', () => {
+          const val = transform ? transform(ctrl.value) : ctrl.value;
+          dock.setAttribute(attr, val);
+          if (display) display.textContent = val;
+        });
+      }
+
+      document.getElementById('c-position').addEventListener('change', (e) => {
+        dock.setAttribute('position', e.target.value);
+      });
+
+      bind('c-blur', 'v-blur', 'blur');
+      bind('c-ripple', 'v-ripple', 'ripple-scale');
+      bind('c-magnet-r', 'v-magnet-r', 'magnet-radius');
+      bind('c-magnet-s', 'v-magnet-s', 'magnet-strength');
+      bind('c-gap', 'v-gap', 'gap');
+      bind('c-bob', 'v-bob', 'bob-intensity');
+      bind('c-ripple-speed', 'v-ripple-speed', 'ripple-speed');
+
+      document.getElementById('c-color').addEventListener('input', (e) => {
+        dock.setAttribute('color', e.target.value);
+      });
+
+      document.getElementById('c-disabled').addEventListener('change', (e) => {
+        if (e.target.checked) {
+          dock.setAttribute('disabled', '');
+        } else {
+          dock.removeAttribute('disabled');
+        }
+      });
+    </script>
+  </body>
+</html>

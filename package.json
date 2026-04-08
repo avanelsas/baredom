@@ -327,6 +327,10 @@
     "./x-liquid-glass" : {
       "import" : "./dist/x-liquid-glass.js",
       "default" : "./dist/x-liquid-glass.js"
+    },
+    "./x-liquid-dock" : {
+      "import" : "./dist/x-liquid-dock.js",
+      "default" : "./dist/x-liquid-dock.js"
     }
   },
   "devDependencies" : {

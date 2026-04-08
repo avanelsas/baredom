@@ -74,7 +74,8 @@
    [baredom.exports.x-bento-grid      :as x-bento-grid]
    [baredom.exports.x-bento-item      :as x-bento-item]
    [baredom.exports.x-soft-body       :as x-soft-body]
-   [baredom.exports.x-liquid-glass    :as x-liquid-glass]))
+   [baredom.exports.x-liquid-glass    :as x-liquid-glass]
+   [baredom.exports.x-liquid-dock     :as x-liquid-dock]))
 
 (defn register!
   []
@@ -152,7 +153,8 @@
   (x-bento-grid/register!)
   (x-bento-item/register!)
   (x-soft-body/register!)
-  (x-liquid-glass/register!))
+  (x-liquid-glass/register!)
+  (x-liquid-dock/register!))
 
 (defn ^:export init
   []

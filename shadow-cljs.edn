@@ -421,4 +421,9 @@
      {init baredom.exports.x-liquid-glass/init}
      :depends-on #{:base}}
 
+    :x-liquid-dock
+    {:exports
+     {init baredom.exports.x-liquid-dock/init}
+     :depends-on #{:base}}
+
     }}}}
