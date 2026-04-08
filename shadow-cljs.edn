@@ -411,4 +411,14 @@
      {init baredom.exports.x-bento-item/init}
      :depends-on #{:base}}
 
+    :x-soft-body
+    {:exports
+     {init baredom.exports.x-soft-body/init}
+     :depends-on #{:base}}
+
+    :x-liquid-glass
+    {:exports
+     {init baredom.exports.x-liquid-glass/init}
+     :depends-on #{:base}}
+
     }}}}

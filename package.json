@@ -319,6 +319,14 @@
     "./x-bento-item" : {
       "import" : "./dist/x-bento-item.js",
       "default" : "./dist/x-bento-item.js"
+    },
+    "./x-soft-body" : {
+      "import" : "./dist/x-soft-body.js",
+      "default" : "./dist/x-soft-body.js"
+    },
+    "./x-liquid-glass" : {
+      "import" : "./dist/x-liquid-glass.js",
+      "default" : "./dist/x-liquid-glass.js"
     }
   },
   "devDependencies" : {

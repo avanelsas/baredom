@@ -73,6 +73,8 @@
    [baredom.exports.x-neural-glow    :as x-neural-glow]
    [baredom.exports.x-bento-grid     :as x-bento-grid]
    [baredom.exports.x-bento-item     :as x-bento-item]
+   [baredom.exports.x-soft-body      :as x-soft-body]
+   [baredom.exports.x-liquid-glass   :as x-liquid-glass]
    [baredom.dev.hot-reload             :as hot-reload]))
 
 (defn ^:dev/after-load start!
@@ -150,6 +152,8 @@
   (x-neural-glow/register!)
   (x-bento-grid/register!)
   (x-bento-item/register!)
+  (x-soft-body/register!)
+  (x-liquid-glass/register!)
   (hot-reload/refresh-styles!))
 
 (defn init!

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-soft-body demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      margin: 1.5rem 0;
+    }
+    x-soft-body {
+      min-height: 160px;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; align-items: end;
+    }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .control-group label {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; opacity: 0.7;
+    }
+    .control-group input[type=range] { width: 140px; }
+    .val { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+    #event-log {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 0.75rem;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      #event-log { background: #1e293b; }
+    }
+    .amber {
+      --x-soft-body-bg: #fef3c7;
+      --x-soft-body-border: #f59e0b;
+      --x-soft-body-shadow: 0 4px 12px rgba(245,158,11,0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+      .amber {
+        --x-soft-body-bg: #451a03;
+        --x-soft-body-border: #b45309;
+        --x-soft-body-shadow: 0 4px 12px rgba(180,83,9,0.3);
+      }
+    }
+    .indigo {
+      --x-soft-body-bg: #eef2ff;
+      --x-soft-body-border: #6366f1;
+      --x-soft-body-shadow: 0 4px 12px rgba(99,102,241,0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+      .indigo {
+        --x-soft-body-bg: #1e1b4b;
+        --x-soft-body-border: #818cf8;
+        --x-soft-body-shadow: 0 4px 12px rgba(129,140,248,0.3);
+      }
+    }
+    .emerald {
+      --x-soft-body-bg: #ecfdf5;
+      --x-soft-body-border: #10b981;
+      --x-soft-body-shadow: 0 4px 12px rgba(16,185,129,0.2);
+    }
+    @media (prefers-color-scheme: dark) {
+      .emerald {
+        --x-soft-body-bg: #022c22;
+        --x-soft-body-border: #34d399;
+        --x-soft-body-shadow: 0 4px 12px rgba(52,211,153,0.3);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-soft-body</h1>
+<p>Soft-body physics cards — hover or grab to deform.</p>
+
+<h2>Showcase</h2>
+<div class="grid">
+  <x-soft-body id="card-default">
+    <h3 style="margin:0 0 0.5rem">Default</h3>
+    <p style="margin:0;opacity:0.7">Hover me or click and drag to see the squishy effect.</p>
+  </x-soft-body>
+
+  <x-soft-body class="amber" stiffness="120" damping="6" intensity="2" radius="24">
+    <h3 style="margin:0 0 0.5rem">Bouncy Amber</h3>
+    <p style="margin:0;opacity:0.7">Low stiffness, low damping — extra jiggly.</p>
+  </x-soft-body>
+
+  <x-soft-body class="indigo" stiffness="400" damping="20" intensity="0.8" radius="8">
+    <h3 style="margin:0 0 0.5rem">Tight Indigo</h3>
+    <p style="margin:0;opacity:0.7">High stiffness, high damping — snappy and subtle.</p>
+  </x-soft-body>
+
+  <x-soft-body class="emerald" stiffness="80" damping="4" intensity="3" radius="32" grab-radius="150">
+    <h3 style="margin:0 0 0.5rem">Wobbly Emerald</h3>
+    <p style="margin:0;opacity:0.7">Very squishy with large grab radius.</p>
+  </x-soft-body>
+
+  <x-soft-body disabled>
+    <h3 style="margin:0 0 0.5rem">Disabled</h3>
+    <p style="margin:0;opacity:0.7">Physics disabled — static rounded rect.</p>
+  </x-soft-body>
+</div>
+
+<h2>Interactive Controls</h2>
+<div class="controls">
+  <div class="control-group">
+    <label>Stiffness <span class="val" id="stiffness-val">180</span></label>
+    <input type="range" id="ctrl-stiffness" min="10" max="500" value="180" step="10">
+  </div>
+  <div class="control-group">
+    <label>Damping <span class="val" id="damping-val">12</span></label>
+    <input type="range" id="ctrl-damping" min="1" max="50" value="12" step="1">
+  </div>
+  <div class="control-group">
+    <label>Radius <span class="val" id="radius-val">16</span></label>
+    <input type="range" id="ctrl-radius" min="6" max="60" value="16" step="2">
+  </div>
+  <div class="control-group">
+    <label>Intensity <span class="val" id="intensity-val">1.0</span></label>
+    <input type="range" id="ctrl-intensity" min="0" max="5" value="1" step="0.1">
+  </div>
+  <div class="control-group">
+    <label>Grab Radius <span class="val" id="grab-radius-val">80</span></label>
+    <input type="range" id="ctrl-grab-radius" min="10" max="300" value="80" step="10">
+  </div>
+  <div class="control-group">
+    <label>Disabled</label>
+    <input type="checkbox" id="ctrl-disabled">
+  </div>
+</div>
+
+<x-soft-body id="interactive-card" style="max-width:400px;min-height:200px;">
+  <h3 style="margin:0 0 0.5rem">Interactive Card</h3>
+  <p style="margin:0;opacity:0.7">Use the controls above to tweak physics parameters in real time.</p>
+</x-soft-body>
+
+<h2>Event Log</h2>
+<div id="event-log">Events will appear here...</div>
+
+<script>
+  // Interactive controls
+  const card = document.getElementById('interactive-card');
+  const attrs = ['stiffness', 'damping', 'radius', 'intensity', 'grab-radius'];
+
+  attrs.forEach(attr => {
+    const ctrl = document.getElementById('ctrl-' + attr);
+    const valEl = document.getElementById(attr + '-val');
+    ctrl.addEventListener('input', () => {
+      card.setAttribute(attr, ctrl.value);
+      valEl.textContent = ctrl.value;
+    });
+  });
+
+  document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+    if (e.target.checked) {
+      card.setAttribute('disabled', '');
+    } else {
+      card.removeAttribute('disabled');
+    }
+  });
+
+  // Event logging
+  const logEl = document.getElementById('event-log');
+  function logEvent(name) {
+    const now = new Date().toLocaleTimeString();
+    const line = document.createElement('div');
+    line.textContent = `[${now}] ${name}`;
+    logEl.prepend(line);
+    if (logEl.childElementCount > 50) logEl.lastChild.remove();
+  }
+
+  document.querySelectorAll('x-soft-body').forEach(el => {
+    el.addEventListener('x-soft-body-grab', () => logEvent('x-soft-body-grab'));
+    el.addEventListener('x-soft-body-release', () => logEvent('x-soft-body-release'));
+  });
+</script>
+
+</body>
+</html>

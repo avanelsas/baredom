@@ -137,7 +137,12 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 1. **Architecture** — define tag name, shadow DOM structure, rendering strategy, attributes, properties, events, theming, accessibility, open questions
 2. **API Contract** — full tables for observed attributes, properties, events, public methods, slots, CSS custom properties, theme/motion/a11y behavior, rendering invariants
-3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`
+3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. **Registration checklist** — after creating a new component, register it in all four places:
+   - `shadow-cljs.edn` — add `:x-<name>` module under `:lib :modules`
+   - `package.json` — add `"./x-<name>"` entry under `"exports"`
+   - `src/baredom/core.cljs` — require the export namespace and call `register!` in `start!`
+   - `src/baredom/exports/all.cljs` — require the export namespace and call `register!`
+   - `public/index.html` — add an entry to the `components` array in the `<script>` block (name, tag, file, category)
 4. **Verification** — check architecture conformance, API contract conformance, Closure Advanced safety, stateless rendering, theming, motion, accessibility
 
 ## Performance & Context Management

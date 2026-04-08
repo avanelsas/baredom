@@ -72,7 +72,9 @@
    [baredom.exports.x-neural-glow    :as x-neural-glow]
    [baredom.exports.x-organic-progress :as x-organic-progress]
    [baredom.exports.x-bento-grid      :as x-bento-grid]
-   [baredom.exports.x-bento-item      :as x-bento-item]))
+   [baredom.exports.x-bento-item      :as x-bento-item]
+   [baredom.exports.x-soft-body       :as x-soft-body]
+   [baredom.exports.x-liquid-glass    :as x-liquid-glass]))
 
 (defn register!
   []
@@ -148,7 +150,9 @@
   (x-neural-glow/register!)
   (x-organic-progress/register!)
   (x-bento-grid/register!)
-  (x-bento-item/register!))
+  (x-bento-item/register!)
+  (x-soft-body/register!)
+  (x-liquid-glass/register!))
 
 (defn ^:export init
   []

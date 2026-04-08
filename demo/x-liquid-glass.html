@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-liquid-glass demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      margin: 1.5rem 0;
+    }
+    x-liquid-glass {
+      min-height: 180px;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; align-items: end;
+    }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .control-group label {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; opacity: 0.7;
+    }
+    .control-group input[type=range] { width: 140px; }
+    .val { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+
+    /* Solid background to show off glass effect */
+    .showcase-bg {
+      background: #94a3b8;
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .showcase-bg {
+        background: #334155;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>x-liquid-glass</h1>
+<p>Refractive glass blob containers — organic shapes with frosted glass effect.</p>
+
+<h2>Showcase</h2>
+<div class="showcase-bg">
+  <div class="grid">
+    <x-liquid-glass>
+      <h3 style="margin:0 0 0.5rem">Default</h3>
+      <p style="margin:0;opacity:0.7">A gently shifting glass blob with built-in mesh gradient.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass specular specular-intensity="0.5" blobs="6">
+      <h3 style="margin:0 0 0.5rem">Specular</h3>
+      <p style="margin:0;opacity:0.7">Move your pointer to see the light follow.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass blobs="7" speed="0.8" amplitude="0.3" goo="15">
+      <h3 style="margin:0 0 0.5rem">Wobbly</h3>
+      <p style="margin:0;opacity:0.7">More satellites, faster, wobblier, goopier.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass blobs="3" speed="0.1" amplitude="0.08" goo="6" blur="20">
+      <h3 style="margin:0 0 0.5rem">Subtle</h3>
+      <p style="margin:0;opacity:0.7">Few blobs, slow movement, heavy frosting.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass disabled>
+      <h3 style="margin:0 0 0.5rem">Disabled</h3>
+      <p style="margin:0;opacity:0.7">Static blob — no animation.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass style="
+      --x-liquid-glass-tint: rgba(99,102,241,0.2);
+      --x-liquid-glass-border: rgba(99,102,241,0.4);
+    " specular>
+      <h3 style="margin:0 0 0.5rem">Indigo Tint</h3>
+      <p style="margin:0;opacity:0.7">Custom tint and border with specular highlight.</p>
+    </x-liquid-glass>
+
+    <x-liquid-glass mode="submerged" specular specular-intensity="0.4">
+      <h3 style="margin:0 0 0.5rem">Submerged</h3>
+      <p style="margin:0;opacity:0.7">Content sits behind the frosted glass — like text embedded in ice.</p>
+      <button style="margin-top:0.75rem;padding:0.4rem 1rem;border-radius:8px;border:1px solid rgba(0,0,0,0.2);background:rgba(255,255,255,0.5);cursor:pointer;">Try clicking</button>
+    </x-liquid-glass>
+  </div>
+</div>
+
+<h2>Interactive Controls</h2>
+<div class="controls">
+  <div class="control-group">
+    <label>Blobs <span class="val" id="blobs-val">5</span></label>
+    <input type="range" id="ctrl-blobs" min="3" max="8" value="5" step="1">
+  </div>
+  <div class="control-group">
+    <label>Speed <span class="val" id="speed-val">0.3</span></label>
+    <input type="range" id="ctrl-speed" min="0.05" max="2" value="0.3" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Amplitude <span class="val" id="amplitude-val">0.15</span></label>
+    <input type="range" id="ctrl-amplitude" min="0.05" max="0.4" value="0.15" step="0.01">
+  </div>
+  <div class="control-group">
+    <label>Blur <span class="val" id="blur-val">12</span></label>
+    <input type="range" id="ctrl-blur" min="0" max="40" value="12" step="1">
+  </div>
+  <div class="control-group">
+    <label>Goo <span class="val" id="goo-val">10</span></label>
+    <input type="range" id="ctrl-goo" min="4" max="20" value="10" step="1">
+  </div>
+  <div class="control-group">
+    <label>Specular</label>
+    <input type="checkbox" id="ctrl-specular">
+  </div>
+  <div class="control-group">
+    <label>Spec. Size <span class="val" id="specular-size-val">0.4</span></label>
+    <input type="range" id="ctrl-specular-size" min="0.1" max="1" value="0.4" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Spec. Intensity <span class="val" id="specular-intensity-val">0.3</span></label>
+    <input type="range" id="ctrl-specular-intensity" min="0" max="1" value="0.3" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Disabled</label>
+    <input type="checkbox" id="ctrl-disabled">
+  </div>
+  <div class="control-group">
+    <label>Frost <span class="val" id="frost-val">0.5</span></label>
+    <input type="range" id="ctrl-frost" min="0" max="1" value="0.5" step="0.05">
+  </div>
+  <div class="control-group">
+    <label>Mode</label>
+    <select id="ctrl-mode">
+      <option value="surface">Surface</option>
+      <option value="submerged">Submerged</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Color 1</label>
+    <input type="color" id="ctrl-color-1" value="#6366f1">
+  </div>
+  <div class="control-group">
+    <label>Color 2</label>
+    <input type="color" id="ctrl-color-2" value="#f472b6">
+  </div>
+</div>
+
+<div class="showcase-bg" style="padding:2rem;">
+  <x-liquid-glass id="interactive-card" style="max-width:400px;min-height:220px;">
+    <h3 style="margin:0 0 0.5rem">Interactive Card</h3>
+    <p style="margin:0;opacity:0.7">Use the controls above to tweak parameters in real time.</p>
+  </x-liquid-glass>
+</div>
+
+<script>
+  const card = document.getElementById('interactive-card');
+  const rangeAttrs = ['blobs', 'speed', 'amplitude', 'blur', 'goo', 'specular-size', 'specular-intensity', 'frost'];
+
+  rangeAttrs.forEach(attr => {
+    const ctrl = document.getElementById('ctrl-' + attr);
+    const valEl = document.getElementById(attr + '-val');
+    ctrl.addEventListener('input', () => {
+      card.setAttribute(attr, ctrl.value);
+      valEl.textContent = ctrl.value;
+    });
+  });
+
+  document.getElementById('ctrl-specular').addEventListener('change', (e) => {
+    if (e.target.checked) {
+      card.setAttribute('specular', '');
+    } else {
+      card.removeAttribute('specular');
+    }
+  });
+
+  document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+    if (e.target.checked) {
+      card.setAttribute('disabled', '');
+    } else {
+      card.removeAttribute('disabled');
+    }
+  });
+
+  document.getElementById('ctrl-mode').addEventListener('change', (e) => {
+    card.setAttribute('mode', e.target.value);
+  });
+
+  // Convert hex to rgba with opacity for gradient colors
+  function hexToRgba(hex, opacity) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${opacity})`;
+  }
+
+  document.getElementById('ctrl-color-1').addEventListener('input', (e) => {
+    card.setAttribute('color-1', hexToRgba(e.target.value, 0.4));
+  });
+
+  document.getElementById('ctrl-color-2').addEventListener('input', (e) => {
+    card.setAttribute('color-2', hexToRgba(e.target.value, 0.35));
+  });
+</script>
+
+</body>
+</html>

@@ -46,7 +46,7 @@
     *, *::before, *::after { box-sizing: border-box; }
 
     html, body {
-      min-height: 100%;
+      height: 100%;
       margin: 0;
       background: var(--page-bg);
       color: var(--page-fg);
@@ -55,13 +55,18 @@
     body {
       font-family: system-ui, -apple-system, sans-serif;
       line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     /* ── Header ─────────────────────────────────────────── */
     header {
       padding: 48px 32px 40px;
       max-width: 1100px;
+      width: 100%;
       margin: 0 auto;
+      flex-shrink: 0;
     }
 
     .header-eyebrow {
@@ -118,12 +123,14 @@
     /* ── Toolbar ─────────────────────────────────────────── */
     .toolbar {
       max-width: 1100px;
+      width: 100%;
       margin: 0 auto;
       padding: 0 32px 28px;
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
 
     .search-wrap {
@@ -195,6 +202,7 @@
     /* ── Section label ───────────────────────────────────── */
     .section-label {
       max-width: 1100px;
+      width: 100%;
       margin: 0 auto;
       padding: 0 32px 12px;
       font-size: 0.75rem;
@@ -202,16 +210,22 @@
       letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--muted);
+      flex-shrink: 0;
     }
 
     /* ── Grid ────────────────────────────────────────────── */
     .grid {
       max-width: 1100px;
+      width: 100%;
       margin: 0 auto;
-      padding: 0 32px 64px;
+      padding: 0 32px 24px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 14px;
+      align-content: start;
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
     }
 
     /* ── Component card ──────────────────────────────────── */
@@ -295,6 +309,7 @@
     /* ── Footer ──────────────────────────────────────────── */
     footer {
       max-width: 1100px;
+      width: 100%;
       margin: 0 auto;
       padding: 24px 32px;
       border-top: 1px solid var(--surface-border);
@@ -305,13 +320,14 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     @media (max-width: 600px) {
       header { padding: 32px 20px 28px; }
       .toolbar { padding: 0 20px 20px; }
       .section-label { padding: 0 20px 10px; }
-      .grid { padding: 0 20px 48px; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .grid { padding: 0 20px 20px; grid-template-columns: 1fr 1fr; gap: 10px; }
       footer { padding: 20px; }
     }
 
@@ -440,6 +456,8 @@
     { name: "Metaball Cursor",   tag: "x-metaball-cursor",        file: "x-metaball-cursor",        cat: "feedback"   },
     { name: "Neural Glow",      tag: "x-neural-glow",            file: "x-neural-glow",            cat: "feedback"   },
     { name: "Organic Progress", tag: "x-organic-progress",       file: "x-organic-progress",       cat: "feedback"   },
+    { name: "Soft Body",       tag: "x-soft-body",              file: "x-soft-body",              cat: "feedback"   },
+    { name: "Liquid Glass",   tag: "x-liquid-glass",            file: "x-liquid-glass",            cat: "layout"     },
   ];
 
   const catIcons = {
