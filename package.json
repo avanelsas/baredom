@@ -339,6 +339,10 @@
     "./x-liquid-fill" : {
       "import" : "./dist/x-liquid-fill.js",
       "default" : "./dist/x-liquid-fill.js"
+    },
+    "./x-morph-stack" : {
+      "import" : "./dist/x-morph-stack.js",
+      "default" : "./dist/x-morph-stack.js"
     }
   },
   "devDependencies" : {
