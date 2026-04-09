@@ -75,15 +75,25 @@
     (is (= 30  (.-damping el)))
     (is (= 2   (.-mass el)))))
 
+;; ── Duration property: nullable ms, round-trips through the attribute ───────
+(deftest duration-property-roundtrip-test
+  (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
+    ;; Default: no attribute, .duration reads as nil.
+    (is (nil? (.-duration el)))
+    (set! (.-duration el) 1500)
+    (is (= "1500" (.getAttribute el model/attr-duration)))
+    (is (= 1500   (.-duration el)))
+    (set! (.-duration el) nil)
+    (is (not (.hasAttribute el model/attr-duration)))
+    (is (nil? (.-duration el)))))
+
 ;; ── Boolean properties ───────────────────────────────────────────────────────
 (deftest bool-property-test
   (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
-    (set! (.-goo el) true)
-    (is (.hasAttribute el model/attr-goo))
-    (set! (.-goo el) false)
-    (is (not (.hasAttribute el model/attr-goo)))
     (set! (.-disabled el) true)
-    (is (.hasAttribute el model/attr-disabled))))
+    (is (.hasAttribute el model/attr-disabled))
+    (set! (.-disabled el) false)
+    (is (not (.hasAttribute el model/attr-disabled)))))
 
 ;; ── Disabled / reduced motion → instant swap ─────────────────────────────────
 (deftest disabled-instant-swap-test
@@ -154,13 +164,46 @@
                                (is (= "a" (.getAttribute el model/attr-data-active-state)))
                                (done))))))
 
-;; ── Goo attribute is a property round-trip ──────────────────────────────────
-(deftest goo-attribute-test
+;; ── Variant attribute / property / data mirroring ───────────────────────────
+(deftest variant-default-test
   (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
-    (.setAttribute el model/attr-goo "")
-    (is (.-goo el))
-    (.removeAttribute el model/attr-goo)
-    (is (not (.-goo el)))))
+    ;; No attribute set → default "clean" mirrored to data-variant.
+    (is (= "clean" (.getAttribute el model/attr-data-variant)))
+    (is (= "clean" (.-variant el)))))
+
+(deftest variant-attribute-mirrors-data-test
+  (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
+    (.setAttribute el model/attr-variant "organic")
+    (is (= "organic" (.getAttribute el model/attr-data-variant)))
+    (is (= "organic" (.-variant el)))
+    (.setAttribute el model/attr-variant "liquid")
+    (is (= "liquid" (.getAttribute el model/attr-data-variant)))))
+
+(deftest variant-unknown-falls-back-test
+  (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
+    (.setAttribute el model/attr-variant "bogus")
+    (is (= "clean" (.getAttribute el model/attr-data-variant)))
+    (is (= "clean" (.-variant el)))))
+
+(deftest variant-property-roundtrip-test
+  (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
+    (set! (.-variant el) "liquid")
+    (is (= "liquid" (.getAttribute el model/attr-variant)))
+    (is (= "liquid" (.-variant el)))
+    ;; Setting nil removes the attribute → reads back as default.
+    (set! (.-variant el) nil)
+    (is (not (.hasAttribute el model/attr-variant)))
+    (is (= "clean" (.-variant el)))))
+
+(deftest variant-applies-css-vars-test
+  ;; The :host([data-variant='liquid']) rule must actually flow through to
+  ;; computed style on the host. This guards against typos in style-text and
+  ;; against the data-variant mirror being skipped.
+  (let [^js el (make-stack [(make-state "a" "A") (make-state "b" "B")])]
+    (set! (.-variant el) "liquid")
+    (let [cs (.getComputedStyle js/window el)
+          stiff (.. (.getPropertyValue cs "--x-morph-stack-spring-stiffness") trim)]
+      (is (= "50" stiff)))))
 
 ;; ── activeIndex property round trip ──────────────────────────────────────────
 (deftest active-index-property-test

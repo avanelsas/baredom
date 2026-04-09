@@ -15,8 +15,12 @@
 (def attr-stiffness    "stiffness")
 (def attr-damping      "damping")
 (def attr-mass         "mass")
-(def attr-goo          "goo")
+(def attr-variant      "variant")
+(def attr-duration     "duration")
 (def attr-disabled     "disabled")
+
+;; Mirrored on the host so :host([data-variant='…']) CSS rules apply.
+(def attr-data-variant "data-variant")
 
 (def observed-attributes
   #js [attr-active-state
@@ -24,8 +28,33 @@
        attr-stiffness
        attr-damping
        attr-mass
-       attr-goo
+       attr-variant
+       attr-duration
        attr-disabled])
+
+;; ── Variant presets ────────────────────────────────────────────────────────
+(def variant-clean   "clean")
+(def variant-organic "organic")
+(def variant-liquid  "liquid")
+
+(def default-variant variant-clean)
+
+(def allowed-variants #{variant-clean variant-organic variant-liquid})
+
+(defn parse-variant
+  "Normalise a raw variant attribute string. Unknown / nil / empty → default."
+  [s]
+  (if (string? s)
+    (let [v (.toLowerCase (.trim s))]
+      (if (contains? allowed-variants v)
+        v
+        default-variant))
+    default-variant))
+
+(defn variant-uses-goo?
+  "Whether a given variant string installs the SVG gooey filter."
+  [variant]
+  (or (= variant variant-organic) (= variant variant-liquid)))
 
 ;; ── Events ─────────────────────────────────────────────────────────────────
 (def event-change   "x-morph-stack-change")
@@ -37,7 +66,8 @@
    :stiffness    {:type 'number}
    :damping      {:type 'number}
    :mass         {:type 'number}
-   :goo          {:type 'boolean}
+   :variant      {:type 'string :enum allowed-variants :default default-variant}
+   :duration     {:type 'number :unit 'ms :nullable true}
    :disabled     {:type 'boolean}})
 
 (def event-schema
@@ -51,9 +81,22 @@
 (def ^:private default-damping    26.0)
 (def ^:private default-mass        1.0)
 (def default-goo-blur       10)
-(def default-goo-threshold
-  ;; Standard "gooey" alpha-contrast color matrix.
-  "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7")
+;; Alpha-channel multiplier in the gooey color-matrix. Larger values produce a
+;; harder, more aggressive blob edge; the trailing -7 keeps the resulting alpha
+;; biased toward fully opaque inside the blob.
+(def default-goo-threshold  18)
+
+(defn goo-matrix-values
+  "Build the feColorMatrix `values` string for a given alpha multiplier.
+  The alpha offset is derived linearly from the multiplier so that:
+    - threshold = 18 → '0 0 0 18 -7' (the canonical gooey configuration)
+    - threshold =  1 → '0 0 0  1  0' (the identity alpha row, no goo effect)
+  This lets callers tween a single number toward 1 to fade the gooey filter
+  smoothly into a no-op as the morph spring settles, avoiding a visual snap
+  when the filtered ghost is replaced by the un-filtered real element."
+  [threshold]
+  (let [offset (* -7.0 (/ (- threshold 1.0) 17.0))]
+    (str "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 " threshold " " offset)))
 
 ;; ── Pure parsers ───────────────────────────────────────────────────────────
 (defn- parse-float-clamped
@@ -83,10 +126,59 @@
           (when (and (number? n) (not (js/isNaN n)) (>= n 0))
             n))))))
 
-(defn parse-bool
-  "Boolean attribute: present (any value) → true; nil → false."
+(defn parse-duration
+  "Parse the duration attribute (positive number of ms) to a number, or nil.
+  nil / empty / non-numeric / non-positive → nil, meaning the spring runs at
+  its natural settle time."
   [s]
-  (some? s))
+  (when (string? s)
+    (let [v (.trim s)]
+      (when (not= v "")
+        (let [n (js/parseFloat v)]
+          (when (and (number? n) (not (js/isNaN n)) (pos? n))
+            n))))))
+
+;; ── Spring duration estimation ─────────────────────────────────────────────
+(defn natural-duration-ms
+  "Estimate the spring's natural settle time in milliseconds from the current
+  `stiffness`, `damping`, and `mass`. Combines two physical effects:
+
+    ω₀ = √(k/m)          (undamped natural angular frequency, rad/s)
+    ζ  = c / (2·√(k·m))  (damping ratio)
+
+    ts ≈ 4 / (ζ·ω₀)  +  π / ω₀
+       = envelope decay  +  rise time to first reach the target
+
+  The envelope-decay term alone simplifies to 8m/c and is therefore
+  insensitive to stiffness — that's mathematically right for the asymptotic
+  decay of the displacement envelope, but it doesn't match the perceived
+  duration because it ignores how fast the spring first arrives. Adding the
+  rise-time term π/ω₀ (which is π·√(m/k)) brings stiffness back in, so a
+  stiffer spring of the same damping is correctly estimated as faster.
+
+  Inputs are clamped to safe positive ranges; ζ is clamped to [0.2, 5] so
+  very low / very high damping doesn't blow the result up. The component
+  divides this by an author-supplied `duration` to derive a per-tick time
+  scale, so the exact constant matters less than its monotonic behaviour
+  across spring tunings."
+  [stiffness damping mass]
+  (let [k  (max 0.0001 (or stiffness 0))
+        c  (max 0.0001 (or damping 0))
+        m  (max 0.0001 (or mass 0))
+        ω0 (js/Math.sqrt (/ k m))
+        ζ  (max 0.2 (min 5.0 (/ c (* 2.0 (js/Math.sqrt (* k m))))))
+        envelope (/ 4.0 (* ζ ω0))
+        rise     (/ js/Math.PI ω0)]
+    (* 1000.0 (+ envelope rise))))
+
+(defn time-scale-for
+  "Compute the per-tick time scale that stretches/compresses the spring's
+  natural settle time to the requested `duration-ms`. Returns 1.0 (no scaling)
+  when `duration-ms` is nil / non-positive."
+  [duration-ms stiffness damping mass]
+  (if (and duration-ms (pos? duration-ms))
+    (/ (natural-duration-ms stiffness damping mass) duration-ms)
+    1.0))
 
 (defn normalize
   "Normalise raw attribute inputs into a stable view-model map.
@@ -97,7 +189,8 @@
     :stiffness-raw      string | nil
     :damping-raw        string | nil
     :mass-raw           string | nil
-    :goo-present?       boolean
+    :variant-raw        string | nil
+    :duration-raw       string | nil
     :disabled-present?  boolean
 
   Output keys:
@@ -106,11 +199,12 @@
     :stiffness     number
     :damping       number
     :mass          number
-    :goo?          boolean
+    :variant       string  (one of allowed-variants)
+    :duration      number | nil  (ms; nil means natural spring time)
     :disabled?     boolean"
   [{:keys [active-state-raw active-index-raw
            stiffness-raw damping-raw mass-raw
-           goo-present? disabled-present?]}]
+           variant-raw duration-raw disabled-present?]}]
   {:active-state (when (and (string? active-state-raw)
                             (not= "" (.trim active-state-raw)))
                    (.trim active-state-raw))
@@ -118,7 +212,8 @@
    :stiffness    (parse-stiffness stiffness-raw)
    :damping      (parse-damping   damping-raw)
    :mass         (parse-mass      mass-raw)
-   :goo?         (boolean goo-present?)
+   :variant      (parse-variant   variant-raw)
+   :duration     (parse-duration  duration-raw)
    :disabled?    (boolean disabled-present?)})
 
 ;; ── Spring physics (verbatim from x-kinetic-font) ──────────────────────────
