@@ -25,7 +25,7 @@ BareDOM is authored in ClojureScript and compiled to optimised, minified ES modu
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
-All web components—including new, modern, and exciting ones such as x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, and x-organic-progress—can be seen [here](https://avanelsas.github.io/baredom/)
+All web components, including new, modern, and exciting ones such as x-morph-stack, x-liquid-fill, x-liquid-glass, x=soft-body, x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-font, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, and x-organic-progress, can be seen [here](https://avanelsas.github.io/baredom/)
 
 ---
 
@@ -34,6 +34,8 @@ All web components—including new, modern, and exciting ones such as x-ripple-e
 Like most Clojure/ClojureScript developers starting out with UIs, I went through the common phases of using Reagent and Re-frame—which are great utilities in their own right. However, as my UIs became larger and more complex, bundle sizes increased, and I found myself spending too much time rebuilding generic, reusable components from scratch.
 
 I started looking for a different approach and discovered Web Components. I built a few, but didn't have the spare time to develop a comprehensive set that could be used in any project. Then AI arrived. While experimenting with Claude Code, I realised that 1 + 1 could be 3. That is how BareDOM, my first open-source project, was born.
+
+I first built the usual suspects for web components, a basis to create a UI. I then thought about trying something more exciting, with animations, shapes, colours, and a whole range of web components that deal with morphing, kinetics and organic styles were born. I hope it brings you joy when using them in your web application!
 
 # Why web components?
 
