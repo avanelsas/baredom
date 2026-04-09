@@ -214,6 +214,27 @@
         font-weight: 700;
         text-align: center;
       }
+
+      /* ── Demo 4: two-orb merge (multi-element goo) ───────────────────── */
+      /* Two orbs with their own data-morph-ids share the goo layer during
+         the morph. When liquid is on, the gooey filter visibly bridges them
+         as they approach each other — the classic "two blobs merge into one"
+         effect that single-element morphs can't show. */
+      .orb-stage {
+        position: relative;
+        height: 160px;
+        margin: 0 auto;
+        max-width: 460px;
+      }
+      .orb {
+        position: absolute;
+        top: 30px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+      }
+      .orb-a { background: #ef4444; }   /* coral red */
+      .orb-b { background: #3b82f6; }   /* blue */
     </style>
     <script src="../js/main.js"></script>
   </head>
@@ -251,10 +272,10 @@
       <div class="log" id="log-1"></div>
     </div>
 
-    <!-- ─────────── Demo 2: button → modal with goo ─────────── -->
-    <h2>Button → modal (goo)</h2>
+    <!-- ─────────── Demo 2: button → modal with liquid variant ─────────── -->
+    <h2>Button → modal (liquid variant)</h2>
     <div class="demo-card">
-      <x-morph-stack id="ms-2" class="stage" goo>
+      <x-morph-stack id="ms-2" class="stage" variant="liquid">
         <div slot="state" data-state="closed">
           <span class="pill" data-morph-id="surface">Open dialogue</span>
         </div>
@@ -296,23 +317,78 @@
       <div class="log" id="log-3"></div>
     </div>
 
+    <!-- ─────────── Demo 4: two-orb merge (multi-element goo) ─────────── -->
+    <h2>Two orbs (multi-element goo merge)</h2>
+    <div class="demo-card">
+      <p style="color: var(--muted); font-size: 12px; margin: 0 0 10px;">
+        Two orbs with their own <code>data-morph-id</code>s morph between
+        <em>apart</em> (200&nbsp;px between centres) and <em>together</em>
+        (heavily overlapping). The gooey filter only shows its signature
+        blob-merging effect when two filtered ghosts are close enough for
+        their halos to overlap — so this is the demo where <code>liquid</code>
+        actually <strong>looks</strong> like liquid. Try the same morph in
+        <code>clean</code> (no goo, just two crisp circles), <code>organic</code>
+        (mild bridge, plus visible bounce around the target), and
+        <code>liquid</code> (the orbs visibly bridge into one blob mid-flight).
+      </p>
+      <x-morph-stack id="ms-4" class="stage" variant="liquid">
+        <div slot="state" data-state="apart">
+          <div class="orb-stage">
+            <div class="orb orb-a" data-morph-id="orb-a" style="left: 60px;"></div>
+            <div class="orb orb-b" data-morph-id="orb-b" style="left: 260px;"></div>
+          </div>
+        </div>
+        <div slot="state" data-state="together">
+          <div class="orb-stage">
+            <div class="orb orb-a" data-morph-id="orb-a" style="left: 150px;"></div>
+            <div class="orb orb-b" data-morph-id="orb-b" style="left: 180px;"></div>
+          </div>
+        </div>
+      </x-morph-stack>
+      <div class="controls">
+        <button data-stack="ms-4" data-action="goto" data-arg="apart">Apart</button>
+        <button data-stack="ms-4" data-action="goto" data-arg="together">Together</button>
+        <button data-stack="ms-4" data-action="next">Toggle</button>
+      </div>
+      <div class="log" id="log-4"></div>
+    </div>
+
     <!-- ─────────── Spring tuning ─────────── -->
     <h2>Tuning</h2>
     <div class="demo-card">
       <div class="controls">
-        <label>stiffness <input type="range" id="stiff" min="20" max="400" value="170"></label>
-        <label>damping   <input type="range" id="damp"  min="2"  max="60"  value="26"></label>
-        <label>mass      <input type="range" id="mass"  min="1"  max="40"  value="10"></label>
-        <label><input type="checkbox" id="goo-toggle"> goo</label>
+        <label>variant
+          <select id="variant-sel">
+            <option value="">(unset → clean)</option>
+            <option value="clean">clean</option>
+            <option value="organic">organic</option>
+            <option value="liquid">liquid</option>
+          </select>
+        </label>
+        <label>stiffness <input type="range" id="stiff" min="20" max="400" value=""></label>
+        <label>damping   <input type="range" id="damp"  min="2"  max="60"  value=""></label>
+        <label>mass      <input type="range" id="mass"  min="1"  max="40"  value=""></label>
+        <label>duration <span id="dur-readout" style="font-variant-numeric: tabular-nums;">auto</span>
+          <input type="range" id="dur" min="0" max="3000" step="50" value="0">
+        </label>
         <label><input type="checkbox" id="dis-toggle"> disabled (instant)</label>
+        <button type="button" id="reset-tuning">Reset overrides</button>
       </div>
       <p style="color: var(--muted); font-size: 12px; margin-top: 8px;">
-        Sliders apply to all three demos above. Mass slider is /10 (so default = 10 → 1.0).
+        The variant selector applies to all three demos. The sliders override the
+        variant's spring values; click <em>Reset overrides</em> to fall back to the
+        variant defaults. Mass slider is /10 (so 10 → 1.0). The duration slider at
+        <code>0</code> means <em>auto</em> (use the spring's natural time); any other
+        value stretches the spring to that many milliseconds while keeping its
+        character. Demo&nbsp;2 (button → modal) starts in <code>liquid</code>.
       </p>
     </div>
 
     <script>
-      const stacks = ['ms-1', 'ms-2', 'ms-3'];
+      const stacks = ['ms-1', 'ms-2', 'ms-3', 'ms-4'];
+      // These stacks were authored with a non-default variant in HTML and should
+      // keep it whenever the user leaves the variant selector on "(unset)".
+      const authoredVariants = { 'ms-2': 'liquid', 'ms-4': 'liquid' };
 
       function logEvent(stackId, type, detail) {
         const logEl = document.getElementById('log-' + stackId.split('-')[1]);
@@ -346,25 +422,50 @@
       });
 
       function applyTuning() {
-        const stiff = document.getElementById('stiff').value;
-        const damp  = document.getElementById('damp').value;
-        const mass  = (document.getElementById('mass').value / 10).toFixed(2);
-        const goo   = document.getElementById('goo-toggle').checked;
-        const dis   = document.getElementById('dis-toggle').checked;
+        const variantSel = document.getElementById('variant-sel');
+        const variant    = variantSel.value;            // '' | 'clean' | 'organic' | 'liquid'
+        const stiffRaw   = document.getElementById('stiff').value;
+        const dampRaw    = document.getElementById('damp').value;
+        const massRaw    = document.getElementById('mass').value;
+        const durRaw     = +document.getElementById('dur').value;   // 0 means auto
+        const dis        = document.getElementById('dis-toggle').checked;
+        document.getElementById('dur-readout').textContent =
+          durRaw > 0 ? (durRaw + ' ms') : 'auto';
         stacks.forEach((id) => {
           const el = document.getElementById(id);
-          el.stiffness = +stiff;
-          el.damping   = +damp;
-          el.mass      = +mass;
-          if (id !== 'ms-2') el.goo = goo; // ms-2 is always goo
+          // Some stacks were authored with a specific variant in HTML — keep
+          // it whenever the user has the selector on "(unset)".
+          const authored = authoredVariants[id];
+          if (variant === '' && authored) {
+            el.setAttribute('variant', authored);
+          } else if (variant === '') {
+            el.removeAttribute('variant');
+          } else {
+            el.setAttribute('variant', variant);
+          }
+          // Sliders are overrides — empty string means "let the variant decide".
+          el.stiffness = stiffRaw === '' ? null : +stiffRaw;
+          el.damping   = dampRaw  === '' ? null : +dampRaw;
+          el.mass      = massRaw  === '' ? null : +(+massRaw / 10).toFixed(2);
+          el.duration  = durRaw > 0 ? durRaw : null;
           el.disabled = dis;
         });
       }
 
-      ['stiff','damp','mass','goo-toggle','dis-toggle'].forEach((id) => {
+      document.getElementById('reset-tuning').addEventListener('click', () => {
+        document.getElementById('stiff').value = '';
+        document.getElementById('damp').value  = '';
+        document.getElementById('mass').value  = '';
+        document.getElementById('dur').value   = '0';
+        applyTuning();
+      });
+
+      ['variant-sel','stiff','damp','mass','dur','dis-toggle'].forEach((id) => {
         document.getElementById(id).addEventListener('input', applyTuning);
         document.getElementById(id).addEventListener('change', applyTuning);
       });
+      // Initialise the duration readout on first load.
+      applyTuning();
     </script>
   </body>
 </html>

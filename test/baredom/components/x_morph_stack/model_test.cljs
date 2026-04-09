@@ -33,11 +33,72 @@
   (is (= 0 (model/parse-active-index "0")))
   (is (= 5 (model/parse-active-index "5"))))
 
-(deftest parse-bool-test
-  (is (false? (model/parse-bool nil)))
-  (is (true?  (model/parse-bool "")))
-  (is (true?  (model/parse-bool "true")))
-  (is (true?  (model/parse-bool "false"))))  ; presence-based
+(deftest parse-duration-test
+  (testing "absent / empty / non-numeric / non-positive → nil (natural time)"
+    (is (nil? (model/parse-duration nil)))
+    (is (nil? (model/parse-duration "")))
+    (is (nil? (model/parse-duration "abc")))
+    (is (nil? (model/parse-duration "0")))
+    (is (nil? (model/parse-duration "-500"))))
+  (testing "positive numeric → number"
+    (is (= 600.0  (model/parse-duration "600")))
+    (is (= 1500.0 (model/parse-duration " 1500 ")))
+    (is (= 250.5  (model/parse-duration "250.5")))))
+
+(deftest natural-duration-ms-test
+  (testing "monotonic in stiffness — stiffer spring settles faster"
+    (let [slow (model/natural-duration-ms 50  14 1)
+          fast (model/natural-duration-ms 280 14 1)]
+      (is (< fast slow))))
+  (testing "monotonic in mass — heavier spring settles slower"
+    (let [light (model/natural-duration-ms 170 26 0.5)
+          heavy (model/natural-duration-ms 170 26 4.0)]
+      (is (< light heavy))))
+  (testing "default-ish spring is in the few-hundred-ms range"
+    (let [d (model/natural-duration-ms 170 26 1)]
+      (is (and (> d 100) (< d 800))))))
+
+(deftest time-scale-for-test
+  (testing "nil / non-positive duration → no scaling"
+    (is (= 1.0 (model/time-scale-for nil 170 26 1)))
+    (is (= 1.0 (model/time-scale-for 0   170 26 1)))
+    (is (= 1.0 (model/time-scale-for -1  170 26 1))))
+  (testing "longer requested duration → scale < 1 (slower per tick)"
+    (let [natural (model/natural-duration-ms 170 26 1)
+          scale   (model/time-scale-for (* 4 natural) 170 26 1)]
+      (is (< scale 0.4))
+      (is (> scale 0.0))))
+  (testing "shorter requested duration → scale > 1 (faster per tick)"
+    (let [natural (model/natural-duration-ms 170 26 1)
+          scale   (model/time-scale-for (/ natural 4) 170 26 1)]
+      (is (> scale 3.5)))))
+
+(deftest parse-variant-test
+  (testing "known values pass through"
+    (is (= "clean"   (model/parse-variant "clean")))
+    (is (= "organic" (model/parse-variant "organic")))
+    (is (= "liquid"  (model/parse-variant "liquid"))))
+  (testing "case-insensitive and trims whitespace"
+    (is (= "organic" (model/parse-variant "  Organic  ")))
+    (is (= "liquid"  (model/parse-variant "LIQUID"))))
+  (testing "unknown / nil / empty fall back to default 'clean'"
+    (is (= "clean" (model/parse-variant nil)))
+    (is (= "clean" (model/parse-variant "")))
+    (is (= "clean" (model/parse-variant "bogus")))))
+
+(deftest variant-uses-goo-test
+  (is (false? (model/variant-uses-goo? "clean")))
+  (is (true?  (model/variant-uses-goo? "organic")))
+  (is (true?  (model/variant-uses-goo? "liquid")))
+  (is (false? (model/variant-uses-goo? "unknown"))))
+
+(deftest goo-matrix-values-test
+  (testing "default threshold 18 yields the canonical gooey alpha row"
+    (is (= "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+           (model/goo-matrix-values 18))))
+  (testing "threshold 1 yields the identity alpha row (zero goo effect)"
+    (is (= "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"
+           (model/goo-matrix-values 1)))))
 
 ;; ── normalize ────────────────────────────────────────────────────────────────
 (deftest normalize-defaults-test
@@ -47,7 +108,8 @@
     (is (= 170.0 (:stiffness m)))
     (is (= 26.0  (:damping m)))
     (is (= 1.0   (:mass m)))
-    (is (false? (:goo? m)))
+    (is (= "clean" (:variant m)))
+    (is (nil? (:duration m)))
     (is (false? (:disabled? m)))))
 
 (deftest normalize-with-values-test
@@ -56,15 +118,20 @@
                             :stiffness-raw "200"
                             :damping-raw "30"
                             :mass-raw "1.5"
-                            :goo-present? true
+                            :variant-raw "liquid"
+                            :duration-raw "1500"
                             :disabled-present? true})]
     (is (= "welcome" (:active-state m)))
     (is (= 2        (:active-index m)))
     (is (= 200.0    (:stiffness m)))
     (is (= 30.0     (:damping m)))
     (is (= 1.5      (:mass m)))
-    (is (true? (:goo? m)))
+    (is (= "liquid" (:variant m)))
+    (is (= 1500.0   (:duration m)))
     (is (true? (:disabled? m)))))
+
+(deftest normalize-unknown-variant-falls-back-test
+  (is (= "clean" (:variant (model/normalize {:variant-raw "bogus"})))))
 
 ;; ── resolve-active ───────────────────────────────────────────────────────────
 (deftest resolve-active-test

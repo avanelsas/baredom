@@ -12,9 +12,14 @@
 (def ^:private k-raf           "__xMorphStackRaf")
 (def ^:private k-entries       "__xMorphStackEntries")
 (def ^:private k-last-time     "__xMorphStackLast")
-(def ^:private k-filter-id     "__xMorphStackFilterId")
+(def ^:private k-filter-id        "__xMorphStackFilterId")
+(def ^:private k-filter-blur      "__xMorphStackFilterBlur")
+(def ^:private k-filter-matrix    "__xMorphStackFilterMatrix")
+(def ^:private k-goo-base-blur    "__xMorphStackGooBaseBlur")
+(def ^:private k-goo-base-threshold "__xMorphStackGooBaseThreshold")
 (def ^:private k-from          "__xMorphStackFrom")
 (def ^:private k-to            "__xMorphStackTo")
+(def ^:private k-time-scale    "__xMorphStackTimeScale")
 
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
 
@@ -39,6 +44,33 @@
    "--x-morph-stack-goo-blur:10;"
    "--x-morph-stack-goo-threshold:18;"
    "--x-morph-stack-bg:transparent;}"
+
+   ;; Variant presets — bundles of spring + goo tuning. Each preset is sized
+   ;; for clearly distinct *character*, not just numerical difference:
+   ;;   clean   → critically-damped, no overshoot, fast settle
+   ;;   organic → strongly under-damped, visible bounce/wobble, mild goo
+   ;;   liquid  → slow + heavy + strong goo, viscous flow with pronounced blob
+   ;; Authors can still override individual CSS custom properties or set
+   ;; explicit attributes (stiffness/damping/mass), which win because the
+   ;; per-element attribute path writes via JS, not via these :host() rules.
+   ":host([data-variant='clean']){"
+   "--x-morph-stack-spring-stiffness:280;"
+   "--x-morph-stack-spring-damping:30;"
+   "--x-morph-stack-spring-mass:0.7;}"
+
+   ":host([data-variant='organic']){"
+   "--x-morph-stack-spring-stiffness:180;"
+   "--x-morph-stack-spring-damping:5;"
+   "--x-morph-stack-spring-mass:1.0;"
+   "--x-morph-stack-goo-blur:6;"
+   "--x-morph-stack-goo-threshold:14;}"
+
+   ":host([data-variant='liquid']){"
+   "--x-morph-stack-spring-stiffness:50;"
+   "--x-morph-stack-spring-damping:14;"
+   "--x-morph-stack-spring-mass:2.0;"
+   "--x-morph-stack-goo-blur:26;"
+   "--x-morph-stack-goo-threshold:26;}"
 
    "[part=viewport]{"
    "position:relative;"
@@ -114,6 +146,10 @@
     (when refs
       (gobj/set el k-refs (-> refs (dissoc :ghost-layer) (dissoc :svg)))))
   (gobj/set el k-filter-id nil)
+  (gobj/set el k-filter-blur nil)
+  (gobj/set el k-filter-matrix nil)
+  (gobj/set el k-goo-base-blur nil)
+  (gobj/set el k-goo-base-threshold nil)
   nil)
 
 (defn- ensure-refs! [^js el]
@@ -129,8 +165,20 @@
     :stiffness-raw     (.getAttribute el model/attr-stiffness)
     :damping-raw       (.getAttribute el model/attr-damping)
     :mass-raw          (.getAttribute el model/attr-mass)
-    :goo-present?      (.hasAttribute el model/attr-goo)
+    :variant-raw       (.getAttribute el model/attr-variant)
+    :duration-raw      (.getAttribute el model/attr-duration)
     :disabled-present? (.hasAttribute el model/attr-disabled)}))
+
+(defn- read-css-number
+  "Read a CSS custom property from the host's computed style and parse it as a
+  float. Returns `default-val` when the property is unset, empty, or NaN."
+  [^js el ^String prop default-val]
+  (let [cs (.getComputedStyle js/window el)
+        v  (.getPropertyValue cs prop)]
+    (if (and (string? v) (not= "" (.trim v)))
+      (let [n (js/parseFloat (.trim v))]
+        (if (js/isNaN n) default-val n))
+      default-val)))
 
 ;; ── State root collection ───────────────────────────────────────────────────
 (defn- collect-state-roots
@@ -230,19 +278,90 @@
           (.setAttribute blur "result" "blur")
           (.setAttribute matrix "in" "blur")
           (.setAttribute matrix "type" "matrix")
-          (.setAttribute matrix "values" model/default-goo-threshold)
+          (.setAttribute matrix "values" (model/goo-matrix-values model/default-goo-threshold))
           (.appendChild filt blur)
           (.appendChild filt matrix)
           (.appendChild defs filt)
           (.appendChild svg defs)
           (gobj/set el k-filter-id filter-id)
+          (gobj/set el k-filter-blur blur)
+          (gobj/set el k-filter-matrix matrix)
           filter-id))))
+
+(defn- apply-goo-filter-values!
+  "Write `blur-px` and `threshold` to the cached SVG filter nodes."
+  [^js el blur-px threshold]
+  (let [^js blur   (gobj/get el k-filter-blur)
+        ^js matrix (gobj/get el k-filter-matrix)]
+    (when blur   (.setAttribute blur   "stdDeviation" (str blur-px)))
+    (when matrix (.setAttribute matrix "values"       (model/goo-matrix-values threshold))))
+  nil)
+
+;; The gooey filter follows a trapezoidal envelope across the spring's
+;; progress: identity at the start (so text and crisp edges are readable in
+;; the source state), fade-in to full strength, plateau at full strength
+;; while the spring is in peak motion (the blob effect dominates and the
+;; text is moving anyway), fade-out back to identity (so the destination
+;; state is also crisp), and identity again past settle. Fading IN as well
+;; as out is what lets `liquid` carry text content without smearing it into
+;; illegibility — at high blur radii (e.g. blur=26 on a small element) the
+;; gooey filter would otherwise erase any text inside the morphing shape.
+(def ^:private goo-fade-in-end    0.18)
+(def ^:private goo-fade-out-start 0.70)
+(def ^:private goo-fade-out-end   1.00)
+
+(defn- goo-identity-factor
+  "Return f ∈ [0, 1] where f=0 means full goo and f=1 means identity (no goo).
+  Implements the trapezoidal envelope described above."
+  [progress]
+  (cond
+    (<= progress 0.0)
+    1.0
+
+    (< progress goo-fade-in-end)
+    (- 1.0 (/ progress goo-fade-in-end))
+
+    (< progress goo-fade-out-start)
+    0.0
+
+    (< progress goo-fade-out-end)
+    (/ (- progress goo-fade-out-start)
+       (- goo-fade-out-end goo-fade-out-start))
+
+    :else
+    1.0))
+
+(defn- update-goo-fade!
+  "Tween the gooey filter according to the trapezoidal envelope above.
+  `progress` is the slowest entry's spring position (0..1+; springs may
+  briefly overshoot past 1). The filter is at identity at the start and
+  end of the morph and at full strength during the middle, so authors can
+  morph text-bearing shapes with `variant=\"liquid\"` without the start/end
+  text being smeared into illegibility by the gooey blur."
+  [^js el progress]
+  (let [base-b (gobj/get el k-goo-base-blur)
+        base-t (gobj/get el k-goo-base-threshold)]
+    (when (and (some? base-b) (some? base-t))
+      (let [f (goo-identity-factor progress)
+            inv (- 1.0 f)
+            ;; Blur → 0; threshold → 1 (identity alpha row).
+            new-blur   (* base-b inv)
+            new-thresh (model/lerp base-t 1.0 f)]
+        (apply-goo-filter-values! el new-blur new-thresh))))
+  nil)
 
 (defn- start-goo! [^js el]
   (let [filter-id (ensure-goo-filter! el)
-        {:keys [^js ghost-layer]} (ensure-light-layer! el)]
-    (set! (.. ghost-layer -style -filter) (str "url(#" filter-id ")"))
-    (set! (.. ghost-layer -style -webkitFilter) (str "url(#" filter-id ")")))
+        {:keys [^js ghost-layer]} (ensure-light-layer! el)
+        b (read-css-number el "--x-morph-stack-goo-blur"      model/default-goo-blur)
+        t (read-css-number el "--x-morph-stack-goo-threshold" model/default-goo-threshold)]
+    ;; Capture the variant/author values once per transition; tick! will fade
+    ;; them toward identity as the spring settles.
+    (gobj/set el k-goo-base-blur b)
+    (gobj/set el k-goo-base-threshold t)
+    (apply-goo-filter-values! el b t)
+    (set! (.. ghost-layer -style -filter)        (str "url(#" filter-id ")"))
+    (set! (.. ghost-layer -style -webkitFilter)  (str "url(#" filter-id ")")))
   nil)
 
 (defn- stop-goo! [^js el]
@@ -282,7 +401,8 @@
   The ghost holds its natural cloned content (with new text in normal flow),
   so its final visual layout matches the real element exactly — no snap on
   finalize. When old and new text differ, callers should pair this with a
-  `make-leaving-entry` over the old node to crossfade the prior text out."
+  `make-paired-leaving-entry` over the old node so the prior text crossfades
+  *along the morph path* instead of fading in place at the old position."
   [^js layer ^js layer-rect old-data new-data]
   (let [^js new-node (gobj/get new-data "node")
         ^js new-rect (gobj/get new-data "rect")
@@ -336,10 +456,61 @@
                      (set! (.. new-node -style -visibility) "")
                      (when (.-parentNode ghost)
                        (.removeChild (.-parentNode ghost) ghost)))]
+      ;; Apply the t=0 state immediately so the very first paint shows the
+      ;; ghost at the OLD position rather than its post-append (NEW) position.
+      ;; Without this, there's a one-frame gap between appendChild and the
+      ;; first `tick!` where the ghost is rendered at its destination.
+      (update 0)
+      #js {:t 0 :v 0 :update update :finalize finalize})))
+
+(defn- make-paired-leaving-entry
+  "Leaving ghost paired with a matched ghost: clones the OLD node and morphs
+  it along the SAME translate+scale path the matched ghost will follow,
+  while its opacity fades from 1 to 0. The two ghosts overlay perfectly at
+  every t, so the OLD and NEW content crossfade *along* the morph path —
+  the old text travels with the new layout instead of fading in place at
+  the source position while the new text moves away to its destination."
+  [^js layer ^js layer-rect old-data new-data]
+  (let [^js old-node (gobj/get old-data "node")
+        ^js old-rect (gobj/get old-data "rect")
+        ^js new-rect (gobj/get new-data "rect")
+        ox (.-x old-rect) oy (.-y old-rect)
+        ow (.-w old-rect) oh (.-h old-rect)
+        nx (.-x new-rect) ny (.-y new-rect)
+        nw (.-w new-rect) nh (.-h new-rect)
+        ;; Old natural rect → new rect, same direction the matched ghost
+        ;; ends up traveling.
+        dx-end (- nx ox)
+        dy-end (- ny oy)
+        sx-end (if (pos? ow) (/ nw ow) 1.0)
+        sy-end (if (pos? oh) (/ nh oh) 1.0)
+        ghost  (.cloneNode old-node true)]
+    (prep-ghost-base-style! ghost)
+    (abs-place! ghost old-rect layer-rect)
+    (.appendChild layer ghost)
+    (let [update (fn [t]
+                   (let [tt (max 0.0 (min 1.0 t))
+                         dx (model/lerp 0.0 dx-end tt)
+                         dy (model/lerp 0.0 dy-end tt)
+                         sx (model/lerp 1.0 sx-end tt)
+                         sy (model/lerp 1.0 sy-end tt)]
+                     (set! (.. ghost -style -transform)
+                           (str "translate(" dx "px," dy "px) scale(" sx "," sy ")"))
+                     (set! (.. ghost -style -opacity)
+                           (str (max 0.0 (- 1.0 tt))))
+                     nil))
+          finalize (fn []
+                     (when (.-parentNode ghost)
+                       (.removeChild (.-parentNode ghost) ghost)))]
+      ;; Same first-paint priming as the matched ghost.
+      (update 0)
       #js {:t 0 :v 0 :update update :finalize finalize})))
 
 (defn- make-leaving-entry
-  "Clone the old node anchored at its old rect; fade opacity 1→0."
+  "Static leaving ghost — clone of an old node anchored at its old rect that
+  fades opacity 1 → 0. Used for elements that exist only in the old state
+  (no morph-id match in the new state) so there's nowhere meaningful to
+  travel to."
   [^js layer ^js layer-rect old-data]
   (let [^js old-node (gobj/get old-data "node")
         ^js old-rect (gobj/get old-data "rect")
@@ -387,13 +558,14 @@
             old-text (gobj/get old-data "text")
             new-text (gobj/get new-data "text")]
         (.push out (make-matched-entry ghost-layer layer-rect old-data new-data))
-        ;; When the text differs, layer a leaving ghost (clone of the OLD node
-        ;; at the OLD rect) over it that fades out as the matched ghost fades
-        ;; in. Both are driven by the same spring, producing a smooth crossfade
-        ;; with no final-position snap (the matched ghost's natural new-text
-        ;; layout matches the real revealed element).
+        ;; When the text differs, layer a *paired* leaving ghost over the
+        ;; matched ghost. The paired version morphs along the same translate+
+        ;; scale path the matched ghost will follow, so the OLD content
+        ;; crossfades to the NEW content along the morph rather than fading
+        ;; in place at the source position. Both are driven by the same
+        ;; spring `t`, so they overlay perfectly at every frame.
         (when (not= old-text new-text)
-          (.push out (make-leaving-entry ghost-layer layer-rect old-data)))))
+          (.push out (make-paired-leaving-entry ghost-layer layer-rect old-data new-data)))))
     (doseq [id leaving]
       (.push out (make-leaving-entry ghost-layer layer-rect
                                      (gobj/get old-snap id))))
@@ -412,12 +584,22 @@
         mass (:mass m)
         tension (:stiffness m)
         friction (:damping m)
-        dt (max 0.0 (min (/ 1.0 30.0) (if last-time (/ (- now last-time) 1000.0) (/ 1.0 60.0))))]
+        ;; `time-scale` lets the `duration` attribute stretch / compress the
+        ;; spring's natural settle time without altering its character. >1 means
+        ;; the spring evolves faster per real second, <1 means slower.
+        time-scale (or (gobj/get el k-time-scale) 1.0)
+        dt-real (if last-time (/ (- now last-time) 1000.0) (/ 1.0 60.0))
+        dt (max 0.0 (min (/ 1.0 30.0) (* time-scale dt-real)))]
     (gobj/set el k-last-time now)
     (when (and entries (.-length entries))
       (let [len (.-length entries)
-            ;; Use a 1-slot JS array for the all-settled flag (no volatile!).
-            flag #js [true]]
+            ;; 1-slot JS arrays so the dotimes body can mutate without volatile!.
+            flag #js [true]
+            ;; Track the slowest entry's progress this tick — used to fade the
+            ;; gooey filter toward identity so the matched ghost's filtered
+            ;; pixels match the un-filtered real element by the time the ghost
+            ;; is removed (no snap on finalize).
+            min-t #js [1.0]]
         (dotimes [i len]
           (let [^js entry (aget entries i)
                 t (.-t entry)
@@ -428,8 +610,10 @@
             (set! (.-t entry) t')
             (set! (.-v entry) v')
             ((.-update entry) t')
+            (when (< t' (aget min-t 0)) (aset min-t 0 t'))
             (when-not (model/spring-settled? (- t' 1.0) v')
               (aset flag 0 false))))
+        (update-goo-fade! el (aget min-t 0))
         (if (aget flag 0)
           (finalize-transition! el token true)
           (let [raf (.requestAnimationFrame js/window
@@ -544,7 +728,22 @@
                   (gobj/set el k-last-time nil)
                   (gobj/set el k-from from-name)
                   (gobj/set el k-to   to-name)
-                  (when (:goo? m) (start-goo! el))
+                  ;; Snapshot the time scale for this transition. Spring params
+                  ;; don't change mid-flight, so this only needs computing once.
+                  (gobj/set el k-time-scale
+                            (model/time-scale-for (:duration m)
+                                                  (:stiffness m)
+                                                  (:damping m)
+                                                  (:mass m)))
+                  (when (model/variant-uses-goo? (:variant m))
+                    (start-goo! el)
+                    ;; Prime the filter at progress=0 so the first painted
+                    ;; frame already has the trapezoidal envelope applied
+                    ;; (i.e. identity, no blur). Without this the very first
+                    ;; paint would show the filter at full base strength,
+                    ;; smearing the source-state text for one frame before
+                    ;; the first `tick!` runs `update-goo-fade!`.
+                    (update-goo-fade! el 0))
                   (if (zero? (.-length entries))
                     ;; Nothing to animate (no morph-ids on either side); finalize immediately.
                     (finalize-transition! el token true)
@@ -586,6 +785,9 @@
   (ensure-refs! el)
   (let [new-m (read-model el)]
     (gobj/set el k-model new-m)
+    ;; Mirror the (normalised) variant to a data attribute so :host([data-variant=…])
+    ;; CSS rules apply, even when the author wrote an unknown / mis-cased value.
+    (.setAttribute el model/attr-data-variant (:variant new-m))
     (let [names (state-names el)
           target (model/resolve-active (vec (array-seq names)) new-m)
           current (gobj/get el k-current-state)]
@@ -700,8 +902,22 @@
   (number-attr-prop! proto "stiffness" model/attr-stiffness)
   (number-attr-prop! proto "damping"   model/attr-damping)
   (number-attr-prop! proto "mass"      model/attr-mass)
+  (number-attr-prop! proto "duration"  model/attr-duration)
 
-  (bool-attr-prop! proto model/attr-goo)
+  (.defineProperty js/Object proto "variant"
+                   #js {:get (fn []
+                               (this-as ^js this
+                                        ;; Always report the normalised value so
+                                        ;; consumers see one of the allowed strings.
+                                        (model/parse-variant
+                                         (.getAttribute this model/attr-variant))))
+                        :set (fn [v]
+                               (this-as ^js this
+                                        (if (nil? v)
+                                          (.removeAttribute this model/attr-variant)
+                                          (.setAttribute this model/attr-variant (str v)))))
+                        :enumerable true :configurable true})
+
   (bool-attr-prop! proto model/attr-disabled)
 
   ;; Methods
