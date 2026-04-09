@@ -2,7 +2,7 @@
   (:require [clojure.tools.build.api :as b]))
 
 (def lib       'com.github.avanelsas/baredom)
-(def version   "1.3.0")
+(def version   "1.4.0")
 (def class-dir "target/classes")
 (def jar-file  (format "target/%s-%s.jar" (name lib) version))
 (def pom-file  (format "target/classes/META-INF/maven/%s/%s/pom.xml"
@@ -22,7 +22,7 @@
                             :connection          "scm:git:git://github.com/avanelsas/baredom.git"
                             :developerConnection "scm:git:ssh://git@github.com/avanelsas/baredom.git"
                             :tag                (str "v" version)}
-                :pom-data  [[:description "73 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM."]
+                :pom-data  [[:description "More than 70 native web components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM."]
                             [:url "https://github.com/avanelsas/baredom"]
                             [:licenses
                              [:license

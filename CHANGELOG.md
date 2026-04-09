@@ -2,6 +2,22 @@
 
 All notable changes to BareDome will be documented in this file.
 
+## [1.4.0] - 2026-04-09
+
+### Added
+
+Six new components:
+
+- **Effects** — x-liquid-glass, x-soft-body, x-liquid-dock, x-liquid-fill
+- **Typography** — x-kinetic-font
+- **Layout** — x-morph-stack (with variant presets and multi-element goo merge demo)
+
+### Changed
+
+- Demo index: style family filtering
+- Demo index components sorted alphabetically
+- README updates
+
 ## [1.3.0] - 2026-04-07
 
 ### Added
