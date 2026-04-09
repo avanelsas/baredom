@@ -341,6 +341,11 @@
      {init baredom.exports.x-kinetic-typography/init}
      :depends-on #{:base}}
 
+    :x-kinetic-font
+    {:exports
+     {init baredom.exports.x-kinetic-font/init}
+     :depends-on #{:base}}
+
     :x-organic-divider
     {:exports
      {init baredom.exports.x-organic-divider/init}

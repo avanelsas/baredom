@@ -260,6 +260,10 @@
       "import" : "./dist/x-kinetic-typography.js",
       "default" : "./dist/x-kinetic-typography.js"
     },
+    "./x-kinetic-font" : {
+      "import" : "./dist/x-kinetic-font.js",
+      "default" : "./dist/x-kinetic-font.js"
+    },
     "./x-scroll" : {
       "import" : "./dist/x-scroll.js",
       "default" : "./dist/x-scroll.js"

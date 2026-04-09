@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-kinetic-font demo</title>
+  <script src="../js/main.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,slnt,wdth,wght@8..144,-10..0,25..151,100..1000&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e2e8f0; background: #0f172a; }
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    @media (prefers-color-scheme: dark) {
+      h2 { border-color: #334155; }
+    }
+    .demo-section {
+      margin: 1.5rem 0;
+      padding: 2rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #ffffff;
+      text-align: center;
+    }
+    @media (prefers-color-scheme: dark) {
+      .demo-section {
+        border-color: #334155;
+        background: #1e293b;
+      }
+    }
+    x-kinetic-font {
+      --x-kinetic-font-family: "Roboto Flex", system-ui, sans-serif;
+      --x-kinetic-font-size: 2.5rem;
+      --x-kinetic-font-weight-min: 100;
+      --x-kinetic-font-weight-max: 1000;
+      --x-kinetic-font-width-min: 25;
+      --x-kinetic-font-width-max: 151;
+      --x-kinetic-font-slant-min: -10;
+      --x-kinetic-font-slant-max: 0;
+      --x-kinetic-font-opsz-min: 8;
+      --x-kinetic-font-opsz-max: 144;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; align-items: end;
+    }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .control-group label {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; opacity: 0.7;
+    }
+    .control-group input[type=range] { width: 140px; }
+    .control-group select { padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; }
+    @media (prefers-color-scheme: dark) {
+      .control-group select { background: #334155; color: #e2e8f0; border-color: #475569; }
+    }
+    .val { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+    #event-log {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      #event-log { background: #1e293b; border-color: #334155; }
+    }
+    .per-char-demo {
+      --x-kinetic-font-size: 3rem;
+    }
+    .scroll-section {
+      min-height: 200vh;
+      padding-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>&lt;x-kinetic-font&gt;</h1>
+<p>Variable Font axis interpolation driven by spring physics. Move your cursor near the text to see it react.</p>
+
+<!-- ── Bulge (default) ──────────────────────────────────── -->
+<h2>Bulge (weight axis)</h2>
+<div class="demo-section">
+  <x-kinetic-font id="demo-bulge" text="Bulge Effect" mode="bulge" trigger="cursor"></x-kinetic-font>
+</div>
+
+<!-- ── Lean ──────────────────────────────────────────────── -->
+<h2>Lean (slant axis)</h2>
+<div class="demo-section">
+  <x-kinetic-font text="Lean Into It" mode="lean" trigger="cursor"></x-kinetic-font>
+</div>
+
+<!-- ── Stretch ───────────────────────────────────────────── -->
+<h2>Stretch (width axis)</h2>
+<div class="demo-section">
+  <x-kinetic-font text="Stretch Wide" mode="stretch" trigger="cursor"></x-kinetic-font>
+</div>
+
+<!-- ── Breathe ───────────────────────────────────────────── -->
+<h2>Breathe (optical size axis)</h2>
+<div class="demo-section">
+  <x-kinetic-font text="Breathe Deep" mode="breathe" trigger="cursor"></x-kinetic-font>
+</div>
+
+<!-- ── Combined modes ────────────────────────────────────── -->
+<h2>Combined Modes</h2>
+<div class="demo-section">
+  <x-kinetic-font text="All At Once" mode="bulge lean stretch" trigger="cursor" intensity="0.7" style="--x-kinetic-font-size: 5rem;"></x-kinetic-font>
+</div>
+
+<!-- ── Per-character ─────────────────────────────────────── -->
+<h2>Per-Character Ripple</h2>
+<div class="demo-section">
+  <x-kinetic-font class="per-char-demo" text="Ripple Wave" mode="bulge" trigger="cursor" per-char></x-kinetic-font>
+</div>
+
+<!-- ── Per-character + lean ──────────────────────────────── -->
+<h2>Per-Character Lean</h2>
+<div class="demo-section">
+  <x-kinetic-font class="per-char-demo" text="Domino Lean" mode="lean" trigger="cursor" per-char></x-kinetic-font>
+</div>
+
+<!-- ── Interactive controls ──────────────────────────────── -->
+<h2>Interactive Controls</h2>
+<div class="demo-section">
+  <x-kinetic-font id="controlled" text="Play With Me" mode="bulge" trigger="cursor"></x-kinetic-font>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Trigger</label>
+    <select id="ctrl-trigger">
+      <option value="cursor" selected>cursor</option>
+      <option value="scroll">scroll</option>
+      <option value="both">both</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Mode</label>
+    <select id="ctrl-mode">
+      <option value="bulge" selected>bulge</option>
+      <option value="lean">lean</option>
+      <option value="stretch">stretch</option>
+      <option value="breathe">breathe</option>
+      <option value="bulge lean">bulge + lean</option>
+      <option value="bulge stretch">bulge + stretch</option>
+      <option value="bulge lean stretch breathe">all</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Per-char</label>
+    <select id="ctrl-perchar">
+      <option value="false" selected>off</option>
+      <option value="true">on</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Mass <span class="val" id="val-mass">1.0</span></label>
+    <input type="range" id="ctrl-mass" min="0.1" max="10" step="0.1" value="1">
+  </div>
+  <div class="control-group">
+    <label>Tension <span class="val" id="val-tension">170</span></label>
+    <input type="range" id="ctrl-tension" min="10" max="500" step="10" value="170">
+  </div>
+  <div class="control-group">
+    <label>Friction <span class="val" id="val-friction">26</span></label>
+    <input type="range" id="ctrl-friction" min="1" max="100" step="1" value="26">
+  </div>
+  <div class="control-group">
+    <label>Intensity <span class="val" id="val-intensity">0.5</span></label>
+    <input type="range" id="ctrl-intensity" min="0" max="1" step="0.05" value="0.5">
+  </div>
+  <div class="control-group">
+    <label>Radius <span class="val" id="val-radius">200</span></label>
+    <input type="range" id="ctrl-radius" min="20" max="1000" step="10" value="200">
+  </div>
+</div>
+
+<!-- ── Event log ─────────────────────────────────────────── -->
+<h2>Event Log</h2>
+<div id="event-log">(events will appear here)</div>
+
+<!-- ── Scroll trigger ────────────────────────────────────── -->
+<h2>Scroll Trigger (scroll down)</h2>
+<div class="scroll-section">
+  <div class="demo-section" style="position: sticky; top: 2rem;">
+    <x-kinetic-font text="Scroll Me" mode="stretch" trigger="scroll" intensity="0.8"></x-kinetic-font>
+  </div>
+</div>
+
+<script>
+  // Interactive controls
+  const el = document.getElementById('controlled');
+
+  document.getElementById('ctrl-trigger').addEventListener('change', e => {
+    el.setAttribute('trigger', e.target.value);
+  });
+  document.getElementById('ctrl-mode').addEventListener('change', e => {
+    el.setAttribute('mode', e.target.value);
+  });
+  document.getElementById('ctrl-perchar').addEventListener('change', e => {
+    if (e.target.value === 'true') {
+      el.setAttribute('per-char', '');
+    } else {
+      el.removeAttribute('per-char');
+    }
+  });
+
+  ['mass', 'tension', 'friction', 'intensity', 'radius'].forEach(attr => {
+    const input = document.getElementById('ctrl-' + attr);
+    const val = document.getElementById('val-' + attr);
+    input.addEventListener('input', () => {
+      el.setAttribute(attr, input.value);
+      val.textContent = input.value;
+    });
+  });
+
+  // Event logging
+  const log = document.getElementById('event-log');
+  const bulgeEl = document.getElementById('demo-bulge');
+
+  function logEvent(name, target) {
+    const entry = document.createElement('div');
+    const time = new Date().toLocaleTimeString();
+    entry.textContent = `[${time}] ${name} on <${target.tagName.toLowerCase()}>`;
+    log.prepend(entry);
+    if (log.children.length > 50) log.lastChild.remove();
+  }
+
+  document.querySelectorAll('x-kinetic-font').forEach(comp => {
+    comp.addEventListener('x-kinetic-font-spring-activate', e => logEvent('spring-activate', e.target));
+    comp.addEventListener('x-kinetic-font-spring-settle', e => logEvent('spring-settle', e.target));
+  });
+</script>
+
+</body>
+</html>
