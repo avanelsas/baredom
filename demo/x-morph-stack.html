@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-morph-stack demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #f8fafc;
+        --page-fg: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --surface-bg: #ffffff;
+        --accent: #3b82f6;
+        --accent-fg: #ffffff;
+        --pill: #e0f2fe;
+        --pill-fg: #075985;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #0f172a;
+          --page-fg: #f8fafc;
+          --muted: #94a3b8;
+          --border: #1e293b;
+          --surface-bg: #1e293b;
+          --accent: #60a5fa;
+          --accent-fg: #0f172a;
+          --pill: #1e3a8a;
+          --pill-fg: #dbeafe;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin: 0 0 4px;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .demo-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 24px;
+      }
+
+      .stage {
+        position: relative;
+        min-height: 240px;
+        display: block;
+      }
+
+      .controls {
+        margin-top: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: var(--surface-bg);
+        color: var(--page-fg);
+        font: inherit;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      button:hover { background: var(--pill); color: var(--pill-fg); }
+
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      input[type="range"] { width: 110px; }
+
+      .log {
+        margin-top: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--page-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        max-height: 120px;
+        overflow: auto;
+      }
+
+      /* ── Demo 1: card → detail morph ─────────────────────────────────── */
+      .card-state, .detail-state {
+        padding: 12px;
+      }
+
+      .card-cover {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: #fff;
+        padding: 18px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 18px;
+        width: 220px;
+        height: 120px;
+      }
+
+      .detail-cover {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: #fff;
+        padding: 32px 24px;
+        border-radius: 22px;
+        font-weight: 700;
+        font-size: 28px;
+        width: 100%;
+        height: 200px;
+      }
+
+      .card-title { margin-top: 10px; font-size: 16px; font-weight: 600; }
+      .detail-title { margin-top: 18px; font-size: 24px; font-weight: 700; }
+
+      .card-body { margin-top: 6px; font-size: 13px; color: var(--muted); }
+      .detail-body { margin-top: 10px; font-size: 14px; color: var(--page-fg); max-width: 56ch; }
+
+      /* ── Demo 2: button → modal morph ────────────────────────────────── */
+      .pill {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+      }
+      .modal-block {
+        display: block;
+        padding: 22px 24px;
+        border-radius: 18px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-weight: 600;
+        font-size: 18px;
+        max-width: 420px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      /* ── Demo 3: 3-step onboarding ───────────────────────────────────── */
+      .step-illustration {
+        background: var(--pill);
+        color: var(--pill-fg);
+        border-radius: 14px;
+        padding: 24px;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+        max-width: 360px;
+        height: 80px;
+        line-height: 32px;
+      }
+      .step-circle {
+        background: var(--accent);
+        color: var(--accent-fg);
+        border-radius: 999px;
+        padding: 18px;
+        width: 96px;
+        height: 96px;
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+        line-height: 60px;
+      }
+      .step-square {
+        background: #10b981;
+        color: #fff;
+        border-radius: 8px;
+        padding: 14px;
+        width: 200px;
+        height: 200px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-morph-stack</h1>
+    <p style="color: var(--muted); margin: 0 0 16px;">
+      Continuous transformation between UI states. Layout, shape, material, and content
+      evolve together — driven by FLIP capture/replay and spring physics.
+    </p>
+
+    <!-- ─────────── Demo 1: card → detail morph ─────────── -->
+    <h2>Card → detail</h2>
+    <div class="demo-card">
+      <x-morph-stack id="ms-1" class="stage">
+        <div slot="state" data-state="card" class="card-state">
+          <div class="card-cover" data-morph-id="cover">Mountain trek</div>
+          <div class="card-title" data-morph-id="title">Mountain trek</div>
+          <div class="card-body"  data-morph-id="body">A short alpine getaway.</div>
+        </div>
+        <div slot="state" data-state="detail" class="detail-state">
+          <div class="detail-cover" data-morph-id="cover">Mountain trek</div>
+          <div class="detail-title" data-morph-id="title">Mountain trek — full itinerary</div>
+          <div class="detail-body"  data-morph-id="body">
+            Three days of high-altitude trails, two nights in mountain refuges,
+            and a guided dawn summit on the final morning. Includes transport,
+            permits, and a celebratory dinner at the trailhead lodge.
+          </div>
+        </div>
+      </x-morph-stack>
+      <div class="controls">
+        <button data-stack="ms-1" data-action="goto" data-arg="card">Card</button>
+        <button data-stack="ms-1" data-action="goto" data-arg="detail">Detail</button>
+        <button data-stack="ms-1" data-action="next">Next</button>
+      </div>
+      <div class="log" id="log-1"></div>
+    </div>
+
+    <!-- ─────────── Demo 2: button → modal with goo ─────────── -->
+    <h2>Button → modal (goo)</h2>
+    <div class="demo-card">
+      <x-morph-stack id="ms-2" class="stage" goo>
+        <div slot="state" data-state="closed">
+          <span class="pill" data-morph-id="surface">Open dialogue</span>
+        </div>
+        <div slot="state" data-state="open">
+          <div class="modal-block" data-morph-id="surface">
+            Dialogue is open. The surface above morphed into this panel —
+            same identity, new shape, new size, new content.
+          </div>
+        </div>
+      </x-morph-stack>
+      <div class="controls">
+        <button data-stack="ms-2" data-action="goto" data-arg="closed">Closed</button>
+        <button data-stack="ms-2" data-action="goto" data-arg="open">Open</button>
+      </div>
+      <div class="log" id="log-2"></div>
+    </div>
+
+    <!-- ─────────── Demo 3: 3-step onboarding ─────────── -->
+    <h2>Onboarding flow</h2>
+    <div class="demo-card">
+      <x-morph-stack id="ms-3" class="stage">
+        <div slot="state" data-state="welcome">
+          <div class="step-illustration" data-morph-id="illustration">Welcome</div>
+        </div>
+        <div slot="state" data-state="profile">
+          <div class="step-circle" data-morph-id="illustration">You</div>
+        </div>
+        <div slot="state" data-state="done">
+          <div class="step-square" data-morph-id="illustration">All set!</div>
+        </div>
+      </x-morph-stack>
+      <div class="controls">
+        <button data-stack="ms-3" data-action="prev">Prev</button>
+        <button data-stack="ms-3" data-action="next">Next</button>
+        <button data-stack="ms-3" data-action="goto" data-arg="welcome">Welcome</button>
+        <button data-stack="ms-3" data-action="goto" data-arg="profile">Profile</button>
+        <button data-stack="ms-3" data-action="goto" data-arg="done">Done</button>
+      </div>
+      <div class="log" id="log-3"></div>
+    </div>
+
+    <!-- ─────────── Spring tuning ─────────── -->
+    <h2>Tuning</h2>
+    <div class="demo-card">
+      <div class="controls">
+        <label>stiffness <input type="range" id="stiff" min="20" max="400" value="170"></label>
+        <label>damping   <input type="range" id="damp"  min="2"  max="60"  value="26"></label>
+        <label>mass      <input type="range" id="mass"  min="1"  max="40"  value="10"></label>
+        <label><input type="checkbox" id="goo-toggle"> goo</label>
+        <label><input type="checkbox" id="dis-toggle"> disabled (instant)</label>
+      </div>
+      <p style="color: var(--muted); font-size: 12px; margin-top: 8px;">
+        Sliders apply to all three demos above. Mass slider is /10 (so default = 10 → 1.0).
+      </p>
+    </div>
+
+    <script>
+      const stacks = ['ms-1', 'ms-2', 'ms-3'];
+
+      function logEvent(stackId, type, detail) {
+        const logEl = document.getElementById('log-' + stackId.split('-')[1]);
+        const line = document.createElement('div');
+        line.textContent = `${type}: ${detail.from || '∅'} → ${detail.to || '∅'}`;
+        logEl.prepend(line);
+        while (logEl.children.length > 6) logEl.removeChild(logEl.lastChild);
+      }
+
+      stacks.forEach((id) => {
+        const el = document.getElementById(id);
+        el.addEventListener('x-morph-stack-change',  (e) => logEvent(id, 'change',  e.detail));
+        el.addEventListener('x-morph-stack-changed', (e) => logEvent(id, 'changed', e.detail));
+      });
+
+      document.querySelectorAll('button[data-stack]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const el = document.getElementById(btn.dataset.stack);
+          const action = btn.dataset.action;
+          if (action === 'next') el.next();
+          else if (action === 'prev') el.prev();
+          else if (action === 'goto') el.goTo(btn.dataset.arg);
+        });
+      });
+
+      // ms-2: clicking the pill or the modal-block toggles the state.
+      const ms2 = document.getElementById('ms-2');
+      ms2.addEventListener('click', (e) => {
+        if (e.target.closest('.pill'))        ms2.goTo('open');
+        else if (e.target.closest('.modal-block')) ms2.goTo('closed');
+      });
+
+      function applyTuning() {
+        const stiff = document.getElementById('stiff').value;
+        const damp  = document.getElementById('damp').value;
+        const mass  = (document.getElementById('mass').value / 10).toFixed(2);
+        const goo   = document.getElementById('goo-toggle').checked;
+        const dis   = document.getElementById('dis-toggle').checked;
+        stacks.forEach((id) => {
+          const el = document.getElementById(id);
+          el.stiffness = +stiff;
+          el.damping   = +damp;
+          el.mass      = +mass;
+          if (id !== 'ms-2') el.goo = goo; // ms-2 is always goo
+          el.disabled = dis;
+        });
+      }
+
+      ['stiff','damp','mass','goo-toggle','dis-toggle'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', applyTuning);
+        document.getElementById(id).addEventListener('change', applyTuning);
+      });
+    </script>
+  </body>
+</html>

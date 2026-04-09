@@ -78,6 +78,7 @@
    [baredom.exports.x-liquid-glass   :as x-liquid-glass]
    [baredom.exports.x-liquid-dock    :as x-liquid-dock]
    [baredom.exports.x-liquid-fill    :as x-liquid-fill]
+   [baredom.exports.x-morph-stack    :as x-morph-stack]
    [baredom.dev.hot-reload             :as hot-reload]))
 
 (defn ^:dev/after-load start!
@@ -160,6 +161,7 @@
   (x-liquid-glass/register!)
   (x-liquid-dock/register!)
   (x-liquid-fill/register!)
+  (x-morph-stack/register!)
   (hot-reload/refresh-styles!))
 
 (defn init!

@@ -77,7 +77,8 @@
    [baredom.exports.x-soft-body       :as x-soft-body]
    [baredom.exports.x-liquid-glass    :as x-liquid-glass]
    [baredom.exports.x-liquid-dock     :as x-liquid-dock]
-   [baredom.exports.x-liquid-fill     :as x-liquid-fill]))
+   [baredom.exports.x-liquid-fill     :as x-liquid-fill]
+   [baredom.exports.x-morph-stack     :as x-morph-stack]))
 
 (defn register!
   []
@@ -158,7 +159,8 @@
   (x-soft-body/register!)
   (x-liquid-glass/register!)
   (x-liquid-dock/register!)
-  (x-liquid-fill/register!))
+  (x-liquid-fill/register!)
+  (x-morph-stack/register!))
 
 (defn ^:export init
   []
