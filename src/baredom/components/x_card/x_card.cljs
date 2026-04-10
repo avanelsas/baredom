@@ -78,7 +78,7 @@
   --x-card-ghost-background: transparent;
   --x-card-hover-background: rgba(15, 23, 42, 0.04);
   --x-card-press-background: rgba(15, 23, 42, 0.08);
-  --x-card-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+  --x-card-shadow: var(--x-shadow-md, 0 10px 24px rgba(15, 23, 42, 0.10));
   --x-card-focus-ring: rgba(59, 130, 246, 0.55);
   --x-card-disabled-opacity: 0.6;
 
@@ -88,12 +88,12 @@
   --x-card-padding-lg: 1.5rem;
 
   --x-card-radius-none: 0;
-  --x-card-radius-sm: 0.375rem;
-  --x-card-radius-md: 0.75rem;
-  --x-card-radius-lg: 1rem;
+  --x-card-radius-sm: var(--x-radius-sm, 0.375rem);
+  --x-card-radius-md: var(--x-radius-md, 0.75rem);
+  --x-card-radius-lg: var(--x-radius-lg, 1rem);
   --x-card-radius-xl: 1.5rem;
 
-  --x-card-transition-duration: 140ms;
+  --x-card-transition-duration: var(--x-transition-duration, 140ms);
   --x-card-transition-timing: ease;
 
   outline: none;
@@ -102,12 +102,12 @@
   @media (prefers-color-scheme: dark) {
   :host {
   --x-card-background: rgba(15, 23, 42, 0.88);
-  --x-card-color: #e5e7eb;
+  --x-card-color: var(--x-color-text, #e5e7eb);
   --x-card-border-color: rgba(148, 163, 184, 0.24);
   --x-card-filled-background: rgba(30, 41, 59, 0.96);
   --x-card-hover-background: rgba(148, 163, 184, 0.10);
   --x-card-press-background: rgba(148, 163, 184, 0.16);
-  --x-card-shadow: 0 16px 32px rgba(0, 0, 0, 0.32);
+  --x-card-shadow: var(--x-shadow-md, 0 16px 32px rgba(0, 0, 0, 0.32));
   --x-card-focus-ring: rgba(96, 165, 250, 0.6);
   }
   }

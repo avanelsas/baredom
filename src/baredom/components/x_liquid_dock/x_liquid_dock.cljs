@@ -158,7 +158,7 @@
    ":host{"
    "--x-liquid-dock-bg:rgba(15,23,42,0.84);"
    "--x-liquid-dock-border:rgba(51,65,85,0.9);"
-   "--x-liquid-dock-shadow:0 14px 36px rgba(0,0,0,0.35);"
+   "--x-liquid-dock-shadow:var(--x-shadow-lg,0 14px 36px rgba(0,0,0,0.35));"
    "--x-liquid-dock-color:#818cf8;"
    "}}"
 

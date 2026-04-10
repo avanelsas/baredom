@@ -88,7 +88,7 @@
   --x-container-margin-inline:auto;
 
   --x-container-bg:transparent;
-  --x-container-color:#0f172a;
+  --x-container-color:var(--x-color-text, #0f172a);
   --x-container-border:transparent;
   --x-container-radius:0;
   --x-container-shadow:none;
@@ -97,7 +97,7 @@
   @media (prefers-color-scheme: dark){
   :host{
   --x-container-bg:transparent;
-  --x-container-color:#e5e7eb;
+  --x-container-color:var(--x-color-text, #e5e7eb);
   --x-container-border:transparent;
   --x-container-radius:0;
   --x-container-shadow:none;

@@ -184,4 +184,4 @@
         css-text (.-textContent style-el)]
     (is (not= -1 (.indexOf css-text "color-scheme:light dark")))
     (is (not= -1 (.indexOf css-text "@media (prefers-color-scheme: dark)")))
-    (is (not= -1 (.indexOf css-text "--x-container-color:#e5e7eb")))))
+    (is (not= -1 (.indexOf css-text "--x-container-color:var(--x-color-text, #e5e7eb)")))))

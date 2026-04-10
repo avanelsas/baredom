@@ -38,7 +38,7 @@
    "--x-kinetic-typography-duration:10s;"
    "--x-kinetic-typography-timing:linear;"
    "--x-kinetic-typography-color-shift-from:currentColor;"
-   "--x-kinetic-typography-color-shift-to:#3b82f6;"
+   "--x-kinetic-typography-color-shift-to:var(--x-color-primary,#3b82f6);"
    "--x-kinetic-typography-path-stroke:none;"
    "--x-kinetic-typography-path-stroke-width:0;"
    "--x-kinetic-typography-crawl-perspective:400px;}"

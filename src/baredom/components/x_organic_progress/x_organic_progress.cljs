@@ -35,8 +35,8 @@
    "min-height:60px;"
    "width:100%;"
    "overflow:hidden;"
-   model/css-color-primary ":#22c55e;"
-   model/css-color-secondary ":#16a34a;"
+   model/css-color-primary ":var(--x-color-success,#22c55e);"
+   model/css-color-secondary ":var(--x-color-success,#16a34a);"
    model/css-bloom-color ":#f472b6;"
    model/css-bg ":transparent;"
    model/css-branch-width ":3;"
@@ -52,8 +52,8 @@
 
    "@media(prefers-color-scheme:dark){"
    ":host{"
-   "--x-organic-progress-color-primary:#4ade80;"
-   "--x-organic-progress-color-secondary:#22c55e;"
+   "--x-organic-progress-color-primary:var(--x-color-success,#4ade80);"
+   "--x-organic-progress-color-secondary:var(--x-color-success,#22c55e);"
    "--x-organic-progress-bloom-color:#f9a8d4;}}"
 
    "@media(prefers-reduced-motion:reduce){"

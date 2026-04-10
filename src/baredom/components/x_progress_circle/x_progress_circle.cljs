@@ -23,10 +23,10 @@
    "box-sizing:border-box;"
    "--x-progress-circle-size:64px;"
    "--x-progress-circle-track-color:rgba(0,0,0,0.10);"
-   "--x-progress-circle-fill-color:#3b82f6;"
+   "--x-progress-circle-fill-color:var(--x-color-primary,#3b82f6);"
    "--x-progress-circle-stroke-width:2.8;"
    "--x-progress-circle-value-color:rgba(0,0,0,0.50);"
-   "--x-progress-circle-transition-duration:0.3s;}"
+   "--x-progress-circle-transition-duration:var(--x-transition-duration,0.3s);}"
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
@@ -39,9 +39,9 @@
    "[part=base][data-size='lg']{--x-progress-circle-size:96px;}"
 
    ;; Variant fill-color overrides
-   "[part=base][data-variant='success']{--x-progress-circle-fill-color:#22c55e;}"
-   "[part=base][data-variant='warning']{--x-progress-circle-fill-color:#f59e0b;}"
-   "[part=base][data-variant='danger']{--x-progress-circle-fill-color:#ef4444;}"
+   "[part=base][data-variant='success']{--x-progress-circle-fill-color:var(--x-color-success,#22c55e);}"
+   "[part=base][data-variant='warning']{--x-progress-circle-fill-color:var(--x-color-warning,#f59e0b);}"
+   "[part=base][data-variant='danger']{--x-progress-circle-fill-color:var(--x-color-danger,#ef4444);}"
 
    ;; Base wrapper
    "[part=base]{"

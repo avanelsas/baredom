@@ -19,9 +19,9 @@
    "display:block;"
    "color-scheme:light dark;"
    "box-sizing:border-box;"
-   "--x-progress-border-radius:9999px;"
+   "--x-progress-border-radius:var(--x-radius-full,9999px);"
    "--x-progress-track-color:rgba(0,0,0,0.10);"
-   "--x-progress-fill-color:#3b82f6;"
+   "--x-progress-fill-color:var(--x-color-primary,#3b82f6);"
    "--x-progress-label-color:rgba(0,0,0,0.60);"
    "--x-progress-value-color:rgba(0,0,0,0.50);}"
 
@@ -37,9 +37,9 @@
    "[part=base][data-size='lg']{--x-progress-height:12px;}"
 
    ;; Variant fill-color overrides
-   "[part=base][data-variant='success']{--x-progress-fill-color:#22c55e;}"
-   "[part=base][data-variant='warning']{--x-progress-fill-color:#f59e0b;}"
-   "[part=base][data-variant='danger']{--x-progress-fill-color:#ef4444;}"
+   "[part=base][data-variant='success']{--x-progress-fill-color:var(--x-color-success,#22c55e);}"
+   "[part=base][data-variant='warning']{--x-progress-fill-color:var(--x-color-warning,#f59e0b);}"
+   "[part=base][data-variant='danger']{--x-progress-fill-color:var(--x-color-danger,#ef4444);}"
 
    ;; Base wrapper
    "[part=base]{"
@@ -54,7 +54,7 @@
    "margin-bottom:4px;}"
 
    "[part=label-text]{"
-   "font-size:0.875rem;"
+   "font-size:var(--x-font-size-sm,0.875rem);"
    "color:var(--x-progress-label-color);"
    "font-weight:500;}"
 

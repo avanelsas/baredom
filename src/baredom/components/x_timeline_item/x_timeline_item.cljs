@@ -31,8 +31,8 @@
    "--x-timeline-item-label-font-size:0.8125rem;"
    "--x-timeline-item-title-font-size:0.9375rem;"
    "--x-timeline-item-stripe-bg:rgba(0,0,0,0.025);"
-   "--x-timeline-item-motion:150ms;"
-   "--x-timeline-item-motion-ease:cubic-bezier(0.2,0,0,1);"
+   "--x-timeline-item-motion:var(--x-transition-duration,150ms);"
+   "--x-timeline-item-motion-ease:var(--x-transition-easing,cubic-bezier(0.2,0,0,1));"
    "--x-timeline-item-enter-duration:160ms;"
    "--x-timeline-item-disabled-opacity:0.45;}"
 

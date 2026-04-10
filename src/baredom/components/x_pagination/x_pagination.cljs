@@ -15,7 +15,7 @@
    "color-scheme:light dark;"
    "--x-pagination-gap:0.25rem;"
    "--x-pagination-button-size:2rem;"
-   "--x-pagination-button-radius:0.375rem;"
+   "--x-pagination-button-radius:var(--x-radius-sm,0.375rem);"
    "--x-pagination-button-bg:transparent;"
    "--x-pagination-button-color:rgba(0,0,0,0.75);"
    "--x-pagination-button-border:1px solid rgba(0,0,0,0.15);"
@@ -25,7 +25,7 @@
    "--x-pagination-current-color:#fff;"
    "--x-pagination-current-border:1px solid transparent;"
    "--x-pagination-disabled-opacity:0.4;"
-   "--x-pagination-font-size:0.875rem;"
+   "--x-pagination-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-pagination-ellipsis-color:rgba(0,0,0,0.45);}"
 
    "@media (prefers-color-scheme:dark){"

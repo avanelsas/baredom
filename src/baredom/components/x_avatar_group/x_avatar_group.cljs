@@ -19,7 +19,7 @@
    "--x-avatar-group-overflow-bg:rgba(0,0,0,0.08);"
    "--x-avatar-group-overflow-color:rgba(0,0,0,0.70);"
    "--x-avatar-group-overflow-border:rgba(0,0,0,0.14);"
-   "--x-avatar-group-overflow-ring:#ffffff;"
+   "--x-avatar-group-overflow-ring:var(--x-color-surface, #ffffff);"
    "--x-avatar-group-size:32px;"
    "--x-avatar-group-font-size:0.75rem;}"
 

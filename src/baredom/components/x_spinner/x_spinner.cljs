@@ -33,10 +33,10 @@
    ":host([data-size='xl']){--x-spinner-size:48px;}"
 
    ;; Variant colour overrides
-   ":host([data-variant='primary']){--x-spinner-color:#3b82f6;}"
-   ":host([data-variant='success']){--x-spinner-color:#22c55e;}"
-   ":host([data-variant='warning']){--x-spinner-color:#f59e0b;}"
-   ":host([data-variant='danger']){--x-spinner-color:#ef4444;}"
+   ":host([data-variant='primary']){--x-spinner-color:var(--x-color-primary,#3b82f6);}"
+   ":host([data-variant='success']){--x-spinner-color:var(--x-color-success,#22c55e);}"
+   ":host([data-variant='warning']){--x-spinner-color:var(--x-color-warning,#f59e0b);}"
+   ":host([data-variant='danger']){--x-spinner-color:var(--x-color-danger,#ef4444);}"
 
    ;; Ring element
    "[part=ring]{"

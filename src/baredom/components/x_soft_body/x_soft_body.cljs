@@ -34,10 +34,10 @@
    "position:relative;"
    "background:none;"
    "overflow:visible;"
-   model/css-bg ":#ffffff;"
+   model/css-bg ":var(--x-color-surface,#ffffff);"
    model/css-border ":#e2e8f0;"
    model/css-border-width ":1.5;"
-   model/css-shadow ":0 1px 3px rgba(0,0,0,0.1);"
+   model/css-shadow ":var(--x-shadow-sm,0 1px 3px rgba(0,0,0,0.1));"
    model/css-padding ":1rem;}"
 
    "[part=svg]{"
@@ -63,9 +63,9 @@
 
    "@media(prefers-color-scheme:dark){"
    ":host{"
-   model/css-bg ":#1e293b;"
-   model/css-border ":#475569;"
-   model/css-shadow ":0 1px 3px rgba(0,0,0,0.3);}}"
+   model/css-bg ":var(--x-color-surface,#1e293b);"
+   model/css-border ":var(--x-color-border,#475569);"
+   model/css-shadow ":var(--x-shadow-sm,0 1px 3px rgba(0,0,0,0.3));}}"
 
    "@media(prefers-reduced-motion:reduce){"
    "[part=shape]{transition:none!important;}}"))

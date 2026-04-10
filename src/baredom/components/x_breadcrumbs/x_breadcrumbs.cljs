@@ -18,7 +18,7 @@
    "--x-breadcrumbs-color-current:rgba(0,0,0,0.88);"
    "--x-breadcrumbs-color-hover:rgba(0,0,0,0.80);"
    "--x-breadcrumbs-separator-color:rgba(0,0,0,0.35);"
-   "--x-breadcrumbs-font-size:0.875rem;"
+   "--x-breadcrumbs-font-size:var(--x-font-size-sm,0.875rem);"
    "--x-breadcrumbs-gap:0.25rem;"
    "--x-breadcrumbs-disabled-opacity:0.55;}"
 
