@@ -111,6 +111,30 @@ Every component under `src/baredom/components/<name>/` follows:
 
 All components use open shadow DOM (`mode: "open"`). Styles are inline ClojureScript strings. CSS custom properties follow `--x-<component>-<property>` naming. Light/dark mode is handled via `@media (prefers-color-scheme: dark)` inside the shadow style string. Animations must respect `@media (prefers-reduced-motion: reduce)`.
 
+### Theming
+
+All components must consume the shared design tokens defined by `x-theme` (`src/baredom/components/x_theme/model.cljs`). In `:host` CSS custom property declarations, wrap hardcoded values with `var(--x-token, fallback)` so the original value is preserved when no `<x-theme>` is present:
+
+```css
+/* Correct — themed with fallback */
+--x-foo-bg: var(--x-color-surface, #ffffff);
+
+/* Wrong — ignores theme tokens */
+--x-foo-bg: #ffffff;
+```
+
+**Token usage rules:**
+- **Colors:** Use `--x-color-primary/hover/active`, `--x-color-secondary/...`, `--x-color-tertiary/...`, `--x-color-surface/hover/active`, `--x-color-bg`, `--x-color-text`, `--x-color-text-muted`, `--x-color-border`, `--x-color-focus-ring`, `--x-color-danger`, `--x-color-success`, `--x-color-warning`
+- **Shape:** `--x-radius-sm/md/lg/full`, **Shadows:** `--x-shadow-sm/md/lg`, **Motion:** `--x-transition-duration`, `--x-transition-easing`, **Typography:** `--x-font-size-sm/base`, `--x-font-family`
+- **Overlays** (modals, drawers, menus, popovers, toasts, dropdowns, command palette): use `--x-color-bg` (always opaque), never `--x-color-surface` (can be semi-transparent in Aurora theme)
+- **Inline surfaces** (cards, fieldsets, collapse panels): use `--x-color-surface`
+- **Do not theme:** component-specific spacing, font-weight, line-height, opacity, decorative palette colours (e.g. x-liquid-fill gold), white-on-coloured-button foreground, rgba variant tints (info/success/warning/error overlays)
+
+**Demo pages:**
+- Include `<script src="demo-theme.js" defer></script>` in every demo page
+- Use `var(--page-bg)`, `var(--surface-bg)`, `var(--input-bg)` etc. from `demo-responsive.css` — never hardcode colours
+- If a demo defines its own `:root` variables, add an `x-theme { ... }` block that re-maps them to theme tokens (`:root` resolves before `<x-theme>` in the DOM tree)
+
 ### Mobile and responsive
 
 All components must work on viewports from 320px up. Apply these rules in every component:
