@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <packaging>jar</packaging>
+  <groupId>com.github.avanelsas</groupId>
+  <artifactId>baredom</artifactId>
+  <version>2.0.0</version>
+  <name>baredom</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>1.11.2</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+  </build>
+  <repositories>
+    <repository>
+      <id>clojars</id>
+      <url>https://repo.clojars.org/</url>
+    </repository>
+  </repositories>
+  <scm>
+    <connection>scm:git:git://github.com/avanelsas/baredom.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/avanelsas/baredom.git</developerConnection>
+    <tag>v2.0.0</tag>
+    <url>https://github.com/avanelsas/baredom</url>
+  </scm>
+  <description>80 native Web Components with centralised theming — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.</description>
+  <url>https://github.com/vanelsas/baredom</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Alexander van Elsas</name>
+    </developer>
+  </developers>
+</project>
