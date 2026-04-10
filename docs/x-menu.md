@@ -71,6 +71,12 @@ Click outside the host closes the menu without returning focus.
 - Focus is managed via `tabindex="-1"` on items and programmatic `.focus()`.
 - `aria-disabled` is set on disabled items.
 
+## Responsive
+
+The panel max-width is capped at `calc(100vw - 1rem)` to prevent horizontal overflow on narrow viewports.
+
+---
+
 ## Usage
 
 ```html

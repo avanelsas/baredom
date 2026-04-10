@@ -110,6 +110,12 @@ In light mode, the panel uses the CSS system colors `Canvas` and `CanvasText`. I
 - Pressing Escape closes the drawer.
 - Clicking the backdrop closes the drawer.
 
+## Responsive
+
+Panel max-width uses `100%` instead of `100vw` to avoid scrollbar-induced overflow on mobile. Vertical panels use `100dvh` for correct height on mobile browsers with dynamic toolbars.
+
+---
+
 ## Usage Examples
 
 ### Basic usage

@@ -122,6 +122,12 @@ The `size` attribute sets CSS custom properties on `[part=base]`:
 
 ---
 
+## Responsive
+
+On touch devices (`@media (pointer:coarse)`) the slider thumb is enlarged to 28px for easier interaction.
+
+---
+
 ## Usage examples
 
 ### Basic slider

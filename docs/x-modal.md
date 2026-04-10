@@ -98,6 +98,12 @@ Centered overlay dialog with backdrop. Traps focus, dismisses on Escape or backd
 | `xl`   | `60rem`             | |
 | `full` | `100vw × 100dvh`   | Fills the viewport, border-radius removed. |
 
+## Responsive
+
+On narrow viewports the dialog width is capped at `calc(100vw - 2rem)` to prevent horizontal overflow. Full-screen mode (`size="full"`) uses `100dvh` for correct height on mobile browsers with dynamic toolbars.
+
+---
+
 ## Usage
 
 ```html

@@ -87,6 +87,12 @@ The panel is positioned using pure DOM geometry. When the preferred placement ov
 
 ---
 
+## Responsive
+
+The panel max-width is capped at `calc(100vw - 1rem)` to prevent horizontal overflow on narrow viewports.
+
+---
+
 ## Examples
 
 ### Basic

@@ -137,6 +137,12 @@ An action-menu dropdown: a styled trigger button that toggles a positioned panel
 - **Cancelled toggle**: calling `preventDefault()` on `x-dropdown-toggle` prevents the state change and suppresses `x-dropdown-change`.
 - **Placement**: driven entirely by CSS via `data-placement` on `[part=panel]`. No JavaScript viewport math — the component does not auto-flip.
 
+## Responsive
+
+The panel max-width is capped at `calc(100vw - 1rem)` to prevent horizontal overflow on narrow viewports.
+
+---
+
 ## Usage examples
 
 ```html

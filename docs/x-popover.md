@@ -166,6 +166,12 @@ All color custom properties respond to `@media (prefers-color-scheme: dark)` via
 
 When `@media (prefers-reduced-motion: reduce)` is active, panel and close button transitions are disabled (`transition: none !important`).
 
+## Responsive
+
+The default panel max-width uses `min(24rem, calc(100vw - 1rem))` to prevent horizontal overflow on narrow viewports.
+
+---
+
 ## Usage examples
 
 ### Basic usage

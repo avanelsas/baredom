@@ -59,6 +59,8 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 
 **Accessibility built in.** ARIA roles, live regions, keyboard navigation, focus management, and `prefers-reduced-motion` support are part of the component, not an afterthought. You do not need to layer accessibility on top.
 
+**Mobile-ready.** All components are tested on viewports from 320px up. Overlay panels cap their width to avoid overflow. Touch targets meet the 44px minimum on coarse-pointer devices. Pointer events are used throughout for unified mouse and touch input.
+
 **Open Shadow DOM.** Shadow roots are `mode: "open"` — inspectable in DevTools, styleable via `::part()`, and testable with standard DOM APIs.
 
 ---
@@ -391,6 +393,8 @@ Override CSS custom properties at any scope:
 **Accessible by default.** ARIA roles, live regions, keyboard interaction patterns, focus indicators, and `prefers-reduced-motion` support are written into every component that needs them — not optional add-ons.
 
 **Predictable theming.** CSS custom properties follow a single naming convention: `--x-<component>-<property>`. Tokens are set on `:host` and cascade normally. You override them the same way you override any CSS property.
+
+**Mobile-first.** Components use `dvh` viewport units, `calc(100vw - ...)` width caps, and `@media (pointer:coarse)` rules for touch-friendly sizing. No component overflows on a 320px screen.
 
 ---
 

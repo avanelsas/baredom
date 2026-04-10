@@ -90,6 +90,12 @@ A searchable command list overlay (⌘K pattern). Opens as a modal with a text i
 
 ---
 
+## Responsive
+
+The panel max-width is capped at `calc(100vw - 2rem)` to prevent horizontal overflow on narrow viewports.
+
+---
+
 ## Examples
 
 ### Basic usage

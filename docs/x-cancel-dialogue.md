@@ -70,6 +70,12 @@ All events bubble and are composed.
 
 ---
 
+## Responsive
+
+The panel min-width and max-width are capped via `min(Xpx, calc(100vw - 2rem))` so the dialogue never overflows on narrow viewports (320px and up).
+
+---
+
 ## Examples
 
 ### Basic usage

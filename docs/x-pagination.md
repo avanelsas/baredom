@@ -172,6 +172,12 @@ An `…` ellipsis is inserted wherever consecutive visible page numbers have a g
 
 ---
 
+## Responsive
+
+On touch devices (`@media (pointer:coarse)`) page buttons are enlarged to 2.75rem (44px) for easier tap interaction.
+
+---
+
 ## Usage Examples
 
 ### Basic
