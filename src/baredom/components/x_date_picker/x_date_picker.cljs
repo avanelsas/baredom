@@ -468,6 +468,7 @@
    "box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);"
    "padding:16px;"
    "width:var(--x-date-picker-popover-width,304px);"
+   "max-width:calc(100vw - 1rem);"
    "box-sizing:border-box;"
    "}"
    ":host([open]) [part=popover]{display:block;}"
@@ -792,7 +793,7 @@
     (.addEventListener next "click"   h-next)
     (.addEventListener grid "click"   h-grid)
     (.addEventListener grid "keydown" h-grid-kd)
-    (.addEventListener pop "mousedown" h-pop-md)
+    (.addEventListener pop "pointerdown" h-pop-md)
     (.addEventListener js/document "pointerdown" h-doc-click true)
 
     (gobj/set el k-handlers
@@ -828,7 +829,7 @@
         (.removeEventListener next "click"     (gobj/get handlers "next"))
         (.removeEventListener grid "click"     (gobj/get handlers "grid"))
         (.removeEventListener grid "keydown"  (gobj/get handlers "grid-kd"))
-        (.removeEventListener pop  "mousedown" (gobj/get handlers "pop-md"))
+        (.removeEventListener pop  "pointerdown" (gobj/get handlers "pop-md"))
         (.removeEventListener js/document "pointerdown" (gobj/get handlers "doc-click") true)))))
 
 ;; ---------------------------------------------------------------------------

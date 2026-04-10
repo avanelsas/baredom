@@ -102,7 +102,11 @@
    "user-select:none;}"
 
    "@media (prefers-reduced-motion:reduce){"
-   "[part~='button']{transition:none !important;}}"))
+   "[part~='button']{transition:none !important;}}"
+
+   "@media (pointer:coarse){"
+   "[part~='button']{min-width:2.75rem;height:2.75rem;}"
+   "}"))
 
 ;; ── DOM initialisation ────────────────────────────────────────────────────
 (defn- make-prev-li! []

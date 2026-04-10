@@ -376,11 +376,9 @@
     (gobj/set el k-autoplay-raf nil))
   ;; Remove pause/resume listeners
   (when-let [hs (gobj/get el k-autoplay-handlers)]
-    (.removeEventListener el "mousedown"  (gobj/get hs "mousedown"))
-    (.removeEventListener el "mouseup"    (gobj/get hs "mouseup"))
-    (.removeEventListener el "mouseleave" (gobj/get hs "mouseleave"))
-    (.removeEventListener el "touchstart" (gobj/get hs "touchstart"))
-    (.removeEventListener el "touchend"   (gobj/get hs "touchend"))
+    (.removeEventListener el "pointerdown"  (gobj/get hs "pointerdown"))
+    (.removeEventListener el "pointerup"    (gobj/get hs "pointerup"))
+    (.removeEventListener el "pointerleave" (gobj/get hs "pointerleave"))
     (.removeEventListener el "keydown"    (gobj/get hs "keydown"))
     (.removeEventListener el "keyup"      (gobj/get hs "keyup"))
     (gobj/set el k-autoplay-handlers nil))
@@ -403,12 +401,10 @@
         (gobj/set el k-autoplay-paused false)
         (gobj/set el k-autoplay-last nil)
         ;; Attach pause/resume listeners
-        (let [on-mousedown  (fn [_e] (pause-autoplay! el))
-              on-mouseup    (fn [_e] (resume-autoplay! el))
-              on-mouseleave (fn [_e] (when (gobj/get el k-autoplay-paused)
-                                       (resume-autoplay! el)))
-              on-touchstart (fn [_e] (pause-autoplay! el))
-              on-touchend   (fn [_e] (resume-autoplay! el))
+        (let [on-pointerdown  (fn [_e] (pause-autoplay! el))
+              on-pointerup    (fn [_e] (resume-autoplay! el))
+              on-pointerleave (fn [_e] (when (gobj/get el k-autoplay-paused)
+                                         (resume-autoplay! el)))
               on-keydown    (fn [^js e]
                               (when (= (.-code e) "Space")
                                 (.preventDefault e)
@@ -416,19 +412,15 @@
               on-keyup      (fn [^js e]
                               (when (= (.-code e) "Space")
                                 (resume-autoplay! el)))]
-          (.addEventListener el "mousedown"  on-mousedown)
-          (.addEventListener el "mouseup"    on-mouseup)
-          (.addEventListener el "mouseleave" on-mouseleave)
-          (.addEventListener el "touchstart" on-touchstart #js {:passive true})
-          (.addEventListener el "touchend"   on-touchend   #js {:passive true})
+          (.addEventListener el "pointerdown"  on-pointerdown)
+          (.addEventListener el "pointerup"    on-pointerup)
+          (.addEventListener el "pointerleave" on-pointerleave)
           (.addEventListener el "keydown"    on-keydown)
           (.addEventListener el "keyup"      on-keyup)
           (gobj/set el k-autoplay-handlers
-                    #js {:mousedown  on-mousedown
-                         :mouseup    on-mouseup
-                         :mouseleave on-mouseleave
-                         :touchstart on-touchstart
-                         :touchend   on-touchend
+                    #js {:pointerdown  on-pointerdown
+                         :pointerup    on-pointerup
+                         :pointerleave on-pointerleave
                          :keydown    on-keydown
                          :keyup      on-keyup}))
         ;; Start rAF loop

@@ -69,7 +69,7 @@
    ":host([data-placement=bottom]) [part=panel]{"
    "left:0;right:0;"
    "height:var(--x-drawer-size);"
-   "max-height:100vh;"
+   "max-height:100dvh;"
    "}"
    ":host([data-placement=top]) [part=panel]{"
    "top:0;"

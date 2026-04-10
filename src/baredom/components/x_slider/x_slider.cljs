@@ -153,6 +153,11 @@
    "@media (prefers-reduced-motion:reduce){"
    "[part=input]::-webkit-slider-thumb{transition:none;}"
    "[part=input]::-moz-range-thumb{transition:none;}"
+   "}"
+
+   ;; Larger touch targets on coarse-pointer devices
+   "@media (pointer:coarse){"
+   "[part=base]{--_x-slider-thumb-sz:28px;}"
    "}"))
 
 ;; ---------------------------------------------------------------------------

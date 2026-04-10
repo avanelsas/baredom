@@ -18,7 +18,7 @@
    "z-index:var(--x-toaster-z-index,9000);"
    "gap:var(--x-toaster-gap,8px);"
    "width:max-content;"
-   "max-width:var(--x-toaster-max-width,480px);"
+   "max-width:var(--x-toaster-max-width,min(480px,calc(100vw - 2rem)));"
    "box-sizing:border-box;"
    "pointer-events:none;"
    "color-scheme:light dark;}"
