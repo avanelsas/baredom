@@ -1,5 +1,13 @@
 # BareDOM
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/assets/baredom_darkmode.svg">
+    <source media="(prefers-color-scheme: light)" srcset="public/assets/baredom_lightmode.svg">
+    <img alt="Project Logo" src="public/assets/baredom_lightmode.svg" width="200">
+  </picture>
+</p>
+
 **Native web components. Zero runtime. No framework required.**
 
 [![npm version](https://img.shields.io/npm/v/%40vanelsas%2Fbaredom.svg)](https://www.npmjs.com/package/@vanelsas/baredom)
