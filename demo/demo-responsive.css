@@ -1,0 +1,200 @@
+/* ── demo-responsive.css ──────────────────────────────────
+   Shared responsive overrides and standard theme for all demo pages.
+   Targets 320px minimum width.
+   Breakpoints: 768px (tablet), 640px (large phone), 480px (small phone)
+   ──────────────────────────────────────────────────────── */
+
+/* ── Standard theme (matches x-alert reference) ─────── */
+:root {
+  color-scheme: light dark;
+  --page-bg: #f8fafc;
+  --page-fg: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --input-fg: #0f172a;
+  --surface-bg: #ffffff;
+  --surface-border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #0f172a;
+    --page-fg: #f8fafc;
+    --muted: #94a3b8;
+    --border: #1e293b;
+    --input-bg: #1e293b;
+    --input-fg: #f8fafc;
+    --surface-bg: #1e293b;
+    --surface-border: #334155;
+  }
+}
+
+html, body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--page-fg);
+}
+
+/* ── Tablet & below (768px) ──────────────────────────── */
+@media (max-width: 768px) {
+  .page {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Two-column layouts → single column */
+  .layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Fluid grids: cap minmax to viewport */
+  .demo-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)) !important;
+  }
+
+  .placement-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px;
+  }
+}
+
+/* ── Large phone (640px) ─────────────────────────────── */
+@media (max-width: 640px) {
+  body {
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+
+  .page {
+    padding: 20px 12px 40px;
+  }
+
+  /* Cards and sections: tighter padding */
+  .section-card,
+  .section,
+  .card,
+  .panel {
+    padding: 14px;
+  }
+
+  /* Grids → single column */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .demo-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Control groups: stack vertically */
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .field {
+    width: 100%;
+  }
+
+  /* Keep rows wrapping but tighter */
+  .row {
+    gap: 8px;
+  }
+
+  /* Headings: fluid sizing */
+  h1 {
+    font-size: clamp(1.25rem, 5vw, 1.75rem) !important;
+  }
+
+  /* Log/event blocks: allow wrapping */
+  .log,
+  .event-log,
+  pre {
+    word-break: break-all;
+    font-size: 0.75rem;
+  }
+
+  .log-entry {
+    font-size: 0.75rem;
+  }
+
+  /* Fullpage demos: reduce padding */
+  .fullpage-demo {
+    padding: 16px;
+  }
+}
+
+/* ── Small phone (480px, down to 320px) ──────────────── */
+@media (max-width: 480px) {
+  body {
+    padding: 10px !important;
+  }
+
+  .page {
+    padding: 16px 8px 32px;
+  }
+
+  .section-card,
+  .section,
+  .card,
+  .panel {
+    padding: 10px;
+  }
+
+  .controls {
+    gap: 8px;
+  }
+
+  .control-group {
+    gap: 4px;
+  }
+
+  /* Smaller labels and chips */
+  .eyebrow {
+    font-size: 0.625rem;
+    padding: 2px 6px;
+  }
+
+  .placement-grid {
+    gap: 20px;
+    padding: 12px 4px;
+  }
+
+  .fullpage-demo {
+    padding: 8px;
+  }
+
+  .hero {
+    padding: 16px;
+  }
+}
+
+/* ── Table horizontal scroll ─────────────────────────── */
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* Fixed-column grids: horizontal scroll on mobile */
+@media (max-width: 640px) {
+  .table-grid,
+  .grid-row,
+  .truncate-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Two-column side-by-side grids → single column */
+  .mini-grid.two,
+  .mini-grid.three {
+    grid-template-columns: 1fr !important;
+  }
+}

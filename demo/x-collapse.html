@@ -7,38 +7,12 @@
   <title>x-collapse demo</title>
   <script src="../js/main.js"></script>
   <style>
-    :root {
-      --page-bg: #f9fafb;
-      --page-fg: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --input-bg: #fff;
-      --input-fg: #111827;
-      --surface-bg: #fff;
-      --surface-border: #e5e7eb;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page-bg: #111827;
-        --page-fg: #f9fafb;
-        --muted: #9ca3af;
-        --border: #374151;
-        --input-bg: #374151;
-        --input-fg: #f9fafb;
-        --surface-bg: #1f2937;
-        --surface-border: #374151;
-      }
-    }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: system-ui, -apple-system, sans-serif;
       font-size: 15px;
       line-height: 1.5;
-      background: var(--page-bg);
-      color: var(--page-fg);
       padding: 24px;
       max-width: 780px;
       margin: 0 auto;
@@ -136,6 +110,7 @@
       display: block;
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

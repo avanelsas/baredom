@@ -7,32 +7,15 @@
     <meta name="color-scheme" content="light dark" />
     <style>
       :root {
-        color-scheme: light dark;
-        --page-bg: #f8fafc;
-        --page-fg: #0f172a;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --surface-bg: #ffffff;
-        --surface-border: #e2e8f0;
         --btn-bg: #2563eb;
-        --input-bg: #ffffff;
-        --input-fg: #0f172a;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --page-bg: #0f172a;
-          --page-fg: #f8fafc;
-          --muted: #94a3b8;
-          --border: #1e293b;
-          --surface-bg: #1e293b;
-          --surface-border: #334155;
           --btn-bg: #3b82f6;
-          --input-bg: #1e293b;
-          --input-fg: #f8fafc;
         }
       }
       * { box-sizing: border-box; }
-      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 800px; }
       h1 { font-size: 1.5rem; margin: 0 0 4px; }
       h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
@@ -56,6 +39,7 @@
       .trigger-btn:hover { background: var(--border); }
       .chevron { font-size: 10px; }
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
   </head>
   <body>

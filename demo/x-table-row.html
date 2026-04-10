@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>x-table-row demo</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -13,20 +14,15 @@
       line-height: 1.5;
       margin: 0;
       padding: 24px;
-      background: #f9fafb;
-      color: #111827;
     }
 
-    @media (prefers-color-scheme: dark) {
-      body { background: #111827; color: #f3f4f6; }
-      .label { color: #9ca3af; }
-    }
+    
 
     h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
 
     .section {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
       border-radius: 10px;
       padding: 20px;
       margin-bottom: 24px;
@@ -37,7 +33,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #6b7280;
+      color: var(--muted);
       margin: 0 0 16px;
       padding-bottom: 8px;
       border-bottom: 1px solid #f3f4f6;
@@ -46,7 +42,7 @@
     /* Grid table container */
     .table-grid {
       display: grid;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--surface-border);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -63,8 +59,8 @@
     .state-label {
       display: inline-block;
       font-size: 11px;
-      color: #6b7280;
-      background: #f3f4f6;
+      color: var(--muted);
+      background: var(--surface-bg);
       border-radius: 4px;
       padding: 1px 6px;
       margin-left: 4px;
@@ -79,13 +75,13 @@
       align-items: flex-end;
       margin-bottom: 20px;
       padding: 16px;
-      background: #f9fafb;
+      background: var(--page-bg);
       border-radius: 8px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--surface-border);
     }
 
     .field { display: flex; flex-direction: column; gap: 4px; }
-    .field label { font-size: 12px; font-weight: 500; color: #6b7280; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--muted); }
 
     .checkbox-row {
       display: flex;
@@ -104,7 +100,7 @@
     input[type=number] {
       width: 80px;
       padding: 6px 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 13px;
     }
@@ -115,16 +111,14 @@
       overflow-y: auto;
       font-family: monospace;
       font-size: 12px;
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      color: #111827;
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
+      color: var(--page-fg);
       border-radius: 8px;
       padding: 12px;
     }
 
-    @media (prefers-color-scheme: dark) {
-      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
-    }
+    
 
     .log-entry { margin: 2px 0; }
     .log-entry.click     { color: #2563eb; }
@@ -146,13 +140,13 @@
     button {
       padding: 6px 14px;
       border-radius: 6px;
-      border: 1px solid #d1d5db;
-      background: #fff;
+      border: 1px solid var(--border);
+      background: var(--surface-bg);
       font-size: 13px;
       cursor: pointer;
     }
 
-    button:hover { background: #f3f4f6; }
+    button:hover { background: var(--surface-bg); }
 
     .badge {
       display: inline-flex;
@@ -167,18 +161,10 @@
     .badge-red    { background: #fee2e2; color: #991b1b; }
 
     @media (prefers-color-scheme: dark) {
-      .section { background: #1f2937; border-color: #374151; }
-      .section h2 { color: #f9fafb; border-color: #374151; }
-      .panel { background: #1f2937; border-color: #374151; }
-      .field label { color: #9ca3af; }
-      input[type=number] { background: #374151; border-color: #4b5563; color: #f3f4f6; }
-      button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
-      button:hover { background: #4b5563; }
-      .state-label { background: #374151; color: #9ca3af; }
-      .table-grid { border-color: #374151; }
       x-table-row { --x-table-cell-border-color: rgba(255,255,255,0.06); }
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
   <h1>x-table-row</h1>

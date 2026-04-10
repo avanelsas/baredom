@@ -41,7 +41,7 @@
 
     .demo-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
       gap: 1.5rem;
       margin-top: 1rem;
     }
@@ -209,6 +209,7 @@
       inset: 0;
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

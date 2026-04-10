@@ -7,10 +7,6 @@
     <meta name="color-scheme" content="light dark" />
     <style>
       :root {
-        color-scheme: light dark;
-        --page-bg: #f8fafc;
-        --page-fg: #0f172a;
-        --muted: #475569;
         --card-bg: rgba(255, 255, 255, 0.82);
         --card-border: rgba(148, 163, 184, 0.24);
         --card-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
@@ -24,9 +20,6 @@
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --page-bg: #020617;
-          --page-fg: #e5e7eb;
-          --muted: #94a3b8;
           --card-bg: rgba(15, 23, 42, 0.82);
           --card-border: rgba(51, 65, 85, 0.88);
           --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
@@ -47,8 +40,6 @@
       body {
         min-height: 100%;
         margin: 0;
-        background: var(--page-bg);
-        color: var(--page-fg);
       }
 
       body {
@@ -238,6 +229,7 @@
         color: var(--muted);
       }
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
     <x-navbar

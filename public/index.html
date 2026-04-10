@@ -377,12 +377,26 @@
       flex-shrink: 0;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       header { padding: 32px 20px 28px; }
       .toolbar { padding: 0 20px 20px; }
       .section-label { padding: 0 20px 10px; }
       .grid { padding: 0 20px 20px; grid-template-columns: 1fr 1fr; gap: 10px; }
       footer { padding: 20px; }
+      .search-wrap { min-width: 0; max-width: none; flex: 1 1 100%; }
+    }
+
+    @media (max-width: 480px) {
+      header { padding: 20px 12px 16px; }
+      header h1 { font-size: 1.5rem; }
+      header p { font-size: 0.9rem; }
+      .toolbar { padding: 0 12px 14px; }
+      .section-label { padding: 0 12px 8px; }
+      .grid { padding: 0 12px 14px; grid-template-columns: 1fr; gap: 8px; }
+      footer { padding: 14px 12px; flex-direction: column; text-align: center; gap: 8px; }
+      .comp-card { padding: 12px 14px 10px; }
+      .filter-chip { padding: 4px 8px; font-size: 0.75rem; }
+      .comp-style { font-size: 0.6rem; padding: 2px 6px; }
     }
 
     @media (prefers-reduced-motion: reduce) {

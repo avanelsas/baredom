@@ -7,29 +7,9 @@
   <title>x-popover demo</title>
   <script src="../js/main.js"></script>
   <style>
-    :root {
-      --page-bg: #f8fafc;
-      --page-fg: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-fg: #0f172a;
-      --surface-bg: #ffffff;
-      --surface-border: #e2e8f0;
-    }
+    
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page-bg: #0f172a;
-        --page-fg: #f8fafc;
-        --muted: #94a3b8;
-        --border: #1e293b;
-        --input-bg: #1e293b;
-        --input-fg: #f8fafc;
-        --surface-bg: #1e293b;
-        --surface-border: #334155;
-      }
-    }
+    
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -37,8 +17,6 @@
       font-family: system-ui, -apple-system, sans-serif;
       font-size: 15px;
       line-height: 1.5;
-      background: var(--page-bg);
-      color: var(--page-fg);
       padding: 24px;
       max-width: 860px;
       margin: 0 auto;
@@ -110,7 +88,6 @@
     /* Popover body content styles */
     .pop-text {
       font-size: 0.9rem;
-      color: var(--page-fg);
       line-height: 1.6;
     }
     .pop-footer-row {
@@ -161,6 +138,7 @@
       padding: 60px 40px;
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>x-splash demo</title>
   <script src="../js/main.js"></script>
   <style>
@@ -12,38 +13,29 @@
       max-width: 800px;
       margin: 2rem auto;
       padding: 0 1rem;
-      color: #1e293b;
-      background: #f8fafc;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { color: #e2e8f0; background: #0f172a; }
+      color: var(--page-fg);
+      background: var(--page-bg);
     }
     h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-    @media (prefers-color-scheme: dark) {
-      h2 { border-color: #334155; }
-    }
+    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
+    
     .controls {
       display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;
     }
     .controls button {
       padding: 0.5rem 1rem;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: #fff;
+      background: var(--surface-bg);
       cursor: pointer;
       font-size: 0.875rem;
     }
-    @media (prefers-color-scheme: dark) {
-      .controls button { background: #1e293b; border-color: #475569; color: #e2e8f0; }
-    }
-    .controls button:hover { background: #f1f5f9; }
-    @media (prefers-color-scheme: dark) {
-      .controls button:hover { background: #334155; }
-    }
+    
+    .controls button:hover { background: var(--surface-bg); }
+    
     .controls label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
     #event-log {
-      background: #1e293b; color: #a5f3fc; padding: 1rem;
+      background: var(--surface-bg); color: #a5f3fc; padding: 1rem;
       border-radius: 8px; font-family: monospace; font-size: 0.8rem;
       max-height: 200px; overflow-y: auto; margin-top: 1rem;
     }
@@ -72,6 +64,7 @@
     }
     .demo-close-btn:hover { background: rgba(255,255,255,0.3); }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
   <h1>&lt;x-splash&gt; Demo</h1>

@@ -8,42 +8,22 @@
   <script src="../js/main.js"></script>
   <style>
     :root {
-      color-scheme: light dark;
-      --page-bg: #f8fafc;
-      --page-fg: #0f172a;
-      --muted: #64748b;
-      --surface-bg: #ffffff;
-      --surface-border: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-fg: #0f172a;
       --log-bg: #111827;
       --log-fg: #f9fafb;
       --log-entry-border: #1f2937;
-    }
+      }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --page-bg: #0f172a;
-        --page-fg: #f8fafc;
-        --muted: #94a3b8;
-        --surface-bg: #1e293b;
-        --surface-border: #334155;
-        --input-bg: #1e293b;
-        --input-fg: #f8fafc;
         --log-bg: #020617;
         --log-fg: #f9fafb;
         --log-entry-border: #1e293b;
-      }
+        }
     }
 
     *, *::before, *::after { box-sizing: border-box; }
 
-    html, body {
-      min-height: 100%;
-      margin: 0;
-      background: var(--page-bg);
-      color: var(--page-fg);
-    }
+    
 
     body {
       font-family: system-ui, -apple-system, sans-serif;
@@ -121,6 +101,7 @@
     .chip.warning { background: #fff3cd; color: #664d03; }
     .chip.error   { background: #f8d7da; color: #58151c; }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

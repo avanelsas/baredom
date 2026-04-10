@@ -7,12 +7,6 @@
     <meta name="color-scheme" content="light dark" />
     <style>
       :root {
-        color-scheme: light dark;
-        --page-bg: #f8fafc;
-        --page-fg: #0f172a;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --surface-bg: #ffffff;
         --accent: #3b82f6;
         --accent-fg: #ffffff;
         --pill: #e0f2fe;
@@ -21,11 +15,6 @@
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --page-bg: #0f172a;
-          --page-fg: #f8fafc;
-          --muted: #94a3b8;
-          --border: #1e293b;
-          --surface-bg: #1e293b;
           --accent: #60a5fa;
           --accent-fg: #0f172a;
           --pill: #1e3a8a;
@@ -35,12 +24,7 @@
 
       * { box-sizing: border-box; }
 
-      html, body {
-        min-height: 100%;
-        margin: 0;
-        background: var(--page-bg);
-        color: var(--page-fg);
-      }
+      
 
       body {
         font-family: system-ui, -apple-system, sans-serif;
@@ -88,7 +72,6 @@
         appearance: none;
         border: 1px solid var(--border);
         background: var(--surface-bg);
-        color: var(--page-fg);
         font: inherit;
         padding: 6px 12px;
         border-radius: 8px;
@@ -112,7 +95,6 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 12px;
         color: var(--muted);
-        background: var(--page-bg);
         border: 1px solid var(--border);
         border-radius: 8px;
         padding: 8px 10px;
@@ -236,6 +218,7 @@
       .orb-a { background: #ef4444; }   /* coral red */
       .orb-b { background: #3b82f6; }   /* blue */
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
   </head>
   <body>

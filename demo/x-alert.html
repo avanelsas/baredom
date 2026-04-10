@@ -6,38 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <style>
-      :root {
-        color-scheme: light dark;
-        --page-bg: #f8fafc;
-        --page-fg: #0f172a;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --input-bg: #ffffff;
-        --input-fg: #0f172a;
-        --surface-bg: #ffffff;
-        --surface-border: #e2e8f0;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --page-bg: #0f172a;
-          --page-fg: #f8fafc;
-          --muted: #94a3b8;
-          --border: #1e293b;
-          --input-bg: #1e293b;
-          --input-fg: #f8fafc;
-          --surface-bg: #1e293b;
-          --surface-border: #334155;
-        }
-      }
-
       * { box-sizing: border-box; }
 
       html, body {
         min-height: 100%;
         margin: 0;
-        background: var(--page-bg);
-        color: var(--page-fg);
       }
 
       body {
@@ -106,6 +79,7 @@
         font-size: 12px;
       }
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
   </head>
   <body>

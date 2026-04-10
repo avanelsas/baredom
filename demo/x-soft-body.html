@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>x-soft-body demo</title>
   <script src="../js/main.js"></script>
   <style>
@@ -12,17 +13,12 @@
       max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1rem;
-      color: #1e293b;
-      background: #f8fafc;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { color: #e2e8f0; background: #0f172a; }
+      color: var(--page-fg);
+      background: var(--page-bg);
     }
     h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-    @media (prefers-color-scheme: dark) {
-      h2 { border-color: #334155; }
-    }
+    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
+    
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -47,7 +43,7 @@
     #event-log {
       font-family: monospace;
       font-size: 0.8rem;
-      background: #f1f5f9;
+      background: var(--surface-bg);
       border-radius: 8px;
       padding: 0.75rem;
       max-height: 160px;
@@ -55,7 +51,7 @@
       margin-top: 0.5rem;
     }
     @media (prefers-color-scheme: dark) {
-      #event-log { background: #1e293b; }
+      #event-log { background: var(--surface-bg); }
     }
     .amber {
       --x-soft-body-bg: #fef3c7;
@@ -94,6 +90,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>x-button demo</title>
+    <meta name="color-scheme" content="light dark" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="../js/main.js"></script>
     <style>
@@ -12,13 +13,11 @@
         font-family: system-ui, sans-serif;
         margin: 24px;
         line-height: 1.4;
-        background: #f9fafb;
-        color: #111827;
+        background: var(--page-bg);
+        color: var(--page-fg);
       }
 
-      @media (prefers-color-scheme: dark) {
-        body { background: #111827; color: #f9fafb; }
-      }
+      
 
       .grid {
         display: grid;
@@ -27,15 +26,13 @@
       }
 
       .card {
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--surface-border);
         border-radius: 12px;
         padding: 16px;
-        background: #fff;
+        background: var(--surface-bg);
       }
 
-      @media (prefers-color-scheme: dark) {
-        .card { background: #1f2937; border-color: #374151; }
-      }
+      
 
       .row {
         display: flex;
@@ -48,18 +45,16 @@
         margin-top: 24px;
         padding: 12px;
         border-radius: 8px;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        color: #111827;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        color: var(--page-fg);
         min-height: 72px;
         white-space: pre-wrap;
         font-family: monospace;
         font-size: 0.8rem;
       }
 
-      @media (prefers-color-scheme: dark) {
-        .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
-      }
+      
 
       x-button.brand {
         --x-button-bg: #2563eb;
@@ -85,6 +80,7 @@
         opacity: 0.75;
       }
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
     <h1>x-button demo</h1>

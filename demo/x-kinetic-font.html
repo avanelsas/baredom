@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>x-kinetic-font demo</title>
   <script src="../js/main.js"></script>
   <style>
@@ -14,31 +15,21 @@
       max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1rem;
-      color: #1e293b;
-      background: #f8fafc;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { color: #e2e8f0; background: #0f172a; }
+      color: var(--page-fg);
+      background: var(--page-bg);
     }
     h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-    @media (prefers-color-scheme: dark) {
-      h2 { border-color: #334155; }
-    }
+    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
+    
     .demo-section {
       margin: 1.5rem 0;
       padding: 2rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--surface-border);
       border-radius: 12px;
-      background: #ffffff;
+      background: var(--surface-bg);
       text-align: center;
     }
-    @media (prefers-color-scheme: dark) {
-      .demo-section {
-        border-color: #334155;
-        background: #1e293b;
-      }
-    }
+    
     x-kinetic-font {
       --x-kinetic-font-family: "Roboto Flex", system-ui, sans-serif;
       --x-kinetic-font-size: 2.5rem;
@@ -62,24 +53,19 @@
       letter-spacing: 0.05em; opacity: 0.7;
     }
     .control-group input[type=range] { width: 140px; }
-    .control-group select { padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid #cbd5e1; }
-    @media (prefers-color-scheme: dark) {
-      .control-group select { background: #334155; color: #e2e8f0; border-color: #475569; }
-    }
+    .control-group select { padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
+    
     .val { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
     #event-log {
       font-family: monospace;
       font-size: 0.8rem;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
       border-radius: 8px;
       padding: 0.75rem 1rem;
       max-height: 160px;
       overflow-y: auto;
       margin-top: 1rem;
-    }
-    @media (prefers-color-scheme: dark) {
-      #event-log { background: #1e293b; border-color: #334155; }
     }
     .per-char-demo {
       --x-kinetic-font-size: 3rem;
@@ -89,6 +75,7 @@
       padding-top: 2rem;
     }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x-table-cell demo</title>
   <script src="../js/main.js" defer></script>
   <style>
@@ -11,12 +12,8 @@
       font-family: system-ui, sans-serif;
       margin: 0;
       padding: 2rem;
-      background: #f9fafb;
-      color: #111827;
     }
-    @media (prefers-color-scheme: dark) {
-      body { background: #111827; color: #f9fafb; }
-    }
+    
     h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
     h2 { font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
     .row {
@@ -28,33 +25,27 @@
     }
     label { font-size: 0.875rem; }
     .panel {
-      background: #fff;
-      border: 1px solid #e5e7eb;
+      background: var(--surface-bg);
+      border: 1px solid var(--surface-border);
       border-radius: 10px;
       padding: 1.25rem 1.5rem;
       margin-bottom: 1.5rem;
     }
-    @media (prefers-color-scheme: dark) {
-      .panel { background: #1f2937; border-color: #374151; }
-    }
+    
     .grid-row {
       display: grid;
       grid-template-columns: repeat(4, 160px);
-      border-top: 1px solid #e5e7eb;
-      border-left: 1px solid #e5e7eb;
+      border-top: 1px solid var(--surface-border);
+      border-left: 1px solid var(--surface-border);
     }
-    @media (prefers-color-scheme: dark) {
-      .grid-row { border-color: #374151; }
-    }
+    
     .scroll-container {
       overflow-x: auto;
       max-width: 480px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--surface-border);
       border-radius: 6px;
     }
-    @media (prefers-color-scheme: dark) {
-      .scroll-container { border-color: #374151; }
-    }
+    
     .scroll-row {
       display: grid;
       grid-template-columns: 160px repeat(5, 200px);
@@ -63,62 +54,55 @@
     .log {
       font-family: monospace;
       font-size: 0.8rem;
-      background: #f3f4f6;
+      background: var(--surface-bg);
       border-radius: 6px;
       padding: 0.75rem 1rem;
       max-height: 200px;
       overflow-y: auto;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--surface-border);
     }
-    @media (prefers-color-scheme: dark) {
-      .log { background: #111827; border-color: #374151; }
-    }
+    
     .log-entry { margin-bottom: 4px; }
-    .log-entry span { color: #6b7280; }
+    .log-entry span { color: var(--muted); }
     select, input[type=checkbox] { font-size: 0.875rem; }
     select {
       padding: 2px 6px;
       border-radius: 4px;
-      border: 1px solid #d1d5db;
-      background: white;
-      color: #111827;
+      border: 1px solid var(--border);
+      background: var(--surface-bg);
+      color: var(--page-fg);
     }
-    @media (prefers-color-scheme: dark) {
-      select { background: #374151; color: #f9fafb; border-color: #4b5563; }
-    }
+    
     button.action-btn {
       padding: 4px 10px;
       border-radius: 4px;
-      border: 1px solid #d1d5db;
-      background: white;
+      border: 1px solid var(--border);
+      background: var(--surface-bg);
       font-size: 0.875rem;
       cursor: pointer;
-      color: #111827;
+      color: var(--page-fg);
     }
-    @media (prefers-color-scheme: dark) {
-      button.action-btn { background: #374151; color: #f9fafb; border-color: #4b5563; }
-    }
+    
     x-table-cell {
-      --x-table-cell-border-color: #e5e7eb;
+      --x-table-cell-border-color: var(--surface-border);
       --x-table-cell-sticky-bg: #f9fafb;
     }
     @media (prefers-color-scheme: dark) {
       x-table-cell {
-        --x-table-cell-border-color: #374151;
+        --x-table-cell-border-color: var(--surface-border);
         --x-table-cell-sticky-bg: #1f2937;
       }
     }
     .truncate-container {
       display: grid;
       grid-template-columns: 200px 200px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--surface-border);
       border-radius: 6px;
       overflow: hidden;
     }
-    @media (prefers-color-scheme: dark) {
-      .truncate-container { border-color: #374151; }
-    }
+    
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
   <h1>x-table-cell</h1>

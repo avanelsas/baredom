@@ -7,32 +7,11 @@
     <meta name="color-scheme" content="light dark" />
     <style>
       :root {
-        color-scheme: light dark;
-        --page-bg: #f8fafc;
-        --page-fg: #0f172a;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --input-bg: #ffffff;
-        --input-fg: #0f172a;
-        --surface-bg: #ffffff;
-        --surface-border: #e2e8f0;
         --btn-primary-bg: #2563eb;
         --btn-secondary-bg: #6b7280;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --page-bg: #0f172a;
-          --page-fg: #f8fafc;
-          --muted: #94a3b8;
-          --border: #1e293b;
-          --input-bg: #1e293b;
-          --input-fg: #f8fafc;
-          --surface-bg: #1e293b;
-          --surface-border: #334155;
-        }
-      }
       * { box-sizing: border-box; }
-      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
       h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
       .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
@@ -56,6 +35,7 @@
       .btn-secondary { background: var(--btn-secondary-bg); }
       x-currency-field { display: block; }
     </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
   </head>
   <body>

@@ -6,39 +6,13 @@
   <meta name="color-scheme" content="light dark">
   <title>x-table demo</title>
   <style>
-    :root {
-      color-scheme: light dark;
-      --page-bg: #f8fafc;
-      --page-fg: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-fg: #0f172a;
-      --surface-bg: #ffffff;
-      --surface-border: #e2e8f0;
-    }
+    
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page-bg: #0f172a;
-        --page-fg: #f8fafc;
-        --muted: #94a3b8;
-        --border: #1e293b;
-        --input-bg: #1e293b;
-        --input-fg: #f8fafc;
-        --surface-bg: #1e293b;
-        --surface-border: #334155;
-      }
-    }
+    
 
     *, *::before, *::after { box-sizing: border-box; }
 
-    html, body {
-      min-height: 100%;
-      margin: 0;
-      background: var(--page-bg);
-      color: var(--page-fg);
-    }
+    
 
     body {
       font-family: system-ui, -apple-system, sans-serif;
@@ -89,7 +63,6 @@
       align-items: flex-end;
       margin-bottom: 20px;
       padding: 16px;
-      background: var(--page-bg);
       border-radius: 8px;
       border: 1px solid var(--surface-border);
     }
@@ -140,6 +113,7 @@
 
     .log-actions { display: flex; gap: 8px; margin-bottom: 8px; }
   </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
   <h1>x-table</h1>
@@ -148,6 +122,7 @@
   <div class="section">
     <h2>Basic table — bordered + caption</h2>
 
+    <div class="table-scroll-wrapper">
     <x-table columns="2fr 1fr 1fr 120px" bordered caption="Team Members" id="basic-table">
       <x-table-row>
         <x-table-cell type="header" scope="col">Name</x-table-cell>
@@ -177,12 +152,14 @@
         <x-table-cell align="end">2022-06-19</x-table-cell>
       </x-table-row>
     </x-table>
+    </div>
   </div>
 
   <!-- ── Striped + compact ── -->
   <div class="section">
     <h2>Striped + compact</h2>
 
+    <div class="table-scroll-wrapper">
     <x-table columns="2fr 1fr 1fr" bordered striped compact>
       <x-table-row>
         <x-table-cell type="header" scope="col">Product</x-table-cell>
@@ -215,6 +192,7 @@
         <x-table-cell align="end">3</x-table-cell>
       </x-table-row>
     </x-table>
+    </div>
   </div>
 
   <!-- ── Single selection + sort ── -->
@@ -225,6 +203,7 @@
       <code>x-table-sort</code> and <code>x-table-row-select</code> appear in the event log.
     </p>
 
+    <div class="table-scroll-wrapper">
     <x-table id="selectable-table" columns="2fr 1fr 1fr 100px"
              selectable="single" bordered full-width>
       <x-table-row id="sel-header-row">
@@ -262,6 +241,7 @@
         <x-table-cell align="end">2022-06-19</x-table-cell>
       </x-table-row>
     </x-table>
+    </div>
   </div>
 
   <!-- ── Multi selection ── -->
@@ -271,6 +251,7 @@
       Click any row to toggle its selection. Multiple rows can be selected simultaneously.
     </p>
 
+    <div class="table-scroll-wrapper">
     <x-table columns="2fr 1fr 1fr" selectable="multi" bordered striped>
       <x-table-row>
         <x-table-cell type="header" scope="col">Name</x-table-cell>
@@ -298,6 +279,7 @@
         <x-table-cell align="end">74</x-table-cell>
       </x-table-row>
     </x-table>
+    </div>
   </div>
 
   <!-- ── Live control panel ── -->
@@ -332,6 +314,7 @@
       </div>
     </div>
 
+    <div class="table-scroll-wrapper">
     <x-table id="preview-table" columns="2fr 1fr 1fr" bordered>
       <x-table-row>
         <x-table-cell type="header" scope="col" sortable sort-direction="none">Name</x-table-cell>
@@ -354,6 +337,7 @@
         <x-table-cell align="end">91</x-table-cell>
       </x-table-row>
     </x-table>
+    </div>
   </div>
 
   <!-- ── Event log ── -->
