@@ -19,6 +19,15 @@
 (def attr-autoplay-loop      "autoplay-loop")
 (def attr-autoplay-indicator "autoplay-indicator")
 
+;; ── JS property name constants (camelCase, differ from HTML attribute names) ─
+(def prop-no-progress        "noProgress")
+(def prop-active-index       "activeIndex")
+(def prop-progress           "progress")
+(def prop-autoplay-speed     "autoplaySpeed")
+(def prop-autoplay-loop      "autoplayLoop")
+(def prop-autoplay-indicator "autoplayIndicator")
+(def prop-autoplay-paused    "autoplayPaused")
+
 (def observed-attributes
   #js [attr-layout attr-track attr-threshold attr-no-progress
        attr-disabled attr-label attr-marker
@@ -278,28 +287,3 @@
                                 " " cp2x " " cp2y
                                 " " ex " " ey))))))))))
 
-;; ── Event detail builders ───────────────────────────────────────────────────
-
-(defn entry-change-detail [index id prev-index prev-id]
-  {:index index :id id :previousIndex prev-index :previousId prev-id})
-
-(defn entry-enter-detail [index id progress]
-  {:index index :id id :progress progress})
-
-(defn entry-leave-detail [index id progress]
-  {:index index :id id :progress progress})
-
-(defn progress-detail [progress active-index active-id]
-  {:progress progress :activeIndex active-index :activeId active-id})
-
-(defn enter-detail [progress]
-  {:progress progress})
-
-(defn leave-detail [progress]
-  {:progress progress})
-
-(defn autoplay-pause-detail [progress active-index active-id]
-  {:progress progress :activeIndex active-index :activeId active-id})
-
-(defn autoplay-resume-detail [progress active-index active-id]
-  {:progress progress :activeIndex active-index :activeId active-id})

@@ -191,26 +191,3 @@
       ;; Should have M + 2 C commands
       (is (= 2 (count (re-seq #"C " path)))))))
 
-;; ── Event detail builders ───────────────────────────────────────────────────
-(deftest event-detail-builders-test
-  (testing "entry-change-detail"
-    (let [d (model/entry-change-detail 2 "step-2" 1 "step-1")]
-      (is (= 2 (:index d)))
-      (is (= "step-2" (:id d)))
-      (is (= 1 (:previousIndex d)))
-      (is (= "step-1" (:previousId d)))))
-  (testing "progress-detail"
-    (let [d (model/progress-detail 0.5 1 "step-1")]
-      (is (= 0.5 (:progress d)))
-      (is (= 1 (:activeIndex d)))
-      (is (= "step-1" (:activeId d)))))
-  (testing "autoplay-pause-detail"
-    (let [d (model/autoplay-pause-detail 0.3 2 "entry-2")]
-      (is (= 0.3 (:progress d)))
-      (is (= 2 (:activeIndex d)))
-      (is (= "entry-2" (:activeId d)))))
-  (testing "autoplay-resume-detail"
-    (let [d (model/autoplay-resume-detail 0.7 1 "entry-1")]
-      (is (= 0.7 (:progress d)))
-      (is (= 1 (:activeIndex d)))
-      (is (= "entry-1" (:activeId d))))))

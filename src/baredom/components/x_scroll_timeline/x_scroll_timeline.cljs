@@ -237,6 +237,10 @@
    ":host([data-autoplay-paused][autoplay-indicator]) [part=indicator]{"
    "display:block;}"
 
+   ;; Coarse pointer: enlarge markers for touch targets >= 44px
+   "@media (pointer:coarse){"
+   ":host{--x-scroll-timeline-marker-size:44px;}}"
+
    ;; Reduced motion
    "@media (prefers-reduced-motion:reduce){"
    "::slotted(*){transition:none !important;}"
@@ -353,10 +357,10 @@
       id)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail-map]
+(defn- dispatch! [^js el event-name ^js detail-obj]
   (let [^js ev (js/CustomEvent.
                 event-name
-                #js {:detail     (clj->js detail-map)
+                #js {:detail     detail-obj
                      :bubbles    true
                      :composed   true
                      :cancelable false})]
@@ -564,7 +568,8 @@
             new-id (when (and (>= new-index 0) (< new-index (.-length children)))
                      (entry-id (aget children new-index)))]
         (dispatch! el model/event-entry-change
-                   (model/entry-change-detail new-index new-id old-index old-id))
+                   #js {:index new-index :id new-id
+                        :previousIndex old-index :previousId old-id})
         ;; Announce to live region
         (announce! el (str "Entry " (inc new-index) " active"))))))
 
@@ -601,11 +606,11 @@
             (and (not was-in?) is-in?)
             (do (aset states i true)
                 (dispatch! el model/event-entry-enter
-                           (model/entry-enter-detail i id progress)))
+                           #js {:index i :id id :progress progress}))
             (and was-in? (not is-in?))
             (do (aset states i false)
                 (dispatch! el model/event-entry-leave
-                           (model/entry-leave-detail i id progress)))))))))
+                           #js {:index i :id id :progress progress}))))))))
 
 ;; ── Scroll update ───────────────────────────────────────────────────────────
 (defn- update-scroll!
@@ -677,7 +682,7 @@
           (let [active-id (when (and (>= active-idx 0) (< active-idx n))
                             (entry-id (aget children active-idx)))]
             (dispatch! el model/event-progress
-                       (model/progress-detail progress active-idx active-id)))))))
+                       #js {:progress progress :activeIndex active-idx :activeId active-id}))))))
   ;; Clear rAF handle
   (gobj/set el k-raf nil))
 
@@ -697,16 +702,17 @@
                 dt      (if last-ts (/ (- ts last-ts) 1000.0) 0)]
             (gobj/set el k-autoplay-last ts)
             (when (> dt 0)
-              (let [scroll-before (.-scrollY js/window)]
-                (.scrollBy js/window 0 (* (:autoplay-speed m) dt))
-                ;; Loop: detect that scrollBy had no effect (page bottom).
-                (when (and (:autoplay-loop? m)
-                           (< (- (.-scrollY js/window) scroll-before) 0.5))
-                  (let [rect    (.getBoundingClientRect el)
-                        abs-top (+ (.-top rect) (.-scrollY js/window))
-                        vh      (.-innerHeight js/window)]
-                    (.scrollTo js/window 0 (max 0 (- abs-top vh)))
-                    (gobj/set el k-autoplay-last nil)))))
+              (.scrollBy js/window 0 (* (:autoplay-speed m) dt))
+              ;; Loop: detect page bottom and scroll back to element start.
+              (when (:autoplay-loop? m)
+                (let [scroll-y    (.-scrollY js/window)
+                      vh          (.-innerHeight js/window)
+                      page-height (.-scrollHeight (.-documentElement js/document))]
+                  (when (>= (+ scroll-y vh) (- page-height 1))
+                    (let [rect    (.getBoundingClientRect el)
+                          abs-top (+ (.-top rect) scroll-y)]
+                      (.scrollTo js/window 0 (max 0 (- abs-top vh)))
+                      (gobj/set el k-autoplay-last nil))))))
             (gobj/set el k-autoplay-raf
                       (js/requestAnimationFrame tick))))))))
 
@@ -722,11 +728,11 @@
     ;; Dispatch pause event
     (let [prog     (or (gobj/get el k-last-prog) 0)
           idx      (or (gobj/get el k-active-index) -1)
-          children (.-children el)
+          children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
       (dispatch! el model/event-autoplay-pause
-                 (model/autoplay-pause-detail prog idx aid)))))
+                 #js {:progress prog :activeIndex idx :activeId aid}))))
 
 (defn- resume-autoplay! [^js el]
   (when (gobj/get el k-autoplay-paused)
@@ -741,11 +747,11 @@
     ;; Dispatch resume event
     (let [prog     (or (gobj/get el k-last-prog) 0)
           idx      (or (gobj/get el k-active-index) -1)
-          children (.-children el)
+          children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
       (dispatch! el model/event-autoplay-resume
-                 (model/autoplay-resume-detail prog idx aid)))))
+                 #js {:progress prog :activeIndex idx :activeId aid}))))
 
 (defn- stop-autoplay! [^js el]
   ;; Cancel rAF
@@ -754,13 +760,11 @@
     (gobj/set el k-autoplay-raf nil))
   ;; Remove pause/resume listeners
   (when-let [hs (gobj/get el k-autoplay-handlers)]
-    (.removeEventListener el "mousedown"  (gobj/get hs "mousedown"))
-    (.removeEventListener el "mouseup"    (gobj/get hs "mouseup"))
-    (.removeEventListener el "mouseleave" (gobj/get hs "mouseleave"))
-    (.removeEventListener el "touchstart" (gobj/get hs "touchstart"))
-    (.removeEventListener el "touchend"   (gobj/get hs "touchend"))
-    (.removeEventListener el "keydown"    (gobj/get hs "keydown"))
-    (.removeEventListener el "keyup"      (gobj/get hs "keyup"))
+    (.removeEventListener el "pointerdown"  (gobj/get hs "pointerdown"))
+    (.removeEventListener el "pointerup"    (gobj/get hs "pointerup"))
+    (.removeEventListener el "pointerleave" (gobj/get hs "pointerleave"))
+    (.removeEventListener el "keydown"      (gobj/get hs "keydown"))
+    (.removeEventListener el "keyup"        (gobj/get hs "keyup"))
     (gobj/set el k-autoplay-handlers nil))
   ;; Clean up state
   (.removeAttribute el "data-autoplay-paused")
@@ -780,35 +784,29 @@
         ;; Init state
         (gobj/set el k-autoplay-paused false)
         (gobj/set el k-autoplay-last nil)
-        ;; Attach pause/resume listeners
-        (let [on-mousedown  (fn [_e] (pause-autoplay! el))
-              on-mouseup    (fn [_e] (resume-autoplay! el))
-              on-mouseleave (fn [_e] (when (gobj/get el k-autoplay-paused)
-                                       (resume-autoplay! el)))
-              on-touchstart (fn [_e] (pause-autoplay! el))
-              on-touchend   (fn [_e] (resume-autoplay! el))
-              on-keydown    (fn [^js e]
-                              (when (= (.-code e) "Space")
-                                (.preventDefault e)
-                                (pause-autoplay! el)))
-              on-keyup      (fn [^js e]
-                              (when (= (.-code e) "Space")
-                                (resume-autoplay! el)))]
-          (.addEventListener el "mousedown"  on-mousedown)
-          (.addEventListener el "mouseup"    on-mouseup)
-          (.addEventListener el "mouseleave" on-mouseleave)
-          (.addEventListener el "touchstart" on-touchstart #js {:passive true})
-          (.addEventListener el "touchend"   on-touchend   #js {:passive true})
-          (.addEventListener el "keydown"    on-keydown)
-          (.addEventListener el "keyup"      on-keyup)
+        ;; Attach pause/resume listeners (pointer events unify mouse + touch)
+        (let [on-pointerdown  (fn [_e] (pause-autoplay! el))
+              on-pointerup    (fn [_e] (resume-autoplay! el))
+              on-pointerleave (fn [_e] (when (gobj/get el k-autoplay-paused)
+                                         (resume-autoplay! el)))
+              on-keydown      (fn [^js e]
+                                (when (= (.-code e) "Space")
+                                  (.preventDefault e)
+                                  (pause-autoplay! el)))
+              on-keyup        (fn [^js e]
+                                (when (= (.-code e) "Space")
+                                  (resume-autoplay! el)))]
+          (.addEventListener el "pointerdown"  on-pointerdown)
+          (.addEventListener el "pointerup"    on-pointerup)
+          (.addEventListener el "pointerleave" on-pointerleave)
+          (.addEventListener el "keydown"      on-keydown)
+          (.addEventListener el "keyup"        on-keyup)
           (gobj/set el k-autoplay-handlers
-                    #js {:mousedown  on-mousedown
-                         :mouseup    on-mouseup
-                         :mouseleave on-mouseleave
-                         :touchstart on-touchstart
-                         :touchend   on-touchend
-                         :keydown    on-keydown
-                         :keyup      on-keyup}))
+                    #js {:pointerdown  on-pointerdown
+                         :pointerup    on-pointerup
+                         :pointerleave on-pointerleave
+                         :keydown      on-keydown
+                         :keyup        on-keyup}))
         ;; Start rAF loop
         (let [tick (autoplay-tick el)]
           (gobj/set el k-autoplay-raf
@@ -855,7 +853,7 @@
         (update-scroll! el)
         (announce! el "Timeline entered viewport")
         (dispatch! el model/event-enter
-                   (model/enter-detail (or (gobj/get el k-last-prog) 0)))
+                   #js {:progress (or (gobj/get el k-last-prog) 0)})
         ;; Start autoplay if enabled
         (let [m (gobj/get el k-model)]
           (when (and m (:autoplay? m))
@@ -866,7 +864,7 @@
         (when-not (disabled? el)
           (announce! el "Timeline left viewport")
           (dispatch! el model/event-leave
-                     (model/leave-detail (or (gobj/get el k-last-prog) 0))))))))
+                     #js {:progress (or (gobj/get el k-last-prog) 0)}))))))
 
 ;; ── Slot change / resize ────────────────────────────────────────────────────
 (defn- rebuild-layout!
@@ -1004,157 +1002,79 @@
       (apply-model! el new-m)))
   nil)
 
-;; ── Property accessors ──────────────────────────────────────────────────────
-(defn- install-property-accessors! [^js proto]
-  ;; layout (string)
-  (.defineProperty js/Object proto model/attr-layout
+;; ── Property accessor helpers ───────────────────────────────────────────────
+
+(defn- def-string-prop-default! [^js proto prop-name attr default]
+  (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
                                (this-as ^js this
-                                        (or (.getAttribute this model/attr-layout) "alternating")))
+                                        (or (.getAttribute this attr) default)))
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-layout (str v))
-                                          (.removeAttribute this model/attr-layout))))
-                        :enumerable true :configurable true})
+                                          (.setAttribute this attr (str v))
+                                          (.removeAttribute this attr))))
+                        :enumerable true :configurable true}))
 
-  ;; track (string)
-  (.defineProperty js/Object proto model/attr-track
+(defn- def-string-prop-empty! [^js proto prop-name attr]
+  (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
                                (this-as ^js this
-                                        (or (.getAttribute this model/attr-track) "straight")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-track (str v))
-                                          (.removeAttribute this model/attr-track))))
-                        :enumerable true :configurable true})
-
-  ;; threshold (number)
-  (.defineProperty js/Object proto model/attr-threshold
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-threshold (.getAttribute this model/attr-threshold))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-threshold (str v))
-                                          (.removeAttribute this model/attr-threshold))))
-                        :enumerable true :configurable true})
-
-  ;; noProgress (boolean)
-  (.defineProperty js/Object proto "noProgress"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-no-progress)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-no-progress "")
-                                          (.removeAttribute this model/attr-no-progress))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
-
-  ;; label (string)
-  (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label) "")))
+                                        (or (.getAttribute this attr) "")))
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true})
+                                          (.setAttribute this attr (str v))
+                                          (.removeAttribute this attr))))
+                        :enumerable true :configurable true}))
 
-  ;; marker (string)
-  (.defineProperty js/Object proto model/attr-marker
+(defn- def-bool-prop! [^js proto prop-name attr]
+  (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-marker) "dot")))
+                               (this-as ^js this (.hasAttribute this attr)))
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-marker (str v))
-                                          (.removeAttribute this model/attr-marker))))
-                        :enumerable true :configurable true})
+                                          (.setAttribute this attr "")
+                                          (.removeAttribute this attr))))
+                        :enumerable true :configurable true}))
 
-  ;; activeIndex (read-only number)
-  (.defineProperty js/Object proto "activeIndex"
+(defn- def-number-prop! [^js proto prop-name attr parse-fn]
+  (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
                                (this-as ^js this
-                                        (let [idx (gobj/get this k-active-index)]
-                                          (if (some? idx) idx -1))))
-                        :enumerable true :configurable true})
-
-  ;; progress (read-only number)
-  (.defineProperty js/Object proto "progress"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (gobj/get this k-last-prog) 0)))
-                        :enumerable true :configurable true})
-
-  ;; autoplay (boolean)
-  (.defineProperty js/Object proto model/attr-autoplay
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay "")
-                                          (.removeAttribute this model/attr-autoplay))))
-                        :enumerable true :configurable true})
-
-  ;; autoplaySpeed (number)
-  (.defineProperty js/Object proto "autoplaySpeed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-autoplay-speed
-                                         (.getAttribute this model/attr-autoplay-speed))))
+                                        (parse-fn (.getAttribute this attr))))
                         :set (fn [v]
                                (this-as ^js this
                                         (if (some? v)
-                                          (.setAttribute this model/attr-autoplay-speed (str v))
-                                          (.removeAttribute this model/attr-autoplay-speed))))
-                        :enumerable true :configurable true})
-
-  ;; autoplayLoop (boolean)
-  (.defineProperty js/Object proto "autoplayLoop"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay-loop)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay-loop "")
-                                          (.removeAttribute this model/attr-autoplay-loop))))
-                        :enumerable true :configurable true})
-
-  ;; autoplayIndicator (boolean)
-  (.defineProperty js/Object proto "autoplayIndicator"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay-indicator)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay-indicator "")
-                                          (.removeAttribute this model/attr-autoplay-indicator))))
-                        :enumerable true :configurable true})
-
-  ;; autoplayPaused (read-only boolean)
-  (.defineProperty js/Object proto "autoplayPaused"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (boolean (gobj/get this k-autoplay-paused))))
+                                          (.setAttribute this attr (str v))
+                                          (.removeAttribute this attr))))
                         :enumerable true :configurable true}))
+
+(defn- def-readonly-prop! [^js proto prop-name field-key default]
+  (.defineProperty js/Object proto prop-name
+                   #js {:get (fn []
+                               (this-as ^js this
+                                        (let [v (gobj/get this field-key)]
+                                          (if (some? v) v default))))
+                        :enumerable true :configurable true}))
+
+;; ── Property accessors ──────────────────────────────────────────────────────
+(defn- install-property-accessors! [^js proto]
+  (def-string-prop-default! proto model/attr-layout  model/attr-layout  "alternating")
+  (def-string-prop-default! proto model/attr-track   model/attr-track   "straight")
+  (def-string-prop-default! proto model/attr-marker  model/attr-marker  "dot")
+  (def-string-prop-empty!   proto model/attr-label   model/attr-label)
+  (def-number-prop!         proto model/attr-threshold model/attr-threshold model/parse-threshold)
+  (def-bool-prop!           proto model/prop-no-progress        model/attr-no-progress)
+  (def-bool-prop!           proto model/attr-disabled           model/attr-disabled)
+  (def-bool-prop!           proto model/attr-autoplay           model/attr-autoplay)
+  (def-number-prop!         proto model/prop-autoplay-speed     model/attr-autoplay-speed model/parse-autoplay-speed)
+  (def-bool-prop!           proto model/prop-autoplay-loop      model/attr-autoplay-loop)
+  (def-bool-prop!           proto model/prop-autoplay-indicator model/attr-autoplay-indicator)
+  (def-readonly-prop!       proto model/prop-active-index       k-active-index -1)
+  (def-readonly-prop!       proto model/prop-progress           k-last-prog 0)
+  (def-readonly-prop!       proto model/prop-autoplay-paused    k-autoplay-paused false))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- element-class []
@@ -1182,7 +1102,7 @@
                      ;; Dispatch leave event if visible
                      (when (gobj/get this k-visible)
                        (dispatch! this model/event-leave
-                                  (model/leave-detail (or (gobj/get this k-last-prog) 0))))
+                                  #js {:progress (or (gobj/get this k-last-prog) 0)}))
                      (remove-listeners! this)
                      (teardown-observer! this)
                      (gobj/set this k-visible false)
