@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-theme demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+
+      .subtitle {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin: 0 0 32px;
+      }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+
+      .preset-card {
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 20px;
+        background: var(--surface-bg);
+      }
+
+      .preset-card h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+
+      .preset-card code {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 16px;
+      }
+
+      .sample-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .sample-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .row select {
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+      }
+
+      #event-log {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        margin-top: 12px;
+        color: var(--muted);
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <h1>x-theme</h1>
+    <p class="subtitle">Centralised theming wrapper. Wrap any subtree to apply a preset palette.</p>
+
+    <h2>Built-in Presets</h2>
+    <div class="preset-grid">
+
+      <div class="preset-card">
+        <h3>Default</h3>
+        <code>preset="default"</code>
+        <x-theme preset="default">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Default theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Ocean</h3>
+        <code>preset="ocean"</code>
+        <x-theme preset="ocean">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Ocean theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Forest</h3>
+        <code>preset="forest"</code>
+        <x-theme preset="forest">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Forest theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Sunset</h3>
+        <code>preset="sunset"</code>
+        <x-theme preset="sunset">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Sunset theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Neo Brutalist</h3>
+        <code>preset="neo-brutalist"</code>
+        <x-theme preset="neo-brutalist">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Neo-brutalist theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Aurora</h3>
+        <code>preset="aurora"</code>
+        <x-theme preset="aurora">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Aurora theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Mono AI</h3>
+        <code>preset="mono-ai"</code>
+        <x-theme preset="mono-ai">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Mono AI theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Warm Mineral</h3>
+        <code>preset="warm-mineral"</code>
+        <x-theme preset="warm-mineral">
+          <div class="sample-row">
+            <x-button>Primary</x-button>
+            <x-button variant="secondary">Secondary</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+          <div class="sample-row">
+            <x-badge>Badge</x-badge>
+            <x-badge type="success">Success</x-badge>
+            <x-badge type="warning">Warning</x-badge>
+          </div>
+          <x-alert type="info" text="Warm mineral theme alert"></x-alert>
+        </x-theme>
+      </div>
+
+    </div>
+
+    <h2>Nested Themes</h2>
+    <x-theme preset="ocean">
+      <div class="preset-card" style="margin-bottom: 16px;">
+        <h3>Outer: Ocean</h3>
+        <div class="sample-row">
+          <x-button>Ocean button</x-button>
+        </div>
+        <x-theme preset="sunset">
+          <div style="border: 1px dashed var(--surface-border); padding: 12px; border-radius: 8px; margin-top: 8px;">
+            <h3>Inner: Sunset (overrides Ocean)</h3>
+            <div class="sample-row">
+              <x-button>Sunset button</x-button>
+            </div>
+          </div>
+        </x-theme>
+      </div>
+    </x-theme>
+
+    <h2>CSS Override</h2>
+    <x-theme preset="default" style="--x-color-primary: #e11d48; --x-color-primary-hover: #be123c;">
+      <div class="preset-card">
+        <h3>Default + Custom Primary (Rose)</h3>
+        <div class="sample-row">
+          <x-button>Custom primary</x-button>
+          <x-button variant="secondary">Secondary unchanged</x-button>
+        </div>
+      </div>
+    </x-theme>
+
+    <h2>Live Control Panel</h2>
+    <div class="row">
+      <label for="preset-picker">Preset:</label>
+      <select id="preset-picker">
+        <option value="default">default</option>
+        <option value="ocean">ocean</option>
+        <option value="forest">forest</option>
+        <option value="sunset">sunset</option>
+        <option value="neo-brutalist">neo-brutalist</option>
+        <option value="aurora">aurora</option>
+        <option value="mono-ai">mono-ai</option>
+        <option value="warm-mineral">warm-mineral</option>
+      </select>
+    </div>
+    <x-theme id="live-theme" preset="default">
+      <div class="preset-card">
+        <div class="sample-row">
+          <x-button>Primary</x-button>
+          <x-button variant="secondary">Secondary</x-button>
+          <x-button variant="outline">Outline</x-button>
+          <x-button disabled>Disabled</x-button>
+        </div>
+        <div class="sample-row">
+          <x-badge>Info</x-badge>
+          <x-badge type="success">Success</x-badge>
+          <x-badge type="warning">Warning</x-badge>
+          <x-badge type="error">Error</x-badge>
+        </div>
+        <div class="sample-stack">
+          <x-alert type="info" text="Informational message"></x-alert>
+          <x-alert type="success" text="Operation completed"></x-alert>
+          <x-alert type="warning" text="Proceed with caution"></x-alert>
+          <x-alert type="error" text="Something went wrong"></x-alert>
+        </div>
+      </div>
+    </x-theme>
+
+    <div id="event-log">Theme events will appear here...</div>
+
+    <script>
+      const picker = document.getElementById('preset-picker');
+      const theme  = document.getElementById('live-theme');
+      const log    = document.getElementById('event-log');
+
+      picker.addEventListener('change', () => {
+        theme.preset = picker.value;
+        log.textContent += `\npreset changed to "${picker.value}"`;
+        log.scrollTop = log.scrollHeight;
+      });
+    </script>
+  </body>
+</html>

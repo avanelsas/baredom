@@ -441,4 +441,10 @@
      {init baredom.exports.x-morph-stack/init}
      :depends-on #{:base}}
 
+    :x-theme
+    {:exports
+     {init baredom.exports.x-theme/init
+      registerPreset baredom.exports.x-theme/registerPreset}
+     :depends-on #{:base}}
+
     }}}}

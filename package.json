@@ -343,6 +343,10 @@
     "./x-morph-stack" : {
       "import" : "./dist/x-morph-stack.js",
       "default" : "./dist/x-morph-stack.js"
+    },
+    "./x-theme" : {
+      "import" : "./dist/x-theme.js",
+      "default" : "./dist/x-theme.js"
     }
   },
   "devDependencies" : {
