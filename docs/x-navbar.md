@@ -205,6 +205,12 @@ All transitions respect `@media (prefers-reduced-motion: reduce)` by disabling t
 
 ---
 
+## Responsive
+
+On screens 640px and below (horizontal orientation), the navbar collapses to show only the **brand** and **toggle** slots. The `start`, `nav` (default slot), `actions`, and `end` slots are hidden. The consumer should wire the toggle button to an `x-sidebar` or `x-drawer` that provides access to the hidden navigation items. Vertical orientation is unaffected by this breakpoint.
+
+---
+
 # Examples
 
 ## Basic navbar
