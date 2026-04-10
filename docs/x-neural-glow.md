@@ -96,6 +96,12 @@ The shader automatically adapts its rendering strategy based on the perceived lu
 
 No configuration is needed. Set `color-background` to any color and the component adapts automatically. For best results, choose orb colors that contrast with the background.
 
+## Mobile
+
+This component uses WebGL for real-time rendering. On some mobile devices — particularly older phones or low-end GPUs — performance may be reduced, resulting in dropped frames or high battery drain. Consider lowering `orb-count` and `connection-distance` on mobile, or disabling the component entirely on devices where smooth animation cannot be guaranteed.
+
+---
+
 ## Examples
 
 ### Basic usage
