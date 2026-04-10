@@ -111,6 +111,17 @@ Every component under `src/baredom/components/<name>/` follows:
 
 All components use open shadow DOM (`mode: "open"`). Styles are inline ClojureScript strings. CSS custom properties follow `--x-<component>-<property>` naming. Light/dark mode is handled via `@media (prefers-color-scheme: dark)` inside the shadow style string. Animations must respect `@media (prefers-reduced-motion: reduce)`.
 
+### Mobile and responsive
+
+All components must work on viewports from 320px up. Apply these rules in every component:
+
+- **No fixed widths that can overflow.** Cap with `min(Xpx, calc(100vw - 2rem))` or add `max-width:calc(100vw - 1rem)` on positioned panels (menus, popovers, dropdowns, modals).
+- **Use `100dvh`, never `100vh`.** Mobile browsers have dynamic toolbars that change the viewport height; `dvh` accounts for this.
+- **Use `100%`, never `100vw`** for full-width elements. `100vw` includes scrollbar width and causes horizontal overflow.
+- **Use pointer events, never mouse events.** `pointermove`, `pointerdown`, `pointerup`, `pointerenter`, `pointerleave` — these fire on both mouse and touch. Never use `mousemove`, `mousedown`, `mouseenter`, etc.
+- **Touch targets ≥ 44px on coarse pointers.** Add `@media (pointer:coarse)` rules to enlarge interactive elements (thumbs, buttons) that are smaller than 44px at their default size.
+- **Demo pages** link `demo-responsive.css` for shared responsive breakpoints and theme. Use `var(--page-bg)`, `var(--surface-bg)`, etc. — do not hardcode theme colours in demo HTML.
+
 ### State storage on element instances
 
 Internal interaction state (hover, focus-visible, active-source) is stored as JS properties on the element instance using `aget`/`aset` with private string keys (e.g. `"__xButtonState"`). Public state is always re-derived from HTML attributes at render time.
@@ -145,7 +156,7 @@ Follow these stages in order. **Do not skip or merge stages.**
    - `src/baredom/core.cljs` — require the export namespace and call `register!` in `start!`
    - `src/baredom/exports/all.cljs` — require the export namespace and call `register!`
    - `public/index.html` — add an entry to the `components` array in the `<script>` block (name, tag, file, category)
-4. **Verification** — check architecture conformance, API contract conformance, Closure Advanced safety, stateless rendering, theming, motion, accessibility
+4. **Verification** — check architecture conformance, API contract conformance, Closure Advanced safety, stateless rendering, theming, motion, accessibility, mobile readiness (no overflow at 320px, pointer events, touch targets)
 
 ## Performance & Context Management
 To minimize token usage and latency:
