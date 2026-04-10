@@ -52,6 +52,7 @@ jobs:
           CHROMIUM_FLAGS: "--no-sandbox"
 
       - name: Publish to NPM
+        continue-on-error: true
         run: |
           npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
           npm publish --access public

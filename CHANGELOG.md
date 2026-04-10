@@ -2,6 +2,13 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.0.1] - 2026-04-10
+
+### Fixed
+
+- Release pipeline: version references in build.clj, deps.edn, and pom.xml now match package.json (were stuck at 1.4.0/1.2.0, causing Clojars deploy to fail for 2.0.0)
+- CI workflow: npm publish step now uses continue-on-error to avoid blocking Clojars deploy
+
 ## [2.0.0] - 2026-04-10
 
 ### Added
