@@ -1,5 +1,5 @@
 {
-  "description" : "73 native Web Components — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
+  "description" : "80 native Web Components with centralised theming — stateless, framework-free, zero runtime. Built with ClojureScript, compiled to tree-shakeable ESM.",
   "engines" : {
     "node" : ">=18"
   },
@@ -356,6 +356,6 @@
     "shadow-cljs" : "^3.3.6"
   },
   "files" : [ "dist", "README.md", "LICENSE", "CHANGELOG.md" ],
-  "version" : "1.4.0",
+  "version" : "2.0.0",
   "sideEffects" : [ "./dist/*.js" ]
 }

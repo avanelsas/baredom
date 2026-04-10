@@ -1,6 +1,26 @@
 # Changelog
 
-All notable changes to BareDome will be documented in this file.
+All notable changes to BareDOM will be documented in this file.
+
+## [2.0.0] - 2026-04-10
+
+### Added
+
+- **x-theme** — Centralised theming component with 33 design tokens, 8 built-in presets (default, ocean, forest, sunset, neo-brutalist, aurora, mono-ai, warm-mineral), and `registerPreset()` JS API for custom themes with partial preset merging
+- Theme preset picker on all 79 demo pages (desktop buttons + mobile dropdown, persists via localStorage)
+- Theming section in README.md
+- Theming guidelines in CLAUDE.md
+
+### Changed
+
+- All 80 components now consume x-theme design tokens via `var(--x-token, fallback)` pattern — fully backwards compatible, components render identically without an `<x-theme>` wrapper
+- Overlay components (modal, drawer, menu, popover, dropdown, toast, command-palette, context-menu, cancel-dialogue) use opaque `--x-color-bg` for backgrounds
+- `demo-responsive.css` re-maps demo variables to theme tokens when inside `<x-theme>`
+- Demo pages use theme-aware CSS variables instead of hardcoded colours
+
+### Fixed
+
+- x-liquid-dock: `.color` property returns `null` when no `color` attribute is set, allowing the CSS theme token to take effect (visual default unchanged)
 
 ## [1.4.0] - 2026-04-09
 
