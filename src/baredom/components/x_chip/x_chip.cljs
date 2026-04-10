@@ -11,9 +11,9 @@
 (def style-text
   (str
    ":host{"
-   "--x-chip-bg:rgba(0,0,0,0.08);"
-   "--x-chip-color:rgba(0,0,0,0.80);"
-   "--x-chip-border:rgba(0,0,0,0.12);"
+   "--x-chip-bg:var(--x-color-surface,rgba(0,0,0,0.08));"
+   "--x-chip-color:var(--x-color-text,rgba(0,0,0,0.80));"
+   "--x-chip-border:var(--x-color-border,rgba(0,0,0,0.12));"
    "--x-chip-radius:var(--x-radius-full, 9999px);"
    "--x-chip-font-size:var(--x-font-size-sm, 0.875rem);"
    "--x-chip-padding-x:0.625rem;"
@@ -40,12 +40,12 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-chip-bg:rgba(255,255,255,0.10);"
-   "--x-chip-border:rgba(255,255,255,0.16);"
-   "--x-chip-color:rgba(255,255,255,0.88);}}"
+   "--x-chip-bg:var(--x-color-surface,rgba(255,255,255,0.10));"
+   "--x-chip-border:var(--x-color-border,rgba(255,255,255,0.16));"
+   "--x-chip-color:var(--x-color-text,rgba(255,255,255,0.88));}}"
 
    ":host(:focus-visible){"
-   "outline:2px solid currentColor;"
+   "outline:2px solid var(--x-color-focus-ring,currentColor);"
    "outline-offset:2px;}"
 
    ":host([disabled]){"

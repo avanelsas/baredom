@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark">
   <title>x-toast demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     :root {
       --log-bg: #111827;
@@ -19,6 +20,11 @@
         --log-fg: #f9fafb;
         --log-entry-border: #1e293b;
         }
+    }
+
+    x-theme {
+      --log-bg: var(--x-color-bg);
+      --log-fg: var(--x-color-text);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -89,11 +95,11 @@
     button:hover { opacity: 0.85; }
 
     .btn-primary {
-      background: #1d4ed8;
+      background: var(--x-color-primary, #1d4ed8);
       color: #ffffff;
-      border-color: #1d4ed8;
+      border-color: var(--x-color-primary, #1d4ed8);
     }
-    .btn-primary:hover { background: #1e40af; border-color: #1e40af; opacity: 1; }
+    .btn-primary:hover { background: var(--x-color-primary-hover, #1e40af); border-color: var(--x-color-primary-hover, #1e40af); opacity: 1; }
 
     #log {
       background: var(--log-bg);

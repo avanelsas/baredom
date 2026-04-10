@@ -37,7 +37,7 @@
    "overflow:hidden;"
    model/css-color-primary ":var(--x-color-success,#22c55e);"
    model/css-color-secondary ":var(--x-color-success,#16a34a);"
-   model/css-bloom-color ":#f472b6;"
+   model/css-bloom-color ":var(--x-color-danger,#f472b6);"
    model/css-bg ":transparent;"
    model/css-branch-width ":3;"
    model/css-glow ":2;"
@@ -50,11 +50,14 @@
    "width:100%;"
    "height:100%;}"
 
+   "[part=nodes] circle{"
+   "fill:var(" model/css-color-primary ",#22c55e);}"
+
    "@media(prefers-color-scheme:dark){"
    ":host{"
    "--x-organic-progress-color-primary:var(--x-color-success,#4ade80);"
    "--x-organic-progress-color-secondary:var(--x-color-success,#22c55e);"
-   "--x-organic-progress-bloom-color:#f9a8d4;}}"
+   "--x-organic-progress-bloom-color:var(--x-color-danger,#f9a8d4);}}"
 
    "@media(prefers-reduced-motion:reduce){"
    "[part=svg]{transition:none!important;}"
@@ -154,11 +157,6 @@
     :label-raw    (.getAttribute el model/attr-label)}))
 
 ;; ── CSS helpers ─────────────────────────────────────────────────────────────
-(defn- resolve-color [^js el css-prop fallback]
-  (let [^js cs (.getComputedStyle js/window el)
-        v      (.trim (.getPropertyValue cs css-prop))]
-    (if (not= v "") v fallback)))
-
 (defn- resolve-css-float [^js el css-prop fallback]
   (let [^js cs (.getComputedStyle js/window el)
         v      (.trim (.getPropertyValue cs css-prop))]
@@ -303,11 +301,17 @@
         total        (gobj/get el k-segment-count)
         m            (gobj/get el k-model)
         honeycomb?   (= (:variant m) "honeycomb")
-        primary      (or (:color m)
-                         (resolve-color el model/css-color-primary
-                                        (if honeycomb? "#818cf8" "#22c55e")))
-        secondary    (resolve-color el model/css-color-secondary
-                                    (if honeycomb? "#a5b4fc" "#16a34a"))]
+        ;; Use CSS var() references so strokes respond to theme changes.
+        ;; When a custom color attribute is set, use it directly; otherwise
+        ;; reference the component's CSS custom properties which chain to
+        ;; global theme tokens.
+        color-attr   (:color m)
+        primary-css  (if color-attr
+                       color-attr
+                       (str "var(" model/css-color-primary ","
+                            (if honeycomb? "#818cf8" "#22c55e") ")"))
+        secondary-css (str "var(" model/css-color-secondary ","
+                           (if honeycomb? "#a5b4fc" "#16a34a") ")")]
     (let [base-w   (resolve-css-float el model/css-branch-width (if honeycomb? 1.5 3.0))]
       (if honeycomb?
         ;; Honeycomb: thin uniform hex edges with depth-based opacity
@@ -316,7 +320,8 @@
                 ^js seg  (aget segments i)
                 depth    (gobj/get seg "depth")]
             (.setAttribute line "stroke-width" (str base-w))
-            (.setAttribute line "stroke" (case depth 0 primary 1 secondary secondary))
+            (set! (.. line -style -stroke)
+                  (case depth 0 primary-css 1 secondary-css secondary-css))
             (.setAttribute line "stroke-linecap" "round")
             (.setAttribute line "stroke-opacity" (case depth 0 "0.9" 1 "0.7" "0.5"))))
         ;; Vine: organic with round caps, width tapers with depth
@@ -325,9 +330,9 @@
                 ^js seg  (aget segments i)
                 depth    (gobj/get seg "depth")
                 w        (js/Math.max 0.5 (- base-w (* depth 0.6)))
-                color    (if (zero? depth) primary secondary)]
+                color    (if (zero? depth) primary-css secondary-css)]
             (.setAttribute line "stroke-width" (str w))
-            (.setAttribute line "stroke" color)
+            (set! (.. line -style -stroke) color)
             (.setAttribute line "stroke-linecap" "round")
             (.setAttribute line "stroke-opacity" "1"))))))
   nil)
@@ -372,7 +377,7 @@
         {:keys [blooms-g]} (gobj/get el k-refs)
         ^js blooms-g blooms-g
         m            (gobj/get el k-model)
-        bloom-color  (resolve-color el model/css-bloom-color "#f472b6")
+        bloom-color  (str "var(" model/css-bloom-color ",#f472b6)")
         rng          (model/make-rng (+ (:seed m) 7))
         bloom-els    #js []]
     ;; Create bloom circles at branch tips (depth >= 2)
@@ -388,7 +393,7 @@
             (.setAttribute circle "cx" (str x2))
             (.setAttribute circle "cy" (str y2))
             (.setAttribute circle "r" "0")
-            (.setAttribute circle "fill" bloom-color)
+            (set! (.. circle -style -fill) bloom-color)
             (.setAttribute circle "opacity" "0")
             (.setAttribute circle "class" "bloom-petal")
             ;; Store scatter direction

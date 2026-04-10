@@ -184,7 +184,7 @@
 
 (deftest color-property-test
   (let [^js el (append! (make-el))]
-    (is (= "#6366f1" (.-color el)))
+    (is (nil? (.-color el)))
     (set! (.-color el) "hotpink")
     (is (= "hotpink" (.getAttribute el model/attr-color)))
     (is (= "hotpink" (.-color el)))))

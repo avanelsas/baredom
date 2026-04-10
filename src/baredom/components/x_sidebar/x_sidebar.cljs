@@ -6,14 +6,14 @@
 (def css-text
   (str
    ":host {"
-   "  --x-sidebar-bg: Canvas;"
-   "  --x-sidebar-fg: CanvasText;"
+   "  --x-sidebar-bg: var(--x-color-bg, Canvas);"
+   "  --x-sidebar-fg: var(--x-color-text, CanvasText);"
    "  --x-sidebar-backdrop: rgb(0 0 0 / 0.4);"
-   "  --x-sidebar-shadow: 0 8px 24px rgb(0 0 0 / 0.18);"
+   "  --x-sidebar-shadow: var(--x-shadow-lg, 0 8px 24px rgb(0 0 0 / 0.18));"
    "  --x-sidebar-width: 18rem;"
    "  --x-sidebar-collapsed-width: 4rem;"
-   "  --x-sidebar-duration: 180ms;"
-   "  --x-sidebar-easing: ease;"
+   "  --x-sidebar-duration: var(--x-transition-duration, 180ms);"
+   "  --x-sidebar-easing: var(--x-transition-easing, ease);"
    "  display: block;"
    "  position: relative;"
    "}"
@@ -92,7 +92,9 @@
    "}"
    "@media (prefers-color-scheme: dark) {"
    "  :host {"
-   "    --x-sidebar-shadow: 0 8px 24px rgb(0 0 0 / 0.4);"
+   "    --x-sidebar-bg: var(--x-color-bg, #1f2937);"
+   "    --x-sidebar-fg: var(--x-color-text, #f9fafb);"
+   "    --x-sidebar-shadow: var(--x-shadow-lg, 0 8px 24px rgb(0 0 0 / 0.4));"
    "  }"
    "}"))
 

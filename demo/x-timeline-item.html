@@ -67,8 +67,9 @@
         margin-top: 24px;
         padding: 12px;
         border-radius: 8px;
-        background: #111827;
-        color: #f9fafb;
+        background: var(--surface-bg, #111827);
+        color: var(--page-fg, #f9fafb);
+        border: 1px solid var(--surface-border, transparent);
         min-height: 72px;
         white-space: pre-wrap;
         font-family: monospace;
@@ -87,6 +88,7 @@
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   </head>
   <body>
     <h1>x-timeline-item demo</h1>
@@ -151,7 +153,7 @@
       <x-timeline-item label="Pending" title="Awaiting approval" status="pending" data-last="">
         <p style="margin:0 0 0.5rem;font-size:0.875rem">This step requires sign-off from the manager.</p>
         <div slot="actions" style="display:flex;gap:8px">
-          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:none;background:#1d4ed8;color:#fff;cursor:pointer">Approve</button>
+          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:none;background:var(--x-color-primary,#1d4ed8);color:#fff;cursor:pointer">Approve</button>
           <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:inherit;cursor:pointer">Reject</button>
         </div>
       </x-timeline-item>

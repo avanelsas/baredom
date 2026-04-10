@@ -25,7 +25,7 @@
    "display:inline-block;"
    "box-sizing:border-box;"
    "color-scheme:light dark;"
-   model/css-color ":currentColor;"
+   model/css-color ":var(--x-color-text,currentColor);"
    model/css-family ":system-ui,sans-serif;"
    model/css-size ":2rem;"
    model/css-wght-min ":100;"

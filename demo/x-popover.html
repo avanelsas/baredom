@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark" />
   <title>x-popover demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     
 
@@ -106,15 +107,16 @@
       cursor: pointer;
     }
     .pop-footer-btn.primary {
-      background: #6366f1;
+      background: var(--x-color-primary, #6366f1);
       color: #fff;
-      border-color: #6366f1;
+      border-color: var(--x-color-primary, #6366f1);
     }
     .pop-footer-btn:hover { opacity: 0.85; }
 
     .log {
-      background: #0a0a0a;
-      color: #d4f5a0;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      border: 1px solid var(--surface-border, transparent);
       font-family: ui-monospace, monospace;
       font-size: 12px;
       line-height: 1.6;

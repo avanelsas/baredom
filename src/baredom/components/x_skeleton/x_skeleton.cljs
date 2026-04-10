@@ -13,14 +13,14 @@
    "display:block;"
    "box-sizing:border-box;"
    "color-scheme:light dark;"
-   "--x-skeleton-color:rgba(0,0,0,0.08);"
+   "--x-skeleton-color:var(--x-color-border,rgba(0,0,0,0.08));"
    "--x-skeleton-highlight:rgba(255,255,255,0.65);"
-   "--x-skeleton-border-radius:4px;"
+   "--x-skeleton-border-radius:var(--x-radius-sm,4px);"
    "--x-skeleton-duration:1.5s;}"
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-skeleton-color:rgba(255,255,255,0.10);"
+   "--x-skeleton-color:var(--x-color-border,rgba(255,255,255,0.10));"
    "--x-skeleton-highlight:rgba(255,255,255,0.18);}}"
 
    ;; Base element — the visible skeleton shape

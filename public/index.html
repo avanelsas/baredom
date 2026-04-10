@@ -439,6 +439,18 @@
     <button class="filter-chip" data-cat="overlay">Overlay</button>
   </div>
   <div class="filter-chips" id="style-chips"></div>
+  <div class="filter-chips" id="theme-chips">
+    <span style="font-size:12px;color:var(--muted);font-weight:500;margin-right:2px;">Theme:</span>
+    <button class="filter-chip active" data-theme="">None</button>
+    <button class="filter-chip" data-theme="default">default</button>
+    <button class="filter-chip" data-theme="ocean">ocean</button>
+    <button class="filter-chip" data-theme="forest">forest</button>
+    <button class="filter-chip" data-theme="sunset">sunset</button>
+    <button class="filter-chip" data-theme="neo-brutalist">neo-brutalist</button>
+    <button class="filter-chip" data-theme="aurora">aurora</button>
+    <button class="filter-chip" data-theme="mono-ai">mono-ai</button>
+    <button class="filter-chip" data-theme="warm-mineral">warm-mineral</button>
+  </div>
 </div>
 
 <div class="section-label" id="section-label">All components</div>
@@ -545,6 +557,7 @@
 
   let activeCategory = "all";
   let activeStyle = "all";
+  let activeTheme = "";
   let searchQuery = "";
 
   // Auto-generate style chips from data
@@ -582,7 +595,7 @@
     }
 
     grid.innerHTML = filtered.map(c => `
-      <a class="comp-card" href="demo/${c.file}.html" target="_blank" rel="noopener">
+      <a class="comp-card" href="demo/${c.file}.html${activeTheme ? '?theme=' + activeTheme : ''}" target="_blank" rel="noopener">
         <div class="comp-icon">${catIcons[c.cat]}</div>
         <div class="comp-name">${c.name}</div>
         <div class="comp-tag">&lt;${c.tag}&gt;</div>
@@ -608,6 +621,15 @@
     if (!chip) return;
     activeStyle = chip.dataset.style;
     document.querySelectorAll(".style-chip").forEach(el =>
+      el.classList.toggle("active", el === chip));
+    render();
+  });
+
+  document.getElementById("theme-chips").addEventListener("click", e => {
+    const chip = e.target.closest(".filter-chip");
+    if (!chip) return;
+    activeTheme = chip.dataset.theme;
+    document.querySelectorAll("#theme-chips .filter-chip").forEach(el =>
       el.classList.toggle("active", el === chip));
     render();
   });

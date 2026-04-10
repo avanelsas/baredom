@@ -20,12 +20,15 @@
       }
       .log {
         margin-top: 24px; padding: 12px; border-radius: 8px;
-        background: #111827; color: #f9fafb; min-height: 72px;
+        background: var(--surface-bg, #111827); color: var(--page-fg, #f9fafb);
+        border: 1px solid var(--surface-border, transparent);
+        min-height: 72px;
         white-space: pre-wrap; font-family: monospace; font-size: 12px;
       }
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   </head>
   <body>
     <h1>x-select demo</h1>

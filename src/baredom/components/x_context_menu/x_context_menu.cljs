@@ -25,24 +25,24 @@
 (def ^:private panel-style-text
   (str
    ":host{color-scheme:light dark;"
-   "--x-context-menu-bg:rgba(255,255,255,0.97);"
-   "--x-context-menu-border:rgba(0,0,0,0.1);"
-   "--x-context-menu-shadow:0 8px 32px rgba(0,0,0,0.14),0 2px 8px rgba(0,0,0,0.08);"
+   "--x-context-menu-bg:var(--x-color-bg,rgba(255,255,255,0.97));"
+   "--x-context-menu-border:var(--x-color-border,rgba(0,0,0,0.1));"
+   "--x-context-menu-shadow:var(--x-shadow-lg,0 8px 32px rgba(0,0,0,0.14),0 2px 8px rgba(0,0,0,0.08));"
    "--x-context-menu-radius:var(--x-radius-md,10px);"
    "--x-context-menu-item-hover:rgba(0,0,0,0.05);"
    "--x-context-menu-item-active:rgba(0,0,0,0.09);"
-   "--x-context-menu-item-fg:rgba(0,0,0,0.87);"
-   "--x-context-menu-separator:rgba(0,0,0,0.1);"
+   "--x-context-menu-item-fg:var(--x-color-text,rgba(0,0,0,0.87));"
+   "--x-context-menu-separator:var(--x-color-border,rgba(0,0,0,0.1));"
    "}"
    "@media(prefers-color-scheme:dark){"
    ":host{"
-   "--x-context-menu-bg:var(--x-color-surface,#1e293b);"
-   "--x-context-menu-border:rgba(255,255,255,0.12);"
-   "--x-context-menu-shadow:0 8px 32px rgba(0,0,0,0.7),0 2px 8px rgba(0,0,0,0.4);"
+   "--x-context-menu-bg:var(--x-color-bg,#1e293b);"
+   "--x-context-menu-border:var(--x-color-border,rgba(255,255,255,0.12));"
+   "--x-context-menu-shadow:var(--x-shadow-lg,0 8px 32px rgba(0,0,0,0.7),0 2px 8px rgba(0,0,0,0.4));"
    "--x-context-menu-item-hover:rgba(255,255,255,0.08);"
    "--x-context-menu-item-active:rgba(255,255,255,0.14);"
-   "--x-context-menu-item-fg:rgba(255,255,255,0.9);"
-   "--x-context-menu-separator:rgba(255,255,255,0.12);"
+   "--x-context-menu-item-fg:var(--x-color-text,rgba(255,255,255,0.9));"
+   "--x-context-menu-separator:var(--x-color-border,rgba(255,255,255,0.12));"
    "}"
    "}"
    "[part=panel]{"
@@ -95,16 +95,30 @@
 
 (def ^:private overlay-root-id "__xOverlayRoot")
 
-(defn- ensure-overlay-root! []
-  (or (.getElementById js/document overlay-root-id)
+(defn- find-theme-host
+  "Walk up from el to find the nearest x-theme ancestor, or fall back to body."
+  [^js el]
+  (or (when el (.closest el "x-theme"))
+      (.-body js/document)))
+
+(defn- ensure-overlay-root!
+  "Return (or create) the fixed overlay container. When an x-theme wrapper
+   exists, the root is placed inside it so theme tokens cascade into panels."
+  [^js trigger-el]
+  (let [^js host   (find-theme-host trigger-el)
+        ^js existing (.getElementById js/document overlay-root-id)]
+    ;; If existing root is inside the right host, reuse it
+    (if (and existing (.contains host existing))
+      existing
       (let [^js div (make-el "div")]
         (.setAttribute div "id" overlay-root-id)
         (set! (.. div -style -position) "fixed")
         (set! (.. div -style -inset) "0")
         (set! (.. div -style -pointerEvents) "none")
         (set! (.. div -style -zIndex) "0")
-        (.appendChild (.-body js/document) div)
-        div)))
+        (when existing (.remove existing))
+        (.appendChild host div)
+        div))))
 
 ;; ---- Keyboard navigation in panel ----
 
@@ -133,7 +147,7 @@
 ;; ---- Layer management ----
 
 (defn- make-layer! [^js el z-index]
-  (let [^js overlay (ensure-overlay-root!)
+  (let [^js overlay (ensure-overlay-root! el)
         ^js layer   (make-el "div")
         ^js shadow  (.attachShadow layer #js {:mode "open"})
         ^js style   (make-el "style")

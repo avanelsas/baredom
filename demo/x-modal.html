@@ -7,19 +7,8 @@
     <meta name="color-scheme" content="light dark" />
     <style>
       :root {
-        --btn-bg: #2563eb;
+        --btn-bg: var(--x-color-primary, #2563eb);
         --btn-fg: #ffffff;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --btn-bg: #3b82f6;
-        }
-        x-modal {
-          --x-modal-bg: #1e293b;
-          --x-modal-fg: #f8fafc;
-          --x-modal-shadow: 0 20px 60px rgba(0,0,0,0.65);
-          --x-modal-border: rgba(255, 255, 255, 0.1);
-        }
       }
       * { box-sizing: border-box; }
       
@@ -62,6 +51,7 @@
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   </head>
   <body>
     <h1>x-modal</h1>

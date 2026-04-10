@@ -30,6 +30,18 @@
   }
 }
 
+/* When inside an x-theme wrapper, re-derive demo variables from theme tokens */
+x-theme {
+  --page-bg: var(--x-color-bg);
+  --page-fg: var(--x-color-text);
+  --muted: var(--x-color-text-muted);
+  --border: var(--x-color-border);
+  --input-bg: var(--x-color-surface);
+  --input-fg: var(--x-color-text);
+  --surface-bg: var(--x-color-surface);
+  --surface-border: var(--x-color-border);
+}
+
 html, body {
   min-height: 100%;
   margin: 0;

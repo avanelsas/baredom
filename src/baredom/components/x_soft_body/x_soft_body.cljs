@@ -35,7 +35,7 @@
    "background:none;"
    "overflow:visible;"
    model/css-bg ":var(--x-color-surface,#ffffff);"
-   model/css-border ":#e2e8f0;"
+   model/css-border ":var(--x-color-border,#e2e8f0);"
    model/css-border-width ":1.5;"
    model/css-shadow ":var(--x-shadow-sm,0 1px 3px rgba(0,0,0,0.1));"
    model/css-padding ":1rem;}"

@@ -75,14 +75,14 @@
     .control-row input[type=checkbox] { width: 16px; height: 16px; margin-top: 6px; cursor: pointer; }
     button {
       padding: 8px 16px;
-      background: #2563eb;
+      background: var(--x-color-primary, #1d4ed8);
       color: #fff;
       border: none;
       border-radius: 6px;
       font-size: 13px;
       cursor: pointer;
     }
-    button:hover { background: #1d4ed8; }
+    button:hover { background: var(--x-color-primary-hover, #1e40af); }
     /* Event log */
     .log {
       background: var(--surface-bg);
@@ -100,6 +100,7 @@
   </style>
   <link rel="stylesheet" href="demo-responsive.css" />
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
 </head>
 <body>
 

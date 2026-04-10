@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark" />
   <title>x-collapse demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -63,9 +64,9 @@
     button.demo-btn:hover { opacity: 0.8; }
 
     .log {
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      color: #111827;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      border: 1px solid var(--surface-border, transparent);
       font-family: ui-monospace, monospace;
       font-size: 12px;
       line-height: 1.6;
@@ -78,15 +79,8 @@
       word-break: break-all;
     }
 
-    @media (prefers-color-scheme: dark) {
-      .log { background: #1f2937; border-color: #374151; color: #d1d5db; }
-    }
-
     .log-entry { margin-bottom: 2px; }
-    .log-entry.cancelled { color: #dc2626; }
-    @media (prefers-color-scheme: dark) {
-      .log-entry.cancelled { color: #f87171; }
-    }
+    .log-entry.cancelled { color: var(--x-color-error, #dc2626); }
     .log-entry.muted { color: #9ca3af; }
 
     /* Surface for accordion demo */

@@ -18,6 +18,10 @@
           --log-border: #334155;
         }
       }
+      x-theme {
+        --log-bg: var(--x-color-bg);
+        --log-fg: var(--x-color-text);
+      }
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
@@ -44,6 +48,7 @@
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   </head>
   <body>
     <h1>x-file-download demo</h1>

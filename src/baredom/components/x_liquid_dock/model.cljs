@@ -115,11 +115,12 @@
   (parse-float-clamped s default-ripple-speed 0.005 0.15))
 
 (defn parse-color
-  "Parse color attribute. Any non-empty string passes through."
+  "Parse color attribute. Any non-empty string passes through.
+  Returns nil when no attribute is set so the CSS custom property
+  (which may reference a theme token) takes effect."
   [s]
-  (if (and (string? s) (pos? (.-length (.trim s))))
-    (.trim s)
-    default-color))
+  (when (and (string? s) (pos? (.-length (.trim s))))
+    (.trim s)))
 
 (defn parse-magnet-radius [s]
   (parse-float-clamped s default-magnet-radius 40 400))

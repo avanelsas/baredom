@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>x-timeline Demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -68,13 +69,13 @@
       font-size: 0.875rem;
     }
     .toggle-btn.active {
-      background: #1d4ed8;
+      background: var(--x-color-primary, #1d4ed8);
       border-color: transparent;
       color: #fff;
     }
     @media (prefers-color-scheme: dark) {
       .toggle-btn { background: var(--surface-border); border-color: var(--surface-border); color: var(--page-fg); }
-      .toggle-btn.active { background: #3b82f6; }
+      .toggle-btn.active { background: var(--x-color-primary, #3b82f6); }
     }
 
     .event-log {

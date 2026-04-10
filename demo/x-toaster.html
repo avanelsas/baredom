@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="light dark" />
   <title>x-toaster demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     :root {
       --log-bg: #111827;
@@ -19,6 +20,11 @@
         --log-fg: #f9fafb;
         --log-entry-border: #1e293b;
         }
+    }
+
+    x-theme {
+      --log-bg: var(--x-color-bg);
+      --log-fg: var(--x-color-text);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -67,10 +73,10 @@
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      background: #1d4ed8;
+      background: var(--x-color-primary, #1d4ed8);
       color: #ffffff;
     }
-    button:hover { background: #1e40af; }
+    button:hover { background: var(--x-color-primary-hover, #1e40af); }
     button.secondary { background: var(--surface-bg); color: var(--page-fg); border-color: var(--surface-border); }
     button.secondary:hover { opacity: 0.8; }
     button.danger { background: #dc2626; }

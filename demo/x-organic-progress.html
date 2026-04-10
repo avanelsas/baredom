@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>x-organic-progress demo</title>
   <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -53,12 +54,9 @@
       height: 100px;
     }
     #event-log {
-      background: var(--surface-bg); color: #a5f3fc; padding: 1rem;
+      background: var(--surface-bg); color: var(--page-fg); padding: 1rem;
       border-radius: 8px; font-family: monospace; font-size: 0.8rem;
       max-height: 200px; overflow-y: auto; margin-top: 1rem;
-    }
-    @media (prefers-color-scheme: dark) {
-      #event-log { background: #0c1322; }
     }
   </style>
   <link rel="stylesheet" href="demo-responsive.css" />

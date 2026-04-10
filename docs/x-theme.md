@@ -2,6 +2,10 @@
 
 Centralised theming wrapper for BareDom web components. Wrap any subtree with `<x-theme>` to apply a consistent design token palette to all descendant components.
 
+All BareDom components are theme-aware out of the box. Each component references the 33 design tokens defined by `x-theme` via `var(--x-token, fallback)` — they work identically with or without a theme wrapper.
+
+Every component demo page includes a theme preset picker for live preview.
+
 ## Tag
 
 ```html

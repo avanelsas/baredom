@@ -100,13 +100,14 @@
       overflow-y: auto;
       font-family: monospace;
       font-size: 12px;
-      background: #111827;
-      color: #f9fafb;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px;
     }
 
-    .log-entry { margin: 2px 0; color: #94a3b8; }
+    .log-entry { margin: 2px 0; color: var(--muted); }
     .log-sort       { color: #a78bfa; }
     .log-select     { color: #60a5fa; }
     .log-connected  { color: #34d399; }
@@ -114,6 +115,7 @@
     .log-actions { display: flex; gap: 8px; margin-bottom: 8px; }
   </style>
   <link rel="stylesheet" href="demo-responsive.css" />
+  <script src="demo-theme.js" defer></script>
 </head>
 <body>
   <h1>x-table</h1>

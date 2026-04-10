@@ -31,6 +31,7 @@
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
   </head>
   <body>
     <div class="container">
@@ -144,25 +145,23 @@
     <div class="section-c">Section C</div>
 
     <div class="container">
-      <h2>Custom colors</h2>
+      <h2>Custom colors (base token)</h2>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="wave" layers="3"
-            style="--x-organic-divider-color-1: rgba(236,72,153,0.2);
-                   --x-organic-divider-color-2: rgba(236,72,153,0.4);
-                   --x-organic-divider-color-3: rgba(236,72,153,0.7);">
+            style="--x-organic-divider-color: #ec4899;">
           </x-organic-divider>
           <div class="label">pink gradient layers</div>
         </div>
         <div class="divider-showcase">
           <x-organic-divider shape="scallop"
-            style="--x-organic-divider-color-1: rgba(34,197,94,0.6);">
+            style="--x-organic-divider-color: #22c55e;">
           </x-organic-divider>
           <div class="label">green scallop</div>
         </div>
         <div class="divider-showcase">
           <x-organic-divider shape="cloud" height="80px"
-            style="--x-organic-divider-color-1: rgba(251,191,36,0.5);">
+            style="--x-organic-divider-color: #fbbf24;">
           </x-organic-divider>
           <div class="label">gold cloud, 80px height</div>
         </div>

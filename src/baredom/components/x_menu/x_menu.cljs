@@ -20,7 +20,7 @@
   (str
    ":host{"
    "display:inline-block;position:relative;color-scheme:light dark;"
-   "--x-menu-bg:var(--x-color-surface,#ffffff);"
+   "--x-menu-bg:var(--x-color-bg,#ffffff);"
    "--x-menu-border:1px solid var(--x-color-border,#e5e7eb);"
    "--x-menu-border-radius:var(--x-radius-md,8px);"
    "--x-menu-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
@@ -29,7 +29,7 @@
    "--x-menu-z-index:1000;}"
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-menu-bg:var(--x-color-surface,#1f2937);"
+   "--x-menu-bg:var(--x-color-bg,#1f2937);"
    "--x-menu-border:1px solid var(--x-color-border,#374151);"
    "--x-menu-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.4));}}"
    ".base{position:relative;display:inline-block;}"

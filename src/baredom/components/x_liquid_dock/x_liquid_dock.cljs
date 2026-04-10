@@ -38,6 +38,7 @@
    "position:fixed;"
    "z-index:var(" model/css-z-index ",50);"
    "pointer-events:auto;"
+   model/css-color ":var(--x-color-primary,#6366f1);"
    "}"
 
    ;; ── Position variants ──
@@ -159,7 +160,7 @@
    "--x-liquid-dock-bg:rgba(15,23,42,0.84);"
    "--x-liquid-dock-border:rgba(51,65,85,0.9);"
    "--x-liquid-dock-shadow:var(--x-shadow-lg,0 14px 36px rgba(0,0,0,0.35));"
-   "--x-liquid-dock-color:#818cf8;"
+   "--x-liquid-dock-color:var(--x-color-primary,#818cf8);"
    "}}"
 
    ;; ── Reduced motion ──
@@ -397,7 +398,9 @@
 (defn- apply-host-style!
   "Push model values onto the host as CSS custom properties."
   [^js el {:keys [color gap]}]
-  (.setProperty (.-style el) model/css-color color)
+  (if color
+    (.setProperty (.-style el) model/css-color color)
+    (.removeProperty (.-style el) model/css-color))
   (.setProperty (.-style el) model/css-gap (str gap "px")))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────

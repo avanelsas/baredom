@@ -96,9 +96,9 @@
   (is (= "rgba(0,0,0,0.5)" (model/parse-color "rgba(0,0,0,0.5)"))))
 
 (deftest parse-color-default-test
-  (is (= "#6366f1" (model/parse-color nil)))
-  (is (= "#6366f1" (model/parse-color "")))
-  (is (= "#6366f1" (model/parse-color "   "))))
+  (is (nil? (model/parse-color nil)))
+  (is (nil? (model/parse-color "")))
+  (is (nil? (model/parse-color "   "))))
 
 ;; ── parse-magnet-radius ─────────────────────────────────────────────────────
 (deftest parse-magnet-radius-valid-test
@@ -153,7 +153,7 @@
     (is (= 10        (:blur m)))
     (is (= 8         (:ripple-scale m)))
     (is (= 0.03      (:ripple-speed m)))
-    (is (= "#6366f1" (:color m)))
+    (is (nil? (:color m)))
     (is (= 150       (:magnet-radius m)))
     (is (= 0.6       (:magnet-strength m)))
     (is (= 1.0       (:bob-intensity m)))

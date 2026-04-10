@@ -20,17 +20,26 @@
    "--x-fieldset-border-radius:var(--x-radius-md, 8px);"
    "--x-fieldset-padding:1rem;"
    "--x-fieldset-gap:0.75rem;"
-   "--x-fieldset-bg:transparent;"
-   "--x-fieldset-legend-color:#374151;"
+   "--x-fieldset-bg:var(--x-color-surface,transparent);"
+   "--x-fieldset-legend-color:var(--x-color-text-muted,#374151);"
    "--x-fieldset-legend-font-size:var(--x-font-size-sm, 0.875rem);"
    "--x-fieldset-legend-font-weight:600;"
    "--x-fieldset-legend-padding:0 0.375rem;"
    "--x-fieldset-disabled-opacity:0.45;"
+   "--x-fieldset-input-bg:var(--x-color-surface,#ffffff);"
+   "--x-fieldset-input-color:var(--x-color-text,#0f172a);"
+   "--x-fieldset-input-border:var(--x-color-border,#d1d5db);"
+   "--x-fieldset-input-radius:var(--x-radius-sm,0.375rem);"
+   "--x-fieldset-input-focus:var(--x-color-focus-ring,#60a5fa);"
    "}"
    "@media (prefers-color-scheme:dark){"
    ":host{"
    "--x-fieldset-border-color:var(--x-color-border, #374151);"
-   "--x-fieldset-legend-color:#d1d5db;"
+   "--x-fieldset-legend-color:var(--x-color-text-muted,#d1d5db);"
+   "--x-fieldset-input-bg:var(--x-color-surface,#1f2937);"
+   "--x-fieldset-input-color:var(--x-color-text,#e5e7eb);"
+   "--x-fieldset-input-border:var(--x-color-border,#374151);"
+   "--x-fieldset-input-focus:var(--x-color-focus-ring,#93c5fd);"
    "}"
    "}"
    "[part=root]{"
@@ -66,6 +75,29 @@
    "gap:var(--x-fieldset-gap);"
    "}"
    ))
+
+(def ^:private light-dom-style-text
+  (str
+   "x-fieldset input,"
+   "x-fieldset select,"
+   "x-fieldset textarea{"
+   "background:var(--x-fieldset-input-bg);"
+   "color:var(--x-fieldset-input-color);"
+   "border:1px solid var(--x-fieldset-input-border);"
+   "border-radius:var(--x-fieldset-input-radius);"
+   "padding:0.5rem 0.75rem;"
+   "font:inherit;"
+   "outline:none;"
+   "box-sizing:border-box;"
+   "}"
+   "x-fieldset input:focus,"
+   "x-fieldset select:focus,"
+   "x-fieldset textarea:focus{"
+   "border-color:var(--x-fieldset-input-focus);"
+   "box-shadow:0 0 0 2px var(--x-fieldset-input-focus);"
+   "}"))
+
+(def ^:private light-style-id "x-fieldset-input-styles")
 
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
@@ -111,6 +143,13 @@
     (.appendChild root-el content-el)
     (.appendChild root style-el)
     (.appendChild root root-el)
+
+    ;; Inject shared light-DOM style for native inputs (once per document)
+    (when-not (.getElementById js/document light-style-id)
+      (let [ls (make-el "style")]
+        (set-attr! ls "id" light-style-id)
+        (set! (.-textContent ls) light-dom-style-text)
+        (.appendChild (.-head js/document) ls)))
 
     (let [refs #js {:root root :root-el root-el :legend-el legend-el :content-el content-el}]
       (gobj/set el k-refs refs)

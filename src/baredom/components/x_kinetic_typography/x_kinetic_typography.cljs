@@ -27,7 +27,7 @@
    "display:block;"
    "box-sizing:border-box;"
    "color-scheme:light dark;"
-   "--x-kinetic-typography-color:currentColor;"
+   "--x-kinetic-typography-color:var(--x-color-text,currentColor);"
    "--x-kinetic-typography-font-family:system-ui,sans-serif;"
    "--x-kinetic-typography-font-size:24px;"
    "--x-kinetic-typography-font-weight:400;"
@@ -37,7 +37,7 @@
    "--x-kinetic-typography-stroke-width:0;"
    "--x-kinetic-typography-duration:10s;"
    "--x-kinetic-typography-timing:linear;"
-   "--x-kinetic-typography-color-shift-from:currentColor;"
+   "--x-kinetic-typography-color-shift-from:var(--x-color-text,currentColor);"
    "--x-kinetic-typography-color-shift-to:var(--x-color-primary,#3b82f6);"
    "--x-kinetic-typography-path-stroke:none;"
    "--x-kinetic-typography-path-stroke-width:0;"
@@ -45,7 +45,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-kinetic-typography-color:rgba(255,255,255,0.87);}}"
+   "--x-kinetic-typography-color:var(--x-color-text,rgba(255,255,255,0.87));}}"
 
    "[part=container]{"
    "width:100%;height:100%;position:relative;}"

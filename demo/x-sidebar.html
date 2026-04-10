@@ -252,13 +252,7 @@
         .nav button:hover { background: #374151; }
       }
 
-      @media (prefers-color-scheme: dark) {
-        x-sidebar {
-          --x-sidebar-bg: #1f2937;
-          --x-sidebar-fg: #f9fafb;
-          --x-sidebar-border: #374151;
-        }
-      }
+      /* x-sidebar now derives bg/fg from --x-color-bg / --x-color-text tokens */
 
       .examples {
         display: grid;
@@ -539,6 +533,7 @@
     </div>
 
     <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
     <script>
       (function () {
         if (!customElements.get("x-sidebar")) {

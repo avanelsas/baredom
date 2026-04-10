@@ -15,10 +15,10 @@
    "display:grid;"
    "box-sizing:border-box;"
    "color-scheme:light dark;"
-   "--x-table-border-color:rgba(0,0,0,0.1);"
-   "--x-table-border-radius:8px;"
+   "--x-table-border-color:var(--x-color-border,rgba(0,0,0,0.1));"
+   "--x-table-border-radius:var(--x-radius-md,8px);"
    "--x-table-stripe-bg:rgba(0,0,0,0.025);"
-   "--x-table-caption-color:inherit;"
+   "--x-table-caption-color:var(--x-color-text,inherit);"
    "--x-table-caption-font-size:0.875rem;"
    "--x-table-caption-font-weight:600;"
    "--x-table-caption-padding:0 0 0.5rem;"
@@ -26,7 +26,7 @@
 
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-table-border-color:rgba(255,255,255,0.1);"
+   "--x-table-border-color:var(--x-color-border,rgba(255,255,255,0.1));"
    "--x-table-stripe-bg:rgba(255,255,255,0.03);}}"
 
    ":host([data-bordered]){"

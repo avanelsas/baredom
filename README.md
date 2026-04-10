@@ -53,7 +53,7 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 
 **Tree-shakeable by design.** Each component is a separate ES module. Import only what you use; bundle tools eliminate the rest automatically.
 
-**Full theming with CSS custom properties.** Every visual detail — colours, spacing, radius, shadows, typography — is exposed as a `--x-<component>-<property>` CSS custom property. Override at any scope: globally, per-page, per-instance.
+**Full theming with CSS custom properties.** Every visual detail — colours, spacing, radius, shadows, typography — is exposed as a `--x-<component>-<property>` CSS custom property. Override at any scope: globally, per-page, per-instance. Use [`<x-theme>`](./docs/x-theme.md) for centralised theming with built-in presets.
 
 **Light and dark mode included.** All components adapt automatically to `prefers-color-scheme`. No JavaScript required, no class toggling.
 
@@ -62,6 +62,46 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 **Mobile-ready.** All components are tested on viewports from 320px up. Overlay panels cap their width to avoid overflow. Touch targets meet the 44px minimum on coarse-pointer devices. Pointer events are used throughout for unified mouse and touch input.
 
 **Open Shadow DOM.** Shadow roots are `mode: "open"` — inspectable in DevTools, styleable via `::part()`, and testable with standard DOM APIs.
+
+---
+
+## Theming
+
+Wrap any subtree in `<x-theme>` to apply a consistent palette across all components:
+
+```html
+<x-theme preset="ocean">
+  <x-button>Themed button</x-button>
+  <x-alert type="info" text="Themed alert"></x-alert>
+</x-theme>
+```
+
+Ships with **8 built-in presets**: `default`, `ocean`, `forest`, `sunset`, `neo-brutalist`, `aurora`, `mono-ai`, `warm-mineral`. All presets include both light and dark mode values that work with `prefers-color-scheme`.
+
+For custom themes, register your own preset via JavaScript:
+
+```js
+import { registerPreset } from '@vanelsas/baredom/x-theme';
+
+registerPreset('acme', {
+  light: { '--x-color-primary': '#e11d48', '--x-color-surface': '#fff' },
+  dark:  { '--x-color-primary': '#fb7185', '--x-color-surface': '#1a1a2e' }
+});
+```
+
+```html
+<x-theme preset="acme">...</x-theme>
+```
+
+Or override individual tokens via CSS:
+
+```html
+<x-theme preset="default" style="--x-color-primary: #e11d48;">
+  ...
+</x-theme>
+```
+
+See [docs/x-theme.md](./docs/x-theme.md) for the full token list, preset details, and API reference.
 
 ---
 
