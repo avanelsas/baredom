@@ -22,7 +22,7 @@
    "--x-popover-panel-radius:8px;"
    "--x-popover-panel-shadow:0 4px 16px rgba(0,0,0,0.12);"
    "--x-popover-panel-min-width:12rem;"
-   "--x-popover-panel-max-width:24rem;"
+   "--x-popover-panel-max-width:min(24rem,calc(100vw - 1rem));"
    "--x-popover-panel-max-height:24rem;"
    "--x-popover-panel-offset:4px;"
    "--x-popover-panel-z:1000;"

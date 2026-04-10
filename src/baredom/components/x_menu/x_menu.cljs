@@ -40,6 +40,7 @@
    "border-radius:var(--x-menu-border-radius);"
    "box-shadow:var(--x-menu-shadow);"
    "min-width:var(--x-menu-min-width);"
+   "max-width:calc(100vw - 1rem);"
    "padding:var(--x-menu-padding);"
    "z-index:var(--x-menu-z-index);"
    "box-sizing:border-box;}"

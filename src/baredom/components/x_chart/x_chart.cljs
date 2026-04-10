@@ -459,7 +459,7 @@
 (defn- add-mouse-listeners! [^js el ^js hit-el all-pts ^js refs W H cursor show-tooltip? x-fmt y-fmt series]
   (when-not (= cursor "none")
     (.addEventListener
-     hit-el "mousemove"
+     hit-el "pointermove"
      (fn [^js ev]
        (let [rect (.getBoundingClientRect hit-el)
              mx   (- (.-clientX ev) (.-x rect))
@@ -480,7 +480,7 @@
                            :y        (:y pt)
                            :value    (:y pt)})))))
     (.addEventListener
-     hit-el "mouseleave"
+     hit-el "pointerleave"
      (fn [_]
        (when show-tooltip? (hide-tooltip! refs))))
     (.addEventListener

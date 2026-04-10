@@ -110,6 +110,7 @@
    "box-shadow:var(--x-dropdown-panel-shadow);"
    "padding:var(--x-dropdown-panel-padding);"
    "min-width:var(--x-dropdown-panel-min-width);"
+   "max-width:calc(100vw - 1rem);"
    "max-height:var(--x-dropdown-panel-max-height);"
    "overflow-y:auto;"
    "visibility:hidden;"

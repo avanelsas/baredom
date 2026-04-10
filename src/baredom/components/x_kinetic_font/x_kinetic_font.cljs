@@ -340,7 +340,7 @@
     (when (or (= trigger "cursor") (= trigger "both"))
       (let [move-fn (fn [^js e] (on-mousemove el e))]
         (gobj/set hdl "move" move-fn)
-        (.addEventListener js/document "mousemove" move-fn #js {:passive true})))
+        (.addEventListener js/document "pointermove" move-fn #js {:passive true})))
     ;; Scroll tracking
     (when (or (= trigger "scroll") (= trigger "both"))
       (let [scroll-fn (fn [] (on-scroll el))]
@@ -353,7 +353,7 @@
 (defn- remove-listeners! [^js el]
   (when-let [^js hdl (gobj/get el k-handlers)]
     (when-let [move-fn (gobj/get hdl "move")]
-      (.removeEventListener js/document "mousemove" move-fn))
+      (.removeEventListener js/document "pointermove" move-fn))
     (when-let [scroll-fn (gobj/get hdl "scroll")]
       (.removeEventListener js/window "scroll" scroll-fn))
     (gobj/set el k-handlers nil))

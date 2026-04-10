@@ -48,6 +48,7 @@
    "[part=panel]{"
    "position:absolute;"
    "min-width:160px;"
+   "max-width:calc(100vw - 1rem);"
    "border-radius:var(--x-context-menu-radius);"
    "background:var(--x-context-menu-bg);"
    "border:1px solid var(--x-context-menu-border);"

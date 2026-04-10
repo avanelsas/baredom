@@ -55,7 +55,7 @@
    ":host([data-placement=right]) [part=panel]{"
    "top:0;bottom:0;"
    "width:var(--x-drawer-size);"
-   "max-width:100vw;"
+   "max-width:100%;"
    "}"
    ":host([data-placement=left]) [part=panel]{"
    "left:0;"
