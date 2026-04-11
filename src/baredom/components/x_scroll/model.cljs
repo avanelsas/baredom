@@ -1,4 +1,5 @@
-(ns baredom.components.x-scroll.model)
+(ns baredom.components.x-scroll.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-scroll")
@@ -72,11 +73,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? allowed-snaps v) v "none")))
 
-(defn parse-bool-attr
-  "Standard HTML boolean attribute: present (non-nil) = true, absent (nil) = false."
-  [s]
-  (some? s))
-
 (defn parse-bool-default-true
   "Parse an attribute that is true when absent or empty, false only when \"false\"."
   [s]
@@ -131,14 +127,14 @@
            gap-raw disabled-attr label-raw]}]
   {:mode             (parse-mode mode-raw)
    :snap             (parse-snap snap-raw)
-   :loop?            (parse-bool-attr loop-attr)
-   :auto-play?       (parse-bool-attr auto-play-attr)
+   :loop?            (mu/parse-bool-present loop-attr)
+   :auto-play?       (mu/parse-bool-present auto-play-attr)
    :interval         (parse-interval interval-raw)
    :show-controls?   (parse-bool-default-true show-controls-attr)
-   :show-indicators? (parse-bool-attr show-indicators-attr)
+   :show-indicators? (mu/parse-bool-present show-indicators-attr)
    :active-index     (parse-active-index active-index-raw)
    :gap              (parse-gap gap-raw)
-   :disabled?        (parse-bool-attr disabled-attr)
+   :disabled?        (mu/parse-bool-present disabled-attr)
    :label            (or label-raw "")})
 
 ;; ── Position math ───────────────────────────────────────────────────────────

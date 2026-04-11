@@ -1,4 +1,5 @@
-(ns baredom.components.x-container.model)
+(ns baredom.components.x-container.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-container")
 
@@ -51,10 +52,6 @@
   [value]
   (normalize-enum value allowed-padding default-padding))
 
-(defn non-empty-string?
-  [value]
-  (and (string? value) (not= value "")))
-
 (defn public-state
   [{:keys [as size padding center fluid label]}]
   {:as (normalize-as as)
@@ -62,4 +59,4 @@
    :padding (normalize-padding padding)
    :center (boolean center)
    :fluid (boolean fluid)
-   :label (when (non-empty-string? label) label)})
+   :label (when (mu/non-empty-string? label) label)})

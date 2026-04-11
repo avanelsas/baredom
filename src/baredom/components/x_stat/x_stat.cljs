@@ -1,6 +1,6 @@
 (ns baredom.components.x-stat.x-stat
   (:require
-   [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-stat.model :as model]))
 
 (def key-root "__x_stat_root")
@@ -9,12 +9,6 @@
 (def key-value "__x_stat_value")
 (def key-hint "__x_stat_hint")
 (def key-initialized "__x_stat_initialized")
-
-(defn getv [el k] (gobj/get el k))
-(defn setv! [el k v] (gobj/set el k v))
-
-(defn initialized? [el] (true? (getv el key-initialized)))
-(defn mark-initialized! [el] (setv! el key-initialized true))
 
 (defn read-inputs [el]
   {:variant (.getAttribute el model/attr-variant)
@@ -52,10 +46,10 @@
 
 (defn render! [el]
   (let [state (model/derive-state (read-inputs el))
-        base (getv el key-base)
-        label-node (getv el key-label)
-        value-node (getv el key-value)
-        hint-node (getv el key-hint)]
+        base (du/getv el key-base)
+        label-node (du/getv el key-label)
+        value-node (du/getv el key-value)
+        hint-node (du/getv el key-hint)]
     (when base
       (apply-host-a11y! el state)
       (apply-state! base state)
@@ -185,17 +179,17 @@
     (.appendChild root style-el)
     (.appendChild root base)
 
-    (setv! el key-root root)
-    (setv! el key-base base)
-    (setv! el key-label label-span)
-    (setv! el key-value value-span)
-    (setv! el key-hint hint-span)))
+    (du/setv! el key-root root)
+    (du/setv! el key-base base)
+    (du/setv! el key-label label-span)
+    (du/setv! el key-value value-span)
+    (du/setv! el key-hint hint-span)))
 
 (defn init-element! [el]
 
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-initialized)
     (init-dom! el)
-    (mark-initialized! el))
+    (du/mark-initialized! el key-initialized))
 
   (render! el)
   el)
@@ -204,7 +198,7 @@
   (init-element! el))
 
 (defn attribute-changed-callback [el _ _ _]
-  (if (initialized? el)
+  (if (du/initialized? el key-initialized)
     (render! el)
     (init-element! el)))
 

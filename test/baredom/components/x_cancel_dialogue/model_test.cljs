@@ -1,17 +1,18 @@
 (ns baredom.components.x-cancel-dialogue.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-cancel-dialogue.model :as model]))
+            [baredom.components.x-cancel-dialogue.model :as model]
+            [baredom.utils.model :as mu]))
 
-;; ── parse-bool-attr ───────────────────────────────────────────────────────────
-(deftest parse-bool-attr-test
+;; ── parse-bool-present ────────────────────────────────────────────────────────
+(deftest parse-bool-present-test
   (testing "nil → false"
-    (is (= false (model/parse-bool-attr nil))))
+    (is (= false (mu/parse-bool-present nil))))
   (testing "empty string → true (attr present)"
-    (is (= true (model/parse-bool-attr ""))))
+    (is (= true (mu/parse-bool-present ""))))
   (testing "any string → true"
-    (is (= true (model/parse-bool-attr "true"))))
+    (is (= true (mu/parse-bool-present "true"))))
   (testing "false string still true (presence semantics)"
-    (is (= true (model/parse-bool-attr "false")))))
+    (is (= true (mu/parse-bool-present "false")))))
 
 ;; ── normalize defaults ────────────────────────────────────────────────────────
 (deftest normalize-defaults-test

@@ -1,20 +1,12 @@
 (ns baredom.components.x-menu.x-menu
   (:require
    [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-menu.model :as model]))
 
 (def key-refs "__xMenuRefs")
 (def key-handlers "__xMenuHandlers")
 (def key-init "__xMenuInit")
-
-(defn getv [el k] (gobj/get el k))
-(defn setv! [el k v] (gobj/set el k v))
-
-(defn initialized? [el]
-  (true? (getv el key-init)))
-
-(defn mark-initialized! [el]
-  (setv! el key-init true))
 
 (def style-text
   (str
@@ -69,7 +61,7 @@
   (.focus item))
 
 (defn get-trigger [^js el]
-  (let [refs (getv el key-refs)
+  (let [refs (du/getv el key-refs)
         trigger-slot (when refs (gobj/get refs "trigger-slot"))
         assigned (when trigger-slot (.assignedElements trigger-slot))]
     (when (and assigned (> (alength assigned) 0))
@@ -110,7 +102,7 @@
     (boolean (some (fn [node] (> (.indexOf path node) -1)) assigned))))
 
 (defn handle-el-click! [^js el ^js evt]
-  (let [refs (getv el key-refs)
+  (let [refs (du/getv el key-refs)
         trigger-slot (when refs (gobj/get refs "trigger-slot"))]
     (when (and trigger-slot (trigger-clicked? trigger-slot evt))
       (if (.hasAttribute el model/attr-open)
@@ -173,7 +165,7 @@
     (dispatch-event! el model/event-select #js {:value (or value "")})))
 
 (defn render! [^js el]
-  (let [refs (getv el key-refs)
+  (let [refs (du/getv el key-refs)
         popup (when refs (gobj/get refs "popup"))
         state (model/derive-state (read-inputs el))]
     (when popup
@@ -207,7 +199,7 @@
       (gobj/set refs "popup" popup)
       (gobj/set refs "trigger-slot" trigger-slot)
       (gobj/set refs "item-slot" item-slot)
-      (setv! el key-refs refs))))
+      (du/setv! el key-refs refs))))
 
 (defn install-listeners! [^js el]
   (let [on-click (fn [^js e] (handle-el-click! el e))
@@ -223,10 +215,10 @@
     (gobj/set handlers "doc-click" on-doc-click)
     (gobj/set handlers "keydown" on-keydown)
     (gobj/set handlers "item-select" on-item-select)
-    (setv! el key-handlers handlers)))
+    (du/setv! el key-handlers handlers)))
 
 (defn remove-listeners! [^js el]
-  (let [handlers (getv el key-handlers)]
+  (let [handlers (du/getv el key-handlers)]
     (when handlers
       (let [on-click (gobj/get handlers "click")
             on-doc-click (gobj/get handlers "doc-click")
@@ -238,15 +230,15 @@
         (.removeEventListener el model/event-item-select on-item-select)))))
 
 (defn init-element! [^js el]
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
-    (mark-initialized! el))
+    (du/mark-initialized! el key-init))
   (render! el)
   el)
 
 (defn connected-callback [^js el]
-  (if (initialized? el)
+  (if (du/initialized? el key-init)
     (do (install-listeners! el) (render! el))
     (init-element! el)))
 
@@ -254,7 +246,7 @@
   (remove-listeners! el))
 
 (defn attribute-changed-callback [^js el _name _old _new]
-  (when (initialized? el)
+  (when (du/initialized? el key-init)
     (render! el)))
 
 (defn install-property-accessors! [^js klass]

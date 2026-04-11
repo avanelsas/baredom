@@ -47,11 +47,6 @@
                                   :checked 'boolean}}})
 
 ;; ── Pure functions ───────────────────────────────────────────────────────────
-(defn parse-bool-attr
-  "Returns true if the attribute is present (non-nil) and not equal to \"false\"."
-  [s]
-  (and (some? s) (not= s "false")))
-
 (defn switch-value
   "Returns the raw value string, or \"on\" if nil."
   [raw]

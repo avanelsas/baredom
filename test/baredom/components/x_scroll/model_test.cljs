@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-scroll.model :as model]))
+            [baredom.components.x-scroll.model :as model]
+            [baredom.utils.model :as mu]))
 
 ;; ── parse-mode ──────────────────────────────────────────────────────────────
 (deftest parse-mode-known-values-test
@@ -35,13 +36,13 @@
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 (deftest parse-bool-attr-test
   (testing "absent (nil) -> false"
-    (is (false? (model/parse-bool-attr nil))))
+    (is (false? (mu/parse-bool-present nil))))
   (testing "present (empty string) -> true"
-    (is (true? (model/parse-bool-attr ""))))
+    (is (true? (mu/parse-bool-present ""))))
   (testing "present (any value) -> true"
-    (is (true? (model/parse-bool-attr "true")))
-    (is (true? (model/parse-bool-attr "false")))
-    (is (true? (model/parse-bool-attr "anything")))))
+    (is (true? (mu/parse-bool-present "true")))
+    (is (true? (mu/parse-bool-present "false")))
+    (is (true? (mu/parse-bool-present "anything")))))
 
 ;; ── parse-bool-default-true ─────────────────────────────────────────────────
 (deftest parse-bool-default-true-test

@@ -1,7 +1,8 @@
 (ns baredom.components.x-scroll-story.model-test
   (:require
    [cljs.test :refer [deftest testing is]]
-   [baredom.components.x-scroll-story.model :as model]))
+   [baredom.components.x-scroll-story.model :as model]
+   [baredom.utils.model :as mu]))
 
 ;; ── parse-layout ────────────────────────────────────────────────────────────
 
@@ -62,10 +63,10 @@
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 
 (deftest parse-bool-attr-test
-  (is (false? (model/parse-bool-attr nil)))
-  (is (true?  (model/parse-bool-attr "")))
-  (is (true?  (model/parse-bool-attr "true")))
-  (is (true?  (model/parse-bool-attr "anything"))))
+  (is (false? (mu/parse-bool-present nil)))
+  (is (true?  (mu/parse-bool-present "")))
+  (is (true?  (mu/parse-bool-present "true")))
+  (is (true?  (mu/parse-bool-present "anything"))))
 
 ;; ── parse-autoplay-speed ─────────────────────────────────────────────────────
 

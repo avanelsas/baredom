@@ -1,5 +1,6 @@
 (ns baredom.components.x-command-palette.model
-  (:require [clojure.string :as str]))
+  (:require [baredom.utils.model :as mu]
+            [clojure.string :as str]))
 
 (def tag-name "x-command-palette")
 
@@ -45,11 +46,6 @@
    event-select-request {:cancelable true :detail {:item 'object}}
    event-select {:cancelable false :detail {:item 'object}}
    event-query-change {:cancelable false :detail {:query 'string}}})
-
-(defn parse-bool-attr
-  "Returns true if attr string is non-nil and not \"false\"."
-  [s]
-  (and (some? s) (not= s "false")))
 
 (defn parse-bool-default-true
   "nil → true, \"false\" → false, anything else → true."
@@ -151,16 +147,16 @@
            label-raw placeholder-raw empty-text-raw]}]
   (let [modal?          (parse-bool-default-true modal-raw)
         dismissible?    (parse-bool-default-true dismissible-raw)
-        no-scrim?       (parse-bool-attr no-scrim-raw)
+        no-scrim?       (mu/parse-bool-attr no-scrim-raw)
         scrim?          (and modal? (not no-scrim?))
         close-on-scrim? (if (some? close-on-scrim-raw)
-                          (parse-bool-attr close-on-scrim-raw)
+                          (mu/parse-bool-attr close-on-scrim-raw)
                           scrim?)
         close-on-escape? (parse-bool-default-true close-on-escape-raw)]
     {:open?            (boolean open-present?)
      :modal?           modal?
      :dismissible?     dismissible?
-     :disabled?        (parse-bool-attr disabled-raw)
+     :disabled?        (mu/parse-bool-attr disabled-raw)
      :scrim?           scrim?
      :close-on-scrim?  close-on-scrim?
      :close-on-escape? close-on-escape?

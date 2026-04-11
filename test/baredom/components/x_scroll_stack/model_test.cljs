@@ -1,7 +1,8 @@
 (ns baredom.components.x-scroll-stack.model-test
   (:require
    [cljs.test :refer [deftest is testing]]
-   [baredom.components.x-scroll-stack.model :as model]))
+   [baredom.components.x-scroll-stack.model :as model]
+   [baredom.utils.model :as mu]))
 
 ;; ── parse-positive-number ───────────────────────────────────────────────────
 (deftest parse-positive-number-test
@@ -21,9 +22,9 @@
 
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 (deftest parse-bool-attr-test
-  (is (true? (model/parse-bool-attr "")))
-  (is (true? (model/parse-bool-attr "anything")))
-  (is (false? (model/parse-bool-attr nil))))
+  (is (true? (mu/parse-bool-present "")))
+  (is (true? (mu/parse-bool-present "anything")))
+  (is (false? (mu/parse-bool-present nil))))
 
 ;; ── parse-align ─────────────────────────────────────────────────────────────
 (deftest parse-align-test

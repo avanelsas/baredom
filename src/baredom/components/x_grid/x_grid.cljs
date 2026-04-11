@@ -1,20 +1,11 @@
 (ns baredom.components.x-grid.x-grid
   (:require
-   [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-grid.model :as model]))
 
 (def key-root "__x_grid_root")
 (def key-base "__x_grid_base")
 (def key-initialized "__x_grid_initialized")
-
-(defn getv [el k] (gobj/get el k))
-(defn setv! [el k v] (gobj/set el k v))
-
-(defn initialized? [el]
-  (true? (getv el key-initialized)))
-
-(defn mark-initialized! [el]
-  (setv! el key-initialized true))
 
 (defn read-inputs [el]
   {:columns (.getAttribute el model/attr-columns)
@@ -63,7 +54,7 @@
 (defn render! [el]
 
   (let [state (model/derive-state (read-inputs el))
-        base (getv el key-base)]
+        base (du/getv el key-base)]
 
     (when base
       (apply-state! base state))))
@@ -84,14 +75,14 @@
     (.appendChild root style)
     (.appendChild root base)
 
-    (setv! el key-root root)
-    (setv! el key-base base)))
+    (du/setv! el key-root root)
+    (du/setv! el key-base base)))
 
 (defn init-element! [el]
 
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-initialized)
     (init-dom! el)
-    (mark-initialized! el))
+    (du/mark-initialized! el key-initialized))
 
   (render! el)
   el)
@@ -100,7 +91,7 @@
   (init-element! el))
 
 (defn attribute-changed-callback [el _ _ _]
-  (if (initialized? el)
+  (if (du/initialized? el key-initialized)
     (render! el)
     (init-element! el)))
 

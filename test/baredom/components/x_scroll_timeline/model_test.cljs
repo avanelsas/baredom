@@ -1,7 +1,8 @@
 (ns baredom.components.x-scroll-timeline.model-test
   (:require
    [cljs.test :refer [deftest testing is]]
-   [baredom.components.x-scroll-timeline.model :as model]))
+   [baredom.components.x-scroll-timeline.model :as model]
+   [baredom.utils.model :as mu]))
 
 ;; ── parse-layout ────────────────────────────────────────────────────────────
 (deftest parse-layout-test
@@ -58,9 +59,9 @@
 
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 (deftest parse-bool-attr-test
-  (is (true?  (model/parse-bool-attr "")))
-  (is (true?  (model/parse-bool-attr "anything")))
-  (is (false? (model/parse-bool-attr nil))))
+  (is (true?  (mu/parse-bool-present "")))
+  (is (true?  (mu/parse-bool-present "anything")))
+  (is (false? (mu/parse-bool-present nil))))
 
 ;; ── parse-autoplay-speed ────────────────────────────────────────────────────
 (deftest parse-autoplay-speed-test

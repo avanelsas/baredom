@@ -1,4 +1,5 @@
-(ns baredom.components.x-chart.model)
+(ns baredom.components.x-chart.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-chart")
 
@@ -54,11 +55,6 @@
 
 (defn parse-cursor [s]
   (if (and (string? s) (contains? allowed-cursors s)) s "nearest"))
-
-(defn parse-bool-attr
-  "Returns true if attr is present (non-nil) and not literally \"false\"."
-  [s]
-  (and (some? s) (not= s "false")))
 
 (defn parse-int-pos
   "Parse a positive integer string, returning default-val on failure."
@@ -187,12 +183,12 @@
     {:type      (parse-type type-raw)
      :height    (parse-int-pos height-raw default-height)
      :padding   (parse-int-pos padding-raw default-padding)
-     :grid?     (if (nil? grid-present?) true (parse-bool-attr grid-present?))
-     :axes?     (if (nil? axes-raw) true (parse-bool-attr axes-raw))
-     :tooltip?  (parse-bool-attr tooltip-present?)
+     :grid?     (if (nil? grid-present?) true (mu/parse-bool-attr grid-present?))
+     :axes?     (if (nil? axes-raw) true (mu/parse-bool-attr axes-raw))
+     :tooltip?  (mu/parse-bool-attr tooltip-present?)
      :cursor    (parse-cursor cursor-raw)
-     :disabled? (parse-bool-attr disabled-present?)
-     :loading?  (parse-bool-attr loading-present?)
+     :disabled? (mu/parse-bool-attr disabled-present?)
+     :loading?  (mu/parse-bool-attr loading-present?)
      :series    series
      :x-kind    (x-kind series)
      :y-domain  [ymn ymx]

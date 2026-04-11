@@ -1,6 +1,6 @@
 (ns baredom.components.x-tabs.x-tabs
   (:require
-   [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-tabs.model :as model]))
 
 (def key-root "__x_tabs_root")
@@ -10,18 +10,6 @@
 (def key-on-tab-select "__x_tabs_on_tab_select")
 (def key-on-keydown "__x_tabs_on_keydown")
 (def key-observer "__x_tabs_observer")
-
-(defn getv [el k]
-  (gobj/get el k))
-
-(defn setv! [el k v]
-  (gobj/set el k v))
-
-(defn initialized? [el]
-  (true? (getv el key-init)))
-
-(defn mark-init! [el]
-  (setv! el key-init true))
 
 (def style-text
   (str
@@ -205,7 +193,7 @@
               (activate-tab-by-value! el (tab-value tab)))))))))
 
 (defn render! [^js el]
-  (let [base (getv el key-base)
+  (let [base (du/getv el key-base)
         state (model/derive-state (read-inputs el))]
     (when base
       (.setAttribute base "role" "tablist")
@@ -224,10 +212,10 @@
                                :subtree true
                                :attributes true
                                :attributeFilter #js ["value" "selected" "disabled" "controls"]})
-    (setv! el key-observer observer)))
+    (du/setv! el key-observer observer)))
 
 (defn disconnect-mutation-observer! [^js el]
-  (when-let [observer (getv el key-observer)]
+  (when-let [observer (du/getv el key-observer)]
     (.disconnect observer)))
 
 (defn install-listeners! [^js el]
@@ -235,14 +223,14 @@
         on-keydown* (fn [e] (handle-arrow el e))]
     (.addEventListener el "tab-select" on-tab-select*)
     (.addEventListener el "keydown" on-keydown*)
-    (setv! el key-on-tab-select on-tab-select*)
-    (setv! el key-on-keydown on-keydown*)
+    (du/setv! el key-on-tab-select on-tab-select*)
+    (du/setv! el key-on-keydown on-keydown*)
     (install-mutation-observer! el)))
 
 (defn remove-listeners! [^js el]
-  (when-let [on-tab-select* (getv el key-on-tab-select)]
+  (when-let [on-tab-select* (du/getv el key-on-tab-select)]
     (.removeEventListener el "tab-select" on-tab-select*))
-  (when-let [on-keydown* (getv el key-on-keydown)]
+  (when-let [on-keydown* (du/getv el key-on-keydown)]
     (.removeEventListener el "keydown" on-keydown*))
   (disconnect-mutation-observer! el))
 
@@ -257,20 +245,20 @@
     (.appendChild base slot)
     (.appendChild root style)
     (.appendChild root base)
-    (setv! el key-root root)
-    (setv! el key-base base)
-    (setv! el key-slot slot)))
+    (du/setv! el key-root root)
+    (du/setv! el key-base base)
+    (du/setv! el key-slot slot)))
 
 (defn init-element! [^js el]
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
-    (mark-init! el))
+    (du/mark-initialized! el key-init))
   (render! el)
   el)
 
 (defn connected-callback [^js el]
-  (if (initialized? el)
+  (if (du/initialized? el key-init)
     (do (install-listeners! el) (render! el))
     (init-element! el)))
 
@@ -278,7 +266,7 @@
   (remove-listeners! el))
 
 (defn attribute-changed-callback [^js el _name _old _new]
-  (when (initialized? el)
+  (when (du/initialized? el key-init)
     (render! el)))
 
 (defn install-property-accessors! [klass]

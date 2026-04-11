@@ -1,4 +1,5 @@
-(ns baredom.components.x-navbar.model)
+(ns baredom.components.x-navbar.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-navbar")
 
@@ -84,10 +85,6 @@
   [value]
   (normalize-enum value allowed-alignments default-alignment))
 
-(defn non-empty-string?
-  [value]
-  (and (string? value) (not= "" value)))
-
 (defn public-state
   [{:keys [label orientation variant sticky elevated breakpoint alignment]}]
   {:label (when (string? label) label)
@@ -100,5 +97,5 @@
 
 (defn landmark-label
   [{:keys [label]}]
-  (when (non-empty-string? label)
+  (when (mu/non-empty-string? label)
     label))

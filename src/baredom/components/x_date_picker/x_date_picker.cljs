@@ -1,5 +1,6 @@
 (ns baredom.components.x-date-picker.x-date-picker
   (:require [goog.object :as gobj]
+            [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -58,10 +59,10 @@
                     :format     (.getAttribute el model/attr-format)
                     :locale     (.getAttribute el model/attr-locale)
                     :separator  (.getAttribute el model/attr-separator)
-                    :auto-swap? (model/parse-bool-attr
+                    :auto-swap? (mu/parse-bool-attr
                                  (.getAttribute el model/attr-auto-swap))
                     :range-allow-same-day?
-                    (model/parse-bool-attr
+                    (mu/parse-bool-attr
                      (.getAttribute el model/attr-range-allow-same))})
         cfg       {:format (:format canon) :locale (:locale canon)}
         disp      (model/display-value canon cfg)

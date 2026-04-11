@@ -1,5 +1,6 @@
 (ns baredom.components.x-scroll-timeline.model
-  (:require [clojure.string :as str]))
+  (:require [baredom.utils.model :as mu]
+            [clojure.string :as str]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-scroll-timeline")
@@ -120,11 +121,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? allowed-markers v) v "dot")))
 
-(defn parse-bool-attr
-  "Standard HTML boolean attribute: present (non-nil) = true, absent (nil) = false."
-  [s]
-  (some? s))
-
 (defn parse-autoplay-speed
   "Parse autoplay-speed attribute to a positive number clamped to [1,1000].
   Default 50 px/s."
@@ -171,14 +167,14 @@
   {:layout              (parse-layout layout-raw)
    :track               (parse-track track-raw)
    :threshold           (parse-threshold threshold-raw)
-   :no-progress?        (parse-bool-attr no-progress-attr)
-   :disabled?           (parse-bool-attr disabled-attr)
+   :no-progress?        (mu/parse-bool-present no-progress-attr)
+   :disabled?           (mu/parse-bool-present disabled-attr)
    :label               (or label-raw "")
    :marker              (parse-marker marker-raw)
-   :autoplay?           (parse-bool-attr autoplay-attr)
+   :autoplay?           (mu/parse-bool-present autoplay-attr)
    :autoplay-speed      (parse-autoplay-speed autoplay-speed-raw)
-   :autoplay-loop?      (parse-bool-attr autoplay-loop-attr)
-   :autoplay-indicator? (parse-bool-attr autoplay-indicator-attr)})
+   :autoplay-loop?      (mu/parse-bool-present autoplay-loop-attr)
+   :autoplay-indicator? (mu/parse-bool-present autoplay-indicator-attr)})
 
 ;; ── Layout logic ────────────────────────────────────────────────────────────
 

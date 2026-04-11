@@ -1,4 +1,5 @@
-(ns baredom.components.x-metaball-cursor.model)
+(ns baredom.components.x-metaball-cursor.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-metaball-cursor")
@@ -79,11 +80,6 @@
   (if (and (string? s) (pos? (.-length (.trim s))))
     (.trim s)
     default-color))
-
-(defn parse-bool-attr
-  "Boolean from attribute presence: nil → false, any string → true."
-  [s]
-  (some? s))
 
 (defn parse-noise-scale
   "Parse noise-scale to float in [0.5, 20], default 3."
@@ -207,7 +203,7 @@
      :color           color
      :palette         palette
      :colors          (blob-colors palette color bc)
-     :noise?          (parse-bool-attr noise-attr)
+     :noise?          (mu/parse-bool-present noise-attr)
      :noise-scale     (parse-noise-scale noise-scale-raw)
      :noise-speed     (parse-noise-speed noise-speed-raw)
      :noise-intensity (parse-noise-intensity noise-intensity-raw)

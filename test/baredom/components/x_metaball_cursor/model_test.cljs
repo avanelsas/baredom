@@ -1,6 +1,7 @@
 (ns baredom.components.x-metaball-cursor.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-metaball-cursor.model :as model]))
+            [baredom.components.x-metaball-cursor.model :as model]
+            [baredom.utils.model :as mu]))
 
 ;; ── parse-blob-count ────────────────────────────────────────────────────────
 (deftest parse-blob-count-valid-test
@@ -47,10 +48,10 @@
 
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 (deftest parse-bool-attr-test
-  (is (false? (model/parse-bool-attr nil)))
-  (is (true? (model/parse-bool-attr "")))
-  (is (true? (model/parse-bool-attr "true")))
-  (is (true? (model/parse-bool-attr "anything"))))
+  (is (false? (mu/parse-bool-present nil)))
+  (is (true? (mu/parse-bool-present "")))
+  (is (true? (mu/parse-bool-present "true")))
+  (is (true? (mu/parse-bool-present "anything"))))
 
 ;; ── parse-noise-scale ───────────────────────────────────────────────────────
 (deftest parse-noise-scale-valid-test

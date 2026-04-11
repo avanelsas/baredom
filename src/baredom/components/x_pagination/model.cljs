@@ -64,9 +64,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? allowed-sizes v) v default-size)))
 
-(defn parse-bool-attr [s]
-  (and (some? s) (not= s "false")))
-
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize
   [{:keys [page-raw total-pages-raw sibling-count-raw boundary-count-raw

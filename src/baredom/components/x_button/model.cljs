@@ -1,4 +1,5 @@
-(ns baredom.components.x-button.model)
+(ns baredom.components.x-button.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-button")
 
@@ -73,10 +74,6 @@
   [value]
   (normalize-enum value allowed-sizes default-size))
 
-(defn non-empty-string?
-  [value]
-  (and (string? value) (not= "" value)))
-
 (defn public-state
   [{:keys [disabled loading pressed type variant size label]}]
   {:disabled (boolean disabled)
@@ -98,5 +95,5 @@
 (defn aria-label
   [{:keys [label has-default-text?]}]
   (when (and (not has-default-text?)
-             (non-empty-string? label))
+             (mu/non-empty-string? label))
     label))

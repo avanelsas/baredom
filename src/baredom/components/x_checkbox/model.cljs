@@ -48,11 +48,6 @@
                          :detail {:value   'string
                                   :checked 'boolean}}})
 
-(defn parse-bool-attr
-  "Returns true if the attribute is present and not equal to \"false\"."
-  [s]
-  (and (some? s) (not= s "false")))
-
 (defn checkbox-value
   "Returns the raw value string, or \"on\" if nil."
   [raw]

@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-dock.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-liquid-dock.model :as model]))
+            [baredom.components.x-liquid-dock.model :as model]
+            [baredom.utils.model :as mu]))
 
 ;; ── parse-position ──────────────────────────────────────────────────────────
 (deftest parse-position-valid-test
@@ -126,10 +127,10 @@
 
 ;; ── parse-bool-attr ─────────────────────────────────────────────────────────
 (deftest parse-bool-attr-test
-  (is (false? (model/parse-bool-attr nil)))
-  (is (true?  (model/parse-bool-attr "")))
-  (is (true?  (model/parse-bool-attr "true")))
-  (is (true?  (model/parse-bool-attr "anything"))))
+  (is (false? (mu/parse-bool-present nil)))
+  (is (true?  (mu/parse-bool-present "")))
+  (is (true?  (mu/parse-bool-present "true")))
+  (is (true?  (mu/parse-bool-present "anything"))))
 
 ;; ── parse-bob-intensity ──────────────────────────────────────────────────────
 (deftest parse-bob-intensity-valid-test

@@ -1,4 +1,5 @@
-(ns baredom.components.x-liquid-dock.model)
+(ns baredom.components.x-liquid-dock.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-liquid-dock")
@@ -131,11 +132,6 @@
 (defn parse-bob-intensity [s]
   (parse-float-clamped s default-bob-intensity 0.0 2.0))
 
-(defn parse-bool-attr
-  "Boolean from attribute presence: nil → false, any string → true."
-  [s]
-  (some? s))
-
 ;; ── Normalize ───────────────────────────────────────────────────────────────
 
 (defn normalize
@@ -182,7 +178,7 @@
      :magnet-radius   (parse-magnet-radius magnet-radius-raw)
      :magnet-strength (parse-magnet-strength magnet-strength-raw)
      :bob-intensity   (parse-bob-intensity bob-intensity-raw)
-     :disabled?       (parse-bool-attr disabled-attr)
+     :disabled?       (mu/parse-bool-present disabled-attr)
      :vertical?       (or (= pos "left") (= pos "right"))}))
 
 ;; ── Derived computations ────────────────────────────────────────────────────

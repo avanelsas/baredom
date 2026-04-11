@@ -1,21 +1,11 @@
 (ns baredom.components.x-container.x-container
-  (:require [baredom.components.x-container.model :as model]))
+  (:require [baredom.utils.dom :as du]
+            [baredom.components.x-container.model :as model]))
 
 (def state-key "__xContainerState")
 
 (defn get-prop [^js obj k] (aget obj k))
 (defn set-prop! [^js obj k v] (aset obj k v))
-
-(defn has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn set-bool-attr! [^js el attr value]
-  (if value
-    (.setAttribute el attr "")
-    (.removeAttribute el attr)))
 
 (defn get-el-state [^js el]
   (get-prop el state-key))
@@ -29,12 +19,12 @@
 
 (defn read-public-state [^js el]
   (model/public-state
-   {:as (get-attr el model/attr-as)
-    :size (get-attr el model/attr-size)
-    :padding (get-attr el model/attr-padding)
+   {:as (du/get-attr el model/attr-as)
+    :size (du/get-attr el model/attr-size)
+    :padding (du/get-attr el model/attr-padding)
     :center (get-default-true-bool el model/attr-center)
-    :fluid (has-attr? el model/attr-fluid)
-    :label (get-attr el model/attr-label)}))
+    :fluid (du/has-attr? el model/attr-fluid)
+    :label (du/get-attr el model/attr-label)}))
 
 (defn define-bool-prop!
   [^js proto prop attr]
@@ -46,10 +36,10 @@
         :enumerable true
         :get (fn []
                (this-as ^js this
-                        (has-attr? this attr)))
+                        (du/has-attr? this attr)))
         :set (fn [v]
                (this-as ^js this
-                        (set-bool-attr! this attr (boolean v))))}))
+                        (du/set-bool-attr! this attr (boolean v))))}))
 
 (defn define-default-true-bool-prop!
   [^js proto prop attr]

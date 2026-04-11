@@ -1,5 +1,6 @@
 (ns baredom.components.x-sidebar.x-sidebar
   (:require [goog.object :as gobj]
+            [baredom.utils.dom :as du]
             [baredom.components.x-sidebar.model :as model])
   (:require-macros [cljs.core :refer [this-as]]))
 
@@ -99,20 +100,6 @@
    "}"))
 
 
-(defn has-attr?
-  [el name]
-  (.hasAttribute el name))
-
-(defn get-attr
-  [el name]
-  (.getAttribute el name))
-
-(defn set-bool-attr!
-  [el name value]
-  (if value
-    (.setAttribute el name "")
-    (.removeAttribute el name)))
-
 (defn set-data-attr!
   [el name value]
   (.setAttribute el name value))
@@ -128,12 +115,12 @@
 
 (defn read-inputs
   [instance]
-  {:open-attr (has-attr? instance model/attr-open)
-   :collapsed-attr (has-attr? instance model/attr-collapsed)
-   :placement-attr (get-attr instance model/attr-placement)
-   :variant-attr (get-attr instance model/attr-variant)
-   :breakpoint-attr (get-attr instance model/attr-breakpoint)
-   :label-attr (get-attr instance model/attr-label)
+  {:open-attr (du/has-attr? instance model/attr-open)
+   :collapsed-attr (du/has-attr? instance model/attr-collapsed)
+   :placement-attr (du/get-attr instance model/attr-placement)
+   :variant-attr (du/get-attr instance model/attr-variant)
+   :breakpoint-attr (du/get-attr instance model/attr-breakpoint)
+   :label-attr (du/get-attr instance model/attr-label)
    :viewport-width (viewport-width)
    :prefers-reduced-motion (prefers-reduced-motion?)})
 
@@ -347,7 +334,7 @@
                (:open state)
                (= (.-target event) backdrop))
       (emit-dismiss! instance model/reason-backdrop)
-      (set-bool-attr! instance model/attr-open false))))
+      (du/set-bool-attr! instance model/attr-open false))))
 
 (defn on-keydown
   [instance event]
@@ -360,7 +347,7 @@
         (do
           (.preventDefault event)
           (emit-dismiss! instance model/reason-escape)
-          (set-bool-attr! instance model/attr-open false))
+          (du/set-bool-attr! instance model/attr-open false))
 
         (and (:is-modal state) (= key "Tab"))
         (cycle-focus! instance event)
@@ -434,7 +421,7 @@
                         (.hasAttribute this model/attr-open)))
         :set (fn [value]
                (this-as ^js this
-                        (set-bool-attr! this model/attr-open (boolean value))))
+                        (du/set-bool-attr! this model/attr-open (boolean value))))
         :enumerable true
         :configurable true})
   (js/Object.defineProperty
@@ -444,7 +431,7 @@
                         (.hasAttribute this model/attr-collapsed)))
         :set (fn [value]
                (this-as ^js this
-                        (set-bool-attr! this model/attr-collapsed (boolean value))))
+                        (du/set-bool-attr! this model/attr-collapsed (boolean value))))
         :enumerable true
         :configurable true}))
 

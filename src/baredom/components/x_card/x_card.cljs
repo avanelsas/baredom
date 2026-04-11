@@ -1,6 +1,6 @@
 (ns baredom.components.x-card.x-card
   (:require
-   [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-card.model :as model]))
 
 (def key-root "__x_card_root")
@@ -9,23 +9,11 @@
 (def key-slot "__x_card_slot")
 (def key-initialized "__x_card_initialized")
 
-(defn get-instance-value [^js el key]
-  (gobj/get el key))
-
-(defn set-instance-value! [^js el key value]
-  (gobj/set el key value))
-
-(defn initialized? [^js el]
-  (true? (get-instance-value el key-initialized)))
-
-(defn mark-initialized! [^js el]
-  (set-instance-value! el key-initialized true))
-
 (defn shadow-root-of [^js el]
-  (get-instance-value el key-root))
+  (du/getv el key-root))
 
 (defn base-node-of [^js el]
-  (get-instance-value el key-base))
+  (du/getv el key-base))
 
 (defn read-inputs [^js el]
   {:variant (.getAttribute el model/attr-variant)
@@ -217,10 +205,10 @@
     (.appendChild base-node slot-node)
     (.appendChild root style-node)
     (.appendChild root base-node)
-    (set-instance-value! el key-root root)
-    (set-instance-value! el key-style style-node)
-    (set-instance-value! el key-base base-node)
-    (set-instance-value! el key-slot slot-node)
+    (du/setv! el key-root root)
+    (du/setv! el key-style style-node)
+    (du/setv! el key-base base-node)
+    (du/setv! el key-slot slot-node)
     root))
 
 (defn render! [el]
@@ -259,10 +247,10 @@
   (.addEventListener el "keydown" (fn [event] (on-keydown el event))))
 
 (defn init-element! [^js el]
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-initialized)
     (init-shadow-dom! el)
     (install-listeners! el)
-    (mark-initialized! el))
+    (du/mark-initialized! el key-initialized))
   (render! el)
   el)
 
@@ -272,7 +260,7 @@
 (defn disconnected-callback [^js _el])
 
 (defn attribute-changed-callback [^js el _name _old-value _new-value]
-  (when (initialized? el)
+  (when (du/initialized? el key-initialized)
     (render! el)))
 
 (defn install-property-accessors! [^js klass]

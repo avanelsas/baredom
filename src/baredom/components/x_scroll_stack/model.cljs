@@ -1,4 +1,5 @@
-(ns baredom.components.x-scroll-stack.model)
+(ns baredom.components.x-scroll-stack.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-scroll-stack")
@@ -59,11 +60,6 @@
     (.toLowerCase (.trim s))
     "center"))
 
-(defn parse-bool-attr
-  "Parse a boolean attribute (present = true)."
-  [s]
-  (some? s))
-
 ;; ── Normalize ───────────────────────────────────────────────────────────────
 (defn normalize
   "Normalise raw attribute inputs into a stable view-model map.
@@ -86,7 +82,7 @@
    :rotation        (parse-positive-number rotation-raw default-rotation)
    :scroll-distance (parse-positive-number scroll-distance-raw default-scroll-distance)
    :align           (parse-align align-raw)
-   :disabled?       (parse-bool-attr disabled-attr)})
+   :disabled?       (mu/parse-bool-present disabled-attr)})
 
 ;; ── Stacking math (pure functions) ──────────────────────────────────────────
 

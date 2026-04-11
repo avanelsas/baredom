@@ -54,11 +54,6 @@
     (let [t (.trim s)]
       (when (not= t "") t))))
 
-(defn parse-bool-attr
-  "Returns true if attr string is non-nil and not \"false\"."
-  [s]
-  (and (some? s) (not= s "false")))
-
 (defn parse-format
   "Returns :iso or :localized.  Default is :iso."
   [s]

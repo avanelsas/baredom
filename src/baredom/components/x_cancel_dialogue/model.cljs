@@ -25,11 +25,6 @@
 (def observed-attributes
   #js ["open" "disabled" "headline" "message" "confirm-text" "cancel-text" "danger"])
 
-(defn parse-bool-attr
-  "Returns true if the attr value indicates presence (not nil), false otherwise."
-  [s]
-  (some? s))
-
 (defn normalize
   "Produce a normalized view-model map from raw attribute values."
   [{:keys [open-present? disabled-present? headline-raw message-raw

@@ -42,9 +42,6 @@
     (let [n (js/parseInt s 10)]
       (when (and (js/isFinite n) (pos? n)) n))))
 
-(defn parse-bool-attr [s]
-  (and (some? s) (not= s "false")))
-
 (defn normalize-label [s]
   (when (string? s)
     (let [v (.trim s)]

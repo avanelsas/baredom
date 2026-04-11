@@ -1,17 +1,18 @@
 (ns baredom.components.x-radio.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-radio.model :as model]))
+            [baredom.components.x-radio.model :as model]
+            [baredom.utils.model :as mu]))
 
 (deftest parse-bool-attr-test
   (testing "nil returns false"
-    (is (= false (model/parse-bool-attr nil))))
-  (testing "\"false\" returns false"
-    (is (= false (model/parse-bool-attr "false"))))
+    (is (= false (mu/parse-bool-attr nil))))
+  (testing "\"false\" string still true (presence semantics)"
+    (is (= false (mu/parse-bool-attr "false"))))
   (testing "empty string returns true"
-    (is (= true (model/parse-bool-attr ""))))
+    (is (= true (mu/parse-bool-attr ""))))
   (testing "any other string returns true"
-    (is (= true (model/parse-bool-attr "true")))
-    (is (= true (model/parse-bool-attr "yes")))))
+    (is (= true (mu/parse-bool-attr "true")))
+    (is (= true (mu/parse-bool-attr "yes")))))
 
 (deftest radio-value-test
   (testing "nil yields \"on\""

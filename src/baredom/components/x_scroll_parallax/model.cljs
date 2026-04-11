@@ -1,4 +1,5 @@
-(ns baredom.components.x-scroll-parallax.model)
+(ns baredom.components.x-scroll-parallax.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-scroll-parallax")
@@ -67,11 +68,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? allowed-easings v) v "none")))
 
-(defn parse-bool-attr
-  "Standard HTML boolean attribute: present (non-nil) = true, absent (nil) = false."
-  [s]
-  (some? s))
-
 (defn parse-speed
   "Parse a data-speed string to a float. Default 1.0."
   [s]
@@ -110,7 +106,7 @@
   {:direction (parse-direction direction-raw)
    :source    (parse-source source-raw)
    :easing    (parse-easing easing-raw)
-   :disabled? (parse-bool-attr disabled-attr)
+   :disabled? (mu/parse-bool-present disabled-attr)
    :label     (or label-raw "")})
 
 ;; ── Progress & parallax math ────────────────────────────────────────────────

@@ -130,11 +130,6 @@
         (js/Math.min 1.0 (js/Math.max 0.0 n))))
     default-opacity))
 
-(defn parse-bool-attr
-  "Boolean from attribute presence: nil → false, any string → true."
-  [s]
-  (some? s))
-
 (defn parse-interactive
   "Interactive defaults to true (present when absent)."
   [raw]

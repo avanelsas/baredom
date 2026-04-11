@@ -1,4 +1,5 @@
-(ns baredom.components.x-scroll-story.model)
+(ns baredom.components.x-scroll-story.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag name ────────────────────────────────────────────────────────────────
 (def tag-name "x-scroll-story")
@@ -92,11 +93,6 @@
       (if (js/isNaN n) 0.5 (max 0.1 (min 0.9 n))))
     0.5))
 
-(defn parse-bool-attr
-  "Standard HTML boolean attribute: present (non-nil) = true, absent (nil) = false."
-  [s]
-  (some? s))
-
 (defn parse-autoplay-speed
   "Parse autoplay-speed attribute to a positive number clamped to [1,1000].
   Default 50 px/s."
@@ -137,12 +133,12 @@
   {:layout              (parse-layout layout-raw)
    :threshold           (parse-threshold threshold-raw)
    :split               (parse-split split-raw)
-   :disabled?           (parse-bool-attr disabled-attr)
+   :disabled?           (mu/parse-bool-present disabled-attr)
    :label               (or label-raw "")
-   :autoplay?           (parse-bool-attr autoplay-attr)
+   :autoplay?           (mu/parse-bool-present autoplay-attr)
    :autoplay-speed      (parse-autoplay-speed autoplay-speed-raw)
-   :autoplay-loop?      (parse-bool-attr autoplay-loop-attr)
-   :autoplay-indicator? (parse-bool-attr autoplay-indicator-attr)})
+   :autoplay-loop?      (mu/parse-bool-present autoplay-loop-attr)
+   :autoplay-indicator? (mu/parse-bool-present autoplay-indicator-attr)})
 
 ;; ── Step activation math ────────────────────────────────────────────────────
 

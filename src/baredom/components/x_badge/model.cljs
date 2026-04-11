@@ -1,4 +1,5 @@
-(ns baredom.components.x-badge.model)
+(ns baredom.components.x-badge.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag & attribute constants ─────────────────────────────────────────────
 (def tag-name              "x-badge")
@@ -40,9 +41,6 @@
       (if (and (js/isFinite n) (>= n 0)) n fallback))
     fallback))
 
-(defn parse-bool-attr [s]
-  (and (some? s) (not= s "false")))
-
 ;; ── Display mode ──────────────────────────────────────────────────────────
 (defn compute-mode
   "Determine badge display mode.
@@ -77,8 +75,8 @@
                       (when (some? n) n)))]
     {:variant          (parse-variant variant-raw)
      :size             (parse-size size-raw)
-     :pill             (parse-bool-attr pill-raw)
-     :dot              (parse-bool-attr dot-raw)
+     :pill             (mu/parse-bool-attr pill-raw)
+     :dot              (mu/parse-bool-attr dot-raw)
      :count            count-val
      :max              max-val
      :text             (when (string? text-raw)

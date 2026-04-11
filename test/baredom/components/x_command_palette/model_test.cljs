@@ -1,13 +1,14 @@
 (ns baredom.components.x-command-palette.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [baredom.components.x-command-palette.model :as model]))
+            [baredom.components.x-command-palette.model :as model]
+            [baredom.utils.model :as mu]))
 
 (deftest parse-bool-attr-test
   (testing "parse-bool-attr"
-    (is (= true  (model/parse-bool-attr "")))
-    (is (= true  (model/parse-bool-attr "true")))
-    (is (= false (model/parse-bool-attr "false")))
-    (is (= false (model/parse-bool-attr nil)))))
+    (is (= true  (mu/parse-bool-attr "")))
+    (is (= true  (mu/parse-bool-attr "true")))
+    (is (= false (mu/parse-bool-attr "false")))
+    (is (= false (mu/parse-bool-attr nil)))))
 
 (deftest parse-bool-default-true-test
   (testing "parse-bool-default-true"

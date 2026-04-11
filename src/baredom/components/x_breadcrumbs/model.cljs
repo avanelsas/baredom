@@ -1,4 +1,5 @@
-(ns baredom.components.x-breadcrumbs.model)
+(ns baredom.components.x-breadcrumbs.model
+  (:require [baredom.utils.model :as mu]))
 
 ;; ── Tag & attribute constants ─────────────────────────────────────────────
 (def tag-name                 "x-breadcrumbs")
@@ -37,9 +38,6 @@
 
 (defn parse-size    [s] (parse-enum valid-sizes    default-size    s))
 (defn parse-variant [s] (parse-enum valid-variants default-variant s))
-
-(defn parse-bool-attr [s]
-  (and (some? s) (not= s "false")))
 
 (defn parse-pos-int
   "Parse string to positive integer ≥ 1, returning `fallback` on failure."
@@ -91,7 +89,7 @@
   {:separator             (normalize-separator separator-raw)
    :size                  (parse-size    size-raw)
    :variant               (parse-variant variant-raw)
-   :wrap                  (parse-bool-attr wrap-raw)
+   :wrap                  (mu/parse-bool-attr wrap-raw)
    :max-items             (parse-pos-int-or-nil max-items-raw)
    :items-before          (parse-pos-int items-before-raw default-items-before)
    :items-after           (parse-pos-int items-after-raw  default-items-after)

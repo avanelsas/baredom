@@ -1,5 +1,6 @@
 (ns baredom.components.x-checkbox.x-checkbox
   (:require [goog.object :as gobj]
+            [baredom.utils.model :as mu]
             [baredom.components.x-checkbox.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -175,11 +176,11 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:checked-present?       (model/parse-bool-attr (get-attr el model/attr-checked))
-    :indeterminate-present? (model/parse-bool-attr (get-attr el model/attr-indeterminate))
-    :disabled-present?      (model/parse-bool-attr (get-attr el model/attr-disabled))
-    :readonly-present?      (model/parse-bool-attr (get-attr el model/attr-readonly))
-    :required-present?      (model/parse-bool-attr (get-attr el model/attr-required))
+   {:checked-present?       (mu/parse-bool-attr (get-attr el model/attr-checked))
+    :indeterminate-present? (mu/parse-bool-attr (get-attr el model/attr-indeterminate))
+    :disabled-present?      (mu/parse-bool-attr (get-attr el model/attr-disabled))
+    :readonly-present?      (mu/parse-bool-attr (get-attr el model/attr-readonly))
+    :required-present?      (mu/parse-bool-attr (get-attr el model/attr-required))
     :name-raw               (get-attr el model/attr-name)
     :value-raw              (get-attr el model/attr-value)
     :aria-label-raw         (get-attr el model/attr-aria-label)

@@ -1,20 +1,12 @@
 (ns baredom.components.x-menu-item.x-menu-item
   (:require
    [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.components.x-menu-item.model :as model]))
 
 (def key-refs "__xMenuItemRefs")
 (def key-handlers "__xMenuItemHandlers")
 (def key-init "__xMenuItemInit")
-
-(defn getv [el k] (gobj/get el k))
-(defn setv! [el k v] (gobj/set el k v))
-
-(defn initialized? [el]
-  (true? (getv el key-init)))
-
-(defn mark-initialized! [el]
-  (setv! el key-init true))
 
 (def style-text
   (str
@@ -105,7 +97,7 @@
       (.removeAttribute el "has-icon"))))
 
 (defn render! [^js el]
-  (let [refs (getv el key-refs)
+  (let [refs (du/getv el key-refs)
         base (when refs (gobj/get refs "base"))
         state (model/derive-state (read-inputs el))]
     (when base
@@ -155,10 +147,10 @@
       (gobj/set refs "base" base)
       (gobj/set refs "icon-span" icon-span)
       (gobj/set refs "icon-slot" icon-slot)
-      (setv! el key-refs refs))))
+      (du/setv! el key-refs refs))))
 
 (defn install-listeners! [^js el]
-  (let [refs (getv el key-refs)
+  (let [refs (du/getv el key-refs)
         icon-slot (gobj/get refs "icon-slot")
         on-click (fn [^js e] (handle-click! el e))
         on-keydown (fn [^js e] (handle-keydown! el e))
@@ -170,11 +162,11 @@
     (gobj/set handlers "click" on-click)
     (gobj/set handlers "keydown" on-keydown)
     (gobj/set handlers "icon-slotchange" on-slotchange)
-    (setv! el key-handlers handlers)))
+    (du/setv! el key-handlers handlers)))
 
 (defn remove-listeners! [^js el]
-  (let [handlers (getv el key-handlers)
-        refs (getv el key-refs)]
+  (let [handlers (du/getv el key-handlers)
+        refs (du/getv el key-refs)]
     (when handlers
       (let [on-click (gobj/get handlers "click")
             on-keydown (gobj/get handlers "keydown")
@@ -186,15 +178,15 @@
           (.removeEventListener icon-slot "slotchange" on-slotchange))))))
 
 (defn init-element! [^js el]
-  (when-not (initialized? el)
+  (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
-    (mark-initialized! el))
+    (du/mark-initialized! el key-init))
   (render! el)
   el)
 
 (defn connected-callback [^js el]
-  (if (initialized? el)
+  (if (du/initialized? el key-init)
     (do (install-listeners! el) (render! el))
     (init-element! el)))
 
@@ -202,7 +194,7 @@
   (remove-listeners! el))
 
 (defn attribute-changed-callback [^js el _name _old _new]
-  (when (initialized? el)
+  (when (du/initialized? el key-init)
     (render! el)))
 
 (defn install-property-accessors! [^js klass]

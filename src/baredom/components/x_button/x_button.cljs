@@ -1,5 +1,6 @@
 (ns baredom.components.x-button.x-button
-  (:require [baredom.components.x-button.model :as model]))
+  (:require [baredom.utils.dom :as du]
+            [baredom.components.x-button.model :as model]))
 
 (def state-key "__xButtonState")
 (def hover-key "__xButtonHover")
@@ -15,19 +16,6 @@
   [obj k v]
   (aset obj k v))
 
-(defn has-attr?
-  [^js el attr-name]
-  (.hasAttribute el attr-name))
-
-(defn get-attr
-  [^js el attr-name]
-  (.getAttribute el attr-name))
-
-(defn set-bool-attr!
-  [^js el attr-name value]
-  (if value
-    (.setAttribute el attr-name "")
-    (.removeAttribute el attr-name)))
 
 (defn get-el-state
   [^js el]
@@ -78,13 +66,13 @@
 (defn read-public-state
   [^js el]
   (model/public-state
-   {:disabled (has-attr? el model/attr-disabled)
-    :loading (has-attr? el model/attr-loading)
-    :pressed (has-attr? el model/attr-pressed)
-    :type (get-attr el model/attr-type)
-    :variant (get-attr el model/attr-variant)
-    :size (get-attr el model/attr-size)
-    :label (get-attr el model/attr-label)}))
+   {:disabled (du/has-attr? el model/attr-disabled)
+    :loading (du/has-attr? el model/attr-loading)
+    :pressed (du/has-attr? el model/attr-pressed)
+    :type (du/get-attr el model/attr-type)
+    :variant (du/get-attr el model/attr-variant)
+    :size (du/get-attr el model/attr-size)
+    :label (du/get-attr el model/attr-label)}))
 
 (defn interactive-el?
   [^js el]
@@ -666,10 +654,10 @@
         :enumerable true
         :get (fn []
                (this-as this
-                        (has-attr? this attr-name)))
+                        (du/has-attr? this attr-name)))
         :set (fn [value]
                (this-as this
-                        (set-bool-attr! this attr-name (boolean value))))}))
+                        (du/set-bool-attr! this attr-name (boolean value))))}))
 
 (defn- element-class []
   (let [klass (js* "(class extends HTMLElement {})")]

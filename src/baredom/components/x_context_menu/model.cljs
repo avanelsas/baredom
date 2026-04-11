@@ -1,4 +1,5 @@
-(ns baredom.components.x-context-menu.model)
+(ns baredom.components.x-context-menu.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-context-menu")
 
@@ -44,13 +45,10 @@
       (if (and (not (js/isNaN n)) (pos? n)) n default-val))
     default-val))
 
-(defn parse-bool-attr [s]
-  (and (some? s) (not= s "false")))
-
 (defn normalize
   [{:keys [open-present? disabled-present? placement-raw offset-raw z-index-raw]}]
-  {:open?     (parse-bool-attr open-present?)
-   :disabled? (parse-bool-attr disabled-present?)
+  {:open?     (mu/parse-bool-attr open-present?)
+   :disabled? (mu/parse-bool-attr disabled-present?)
    :placement (parse-placement placement-raw)
    :offset    (parse-int-pos offset-raw default-offset)
    :z-index   (parse-int-pos z-index-raw default-z-index)})
