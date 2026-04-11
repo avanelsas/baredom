@@ -438,6 +438,23 @@ Override CSS custom properties at any scope:
 
 ---
 
+## Bundle Size
+
+BareDOM compiles to lightweight ES modules. Sizes below are gzipped:
+
+| Module | Gzipped |
+|--------|---------|
+| `base.js` (shared runtime) | ~35 KB |
+| Median component | ~3 KB |
+| Smallest (`x-spacer`) | ~1 KB |
+| Largest (`x-chart`) | ~9 KB |
+
+Each component loads `base.js` once plus its own module. A typical page using 5-10 components weighs **40-65 KB** gzipped total.
+
+> **ESM only.** BareDOM ships ES modules exclusively — there is no CommonJS or UMD build. This works natively in all modern browsers and with any bundler that supports ESM (webpack 5+, Vite, esbuild, Rollup, Parcel). If you need server-side rendering, pre-render the HTML and hydrate with component registration on the client.
+
+---
+
 ## Browser Support
 
 BareDOM targets browsers that support Custom Elements v1 and Shadow DOM v1 natively:

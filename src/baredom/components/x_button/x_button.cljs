@@ -16,57 +16,57 @@
   (aset obj k v))
 
 (defn has-attr?
-  [el attr-name]
+  [^js el attr-name]
   (.hasAttribute el attr-name))
 
 (defn get-attr
-  [el attr-name]
+  [^js el attr-name]
   (.getAttribute el attr-name))
 
 (defn set-bool-attr!
-  [el attr-name value]
+  [^js el attr-name value]
   (if value
     (.setAttribute el attr-name "")
     (.removeAttribute el attr-name)))
 
 (defn get-el-state
-  [el]
+  [^js el]
   (get-prop el state-key))
 
 (defn set-el-state!
-  [el state]
+  [^js el state]
   (set-prop! el state-key state))
 
 (defn get-hover
-  [el]
+  [^js el]
   (= true (get-prop el hover-key)))
 
 (defn set-hover!
-  [el value]
+  [^js el value]
   (set-prop! el hover-key (boolean value)))
 
 (defn get-focus-visible
-  [el]
+  [^js el]
   (= true (get-prop el focus-visible-key)))
 
 (defn set-focus-visible!
-  [el value]
+  [^js el value]
   (set-prop! el focus-visible-key (boolean value)))
 
 (defn get-active-source
-  [el]
+  [^js el]
   (get-prop el active-source-key))
 
 (defn set-active-source!
-  [el value]
+  [^js el value]
   (set-prop! el active-source-key value))
 
 (defn get-last-activation-source
-  [el]
+  [^js el]
   (get-prop el last-activation-source-key))
 
 (defn set-last-activation-source!
-  [el value]
+  [^js el value]
   (set-prop! el last-activation-source-key value))
 
 (defn find-owner-form
@@ -76,7 +76,7 @@
       (.closest el "form")))
 
 (defn read-public-state
-  [el]
+  [^js el]
   (model/public-state
    {:disabled (has-attr? el model/attr-disabled)
     :loading (has-attr? el model/attr-loading)
@@ -87,11 +87,11 @@
     :label (get-attr el model/attr-label)}))
 
 (defn interactive-el?
-  [el]
+  [^js el]
   (model/interactive? (read-public-state el)))
 
 (defn dispatch!
-  [el event-name detail]
+  [^js el event-name detail]
   (.dispatchEvent
    el
    (js/CustomEvent.
@@ -102,25 +102,25 @@
          :cancelable false})))
 
 (defn assigned-nodes
-  [slot-el]
+  [^js slot-el]
   (.assignedNodes slot-el #js {:flatten true}))
 
 (defn slot-has-content?
-  [slot-el]
+  [^js slot-el]
   (> (alength (assigned-nodes slot-el)) 0))
 
 (defn meaningful-text-node?
-  [node]
+  [^js node]
   (and (= (.-nodeType node) js/Node.TEXT_NODE)
        (not= "" (.trim (or (.-textContent node) "")))))
 
 (defn meaningful-element-node?
-  [node]
+  [^js node]
   (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
        (not= "" (.trim (or (.-textContent node) "")))))
 
 (defn slot-has-meaningful-text?
-  [slot-el]
+  [^js slot-el]
   (let [nodes (assigned-nodes slot-el)]
     (loop [idx 0]
       (if (< idx (alength nodes))
@@ -382,7 +382,7 @@
        :spinner-slot spinner-slot-el})
 
 (defn create-shadow!
-  [el]
+  [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style-el (create-el "style")
         button-el (create-el "button")
@@ -441,7 +441,7 @@
                        spinner-slot-el)))
 
 (defn render!
-  [el state]
+  [^js el state]
   (let [button-el (aget state "button")
         label-slot-el (aget state "label-slot")
         icon-start-slot-el (aget state "icon-start-slot")
@@ -489,7 +489,7 @@
     (.setAttribute el "data-size" (:size public-state))))
 
 (defn end-active-press!
-  [el]
+  [^js el]
   (let [source (get-active-source el)]
     (when source
       (set-active-source! el nil)
@@ -498,13 +498,13 @@
         (render! el state)))))
 
 (defn sync-noninteractive-state!
-  [el]
+  [^js el]
   (when-not (interactive-el? el)
     (set-hover! el false)
     (set-active-source! el nil)))
 
 (defn setup-hover!
-  [el button-el]
+  [^js el ^js button-el]
   (.addEventListener
    button-el
    "pointerenter"
@@ -528,7 +528,7 @@
        (end-active-press! el)))))
 
 (defn setup-press!
-  [el button-el]
+  [^js el ^js button-el]
   (.addEventListener
    button-el
    "pointerdown"
@@ -599,7 +599,7 @@
                (= btn-type "reset")  (.reset form)))))))))
 
 (defn setup-focus!
-  [el button-el]
+  [^js el ^js button-el]
   (.addEventListener
    button-el
    "focus"
@@ -618,7 +618,7 @@
      (render! el (get-el-state el)))))
 
 (defn setup-slots!
-  [el state]
+  [^js el state]
   (let [rerender (fn [_]
                    (render! el state))]
     (.addEventListener (aget state "label-slot") "slotchange" rerender)
@@ -627,7 +627,7 @@
     (.addEventListener (aget state "spinner-slot") "slotchange" rerender)))
 
 (defn connected!
-  [el]
+  [^js el]
   (when-not (get-el-state el)
     (let [state (create-shadow! el)
           button-el (aget state "button")]
@@ -644,14 +644,14 @@
   (render! el (get-el-state el)))
 
 (defn disconnected!
-  [el]
+  [^js el]
   (set-hover! el false)
   (set-focus-visible! el false)
   (set-active-source! el nil)
   (set-last-activation-source! el nil))
 
 (defn attribute-changed!
-  [el _name _old-value _new-value]
+  [^js el _name _old-value _new-value]
   (when-let [state (get-el-state el)]
     (sync-noninteractive-state! el)
     (render! el state)))

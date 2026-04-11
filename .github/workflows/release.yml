@@ -43,8 +43,18 @@ jobs:
 
       - run: npm ci
 
+      - name: Lint with clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo
+          clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}' || true
+
       - name: Build ESM library
         run: npm run build
+
+      - name: Check bundle sizes
+        run: bash scripts/check-bundle-size.sh
 
       - name: Run tests
         run: npm test
