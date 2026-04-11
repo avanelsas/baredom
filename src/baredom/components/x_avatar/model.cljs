@@ -1,4 +1,5 @@
-(ns baredom.components.x-avatar.model)
+(ns baredom.components.x-avatar.model
+  (:require [baredom.utils.model :as utils]))
 
 ;; ── Tag & attribute constants ─────────────────────────────────────────────
 (def tag-name        "x-avatar")
@@ -62,7 +63,9 @@
 (defn normalize [{:keys [src-raw alt-raw name-raw initials-raw
                          size-raw shape-raw variant-raw status-raw
                          disabled-present?]}]
-  (let [src      (normalize-text src-raw)
+  (let [src      (when-let [s (normalize-text src-raw)]
+                   (let [safe (utils/sanitize-url s)]
+                     (when (not= safe "") safe)))
         alt      (normalize-text alt-raw)
         nm       (normalize-text name-raw)
         initials (normalize-initials initials-raw)

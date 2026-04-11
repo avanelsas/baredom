@@ -61,6 +61,14 @@
   (is (nil? (model/normalize-path "")))
   (is (nil? (model/normalize-path "   "))))
 
+(deftest normalize-path-strips-css-injection-test
+  (testing "strips quotes and parens that could break path() CSS function"
+    (let [result (model/normalize-path "M0,0\"); background: url(evil)")]
+      (is (not (re-find #"[\"();:]" result)))))
+  (testing "strips semicolons"
+    (let [result (model/normalize-path "M0,0; background")]
+      (is (not (re-find #"[;:]" result))))))
+
 ;; ── normalize-boolean ────────────────────────────────────────────────────
 (deftest normalize-boolean-test
   (is (true?  (model/normalize-boolean "")))

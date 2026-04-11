@@ -1,4 +1,5 @@
-(ns baredom.components.x-file-download.model)
+(ns baredom.components.x-file-download.model
+  (:require [baredom.utils.model :as utils]))
 
 (def tag-name "x-file-download")
 
@@ -30,7 +31,7 @@
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
   [{:keys [href-raw filename-raw disabled-present? aria-label-raw]}]
-  {:href       (or href-raw "")
+  {:href       (utils/sanitize-url href-raw)
    :filename   (or filename-raw "")
    :disabled?  (boolean disabled-present?)
    :aria-label aria-label-raw})

@@ -58,6 +58,19 @@
     (let [m (model/normalize {:aria-label-raw nil})]
       (is (= nil (:aria-label m))))))
 
+(deftest normalize-href-blocks-javascript-protocol-test
+  (testing "javascript: URLs are sanitized to empty string"
+    (is (= "" (:href (model/normalize {:href-raw "javascript:alert(1)"}))))
+    (is (= "" (:href (model/normalize {:href-raw "JAVASCRIPT:alert(document.cookie)"}))))
+    (is (= "" (:href (model/normalize {:href-raw "vbscript:MsgBox"})))))
+  (testing "safe URLs pass through"
+    (is (= "https://example.com/file.pdf"
+           (:href (model/normalize {:href-raw "https://example.com/file.pdf"}))))
+    (is (= "data:text/plain,hello"
+           (:href (model/normalize {:href-raw "data:text/plain,hello"}))))
+    (is (= "/relative/path"
+           (:href (model/normalize {:href-raw "/relative/path"}))))))
+
 (deftest data-url?-test
   (testing "detects data: URIs"
     (is (true?  (model/data-url? "data:text/plain,hello")))

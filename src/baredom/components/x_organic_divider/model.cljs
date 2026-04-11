@@ -1,4 +1,5 @@
-(ns baredom.components.x-organic-divider.model)
+(ns baredom.components.x-organic-divider.model
+  (:require [baredom.utils.model :as utils]))
 
 (def tag-name "x-organic-divider")
 
@@ -105,8 +106,7 @@
     default-height))
 
 (defn normalize-path [s]
-  (when (and (string? s) (not= "" (.trim s)))
-    (.trim s)))
+  (utils/sanitize-svg-path-d s))
 
 (defn normalize-boolean [v]
   (some? v))
