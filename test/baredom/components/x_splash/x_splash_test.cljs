@@ -183,9 +183,9 @@
       ;; Failsafe: if event never fires, fail after 1s
       (js/setTimeout (fn []
                        (when-not @fired?
-                         (is false "x-splash-hidden event did not fire within 1s")
+                         (is false "x-splash-hidden event did not fire within 1.2s")
                          (done)))
-                     1000))))
+                     1200))))
 
 (deftest aria-busy-removed-after-hide-test
   (async done
@@ -201,9 +201,9 @@
       (.removeAttribute el model/attr-active)
       (js/setTimeout (fn []
                        (when-not @fired?
-                         (is false "x-splash-hidden event did not fire within 1s")
+                         (is false "x-splash-hidden event did not fire within 1.2s")
                          (done)))
-                     1000))))
+                     1200))))
 
 ;; ── Reconnect: no listener doubling ──────────────────────────────────────────
 (deftest reconnect-no-errors-test

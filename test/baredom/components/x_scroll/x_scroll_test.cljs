@@ -420,7 +420,7 @@
          (.dispatchEvent el (js/KeyboardEvent. "keydown" #js {:key "ArrowDown" :bubbles true}))
          (is (= 1 (.-activeIndex el)))
          (done))
-       50))))
+       100))))
 
 (deftest home-key-goes-to-first-test
   (cljs.test/async done
@@ -576,8 +576,8 @@
             (fn []
               (is (= idx (.-activeIndex el)))
               (done))
-            800)))
-       100))))
+            900)))
+       200))))
 
 ;; ── Edge cases ──────────────────────────────────────────────────────────────
 

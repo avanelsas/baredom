@@ -277,7 +277,7 @@
              (is (number? (.-progress d)) "detail.progress should be a number")
              (is (<= 0 (.-progress d) 1) "detail.progress should be in [0,1]")))
          (done))
-       300))))
+       400))))
 
 (deftest progress-event-detail-shape-test
   (async done

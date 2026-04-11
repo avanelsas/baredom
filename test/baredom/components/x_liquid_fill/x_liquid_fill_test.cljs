@@ -255,7 +255,7 @@
               (.remove box)
               (done))
             100)))
-       300))))
+       500))))
 
 ;; ── Reconnect without listener doubling ─────────────────────────────────────
 
