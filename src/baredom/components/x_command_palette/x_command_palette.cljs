@@ -1,5 +1,6 @@
 (ns baredom.components.x-command-palette.x-command-palette
   (:require [goog.object :as gobj]
+            [baredom.utils.dom :as du]
             [baredom.components.x-command-palette.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -28,16 +29,16 @@
   "Read all observed attrs from the element and normalize."
   [^js el]
   (model/normalize
-   {:open-present?       (.hasAttribute el model/attr-open)
-    :modal-raw           (.getAttribute el model/attr-modal)
-    :dismissible-raw     (.getAttribute el model/attr-dismissible)
-    :disabled-raw        (.getAttribute el model/attr-disabled)
-    :no-scrim-raw        (.getAttribute el model/attr-no-scrim)
-    :close-on-scrim-raw  (.getAttribute el model/attr-close-on-scrim)
-    :close-on-escape-raw (.getAttribute el model/attr-close-on-escape)
-    :label-raw           (.getAttribute el model/attr-label)
-    :placeholder-raw     (.getAttribute el model/attr-placeholder)
-    :empty-text-raw      (.getAttribute el model/attr-empty-text)}))
+   {:open-present?       (du/has-attr? el model/attr-open)
+    :modal-raw           (du/get-attr el model/attr-modal)
+    :dismissible-raw     (du/get-attr el model/attr-dismissible)
+    :disabled-raw        (du/get-attr el model/attr-disabled)
+    :no-scrim-raw        (du/get-attr el model/attr-no-scrim)
+    :close-on-scrim-raw  (du/get-attr el model/attr-close-on-scrim)
+    :close-on-escape-raw (du/get-attr el model/attr-close-on-escape)
+    :label-raw           (du/get-attr el model/attr-label)
+    :placeholder-raw     (du/get-attr el model/attr-placeholder)
+    :empty-text-raw      (du/get-attr el model/attr-empty-text)}))
 
 (defn- dispatch!
   [^js el event-name cancelable detail]
@@ -59,7 +60,7 @@
    ":host{display:contents;}"
    "[part=overlay]{"
    "display:none;position:fixed;inset:0;"
-   "background:rgba(0,0,0,0.45);"
+   "background:var(--x-command-palette-backdrop,rgba(0,0,0,0.45));"
    "z-index:var(--x-command-palette-z,800);"
    "}"
    "[part=panel]{"
@@ -72,7 +73,7 @@
    "flex-direction:column;"
    "border-radius:var(--x-command-palette-radius,var(--x-radius-lg,12px));"
    "background:var(--x-command-palette-bg,var(--x-color-bg,#fff));"
-   "box-shadow:0 20px 60px rgba(0,0,0,0.25),0 4px 16px rgba(0,0,0,0.12);"
+   "box-shadow:var(--x-command-palette-shadow,var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.25),0 4px 16px rgba(0,0,0,0.12)));"
    "overflow:hidden;"
    "}"
    ":host([open]) [part=overlay]{display:block;}"
@@ -134,7 +135,7 @@
    "}"
    "[part=empty][hidden]{display:none;}"
    "@media (prefers-color-scheme:dark){"
-   "[part=panel]{background:var(--x-command-palette-bg,var(--x-color-bg,#1e293b));box-shadow:0 20px 60px rgba(0,0,0,0.6),0 4px 16px rgba(0,0,0,0.4);}"
+   "[part=panel]{background:var(--x-command-palette-bg,var(--x-color-bg,#1e293b));box-shadow:var(--x-command-palette-shadow,var(--x-shadow-lg,0 20px 60px rgba(0,0,0,0.6),0 4px 16px rgba(0,0,0,0.4)));}"
    "[part=search-wrap]{border-bottom-color:var(--x-command-palette-divider,rgba(255,255,255,0.08));}"
    "[part=item]:hover,[part=item]:focus{background:var(--x-command-palette-item-hover,var(--x-color-text-muted,#334155));}"
    "[part=item][aria-selected=true]{background:var(--x-command-palette-item-active,#312e81);color:var(--x-command-palette-item-active-text,#c7d2fe);}"
@@ -457,7 +458,7 @@
   (let [^js target (.-target e)
         ^js item-el (.closest target "[part=item]")]
     (when item-el
-      (let [idx (js/parseInt (.getAttribute item-el "data-idx") 10)
+      (let [idx (js/parseInt (du/get-attr item-el "data-idx") 10)
             visible (active-visible el)
             item (nth visible idx nil)]
         (when (and item (not (:disabled? item)))

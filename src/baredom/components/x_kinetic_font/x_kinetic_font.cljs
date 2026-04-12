@@ -207,7 +207,8 @@
       ;; multiple frames so the spring has time to respond
       (gobj/set el k-scroll-delta (* scroll-d 0.85))
 
-      (let [all-settled (volatile! true)]
+      ;; 1-slot JS array avoids volatile! while letting the dotimes body mutate.
+      (let [all-settled #js [true]]
         (dotimes [i n]
           (let [;; Compute force for this spring
                 force
@@ -263,7 +264,7 @@
 
             ;; Check if settled
             (when-not (model/spring-settled? (- new-disp target) new-vel)
-              (vreset! all-settled false))
+              (aset all-settled 0 false))
 
             ;; Map displacement to font axes and apply
             (let [axes    (model/map-force-to-axes new-disp modes intensity
@@ -279,7 +280,7 @@
 
         ;; Continue or stop — keep running while scroll delta is still decaying
         (let [still-scrolling (> (or (gobj/get el k-scroll-delta) 0.0) 0.5)]
-          (if (and @all-settled (not still-scrolling))
+          (if (and (aget all-settled 0) (not still-scrolling))
             (do
               (gobj/set el k-raf nil)
               (gobj/set el k-scroll-delta 0.0)

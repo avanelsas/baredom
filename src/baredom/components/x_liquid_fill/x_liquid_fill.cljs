@@ -35,8 +35,11 @@
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
 
 ;; ── Unique ID counter ───────────────────────────────────────────────────────
-(def ^:private uid-counter (volatile! 0))
-(defn- next-uid [] (vswap! uid-counter inc))
+(def ^:private uid-state #js {:n 0})
+(defn- next-uid []
+  (let [n (inc (.-n uid-state))]
+    (set! (.-n uid-state) n)
+    n))
 
 ;; ── Max wave layers ─────────────────────────────────────────────────────────
 (def ^:private max-layers 5)
@@ -390,7 +393,16 @@
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
-  (when (.-isConnected el)
+  (cond
+    (not (.-isConnected el))
+    nil
+
+    (or (:disabled? (gobj/get el k-model)) (prefers-reduced-motion?))
+    ;; Bail out without rescheduling — leaves k-raf cleared so a future
+    ;; re-enable via start-animation! will kick the loop back on.
+    (gobj/set el k-raf nil)
+
+    :else
     (let [m           (gobj/get el k-model)
           now         (js/performance.now)
           last-frame  (gobj/get el k-last-frame)
@@ -420,8 +432,8 @@
             new-prog  (model/lerp cur-prog tgt-prog (* 5.0 dt))]
         (gobj/set el k-progress new-prog))
 
-      ;; Update each wave layer's spring
-      (let [any-moving? (volatile! false)]
+      ;; Update each wave layer's spring. 1-slot JS array avoids volatile!.
+      (let [any-moving? #js [false]]
         (dotimes [i n]
           (let [lp          (model/layer-params i n)
                 ;; Target amplitude: velocity-driven + idle
@@ -437,7 +449,7 @@
             (aset wp i (+ (aget wp i) (* dt wave-speed (:speed-mult lp))))
             ;; Check if still moving
             (when (> (js/Math.abs (aget wv i)) settle-threshold)
-              (vreset! any-moving? true))))
+              (aset any-moving? 0 true))))
 
         ;; Decay scroll velocity
         (gobj/set el k-scroll-vel (* vel (js/Math.max 0.0 (- 1.0 (* 3.0 dt)))))
@@ -455,7 +467,7 @@
         ;; Continue or stop
         (let [prog-diff (js/Math.abs (- (or (gobj/get el k-progress) 0.0)
                                         (or (gobj/get el k-target-progress) 0.0)))]
-          (if (or @any-moving? (> vel 0.01) (> prog-diff 0.001))
+          (if (or (aget any-moving? 0) (> vel 0.01) (> prog-diff 0.001))
             (gobj/set el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el))))
             ;; Settled
@@ -478,7 +490,8 @@
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
   (when (and (.-isConnected el)
-             (gobj/get el k-visible))
+             (gobj/get el k-visible)
+             (not (:disabled? (gobj/get el k-model))))
     ;; Lazy re-resolve: target selector specified but not yet found
     (let [m-pre      (gobj/get el k-model)
           cur-tgt    (gobj/get el k-scroll-target)]

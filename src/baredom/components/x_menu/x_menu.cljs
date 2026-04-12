@@ -43,17 +43,17 @@
    ".popup[data-placement='top-end']{bottom:100%;right:0;margin-bottom:4px;}"))
 
 (defn read-inputs [^js el]
-  {:open (.hasAttribute el model/attr-open)
-   :placement (.getAttribute el model/attr-placement)
-   :label (.getAttribute el model/attr-label)})
+  {:open (du/has-attr? el model/attr-open)
+   :placement (du/get-attr el model/attr-placement)
+   :label (du/get-attr el model/attr-label)})
 
 (defn get-focusable-items [^js el]
   (let [all (.querySelectorAll el "x-menu-item")
         result #js []]
     (dotimes [i (alength all)]
       (let [item (aget all i)]
-        (when (and (not (.hasAttribute item "disabled"))
-                   (not= (.getAttribute item "type") "divider"))
+        (when (and (not (du/has-attr? item "disabled"))
+                   (not= (du/get-attr item "type") "divider"))
           (.push result item))))
     result))
 
