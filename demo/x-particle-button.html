@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-particle-button demo</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+        line-height: 1.4;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      h1 { margin-bottom: 8px; }
+      h2 { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+      p.subtitle { margin: 0 0 24px; opacity: 0.7; font-size: 0.9rem; }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--surface-bg);
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .log {
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        color: var(--page-fg);
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .icon {
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.75;
+      }
+
+      .spinner-dot {
+        width: 0.75em;
+        height: 0.75em;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.75;
+      }
+
+      .controls {
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 12px;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: end;
+      }
+
+      .controls label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+      }
+
+      .controls input[type="range"] { width: 120px; }
+      .controls select { padding: 4px 8px; border-radius: 6px; }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <h1>x-particle-button demo</h1>
+    <p class="subtitle">A button whose surface emits and reabsorbs visual fragments. Hover to see edge particles; click to see press-point bursts.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Modes</h2>
+        <div class="row">
+          <x-particle-button mode="dust">Dust</x-particle-button>
+          <x-particle-button mode="spark">Spark</x-particle-button>
+          <x-particle-button mode="ember">Ember</x-particle-button>
+          <x-particle-button mode="burst">Burst</x-particle-button>
+          <x-particle-button mode="disperse">Disperse</x-particle-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Variants (color only)</h2>
+        <div class="row">
+          <x-particle-button mode="spark">Primary</x-particle-button>
+          <x-particle-button variant="secondary" mode="spark">Secondary</x-particle-button>
+          <x-particle-button variant="danger" mode="spark">Danger</x-particle-button>
+          <x-particle-button variant="success" mode="spark">Success</x-particle-button>
+          <x-particle-button variant="warning" mode="spark">Warning</x-particle-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Sizes</h2>
+        <div class="row">
+          <x-particle-button size="sm" mode="dust">Small</x-particle-button>
+          <x-particle-button size="md" mode="dust">Medium</x-particle-button>
+          <x-particle-button size="lg" mode="dust">Large</x-particle-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>States</h2>
+        <div class="row">
+          <x-particle-button pressed>Pressed</x-particle-button>
+          <x-particle-button disabled>Disabled</x-particle-button>
+          <x-particle-button loading label="Saving">
+            Saving
+            <span slot="spinner" class="spinner-dot" aria-hidden="true"></span>
+          </x-particle-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Slots</h2>
+        <div class="row">
+          <x-particle-button mode="ember">
+            <span slot="icon-start" class="icon" aria-hidden="true"></span>
+            Save
+          </x-particle-button>
+          <x-particle-button mode="spark" label="Next">
+            Next
+            <span slot="icon-end" class="icon" aria-hidden="true"></span>
+          </x-particle-button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Intent Combos</h2>
+        <div class="row">
+          <x-particle-button variant="danger" mode="burst">Delete</x-particle-button>
+          <x-particle-button variant="success" mode="disperse">Confirm</x-particle-button>
+          <x-particle-button variant="warning" mode="ember">Proceed</x-particle-button>
+        </div>
+      </section>
+    </div>
+
+    <div class="controls">
+      <label>
+        Mode
+        <select id="ctrl-mode">
+          <option value="dust" selected>dust</option>
+          <option value="spark">spark</option>
+          <option value="ember">ember</option>
+          <option value="burst">burst</option>
+          <option value="disperse">disperse</option>
+        </select>
+      </label>
+      <label>
+        Variant
+        <select id="ctrl-variant">
+          <option value="primary" selected>primary</option>
+          <option value="secondary">secondary</option>
+          <option value="danger">danger</option>
+          <option value="success">success</option>
+          <option value="warning">warning</option>
+        </select>
+      </label>
+      <label>
+        Intensity
+        <input type="range" id="ctrl-intensity" min="1" max="100" value="50" />
+        <span id="val-intensity">50</span>
+      </label>
+      <label>
+        Particle Size
+        <input type="range" id="ctrl-size" min="1" max="8" value="3" />
+        <span id="val-size">3</span>
+      </label>
+      <x-particle-button id="live-demo">Live Demo</x-particle-button>
+    </div>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      const liveBtn = document.getElementById("live-demo");
+
+      // Wire controls
+      document.getElementById("ctrl-mode").addEventListener("change", e => {
+        liveBtn.setAttribute("mode", e.target.value);
+      });
+      document.getElementById("ctrl-variant").addEventListener("change", e => {
+        liveBtn.setAttribute("variant", e.target.value);
+      });
+      ["intensity", "size"].forEach(key => {
+        const input = document.getElementById("ctrl-" + key);
+        const display = document.getElementById("val-" + key);
+        const attrMap = { intensity: "intensity", size: "particle-size" };
+        input.addEventListener("input", () => {
+          display.textContent = input.value;
+          liveBtn.setAttribute(attrMap[key], input.value);
+        });
+      });
+
+      // Log events
+      const events = [
+        "press", "press-start", "press-end",
+        "hover-start", "hover-end", "focus-visible",
+        "burst", "reform"
+      ];
+
+      document.querySelectorAll("x-particle-button").forEach(btn => {
+        events.forEach(name => {
+          btn.addEventListener(name, e => {
+            const detail = e.detail ? JSON.stringify(e.detail) : "";
+            const text = btn.textContent.trim().slice(0, 20);
+            log.textContent = `[${text}] ${name} ${detail}\n` + log.textContent;
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

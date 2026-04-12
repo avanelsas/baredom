@@ -352,6 +352,10 @@
       "import" : "./dist/x-morph-stack.js",
       "default" : "./dist/x-morph-stack.js"
     },
+    "./x-particle-button" : {
+      "import" : "./dist/x-particle-button.js",
+      "default" : "./dist/x-particle-button.js"
+    },
     "./x-theme" : {
       "import" : "./dist/x-theme.js",
       "default" : "./dist/x-theme.js"

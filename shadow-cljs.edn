@@ -451,6 +451,11 @@
      {init baredom.exports.x-morph-stack/init}
      :depends-on #{:base}}
 
+    :x-particle-button
+    {:exports
+     {init baredom.exports.x-particle-button/init}
+     :depends-on #{:base}}
+
     :x-theme
     {:exports
      {init baredom.exports.x-theme/init
