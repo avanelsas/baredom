@@ -2,6 +2,7 @@
   (:require
    [baredom.exports.x-button :as x-button]
    [baredom.exports.x-card :as x-card]
+   [baredom.exports.x-carousel :as x-carousel]
    [baredom.exports.x-container :as x-container]
    [baredom.exports.x-grid :as x-grid]
    [baredom.exports.x-navbar :as x-navbar]
@@ -91,6 +92,7 @@
   (x-breadcrumbs/register!)
   (x-button/register!)
   (x-card/register!)
+  (x-carousel/register!)
   (x-container/register!)
   (x-grid/register!)
   (x-navbar/register!)

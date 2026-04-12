@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-carousel demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+        color: var(--text);
+        background: var(--page-bg);
+      }
+
+      h1 { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+
+      h2 {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 32px 0 10px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 640px;
+      }
+
+      .slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        border-radius: 8px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+
+      .controls label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .controls input[type="number"],
+      .controls select {
+        width: 80px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--input-fg);
+        font-size: 13px;
+      }
+
+      .controls button {
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: none;
+        background: #1d4ed8;
+        color: #ffffff;
+        cursor: pointer;
+      }
+      .controls button:hover { background: #1e40af; }
+
+      #event-log {
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow: auto;
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 8px;
+        white-space: pre-wrap;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+  </head>
+  <body>
+    <script src="demo-theme.js" defer></script>
+    <script src="/js/main.js"></script>
+
+    <h1>x-carousel</h1>
+
+    <div class="stack">
+
+      <!-- Basic carousel -->
+      <h2>Basic Slide Carousel</h2>
+      <x-carousel id="basic" aria-label="Basic demo" style="--x-carousel-height:250px;">
+        <div class="slide" style="background:#3b82f6;">Slide 1</div>
+        <div class="slide" style="background:#ef4444;">Slide 2</div>
+        <div class="slide" style="background:#10b981;">Slide 3</div>
+        <div class="slide" style="background:#f59e0b;">Slide 4</div>
+      </x-carousel>
+
+      <!-- Controls -->
+      <h2>Controls</h2>
+      <div class="controls">
+        <label><input type="checkbox" id="ctl-autoplay"> Autoplay</label>
+        <label><input type="checkbox" id="ctl-loop"> Loop</label>
+        <label><input type="checkbox" id="ctl-disabled"> Disabled</label>
+        <label><input type="checkbox" id="ctl-arrows" checked> Arrows</label>
+        <label><input type="checkbox" id="ctl-dots" checked> Dots</label>
+        <label>Interval:
+          <input type="number" id="ctl-interval" value="3000" min="100" step="500">
+        </label>
+        <label>Slide:
+          <input type="number" id="ctl-current" value="0" min="0">
+        </label>
+        <label>Transition:
+          <select id="ctl-transition">
+            <option value="slide">slide</option>
+            <option value="fade">fade</option>
+          </select>
+        </label>
+        <label>Direction:
+          <select id="ctl-direction">
+            <option value="horizontal">horizontal</option>
+            <option value="vertical">vertical</option>
+          </select>
+        </label>
+        <label>Duration:
+          <input type="number" id="ctl-duration" value="300" min="0" step="50">ms
+        </label>
+        <label>Peek:
+          <input type="number" id="ctl-peek" value="0" min="0" step="10">px
+        </label>
+      </div>
+
+      <!-- Autoplay + loop -->
+      <h2>Autoplay + Loop</h2>
+      <x-carousel autoplay loop interval="3000" aria-label="Autoplay demo" style="--x-carousel-height:200px;">
+        <div class="slide" style="background:#6366f1;">Auto 1</div>
+        <div class="slide" style="background:#ec4899;">Auto 2</div>
+        <div class="slide" style="background:#14b8a6;">Auto 3</div>
+      </x-carousel>
+
+      <!-- Fade transition -->
+      <h2>Fade Transition</h2>
+      <x-carousel transition="fade" aria-label="Fade demo" style="--x-carousel-height:200px;">
+        <div class="slide" style="background:#8b5cf6;">Fade 1</div>
+        <div class="slide" style="background:#f43f5e;">Fade 2</div>
+        <div class="slide" style="background:#06b6d4;">Fade 3</div>
+      </x-carousel>
+
+      <!-- Vertical -->
+      <h2>Vertical Carousel</h2>
+      <x-carousel direction="vertical" aria-label="Vertical demo" style="--x-carousel-height:250px;">
+        <div class="slide" style="background:#059669;">Vertical 1</div>
+        <div class="slide" style="background:#7c3aed;">Vertical 2</div>
+        <div class="slide" style="background:#dc2626;">Vertical 3</div>
+      </x-carousel>
+
+      <!-- Peek mode -->
+      <h2>Peek Mode</h2>
+      <x-carousel peek="40px" loop aria-label="Peek demo" style="--x-carousel-height:200px;">
+        <div class="slide" style="background:#0891b2;">Peek 1</div>
+        <div class="slide" style="background:#c026d3;">Peek 2</div>
+        <div class="slide" style="background:#ea580c;">Peek 3</div>
+      </x-carousel>
+
+      <!-- Disabled -->
+      <h2>Disabled</h2>
+      <x-carousel disabled aria-label="Disabled demo" style="--x-carousel-height:150px;">
+        <div class="slide" style="background:#94a3b8;">Disabled 1</div>
+        <div class="slide" style="background:#64748b;">Disabled 2</div>
+      </x-carousel>
+
+      <!-- Single slide -->
+      <h2>Single Slide (controls hidden)</h2>
+      <x-carousel aria-label="Single slide" style="--x-carousel-height:150px;">
+        <div class="slide" style="background:#0ea5e9;">Only Slide</div>
+      </x-carousel>
+
+      <!-- Dynamic -->
+      <h2>Dynamic Slides</h2>
+      <div class="controls">
+        <button id="add-slide">Add Slide</button>
+        <button id="remove-slide">Remove Slide</button>
+      </div>
+      <x-carousel id="dynamic" loop aria-label="Dynamic demo" style="--x-carousel-height:200px;">
+        <div class="slide" style="background:#22c55e;">Dynamic 1</div>
+        <div class="slide" style="background:#a855f7;">Dynamic 2</div>
+      </x-carousel>
+
+      <!-- Event log -->
+      <h2>Event Log</h2>
+      <div id="event-log"></div>
+
+    </div>
+
+    <script>
+      // ── Control panel wiring ──
+      const basic = document.getElementById('basic');
+
+      document.getElementById('ctl-autoplay').addEventListener('change', e => {
+        basic.autoplay = e.target.checked;
+      });
+      document.getElementById('ctl-loop').addEventListener('change', e => {
+        basic.loop = e.target.checked;
+      });
+      document.getElementById('ctl-disabled').addEventListener('change', e => {
+        basic.disabled = e.target.checked;
+      });
+      document.getElementById('ctl-arrows').addEventListener('change', e => {
+        basic.arrows = e.target.checked;
+      });
+      document.getElementById('ctl-dots').addEventListener('change', e => {
+        basic.dots = e.target.checked;
+      });
+      document.getElementById('ctl-interval').addEventListener('input', e => {
+        basic.interval = parseInt(e.target.value, 10) || 3000;
+      });
+      document.getElementById('ctl-current').addEventListener('input', e => {
+        basic.currentSlide = parseInt(e.target.value, 10) || 0;
+      });
+      document.getElementById('ctl-transition').addEventListener('change', e => {
+        basic.transition = e.target.value;
+      });
+      document.getElementById('ctl-direction').addEventListener('change', e => {
+        basic.direction = e.target.value;
+      });
+      document.getElementById('ctl-duration').addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10) || 300;
+        basic.style.setProperty('--x-carousel-transition-duration', v + 'ms');
+      });
+      document.getElementById('ctl-peek').addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10) || 0;
+        basic.peek = v + 'px';
+      });
+
+      // ── Dynamic slides ──
+      let dynamicCount = 2;
+      const colors = ['#f97316','#06b6d4','#84cc16','#e11d48','#8b5cf6','#14b8a6'];
+      document.getElementById('add-slide').addEventListener('click', () => {
+        dynamicCount++;
+        const d = document.createElement('div');
+        d.className = 'slide';
+        d.style.background = colors[dynamicCount % colors.length];
+        d.textContent = 'Dynamic ' + dynamicCount;
+        document.getElementById('dynamic').appendChild(d);
+      });
+      document.getElementById('remove-slide').addEventListener('click', () => {
+        const el = document.getElementById('dynamic');
+        if (el.lastElementChild) {
+          el.lastElementChild.remove();
+          dynamicCount--;
+        }
+      });
+
+      // ── Event log ──
+      const log = document.getElementById('event-log');
+      document.querySelectorAll('x-carousel').forEach(c => {
+        c.addEventListener('x-carousel-change', e => {
+          const d = e.detail;
+          const line = `[${c.getAttribute('aria-label')}] index=${d.index} prev=${d.previousIndex} reason=${d.reason}\n`;
+          log.textContent = line + log.textContent;
+          if (log.textContent.length > 2000) {
+            log.textContent = log.textContent.slice(0, 2000);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

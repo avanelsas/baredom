@@ -252,6 +252,10 @@
       "import" : "./dist/x-card.js",
       "default" : "./dist/x-card.js"
     },
+    "./x-carousel" : {
+      "import" : "./dist/x-carousel.js",
+      "default" : "./dist/x-carousel.js"
+    },
     "./x-copy" : {
       "import" : "./dist/x-copy.js",
       "default" : "./dist/x-copy.js"

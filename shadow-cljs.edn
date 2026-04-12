@@ -56,6 +56,11 @@
      {init baredom.exports.x-card/init}
      :depends-on #{:base}}
 
+    :x-carousel
+    {:exports
+     {init baredom.exports.x-carousel/init}
+     :depends-on #{:base}}
+
     :x-container
     {:exports
      {init baredom.exports.x-container/init}
