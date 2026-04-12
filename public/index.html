@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light dark" />
   <title>Web Components — Demo Library</title>
+  <script src="js/main.js"></script>
   <style>
     :root {
       color-scheme: light dark;
@@ -406,6 +407,8 @@
 </head>
 <body>
 
+<x-theme id="page-theme">
+
 <header>
   <div class="row">
     <picture>
@@ -469,7 +472,7 @@
     { name: "Avatar Group",        tag: "x-avatar-group",        file: "x-avatar-group",        cat: "data"                         },
     { name: "Badge",               tag: "x-badge",               file: "x-badge",               cat: "feedback"                     },
     { name: "Bento Grid",          tag: "x-bento-grid",          file: "x-bento-grid",          cat: "layout",     style: "bento"   },
-    { name: "Bento Item",          tag: "x-bento-item",          file: "x-bento-grid",          cat: "layout",     style: "bento"   },
+    { name: "Bento Item",          tag: "x-bento-item",          file: "x-bento-item",          cat: "layout",     style: "bento"   },
     { name: "Breadcrumbs",         tag: "x-breadcrumbs",         file: "x-breadcrumbs",         cat: "navigation"                   },
     { name: "Button",              tag: "x-button",              file: "x-button",              cat: "form"                         },
     { name: "Cancel Dialogue",     tag: "x-cancel-dialogue",     file: "x-cancel-dialogue",     cat: "overlay"                      },
@@ -628,12 +631,53 @@
     render();
   });
 
+  // Token-to-page-variable mapping for x-theme integration
+  const tokenMap = [
+    ["--x-color-bg",             ["--page-bg"]],
+    ["--x-color-text",           ["--page-fg"]],
+    ["--x-color-text-muted",     ["--muted", "--tag-fg"]],
+    ["--x-color-surface",        ["--surface-bg", "--tag-bg"]],
+    ["--x-color-border",         ["--surface-border"]],
+    ["--x-color-surface-hover",  ["--surface-hover"]],
+    ["--x-color-primary",        ["--accent", "--accent-fg"]],
+    ["--x-color-primary-hover",  ["--accent-hover"]],
+    ["--x-color-surface-active", ["--accent-subtle"]],
+    ["--x-shadow-sm",            ["--shadow-sm"]],
+    ["--x-shadow-md",            ["--shadow-md"]],
+  ];
+
+  function applyThemeToPage(themeEl, active) {
+    const root = document.documentElement.style;
+    if (!active) {
+      tokenMap.forEach(([, pageVars]) =>
+        pageVars.forEach(v => root.removeProperty(v)));
+      return;
+    }
+    // Wait one frame for x-theme shadow style to update, then read
+    // computed tokens from a slotted child and apply to :root.
+    requestAnimationFrame(() => {
+      const probe = themeEl.querySelector("header") || themeEl;
+      const cs = getComputedStyle(probe);
+      tokenMap.forEach(([token, pageVars]) => {
+        const val = cs.getPropertyValue(token).trim();
+        if (val) pageVars.forEach(v => root.setProperty(v, val));
+      });
+    });
+  }
+
   document.getElementById("theme-chips").addEventListener("click", e => {
     const chip = e.target.closest(".filter-chip");
     if (!chip) return;
     activeTheme = chip.dataset.theme;
+    const themeEl = document.getElementById("page-theme");
+    if (activeTheme) {
+      themeEl.setAttribute("preset", activeTheme);
+    } else {
+      themeEl.removeAttribute("preset");
+    }
     document.querySelectorAll("#theme-chips .filter-chip").forEach(el =>
       el.classList.toggle("active", el === chip));
+    applyThemeToPage(themeEl, !!activeTheme);
     render();
   });
 
@@ -652,6 +696,8 @@
 
   render();
 </script>
+
+</x-theme>
 
 </body>
 </html>
