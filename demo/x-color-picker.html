@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-color-picker demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 680px; }
+      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
+      .label { font-size: 13px; color: var(--muted); min-width: 80px; }
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls input[type=text],
+      .controls input[type=number],
+      .controls select {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg); color: var(--input-fg);
+        width: 160px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+        max-height: 200px; overflow-y: auto;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+      .color-output {
+        font-family: monospace;
+        font-size: 14px;
+        padding: 4px 8px;
+        background: var(--surface-bg);
+        border-radius: 4px;
+        border: 1px solid var(--surface-border);
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>x-color-picker demo</h1>
+
+    <!-- ── Default (inline) ─────────────────────────────── -->
+    <h2>Default (inline)</h2>
+    <div class="row">
+      <x-color-picker id="demo-default" value="#3b82f6"></x-color-picker>
+      <span class="color-output" id="default-output">#3b82f6</span>
+    </div>
+
+    <!-- ── With alpha channel ───────────────────────────── -->
+    <h2>With alpha channel</h2>
+    <div class="row">
+      <x-color-picker id="demo-alpha" value="#3b82f680" alpha></x-color-picker>
+      <span class="color-output" id="alpha-output">#3b82f680</span>
+    </div>
+
+    <!-- ── With preset swatches ─────────────────────────── -->
+    <h2>With preset swatches</h2>
+    <div class="row">
+      <x-color-picker
+        id="demo-swatches"
+        value="#ef4444"
+        swatches="#ef4444,#f59e0b,#10b981,#3b82f6,#8b5cf6,#ec4899,#000000,#ffffff">
+      </x-color-picker>
+    </div>
+
+    <!-- ── Popover mode ─────────────────────────────────── -->
+    <h2>Popover mode</h2>
+    <div class="row">
+      <x-color-picker
+        id="demo-popover"
+        mode="popover"
+        value="#10b981"
+        swatches="#ef4444,#f59e0b,#10b981,#3b82f6,#8b5cf6">
+      </x-color-picker>
+      <span class="label">Click the swatch to open</span>
+    </div>
+
+    <!-- ── Popover with alpha ───────────────────────────── -->
+    <h2>Popover with alpha</h2>
+    <div class="row">
+      <x-color-picker
+        id="demo-popover-alpha"
+        mode="popover"
+        value="#8b5cf6cc"
+        alpha>
+      </x-color-picker>
+    </div>
+
+    <!-- ── Disabled ─────────────────────────────────────── -->
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-color-picker value="#f59e0b" disabled></x-color-picker>
+    </div>
+
+    <!-- ── Readonly ─────────────────────────────────────── -->
+    <h2>Readonly</h2>
+    <div class="row">
+      <x-color-picker value="#8b5cf6" readonly></x-color-picker>
+    </div>
+
+    <!-- ── Custom size ──────────────────────────────────── -->
+    <h2>Custom size (wider)</h2>
+    <div class="row">
+      <x-color-picker
+        value="#ec4899"
+        style="--x-color-picker-width:320px;--x-color-picker-area-height:200px">
+      </x-color-picker>
+    </div>
+
+    <!-- ── Form integration ─────────────────────────────── -->
+    <h2>Form integration</h2>
+    <form id="color-form" onsubmit="return false">
+      <div class="stack">
+        <x-color-picker name="theme-color" value="#3b82f6"></x-color-picker>
+        <button type="submit" style="width:fit-content;padding:6px 16px;border-radius:6px;cursor:pointer">Submit</button>
+        <button type="reset" style="width:fit-content;padding:6px 16px;border-radius:6px;cursor:pointer">Reset</button>
+      </div>
+    </form>
+
+    <!-- ── Live control panel ───────────────────────────── -->
+    <h2>Interactive controls</h2>
+    <div class="controls">
+      <label for="ctrl-value">Value</label>
+      <input type="text" id="ctrl-value" value="#3b82f6" />
+
+      <label for="ctrl-mode">Mode</label>
+      <select id="ctrl-mode">
+        <option value="inline" selected>inline</option>
+        <option value="popover">popover</option>
+      </select>
+
+      <label for="ctrl-alpha">Alpha</label>
+      <input type="checkbox" id="ctrl-alpha" />
+
+      <label for="ctrl-disabled">Disabled</label>
+      <input type="checkbox" id="ctrl-disabled" />
+
+      <label for="ctrl-readonly">Readonly</label>
+      <input type="checkbox" id="ctrl-readonly" />
+
+      <label for="ctrl-swatches">Swatches</label>
+      <input type="text" id="ctrl-swatches" value="" placeholder="#ff0000,#00ff00,..." />
+    </div>
+    <x-color-picker id="demo-interactive" value="#3b82f6"></x-color-picker>
+
+    <!-- ── Event log ────────────────────────────────────── -->
+    <h2>Event log</h2>
+    <div class="log" id="event-log"></div>
+
+    <script>
+      // ── Default output ──────────────────────────────────
+      const defEl = document.getElementById("demo-default");
+      const defOut = document.getElementById("default-output");
+      defEl.addEventListener("x-color-picker-change", (e) => {
+        defOut.textContent = e.detail.value;
+      });
+
+      // ── Alpha output ────────────────────────────────────
+      const alphaEl = document.getElementById("demo-alpha");
+      const alphaOut = document.getElementById("alpha-output");
+      alphaEl.addEventListener("x-color-picker-change", (e) => {
+        alphaOut.textContent = e.detail.value;
+      });
+
+      // ── Form submit ─────────────────────────────────────
+      document.getElementById("color-form").addEventListener("submit", (e) => {
+        const fd = new FormData(e.target);
+        log("Form submit: " + JSON.stringify(Object.fromEntries(fd)));
+      });
+
+      // ── Interactive controls ────────────────────────────
+      const interactive = document.getElementById("demo-interactive");
+      document.getElementById("ctrl-value").addEventListener("input", (e) => {
+        interactive.setAttribute("value", e.target.value);
+      });
+      document.getElementById("ctrl-mode").addEventListener("change", (e) => {
+        interactive.setAttribute("mode", e.target.value);
+      });
+      document.getElementById("ctrl-alpha").addEventListener("change", (e) => {
+        if (e.target.checked) interactive.setAttribute("alpha", "");
+        else interactive.removeAttribute("alpha");
+      });
+      document.getElementById("ctrl-disabled").addEventListener("change", (e) => {
+        if (e.target.checked) interactive.setAttribute("disabled", "");
+        else interactive.removeAttribute("disabled");
+      });
+      document.getElementById("ctrl-readonly").addEventListener("change", (e) => {
+        if (e.target.checked) interactive.setAttribute("readonly", "");
+        else interactive.removeAttribute("readonly");
+      });
+      document.getElementById("ctrl-swatches").addEventListener("input", (e) => {
+        interactive.setAttribute("swatches", e.target.value);
+      });
+
+      // ── Event log ───────────────────────────────────────
+      const logEl = document.getElementById("event-log");
+      function log(msg) {
+        logEl.textContent = msg + "\n" + logEl.textContent;
+      }
+
+      // Log events from all pickers
+      document.addEventListener("x-color-picker-input", (e) => {
+        log(`input: ${e.detail.value}  H=${Math.round(e.detail.h)} S=${Math.round(e.detail.s)} L=${Math.round(e.detail.l)} A=${e.detail.a.toFixed(2)}`);
+      });
+      document.addEventListener("x-color-picker-change", (e) => {
+        log(`CHANGE: ${e.detail.value}  H=${Math.round(e.detail.h)} S=${Math.round(e.detail.s)} L=${Math.round(e.detail.l)} A=${e.detail.a.toFixed(2)}`);
+      });
+    </script>
+  </body>
+</html>

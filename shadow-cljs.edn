@@ -146,6 +146,11 @@
      {init baredom.exports.x-collapse/init}
      :depends-on #{:base}}
 
+    :x-color-picker
+    {:exports
+     {init baredom.exports.x-color-picker/init}
+     :depends-on #{:base}}
+
     :x-command-palette
     {:exports
      {init baredom.exports.x-command-palette/init}

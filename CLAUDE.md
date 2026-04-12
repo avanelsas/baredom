@@ -162,6 +162,28 @@ All components must work on viewports from 320px up. Apply these rules in every 
 - **Touch targets ≥ 44px on coarse pointers.** Add `@media (pointer:coarse)` rules to enlarge interactive elements (thumbs, buttons) that are smaller than 44px at their default size.
 - **Demo pages** link `demo-responsive.css` for shared responsive breakpoints and theme. Use `var(--page-bg)`, `var(--surface-bg)`, etc. — do not hardcode theme colours in demo HTML.
 
+### Shared utilities
+
+Components must use the shared utility modules instead of reimplementing common operations:
+
+- **`baredom.utils.dom`** (alias `du`) — DOM and instance-field helpers:
+  - `du/getv` / `du/setv!` — read/write instance fields (wraps `gobj/get` / `gobj/set`)
+  - `du/has-attr?` / `du/get-attr` — attribute access
+  - `du/set-bool-attr!` — set or remove a boolean attribute
+  - `du/initialized?` / `du/mark-initialized!` — guard one-time init logic
+
+- **`baredom.utils.model`** (alias `mu`) — pure parsing and validation helpers:
+  - `mu/parse-bool-attr` — parse a boolean attribute string (`nil` → `false`, `"false"` → `false`, anything else → `true`)
+  - `mu/parse-bool-present` — `true` when the attribute is present (any value)
+  - `mu/non-empty-string?` — string predicate
+  - `mu/sanitize-svg-path-d` / `mu/safe-url?` / `mu/sanitize-url` — security sanitizers
+
+**Usage rules:**
+- Use `du/getv` / `du/setv!` for all instance-field access (e.g. `k-refs`, `k-handlers`, `k-model`). Only fall back to raw `gobj/get` / `gobj/set` when accessing nested objects within a ref map.
+- Use `du/has-attr?` / `du/get-attr` in `read-model` / `read-state!` functions instead of direct `(.hasAttribute el ...)` / `(.getAttribute el ...)`.
+- Use `mu/parse-bool-attr` in model `normalize` / `derive-state` functions for boolean attributes like `disabled`, `readonly`, `alpha`.
+- Before adding a new utility function, check whether it already exists in `utils/dom.cljs` or `utils/model.cljs`. Add new shared helpers there when they would benefit multiple components.
+
 ### State storage on element instances
 
 Internal interaction state (hover, focus-visible, active-source) is stored as JS properties on the element instance using `aget`/`aset` with private string keys (e.g. `"__xButtonState"`). Public state is always re-derived from HTML attributes at render time.
@@ -190,7 +212,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 1. **Architecture** — define tag name, shadow DOM structure, rendering strategy, attributes, properties, events, theming, accessibility, open questions
 2. **API Contract** — full tables for observed attributes, properties, events, public methods, slots, CSS custom properties, theme/motion/a11y behavior, rendering invariants
-3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. **Registration checklist** — after creating a new component, register it in all four places:
+3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. Import and use `baredom.utils.dom` and `baredom.utils.model` (see "Shared utilities" section above) — do not reimplement helpers that already exist there. **Registration checklist** — after creating a new component, register it in all four places:
    - `shadow-cljs.edn` — add `:x-<name>` module under `:lib :modules`
    - `package.json` — add `"./x-<name>"` entry under `"exports"`
    - `src/baredom/core.cljs` — require the export namespace and call `register!` in `start!`

@@ -180,6 +180,10 @@
       "import" : "./dist/x-collapse.js",
       "default" : "./dist/x-collapse.js"
     },
+    "./x-color-picker" : {
+      "import" : "./dist/x-color-picker.js",
+      "default" : "./dist/x-color-picker.js"
+    },
     "./x-timeline-item" : {
       "import" : "./dist/x-timeline-item.js",
       "default" : "./dist/x-timeline-item.js"
