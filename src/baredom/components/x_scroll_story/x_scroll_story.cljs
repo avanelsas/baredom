@@ -56,7 +56,7 @@
    "flex:1;min-width:0;}"
 
    "[part=media]{"
-   "height:100vh;}"
+   "height:100dvh;}"
 
    "::slotted(:not([slot])){"
    "min-height:var(--x-scroll-story-step-min-height);"

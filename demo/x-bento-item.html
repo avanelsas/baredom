@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-bento-item demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: var(--page-fg);
+      background: var(--page-bg);
+    }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
+
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
+    }
+    .controls label {
+      display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+    }
+    .controls select, .controls input {
+      padding: 0.25rem 0.5rem; border: 1px solid var(--border); border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .demo-box {
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      background: var(--surface-bg);
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      min-height: 100px;
+      height: 100%;
+    }
+    .cell-1 { background: #dbeafe; color: #1e40af; }
+    .cell-2 { background: #fce7f3; color: #9d174d; }
+    .cell-3 { background: #d1fae5; color: #065f46; }
+    .cell-4 { background: #fef3c7; color: #92400e; }
+    .cell-5 { background: #e0e7ff; color: #3730a3; }
+    .cell-6 { background: #ede9fe; color: #5b21b6; }
+    @media (prefers-color-scheme: dark) {
+      .cell-1 { background: #1e3a5f; color: #93c5fd; }
+      .cell-2 { background: #4a1942; color: #f9a8d4; }
+      .cell-3 { background: #064e3b; color: #6ee7b7; }
+      .cell-4 { background: #451a03; color: #fcd34d; }
+      .cell-5 { background: #312e81; color: #a5b4fc; }
+      .cell-6 { background: #3b0764; color: #c4b5fd; }
+    }
+
+    #log {
+      font-family: monospace;
+      font-size: 0.8125rem;
+      white-space: pre-wrap;
+      max-height: 12rem;
+      overflow-y: auto;
+      margin: 1rem 0;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-bg);
+    }
+  </style>
+  <link rel="stylesheet" href="demo-responsive.css" />
+</head>
+<body>
+
+<h1>&lt;x-bento-item&gt;</h1>
+<p>Grid item for <code>&lt;x-bento-grid&gt;</code>. Controls column/row spanning and ordering.</p>
+
+<!-- ── Interactive demo ──────────────────────────────────────────────── -->
+<h2>Interactive</h2>
+
+<div class="controls">
+  <label>col-span:
+    <select id="col-span-select">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select>
+  </label>
+  <label>row-span:
+    <select id="row-span-select">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+    </select>
+  </label>
+  <label>order:
+    <input id="order-input" type="number" value="" placeholder="auto" style="width:5rem">
+  </label>
+</div>
+
+<div class="demo-box">
+  <x-bento-grid columns="4" gap="md" row-height="100px">
+    <x-bento-item id="target" col-span="2" row-span="2">
+      <div class="cell cell-1">Target item</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-2">A</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-3">B</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-4">C</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-5">D</div>
+    </x-bento-item>
+    <x-bento-item>
+      <div class="cell cell-6">E</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<h3>Attribute log</h3>
+<pre id="log"></pre>
+
+<!-- ── Span variations ──────────────────────────────────────────────── -->
+<h2>Span variations</h2>
+<div class="demo-box">
+  <x-bento-grid columns="4" gap="md" row-height="80px">
+    <x-bento-item col-span="1" row-span="1">
+      <div class="cell cell-2">1&times;1</div>
+    </x-bento-item>
+    <x-bento-item col-span="2" row-span="1">
+      <div class="cell cell-3">2&times;1</div>
+    </x-bento-item>
+    <x-bento-item col-span="1" row-span="2">
+      <div class="cell cell-4">1&times;2</div>
+    </x-bento-item>
+    <x-bento-item col-span="3" row-span="1">
+      <div class="cell cell-5">3&times;1</div>
+    </x-bento-item>
+    <x-bento-item col-span="2" row-span="2">
+      <div class="cell cell-1">2&times;2</div>
+    </x-bento-item>
+    <x-bento-item col-span="2" row-span="1">
+      <div class="cell cell-6">2&times;1</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<!-- ── Ordering ──────────────────────────────────────────────────────── -->
+<h2>Custom order</h2>
+<p>Items reordered via the <code>order</code> attribute (lower values first).</p>
+<div class="demo-box">
+  <x-bento-grid columns="3" gap="md" row-height="80px">
+    <x-bento-item order="3">
+      <div class="cell cell-1">order=3</div>
+    </x-bento-item>
+    <x-bento-item order="1">
+      <div class="cell cell-3">order=1</div>
+    </x-bento-item>
+    <x-bento-item order="2">
+      <div class="cell cell-5">order=2</div>
+    </x-bento-item>
+  </x-bento-grid>
+</div>
+
+<script>
+  const target = document.getElementById('target');
+  const log = document.getElementById('log');
+
+  function logChange(attr, value) {
+    const ts = new Date().toLocaleTimeString();
+    log.textContent = `[${ts}] ${attr} = ${JSON.stringify(value)}\n` + log.textContent;
+  }
+
+  document.getElementById('col-span-select').addEventListener('change', function() {
+    target.setAttribute('col-span', this.value);
+    logChange('col-span', this.value);
+  });
+
+  document.getElementById('row-span-select').addEventListener('change', function() {
+    target.setAttribute('row-span', this.value);
+    logChange('row-span', this.value);
+  });
+
+  document.getElementById('order-input').addEventListener('input', function() {
+    if (this.value === '') {
+      target.removeAttribute('order');
+      logChange('order', null);
+    } else {
+      target.setAttribute('order', this.value);
+      logChange('order', this.value);
+    }
+  });
+</script>
+
+</body>
+</html>

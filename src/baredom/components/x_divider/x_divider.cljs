@@ -303,27 +303,32 @@
   (def-string-prop! proto model/attr-inset)
   (def-string-prop! proto model/attr-length))
 
-;; ── Element registration ──────────────────────────────────────────────────
-(defn- make-constructor []
-    (let [ctor-ref (atom nil)
-          ctor (fn [] (js/Reflect.construct js/HTMLElement #js [] @ctor-ref))]
-      (reset! ctor-ref ctor)
-      ctor))
+;; ── Element class ─────────────────────────────────────────────────────────
+(defn- element-class []
+  (let [klass (js* "(class extends HTMLElement {})")]
+
+    (set! (.-observedAttributes klass) model/observed-attributes)
+
+    (set! (.-connectedCallback (.-prototype klass))
+          (fn []
+            (this-as ^js this (connected! this))))
+
+    (set! (.-disconnectedCallback (.-prototype klass))
+          (fn []
+            (this-as ^js this (disconnected! this))))
+
+    (set! (.-attributeChangedCallback (.-prototype klass))
+          (fn [n o v]
+            (this-as ^js this (attribute-changed! this n o v))))
+
+    (install-property-accessors! (.-prototype klass))
+    klass))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
+(defn register! []
+  (when-not (.get js/customElements model/tag-name)
+    (.define js/customElements model/tag-name (element-class)))
+  nil)
+
 (defn init! []
-    (when-not (.get js/customElements model/tag-name)
-      (let [proto (js/Object.create (.-prototype js/HTMLElement))
-            ctor  (make-constructor)]
-        (js/Object.setPrototypeOf ctor js/HTMLElement)
-        (aset proto "constructor" ctor)
-        (install-property-accessors! proto)
-        (aset proto "connectedCallback"
-              (fn [] (this-as ^js this (connected! this))))
-        (aset proto "disconnectedCallback"
-              (fn [] (this-as ^js this (disconnected! this))))
-        (aset proto "attributeChangedCallback"
-              (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-        (aset ctor "observedAttributes" model/observed-attributes)
-        (aset ctor "prototype" proto)
-        (.define js/customElements model/tag-name ctor))))
+  (register!))

@@ -27,7 +27,7 @@
    "--x-scroll-stack-gap:1rem;}"
 
    "[part=container]{"
-   "position:sticky;top:0;height:100vh;"
+   "position:sticky;top:0;height:100dvh;"
    "overflow:hidden;"
    "display:flex;flex-direction:column;"
    "align-items:center;justify-content:flex-start;"
