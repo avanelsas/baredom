@@ -302,6 +302,85 @@
       </div>
     </x-theme>
 
+    <h2>Expanded Token Categories</h2>
+    <p class="subtitle">New tokens for typography weight, spacing, z-index, opacity, and border width.</p>
+
+    <div class="preset-grid">
+      <div class="preset-card">
+        <h3>Typography Tokens</h3>
+        <code>--x-font-weight-*, --x-font-size-*, --x-line-height-*</code>
+        <x-theme preset="default">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <span style="font-weight:var(--x-font-weight-normal);">Normal weight (400)</span>
+            <span style="font-weight:var(--x-font-weight-medium);">Medium weight (500)</span>
+            <span style="font-weight:var(--x-font-weight-semibold);">Semibold weight (600)</span>
+            <span style="font-size:var(--x-font-size-xs);">Extra small text (xs)</span>
+            <span style="font-size:var(--x-font-size-sm);">Small text (sm)</span>
+            <span style="font-size:var(--x-font-size-base);">Base text (base)</span>
+            <span style="font-size:var(--x-font-size-lg);">Large text (lg)</span>
+          </div>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Neo Brutalist: Bolder Weights</h3>
+        <code>font-weight-semibold: 700, border-width: 2px</code>
+        <x-theme preset="neo-brutalist">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <span style="font-weight:var(--x-font-weight-semibold);">Semibold is 700 here</span>
+            <div style="border:var(--x-border-width) solid var(--x-color-border);padding:8px;border-radius:var(--x-radius-md);">
+              Border uses --x-border-width (2px)
+            </div>
+          </div>
+          <div class="sample-row" style="margin-top:12px;">
+            <x-button>Brutalist</x-button>
+            <x-button variant="outline">Outline</x-button>
+          </div>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Spacing Scale</h3>
+        <code>--x-space-xs through --x-space-xl</code>
+        <x-theme preset="default">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:var(--x-space-xs);height:16px;background:var(--x-color-primary);border-radius:2px;"></div>
+              <span style="font-size:var(--x-font-size-xs);">xs (0.25rem)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:var(--x-space-sm);height:16px;background:var(--x-color-primary);border-radius:2px;"></div>
+              <span style="font-size:var(--x-font-size-xs);">sm (0.5rem)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:var(--x-space-md);height:16px;background:var(--x-color-primary);border-radius:2px;"></div>
+              <span style="font-size:var(--x-font-size-xs);">md (0.75rem)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:var(--x-space-lg);height:16px;background:var(--x-color-primary);border-radius:2px;"></div>
+              <span style="font-size:var(--x-font-size-xs);">lg (1rem)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:var(--x-space-xl);height:16px;background:var(--x-color-primary);border-radius:2px;"></div>
+              <span style="font-size:var(--x-font-size-xs);">xl (1.5rem)</span>
+            </div>
+          </div>
+        </x-theme>
+      </div>
+
+      <div class="preset-card">
+        <h3>Opacity Tokens</h3>
+        <code>--x-opacity-disabled, --x-opacity-placeholder</code>
+        <x-theme preset="default">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span>Normal opacity</span>
+            <span style="opacity:var(--x-opacity-placeholder);">Placeholder opacity (0.6)</span>
+            <span style="opacity:var(--x-opacity-disabled);">Disabled opacity (0.5)</span>
+          </div>
+        </x-theme>
+      </div>
+    </div>
+
     <h2>Live Control Panel</h2>
     <div class="row">
       <label for="preset-picker">Preset:</label>

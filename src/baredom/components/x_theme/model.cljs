@@ -51,26 +51,71 @@
 (def tk-shadow-md              "--x-shadow-md")
 (def tk-shadow-lg              "--x-shadow-lg")
 
+(def tk-font-size-xs           "--x-font-size-xs")
+(def tk-font-size-lg           "--x-font-size-lg")
+(def tk-font-weight-normal     "--x-font-weight-normal")
+(def tk-font-weight-medium     "--x-font-weight-medium")
+(def tk-font-weight-semibold   "--x-font-weight-semibold")
+(def tk-line-height-normal     "--x-line-height-normal")
+
+(def tk-space-xs               "--x-space-xs")
+(def tk-space-sm               "--x-space-sm")
+(def tk-space-md               "--x-space-md")
+(def tk-space-lg               "--x-space-lg")
+(def tk-space-xl               "--x-space-xl")
+
+(def tk-z-dropdown             "--x-z-dropdown")
+(def tk-z-modal                "--x-z-modal")
+(def tk-z-toast                "--x-z-toast")
+
+(def tk-opacity-disabled       "--x-opacity-disabled")
+(def tk-opacity-placeholder    "--x-opacity-placeholder")
+
+(def tk-border-width           "--x-border-width")
+
 (def tk-transition-duration    "--x-transition-duration")
 (def tk-transition-easing      "--x-transition-easing")
 
 ;; ── Shared non-color defaults ───────────────────────────────────────────────
 
 (def ^:private base-typography
-  {tk-font-family      "system-ui,-apple-system,sans-serif"
-   tk-font-family-mono "ui-monospace,'SF Mono',monospace"
-   tk-font-size-sm     "0.875rem"
-   tk-font-size-base   "1rem"})
+  {tk-font-family            "system-ui,-apple-system,sans-serif"
+   tk-font-family-mono       "ui-monospace,'SF Mono',monospace"
+   tk-font-size-xs            "0.75rem"
+   tk-font-size-sm            "0.875rem"
+   tk-font-size-base          "1rem"
+   tk-font-size-lg            "1.125rem"
+   tk-font-weight-normal      "400"
+   tk-font-weight-medium      "500"
+   tk-font-weight-semibold    "600"
+   tk-line-height-normal      "1.5"})
 
 (def ^:private base-shape
-  {tk-radius-sm   "0.375rem"
-   tk-radius-md   "0.75rem"
-   tk-radius-lg   "1rem"
-   tk-radius-full "9999px"})
+  {tk-radius-sm    "0.375rem"
+   tk-radius-md    "0.75rem"
+   tk-radius-lg    "1rem"
+   tk-radius-full  "9999px"
+   tk-border-width "1px"})
 
 (def ^:private base-motion
   {tk-transition-duration "140ms"
    tk-transition-easing   "cubic-bezier(0.2,0,0,1)"})
+
+(def ^:private base-spacing
+  {tk-space-xs "0.25rem"
+   tk-space-sm "0.5rem"
+   tk-space-md "0.75rem"
+   tk-space-lg "1rem"
+   tk-space-xl "1.5rem"})
+
+(def ^:private base-z-index
+  {tk-z-dropdown "1000"
+   tk-z-modal    "1100"
+   tk-z-toast    "1200"})
+
+(def ^:private base-opacity
+  {tk-opacity-disabled    "0.5"
+   tk-opacity-placeholder "0.6"})
 
 (def ^:private base-shadow-light
   {tk-shadow-sm "0 1px 2px rgba(15,23,42,0.08)"
@@ -86,6 +131,7 @@
 
 (def ^:private preset-default
   {:light (merge base-typography base-shape base-motion base-shadow-light
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#2563eb"
                   tk-color-primary-hover    "#1d4ed8"
                   tk-color-primary-active   "#1e40af"
@@ -130,6 +176,7 @@
 
 (def ^:private preset-ocean
   {:light (merge base-typography base-shape base-motion base-shadow-light
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#0891b2"
                   tk-color-primary-hover    "#0e7490"
                   tk-color-primary-active   "#155e75"
@@ -174,6 +221,7 @@
 
 (def ^:private preset-forest
   {:light (merge base-typography base-shape base-motion base-shadow-light
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#15803d"
                   tk-color-primary-hover    "#166534"
                   tk-color-primary-active   "#14532d"
@@ -218,6 +266,7 @@
 
 (def ^:private preset-sunset
   {:light (merge base-typography base-shape base-motion base-shadow-light
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#ea580c"
                   tk-color-primary-hover    "#c2410c"
                   tk-color-primary-active   "#9a3412"
@@ -262,6 +311,7 @@
 
 (def ^:private preset-neo-brutalist
   {:light (merge base-typography base-motion
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#000000"
                   tk-color-primary-hover    "#1a1a1a"
                   tk-color-primary-active   "#333333"
@@ -289,7 +339,10 @@
                   tk-shadow-sm              "3px 3px 0 #000000"
                   tk-shadow-md              "5px 5px 0 #000000"
                   tk-shadow-lg              "8px 8px 0 #000000"
-                  tk-font-family            "'Space Grotesk',system-ui,sans-serif"})
+                  tk-font-family            "'Space Grotesk',system-ui,sans-serif"
+                  tk-border-width           "2px"
+                  tk-font-weight-semibold   "700"
+                  tk-space-md               "1rem"})
    :dark  {tk-color-primary          "#ff3366"
            tk-color-primary-hover    "#e6004c"
            tk-color-primary-active   "#cc0044"
@@ -316,6 +369,7 @@
 
 (def ^:private preset-aurora
   {:light (merge base-typography base-shape base-motion
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#7c3aed"
                   tk-color-primary-hover    "#6d28d9"
                   tk-color-primary-active   "#5b21b6"
@@ -338,7 +392,8 @@
                   tk-color-warning          "#d97706"
                   tk-shadow-sm              "0 1px 3px rgba(139,92,246,0.10)"
                   tk-shadow-md              "0 4px 15px rgba(139,92,246,0.12),0 2px 4px rgba(139,92,246,0.08)"
-                  tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.15),0 4px 10px rgba(139,92,246,0.10)"})
+                  tk-shadow-lg              "0 10px 30px rgba(139,92,246,0.15),0 4px 10px rgba(139,92,246,0.10)"
+                  tk-opacity-disabled       "0.45"})
    :dark  {tk-color-primary          "#a78bfa"
            tk-color-primary-hover    "#8b5cf6"
            tk-color-primary-active   "#7c3aed"
@@ -365,6 +420,7 @@
 
 (def ^:private preset-mono-ai
   {:light (merge base-shape base-motion
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#18181b"
                   tk-color-primary-hover    "#27272a"
                   tk-color-primary-active   "#3f3f46"
@@ -385,11 +441,19 @@
                   tk-color-danger           "#ef4444"
                   tk-color-success          "#22c55e"
                   tk-color-warning          "#eab308"
-                  tk-font-family            "'JetBrains Mono',ui-monospace,monospace"
-                  tk-font-family-mono       "'JetBrains Mono',ui-monospace,monospace"
+                  tk-font-family             "'JetBrains Mono',ui-monospace,monospace"
+                  tk-font-family-mono        "'JetBrains Mono',ui-monospace,monospace"
+                  tk-font-size-xs            "0.75rem"
+                  tk-font-size-sm            "0.875rem"
+                  tk-font-size-base          "1rem"
+                  tk-font-size-lg            "1.125rem"
+                  tk-font-weight-normal      "400"
+                  tk-font-weight-medium      "500"
+                  tk-font-weight-semibold    "600"
                   tk-shadow-sm              "0 1px 2px rgba(0,0,0,0.06)"
                   tk-shadow-md              "0 4px 10px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04)"
-                  tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.10),0 4px 10px rgba(0,0,0,0.06)"})
+                  tk-shadow-lg              "0 10px 25px rgba(0,0,0,0.10),0 4px 10px rgba(0,0,0,0.06)"
+                  tk-line-height-normal     "1.4"})
    :dark  {tk-color-primary          "#15803d"
            tk-color-primary-hover    "#166534"
            tk-color-primary-active   "#14532d"
@@ -416,6 +480,7 @@
 
 (def ^:private preset-warm-mineral
   {:light (merge base-typography base-shape base-motion base-shadow-light
+                 base-spacing base-z-index base-opacity
                  {tk-color-primary          "#b45309"
                   tk-color-primary-hover    "#92400e"
                   tk-color-primary-active   "#78350f"

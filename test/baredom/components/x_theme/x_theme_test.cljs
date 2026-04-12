@@ -82,6 +82,30 @@
       (is (re-find #"#facade" css))
       (is (re-find #"#decade" css)))))
 
+;; ── Expanded tokens (33 → 50) ───────────────────────────────────────────────
+(deftest expanded-tokens-rendered-test
+  (let [^js el   (append! (make-el))
+        css      (.-textContent (.querySelector (.-shadowRoot el) "style"))]
+    (testing "new typography tokens"
+      (is (re-find #"--x-font-size-xs:" css))
+      (is (re-find #"--x-font-weight-semibold:" css))
+      (is (re-find #"--x-line-height-normal:" css)))
+    (testing "spacing tokens"
+      (is (re-find #"--x-space-md:" css)))
+    (testing "z-index tokens"
+      (is (re-find #"--x-z-modal:" css)))
+    (testing "opacity tokens"
+      (is (re-find #"--x-opacity-disabled:" css)))
+    (testing "border-width token"
+      (is (re-find #"--x-border-width:" css)))))
+
+(deftest neo-brutalist-expanded-overrides-test
+  (let [^js el (append! (make-el))]
+    (set! (.-preset el) "neo-brutalist")
+    (let [css (.-textContent (.querySelector (.-shadowRoot el) "style"))]
+      (is (re-find #"--x-border-width:2px" css))
+      (is (re-find #"--x-font-weight-semibold:700" css)))))
+
 ;; ── Display contents ────────────────────────────────────────────────────────
 (deftest display-contents-test
   (let [^js el (append! (make-el))

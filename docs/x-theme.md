@@ -2,7 +2,7 @@
 
 Centralised theming wrapper for BareDom web components. Wrap any subtree with `<x-theme>` to apply a consistent design token palette to all descendant components.
 
-All BareDom components are theme-aware out of the box. Each component references the 33 design tokens defined by `x-theme` via `var(--x-token, fallback)` — they work identically with or without a theme wrapper.
+All BareDom components are theme-aware out of the box. Each component references the 50 design tokens defined by `x-theme` via `var(--x-token, fallback)` — they work identically with or without a theme wrapper.
 
 Every component demo page includes a theme preset picker for live preview.
 
@@ -66,23 +66,40 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 | `--x-color-success`            | Success/positive states        |
 | `--x-color-warning`            | Warning/caution states         |
 
-### Typography (4 tokens)
+### Typography (10 tokens)
 
-| Token                  | Default                                    |
-|------------------------|--------------------------------------------|
-| `--x-font-family`      | `system-ui, -apple-system, sans-serif`     |
-| `--x-font-family-mono` | `ui-monospace, 'SF Mono', monospace`        |
-| `--x-font-size-sm`     | `0.875rem`                                  |
-| `--x-font-size-base`   | `1rem`                                      |
+| Token                      | Default                                    |
+|----------------------------|--------------------------------------------|
+| `--x-font-family`          | `system-ui, -apple-system, sans-serif`     |
+| `--x-font-family-mono`     | `ui-monospace, 'SF Mono', monospace`        |
+| `--x-font-size-xs`         | `0.75rem`                                   |
+| `--x-font-size-sm`         | `0.875rem`                                  |
+| `--x-font-size-base`       | `1rem`                                      |
+| `--x-font-size-lg`         | `1.125rem`                                  |
+| `--x-font-weight-normal`   | `400`                                       |
+| `--x-font-weight-medium`   | `500`                                       |
+| `--x-font-weight-semibold` | `600`                                       |
+| `--x-line-height-normal`   | `1.5`                                       |
 
-### Shape (4 tokens)
+### Shape (5 tokens)
 
-| Token            | Default    |
-|------------------|------------|
-| `--x-radius-sm`  | `0.375rem` |
-| `--x-radius-md`  | `0.75rem`  |
-| `--x-radius-lg`  | `1rem`     |
-| `--x-radius-full`| `9999px`   |
+| Token             | Default    |
+|-------------------|------------|
+| `--x-radius-sm`   | `0.375rem` |
+| `--x-radius-md`   | `0.75rem`  |
+| `--x-radius-lg`   | `1rem`     |
+| `--x-radius-full` | `9999px`   |
+| `--x-border-width` | `1px`     |
+
+### Spacing (5 tokens)
+
+| Token          | Default    |
+|----------------|------------|
+| `--x-space-xs` | `0.25rem`  |
+| `--x-space-sm` | `0.5rem`   |
+| `--x-space-md` | `0.75rem`  |
+| `--x-space-lg` | `1rem`     |
+| `--x-space-xl` | `1.5rem`   |
 
 ### Elevation (3 tokens)
 
@@ -91,6 +108,21 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 | `--x-shadow-sm`| Subtle shadow   |
 | `--x-shadow-md`| Medium elevation|
 | `--x-shadow-lg`| High elevation  |
+
+### Z-index (3 tokens)
+
+| Token            | Default |
+|------------------|---------|
+| `--x-z-dropdown` | `1000`  |
+| `--x-z-modal`    | `1100`  |
+| `--x-z-toast`    | `1200`  |
+
+### Opacity (2 tokens)
+
+| Token                    | Default |
+|--------------------------|---------|
+| `--x-opacity-disabled`   | `0.5`   |
+| `--x-opacity-placeholder`| `0.6`   |
 
 ### Motion (2 tokens)
 
@@ -101,16 +133,16 @@ These tokens are set by `x-theme` on its `:host` and inherited by all descendant
 
 ## Built-in Presets
 
-| Preset          | Description                                                       |
-|-----------------|-------------------------------------------------------------------|
-| `default`       | Blue/slate palette matching existing component defaults.           |
-| `ocean`         | Teal/cyan, cool aquatic tones.                                     |
-| `forest`        | Green/earth, warm natural tones.                                   |
-| `sunset`        | Orange/red, warm vibrant tones.                                    |
-| `neo-brutalist`  | High-contrast black/white, zero border-radius, offset shadows.    |
-| `aurora`        | Soft purple/teal/pink with semi-transparent surfaces.              |
-| `mono-ai`       | Monochrome + neon cyan accent, monospace font.                     |
-| `warm-mineral`  | Earthy terracotta/sand/clay, digital naturalism.                   |
+| Preset          | Description                                                       | Notable Overrides                              |
+|-----------------|-------------------------------------------------------------------|------------------------------------------------|
+| `default`       | Blue/slate palette matching existing component defaults.           | —                                              |
+| `ocean`         | Teal/cyan, cool aquatic tones.                                     | —                                              |
+| `forest`        | Green/earth, warm natural tones.                                   | —                                              |
+| `sunset`        | Orange/red, warm vibrant tones.                                    | —                                              |
+| `neo-brutalist`  | High-contrast black/white, zero border-radius, offset shadows.    | `border-width:2px`, `font-weight-semibold:700`, `space-md:1rem` |
+| `aurora`        | Soft purple/teal/pink with semi-transparent surfaces.              | `opacity-disabled:0.45`                        |
+| `mono-ai`       | Monochrome + neon cyan accent, monospace font.                     | `line-height-normal:1.4`                       |
+| `warm-mineral`  | Earthy terracotta/sand/clay, digital naturalism.                   | —                                              |
 
 All presets define both light and dark mode token values. Dark mode is activated automatically via `@media (prefers-color-scheme: dark)`.
 

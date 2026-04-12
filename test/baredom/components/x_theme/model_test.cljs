@@ -45,6 +45,64 @@
         (is (re-find #":host\{" css))
         (is (re-find #"--x-color-primary:" css))))))
 
+;; ── expanded tokens (33 → 50) ───────────────────────────────────────────────
+(deftest preset->css-contains-new-typography-tokens-test
+  (let [css (model/preset->css "default")]
+    (is (re-find #"--x-font-size-xs:" css))
+    (is (re-find #"--x-font-size-lg:" css))
+    (is (re-find #"--x-font-weight-normal:" css))
+    (is (re-find #"--x-font-weight-medium:" css))
+    (is (re-find #"--x-font-weight-semibold:" css))
+    (is (re-find #"--x-line-height-normal:" css))))
+
+(deftest preset->css-contains-spacing-tokens-test
+  (let [css (model/preset->css "default")]
+    (is (re-find #"--x-space-xs:" css))
+    (is (re-find #"--x-space-sm:" css))
+    (is (re-find #"--x-space-md:" css))
+    (is (re-find #"--x-space-lg:" css))
+    (is (re-find #"--x-space-xl:" css))))
+
+(deftest preset->css-contains-z-index-tokens-test
+  (let [css (model/preset->css "default")]
+    (is (re-find #"--x-z-dropdown:" css))
+    (is (re-find #"--x-z-modal:" css))
+    (is (re-find #"--x-z-toast:" css))))
+
+(deftest preset->css-contains-opacity-tokens-test
+  (let [css (model/preset->css "default")]
+    (is (re-find #"--x-opacity-disabled:" css))
+    (is (re-find #"--x-opacity-placeholder:" css))))
+
+(deftest preset->css-contains-border-width-token-test
+  (let [css (model/preset->css "default")]
+    (is (re-find #"--x-border-width:" css))))
+
+(deftest preset->css-neo-brutalist-overrides-test
+  (let [css (model/preset->css "neo-brutalist")]
+    (is (re-find #"--x-border-width:2px" css))
+    (is (re-find #"--x-font-weight-semibold:700" css))
+    (is (re-find #"--x-space-md:1rem" css))))
+
+(deftest preset->css-mono-ai-overrides-test
+  (let [css (model/preset->css "mono-ai")]
+    (is (re-find #"--x-line-height-normal:1\.4" css))))
+
+(deftest preset->css-aurora-overrides-test
+  (let [css (model/preset->css "aurora")]
+    (is (re-find #"--x-opacity-disabled:0\.45" css))))
+
+(deftest preset->css-new-tokens-in-all-presets-test
+  (doseq [name #{"default" "ocean" "forest" "sunset"
+                  "neo-brutalist" "aurora" "mono-ai" "warm-mineral"}]
+    (testing name
+      (let [css (model/preset->css name)]
+        (is (re-find #"--x-space-md:" css))
+        (is (re-find #"--x-z-modal:" css))
+        (is (re-find #"--x-opacity-disabled:" css))
+        (is (re-find #"--x-border-width:" css))
+        (is (re-find #"--x-font-weight-semibold:" css))))))
+
 ;; ── register-preset! ────────────────────────────────────────────────────────
 (deftest register-preset-basic-test
   (model/register-preset!
@@ -63,7 +121,13 @@
       (is (re-find #"#112233" css)))
     (testing "default fallback values present"
       (is (re-find #"--x-color-border:" css))
-      (is (re-find #"--x-radius-md:" css)))))
+      (is (re-find #"--x-radius-md:" css)))
+    (testing "new token defaults inherited"
+      (is (re-find #"--x-space-md:" css))
+      (is (re-find #"--x-z-modal:" css))
+      (is (re-find #"--x-opacity-disabled:" css))
+      (is (re-find #"--x-border-width:" css))
+      (is (re-find #"--x-font-weight-semibold:" css)))))
 
 (deftest register-preset-with-dark-mode-test
   (model/register-preset!
