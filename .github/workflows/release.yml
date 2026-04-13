@@ -44,9 +44,9 @@ jobs:
       - run: npm ci
 
       - name: Setup clj-kondo
-        uses: DeLaGuardo/setup-clj-kondo@1.0.0
+        uses: DeLaGuardo/setup-clj-kondo@v1
         with:
-          version: '2024.11.14'
+          version: '2026.01.19'
 
       - name: Lint with clj-kondo
         run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}' || true
