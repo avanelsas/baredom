@@ -72,13 +72,13 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>text
-        <input type="text" id="ctrl-text" value="Hello, world!" style="width:200px">
+        <x-form-field type="text" id="ctrl-text" value="Hello, world!" style="width:200px"></x-form-field>
       </label>
       <label>success-message
-        <input type="text" id="ctrl-success" value="Copied" style="width:100px">
+        <x-form-field type="text" id="ctrl-success" value="Copied" style="width:100px"></x-form-field>
       </label>
       <label>tooltip-ms
-        <input type="number" id="ctrl-ms" value="1200" style="width:70px" min="100">
+        <x-form-field type="number" id="ctrl-ms" value="1200" style="width:70px"></x-form-field>
       </label>
       <label>show-tooltip
         <x-select id="ctrl-tooltip" value="">

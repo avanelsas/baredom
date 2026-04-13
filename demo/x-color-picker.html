@@ -137,8 +137,9 @@
     <!-- ── Live control panel ───────────────────────────── -->
     <x-typography variant="overline">Interactive controls</x-typography>
     <div class="controls">
-      <label for="ctrl-value">Value</label>
-      <input type="text" id="ctrl-value" value="#3b82f6" />
+      <label>Value
+        <x-form-field id="ctrl-value" type="text" value="#3b82f6"></x-form-field>
+      </label>
 
       <label for="ctrl-mode">Mode</label>
       <x-select id="ctrl-mode" value="inline">
@@ -155,8 +156,9 @@
       <label for="ctrl-readonly">Readonly</label>
       <x-switch id="ctrl-readonly"></x-switch>
 
-      <label for="ctrl-swatches">Swatches</label>
-      <input type="text" id="ctrl-swatches" value="" placeholder="#ff0000,#00ff00,..." />
+      <label>Swatches
+        <x-form-field id="ctrl-swatches" type="text" value="" placeholder="#ff0000,#00ff00,..."></x-form-field>
+      </label>
     </div>
     <x-color-picker id="demo-interactive" value="#3b82f6"></x-color-picker>
 

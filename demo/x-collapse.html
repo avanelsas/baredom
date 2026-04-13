@@ -185,13 +185,15 @@
 
   <div class="stack" style="margin-top:16px;">
     <div class="row">
-      <label for="ctrl-header">header:</label>
-      <input id="ctrl-header" type="text" value="Live demo panel" style="flex:1;min-width:160px;" />
+      <label>header:
+        <x-form-field id="ctrl-header" type="text" value="Live demo panel" style="flex:1;min-width:160px;"></x-form-field>
+      </label>
       <x-button variant="secondary" onclick="applyHeader()">Apply</x-button>
     </div>
     <div class="row">
-      <label for="ctrl-duration">duration-ms:</label>
-      <input id="ctrl-duration" type="number" value="300" min="0" max="2000" style="width:90px;" />
+      <label>duration-ms:
+        <x-form-field id="ctrl-duration" type="number" value="300" style="width:90px;"></x-form-field>
+      </label>
       <x-button variant="secondary" onclick="applyDuration()">Apply</x-button>
     </div>
     <div class="row">
