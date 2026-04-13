@@ -47,7 +47,7 @@
     var bar = document.createElement('div');
     bar._themePickerBar = true;
     bar.setAttribute('style',
-      'position:sticky;top:0;z-index:9999;padding:6px 12px;' +
+      'position:sticky;top:0;z-index:100;padding:6px 12px;' +
       'background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);' +
       'border-bottom:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;gap:6px;' +
       'font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:500;'
