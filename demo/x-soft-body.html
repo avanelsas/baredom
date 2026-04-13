@@ -52,6 +52,10 @@
     @media (prefers-color-scheme: dark) {
       #event-log { background: var(--surface-bg); }
     }
+    /* These color variants have hardcoded light backgrounds, so pin
+       an explicit dark text color — otherwise in dark mode the text
+       inherits the body's near-white color and becomes invisible. */
+    .amber, .indigo, .emerald { color: #0f172a; }
     .amber {
       --x-soft-body-bg: #fef3c7;
       --x-soft-body-border: #f59e0b;
