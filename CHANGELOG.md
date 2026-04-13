@@ -2,6 +2,31 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.1.0] - 2026-04-13
+
+### Added
+
+- **x-carousel** — Themeable, accessible carousel with swipe/drag navigation, arrow buttons, dot indicators, autoplay, keyboard interaction, slide/fade transitions, and horizontal/vertical orientation
+- **x-color-picker** — Color picker with 2D saturation/brightness area, hue strip, optional alpha channel, preset swatches, eyedropper support, and clipboard copy; supports inline and popover display modes
+- **x-particle-button** — Button that emits and reabsorbs visual fragments on interaction, combining a premium base, pointer-tracked specular highlight, and a canvas particle system (modes: subtle, spark, ember, disperse)
+- x-theme: design tokens expanded from 33 to 50 (adds z-index, opacity, and additional colour/spacing/shape tokens for overlay stacking and disabled states)
+- Shared DOM and model utilities (`baredom.utils.dom`, `baredom.utils.model`) so components no longer reimplement attribute parsing, instance-field access, and security sanitisers
+- CI quality checks and bundle-size documentation
+
+### Changed
+
+- `public/index.html` component gallery now consumes x-theme design tokens
+
+### Fixed
+
+- CSS injection and XSS vulnerabilities in input sanitization
+- x-liquid-fill: `disabled` attribute now correctly suspends animation and interaction
+- x-divider: pattern rendering regression
+- Mobile viewport units (`100dvh` / `100%`) applied where `100vh` / `100vw` were causing overflow
+- Missing demo page for audit-flagged component
+- Flaky async test timeouts
+- Closure Advanced Compilation safety regression (bab76f9)
+
 ## [2.0.1] - 2026-04-10
 
 ### Fixed

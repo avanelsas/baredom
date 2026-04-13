@@ -228,10 +228,11 @@
           _       (.appendChild box inner)
           _       (set! (.-id box) "xlf-test-scroll")
           _       (.appendChild (.-body js/document) box)
-          ;; Element targeting that container, disabled for sync dispatch
+          ;; Element targeting that container. Enabled so the rAF-driven
+          ;; animation loop dispatches progress events as it lerps toward
+          ;; the new scroll target.
           ^js el  (make-el)]
       (.setAttribute el "target" "#xlf-test-scroll")
-      (.setAttribute el model/attr-disabled "")
       (set! (.. el -style -width) "200px")
       (set! (.. el -style -height) "100px")
       (.appendChild (.-body js/document) el)
@@ -244,7 +245,7 @@
            ;; Scroll the container
            (set! (.-scrollTop box) 100)
            (.dispatchEvent box (js/Event. "scroll"))
-           ;; Disabled path dispatches synchronously
+           ;; Give the rAF loop a few frames to dispatch
            (js/setTimeout
             (fn []
               (is (pos? (count @events)) "progress event should fire")
@@ -254,7 +255,7 @@
                   (is (number? (.-velocity d)) "detail has velocity")))
               (.remove box)
               (done))
-            100)))
+            300)))
        500))))
 
 ;; ── Reconnect without listener doubling ─────────────────────────────────────

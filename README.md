@@ -19,7 +19,7 @@
 
 ## What is BareDOM?
 
-BareDOM is a library of 80 UI components built entirely on web standards — Custom Elements v1, Shadow DOM, and ES modules. There is no framework runtime, no virtual DOM, and no JavaScript framework peer dependency. Every component is a native HTML element that you register once and use anywhere.
+BareDOM is a library of UI components built entirely on web standards — Custom Elements v1, Shadow DOM, and ES modules. There is no framework runtime, no virtual DOM, and no JavaScript framework peer dependency. Every component is a native HTML element that you register once and use anywhere.
 
 The core rendering model is deliberately simple:
 
@@ -33,7 +33,7 @@ BareDOM is authored in ClojureScript and compiled to optimised, minified ES modu
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
-All web components, including new, modern, and exciting ones such as x-morph-stack, x-liquid-fill, x-liquid-glass, x=soft-body, x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-font, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, and x-organic-progress, can be seen [here](https://avanelsas.github.io/baredom/)
+All web components, including new, modern, and exciting ones such as x-morph-stack, x-liquid-fill, x-liquid-glass, x=soft-body, x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-font, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, x-organic-progress, and x-particle-button, can be seen [here](https://avanelsas.github.io/baredom/)
 
 ---
 
@@ -116,13 +116,13 @@ BareDOM can be consumed three ways: as a **ClojureScript source dependency** (Cl
 Add BareDOM to your `deps.edn`:
 
 ```clojure
-{:deps {com.github.avanelsas/baredom {:mvn/version "2.0.1"}}}
+{:deps {com.github.avanelsas/baredom {:mvn/version "2.1.0"}}}
 ```
 
 Or in your `shadow-cljs.edn` dependencies:
 
 ```clojure
-:dependencies [[com.github.avanelsas/baredom "2.0.1"]]
+:dependencies [[com.github.avanelsas/baredom "2.1.0"]]
 ```
 
 Then require component namespaces directly and call their `init!` function once at startup:
@@ -179,7 +179,7 @@ Add the npm package to your `package.json`:
 ```json
 {
   "dependencies": {
-    "@vanelsas/baredom": "^2.0.1"
+    "@vanelsas/baredom": "^2.1.0"
   }
 }
 ```
@@ -334,12 +334,13 @@ Override CSS custom properties at any scope:
 
 ## Components
 
-### Form (16)
+### Form (17)
 
 | Tag | Description |
 |-----|-------------|
 | [`<x-button>`](./docs/x-button.md) | Action control. Variants: `primary`, `secondary`, `tertiary`, `ghost`, `danger`. Sizes: `sm`, `md`, `lg`. States: `disabled`, `loading`, `pressed`. Icon slots. |
 | [`<x-checkbox>`](./docs/x-checkbox.md) | Boolean input. Reflects `checked` and `indeterminate` states to attributes. |
+| [`<x-color-picker>`](./docs/x-color-picker.md) | Colour picker with 2D saturation/brightness area, hue strip, optional alpha, preset swatches, eyedropper, and clipboard copy. Inline or popover mode. |
 | [`<x-copy>`](./docs/x-copy.md) | Copy-to-clipboard utility button with success feedback. |
 | [`<x-currency-field>`](./docs/x-currency-field.md) | Formatted currency input with locale-aware masking. |
 | [`<x-date-picker>`](./docs/x-date-picker.md) | Calendar-based date selection with keyboard navigation. |
@@ -394,12 +395,13 @@ Override CSS custom properties at any scope:
 | [`<x-grid>`](./docs/x-grid.md) | CSS Grid layout component with responsive column configuration. |
 | [`<x-spacer>`](./docs/x-spacer.md) | Flexible spacing element for flexbox and grid layouts. |
 
-### Data (9)
+### Data (10)
 
 | Tag | Description |
 |-----|-------------|
 | [`<x-avatar>`](./docs/x-avatar.md) | User photo or initials display. Shape, size, and status dot variants. |
 | [`<x-avatar-group>`](./docs/x-avatar-group.md) | Overlapping avatar stack for representing multiple users. |
+| [`<x-carousel>`](./docs/x-carousel.md) | Accessible carousel with swipe/drag, arrows, dot indicators, autoplay, slide/fade transitions, and horizontal/vertical orientation. |
 | [`<x-chart>`](./docs/x-chart.md) | Data visualisation component for common chart types. |
 | [`<x-stat>`](./docs/x-stat.md) | KPI / metric card with value, label, trend, and icon slots. |
 | [`<x-table>`](./docs/x-table.md) | Data grid using CSS subgrid. Supports sorting, single/multi-select, striping, and accessible captions. |
