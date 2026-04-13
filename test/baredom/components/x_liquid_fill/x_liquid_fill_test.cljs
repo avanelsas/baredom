@@ -1,6 +1,6 @@
 (ns baredom.components.x-liquid-fill.x-liquid-fill-test
   (:require
-   [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.x-liquid-fill.x-liquid-fill :as x-liquid-fill]
    [baredom.components.x-liquid-fill.model :as model]))
 

@@ -1,5 +1,5 @@
 (ns baredom.components.x-liquid-dock.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-liquid-dock.model :as model]
             [baredom.utils.model :as mu]))
 

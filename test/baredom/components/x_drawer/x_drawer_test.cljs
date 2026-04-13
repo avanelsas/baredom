@@ -1,5 +1,5 @@
 (ns baredom.components.x-drawer.x-drawer-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-drawer.x-drawer :as x]
             [baredom.components.x-drawer.model :as model]))
 

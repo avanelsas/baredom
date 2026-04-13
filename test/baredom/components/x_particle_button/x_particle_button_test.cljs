@@ -1,5 +1,5 @@
 (ns baredom.components.x-particle-button.x-particle-button-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-particle-button.x-particle-button :as component]
             [baredom.components.x-particle-button.model :as model]))
 

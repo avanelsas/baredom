@@ -1,5 +1,5 @@
 (ns baredom.components.x-progress.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-progress.model :as model]))
 
 ;; ── normalize-max ─────────────────────────────────────────────────────────

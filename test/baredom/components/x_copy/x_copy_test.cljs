@@ -1,5 +1,5 @@
 (ns baredom.components.x-copy.x-copy-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-copy.x-copy :as x]
             [baredom.components.x-copy.model :as model]))
 

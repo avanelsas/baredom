@@ -1,5 +1,5 @@
 (ns baredom.components.x-organic-divider.x-organic-divider-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-organic-divider.x-organic-divider :as x-organic-divider]
             [baredom.components.x-organic-divider.model :as model]))
 

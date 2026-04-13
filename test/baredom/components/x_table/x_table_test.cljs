@@ -1,5 +1,5 @@
 (ns baredom.components.x-table.x-table-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [goog.object :as gobj]
             [baredom.components.x-table.x-table     :as x]
             [baredom.components.x-table.model       :as model]

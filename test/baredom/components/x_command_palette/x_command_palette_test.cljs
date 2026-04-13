@@ -1,5 +1,5 @@
 (ns baredom.components.x-command-palette.x-command-palette-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-command-palette.x-command-palette :as x]
             [baredom.components.x-command-palette.model :as model]))
 

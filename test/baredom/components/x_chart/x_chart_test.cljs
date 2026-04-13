@@ -1,5 +1,5 @@
 (ns baredom.components.x-chart.x-chart-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-chart.x-chart :as x]
             [baredom.components.x-chart.model :as model]))
 

@@ -1,5 +1,5 @@
 (ns baredom.components.x-morph-stack.x-morph-stack-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-morph-stack.x-morph-stack :as x]
             [baredom.components.x-morph-stack.model         :as model]))
 

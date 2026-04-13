@@ -1,5 +1,5 @@
 (ns baredom.components.x-ripple-effect.x-ripple-effect-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-ripple-effect.x-ripple-effect :as x]
             [baredom.components.x-ripple-effect.model           :as model]))
 

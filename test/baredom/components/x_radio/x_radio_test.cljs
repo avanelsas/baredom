@@ -1,5 +1,5 @@
 (ns baredom.components.x-radio.x-radio-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-radio.x-radio :as x]
             [baredom.components.x-radio.model :as model]))
 

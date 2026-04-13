@@ -1,5 +1,5 @@
 (ns baredom.components.x-chip.x-chip-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-chip.x-chip :as x]
             [baredom.components.x-chip.model  :as model]))
 

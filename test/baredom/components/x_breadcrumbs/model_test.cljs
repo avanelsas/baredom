@@ -1,5 +1,5 @@
 (ns baredom.components.x-breadcrumbs.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-breadcrumbs.model :as model]))
 
 ;; ── parse-size ────────────────────────────────────────────────────────────

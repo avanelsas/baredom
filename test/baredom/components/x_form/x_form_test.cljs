@@ -1,5 +1,5 @@
 (ns baredom.components.x-form.x-form-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-form.x-form :as x]
             [baredom.components.x-form.model :as model]))
 

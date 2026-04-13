@@ -1,5 +1,5 @@
 (ns baredom.components.x-kinetic-typography.x-kinetic-typography-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [clojure.string :as str]
             [baredom.components.x-kinetic-typography.x-kinetic-typography :as xkt]
             [baredom.components.x-kinetic-typography.model :as model]))

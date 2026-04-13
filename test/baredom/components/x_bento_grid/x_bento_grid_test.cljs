@@ -1,5 +1,5 @@
 (ns baredom.components.x-bento-grid.x-bento-grid-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-bento-grid.x-bento-grid :as x]
             [baredom.components.x-bento-grid.model :as model]))
 

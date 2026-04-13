@@ -1,5 +1,5 @@
 (ns baredom.components.x-splash.x-splash-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-splash.x-splash :as x]
             [baredom.components.x-splash.model   :as model]))
 

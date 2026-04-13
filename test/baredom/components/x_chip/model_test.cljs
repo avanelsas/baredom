@@ -1,5 +1,5 @@
 (ns baredom.components.x-chip.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-chip.model :as model]))
 
 ;; ── parse-bool-default-true ───────────────────────────────────────────────

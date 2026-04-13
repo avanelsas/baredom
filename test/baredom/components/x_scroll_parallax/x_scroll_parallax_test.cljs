@@ -1,5 +1,5 @@
 (ns baredom.components.x-scroll-parallax.x-scroll-parallax-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-scroll-parallax.x-scroll-parallax :as x-scroll-parallax]
             [baredom.components.x-scroll-parallax.model :as model]))
 

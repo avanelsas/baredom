@@ -1,5 +1,5 @@
 (ns baredom.components.x-carousel.x-carousel-test
-  (:require [cljs.test :refer-macros [deftest is testing async use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is async use-fixtures]]
             [baredom.components.x-carousel.x-carousel :as x]
             [baredom.components.x-carousel.model       :as model]))
 

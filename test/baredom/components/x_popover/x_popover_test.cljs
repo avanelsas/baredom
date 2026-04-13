@@ -1,5 +1,5 @@
 (ns baredom.components.x-popover.x-popover-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-popover.x-popover :as x]
             [baredom.components.x-popover.model :as model]))
 

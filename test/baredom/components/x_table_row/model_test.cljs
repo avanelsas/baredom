@@ -1,5 +1,5 @@
 (ns baredom.components.x-table-row.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-table-row.model :as model]))
 
 ;; ── parse-row-index ──────────────────────────────────────────────────────────

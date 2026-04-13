@@ -1,5 +1,5 @@
 (ns baredom.components.x-pagination.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-pagination.model :as model]))
 
 ;; ── parse-total-pages ─────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 (ns baredom.components.x-bento-item.x-bento-item-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-bento-item.x-bento-item :as x]
             [baredom.components.x-bento-item.model :as model]))
 

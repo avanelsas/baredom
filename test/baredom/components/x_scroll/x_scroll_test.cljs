@@ -1,5 +1,5 @@
 (ns baredom.components.x-scroll.x-scroll-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-scroll.x-scroll :as x-scroll]
             [baredom.components.x-scroll.model :as model]))
 

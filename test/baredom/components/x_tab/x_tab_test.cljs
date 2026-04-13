@@ -1,5 +1,5 @@
 (ns baredom.components.x-tab.x-tab-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-tab.x-tab :as x]
             [baredom.components.x-tab.model :as model]))
 

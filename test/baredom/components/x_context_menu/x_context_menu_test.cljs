@@ -1,5 +1,5 @@
 (ns baredom.components.x-context-menu.x-context-menu-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-context-menu.x-context-menu :as x]
             [baredom.components.x-context-menu.model :as model]))
 

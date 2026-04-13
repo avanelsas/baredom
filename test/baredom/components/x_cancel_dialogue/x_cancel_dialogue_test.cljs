@@ -1,5 +1,5 @@
 (ns baredom.components.x-cancel-dialogue.x-cancel-dialogue-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-cancel-dialogue.x-cancel-dialogue :as x]
             [baredom.components.x-cancel-dialogue.model :as model]))
 

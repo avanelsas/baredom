@@ -1,5 +1,5 @@
 (ns baredom.components.x-timeline-item.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-timeline-item.model :as model]))
 
 ;; ── parse-status ─────────────────────────────────────────────────────────────
