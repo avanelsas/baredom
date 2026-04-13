@@ -54,6 +54,8 @@
       margin-bottom: 12px;
     }
 
+    x-select, x-form-field { display: block; margin-bottom: 12px; }
+
     .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.875rem; }
     .check-row input { width: auto; margin: 0; }
 
@@ -138,9 +140,8 @@
 
     <div>
       <x-typography variant="overline">Step count</x-typography>
-      <label>Number of steps (integer shorthand)
-        <x-form-field type="number" id="ctrl-count" value=""></x-form-field>
-      </label>
+      <label for="ctrl-count">Number of steps (integer shorthand)</label>
+      <x-form-field type="number" id="ctrl-count" value=""></x-form-field>
       <p style="font-size:0.8125rem;color:var(--muted);margin:0 0 8px">
         Leave blank to use the JSON steps above.
       </p>
