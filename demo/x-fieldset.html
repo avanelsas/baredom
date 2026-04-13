@@ -36,15 +36,15 @@
       <x-fieldset legend="Personal Information">
         <label>
           First name
-          <input type="text" name="first-name" placeholder="Jane" />
+          <x-form-field type="text" name="first-name" placeholder="Jane"></x-form-field>
         </label>
         <label>
           Last name
-          <input type="text" name="last-name" placeholder="Doe" />
+          <x-form-field type="text" name="last-name" placeholder="Doe"></x-form-field>
         </label>
         <label>
           Email
-          <input type="email" name="email" placeholder="jane@example.com" />
+          <x-form-field type="email" name="email" placeholder="jane@example.com"></x-form-field>
         </label>
       </x-fieldset>
 
@@ -52,11 +52,11 @@
       <x-fieldset legend="Payment Details" disabled>
         <label>
           Card number
-          <input type="text" placeholder="•••• •••• •••• ••••" />
+          <x-form-field type="text" placeholder="•••• •••• •••• ••••"></x-form-field>
         </label>
         <label>
           Expiry
-          <input type="text" placeholder="MM/YY" />
+          <x-form-field type="text" placeholder="MM/YY"></x-form-field>
         </label>
       </x-fieldset>
 
@@ -64,11 +64,11 @@
       <x-fieldset aria-label="Shipping address">
         <label>
           Street
-          <input type="text" placeholder="123 Main St" />
+          <x-form-field type="text" placeholder="123 Main St"></x-form-field>
         </label>
         <label>
           City
-          <input type="text" placeholder="Springfield" />
+          <x-form-field type="text" placeholder="Springfield"></x-form-field>
         </label>
       </x-fieldset>
 
@@ -79,11 +79,11 @@
       <x-fieldset legend="Contact Details" aria-describedby="contact-desc">
         <label>
           Phone
-          <input type="text" placeholder="+1 555-0100" />
+          <x-form-field type="text" placeholder="+1 555-0100"></x-form-field>
         </label>
         <label>
           Email
-          <input type="email" placeholder="you@example.com" />
+          <x-form-field type="email" placeholder="you@example.com"></x-form-field>
         </label>
       </x-fieldset>
 
@@ -98,7 +98,7 @@
       <div class="controls">
         <label>
           legend
-          <input type="text" id="ctrl-legend" value="Billing Address" />
+          <x-form-field type="text" id="ctrl-legend" value="Billing Address"></x-form-field>
         </label>
         <label>
           disabled
@@ -108,11 +108,11 @@
       <x-fieldset id="live-fs" legend="Billing Address">
         <label>
           Street
-          <input type="text" placeholder="1 Infinite Loop" />
+          <x-form-field type="text" placeholder="1 Infinite Loop"></x-form-field>
         </label>
         <label>
           Postcode
-          <input type="text" placeholder="94025" />
+          <x-form-field type="text" placeholder="94025"></x-form-field>
         </label>
       </x-fieldset>
     </div>
