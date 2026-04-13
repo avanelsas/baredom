@@ -16,14 +16,11 @@
       line-height: 1.6;
     }
 
-    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
-    h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: #9ca3af; }
-    p  { color: #9ca3af; margin-bottom: 1rem; }
+            p  { color: #9ca3af; margin-bottom: 1rem; }
 
     @media (prefers-color-scheme: light) {
       body { background: #f5f5f7 !important; color: #1a1a2e !important; }
-      h2 { color: #6b7280; }
-      p  { color: #6b7280; }
+            p  { color: #6b7280; }
     }
 
     .header {
@@ -98,12 +95,10 @@
       max-width: 500px;
     }
 
-    .fullpage-demo .content h2 { color: #fff; font-size: 2rem; }
-    .fullpage-demo .content p  { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+        .fullpage-demo .content p  { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
 
     @media (prefers-color-scheme: light) {
-      .fullpage-demo .content h2 { color: #1a1a2e; }
-      .fullpage-demo .content p  { color: rgba(0,0,0,0.6); }
+            .fullpage-demo .content p  { color: rgba(0,0,0,0.6); }
     }
 
     /* ── Scroll activity demo ──────────────────────────────────────── */
@@ -215,7 +210,7 @@
 <body>
 
   <div class="header">
-    <h1>x-neural-glow</h1>
+    <x-typography variant="h1">x-neural-glow</x-typography>
     <p>Bioluminescent Neural Network — WebGL-powered background that adapts to light and dark mode</p>
   </div>
 
@@ -224,7 +219,7 @@
        the x-neural-glow API. They are used by the demo's applyScheme()
        script to swap colours when the system colour-scheme changes. -->
   <div class="section">
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="demo-grid">
       <div class="demo-card">
         <x-neural-glow class="adaptive"
@@ -296,7 +291,7 @@
 
   <!-- ── Full-page background demo ─────────────────────────────────── -->
   <div class="section">
-    <h2>Full-Page Background</h2>
+    <x-typography variant="overline">Full-Page Background</x-typography>
     <div class="fullpage-demo">
       <x-neural-glow class="adaptive"
         data-dark-bg="#030712" data-light-bg="#f8fafc"
@@ -306,7 +301,7 @@
         opacity="0.9">
       </x-neural-glow>
       <div class="content">
-        <h2>Content Over Neural Glow</h2>
+        <x-typography variant="overline">Content Over Neural Glow</x-typography>
         <p>The network pulses behind your content, responding to mouse movement, scrolling, and typing.</p>
       </div>
     </div>
@@ -314,7 +309,7 @@
 
   <!-- ── Scroll activity demo ─────────────────────────────────────── -->
   <div class="section">
-    <h2>Scroll Activity Response</h2>
+    <x-typography variant="overline">Scroll Activity Response</x-typography>
     <p>Scroll this area to see the network respond to scroll speed.</p>
     <div class="scroll-demo">
       <x-neural-glow class="adaptive"
@@ -329,7 +324,7 @@
 
   <!-- ── Interactive control panel ─────────────────────────────────── -->
   <div class="controls">
-    <h2>Interactive Controls</h2>
+    <x-typography variant="overline">Interactive Controls</x-typography>
     <div class="control-grid">
       <div class="control-group">
         <label>Orb Count: <span id="v-orb-count">15</span></label>
@@ -369,7 +364,7 @@
       </div>
       <div class="control-group">
         <label>
-          <input type="checkbox" id="c-interactive" checked> Interactive
+          <x-switch id="c-interactive" checked></x-switch> Interactive
         </label>
       </div>
     </div>

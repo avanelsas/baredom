@@ -17,9 +17,7 @@
       color: var(--page-fg);
       background: var(--page-bg);
     }
-    h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
-
+        
     .controls {
       display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
     }
@@ -82,27 +80,27 @@
 </head>
 <body>
 
-<h1>&lt;x-bento-item&gt;</h1>
+<x-typography variant="h1">&lt;x-bento-item&gt;</x-typography>
 <p>Grid item for <code>&lt;x-bento-grid&gt;</code>. Controls column/row spanning and ordering.</p>
 
 <!-- ── Interactive demo ──────────────────────────────────────────────── -->
-<h2>Interactive</h2>
+<x-typography variant="overline">Interactive</x-typography>
 
 <div class="controls">
   <label>col-span:
-    <select id="col-span-select">
+    <x-select id="col-span-select" value="2">
       <option value="1">1</option>
       <option value="2" selected>2</option>
       <option value="3">3</option>
       <option value="4">4</option>
-    </select>
+    </x-select>
   </label>
   <label>row-span:
-    <select id="row-span-select">
+    <x-select id="row-span-select" value="2">
       <option value="1">1</option>
       <option value="2" selected>2</option>
       <option value="3">3</option>
-    </select>
+    </x-select>
   </label>
   <label>order:
     <input id="order-input" type="number" value="" placeholder="auto" style="width:5rem">
@@ -136,7 +134,7 @@
 <pre id="log"></pre>
 
 <!-- ── Span variations ──────────────────────────────────────────────── -->
-<h2>Span variations</h2>
+<x-typography variant="overline">Span variations</x-typography>
 <div class="demo-box">
   <x-bento-grid columns="4" gap="md" row-height="80px">
     <x-bento-item col-span="1" row-span="1">
@@ -161,7 +159,7 @@
 </div>
 
 <!-- ── Ordering ──────────────────────────────────────────────────────── -->
-<h2>Custom order</h2>
+<x-typography variant="overline">Custom order</x-typography>
 <p>Items reordered via the <code>order</code> attribute (lower values first).</p>
 <div class="demo-box">
   <x-bento-grid columns="3" gap="md" row-height="80px">

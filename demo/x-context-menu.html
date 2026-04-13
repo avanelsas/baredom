@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
+            .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input {
@@ -45,9 +44,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-context-menu demo</h1>
+    <x-typography variant="h1">x-context-menu demo</x-typography>
 
-    <h2>Basic (bottom-start)</h2>
+    <x-typography variant="overline">Basic (bottom-start)</x-typography>
     <div class="row">
       <button class="trigger-btn" id="btn-basic">Open menu ▾</button>
       <x-context-menu id="menu-basic">
@@ -57,7 +56,7 @@
       </x-context-menu>
     </div>
 
-    <h2>Right-click target</h2>
+    <x-typography variant="overline">Right-click target</x-typography>
     <div class="row">
       <div class="rightclick-area" id="rightclick-area">Right-click anywhere in this area</div>
       <x-context-menu id="menu-rightclick">
@@ -68,7 +67,7 @@
       </x-context-menu>
     </div>
 
-    <h2>Placement variants</h2>
+    <x-typography variant="overline">Placement variants</x-typography>
     <div class="row">
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
         <button class="trigger-btn" data-placement="bottom-start">bottom-start ▾</button>
@@ -100,7 +99,7 @@
       </div>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <button class="trigger-btn" disabled>Open menu ▾ (disabled)</button>
       <x-context-menu disabled>
@@ -109,22 +108,22 @@
       </x-context-menu>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>placement
-        <select id="ctrl-placement">
+        <x-select id="ctrl-placement" value="bottom-start">
           <option value="bottom-start" selected>bottom-start</option>
           <option value="bottom-end">bottom-end</option>
           <option value="top-start">top-start</option>
           <option value="top-end">top-end</option>
           <option value="right-start">right-start</option>
           <option value="left-start">left-start</option>
-        </select>
+        </x-select>
       </label>
       <label>offset
         <input type="number" id="ctrl-offset" value="8" style="width:60px" min="0">
       </label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <div class="row">
       <button class="trigger-btn" id="btn-live">Open menu ▾</button>
@@ -197,7 +196,7 @@
           btnLive.disabled = false;
         }
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

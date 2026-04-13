@@ -22,17 +22,8 @@
       line-height: 1.4;
     }
 
-    h1  { font-size: 1.6rem; margin-bottom: 0.25rem; }
-
-    h2 {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin: 32px 0 10px;
-    }
-
+    
+    
     pre {
       background: var(--surface-bg);
       border: 1px solid var(--surface-border);
@@ -88,27 +79,17 @@
     .tag-change  { background: #d1fae5; color: #065f46; }
     .tag-cancel  { background: #fee2e2; color: #991b1b; }
 
-    button.action {
-      font-size: 13px;
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: none;
-      background: #1d4ed8;
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    button.action:hover { background: #1e40af; }
-  </style>
+    
+      </style>
   <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
 
-<h1>x-radio</h1>
+<x-typography variant="h1">x-radio</x-typography>
 <p>Native Web Component — mutually exclusive radio group with roving tabindex and form association.</p>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Basic group (one pre-selected)</h2>
+<x-typography variant="overline">Basic group (one pre-selected)</x-typography>
 <fieldset>
   <legend>Favourite fruit</legend>
   <div class="row">
@@ -131,7 +112,7 @@
 &lt;x-radio name="fruit" value="cherry" aria-label="Cherry"&gt;&lt;/x-radio&gt;</pre>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Disabled (whole group + individual)</h2>
+<x-typography variant="overline">Disabled (whole group + individual)</x-typography>
 <fieldset>
   <legend>Plan</legend>
   <div class="row">
@@ -151,7 +132,7 @@
 </fieldset>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Readonly</h2>
+<x-typography variant="overline">Readonly</x-typography>
 <fieldset>
   <legend>Status (readonly)</legend>
   <div class="row">
@@ -167,7 +148,7 @@
 </fieldset>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Required</h2>
+<x-typography variant="overline">Required</x-typography>
 <form id="required-form" style="display:flex;flex-direction:column;gap:0.75rem;">
   <fieldset>
     <legend>Agree to terms (required)</legend>
@@ -182,7 +163,7 @@
       </label>
     </div>
   </fieldset>
-  <button type="submit" class="action" style="align-self:flex-start">Submit</button>
+  <x-button type="submit" variant="secondary" style="align-self:flex-start">Submit</x-button>
   <p id="required-result" style="font-size:0.85rem;margin:0;"></p>
 </form>
 <script>
@@ -195,7 +176,7 @@
 </script>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Custom CSS variables (colored dot)</h2>
+<x-typography variant="overline">Custom CSS variables (colored dot)</x-typography>
 <fieldset>
   <legend>Pick a colour</legend>
   <div class="row">
@@ -215,7 +196,7 @@
 </fieldset>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Event log</h2>
+<x-typography variant="overline">Event log</x-typography>
 <p style="font-size:0.85rem;margin-bottom:0.5rem;">
   The radios below log all events. The first option has a preventDefault demo toggle.
 </p>
@@ -238,9 +219,9 @@
 </fieldset>
 <div class="controls">
   <label>
-    <input type="checkbox" id="cancel-toggle"> Cancel change-request on "small"
+    <x-switch id="cancel-toggle"></x-switch> Cancel change-request on "small"
   </label>
-  <button class="action" onclick="document.getElementById('event-log').innerHTML=''">Clear log</button>
+  <x-button variant="secondary" onclick="document.getElementById('event-log').innerHTML=''">Clear log</x-button>
 </div>
 <div id="event-log"></div>
 
@@ -274,7 +255,7 @@
 </script>
 
 <!-- ------------------------------------------------------------------ -->
-<h2>Live controls panel</h2>
+<x-typography variant="overline">Live controls panel</x-typography>
 <fieldset>
   <legend>Live radio</legend>
   <div class="row">
@@ -284,10 +265,10 @@
   </div>
 </fieldset>
 <div class="controls">
-  <label><input type="checkbox" id="ctrl-checked" onchange="syncLive()"> checked (r1)</label>
-  <label><input type="checkbox" id="ctrl-disabled" onchange="syncLive()"> disabled (r1)</label>
-  <label><input type="checkbox" id="ctrl-readonly" onchange="syncLive()"> readonly (r1)</label>
-  <label><input type="checkbox" id="ctrl-required" onchange="syncLive()"> required</label>
+  <label><x-switch id="ctrl-checked" onchange="syncLive()"></x-switch> checked (r1)</label>
+  <label><x-switch id="ctrl-disabled" onchange="syncLive()"></x-switch> disabled (r1)</label>
+  <label><x-switch id="ctrl-readonly" onchange="syncLive()"></x-switch> readonly (r1)</label>
+  <label><x-switch id="ctrl-required" onchange="syncLive()"></x-switch> required</label>
 </div>
 <pre id="live-state" style="margin-top:0.5rem;font-size:0.8rem;"></pre>
 

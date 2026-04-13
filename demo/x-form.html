@@ -13,8 +13,7 @@
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .btn {
+            .btn {
         padding: 8px 20px; border-radius: 6px; border: none;
         font-size: 14px; cursor: pointer; color: #fff;
       }
@@ -34,10 +33,10 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-form demo</h1>
+    <x-typography variant="h1">x-form demo</x-typography>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Login form — async submit simulation</h2>
+    <x-typography variant="overline">Login form — async submit simulation</x-typography>
     <p style="font-size:14px;color:var(--muted);margin:0 0 12px;">
       Submit sets <code>loading</code> for 1.5 s, then injects a server-side field error.
     </p>
@@ -45,41 +44,41 @@
       <x-form-field label="Email"    name="email"    type="email"    placeholder="you@example.com" required></x-form-field>
       <x-form-field label="Password" name="password" type="password" placeholder="••••••••"        required></x-form-field>
       <div style="display:flex;gap:8px;">
-        <button type="submit" class="btn btn-primary"   id="login-submit">Sign in</button>
-        <button type="reset"  class="btn btn-secondary">Reset</button>
+        <x-button id="login-submit" onclick="document.getElementById('login-form').submit()">Sign in</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('login-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Contact form with reset</h2>
+    <x-typography variant="overline">Contact form with reset</x-typography>
     <x-form id="contact-form">
       <x-form-field label="Name"    name="name"    placeholder="Jane Doe"           required></x-form-field>
       <x-form-field label="Email"   name="email"   type="email" placeholder="jane@example.com"></x-form-field>
       <x-form-field label="Message" name="message" placeholder="Your message here"></x-form-field>
       <x-checkbox name="subscribe" id="subscribe-check">Subscribe to newsletter</x-checkbox>
       <div style="display:flex;gap:8px;">
-        <button type="submit" class="btn btn-primary">Send</button>
-        <button type="reset"  class="btn btn-secondary">Clear</button>
+        <x-button onclick="document.getElementById('contact-form').submit()">Send</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('contact-form').reset()">Clear</x-button>
       </div>
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>loading      <input type="checkbox" id="ctrl-loading"></label>
-      <label>novalidate   <input type="checkbox" id="ctrl-novalidate"></label>
+      <label>loading      <x-switch id="ctrl-loading"></x-switch></label>
+      <label>novalidate   <x-switch id="ctrl-novalidate"></x-switch></label>
       <label>autocomplete
-        <select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+        <x-select id="ctrl-autocomplete" value="on">
           <option value="on">on</option>
           <option value="off">off</option>
-        </select>
+        </x-select>
       </label>
-      <button class="btn btn-primary"   style="font-size:12px;padding:5px 10px;" id="ctrl-set-error">Inject email error</button>
-      <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;" id="ctrl-clear-errors">Clear errors</button>
+      <x-button size="sm" id="ctrl-set-error">Inject email error</x-button>
+      <x-button size="sm" variant="secondary" id="ctrl-clear-errors">Clear errors</x-button>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>
@@ -137,7 +136,7 @@
         contactForm.setAttribute('autocomplete', autocomplete);
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
       });
 

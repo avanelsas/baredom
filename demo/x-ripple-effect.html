@@ -19,15 +19,7 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .demos {
         display: flex;
         flex-wrap: wrap;
@@ -82,8 +74,7 @@
         color: var(--input-fg);
       }
 
-      .row input[type=checkbox] { width: auto; }
-
+      
       .log {
         margin-top: 24px;
         padding: 12px;
@@ -101,10 +92,10 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-ripple-effect demo</h1>
+    <x-typography variant="h1">x-ripple-effect demo</x-typography>
     <p style="color:var(--muted);font-size:14px;">Click anywhere on the content below to see the water distortion ripple.</p>
 
-    <h2>Basic usage</h2>
+    <x-typography variant="overline">Basic usage</x-typography>
     <div class="demos">
       <x-ripple-effect>
         <div class="card">
@@ -118,7 +109,7 @@
       </x-ripple-effect>
     </div>
 
-    <h2>Custom intensity</h2>
+    <x-typography variant="overline">Custom intensity</x-typography>
     <div class="demos">
       <x-ripple-effect intensity="10">
         <div class="card">
@@ -142,7 +133,7 @@
       </x-ripple-effect>
     </div>
 
-    <h2>Custom duration</h2>
+    <x-typography variant="overline">Custom duration</x-typography>
     <div class="demos">
       <x-ripple-effect duration="200">
         <div class="card">
@@ -159,7 +150,7 @@
       </x-ripple-effect>
     </div>
 
-    <h2>Custom frequency</h2>
+    <x-typography variant="overline">Custom frequency</x-typography>
     <div class="demos">
       <x-ripple-effect frequency="0.01">
         <div class="card">
@@ -176,7 +167,7 @@
       </x-ripple-effect>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="demos">
       <x-ripple-effect disabled>
         <div class="card">
@@ -186,12 +177,12 @@
       </x-ripple-effect>
     </div>
 
-    <h2>Interactive controls</h2>
+    <x-typography variant="overline">Interactive controls</x-typography>
     <div class="row">
       <label>intensity <input type="range" id="ctrl-intensity" min="1" max="100" value="25"></label>
       <label>duration <input type="range" id="ctrl-duration" min="100" max="3000" value="800"></label>
       <label>frequency (<span id="ctrl-frequency-val">0.04</span>) <input type="range" id="ctrl-frequency" min="5" max="200" value="40"></label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <x-ripple-effect id="interactive-demo">
       <div class="card" style="width:400px;">
@@ -200,7 +191,7 @@
       </div>
     </x-ripple-effect>
 
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Event log will appear here.</div>
 
     <script>

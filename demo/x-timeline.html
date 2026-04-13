@@ -17,9 +17,7 @@
       color: var(--page-fg);
     }
     
-    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
-    h2 { font-size: 1.125rem; margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.25rem; }
-    
+            
     p { margin: 0 0 1.5rem; color: var(--muted); font-size: 0.875rem; }
     
 
@@ -102,18 +100,18 @@
 </head>
 <body>
 
-<h1>x-timeline</h1>
+<x-typography variant="h1">x-timeline</x-typography>
 <p>A coordinator component for <code>x-timeline-item</code> children.</p>
 
 <!-- ── Live control panel ──────────────────────────────────────────────── -->
 <div class="controls">
   <div class="control-group">
     <label for="ctrl-position">position</label>
-    <select id="ctrl-position">
+    <x-select id="ctrl-position" value="start">
       <option value="start" selected>start</option>
       <option value="end">end</option>
       <option value="alternating">alternating</option>
-    </select>
+    </x-select>
   </div>
 
   <div class="control-group">
@@ -122,13 +120,13 @@
   </div>
 
   <div class="control-group">
-    <button id="ctrl-striped" class="toggle-btn">striped: off</button>
+    <x-button id="ctrl-striped" variant="secondary">striped: off</x-button>
   </div>
 </div>
 
 <!-- ── Live demo timeline ─────────────────────────────────────────────── -->
 <div class="demo-section">
-  <h2>Live timeline</h2>
+  <x-typography variant="overline">Live timeline</x-typography>
   <x-timeline id="live-timeline">
     <x-timeline-item status="complete" label="Jan 1"  title="Project kick-off">
       <span>Stakeholder alignment and goal-setting.</span>
@@ -151,7 +149,7 @@
 
 <!-- ── Alternating (static) ───────────────────────────────────────────── -->
 <div class="demo-section">
-  <h2>Alternating layout</h2>
+  <x-typography variant="overline">Alternating layout</x-typography>
   <x-timeline position="alternating" label="Project milestones">
     <x-timeline-item status="complete" label="Q1" title="Planning phase">
       <span>Requirements gathering and design.</span>
@@ -170,7 +168,7 @@
 
 <!-- ── Striped (static) ───────────────────────────────────────────────── -->
 <div class="demo-section">
-  <h2>Striped</h2>
+  <x-typography variant="overline">Striped</x-typography>
   <x-timeline striped>
     <x-timeline-item status="complete" label="Step 1" title="Environment setup">
     </x-timeline-item>
@@ -186,7 +184,7 @@
 
 <!-- ── All statuses ───────────────────────────────────────────────────── -->
 <div class="demo-section">
-  <h2>All statuses</h2>
+  <x-typography variant="overline">All statuses</x-typography>
   <x-timeline>
     <x-timeline-item status="pending"  title="Pending"  label="1"></x-timeline-item>
     <x-timeline-item status="active"   title="Active"   label="2"></x-timeline-item>

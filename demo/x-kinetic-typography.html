@@ -9,9 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 900px; }
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+                  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
       .row { display: flex; gap: 16px; align-items: start; flex-wrap: wrap; margin: 12px 0; }
       .label { font-size: 11px; color: var(--muted); margin-top: 4px; }
       .card {
@@ -35,9 +33,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-kinetic-typography demo</h1>
+    <x-typography variant="h1">x-kinetic-typography demo</x-typography>
 
-    <h2>Path presets</h2>
+    <x-typography variant="overline">Path presets</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Flowing text along a wave path" preset="wave" animation="scroll"></x-kinetic-typography>
@@ -73,7 +71,7 @@
       </div>
     </div>
 
-    <h2>Animation types</h2>
+    <x-typography variant="overline">Animation types</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Scrolling continuously along the path" preset="wave" animation="scroll"></x-kinetic-typography>
@@ -93,7 +91,7 @@
       </div>
     </div>
 
-    <h2>Visual effects</h2>
+    <x-typography variant="overline">Visual effects</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Fading in and out" preset="wave" animation="scroll" effect="opacity-wave"></x-kinetic-typography>
@@ -125,7 +123,7 @@
       </div>
     </div>
 
-    <h2>Color wave</h2>
+    <x-typography variant="overline">Color wave</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Rainbow ripple across characters" preset="wave" animation="scroll" effect="color-wave"
@@ -153,7 +151,7 @@
       </div>
     </div>
 
-    <h2>Echo / trail effect</h2>
+    <x-typography variant="overline">Echo / trail effect</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Text with trailing echoes" preset="wave" animation="scroll" echo-count="2"></x-kinetic-typography>
@@ -173,7 +171,7 @@
       </div>
     </div>
 
-    <h2>Star Wars crawl</h2>
+    <x-typography variant="overline">Star Wars crawl</x-typography>
     <div class="row">
       <div class="card" style="flex:1;">
         <x-kinetic-typography
@@ -214,7 +212,7 @@
       </div>
     </div>
 
-    <h2>Custom theming</h2>
+    <x-typography variant="overline">Custom theming</x-typography>
     <div class="row">
       <div class="card" style="flex:1;">
         <x-kinetic-typography
@@ -238,7 +236,7 @@
       </div>
     </div>
 
-    <h2>Direction &amp; speed</h2>
+    <x-typography variant="overline">Direction &amp; speed</x-typography>
     <div class="grid">
       <div class="card">
         <x-kinetic-typography text="Forward at normal speed" preset="wave" animation="scroll" direction="normal" speed="1"></x-kinetic-typography>
@@ -258,13 +256,13 @@
       </div>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>text
         <input type="text" id="ctrl-text" value="Edit me with the controls" style="width:200px">
       </label>
       <label>preset
-        <select id="ctrl-preset">
+        <x-select id="ctrl-preset" value="wave">
           <option value="wave" selected>wave</option>
           <option value="circle">circle</option>
           <option value="arc">arc</option>
@@ -273,21 +271,21 @@
           <option value="sine">sine</option>
           <option value="line">line</option>
           <option value="crawl">crawl</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="scroll">
           <option value="scroll" selected>scroll</option>
           <option value="bounce">bounce</option>
           <option value="oscillate">oscillate</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>direction
-        <select id="ctrl-direction">
+        <x-select id="ctrl-direction" value="normal">
           <option value="normal" selected>normal</option>
           <option value="reverse">reverse</option>
-        </select>
+        </x-select>
       </label>
     </div>
     <div class="controls">
@@ -365,7 +363,7 @@
         setOrRemove('echo-scale', document.getElementById('ctrl-echo-scale').value.trim());
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

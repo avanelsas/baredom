@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+            .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input {
@@ -23,9 +22,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-badge demo</h1>
+    <x-typography variant="h1">x-badge demo</x-typography>
 
-    <h2>Colour variants</h2>
+    <x-typography variant="overline">Colour variants</x-typography>
     <div class="row">
       <x-badge variant="neutral">Neutral</x-badge>
       <x-badge variant="info">Info</x-badge>
@@ -34,56 +33,56 @@
       <x-badge variant="error">Error</x-badge>
     </div>
 
-    <h2>Count mode</h2>
+    <x-typography variant="overline">Count mode</x-typography>
     <div class="row">
       <x-badge variant="info"  count="7"></x-badge>
       <x-badge variant="error" count="23"></x-badge>
       <x-badge variant="error" count="999" max="99"></x-badge>
     </div>
 
-    <h2>Text mode</h2>
+    <x-typography variant="overline">Text mode</x-typography>
     <div class="row">
       <x-badge variant="success" text="NEW"></x-badge>
       <x-badge variant="warning" text="BETA"></x-badge>
       <x-badge variant="info"    text="v2"></x-badge>
     </div>
 
-    <h2>Small size</h2>
+    <x-typography variant="overline">Small size</x-typography>
     <div class="row">
       <x-badge variant="info"    size="sm" count="5"></x-badge>
       <x-badge variant="error"   size="sm" count="12"></x-badge>
       <x-badge variant="neutral" size="sm" text="tag"></x-badge>
     </div>
 
-    <h2>Pill shape</h2>
+    <x-typography variant="overline">Pill shape</x-typography>
     <div class="row">
       <x-badge variant="success" pill count="3"></x-badge>
       <x-badge variant="info"    pill text="NEW"></x-badge>
     </div>
 
-    <h2>Dot mode</h2>
+    <x-typography variant="overline">Dot mode</x-typography>
     <div class="row">
       <x-badge variant="error"   dot></x-badge>
       <x-badge variant="warning" dot></x-badge>
       <x-badge variant="success" dot></x-badge>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="info">
           <option value="neutral">neutral</option>
           <option value="info" selected>info</option>
           <option value="success">success</option>
           <option value="warning">warning</option>
           <option value="error">error</option>
-        </select>
+        </x-select>
       </label>
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="md" selected>md</option>
           <option value="sm">sm</option>
-        </select>
+        </x-select>
       </label>
       <label>count
         <input type="number" id="ctrl-count" placeholder="none" style="width:60px" min="0">
@@ -94,8 +93,8 @@
       <label>text
         <input type="text" id="ctrl-text" placeholder="none" style="width:80px">
       </label>
-      <label>dot <input type="checkbox" id="ctrl-dot"></label>
-      <label>pill <input type="checkbox" id="ctrl-pill"></label>
+      <label>dot <x-switch id="ctrl-dot"></x-switch></label>
+      <label>pill <x-switch id="ctrl-pill"></x-switch></label>
     </div>
     <div class="row">
       <x-badge id="live" variant="info">Label</x-badge>
@@ -123,7 +122,7 @@
         if (!count && !text && !dot) live.textContent = "Label";
         else live.textContent = "";
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

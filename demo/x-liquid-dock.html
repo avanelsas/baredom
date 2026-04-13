@@ -23,18 +23,12 @@
         padding: 32px 24px 200px;
       }
 
-      h1 { font-size: 1.5rem; margin: 0 0 8px; }
-      .subtitle { color: var(--muted); margin: 0 0 32px; }
+            .subtitle { color: var(--muted); margin: 0 0 32px; }
 
       section {
         margin-bottom: 40px;
       }
-      section h2 {
-        font-size: 1.1rem;
-        margin: 0 0 12px;
-        color: var(--muted);
-      }
-
+      
       .controls {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -93,26 +87,26 @@
   </head>
   <body>
     <main>
-      <h1>&lt;x-liquid-dock&gt;</h1>
+      <x-typography variant="h1">&lt;x-liquid-dock&gt;</x-typography>
       <p class="subtitle">A viscous floating navigation dock with gooey liquid effects.</p>
 
       <section>
-        <h2>Description</h2>
+        <x-typography variant="overline">Description</x-typography>
         <p>The dock uses a "Magnetic Buoy" design. Icons stay crisp while liquid stretches a viscous neck up to meet them on hover. Moving between items creates gooey bridges. Icons bob and tilt toward the cursor. Clicking triggers a ripple burst across the liquid surface.</p>
       </section>
 
       <!-- ── Interactive controls ─────────────────────────── -->
       <section>
-        <h2>Interactive controls</h2>
+        <x-typography variant="overline">Interactive controls</x-typography>
         <div class="controls">
           <label>
             Position
-            <select id="c-position">
+            <x-select id="c-position" value="bottom">
               <option value="bottom" selected>bottom</option>
               <option value="top">top</option>
               <option value="left">left</option>
               <option value="right">right</option>
-            </select>
+            </x-select>
           </label>
           <label>
             Blur: <span class="value" id="v-blur">10</span>
@@ -147,14 +141,14 @@
             <input type="color" id="c-color" value="#6366f1" />
           </label>
           <label>
-            <input type="checkbox" id="c-disabled" /> Disabled
+            <x-switch id="c-disabled"></x-switch> Disabled
           </label>
         </div>
       </section>
 
       <!-- ── Event log ────────────────────────────────────── -->
       <section>
-        <h2>Event log</h2>
+        <x-typography variant="overline">Event log</x-typography>
         <div class="event-log" id="event-log">Waiting for events...</div>
       </section>
     </main>

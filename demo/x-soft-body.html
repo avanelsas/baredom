@@ -17,9 +17,7 @@
       color: var(--page-fg);
       background: var(--page-bg);
     }
-    h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
-    
+            
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -54,6 +52,10 @@
     @media (prefers-color-scheme: dark) {
       #event-log { background: var(--surface-bg); }
     }
+    /* These color variants have hardcoded light backgrounds, so pin
+       an explicit dark text color — otherwise in dark mode the text
+       inherits the body's near-white color and becomes invisible. */
+    .amber, .indigo, .emerald { color: #0f172a; }
     .amber {
       --x-soft-body-bg: #fef3c7;
       --x-soft-body-border: #f59e0b;
@@ -74,10 +76,10 @@
 </head>
 <body>
 
-<h1>x-soft-body</h1>
+<x-typography variant="h1">x-soft-body</x-typography>
 <p>Soft-body physics cards — hover or grab to deform.</p>
 
-<h2>Showcase</h2>
+<x-typography variant="overline">Showcase</x-typography>
 <div class="grid">
   <x-soft-body id="card-default">
     <h3 style="margin:0 0 0.5rem">Default</h3>
@@ -105,7 +107,7 @@
   </x-soft-body>
 </div>
 
-<h2>Interactive Controls</h2>
+<x-typography variant="overline">Interactive Controls</x-typography>
 <div class="controls">
   <div class="control-group">
     <label>Stiffness <span class="val" id="stiffness-val">180</span></label>
@@ -129,7 +131,7 @@
   </div>
   <div class="control-group">
     <label>Disabled</label>
-    <input type="checkbox" id="ctrl-disabled">
+    <x-switch id="ctrl-disabled"></x-switch>
   </div>
 </div>
 
@@ -138,7 +140,7 @@
   <p style="margin:0;opacity:0.7">Use the controls above to tweak physics parameters in real time.</p>
 </x-soft-body>
 
-<h2>Event Log</h2>
+<x-typography variant="overline">Event Log</x-typography>
 <div id="event-log">Events will appear here...</div>
 
 <script>

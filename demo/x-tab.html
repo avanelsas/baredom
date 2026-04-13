@@ -82,13 +82,7 @@
         text-transform: uppercase;
       }
 
-      h1 {
-        margin: 14px 0 10px;
-        font-size: clamp(2rem, 3vw, 3rem);
-        line-height: 1.05;
-        letter-spacing: -0.03em;
-      }
-
+      
       .subtitle {
         max-width: 760px;
         margin: 0;
@@ -265,7 +259,7 @@
     <main class="page">
       <section class="hero">
         <div class="eyebrow">Web Component · Light & Dark Mode</div>
-        <h1>x-tab</h1>
+        <x-typography variant="h1">x-tab</x-typography>
         <p class="subtitle">
           Themeable single-tab trigger component for tab interfaces. This demo
           follows the same professional light and dark mode visual system as the
@@ -276,7 +270,7 @@
 
       <section class="stack">
         <section class="section-card">
-          <h2>Default horizontal tabs</h2>
+          <x-typography variant="overline">Default horizontal tabs</x-typography>
           <p>
             Standard horizontal tabs with one selected item and one disabled item.
           </p>
@@ -297,7 +291,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Underline variant</h2>
+          <x-typography variant="overline">Underline variant</x-typography>
           <p>
             Underline styling works well for compact navigation and editorial layouts.
           </p>
@@ -312,7 +306,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Pill variant</h2>
+          <x-typography variant="overline">Pill variant</x-typography>
           <p>
             Pill tabs provide a stronger filled selected state for filter-like interfaces.
           </p>
@@ -327,7 +321,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Vertical tabs</h2>
+          <x-typography variant="overline">Vertical tabs</x-typography>
           <p>
             Vertical orientation changes the visual treatment while keeping the same tab semantics.
           </p>
@@ -343,7 +337,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Sizes and explicit states</h2>
+          <x-typography variant="overline">Sizes and explicit states</x-typography>
           <p>
             The component supports size variation while preserving clear selected and disabled states.
           </p>
@@ -364,7 +358,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Keyboard activation example</h2>
+          <x-typography variant="overline">Keyboard activation example</x-typography>
           <p>
             Activate an enabled, non-selected tab with <span class="kbd">Enter</span>
             or <span class="kbd">Space</span>. The component emits a

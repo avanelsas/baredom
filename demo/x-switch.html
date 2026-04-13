@@ -17,9 +17,7 @@
       color: var(--page-fg);
     }
     
-    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
-    h2 { font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
-    .row {
+            .row {
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -54,18 +52,8 @@
       gap: 0.5rem;
       margin-top: 0.75rem;
     }
-    button.ctrl {
-      appearance: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.3rem 0.75rem;
-      font-size: 0.8125rem;
-      background: var(--surface-bg);
-      cursor: pointer;
-    }
-    
-    button.ctrl:hover { background: var(--surface-bg); }
-    
+        
+        
     x-switch.large {
       --x-switch-track-width: 56px;
       --x-switch-track-height: 30px;
@@ -81,9 +69,9 @@
 </head>
 <body>
 
-<h1>x-switch</h1>
+<x-typography variant="h1">x-switch</x-typography>
 
-<h2>States</h2>
+<x-typography variant="overline">States</x-typography>
 <div class="panel">
   <div class="row">
     <x-switch id="sw-default" name="default"></x-switch>
@@ -107,7 +95,7 @@
   </div>
 </div>
 
-<h2>Custom size &amp; colour</h2>
+<x-typography variant="overline">Custom size &amp; colour</x-typography>
 <div class="panel">
   <div class="row">
     <x-switch class="large" name="large"></x-switch>
@@ -119,24 +107,24 @@
   </div>
 </div>
 
-<h2>Interactive control panel</h2>
+<x-typography variant="overline">Interactive control panel</x-typography>
 <div class="panel">
   <div class="row">
     <x-switch id="sw-demo" name="demo" aria-label="Demo switch"></x-switch>
     <label>Demo switch</label>
   </div>
   <div class="controls">
-    <button class="ctrl" id="btn-toggle">Toggle checked</button>
-    <button class="ctrl" id="btn-disable">Toggle disabled</button>
-    <button class="ctrl" id="btn-readonly">Toggle readonly</button>
-    <button class="ctrl" id="btn-cancel">Next toggle: cancel</button>
+    <x-button variant="secondary" id="btn-toggle">Toggle checked</x-button>
+    <x-button variant="secondary" id="btn-disable">Toggle disabled</x-button>
+    <x-button variant="secondary" id="btn-readonly">Toggle readonly</x-button>
+    <x-button variant="secondary" id="btn-cancel">Next toggle: cancel</x-button>
   </div>
 </div>
 
-<h2>Event log</h2>
+<x-typography variant="overline">Event log</x-typography>
 <div class="log" id="log">— waiting for events —</div>
 
-<h2>Form submission</h2>
+<x-typography variant="overline">Form submission</x-typography>
 <div class="panel">
   <form id="demo-form">
     <div class="row">
@@ -144,8 +132,8 @@
       <label for="sw-form">Subscribe to newsletter</label>
     </div>
     <div style="margin-top:0.75rem">
-      <button class="ctrl" type="submit">Submit</button>
-      <button class="ctrl" type="reset">Reset</button>
+      <x-button variant="secondary" type="submit">Submit</x-button>
+      <x-button variant="secondary" type="reset">Reset</x-button>
     </div>
   </form>
 </div>
@@ -174,19 +162,19 @@
     addLog('x-switch-change → checked=' + e.detail.checked + ', value=' + e.detail.value);
   });
 
-  document.getElementById('btn-toggle').addEventListener('click', () => {
+  document.getElementById('btn-toggle').addEventListener('press', () => {
     demo.checked = !demo.checked;
   });
 
-  document.getElementById('btn-disable').addEventListener('click', () => {
+  document.getElementById('btn-disable').addEventListener('press', () => {
     demo.disabled = !demo.disabled;
   });
 
-  document.getElementById('btn-readonly').addEventListener('click', () => {
+  document.getElementById('btn-readonly').addEventListener('press', () => {
     demo.readOnly = !demo.readOnly;
   });
 
-  document.getElementById('btn-cancel').addEventListener('click', () => {
+  document.getElementById('btn-cancel').addEventListener('press', () => {
     cancelNext = true;
     addLog('Next toggle will be cancelled via preventDefault()');
   });

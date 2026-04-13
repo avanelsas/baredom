@@ -9,9 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 900px; }
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin: 12px 0; }
+                  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin: 12px 0; }
       .grid x-organic-shape { width: 140px; }
       .label { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
       .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
@@ -21,8 +19,7 @@
         font-size: 13px; padding: 4px 8px; border-radius: 6px;
         border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
       }
-      .controls input[type=checkbox] { margin: 0; }
-      code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
+            code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
       .content-demo { color: white; font-weight: 600; font-size: 0.875rem; }
     </style>
   <link rel="stylesheet" href="demo-responsive.css" />
@@ -30,9 +27,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-organic-shape demo</h1>
+    <x-typography variant="h1">x-organic-shape demo</x-typography>
 
-    <h2>All presets</h2>
+    <x-typography variant="overline">All presets</x-typography>
     <div class="grid">
       <div>
         <x-organic-shape shape="blob-1"></x-organic-shape>
@@ -68,7 +65,7 @@
       </div>
     </div>
 
-    <h2>Animation styles</h2>
+    <x-typography variant="overline">Animation styles</x-typography>
     <div class="row">
       <div>
         <x-organic-shape shape="blob-1" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(139,92,246,0.2);"></x-organic-shape>
@@ -88,7 +85,7 @@
       </div>
     </div>
 
-    <h2>Custom animation timing</h2>
+    <x-typography variant="overline">Custom animation timing</x-typography>
     <div class="row">
       <div>
         <x-organic-shape shape="blob-2" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(99,102,241,0.2);--x-organic-shape-animate-duration:3s;"></x-organic-shape>
@@ -108,7 +105,7 @@
       </div>
     </div>
 
-    <h2>As content container</h2>
+    <x-typography variant="overline">As content container</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-2" style="width:200px;--x-organic-shape-fill:linear-gradient(135deg,#667eea,#764ba2);">
         <div class="content-demo" style="text-align:center;padding:24px;">Hello World</div>
@@ -118,14 +115,14 @@
       </x-organic-shape>
     </div>
 
-    <h2>Custom path</h2>
+    <x-typography variant="overline">Custom path</x-typography>
     <div class="row">
       <x-organic-shape path="circle(50%)" style="width:140px;--x-organic-shape-fill:rgba(251,191,36,0.25);"></x-organic-shape>
       <x-organic-shape path="polygon(50% 0%,100% 100%,0% 100%)" style="width:140px;--x-organic-shape-fill:rgba(59,130,246,0.2);"></x-organic-shape>
       <x-organic-shape path="ellipse(50% 35% at 50% 50%)" ratio="2/1" style="width:200px;--x-organic-shape-fill:rgba(16,185,129,0.2);"></x-organic-shape>
     </div>
 
-    <h2>Explicit sizes</h2>
+    <x-typography variant="overline">Explicit sizes</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-1" width="100px" height="100px"></x-organic-shape>
       <x-organic-shape shape="pebble" width="200px" height="120px" style="--x-organic-shape-fill:rgba(236,72,153,0.15);"></x-organic-shape>
@@ -133,14 +130,14 @@
       <x-organic-shape shape="cloud" width="250px" height="100px" style="--x-organic-shape-fill:rgba(251,191,36,0.15);"></x-organic-shape>
     </div>
 
-    <h2>Different aspect ratios</h2>
+    <x-typography variant="overline">Different aspect ratios</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-1" ratio="1/1" style="width:120px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
       <x-organic-shape shape="blob-1" ratio="4/3" style="width:160px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
       <x-organic-shape shape="blob-1" ratio="16/9" style="width:200px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
     </div>
 
-    <h2>Custom theming</h2>
+    <x-typography variant="overline">Custom theming</x-typography>
     <div class="row">
       <x-organic-shape
         shape="blob-2"
@@ -163,10 +160,10 @@
       </x-organic-shape>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>shape
-        <select id="ctrl-shape">
+        <x-select id="ctrl-shape" value="blob-1">
           <option value="blob-1" selected>blob-1</option>
           <option value="blob-2">blob-2</option>
           <option value="blob-3">blob-3</option>
@@ -175,34 +172,34 @@
           <option value="droplet">droplet</option>
           <option value="cloud">cloud</option>
           <option value="wave">wave</option>
-        </select>
+        </x-select>
       </label>
       <label>ratio
-        <select id="ctrl-ratio">
+        <x-select id="ctrl-ratio" value="1/1">
           <option value="1/1" selected>1/1</option>
           <option value="4/3">4/3</option>
           <option value="3/2">3/2</option>
           <option value="16/9">16/9</option>
           <option value="auto">auto</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="none">
           <option value="none" selected>none</option>
           <option value="morph">morph</option>
           <option value="pulse">pulse</option>
           <option value="float">float</option>
           <option value="spin">spin</option>
-        </select>
+        </x-select>
       </label>
       <label>speed
-        <select id="ctrl-speed">
+        <x-select id="ctrl-speed" value="">
           <option value="">default (8s)</option>
           <option value="2s">fast (2s)</option>
           <option value="4s">medium (4s)</option>
           <option value="12s">slow (12s)</option>
           <option value="20s">very slow (20s)</option>
-        </select>
+        </x-select>
       </label>
       <label>width
         <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:80px">
@@ -268,7 +265,7 @@
         }
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

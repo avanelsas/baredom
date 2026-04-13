@@ -21,8 +21,7 @@
       padding: 24px;
     }
 
-    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
-
+    
     .section {
       background: var(--surface-bg);
       border: 1px solid var(--surface-border);
@@ -31,17 +30,7 @@
       margin-bottom: 24px;
     }
 
-    .section h2 {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      margin: 0 0 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    
     /* Badge helpers */
     .badge {
       display: inline-flex;
@@ -82,18 +71,8 @@
       color: var(--input-fg);
     }
 
-    button {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--surface-border);
-      background: var(--input-bg);
-      font-size: 13px;
-      cursor: pointer;
-      color: var(--input-fg);
-    }
-
-    button:hover { background: var(--border); }
-
+    
+    
     /* Event log */
     .log {
       height: 180px;
@@ -118,11 +97,11 @@
   <script src="demo-theme.js" defer></script>
 </head>
 <body>
-  <h1>x-table</h1>
+  <x-typography variant="h1">x-table</x-typography>
 
   <!-- ── Basic bordered table ── -->
   <div class="section">
-    <h2>Basic table — bordered + caption</h2>
+    <x-typography variant="overline">Basic table — bordered + caption</x-typography>
 
     <div class="table-scroll-wrapper">
     <x-table columns="2fr 1fr 1fr 120px" bordered caption="Team Members" id="basic-table">
@@ -159,7 +138,7 @@
 
   <!-- ── Striped + compact ── -->
   <div class="section">
-    <h2>Striped + compact</h2>
+    <x-typography variant="overline">Striped + compact</x-typography>
 
     <div class="table-scroll-wrapper">
     <x-table columns="2fr 1fr 1fr" bordered striped compact>
@@ -199,7 +178,7 @@
 
   <!-- ── Single selection + sort ── -->
   <div class="section">
-    <h2>Single selection + sortable columns</h2>
+    <x-typography variant="overline">Single selection + sortable columns</x-typography>
     <p style="font-size:13px;color:var(--muted);margin:0 0 12px">
       Click a row to select it (only one at a time). Click column headers to sort.
       <code>x-table-sort</code> and <code>x-table-row-select</code> appear in the event log.
@@ -248,7 +227,7 @@
 
   <!-- ── Multi selection ── -->
   <div class="section">
-    <h2>Multi selection (selectable="multi")</h2>
+    <x-typography variant="overline">Multi selection (selectable="multi")</x-typography>
     <p style="font-size:13px;color:var(--muted);margin:0 0 12px">
       Click any row to toggle its selection. Multiple rows can be selected simultaneously.
     </p>
@@ -286,7 +265,7 @@
 
   <!-- ── Live control panel ── -->
   <div class="section">
-    <h2>Live control panel</h2>
+    <x-typography variant="overline">Live control panel</x-typography>
 
     <div class="panel">
       <div class="field">
@@ -299,19 +278,19 @@
       </div>
       <div class="field">
         <label>selectable</label>
-        <select id="ctrl-selectable">
+        <x-select id="ctrl-selectable" value="none">
           <option value="none" selected>none</option>
           <option value="single">single</option>
           <option value="multi">multi</option>
-        </select>
+        </x-select>
       </div>
       <div class="field">
         <label>Flags</label>
         <div class="checkbox-row">
-          <label class="checkbox-label"><input type="checkbox" id="ctrl-striped"> striped</label>
-          <label class="checkbox-label"><input type="checkbox" id="ctrl-bordered" checked> bordered</label>
-          <label class="checkbox-label"><input type="checkbox" id="ctrl-full-width"> full-width</label>
-          <label class="checkbox-label"><input type="checkbox" id="ctrl-compact"> compact</label>
+          <label class="checkbox-label"><x-switch id="ctrl-striped"></x-switch> striped</label>
+          <label class="checkbox-label"><x-switch id="ctrl-bordered" checked></x-switch> bordered</label>
+          <label class="checkbox-label"><x-switch id="ctrl-full-width"></x-switch> full-width</label>
+          <label class="checkbox-label"><x-switch id="ctrl-compact"></x-switch> compact</label>
         </div>
       </div>
     </div>
@@ -344,12 +323,12 @@
 
   <!-- ── Event log ── -->
   <div class="section">
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
 
     <div class="log-actions">
-      <button id="btn-clear">Clear log</button>
-      <button id="btn-cancel-sort">Cancel next sort</button>
-      <button id="btn-cancel-select">Cancel next selection</button>
+      <x-button id="btn-clear">Clear log</x-button>
+      <x-button id="btn-cancel-sort">Cancel next sort</x-button>
+      <x-button id="btn-cancel-select">Cancel next selection</x-button>
     </div>
 
     <div class="log" id="event-log">

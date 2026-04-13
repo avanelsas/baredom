@@ -112,13 +112,7 @@
         }
       }
 
-      h1 {
-        margin: 14px 0 10px;
-        font-size: clamp(2rem, 3vw, 3rem);
-        line-height: 1.05;
-        letter-spacing: -0.03em;
-      }
-
+      
       .subtitle {
         max-width: 760px;
         margin: 0;
@@ -141,12 +135,7 @@
         box-shadow: var(--card-shadow);
       }
 
-      .card h2 {
-        margin: 0 0 8px;
-        font-size: 1rem;
-        letter-spacing: -0.02em;
-      }
-
+      
       .card p {
         margin: 0 0 16px;
         color: var(--muted);
@@ -269,7 +258,7 @@
     <main class="page">
       <section class="hero">
         <div class="eyebrow">Web Component · Refactored Shell</div>
-        <h1>x-navbar</h1>
+        <x-typography variant="h1">x-navbar</x-typography>
         <p class="subtitle">
           This refactored version is a pure navigation shell. The toggle slot is
           consumer-owned and the navbar does not assume menu behavior.
@@ -278,7 +267,7 @@
 
       <section class="stack">
         <article class="card">
-          <h2>Controls</h2>
+          <x-typography variant="overline">Controls</x-typography>
           <p>
             These mutate only shell-level presentation: sticky, elevated, variant,
             height, and vertical alignment.
@@ -294,7 +283,7 @@
         </article>
 
         <article class="card">
-          <h2>Consumer-owned toggle</h2>
+          <x-typography variant="overline">Consumer-owned toggle</x-typography>
           <p>
             The toggle button below is just slotted content. Any behavior belongs
             to the consumer or another component such as a sidebar.
@@ -305,7 +294,7 @@
         </article>
 
         <article class="card">
-          <h2>Event log</h2>
+          <x-typography variant="overline">Event log</x-typography>
           <p>
             Interact with the navbar to inspect `navigate`, `brand-activate`, and `focus-visible`.
           </p>
@@ -313,7 +302,7 @@
         </article>
 
         <article class="card">
-          <h2>Scroll area</h2>
+          <x-typography variant="overline">Scroll area</x-typography>
           <p>
             Scroll down to verify that the navbar remains pinned when `sticky` is enabled.
           </p>

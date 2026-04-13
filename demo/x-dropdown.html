@@ -19,19 +19,8 @@
       margin: 0 auto;
     }
 
-    h1 { font-size: 22px; margin-bottom: 32px; }
-
-    h2 {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    
+    
     section { margin-bottom: 40px; }
 
     .stack { display: flex; flex-direction: column; gap: 10px; }
@@ -119,11 +108,11 @@
 </head>
 <body>
 
-<h1>x-dropdown</h1>
+<x-typography variant="h1">x-dropdown</x-typography>
 
 <!-- ===================== STATIC: STATES ===================== -->
 <section>
-  <h2>States — closed, open, disabled</h2>
+  <x-typography variant="overline">States — closed, open, disabled</x-typography>
   <div class="toolbar">
 
     <x-dropdown label="Actions">
@@ -148,7 +137,7 @@
 
 <!-- ===================== PLACEMENTS ===================== -->
 <section>
-  <h2>Placement variants</h2>
+  <x-typography variant="overline">Placement variants</x-typography>
   <div style="display:flex; justify-content:space-between; padding: 60px 20px;">
 
     <x-dropdown label="↙ bottom-start" placement="bottom-start">
@@ -179,7 +168,7 @@
 
 <!-- ===================== LINKS IN MENU ===================== -->
 <section>
-  <h2>Menu with links</h2>
+  <x-typography variant="overline">Menu with links</x-typography>
   <div class="toolbar">
     <x-dropdown label="Navigate">
       <a class="menu-item" href="#section-a">Section A</a>
@@ -191,7 +180,7 @@
 
 <!-- ===================== CUSTOM THEME ===================== -->
 <section>
-  <h2>Custom theme</h2>
+  <x-typography variant="overline">Custom theme</x-typography>
   <div class="toolbar">
     <x-dropdown label="Primary"
       style="
@@ -226,7 +215,7 @@
 
 <!-- ===================== LIVE CONTROL PANEL ===================== -->
 <section>
-  <h2>Live control panel</h2>
+  <x-typography variant="overline">Live control panel</x-typography>
 
   <x-dropdown id="live-dd" label="Live dropdown">
     <button class="menu-item" onclick="logLine('Clicked: Edit')">Edit</button>
@@ -239,27 +228,27 @@
     <div class="row">
       <label for="ctrl-label">label:</label>
       <input id="ctrl-label" type="text" value="Live dropdown" style="flex:1;min-width:160px;" />
-      <button class="demo-btn" onclick="applyLabel()">Apply</button>
+      <x-button variant="secondary" onclick="applyLabel()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-placement">placement:</label>
-      <select id="ctrl-placement">
+      <x-select id="ctrl-placement" value="bottom-start">
         <option value="bottom-start" selected>bottom-start</option>
         <option value="bottom-end">bottom-end</option>
         <option value="top-start">top-start</option>
         <option value="top-end">top-end</option>
-      </select>
-      <button class="demo-btn" onclick="applyPlacement()">Apply</button>
+      </x-select>
+      <x-button variant="secondary" onclick="applyPlacement()">Apply</x-button>
     </div>
     <div class="row">
-      <button class="demo-btn" onclick="liveDD.toggle()">toggle()</button>
-      <button class="demo-btn" onclick="liveDD.show()">show()</button>
-      <button class="demo-btn" onclick="liveDD.hide()">hide()</button>
-      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+      <x-button variant="secondary" onclick="liveDD.toggle()">toggle()</x-button>
+      <x-button variant="secondary" onclick="liveDD.show()">show()</x-button>
+      <x-button variant="secondary" onclick="liveDD.hide()">hide()</x-button>
+      <x-button variant="secondary" onclick="toggleDisabled()">Toggle disabled</x-button>
     </div>
     <div class="row">
       <label>
-        <input type="checkbox" id="ctrl-guard" />
+        <x-switch id="ctrl-guard"></x-switch>
         Cancel next toggle (preventDefault)
       </label>
     </div>
@@ -268,10 +257,10 @@
 
 <!-- ===================== EVENT LOG ===================== -->
 <section>
-  <h2>Event log</h2>
+  <x-typography variant="overline">Event log</x-typography>
   <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
   <div class="row" style="margin-top:10px;">
-    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+    <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </section>
 

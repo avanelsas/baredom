@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+            .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input {
         font-size: 13px; padding: 4px 8px; border-radius: 6px;
@@ -27,70 +26,70 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-chart demo</h1>
+    <x-typography variant="h1">x-chart demo</x-typography>
 
-    <h2>Line chart</h2>
+    <x-typography variant="overline">Line chart</x-typography>
     <x-chart id="chart-line" type="line"></x-chart>
 
-    <h2>Bar chart</h2>
+    <x-typography variant="overline">Bar chart</x-typography>
     <x-chart id="chart-bar" type="bar"></x-chart>
 
-    <h2>Area chart</h2>
+    <x-typography variant="overline">Area chart</x-typography>
     <x-chart id="chart-area" type="area"></x-chart>
 
-    <h2>Multi-series line (tooltip cursor="x")</h2>
+    <x-typography variant="overline">Multi-series line (tooltip cursor="x")</x-typography>
     <x-chart id="chart-multi" type="line" tooltip cursor="x"></x-chart>
 
-    <h2>Multi-series area (tooltip cursor="nearest")</h2>
+    <x-typography variant="overline">Multi-series area (tooltip cursor="nearest")</x-typography>
     <x-chart id="chart-multi-nearest" type="area" tooltip cursor="nearest"></x-chart>
 
-    <h2>Loading state</h2>
+    <x-typography variant="overline">Loading state</x-typography>
     <x-chart loading></x-chart>
 
-    <h2>Disabled state</h2>
+    <x-typography variant="overline">Disabled state</x-typography>
     <x-chart id="chart-disabled" type="bar" disabled></x-chart>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>type
-        <select id="ctrl-type">
+        <x-select id="ctrl-type" value="line">
           <option value="line" selected>line</option>
           <option value="bar">bar</option>
           <option value="area">area</option>
-        </select>
+        </x-select>
       </label>
       <label>height
         <input type="number" id="ctrl-height" value="180" style="width:70px" min="60">
       </label>
-      <label>grid <input type="checkbox" id="ctrl-grid" checked></label>
-      <label>axes <input type="checkbox" id="ctrl-axes" checked></label>
-      <label>tooltip <input type="checkbox" id="ctrl-tooltip"></label>
+      <label>grid <x-switch id="ctrl-grid" checked></x-switch></label>
+      <label>axes <x-switch id="ctrl-axes" checked></x-switch></label>
+      <label>tooltip <x-switch id="ctrl-tooltip"></x-switch></label>
       <label>cursor
-        <select id="ctrl-cursor">
+        <x-select id="ctrl-cursor" value="nearest">
           <option value="nearest" selected>nearest</option>
           <option value="x">x</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>x-format
-        <select id="ctrl-xfmt">
+        <x-select id="ctrl-xfmt" value="">
           <option value="" selected>(default)</option>
           <option value="int">int</option>
           <option value="raw">raw</option>
           <option value="abbr">abbr</option>
-        </select>
+        </x-select>
       </label>
       <label>y-format
-        <select id="ctrl-yfmt">
+        <x-select id="ctrl-yfmt" value="">
           <option value="" selected>(default)</option>
           <option value="int">int</option>
           <option value="pct">pct</option>
           <option value="abbr">abbr</option>
           <option value="fixed:2">fixed:2</option>
-        </select>
+        </x-select>
       </label>
-      <label>loading <input type="checkbox" id="ctrl-loading"></label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>loading <x-switch id="ctrl-loading"></x-switch></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <x-chart id="chart-live" type="line"></x-chart>
 
@@ -157,7 +156,7 @@
         if (xfmt) live.setAttribute("x-format", xfmt); else live.removeAttribute("x-format");
         if (yfmt) live.setAttribute("y-format", yfmt); else live.removeAttribute("y-format");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

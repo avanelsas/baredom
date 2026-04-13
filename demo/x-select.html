@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+            .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .item { display: flex; gap: 8px; align-items: center; font-size: 14px; }
       .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; display: flex; gap: 6px; align-items: center; }
@@ -31,9 +30,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-select demo</h1>
+    <x-typography variant="h1">x-select demo</x-typography>
 
-    <h2>Default (md)</h2>
+    <x-typography variant="overline">Default (md)</x-typography>
     <div class="row">
       <x-select name="fruit" placeholder="Pick a fruit">
         <option value="apple">Apple</option>
@@ -42,7 +41,7 @@
       </x-select>
     </div>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="row">
       <div class="item">
         <x-select size="sm" name="size-sm" placeholder="Small">
@@ -67,7 +66,7 @@
       </div>
     </div>
 
-    <h2>With pre-selected value</h2>
+    <x-typography variant="overline">With pre-selected value</x-typography>
     <div class="row">
       <x-select name="role" value="editor">
         <option value="admin">Admin</option>
@@ -76,7 +75,7 @@
       </x-select>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-select disabled name="disabled-sel" placeholder="Disabled">
         <option value="x">Option X</option>
@@ -87,7 +86,7 @@
       </x-select>
     </div>
 
-    <h2>Required</h2>
+    <x-typography variant="overline">Required</x-typography>
     <div class="row">
       <x-select required name="required-sel" placeholder="Required field">
         <option value="one">One</option>
@@ -95,7 +94,7 @@
       </x-select>
     </div>
 
-    <h2>Option groups</h2>
+    <x-typography variant="overline">Option groups</x-typography>
     <div class="row">
       <x-select name="city" placeholder="Choose a city">
         <optgroup label="North America">
@@ -111,7 +110,7 @@
       </x-select>
     </div>
 
-    <h2>Interactive — select-change events logged below</h2>
+    <x-typography variant="overline">Interactive — select-change events logged below</x-typography>
     <div class="row">
       <x-select id="interactive-sel" name="plan" placeholder="Choose a plan">
         <option value="free">Free</option>
@@ -120,7 +119,7 @@
       </x-select>
     </div>
 
-    <h2>Consumer-controlled value (reacts to select-change)</h2>
+    <x-typography variant="overline">Consumer-controlled value (reacts to select-change)</x-typography>
     <div class="row">
       <x-select id="controlled-sel" name="controlled" placeholder="Pick one">
         <option value="alpha">Alpha</option>
@@ -130,10 +129,10 @@
       <span id="controlled-display" style="font-size:14px;color:var(--muted)">No selection</span>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required <x-switch id="ctrl-required"></x-switch></label>
       <label>
         size
         <select id="ctrl-size">
@@ -194,7 +193,7 @@
         if (value)    liveSel.setAttribute("value", value);       else liveSel.removeAttribute("value");
       }
 
-      document.querySelectorAll(".controls input, .controls select").forEach(el => {
+      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

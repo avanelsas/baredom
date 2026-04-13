@@ -22,18 +22,12 @@
         padding: 32px 24px 64px;
       }
 
-      h1 { font-size: 1.5rem; margin: 0 0 8px; }
-      .subtitle { color: var(--muted); margin: 0 0 32px; }
+            .subtitle { color: var(--muted); margin: 0 0 32px; }
 
       section {
         margin-bottom: 40px;
       }
-      section h2 {
-        font-size: 1.1rem;
-        margin: 0 0 12px;
-        color: var(--muted);
-      }
-
+      
       .demo-box {
         position: relative;
         height: 300px;
@@ -86,12 +80,12 @@
   </head>
   <body>
     <main>
-      <h1>&lt;x-metaball-cursor&gt;</h1>
+      <x-typography variant="h1">&lt;x-metaball-cursor&gt;</x-typography>
       <p class="subtitle">Organic blobs that follow the cursor with metaball fusion.</p>
 
       <!-- ── Basic ────────────────────────────────────────── -->
       <section>
-        <h2>Default (5 blobs)</h2>
+        <x-typography variant="overline">Default (5 blobs)</x-typography>
         <div class="demo-box">
           <x-metaball-cursor></x-metaball-cursor>
         </div>
@@ -99,7 +93,7 @@
 
       <!-- ── Custom color ─────────────────────────────��───── -->
       <section>
-        <h2>Custom color</h2>
+        <x-typography variant="overline">Custom color</x-typography>
         <div class="demo-box">
           <x-metaball-cursor color="#ec4899"></x-metaball-cursor>
         </div>
@@ -107,7 +101,7 @@
 
       <!-- ── Fewer blobs ──────────────────────────────────── -->
       <section>
-        <h2>2 blobs</h2>
+        <x-typography variant="overline">2 blobs</x-typography>
         <div class="demo-box">
           <x-metaball-cursor blob-count="2" blob-size="60"></x-metaball-cursor>
         </div>
@@ -115,7 +109,7 @@
 
       <!-- ── With noise ───────────────────────────────────── -->
       <section>
-        <h2>With Perlin noise shimmer</h2>
+        <x-typography variant="overline">With Perlin noise shimmer</x-typography>
         <div class="demo-box">
           <x-metaball-cursor noise noise-intensity="10"></x-metaball-cursor>
         </div>
@@ -123,42 +117,42 @@
 
       <!-- ── Palette presets ─────────────────────────────── -->
       <section>
-        <h2>Palette: rainbow</h2>
+        <x-typography variant="overline">Palette: rainbow</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="rainbow"></x-metaball-cursor>
         </div>
       </section>
 
       <section>
-        <h2>Palette: ocean</h2>
+        <x-typography variant="overline">Palette: ocean</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="ocean"></x-metaball-cursor>
         </div>
       </section>
 
       <section>
-        <h2>Palette: sunset</h2>
+        <x-typography variant="overline">Palette: sunset</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="sunset"></x-metaball-cursor>
         </div>
       </section>
 
       <section>
-        <h2>Palette: neon</h2>
+        <x-typography variant="overline">Palette: neon</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="neon"></x-metaball-cursor>
         </div>
       </section>
 
       <section>
-        <h2>Palette: ember</h2>
+        <x-typography variant="overline">Palette: ember</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="ember"></x-metaball-cursor>
         </div>
       </section>
 
       <section>
-        <h2>Custom palette</h2>
+        <x-typography variant="overline">Custom palette</x-typography>
         <div class="demo-box">
           <x-metaball-cursor palette="hotpink, cyan, gold"></x-metaball-cursor>
         </div>
@@ -166,7 +160,7 @@
 
       <!-- ── Many blobs ───────────────────────────────────── -->
       <section>
-        <h2>10 blobs, small</h2>
+        <x-typography variant="overline">10 blobs, small</x-typography>
         <div class="demo-box">
           <x-metaball-cursor blob-count="10" blob-size="25"></x-metaball-cursor>
         </div>
@@ -174,7 +168,7 @@
 
       <!-- ── Interactive controls ─────────────────────────── -->
       <section>
-        <h2>Interactive</h2>
+        <x-typography variant="overline">Interactive</x-typography>
         <div class="demo-box" id="interactive-box" style="display:grid;place-items:center;">
           <div style="text-align:center;padding:24px;pointer-events:none;user-select:none;">
             <div style="font-size:2.5rem;font-weight:700;line-height:1.2;">Move your cursor</div>
@@ -204,21 +198,21 @@
           </label>
           <label>
             Palette
-            <select id="c-palette">
+            <x-select id="c-palette" value="">
               <option value="">(none — single color)</option>
               <option value="rainbow">rainbow</option>
               <option value="ocean">ocean</option>
               <option value="sunset">sunset</option>
               <option value="neon">neon</option>
               <option value="ember">ember</option>
-            </select>
+            </x-select>
           </label>
           <label>
             Color (when no palette)
             <input type="color" id="c-color" value="#6366f1" />
           </label>
           <label>
-            <input type="checkbox" id="c-noise" /> Enable noise shimmer
+            <x-switch id="c-noise"></x-switch> Enable noise shimmer
           </label>
           <label>
             Noise intensity: <span class="value" id="v-ni">6</span>

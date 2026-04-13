@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 680px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 12px; margin: 8px 0; }
+            .stack { display: flex; flex-direction: column; gap: 12px; margin: 8px 0; }
       .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .label { font-size: 13px; color: var(--muted); min-width: 80px; }
       .controls {
@@ -46,10 +45,10 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-slider demo</h1>
+    <x-typography variant="h1">x-slider demo</x-typography>
 
     <!-- ── Sizes ─────────────────────────────────────────────── -->
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="stack">
       <div class="row">
         <span class="label">sm</span>
@@ -66,7 +65,7 @@
     </div>
 
     <!-- ── With label and value ───────────────────────────────── -->
-    <h2>Label &amp; show-value</h2>
+    <x-typography variant="overline">Label &amp; show-value</x-typography>
     <div class="stack">
       <x-slider label="Volume" show-value value="60" min="0" max="100"></x-slider>
       <x-slider label="Brightness" value="80" min="0" max="100"></x-slider>
@@ -74,7 +73,7 @@
     </div>
 
     <!-- ── Custom range and step ─────────────────────────────── -->
-    <h2>Custom range &amp; step</h2>
+    <x-typography variant="overline">Custom range &amp; step</x-typography>
     <div class="stack">
       <div class="row">
         <span class="label">step=10</span>
@@ -91,20 +90,20 @@
     </div>
 
     <!-- ── Disabled ───────────────────────────────────────────── -->
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-slider disabled value="40" label="Disabled slider"></x-slider>
       <x-slider disabled value="75" show-value label="Disabled with value"></x-slider>
     </div>
 
     <!-- ── Readonly ───────────────────────────────────────────── -->
-    <h2>Readonly</h2>
+    <x-typography variant="overline">Readonly</x-typography>
     <div class="stack">
       <x-slider readonly value="60" label="Readonly (focusable, not draggable)"></x-slider>
     </div>
 
     <!-- ── Custom theme ───────────────────────────────────────── -->
-    <h2>Custom theme</h2>
+    <x-typography variant="overline">Custom theme</x-typography>
     <div class="theme-demo stack">
       <x-slider
         style="--x-slider-fill-color:#22c55e;--x-slider-thumb-border:2px solid #22c55e;--x-slider-focus-ring:#86efac;"
@@ -121,7 +120,7 @@
     </div>
 
     <!-- ── Live control panel ────────────────────────────────── -->
-    <h2>Live control panel</h2>
+    <x-typography variant="overline">Live control panel</x-typography>
     <x-slider id="live-slider" label="Live slider" show-value value="50" min="0" max="100" step="1"></x-slider>
 
     <div class="controls" style="margin-top:16px;">
@@ -141,42 +140,36 @@
       <input type="text" id="ctrl-label" value="Live slider" />
 
       <label for="ctrl-size">size</label>
-      <select id="ctrl-size">
+      <x-select id="ctrl-size" value="md">
         <option value="sm">sm</option>
         <option value="md" selected>md</option>
         <option value="lg">lg</option>
-      </select>
+      </x-select>
 
       <label>show-value</label>
-      <label><input type="checkbox" id="ctrl-show-value" checked /> enabled</label>
+      <label><x-switch id="ctrl-show-value" checked></x-switch> enabled</label>
 
       <label>disabled</label>
-      <label><input type="checkbox" id="ctrl-disabled" /> enabled</label>
+      <label><x-switch id="ctrl-disabled"></x-switch> enabled</label>
 
       <label>readonly</label>
-      <label><input type="checkbox" id="ctrl-readonly" /> enabled</label>
+      <label><x-switch id="ctrl-readonly"></x-switch> enabled</label>
     </div>
 
     <!-- ── Event log ─────────────────────────────────────────── -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="event-log">Waiting for events…</div>
 
     <!-- ── Form integration ──────────────────────────────────── -->
-    <h2>Form integration</h2>
+    <x-typography variant="overline">Form integration</x-typography>
     <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;">
       <x-slider name="brightness" value="70" min="0" max="100"
                 label="Brightness" show-value></x-slider>
       <x-slider name="contrast" value="50" min="0" max="100"
                 label="Contrast" show-value></x-slider>
       <div style="display:flex;gap:8px;">
-        <button type="submit"
-                style="padding:6px 16px;border-radius:6px;border:none;background:#3b82f6;color:#fff;cursor:pointer;font-size:14px;">
-          Submit
-        </button>
-        <button type="reset"
-                style="padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--input-bg);color:var(--page-fg);cursor:pointer;font-size:14px;">
-          Reset
-        </button>
+        <x-button type="submit">Submit</x-button>
+        <x-button type="reset" variant="secondary">Reset</x-button>
       </div>
     </form>
     <div class="log" id="form-log" style="margin-top:8px;">Form output will appear here…</div>

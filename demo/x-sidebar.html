@@ -48,12 +48,7 @@
         gap: 8px;
       }
 
-      .hero h1 {
-        margin: 0;
-        font-size: clamp(2rem, 3vw, 2.75rem);
-        line-height: 1.05;
-      }
-
+      
       .hero p {
         margin: 0;
         color: var(--muted);
@@ -136,22 +131,8 @@
         gap: 10px;
       }
 
-      button {
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px 14px;
-        font: inherit;
-        background: var(--page-bg);
-        color: var(--page-fg);
-        cursor: pointer;
-      }
-
-      button.primary {
-        border-color: transparent;
-        background: var(--demo-accent);
-        color: white;
-      }
-
+      
+      
       code,
       pre {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -196,10 +177,7 @@
         align-content: start;
       }
 
-      .demo-main h2 {
-        margin: 0;
-      }
-
+      
       .demo-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -335,7 +313,7 @@
   <body>
     <div class="page">
       <header class="hero">
-        <h1>x-sidebar demo</h1>
+        <x-typography variant="h1">x-sidebar demo</x-typography>
         <p>
           Standalone demo page for the <code>x-sidebar</code> custom element.
           This page loads <code>js/main.js</code>, relies on app startup
@@ -347,7 +325,7 @@
       <div class="layout">
         <aside class="stack">
           <section class="card">
-            <h2>Live controls</h2>
+            <x-typography variant="overline">Live controls</x-typography>
             <p>
               Change attributes and properties at runtime. All emitted events are
               logged below and mirrored to the browser console.
@@ -367,19 +345,19 @@
 
               <div class="field">
                 <label for="placement-select">placement attribute</label>
-                <select id="placement-select">
+                <x-select id="placement-select" value="left">
                   <option value="left" selected>left</option>
                   <option value="right">right</option>
-                </select>
+                </x-select>
               </div>
 
               <div class="field">
                 <label for="variant-select">variant attribute</label>
-                <select id="variant-select">
+                <x-select id="variant-select" value="docked">
                   <option value="docked" selected>docked</option>
                   <option value="overlay">overlay</option>
                   <option value="modal">modal</option>
-                </select>
+                </x-select>
               </div>
 
               <div class="field">
@@ -391,11 +369,11 @@
                 <label>Boolean attributes</label>
                 <div class="inline-options">
                   <label>
-                    <input id="open-attr-input" type="checkbox" checked />
+                    <x-switch id="open-attr-input" checked></x-switch>
                     open
                   </label>
                   <label>
-                    <input id="collapsed-attr-input" type="checkbox" />
+                    <x-switch id="collapsed-attr-input"></x-switch>
                     collapsed
                   </label>
                 </div>
@@ -404,31 +382,31 @@
               <div class="field">
                 <label>Property API</label>
                 <div class="button-row">
-                  <button id="set-open-true" type="button" class="primary">sidebar.open = true</button>
-                  <button id="set-open-false" type="button">sidebar.open = false</button>
-                  <button id="set-collapsed-true" type="button">sidebar.collapsed = true</button>
-                  <button id="set-collapsed-false" type="button">sidebar.collapsed = false</button>
+                  <x-button id="set-open-true" type="button">sidebar.open = true</x-button>
+                  <x-button id="set-open-false" type="button">sidebar.open = false</x-button>
+                  <x-button id="set-collapsed-true" type="button">sidebar.collapsed = true</x-button>
+                  <x-button id="set-collapsed-false" type="button">sidebar.collapsed = false</x-button>
                 </div>
               </div>
 
               <div class="field">
                 <label>Utilities</label>
                 <div class="button-row">
-                  <button id="reset-button" type="button">Reset demo</button>
+                  <x-button id="reset-button" type="button">Reset demo</x-button>
                 </div>
               </div>
             </div>
           </section>
 
           <section class="card">
-            <h2>Current state</h2>
+            <x-typography variant="overline">Current state</x-typography>
             <div id="status-grid" class="status-grid"></div>
           </section>
 
           <section class="card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-              <h2 style="margin:0">Events</h2>
-              <button id="clear-event-log-button" type="button" style="font-size:0.8rem;padding:6px 10px">Clear</button>
+              <x-typography variant="overline" style="margin:0">Events</x-typography>
+              <x-button id="clear-event-log-button" type="button" size="sm">Clear</x-button>
             </div>
             <p>
               All <code>toggle</code> and <code>dismiss</code> events fired by
@@ -439,14 +417,14 @@
           </section>
 
           <section class="card">
-            <h2>Example markup</h2>
+            <x-typography variant="overline">Example markup</x-typography>
             <pre id="markup-preview"></pre>
           </section>
         </aside>
 
         <main class="stack">
           <section class="card demo-stage">
-            <h2>Interactive demo</h2>
+            <x-typography variant="overline">Interactive demo</x-typography>
             <p>
               Resize the browser to observe the breakpoint-driven modal behavior.
               The sidebar content is slotted inside the animated panel so the
@@ -467,18 +445,18 @@
                   <a href="#reports">Reports</a>
                   <a href="#team">Team</a>
                   <a href="#settings">Settings</a>
-                  <button id="inner-close-button" type="button">Close via consumer button</button>
+                  <x-button id="inner-close-button" type="button">Close via consumer button</x-button>
                 </nav>
               </x-sidebar>
 
               <div class="demo-main">
                 <div class="button-row">
-                  <button id="main-toggle-button" type="button" class="primary">Toggle open</button>
-                  <button id="main-modal-button" type="button">Force modal variant</button>
-                  <button id="main-docked-button" type="button">Force docked variant</button>
+                  <x-button id="main-toggle-button" type="button">Toggle open</x-button>
+                  <x-button id="main-modal-button" type="button">Force modal variant</x-button>
+                  <x-button id="main-docked-button" type="button">Force docked variant</x-button>
                 </div>
 
-                <h2>App content area</h2>
+                <x-typography variant="overline">App content area</x-typography>
                 <p>
                   This content represents the main application surface next to the
                   sidebar. On smaller viewports, the declared variant resolves to
@@ -508,7 +486,7 @@
           </section>
 
           <section class="card examples">
-            <h2>Multiple states</h2>
+            <x-typography variant="overline">Multiple states</x-typography>
             <div class="example-grid">
               <div class="example-box">
                 <h3>Docked</h3>

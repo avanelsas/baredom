@@ -10,9 +10,7 @@
     html, body { margin: 0; min-height: 100%; }
     body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 32px; max-width: 1100px; margin: 0 auto; }
 
-    h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 8px; }
-    h2 { font-size: 1.25rem; font-weight: 600; margin: 32px 0 12px; }
-    p.muted { color: var(--muted); margin: 0 0 32px; }
+            p.muted { color: var(--muted); margin: 0 0 32px; }
     code { font-family: ui-monospace, monospace; font-size: 0.875em; background: var(--surface-bg); padding: 2px 6px; border-radius: 4px; }
 
     .demo-box {
@@ -65,23 +63,23 @@
 </head>
 <body>
 
-<h1>x-gaussian-blur</h1>
+<x-typography variant="h1">x-gaussian-blur</x-typography>
 <p class="muted">Animated blurred color blobs as a decorative background.</p>
 
 <!-- ── Default ──────────────────────────────────── -->
-<h2>Default</h2>
+<x-typography variant="overline">Default</x-typography>
 <div class="demo-box">
   <x-gaussian-blur></x-gaussian-blur>
 </div>
 
 <!-- ── Custom colors ───────────────────────────── -->
-<h2>Custom colors (warm palette)</h2>
+<x-typography variant="overline">Custom colors (warm palette)</x-typography>
 <div class="demo-box">
   <x-gaussian-blur colors="#ff6b6b, #feca57, #ff9ff3, #f368e0"></x-gaussian-blur>
 </div>
 
 <!-- ── With content overlay ────────────────────── -->
-<h2>With content overlay</h2>
+<x-typography variant="overline">With content overlay</x-typography>
 <div class="demo-box">
   <x-gaussian-blur colors="#667eea, #764ba2, #f093fb" blur="70">
     <div class="overlay-text">Hello World</div>
@@ -89,25 +87,25 @@
 </div>
 
 <!-- ── Pulse animation ─────────────────────────── -->
-<h2>Pulse animation + screen blend</h2>
+<x-typography variant="overline">Pulse animation + screen blend</x-typography>
 <div class="demo-box">
   <x-gaussian-blur animation="pulse" blend="screen" colors="#00d2ff, #3a7bd5, #00b09b, #96c93d"></x-gaussian-blur>
 </div>
 
 <!-- ── Large blobs, heavy blur ─────────────────── -->
-<h2>Large blobs, heavy blur, slow</h2>
+<x-typography variant="overline">Large blobs, heavy blur, slow</x-typography>
 <div class="demo-box">
   <x-gaussian-blur size="large" blur="100" speed="slow" count="3" colors="#e91e63, #9c27b0, #2196f3"></x-gaussian-blur>
 </div>
 
 <!-- ── Static (no animation) ───────────────────── -->
-<h2>No animation</h2>
+<x-typography variant="overline">No animation</x-typography>
 <div class="demo-box">
   <x-gaussian-blur animation="none" colors="#10b981, #3b82f6, #8b5cf6, #f59e0b" count="8" size="small"></x-gaussian-blur>
 </div>
 
 <!-- ── Interactive controls ────────────────────── -->
-<h2>Interactive</h2>
+<x-typography variant="overline">Interactive</x-typography>
 
 <div class="controls">
   <div class="control-group">
@@ -120,11 +118,11 @@
   </div>
   <div class="control-group">
     <label for="ctl-speed">speed</label>
-    <select id="ctl-speed">
+    <x-select id="ctl-speed" value="medium">
       <option value="slow">slow</option>
       <option value="medium" selected>medium</option>
       <option value="fast">fast</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label for="ctl-count">count</label>
@@ -132,11 +130,11 @@
   </div>
   <div class="control-group">
     <label for="ctl-size">size</label>
-    <select id="ctl-size">
+    <x-select id="ctl-size" value="medium">
       <option value="small">small</option>
       <option value="medium" selected>medium</option>
       <option value="large">large</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label for="ctl-opacity">opacity</label>
@@ -144,25 +142,25 @@
   </div>
   <div class="control-group">
     <label for="ctl-animation">animation</label>
-    <select id="ctl-animation">
+    <x-select id="ctl-animation" value="float">
       <option value="float" selected>float</option>
       <option value="pulse">pulse</option>
       <option value="none">none</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label for="ctl-blend">blend</label>
-    <select id="ctl-blend">
+    <x-select id="ctl-blend" value="normal">
       <option value="normal" selected>normal</option>
       <option value="multiply">multiply</option>
       <option value="screen">screen</option>
       <option value="overlay">overlay</option>
       <option value="soft-light">soft-light</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label for="ctl-paused">paused</label>
-    <input id="ctl-paused" type="checkbox" />
+    <x-switch id="ctl-paused"></x-switch>
   </div>
 </div>
 

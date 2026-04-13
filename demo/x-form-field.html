@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+            .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
       .controls input[type=text] {
@@ -30,44 +29,44 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-form-field demo</h1>
+    <x-typography variant="h1">x-form-field demo</x-typography>
 
-    <h2>Default (text)</h2>
+    <x-typography variant="overline">Default (text)</x-typography>
     <div class="stack">
       <x-form-field label="Full name" placeholder="Jane Doe" name="fullname"></x-form-field>
     </div>
 
-    <h2>With hint</h2>
+    <x-typography variant="overline">With hint</x-typography>
     <div class="stack">
       <x-form-field label="Email" type="email" placeholder="you@example.com" hint="We will never share your email." name="email"></x-form-field>
     </div>
 
-    <h2>With error</h2>
+    <x-typography variant="overline">With error</x-typography>
     <div class="stack">
       <x-form-field label="Username" value="foo" error="Username must be at least 4 characters." name="username"></x-form-field>
     </div>
 
-    <h2>With hint and error</h2>
+    <x-typography variant="overline">With hint and error</x-typography>
     <div class="stack">
       <x-form-field label="Password" type="password" hint="At least 8 characters." error="Password is too short." name="password"></x-form-field>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-form-field label="Disabled field" value="Cannot edit this" disabled name="disabled-field"></x-form-field>
     </div>
 
-    <h2>Readonly</h2>
+    <x-typography variant="overline">Readonly</x-typography>
     <div class="stack">
       <x-form-field label="Read-only field" value="Read only value" readonly name="readonly-field"></x-form-field>
     </div>
 
-    <h2>Required</h2>
+    <x-typography variant="overline">Required</x-typography>
     <div class="stack">
       <x-form-field label="Required field" required placeholder="Must fill in" name="required-field"></x-form-field>
     </div>
 
-    <h2>Input types</h2>
+    <x-typography variant="overline">Input types</x-typography>
     <div class="stack">
       <x-form-field label="Email"    type="email"    placeholder="you@example.com" name="t-email"></x-form-field>
       <x-form-field label="Password" type="password" placeholder="••••••••"        name="t-password"></x-form-field>
@@ -76,40 +75,40 @@
       <x-form-field label="Tel"      type="tel"      placeholder="+1 555 000 0000" name="t-tel"></x-form-field>
     </div>
 
-    <h2>No label</h2>
+    <x-typography variant="overline">No label</x-typography>
     <div class="stack">
       <x-form-field placeholder="No label visible" name="no-label"></x-form-field>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>label     <input type="text" id="ctrl-label" value="Email address"></label>
       <label>type
-        <select id="ctrl-type" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+        <x-select id="ctrl-type" value="text">
           <option value="text">text</option>
           <option value="email">email</option>
           <option value="password">password</option>
           <option value="url">url</option>
           <option value="number">number</option>
           <option value="tel">tel</option>
-        </select>
+        </x-select>
       </label>
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Enter value"></label>
       <label>hint        <input type="text" id="ctrl-hint" value=""></label>
       <label>error       <input type="text" id="ctrl-error" value=""></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>readonly    <input type="checkbox" id="ctrl-readonly"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>readonly    <x-switch id="ctrl-readonly"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
     </div>
     <x-form-field id="live-field" label="Email address" placeholder="Enter value" name="live"></x-form-field>
 
-    <h2>In a &lt;form&gt; (submit to see FormData)</h2>
+    <x-typography variant="overline">In a &lt;form&gt; (submit to see FormData)</x-typography>
     <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;margin:8px 0;">
       <x-form-field label="First name" name="first" placeholder="Jane"></x-form-field>
       <x-form-field label="Last name"  name="last"  placeholder="Doe"></x-form-field>
       <x-form-field label="Email"      name="email" type="email" placeholder="jane@example.com"></x-form-field>
-      <button type="submit" style="align-self:flex-start;padding:8px 20px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-size:14px;cursor:pointer;">Submit</button>
-      <button type="reset"  style="align-self:flex-start;padding:8px 20px;border-radius:6px;border:none;background:#6b7280;color:#fff;font-size:14px;cursor:pointer;">Reset</button>
+      <x-button type="submit" style="align-self:flex-start">Submit</x-button>
+      <x-button type="reset" variant="secondary" style="align-self:flex-start">Reset</x-button>
     </form>
 
     <div class="log" id="log">Event log will appear here.</div>
@@ -145,7 +144,7 @@
         if (required) liveField.setAttribute("required", ""); else liveField.removeAttribute("required");
       }
 
-      document.querySelectorAll(".controls input, .controls select").forEach(el => {
+      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

@@ -19,15 +19,7 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .row {
         display: flex;
         gap: 12px;
@@ -58,18 +50,8 @@
         color: var(--input-fg);
       }
 
-      .ctrl-row button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
-
-      .ctrl-row button:hover { background: #1e40af; }
-
+      
+      
       /* Inline badge styling for demo */
       .demo-badge {
         background: #ef4444;
@@ -100,9 +82,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-avatar demo</h1>
+    <x-typography variant="h1">x-avatar demo</x-typography>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="row">
       <label>xs</label><x-avatar size="xs" name="Alice Bob"></x-avatar>
       <label>sm</label><x-avatar size="sm" name="Alice Bob"></x-avatar>
@@ -111,21 +93,21 @@
       <label>xl</label><x-avatar size="xl" name="Alice Bob"></x-avatar>
     </div>
 
-    <h2>Shapes</h2>
+    <x-typography variant="overline">Shapes</x-typography>
     <div class="row">
       <label>circle</label><x-avatar shape="circle"  name="Alice Bob"></x-avatar>
       <label>rounded</label><x-avatar shape="rounded" name="Alice Bob"></x-avatar>
       <label>square</label><x-avatar shape="square"  name="Alice Bob"></x-avatar>
     </div>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="row">
       <label>neutral</label><x-avatar variant="neutral" name="Alice Bob" size="lg"></x-avatar>
       <label>brand</label>  <x-avatar variant="brand"   name="Alice Bob" size="lg"></x-avatar>
       <label>subtle</label> <x-avatar variant="subtle"  name="Alice Bob" size="lg"></x-avatar>
     </div>
 
-    <h2>Status indicators</h2>
+    <x-typography variant="overline">Status indicators</x-typography>
     <div class="row">
       <label>online</label> <x-avatar status="online"  name="Alice" size="lg"></x-avatar>
       <label>busy</label>   <x-avatar status="busy"    name="Bob"   size="lg"></x-avatar>
@@ -133,27 +115,27 @@
       <label>offline</label><x-avatar status="offline" name="Dave"  size="lg"></x-avatar>
     </div>
 
-    <h2>Explicit initials</h2>
+    <x-typography variant="overline">Explicit initials</x-typography>
     <div class="row">
       <x-avatar initials="JD" size="lg"></x-avatar>
       <x-avatar initials="AB" size="lg" variant="brand"></x-avatar>
       <x-avatar initials="Z"  size="lg" variant="subtle"></x-avatar>
     </div>
 
-    <h2>Fallback (no name / initials / src)</h2>
+    <x-typography variant="overline">Fallback (no name / initials / src)</x-typography>
     <div class="row">
       <x-avatar size="lg"></x-avatar>
       <x-avatar size="lg" shape="rounded"></x-avatar>
       <x-avatar size="lg" shape="square"></x-avatar>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-avatar name="Alice Bob" size="lg" disabled></x-avatar>
       <x-avatar name="Alice Bob" size="lg" status="online" disabled></x-avatar>
     </div>
 
-    <h2>Image (loaded / broken)</h2>
+    <x-typography variant="overline">Image (loaded / broken)</x-typography>
     <div class="row">
       <label>loaded</label>
       <x-avatar
@@ -165,7 +147,7 @@
       <x-avatar src="https://localhost/no-such-image.png" name="Alice Bob" size="xl"></x-avatar>
     </div>
 
-    <h2>Badge slot</h2>
+    <x-typography variant="overline">Badge slot</x-typography>
     <div class="row">
       <x-avatar name="Alice Bob" size="xl">
         <span slot="badge" class="demo-badge">3</span>
@@ -175,7 +157,7 @@
       </x-avatar>
     </div>
 
-    <h2>Spawn avatar</h2>
+    <x-typography variant="overline">Spawn avatar</x-typography>
     <div class="ctrl-row">
       <label>name
         <input type="text" id="ctrl-name" value="Alice Bob" style="width:130px">
@@ -184,41 +166,41 @@
         <input type="text" id="ctrl-initials" placeholder="auto" style="width:60px">
       </label>
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="xs">xs</option>
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
           <option value="xl">xl</option>
-        </select>
+        </x-select>
       </label>
       <label>shape
-        <select id="ctrl-shape">
+        <x-select id="ctrl-shape" value="circle">
           <option value="circle" selected>circle</option>
           <option value="rounded">rounded</option>
           <option value="square">square</option>
-        </select>
+        </x-select>
       </label>
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="neutral">
           <option value="neutral" selected>neutral</option>
           <option value="brand">brand</option>
           <option value="subtle">subtle</option>
-        </select>
+        </x-select>
       </label>
       <label>status
-        <select id="ctrl-status">
+        <x-select id="ctrl-status" value="">
           <option value="">none</option>
           <option value="online">online</option>
           <option value="offline">offline</option>
           <option value="busy">busy</option>
           <option value="away">away</option>
-        </select>
+        </x-select>
       </label>
       <label>disabled
-        <input type="checkbox" id="ctrl-disabled">
+        <x-switch id="ctrl-disabled"></x-switch>
       </label>
-      <button id="spawn-btn">Spawn</button>
+      <x-button id="spawn-btn">Spawn</x-button>
     </div>
     <div id="spawn-zone"></div>
 

@@ -82,13 +82,7 @@
         text-transform: uppercase;
       }
 
-      h1 {
-        margin: 14px 0 10px;
-        font-size: clamp(2rem, 3vw, 3rem);
-        line-height: 1.05;
-        letter-spacing: -0.03em;
-      }
-
+      
       .subtitle {
         max-width: 760px;
         margin: 0;
@@ -292,7 +286,7 @@
     <main class="page">
       <section class="hero">
         <div class="eyebrow">Web Component · Light & Dark Mode</div>
-        <h1>x-tabs</h1>
+        <x-typography variant="h1">x-tabs</x-typography>
         <p class="subtitle">
           Themeable tab system container that coordinates <code>x-tab</code>
           triggers and associated panels. This demo follows the same professional
@@ -304,7 +298,7 @@
 
       <section class="stack">
         <section class="section-card">
-          <h2>Default horizontal tabs with coordinated panels</h2>
+          <x-typography variant="overline">Default horizontal tabs with coordinated panels</x-typography>
           <p>
             A standard horizontal tabs pattern with one selected panel and one disabled tab.
           </p>
@@ -339,7 +333,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Manual activation example</h2>
+          <x-typography variant="overline">Manual activation example</x-typography>
           <p>
             In manual activation mode, arrow keys move focus only. Press
             <span class="kbd">Enter</span> or <span class="kbd">Space</span> to select.
@@ -376,7 +370,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Vertical tabs example</h2>
+          <x-typography variant="overline">Vertical tabs example</x-typography>
           <p>
             Vertical orientation changes keyboard traversal to
             <span class="kbd">↑</span> and <span class="kbd">↓</span>.
@@ -412,7 +406,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Disabled tab skipping and loop navigation</h2>
+          <x-typography variant="overline">Disabled tab skipping and loop navigation</x-typography>
           <p>
             Loop mode wraps keyboard traversal from the last enabled tab to the first enabled tab.
           </p>
@@ -453,7 +447,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Controlled selection and event output</h2>
+          <x-typography variant="overline">Controlled selection and event output</x-typography>
           <p>
             The container emits <code>value-change</code> whenever coordinated selection changes.
           </p>

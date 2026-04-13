@@ -10,9 +10,7 @@
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; }
       .container { max-width: 900px; padding: 24px; }
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-      .grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin: 12px 0; }
+                  .grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin: 12px 0; }
       .label { font-size: 11px; color: var(--muted); margin-top: 4px; }
       .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; padding: 0 24px; }
@@ -21,8 +19,7 @@
         font-size: 13px; padding: 4px 8px; border-radius: 6px;
         border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
       }
-      .controls input[type=checkbox] { margin: 0; }
-      code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
+            code { font-family: monospace; font-size: 0.85em; background: var(--border); padding: 1px 4px; border-radius: 3px; }
       .section-a { background: #1e1b4b; color: white; padding: 32px 24px; text-align: center; }
       .section-b { background: #312e81; color: white; padding: 32px 24px; text-align: center; }
       .section-c { background: #4338ca; color: white; padding: 32px 24px; text-align: center; }
@@ -35,9 +32,9 @@
   </head>
   <body>
     <div class="container">
-      <h1>x-organic-divider demo</h1>
+      <x-typography variant="h1">x-organic-divider demo</x-typography>
 
-      <h2>All presets</h2>
+      <x-typography variant="overline">All presets</x-typography>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="wave"></x-organic-divider>
@@ -73,7 +70,7 @@
         </div>
       </div>
 
-      <h2>Multi-layer depth effect</h2>
+      <x-typography variant="overline">Multi-layer depth effect</x-typography>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="wave" layers="1"></x-organic-divider>
@@ -93,7 +90,7 @@
         </div>
       </div>
 
-      <h2>Flip and mirror</h2>
+      <x-typography variant="overline">Flip and mirror</x-typography>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="mountain"></x-organic-divider>
@@ -113,7 +110,7 @@
         </div>
       </div>
 
-      <h2>Animations</h2>
+      <x-typography variant="overline">Animations</x-typography>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="wave" animation="drift" layers="3"></x-organic-divider>
@@ -130,7 +127,7 @@
       </div>
     </div>
 
-    <h2 style="max-width:900px;padding:0 24px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:4px;">Between sections</h2>
+    <x-typography variant="overline" style="max-width:900px;padding:0 24px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:4px;">Between sections</x-typography>
     <div class="section-a">Section A</div>
     <x-organic-divider shape="waves" layers="3"
       style="--x-organic-divider-color-1: #1e1b4b;
@@ -145,7 +142,7 @@
     <div class="section-c">Section C</div>
 
     <div class="container">
-      <h2>Custom colors (base token)</h2>
+      <x-typography variant="overline">Custom colors (base token)</x-typography>
       <div class="grid">
         <div class="divider-showcase">
           <x-organic-divider shape="wave" layers="3"
@@ -167,11 +164,11 @@
         </div>
       </div>
 
-      <h2>Live control</h2>
+      <x-typography variant="overline">Live control</x-typography>
     </div>
     <div class="controls">
       <label>shape
-        <select id="ctrl-shape">
+        <x-select id="ctrl-shape" value="wave">
           <option value="wave" selected>wave</option>
           <option value="waves">waves</option>
           <option value="blob-edge">blob-edge</option>
@@ -180,32 +177,32 @@
           <option value="slant">slant</option>
           <option value="scallop">scallop</option>
           <option value="cloud">cloud</option>
-        </select>
+        </x-select>
       </label>
       <label>layers
-        <select id="ctrl-layers">
+        <x-select id="ctrl-layers" value="1">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
           <option value="5">5</option>
-        </select>
+        </x-select>
       </label>
       <label>height
         <input type="text" id="ctrl-height" value="" placeholder="e.g. 80px" style="width:80px">
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="none">
           <option value="none" selected>none</option>
           <option value="drift">drift</option>
           <option value="morph">morph</option>
-        </select>
+        </x-select>
       </label>
       <label>
-        <input type="checkbox" id="ctrl-flip"> flip
+        <x-switch id="ctrl-flip"></x-switch> flip
       </label>
       <label>
-        <input type="checkbox" id="ctrl-mirror"> mirror
+        <x-switch id="ctrl-mirror"></x-switch> mirror
       </label>
       <label>path
         <input type="text" id="ctrl-path" placeholder="custom SVG d" style="width:220px">
@@ -244,7 +241,7 @@
         else      live.removeAttribute('path');
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

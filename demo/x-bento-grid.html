@@ -17,9 +17,7 @@
       color: var(--page-fg);
       background: var(--page-bg);
     }
-    h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
-    
+            
     .controls {
       display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
     }
@@ -73,39 +71,39 @@
 </head>
 <body>
 
-<h1>&lt;x-bento-grid&gt; + &lt;x-bento-item&gt;</h1>
+<x-typography variant="h1">&lt;x-bento-grid&gt; + &lt;x-bento-item&gt;</x-typography>
 <p>Asymmetric bento-style grid layout with dense auto-placement.</p>
 
 <!-- ── Interactive demo ──────────────────────────────────────────────── -->
-<h2>Interactive</h2>
+<x-typography variant="overline">Interactive</x-typography>
 
 <div class="controls">
   <label>Columns:
-    <select id="columns-select">
+    <x-select id="columns-select" value="4">
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4" selected>4</option>
       <option value="5">5</option>
       <option value="6">6</option>
-    </select>
+    </x-select>
   </label>
   <label>Gap:
-    <select id="gap-select">
+    <x-select id="gap-select" value="md">
       <option value="none">none</option>
       <option value="xs">xs</option>
       <option value="sm">sm</option>
       <option value="md" selected>md</option>
       <option value="lg">lg</option>
       <option value="xl">xl</option>
-    </select>
+    </x-select>
   </label>
   <label>Row height:
-    <select id="row-height-select">
+    <x-select id="row-height-select" value="">
       <option value="" selected>auto</option>
       <option value="100px">100px</option>
       <option value="120px">120px</option>
       <option value="150px">150px</option>
-    </select>
+    </x-select>
   </label>
 </div>
 
@@ -136,7 +134,7 @@
 </div>
 
 <!-- ── Classic Apple-style bento ─────────────────────────────────────── -->
-<h2>Classic 4-column bento</h2>
+<x-typography variant="overline">Classic 4-column bento</x-typography>
 <div class="demo-box">
   <x-bento-grid columns="4" gap="md" row-height="120px">
     <x-bento-item col-span="2" row-span="2">
@@ -161,7 +159,7 @@
 </div>
 
 <!-- ── 3-column compact ──────────────────────────────────────────────── -->
-<h2>3-column compact</h2>
+<x-typography variant="overline">3-column compact</x-typography>
 <div class="demo-box">
   <x-bento-grid columns="3" gap="sm" row-height="100px">
     <x-bento-item col-span="2">
@@ -183,7 +181,7 @@
 </div>
 
 <!-- ── With x-card children ──────────────────────────────────────────── -->
-<h2>Composed with x-card</h2>
+<x-typography variant="overline">Composed with x-card</x-typography>
 <div class="demo-box">
   <x-bento-grid columns="4" gap="md" row-height="120px">
     <x-bento-item col-span="2" row-span="2">

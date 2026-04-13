@@ -19,19 +19,8 @@
       margin: 0 auto;
     }
 
-    h1 { font-size: 22px; margin-bottom: 32px; }
-
-    h2 {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    
+    
     section { margin-bottom: 40px; }
 
     .stack { display: flex; flex-direction: column; gap: 10px; }
@@ -51,18 +40,7 @@
       font-family: inherit;
     }
 
-    button.demo-btn {
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 14px;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    button.demo-btn:hover { opacity: 0.8; }
-
+        
     .log {
       background: var(--surface-bg);
       color: var(--page-fg);
@@ -108,11 +86,11 @@
 </head>
 <body>
 
-<h1>x-collapse</h1>
+<x-typography variant="h1">x-collapse</x-typography>
 
 <!-- ===================== STATIC: INDIVIDUAL STATES ===================== -->
 <section>
-  <h2>States — collapsed, open, disabled</h2>
+  <x-typography variant="overline">States — collapsed, open, disabled</x-typography>
   <div class="stack">
     <x-collapse header="Collapsed by default">
       <div class="panel-body" slot="content">
@@ -142,7 +120,7 @@
 
 <!-- ===================== ACCORDION ===================== -->
 <section>
-  <h2>Accordion (close-others pattern)</h2>
+  <x-typography variant="overline">Accordion (close-others pattern)</x-typography>
   <div class="surface">
     <x-collapse class="accordion-item" header="What is a Web Component?">
       <div class="panel-body" slot="content">
@@ -169,7 +147,7 @@
 
 <!-- ===================== CUSTOM DURATION ===================== -->
 <section>
-  <h2>Custom animation duration</h2>
+  <x-typography variant="overline">Custom animation duration</x-typography>
   <div class="stack">
     <x-collapse header="Fast — 80ms" duration-ms="80">
       <div class="panel-body" slot="content">
@@ -196,7 +174,7 @@
 
 <!-- ===================== LIVE CONTROL PANEL ===================== -->
 <section>
-  <h2>Live control panel</h2>
+  <x-typography variant="overline">Live control panel</x-typography>
 
   <x-collapse id="live-collapse" header="Live demo panel" duration-ms="300">
     <div class="panel-body" slot="content">
@@ -209,22 +187,22 @@
     <div class="row">
       <label for="ctrl-header">header:</label>
       <input id="ctrl-header" type="text" value="Live demo panel" style="flex:1;min-width:160px;" />
-      <button class="demo-btn" onclick="applyHeader()">Apply</button>
+      <x-button variant="secondary" onclick="applyHeader()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-duration">duration-ms:</label>
       <input id="ctrl-duration" type="number" value="300" min="0" max="2000" style="width:90px;" />
-      <button class="demo-btn" onclick="applyDuration()">Apply</button>
+      <x-button variant="secondary" onclick="applyDuration()">Apply</x-button>
     </div>
     <div class="row">
-      <button class="demo-btn" onclick="toggleOpen()">toggle()</button>
-      <button class="demo-btn" onclick="setOpen(true)">Set open</button>
-      <button class="demo-btn" onclick="setOpen(false)">Set closed</button>
-      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+      <x-button variant="secondary" onclick="toggleOpen()">toggle()</x-button>
+      <x-button variant="secondary" onclick="setOpen(true)">Set open</x-button>
+      <x-button variant="secondary" onclick="setOpen(false)">Set closed</x-button>
+      <x-button variant="secondary" onclick="toggleDisabled()">Toggle disabled</x-button>
     </div>
     <div class="row">
       <label>
-        <input type="checkbox" id="ctrl-guard" />
+        <x-switch id="ctrl-guard"></x-switch>
         Cancel next toggle (preventDefault)
       </label>
     </div>
@@ -233,10 +211,10 @@
 
 <!-- ===================== EVENT LOG ===================== -->
 <section>
-  <h2>Event log</h2>
+  <x-typography variant="overline">Event log</x-typography>
   <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
   <div class="row" style="margin-top:10px;">
-    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+    <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </section>
 

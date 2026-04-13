@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+            .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input {
@@ -23,9 +22,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-avatar-group demo</h1>
+    <x-typography variant="h1">x-avatar-group demo</x-typography>
 
-    <h2>Overlap variants</h2>
+    <x-typography variant="overline">Overlap variants</x-typography>
     <div class="row">
       <x-avatar-group overlap="none">
         <x-avatar name="Alice Bob"></x-avatar>
@@ -49,7 +48,7 @@
       </x-avatar-group>
     </div>
 
-    <h2>Size variants</h2>
+    <x-typography variant="overline">Size variants</x-typography>
     <div class="row">
       <x-avatar-group size="xs" overlap="md">
         <x-avatar name="Alice Bob"></x-avatar>
@@ -78,7 +77,7 @@
       </x-avatar-group>
     </div>
 
-    <h2>Overflow (max)</h2>
+    <x-typography variant="overline">Overflow (max)</x-typography>
     <div class="row">
       <x-avatar-group max="2" label="Team (overflow example)">
         <x-avatar name="Alice Bob"></x-avatar>
@@ -95,7 +94,7 @@
       </x-avatar-group>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-avatar-group disabled>
         <x-avatar name="Alice Bob"></x-avatar>
@@ -104,30 +103,30 @@
       </x-avatar-group>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="xs">xs</option>
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
           <option value="xl">xl</option>
-        </select>
+        </x-select>
       </label>
       <label>overlap
-        <select id="ctrl-overlap">
+        <x-select id="ctrl-overlap" value="md">
           <option value="none">none</option>
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
-        </select>
+        </x-select>
       </label>
       <label>max
         <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
       </label>
       <label>disabled
-        <input type="checkbox" id="ctrl-disabled">
+        <x-switch id="ctrl-disabled"></x-switch>
       </label>
     </div>
     <div style="margin-top:8px">
@@ -151,7 +150,7 @@
         if (maxVal) live.setAttribute("max", maxVal); else live.removeAttribute("max");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

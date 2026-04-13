@@ -19,15 +19,7 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .stack {
         display: flex;
         flex-direction: column;
@@ -65,18 +57,8 @@
         color: var(--input-fg);
       }
 
-      .row button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
-
-      .row button:hover { background: #1e40af; }
-
+      
+      
       .log {
         margin-top: 24px;
         padding: 12px;
@@ -100,9 +82,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-chip demo</h1>
+    <x-typography variant="h1">x-chip demo</x-typography>
 
-    <h2>Default (removable)</h2>
+    <x-typography variant="overline">Default (removable)</x-typography>
     <ul class="chip-row" id="basic-list" role="list">
       <x-chip role="listitem" label="Design"></x-chip>
       <x-chip role="listitem" label="Engineering" value="eng"></x-chip>
@@ -112,26 +94,26 @@
     </ul>
     <p class="hint">Click × or focus a chip and press Backspace / Delete to remove it.</p>
 
-    <h2>Non-removable</h2>
+    <x-typography variant="overline">Non-removable</x-typography>
     <ul class="chip-row" role="list">
       <x-chip role="listitem" label="Read-only" removable="false"></x-chip>
       <x-chip role="listitem" label="Locked" removable="false"></x-chip>
     </ul>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <ul class="chip-row" role="list">
       <x-chip role="listitem" label="Archived" disabled></x-chip>
       <x-chip role="listitem" label="Inactive" disabled></x-chip>
     </ul>
 
-    <h2>Prevent removal demo</h2>
+    <x-typography variant="overline">Prevent removal demo</x-typography>
     <ul class="chip-row" id="guarded-list" role="list">
       <x-chip role="listitem" label="Protected A" value="a"></x-chip>
       <x-chip role="listitem" label="Protected B" value="b"></x-chip>
     </ul>
     <p class="hint">Removal is always cancelled here — <code>event.preventDefault()</code> is called in the handler.</p>
 
-    <h2>Spawn chips</h2>
+    <x-typography variant="overline">Spawn chips</x-typography>
     <div class="row">
       <label>label
         <input type="text" id="ctrl-label" value="New chip" style="width:140px">
@@ -140,18 +122,18 @@
         <input type="text" id="ctrl-value" placeholder="optional" style="width:100px">
       </label>
       <label>removable
-        <select id="ctrl-removable">
+        <x-select id="ctrl-removable" value="">
           <option value="">true (default)</option>
           <option value="false">false</option>
-        </select>
+        </x-select>
       </label>
       <label>disabled
-        <select id="ctrl-disabled">
+        <x-select id="ctrl-disabled" value="">
           <option value="">no</option>
           <option value="true">yes</option>
-        </select>
+        </x-select>
       </label>
-      <button id="spawn-btn">Add chip</button>
+      <x-button id="spawn-btn">Add chip</x-button>
     </div>
     <ul class="chip-row" id="live-list" role="list"></ul>
 

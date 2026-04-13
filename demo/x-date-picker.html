@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 12px; max-width: 400px; }
+            .stack { display: flex; flex-direction: column; gap: 12px; max-width: 400px; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input[type=text], .controls input[type=date] {
@@ -28,24 +27,24 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-date-picker demo</h1>
+    <x-typography variant="h1">x-date-picker demo</x-typography>
 
-    <h2>Single date</h2>
+    <x-typography variant="overline">Single date</x-typography>
     <div class="stack">
       <x-date-picker id="dp-single" placeholder="Select a date"></x-date-picker>
     </div>
 
-    <h2>Date range</h2>
+    <x-typography variant="overline">Date range</x-typography>
     <div class="stack">
       <x-date-picker id="dp-range" mode="range" placeholder="Select date range"></x-date-picker>
     </div>
 
-    <h2>Pre-selected value</h2>
+    <x-typography variant="overline">Pre-selected value</x-typography>
     <div class="stack">
       <x-date-picker id="dp-preset" value="2026-03-18" placeholder="Select a date"></x-date-picker>
     </div>
 
-    <h2>With min/max bounds</h2>
+    <x-typography variant="overline">With min/max bounds</x-typography>
     <div class="stack">
       <x-date-picker id="dp-bounded"
         min="2026-01-01"
@@ -54,7 +53,7 @@
       </x-date-picker>
     </div>
 
-    <h2>Localized display</h2>
+    <x-typography variant="overline">Localized display</x-typography>
     <div class="stack">
       <x-date-picker id="dp-localized"
         format="localized"
@@ -63,29 +62,29 @@
       </x-date-picker>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-date-picker disabled placeholder="Not available"></x-date-picker>
     </div>
 
-    <h2>Readonly</h2>
+    <x-typography variant="overline">Readonly</x-typography>
     <div class="stack">
       <x-date-picker readonly value="2026-03-18"></x-date-picker>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>mode
-        <select id="ctrl-mode">
+        <x-select id="ctrl-mode" value="single">
           <option value="single" selected>single</option>
           <option value="range">range</option>
-        </select>
+        </x-select>
       </label>
       <label>format
-        <select id="ctrl-format">
+        <x-select id="ctrl-format" value="iso">
           <option value="iso" selected>iso</option>
           <option value="localized">localized</option>
-        </select>
+        </x-select>
       </label>
       <label>locale
         <input type="text" id="ctrl-locale" value="" placeholder="default" style="width:80px">
@@ -99,10 +98,10 @@
       <label>placeholder
         <input type="text" id="ctrl-placeholder" value="Select a date" style="width:140px">
       </label>
-      <label>disabled  <input type="checkbox" id="ctrl-disabled"></label>
-      <label>readonly  <input type="checkbox" id="ctrl-readonly"></label>
-      <label>required  <input type="checkbox" id="ctrl-required"></label>
-      <label>close-on-select <input type="checkbox" id="ctrl-close"></label>
+      <label>disabled  <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>readonly  <x-switch id="ctrl-readonly"></x-switch></label>
+      <label>required  <x-switch id="ctrl-required"></x-switch></label>
+      <label>close-on-select <x-switch id="ctrl-close"></x-switch></label>
     </div>
     <div class="stack">
       <x-date-picker id="dp-live" placeholder="Select a date"></x-date-picker>
@@ -141,7 +140,7 @@
         if (document.getElementById("ctrl-required").checked) live.setAttribute("required", ""); else live.removeAttribute("required");
         if (document.getElementById("ctrl-close").checked)    live.setAttribute("close-on-select", ""); else live.removeAttribute("close-on-select");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

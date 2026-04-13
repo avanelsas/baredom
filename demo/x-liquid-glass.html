@@ -17,9 +17,7 @@
       color: var(--page-fg);
       background: var(--page-bg);
     }
-    h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
-    
+            
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -58,10 +56,10 @@
 </head>
 <body>
 
-<h1>x-liquid-glass</h1>
+<x-typography variant="h1">x-liquid-glass</x-typography>
 <p>Refractive glass blob containers — organic shapes with frosted glass effect.</p>
 
-<h2>Showcase</h2>
+<x-typography variant="overline">Showcase</x-typography>
 <div class="showcase-bg">
   <div class="grid">
     <x-liquid-glass>
@@ -100,12 +98,12 @@
     <x-liquid-glass mode="submerged" specular specular-intensity="0.4">
       <h3 style="margin:0 0 0.5rem">Submerged</h3>
       <p style="margin:0;opacity:0.7">Content sits behind the frosted glass — like text embedded in ice.</p>
-      <button style="margin-top:0.75rem;padding:0.4rem 1rem;border-radius:8px;border:1px solid rgba(0,0,0,0.2);background:rgba(255,255,255,0.5);cursor:pointer;">Try clicking</button>
+      <x-button variant="ghost" style="margin-top:0.75rem">Try clicking</x-button>
     </x-liquid-glass>
   </div>
 </div>
 
-<h2>Interactive Controls</h2>
+<x-typography variant="overline">Interactive Controls</x-typography>
 <div class="controls">
   <div class="control-group">
     <label>Blobs <span class="val" id="blobs-val">5</span></label>
@@ -129,7 +127,7 @@
   </div>
   <div class="control-group">
     <label>Specular</label>
-    <input type="checkbox" id="ctrl-specular">
+    <x-switch id="ctrl-specular"></x-switch>
   </div>
   <div class="control-group">
     <label>Spec. Size <span class="val" id="specular-size-val">0.4</span></label>
@@ -141,7 +139,7 @@
   </div>
   <div class="control-group">
     <label>Disabled</label>
-    <input type="checkbox" id="ctrl-disabled">
+    <x-switch id="ctrl-disabled"></x-switch>
   </div>
   <div class="control-group">
     <label>Frost <span class="val" id="frost-val">0.5</span></label>
@@ -149,10 +147,10 @@
   </div>
   <div class="control-group">
     <label>Mode</label>
-    <select id="ctrl-mode">
+    <x-select id="ctrl-mode" value="surface">
       <option value="surface">Surface</option>
       <option value="submerged">Submerged</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label>Color 1</label>

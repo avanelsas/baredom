@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+            .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .item { display: flex; gap: 8px; align-items: center; font-size: 14px; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
@@ -29,9 +28,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-checkbox demo</h1>
+    <x-typography variant="h1">x-checkbox demo</x-typography>
 
-    <h2>States</h2>
+    <x-typography variant="overline">States</x-typography>
     <div class="row">
       <div class="item"><x-checkbox aria-label="Unchecked"></x-checkbox> Unchecked</div>
       <div class="item"><x-checkbox checked aria-label="Checked"></x-checkbox> Checked</div>
@@ -41,17 +40,17 @@
       <div class="item"><x-checkbox indeterminate disabled aria-label="Indeterminate disabled"></x-checkbox> Indeterminate + disabled</div>
     </div>
 
-    <h2>Readonly</h2>
+    <x-typography variant="overline">Readonly</x-typography>
     <div class="row">
       <div class="item"><x-checkbox checked readonly aria-label="Readonly checked"></x-checkbox> Readonly (checked)</div>
     </div>
 
-    <h2>Required</h2>
+    <x-typography variant="overline">Required</x-typography>
     <div class="row">
       <div class="item"><x-checkbox required aria-label="Required"></x-checkbox> Required (unchecked = invalid)</div>
     </div>
 
-    <h2>Interactive — click to toggle</h2>
+    <x-typography variant="overline">Interactive — click to toggle</x-typography>
     <div class="row">
       <div class="item">
         <x-checkbox id="toggle-cb" aria-label="Toggle me"></x-checkbox>
@@ -59,7 +58,7 @@
       </div>
     </div>
 
-    <h2>Intercept toggle (block on condition)</h2>
+    <x-typography variant="overline">Intercept toggle (block on condition)</x-typography>
     <div class="row">
       <div class="item">
         <x-checkbox id="guard-cb" aria-label="Guarded checkbox"></x-checkbox>
@@ -67,7 +66,7 @@
       </div>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>checked    <input type="checkbox" id="ctrl-checked"></label>
       <label>indeterminate <input type="checkbox" id="ctrl-indet"></label>
@@ -128,7 +127,7 @@
         if (required) liveCb.setAttribute("required", "");       else liveCb.removeAttribute("required");
         if (value)    liveCb.setAttribute("value", value);       else liveCb.removeAttribute("value");
       }
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

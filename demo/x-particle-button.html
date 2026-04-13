@@ -18,9 +18,7 @@
         color: var(--page-fg);
       }
 
-      h1 { margin-bottom: 8px; }
-      h2 { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
-      p.subtitle { margin: 0 0 24px; opacity: 0.7; font-size: 0.9rem; }
+                  p.subtitle { margin: 0 0 24px; opacity: 0.7; font-size: 0.9rem; }
 
       .grid {
         display: grid;
@@ -94,17 +92,16 @@
       }
 
       .controls input[type="range"] { width: 120px; }
-      .controls select { padding: 4px 8px; border-radius: 6px; }
-    </style>
+          </style>
     <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
-    <h1>x-particle-button demo</h1>
+    <x-typography variant="h1">x-particle-button demo</x-typography>
     <p class="subtitle">A button whose surface emits and reabsorbs visual fragments. Hover to see edge particles; click to see press-point bursts.</p>
 
     <div class="grid">
       <section class="card">
-        <h2>Modes</h2>
+        <x-typography variant="overline">Modes</x-typography>
         <div class="row">
           <x-particle-button mode="dust">Dust</x-particle-button>
           <x-particle-button mode="spark">Spark</x-particle-button>
@@ -115,7 +112,7 @@
       </section>
 
       <section class="card">
-        <h2>Variants (color only)</h2>
+        <x-typography variant="overline">Variants (color only)</x-typography>
         <div class="row">
           <x-particle-button mode="spark">Primary</x-particle-button>
           <x-particle-button variant="secondary" mode="spark">Secondary</x-particle-button>
@@ -126,7 +123,7 @@
       </section>
 
       <section class="card">
-        <h2>Sizes</h2>
+        <x-typography variant="overline">Sizes</x-typography>
         <div class="row">
           <x-particle-button size="sm" mode="dust">Small</x-particle-button>
           <x-particle-button size="md" mode="dust">Medium</x-particle-button>
@@ -135,7 +132,7 @@
       </section>
 
       <section class="card">
-        <h2>States</h2>
+        <x-typography variant="overline">States</x-typography>
         <div class="row">
           <x-particle-button pressed>Pressed</x-particle-button>
           <x-particle-button disabled>Disabled</x-particle-button>
@@ -147,7 +144,7 @@
       </section>
 
       <section class="card">
-        <h2>Slots</h2>
+        <x-typography variant="overline">Slots</x-typography>
         <div class="row">
           <x-particle-button mode="ember">
             <span slot="icon-start" class="icon" aria-hidden="true"></span>
@@ -161,7 +158,7 @@
       </section>
 
       <section class="card">
-        <h2>Intent Combos</h2>
+        <x-typography variant="overline">Intent Combos</x-typography>
         <div class="row">
           <x-particle-button variant="danger" mode="burst">Delete</x-particle-button>
           <x-particle-button variant="success" mode="disperse">Confirm</x-particle-button>
@@ -173,23 +170,23 @@
     <div class="controls">
       <label>
         Mode
-        <select id="ctrl-mode">
+        <x-select id="ctrl-mode" value="dust">
           <option value="dust" selected>dust</option>
           <option value="spark">spark</option>
           <option value="ember">ember</option>
           <option value="burst">burst</option>
           <option value="disperse">disperse</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="primary">
           <option value="primary" selected>primary</option>
           <option value="secondary">secondary</option>
           <option value="danger">danger</option>
           <option value="success">success</option>
           <option value="warning">warning</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Intensity

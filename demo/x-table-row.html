@@ -18,8 +18,7 @@
 
     
 
-    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
-
+    
     .section {
       background: var(--surface-bg);
       border: 1px solid var(--surface-border);
@@ -28,17 +27,7 @@
       margin-bottom: 24px;
     }
 
-    .section h2 {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      margin: 0 0 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
+    
     /* Grid table container */
     .table-grid {
       display: grid;
@@ -137,17 +126,8 @@
       margin-bottom: 8px;
     }
 
-    button {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--surface-bg);
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    button:hover { background: var(--surface-bg); }
-
+    
+    
     .badge {
       display: inline-flex;
       align-items: center;
@@ -167,11 +147,11 @@
   <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
-  <h1>x-table-row</h1>
+  <x-typography variant="h1">x-table-row</x-typography>
 
   <!-- ── Subgrid table: combined x-table-row + x-table-cell ── -->
   <div class="section">
-    <h2>Subgrid table (x-table-row + x-table-cell)</h2>
+    <x-typography variant="overline">Subgrid table (x-table-row + x-table-cell)</x-typography>
     <p style="font-size:13px;color:#6b7280;margin:0 0 16px">
       The outer <code>&lt;div&gt;</code> sets <code>display:grid;grid-template-columns</code>.
       Each <code>x-table-row</code> uses <code>grid-template-columns:subgrid</code> to inherit the tracks.
@@ -218,7 +198,7 @@
 
   <!-- ── State variants ── -->
   <div class="section">
-    <h2>Row state variants</h2>
+    <x-typography variant="overline">Row state variants</x-typography>
 
     <div class="table-grid table-grid-3">
       <x-table-row>
@@ -261,7 +241,7 @@
 
   <!-- ── Keyboard navigation ── -->
   <div class="section">
-    <h2>Keyboard navigation</h2>
+    <x-typography variant="overline">Keyboard navigation</x-typography>
     <p style="font-size:13px;color:#6b7280;margin:0 0 12px">
       Tab to focus a row below, then press <kbd>Enter</kbd> or <kbd>Space</kbd> to toggle selection.
     </p>
@@ -292,7 +272,7 @@
 
   <!-- ── Live control panel ── -->
   <div class="section">
-    <h2>Live control panel</h2>
+    <x-typography variant="overline">Live control panel</x-typography>
 
     <div class="panel">
       <div class="field">
@@ -303,13 +283,13 @@
         <label>Flags</label>
         <div class="checkbox-row">
           <label class="checkbox-label">
-            <input type="checkbox" id="ctrl-interactive"> interactive
+            <x-switch id="ctrl-interactive"></x-switch> interactive
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" id="ctrl-selected"> selected
+            <x-switch id="ctrl-selected"></x-switch> selected
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" id="ctrl-disabled"> disabled
+            <x-switch id="ctrl-disabled"></x-switch> disabled
           </label>
         </div>
       </div>
@@ -331,11 +311,11 @@
 
   <!-- ── Event log ── -->
   <div class="section">
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
 
     <div class="log-actions">
-      <button id="btn-clear">Clear log</button>
-      <button id="btn-cancel-next">Cancel next click</button>
+      <x-button id="btn-clear">Clear log</x-button>
+      <x-button id="btn-cancel-next">Cancel next click</x-button>
     </div>
 
     <div class="log" id="event-log">

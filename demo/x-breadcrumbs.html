@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 12px; max-width: 640px; }
+            .stack { display: flex; flex-direction: column; gap: 12px; max-width: 640px; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input {
@@ -23,16 +22,16 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-breadcrumbs demo</h1>
+    <x-typography variant="h1">x-breadcrumbs demo</x-typography>
 
-    <h2>Default</h2>
+    <x-typography variant="overline">Default</x-typography>
     <x-breadcrumbs>
       <a href="#home">Home</a>
       <a href="#home/products">Products</a>
       <a href="#home/products/shoes">Shoes</a>
     </x-breadcrumbs>
 
-    <h2>Custom separator</h2>
+    <x-typography variant="overline">Custom separator</x-typography>
     <x-breadcrumbs separator="›">
       <a href="#home">Home</a>
       <a href="#home/category">Category</a>
@@ -40,7 +39,7 @@
       <a href="#home/category/subcategory/product">Product</a>
     </x-breadcrumbs>
 
-    <h2>Collapsed (max-items)</h2>
+    <x-typography variant="overline">Collapsed (max-items)</x-typography>
     <x-breadcrumbs max-items="3" items-before="1" items-after="2">
       <a href="#home">Home</a>
       <a href="#home/docs">Docs</a>
@@ -49,7 +48,7 @@
       <a href="#home/docs/components/avatar/api">API</a>
     </x-breadcrumbs>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="stack">
       <x-breadcrumbs variant="default">
         <a href="#home">Home</a>
@@ -68,7 +67,7 @@
       </x-breadcrumbs>
     </div>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="stack">
       <x-breadcrumbs size="sm">
         <a href="#home">Home</a>
@@ -87,36 +86,36 @@
       </x-breadcrumbs>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <x-breadcrumbs disabled>
       <a href="#home">Home</a>
       <a href="#home/products">Products</a>
       <a href="#home/products/shoes">Shoes</a>
     </x-breadcrumbs>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>separator
         <input type="text" id="ctrl-sep" value="/" style="width:40px">
       </label>
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="default">
           <option value="default" selected>default</option>
           <option value="subtle">subtle</option>
           <option value="text">text</option>
-        </select>
+        </x-select>
       </label>
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
-        </select>
+        </x-select>
       </label>
       <label>max-items
         <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
       </label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <x-breadcrumbs id="live">
       <a href="#home">Home</a>
@@ -137,7 +136,7 @@
         if (max) live.setAttribute("max-items", max); else live.removeAttribute("max-items");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

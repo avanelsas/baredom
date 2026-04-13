@@ -16,9 +16,7 @@
       line-height: 1.5;
       padding: 24px;
     }
-    h1 { font-size: 22px; font-weight: 700; margin: 0 0 24px; }
-    h2 { font-size: 15px; font-weight: 600; margin: 32px 0 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-    .grid {
+            .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 24px;
@@ -72,18 +70,7 @@
       font-size: 13px;
       width: 140px;
     }
-    .control-row input[type=checkbox] { width: 16px; height: 16px; margin-top: 6px; cursor: pointer; }
-    button {
-      padding: 8px 16px;
-      background: var(--x-color-primary, #1d4ed8);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    button:hover { background: var(--x-color-primary-hover, #1e40af); }
-    /* Event log */
+                /* Event log */
     .log {
       background: var(--surface-bg);
       border: 1px solid var(--surface-border);
@@ -104,9 +91,9 @@
 </head>
 <body>
 
-<h1>x-text-area</h1>
+<x-typography variant="h1">x-text-area</x-typography>
 
-<h2>States</h2>
+<x-typography variant="overline">States</x-typography>
 <div class="grid">
 
   <div class="card">
@@ -239,7 +226,7 @@
 
 </div>
 
-<h2>Live Control Panel</h2>
+<x-typography variant="overline">Live Control Panel</x-typography>
 <div class="controls">
   <div class="control-row">
     <label>label <input type="text" id="ctrl-label" value="Message" placeholder="Label text"></label>
@@ -252,18 +239,18 @@
     <label>rows <input type="number" id="ctrl-rows" value="3" min="1" max="20"></label>
     <label>maxlength <input type="number" id="ctrl-maxlength" placeholder="none" min="1"></label>
     <label>resize
-      <select id="ctrl-resize">
+      <x-select id="ctrl-resize" value="vertical">
         <option value="vertical" selected>vertical</option>
         <option value="none">none</option>
         <option value="horizontal">horizontal</option>
         <option value="both">both</option>
-      </select>
+      </x-select>
     </label>
   </div>
   <div class="control-row">
-    <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
-    <label>readonly <input type="checkbox" id="ctrl-readonly"></label>
-    <label>required <input type="checkbox" id="ctrl-required"></label>
+    <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
+    <label>readonly <x-switch id="ctrl-readonly"></x-switch></label>
+    <label>required <x-switch id="ctrl-required"></x-switch></label>
   </div>
 </div>
 
@@ -272,7 +259,7 @@
   <x-text-area id="live-ta" name="live" label="Message" placeholder="Type here…" rows="3"></x-text-area>
 </div>
 
-<h2>Event Log</h2>
+<x-typography variant="overline">Event Log</x-typography>
 <div class="log" id="event-log">
   <div class="log-empty">Events will appear here…</div>
 </div>

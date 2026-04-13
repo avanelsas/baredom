@@ -19,15 +19,7 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .stack {
         display: flex;
         flex-direction: column;
@@ -55,18 +47,8 @@
         color: var(--input-fg);
       }
 
-      .row button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
-
-      .row button:hover { background: #1e40af; }
-
+      
+      
       .log {
         margin-top: 24px;
         padding: 12px;
@@ -122,52 +104,52 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-divider demo</h1>
+    <x-typography variant="h1">x-divider demo</x-typography>
 
-    <h2>Default (horizontal, solid)</h2>
+    <x-typography variant="overline">Default (horizontal, solid)</x-typography>
     <div class="stack">
       <p class="section-text">Content above</p>
       <x-divider></x-divider>
       <p class="section-text">Content below</p>
     </div>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="stack">
       <x-divider variant="solid"></x-divider>
       <x-divider variant="dashed"></x-divider>
       <x-divider variant="dotted"></x-divider>
     </div>
 
-    <h2>Custom colour and thickness</h2>
+    <x-typography variant="overline">Custom colour and thickness</x-typography>
     <div class="stack">
       <x-divider color="#3b82f6" thickness="2px"></x-divider>
       <x-divider color="#ef4444" thickness="3px" variant="dashed"></x-divider>
       <x-divider color="#10b981" thickness="1px" variant="dotted"></x-divider>
     </div>
 
-    <h2>With label — center (default)</h2>
+    <x-typography variant="overline">With label — center (default)</x-typography>
     <div class="stack">
       <x-divider label="Section A"></x-divider>
     </div>
 
-    <h2>With label — start</h2>
+    <x-typography variant="overline">With label — start</x-typography>
     <div class="stack">
       <x-divider label="Introduction" align="start"></x-divider>
     </div>
 
-    <h2>With label — end</h2>
+    <x-typography variant="overline">With label — end</x-typography>
     <div class="stack">
       <x-divider label="End of section" align="end"></x-divider>
     </div>
 
-    <h2>Inset</h2>
+    <x-typography variant="overline">Inset</x-typography>
     <div class="surface">
       <p class="section-text" style="margin:0 0 12px">Above the inset divider</p>
       <x-divider inset="24px"></x-divider>
       <p class="section-text" style="margin:12px 0 0">Below the inset divider</p>
     </div>
 
-    <h2>Vertical</h2>
+    <x-typography variant="overline">Vertical</x-typography>
     <div class="vertical-demo">
       <span>Left content</span>
       <x-divider orientation="vertical" style="height:100%; align-self:stretch"></x-divider>
@@ -176,25 +158,25 @@
       <span>More content</span>
     </div>
 
-    <h2>Decorative (role=presentation)</h2>
+    <x-typography variant="overline">Decorative (role=presentation)</x-typography>
     <div class="stack">
       <x-divider role="presentation" color="#a855f7" thickness="2px"></x-divider>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="row">
       <label>orientation
-        <select id="ctrl-orientation">
+        <x-select id="ctrl-orientation" value="horizontal">
           <option value="horizontal">horizontal</option>
           <option value="vertical">vertical</option>
-        </select>
+        </x-select>
       </label>
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="solid">
           <option value="solid">solid</option>
           <option value="dashed">dashed</option>
           <option value="dotted">dotted</option>
-        </select>
+        </x-select>
       </label>
       <label>thickness
         <input type="text" id="ctrl-thickness" placeholder="e.g. 2px" style="width:80px">
@@ -209,21 +191,21 @@
         <input type="text" id="ctrl-label" placeholder="optional text" style="width:120px">
       </label>
       <label>align
-        <select id="ctrl-align">
+        <x-select id="ctrl-align" value="center">
           <option value="center">center</option>
           <option value="start">start</option>
           <option value="end">end</option>
-        </select>
+        </x-select>
       </label>
       <label>role
-        <select id="ctrl-role">
+        <x-select id="ctrl-role" value="separator">
           <option value="separator">separator</option>
           <option value="presentation">presentation</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
-      <button id="apply-btn">Apply</button>
-      <button id="reset-btn">Reset</button>
+      <x-button id="apply-btn">Apply</x-button>
+      <x-button id="reset-btn">Reset</x-button>
     </div>
 
     <div id="live-zone">

@@ -19,15 +19,7 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .row {
         display: flex;
         gap: 8px;
@@ -48,18 +40,8 @@
         color: var(--input-fg);
       }
 
-      .row button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
-
-      .row button:hover { background: #1e40af; }
-
+      
+      
       /* ── Demo helpers ─────────────────────────────────────── */
 
       .surface {
@@ -107,17 +89,7 @@
         color: #3b82f6;
       }
 
-      .nav-demo button {
-        font-size: 13px;
-        padding: 5px 14px;
-        border-radius: 6px;
-        border: 1px solid var(--surface-border);
-        background: var(--surface-bg);
-        color: var(--page-fg);
-        cursor: pointer;
-        margin-left: 8px;
-      }
-
+      
       /* Visualise the spacer with an outline when .show-outline is active */
       .show-outline x-spacer {
         outline: 2px dashed #f59e0b;
@@ -139,9 +111,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-spacer demo</h1>
+    <x-typography variant="h1">x-spacer demo</x-typography>
 
-    <h2>Vertical spacer (default)</h2>
+    <x-typography variant="overline">Vertical spacer (default)</x-typography>
     <p class="section-note">Creates vertical whitespace between stacked elements.</p>
     <div class="col-demo surface">
       <div class="block">Block A</div>
@@ -151,7 +123,7 @@
       <div class="block">Block C (8px gap)</div>
     </div>
 
-    <h2>Horizontal spacer</h2>
+    <x-typography variant="overline">Horizontal spacer</x-typography>
     <p class="section-note">Creates horizontal whitespace in a flex row.</p>
     <div class="row-demo surface">
       <div class="block">Left</div>
@@ -159,24 +131,24 @@
       <div class="block">Right (32px gap)</div>
     </div>
 
-    <h2>Grow spacer — flex spring</h2>
+    <x-typography variant="overline">Grow spacer — flex spring</x-typography>
     <p class="section-note">Pushes trailing content to the end of a flex row (like a nav bar).</p>
     <div class="nav-demo">
       <span class="logo">MyApp</span>
       <x-spacer grow></x-spacer>
-      <button>Docs</button>
-      <button>Sign in</button>
+      <x-button variant="secondary">Docs</x-button>
+      <x-button variant="secondary">Sign in</x-button>
     </div>
 
-    <h2>Grow spacer with minimum size</h2>
+    <x-typography variant="overline">Grow spacer with minimum size</x-typography>
     <p class="section-note">Grow with <code>size="16px"</code> as flex basis / minimum.</p>
     <div class="nav-demo">
       <span class="logo">MyApp</span>
       <x-spacer grow size="16px"></x-spacer>
-      <button>Settings</button>
+      <x-button variant="secondary">Settings</x-button>
     </div>
 
-    <h2>Multiple sizes</h2>
+    <x-typography variant="overline">Multiple sizes</x-typography>
     <div class="col-demo surface">
       <div class="block">0.5rem</div>
       <x-spacer size="0.5rem"></x-spacer>
@@ -187,25 +159,25 @@
       <div class="block">3rem</div>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="row">
       <label>size
         <input type="text" id="ctrl-size" value="1rem" style="width:90px">
       </label>
       <label>axis
-        <select id="ctrl-axis">
+        <x-select id="ctrl-axis" value="vertical">
           <option value="vertical">vertical</option>
           <option value="horizontal">horizontal</option>
-        </select>
+        </x-select>
       </label>
       <label style="display:flex;align-items:center;gap:4px;">
-        <input type="checkbox" id="ctrl-grow">
+        <x-switch id="ctrl-grow"></x-switch>
         grow
       </label>
-      <button id="apply-btn">Apply</button>
-      <button id="reset-btn">Reset</button>
+      <x-button id="apply-btn">Apply</x-button>
+      <x-button id="reset-btn">Reset</x-button>
       <label style="display:flex;align-items:center;gap:4px;margin-left:8px;">
-        <input type="checkbox" id="ctrl-outline">
+        <x-switch id="ctrl-outline"></x-switch>
         show outline
       </label>
     </div>

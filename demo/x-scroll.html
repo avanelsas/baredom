@@ -10,9 +10,7 @@
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; }
 
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-
+            
       #scroller {
         width: 100%;
         height: 300px;
@@ -96,19 +94,7 @@
         padding-top: 8px;
         border-top: 1px solid var(--border);
       }
-      .nav-row button {
-        padding: 4px 12px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: var(--input-bg);
-        color: var(--input-fg);
-        cursor: pointer;
-        font-size: 13px;
-      }
-      .nav-row button:hover {
-        background: var(--border);
-      }
-      .nav-row input[type="number"] {
+                  .nav-row input[type="number"] {
         width: 60px;
         background: var(--input-bg);
         color: var(--input-fg);
@@ -123,16 +109,7 @@
         justify-content: space-between;
         align-items: center;
       }
-      .log-header button {
-        font-size: 11px;
-        padding: 2px 8px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: var(--input-bg);
-        color: var(--input-fg);
-        cursor: pointer;
-      }
-      #log {
+            #log {
         height: 200px;
         overflow-y: auto;
         background: var(--surface-bg);
@@ -153,9 +130,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-scroll demo</h1>
+    <x-typography variant="h1">x-scroll demo</x-typography>
 
-    <h2>Component</h2>
+    <x-typography variant="overline">Component</x-typography>
 
     <x-scroll id="scroller" snap="center" show-indicators gap="16" label="Demo carousel">
       <div class="slide">1</div>
@@ -170,7 +147,7 @@
       <div class="slide">10</div>
     </x-scroll>
 
-    <h2>Controls</h2>
+    <x-typography variant="overline">Controls</x-typography>
 
     <div class="controls">
       <!-- Mode -->
@@ -185,22 +162,22 @@
       <!-- Snap -->
       <div class="control-group">
         <label>Snap</label>
-        <select id="ctrl-snap">
+        <x-select id="ctrl-snap" value="center">
           <option value="none">none</option>
           <option value="start">start</option>
           <option value="center" selected>center</option>
           <option value="end">end</option>
-        </select>
+        </x-select>
       </div>
 
       <!-- Loop -->
       <div class="control-group">
-        <label><input type="checkbox" id="ctrl-loop"> Loop (infinite)</label>
+        <label><x-switch id="ctrl-loop"></x-switch> Loop (infinite)</label>
       </div>
 
       <!-- Auto-play -->
       <div class="control-group">
-        <label><input type="checkbox" id="ctrl-autoplay"> Auto-play</label>
+        <label><x-switch id="ctrl-autoplay"></x-switch> Auto-play</label>
       </div>
 
       <!-- Interval -->
@@ -211,17 +188,17 @@
 
       <!-- Show controls -->
       <div class="control-group">
-        <label><input type="checkbox" id="ctrl-show-controls" checked> Show controls</label>
+        <label><x-switch id="ctrl-show-controls" checked></x-switch> Show controls</label>
       </div>
 
       <!-- Show indicators -->
       <div class="control-group">
-        <label><input type="checkbox" id="ctrl-show-indicators" checked> Show indicators</label>
+        <label><x-switch id="ctrl-show-indicators" checked></x-switch> Show indicators</label>
       </div>
 
       <!-- Disabled -->
       <div class="control-group">
-        <label><input type="checkbox" id="ctrl-disabled"> Disabled</label>
+        <label><x-switch id="ctrl-disabled"></x-switch> Disabled</label>
       </div>
 
       <!-- Gap -->
@@ -274,11 +251,11 @@
 
       <!-- Manual navigation -->
       <div class="nav-row">
-        <button id="btn-prev">Prev</button>
-        <button id="btn-next">Next</button>
+        <x-button id="btn-prev">Prev</x-button>
+        <x-button id="btn-next">Next</x-button>
         <span style="color:var(--muted);font-size:13px;">Go to:</span>
         <input type="number" id="goto-idx" min="0" max="9" value="0">
-        <button id="btn-goto">Go</button>
+        <x-button id="btn-goto">Go</x-button>
       </div>
     </div>
 
@@ -286,7 +263,7 @@
       Keyboard: Arrow Left/Right (or Up/Down in vertical) to navigate, Home/End to jump to first/last slide.
     </p>
 
-    <h2>Auto-play + Loop</h2>
+    <x-typography variant="overline">Auto-play + Loop</x-typography>
     <x-scroll loop auto-play interval="2000" show-indicators gap="12" label="Auto-play demo"
               style="width:100%;height:200px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:33%;">
       <div class="slide">A</div>
@@ -296,7 +273,7 @@
       <div class="slide">E</div>
     </x-scroll>
 
-    <h2>Vertical Mode</h2>
+    <x-typography variant="overline">Vertical Mode</x-typography>
     <x-scroll mode="vertical" show-indicators snap="center" label="Vertical demo"
               style="width:100%;height:300px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:25%;">
       <div class="slide" style="width:25%;margin:0 auto;">1</div>
@@ -306,8 +283,8 @@
     </x-scroll>
 
     <div class="log-header">
-      <h2 style="margin:0;">Event Log</h2>
-      <button id="btn-clear">Clear</button>
+      <x-typography variant="overline" style="margin:0;">Event Log</x-typography>
+      <x-button id="btn-clear">Clear</x-button>
     </div>
     <div id="log"></div>
 

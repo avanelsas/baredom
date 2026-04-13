@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+            .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input[type=text] {
@@ -28,9 +27,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-cancel-dialogue demo</h1>
+    <x-typography variant="h1">x-cancel-dialogue demo</x-typography>
 
-    <h2>Basic confirmation</h2>
+    <x-typography variant="overline">Basic confirmation</x-typography>
     <div class="row">
       <x-cancel-dialogue
         id="dlg-basic"
@@ -40,7 +39,7 @@
       <x-button id="open-basic" variant="default">Open dialog</x-button>
     </div>
 
-    <h2>Danger variant</h2>
+    <x-typography variant="overline">Danger variant</x-typography>
     <div class="row">
       <x-cancel-dialogue
         id="dlg-danger"
@@ -53,7 +52,7 @@
       <x-button id="open-danger" variant="danger">Delete item</x-button>
     </div>
 
-    <h2>No message</h2>
+    <x-typography variant="overline">No message</x-typography>
     <div class="row">
       <x-cancel-dialogue
         id="dlg-short"
@@ -64,7 +63,7 @@
       <x-button id="open-short" variant="default">Open (no message)</x-button>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>headline
         <input type="text" id="ctrl-headline" value="Discard changes?" style="width:180px">
@@ -78,7 +77,7 @@
       <label>cancel-text
         <input type="text" id="ctrl-cancel" value="Keep editing" style="width:90px">
       </label>
-      <label>danger <input type="checkbox" id="ctrl-danger"></label>
+      <label>danger <x-switch id="ctrl-danger"></x-switch></label>
     </div>
     <div class="row">
       <x-cancel-dialogue id="dlg-live"></x-cancel-dialogue>
@@ -128,7 +127,7 @@
         else
           liveDlg.removeAttribute("danger");
       }
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

@@ -9,8 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .examples { display: flex; flex-direction: column; gap: 24px; max-width: 480px; }
+            .examples { display: flex; flex-direction: column; gap: 24px; max-width: 480px; }
       label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
       label input[type=text], label input[type=email] {
         font-size: 14px; padding: 6px 10px; border-radius: 6px;
@@ -30,10 +29,10 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-fieldset demo</h1>
+    <x-typography variant="h1">x-fieldset demo</x-typography>
 
     <div class="examples">
-      <h2>Basic grouping</h2>
+      <x-typography variant="overline">Basic grouping</x-typography>
       <x-fieldset legend="Personal Information">
         <label>
           First name
@@ -49,7 +48,7 @@
         </label>
       </x-fieldset>
 
-      <h2>Disabled</h2>
+      <x-typography variant="overline">Disabled</x-typography>
       <x-fieldset legend="Payment Details" disabled>
         <label>
           Card number
@@ -61,7 +60,7 @@
         </label>
       </x-fieldset>
 
-      <h2>No legend — aria-label only</h2>
+      <x-typography variant="overline">No legend — aria-label only</x-typography>
       <x-fieldset aria-label="Shipping address">
         <label>
           Street
@@ -73,7 +72,7 @@
         </label>
       </x-fieldset>
 
-      <h2>With aria-describedby</h2>
+      <x-typography variant="overline">With aria-describedby</x-typography>
       <p id="contact-desc" style="font-size:13px;color:var(--muted);margin:0 0 8px">
         We only use this information to confirm your identity.
       </p>
@@ -88,14 +87,14 @@
         </label>
       </x-fieldset>
 
-      <h2>Custom legend text (checkboxes)</h2>
+      <x-typography variant="overline">Custom legend text (checkboxes)</x-typography>
       <x-fieldset legend="Notification Preferences">
-        <div class="row"><input type="checkbox" id="n1" /><label for="n1">Email updates</label></div>
-        <div class="row"><input type="checkbox" id="n2" /><label for="n2">SMS alerts</label></div>
-        <div class="row"><input type="checkbox" id="n3" checked /><label for="n3">Weekly digest</label></div>
+        <div class="row"><x-checkbox id="n1"></x-checkbox><label for="n1">Email updates</label></div>
+        <div class="row"><x-checkbox id="n2"></x-checkbox><label for="n2">SMS alerts</label></div>
+        <div class="row"><x-checkbox id="n3" checked></x-checkbox><label for="n3">Weekly digest</label></div>
       </x-fieldset>
 
-      <h2>Live controls</h2>
+      <x-typography variant="overline">Live controls</x-typography>
       <div class="controls">
         <label>
           legend
@@ -103,7 +102,7 @@
         </label>
         <label>
           disabled
-          <input type="checkbox" id="ctrl-disabled" />
+          <x-switch id="ctrl-disabled"></x-switch>
         </label>
       </div>
       <x-fieldset id="live-fs" legend="Billing Address">
@@ -126,7 +125,7 @@
         liveFs.disabled = document.getElementById("ctrl-disabled").checked;
       }
 
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

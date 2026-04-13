@@ -9,9 +9,7 @@
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.5; max-width: 720px; }
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-      .stack { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+                  .stack { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
       .row   { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
       .card-skeleton { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
       .card-skeleton .lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
@@ -28,30 +26,30 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-skeleton demo</h1>
+    <x-typography variant="h1">x-skeleton demo</x-typography>
 
-    <h2>Variants — default size</h2>
+    <x-typography variant="overline">Variants — default size</x-typography>
     <div class="stack">
       <x-skeleton variant="rect"></x-skeleton>
       <x-skeleton variant="text"></x-skeleton>
       <x-skeleton variant="circle"></x-skeleton>
     </div>
 
-    <h2>Animations</h2>
+    <x-typography variant="overline">Animations</x-typography>
     <div class="stack">
       <x-skeleton animation="pulse" height="2rem"></x-skeleton>
       <x-skeleton animation="wave"  height="2rem"></x-skeleton>
       <x-skeleton animation="none"  height="2rem"></x-skeleton>
     </div>
 
-    <h2>Explicit sizes</h2>
+    <x-typography variant="overline">Explicit sizes</x-typography>
     <div class="stack">
       <x-skeleton height="4rem"></x-skeleton>
       <x-skeleton width="60%" height="1rem"></x-skeleton>
       <x-skeleton variant="circle" width="56px" height="56px"></x-skeleton>
     </div>
 
-    <h2>Card placeholder composition</h2>
+    <x-typography variant="overline">Card placeholder composition</x-typography>
     <div class="card-skeleton">
       <x-skeleton variant="circle" width="48px" height="48px"></x-skeleton>
       <div class="lines">
@@ -65,7 +63,7 @@
       <x-skeleton variant="text" width="60%"></x-skeleton>
     </div>
 
-    <h2>Custom theme</h2>
+    <x-typography variant="overline">Custom theme</x-typography>
     <div class="stack">
       <x-skeleton
         animation="wave"
@@ -85,21 +83,21 @@
       </x-skeleton>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="rect">
           <option value="rect" selected>rect</option>
           <option value="text">text</option>
           <option value="circle">circle</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="pulse">
           <option value="pulse" selected>pulse</option>
           <option value="wave">wave</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>width
         <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:100px">
@@ -129,7 +127,7 @@
         else        live.removeAttribute('height');
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

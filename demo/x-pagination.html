@@ -24,16 +24,7 @@
       line-height: 1.4;
     }
 
-    h1 { font-size: 1.5rem; margin-bottom: 2rem; }
-    h2 {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin: 32px 0 10px;
-    }
-
+        
     .demo-row {
       display: flex;
       flex-direction: column;
@@ -99,10 +90,10 @@
   <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
-  <h1>x-pagination</h1>
+  <x-typography variant="h1">x-pagination</x-typography>
 
   <!-- ── Live Control Panel ────────────────────────────────────────── -->
-  <h2>Interactive</h2>
+  <x-typography variant="overline">Interactive</x-typography>
   <div class="panel">
     <div class="controls">
       <div class="control-group">
@@ -123,15 +114,15 @@
       </div>
       <div class="control-group">
         <label for="ctrl-size">size</label>
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
-        </select>
+        </x-select>
       </div>
       <div class="control-group" style="justify-content:flex-end">
         <label>
-          <input id="ctrl-disabled" type="checkbox"> disabled
+          <x-switch id="ctrl-disabled"></x-switch> disabled
         </label>
       </div>
     </div>
@@ -146,7 +137,7 @@
   <hr class="section-sep">
 
   <!-- ── Sizes ─────────────────────────────────────────────────────── -->
-  <h2>Sizes</h2>
+  <x-typography variant="overline">Sizes</x-typography>
   <div class="demo-row">
     <div>
       <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">size="sm"</p>
@@ -165,7 +156,7 @@
   <hr class="section-sep">
 
   <!-- ── Ellipsis variants ─────────────────────────────────────────── -->
-  <h2>Ellipsis behaviour</h2>
+  <x-typography variant="overline">Ellipsis behaviour</x-typography>
   <div class="demo-row">
     <div>
       <p style="font-size:0.75rem;color:#888;margin:0 0 0.5rem">Page 1 of 20 — ellipsis right</p>
@@ -188,13 +179,13 @@
   <hr class="section-sep">
 
   <!-- ── Disabled ───────────────────────────────────────────────────── -->
-  <h2>Disabled</h2>
+  <x-typography variant="overline">Disabled</x-typography>
   <x-pagination page="3" total-pages="10" disabled></x-pagination>
 
   <hr class="section-sep">
 
   <!-- ── Custom slot content ────────────────────────────────────────── -->
-  <h2>Custom prev/next slot content</h2>
+  <x-typography variant="overline">Custom prev/next slot content</x-typography>
   <x-pagination page="5" total-pages="10">
     <span slot="prev">&#8592; Back</span>
     <span slot="next">Forward &#8594;</span>
@@ -203,7 +194,7 @@
   <hr class="section-sep">
 
   <!-- ── Custom theme ───────────────────────────────────────────────── -->
-  <h2>Custom theme (purple pill buttons)</h2>
+  <x-typography variant="overline">Custom theme (purple pill buttons)</x-typography>
   <x-pagination class="themed-pagination" page="3" total-pages="10"></x-pagination>
 
   <script>

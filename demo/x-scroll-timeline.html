@@ -10,8 +10,7 @@
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; margin: 0 auto; }
 
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-
+      
       .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
 
       /* ── Controls panel ─────────────────────────────────────── */
@@ -53,7 +52,7 @@
   <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
-    <h1>&lt;x-scroll-timeline&gt;</h1>
+    <x-typography variant="h1">&lt;x-scroll-timeline&gt;</x-typography>
     <p style="color:var(--muted);margin:0 0 16px;">Scroll-driven timeline with markers, progress track, and curved path support</p>
 
     <!-- ── Controls ──────────────────────────────────────────── -->
@@ -61,26 +60,26 @@
       <strong>Controls</strong>
       <label>
         Layout
-        <select id="ctl-layout">
+        <x-select id="ctl-layout" value="alternating">
           <option value="alternating" selected>alternating</option>
           <option value="left">left</option>
           <option value="right">right</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Track
-        <select id="ctl-track">
+        <x-select id="ctl-track" value="straight">
           <option value="straight" selected>straight</option>
           <option value="curved">curved</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Marker
-        <select id="ctl-marker">
+        <x-select id="ctl-marker" value="dot">
           <option value="dot" selected>dot</option>
           <option value="ring">ring</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Threshold
@@ -88,16 +87,16 @@
         <span class="value" id="ctl-threshold-val">0.5</span>
       </label>
       <label>
-        <input id="ctl-no-progress" type="checkbox" />
+        <x-switch id="ctl-no-progress"></x-switch>
         No Progress
       </label>
       <label>
-        <input id="ctl-disabled" type="checkbox" />
+        <x-switch id="ctl-disabled"></x-switch>
         Disabled
       </label>
       <hr style="border:none;border-top:1px solid var(--border);margin:8px 0;" />
       <label>
-        <input id="ctl-autoplay" type="checkbox" />
+        <x-switch id="ctl-autoplay"></x-switch>
         Autoplay
       </label>
       <label>
@@ -106,11 +105,11 @@
         <span class="value" id="ctl-autoplay-speed-val">50</span>
       </label>
       <label>
-        <input id="ctl-autoplay-loop" type="checkbox" />
+        <x-switch id="ctl-autoplay-loop"></x-switch>
         Autoplay Loop
       </label>
       <label>
-        <input id="ctl-autoplay-indicator" type="checkbox" />
+        <x-switch id="ctl-autoplay-indicator"></x-switch>
         Autoplay Indicator
       </label>
       <div style="margin-top:8px;font-size:11px;color:var(--muted);">

@@ -13,25 +13,15 @@
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
-      h1 { font-size: 1.5rem; margin: 0 0 4px; }
-      p.desc { color: var(--muted); margin: 0 0 32px; font-size: 0.9rem; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+            p.desc { color: var(--muted); margin: 0 0 32px; font-size: 0.9rem; }
+            .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; }
       .controls select, .controls input[type=text] {
         font-size: 13px; padding: 4px 8px; border-radius: 6px;
         border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
       }
-      button {
-        font-size: 13px; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
-        background: var(--btn-bg); color: var(--btn-fg); font-weight: 500;
-      }
-      button.secondary {
-        background: var(--surface-bg); color: var(--page-fg);
-        border: 1px solid var(--surface-border);
-      }
-      .log {
+                  .log {
         margin-top: 24px; padding: 12px; border-radius: 8px;
         background: #111827; color: #f9fafb; min-height: 72px;
         white-space: pre-wrap; font-family: monospace; font-size: 12px;
@@ -54,41 +44,41 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-modal</h1>
+    <x-typography variant="h1">x-modal</x-typography>
     <p class="desc">Centered overlay dialog with opacity + scale animation. Traps focus, dismisses on Escape or backdrop click.</p>
 
-    <h2>Size Variants</h2>
+    <x-typography variant="overline">Size Variants</x-typography>
     <div class="row">
-      <button onclick="openModal('sm')">Small (sm)</button>
-      <button onclick="openModal('md')">Medium (md)</button>
-      <button onclick="openModal('lg')">Large (lg)</button>
-      <button onclick="openModal('xl')">Extra Large (xl)</button>
-      <button onclick="openModal('full')">Full Screen</button>
+      <x-button onclick="openModal('sm')">Small (sm)</x-button>
+      <x-button onclick="openModal('md')">Medium (md)</x-button>
+      <x-button onclick="openModal('lg')">Large (lg)</x-button>
+      <x-button onclick="openModal('xl')">Extra Large (xl)</x-button>
+      <x-button onclick="openModal('full')">Full Screen</x-button>
     </div>
 
-    <h2>Live Controls</h2>
+    <x-typography variant="overline">Live Controls</x-typography>
     <div class="controls">
       <label>Size:
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
           <option value="xl">xl</option>
           <option value="full">full</option>
-        </select>
+        </x-select>
       </label>
       <label>Label:
         <input type="text" id="ctrl-label" value="Modal" style="width:140px" />
       </label>
-      <button onclick="applyControls()">Apply &amp; Open</button>
+      <x-button onclick="applyControls()">Apply &amp; Open</x-button>
     </div>
 
-    <h2>API</h2>
+    <x-typography variant="overline">API</x-typography>
     <div class="row">
-      <button onclick="document.getElementById('demo-modal').show()">show()</button>
-      <button onclick="document.getElementById('demo-modal').hide()">hide()</button>
-      <button onclick="document.getElementById('demo-modal').toggle()">toggle()</button>
-      <button class="secondary" onclick="clearLog()">Clear log</button>
+      <x-button onclick="document.getElementById('demo-modal').show()">show()</x-button>
+      <x-button onclick="document.getElementById('demo-modal').hide()">hide()</x-button>
+      <x-button onclick="document.getElementById('demo-modal').toggle()">toggle()</x-button>
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
     </div>
 
     <div class="log" id="event-log">Events will appear here…</div>
@@ -97,7 +87,7 @@
     <x-modal id="demo-modal" size="md" label="Modal">
       <div slot="header" class="modal-header">
         <span id="modal-title">Modal</span>
-        <button class="modal-close" onclick="document.getElementById('demo-modal').hide()" aria-label="Close">&#x2715;</button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-modal').hide()" label="Close">&#x2715;</x-button>
       </div>
 
       <div class="modal-body-content">
@@ -108,8 +98,8 @@
       </div>
 
       <div slot="footer" class="modal-footer">
-        <button class="secondary" onclick="document.getElementById('demo-modal').hide()">Cancel</button>
-        <button onclick="handleConfirm()">Confirm</button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-modal').hide()">Cancel</x-button>
+        <x-button onclick="handleConfirm()">Confirm</x-button>
       </div>
     </x-modal>
 

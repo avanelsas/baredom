@@ -21,15 +21,7 @@
         max-width: 760px;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
       .timeline {
         display: flex;
         flex-direction: column;
@@ -91,9 +83,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-timeline-item demo</h1>
+    <x-typography variant="h1">x-timeline-item demo</x-typography>
 
-    <h2>Status variants</h2>
+    <x-typography variant="overline">Status variants</x-typography>
     <div class="timeline" id="variants">
       <x-timeline-item label="Jan 2024" title="Project kickoff" status="complete">
         <p style="margin:0;font-size:0.875rem">The project was officially launched.</p>
@@ -115,7 +107,7 @@
       </x-timeline-item>
     </div>
 
-    <h2>Connector variants</h2>
+    <x-typography variant="overline">Connector variants</x-typography>
     <div class="timeline">
       <x-timeline-item label="Step 1" title="Solid connector" status="complete">
         Default connector style.
@@ -128,7 +120,7 @@
       </x-timeline-item>
     </div>
 
-    <h2>Position end (label on right)</h2>
+    <x-typography variant="overline">Position end (label on right)</x-typography>
     <div class="timeline">
       <x-timeline-item position="end" label="Jan" title="First event" status="complete">
         Content appears on the left; label on the right.
@@ -138,7 +130,7 @@
       </x-timeline-item>
     </div>
 
-    <h2>Custom icon / Icon hidden</h2>
+    <x-typography variant="overline">Custom icon / Icon hidden</x-typography>
     <div class="timeline">
       <x-timeline-item label="🚀" title="Deployed" status="complete" icon="🚀">
         Custom emoji icon overrides the default glyph.
@@ -148,48 +140,48 @@
       </x-timeline-item>
     </div>
 
-    <h2>With actions slot</h2>
+    <x-typography variant="overline">With actions slot</x-typography>
     <div class="timeline">
       <x-timeline-item label="Pending" title="Awaiting approval" status="pending" data-last="">
         <p style="margin:0 0 0.5rem;font-size:0.875rem">This step requires sign-off from the manager.</p>
         <div slot="actions" style="display:flex;gap:8px">
-          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:none;background:var(--x-color-primary,#1d4ed8);color:#fff;cursor:pointer">Approve</button>
-          <button style="font-size:0.8125rem;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:inherit;cursor:pointer">Reject</button>
+          <x-button size="sm">Approve</x-button>
+          <x-button size="sm" variant="secondary">Reject</x-button>
         </div>
       </x-timeline-item>
     </div>
 
-    <h2>Disabled item</h2>
+    <x-typography variant="overline">Disabled item</x-typography>
     <div class="timeline">
       <x-timeline-item label="TBD" title="Future step" status="pending" disabled data-last="">
         This item is disabled and cannot be clicked.
       </x-timeline-item>
     </div>
 
-    <h2>Live control panel</h2>
+    <x-typography variant="overline">Live control panel</x-typography>
     <div class="surface">
       <div class="row">
         <label>status
-          <select id="ctrl-status">
+          <x-select id="ctrl-status" value="pending">
             <option value="pending">pending</option>
             <option value="active">active</option>
             <option value="complete">complete</option>
             <option value="error">error</option>
             <option value="warning">warning</option>
-          </select>
+          </x-select>
         </label>
         <label>connector
-          <select id="ctrl-connector">
+          <x-select id="ctrl-connector" value="solid">
             <option value="solid">solid</option>
             <option value="dashed">dashed</option>
             <option value="none">none</option>
-          </select>
+          </x-select>
         </label>
         <label>position
-          <select id="ctrl-position">
+          <x-select id="ctrl-position" value="start">
             <option value="start">start</option>
             <option value="end">end</option>
-          </select>
+          </x-select>
         </label>
       </div>
       <div class="row">
@@ -205,17 +197,17 @@
           <input type="text" id="ctrl-icon" placeholder="e.g. ★ or none" style="width:100px" />
         </label>
         <label style="display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="ctrl-disabled" />
+          <x-switch id="ctrl-disabled"></x-switch>
           disabled
         </label>
         <label style="display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="ctrl-data-last" />
+          <x-switch id="ctrl-data-last"></x-switch>
           data-last
         </label>
       </div>
     </div>
 
-    <h2>Live preview</h2>
+    <x-typography variant="overline">Live preview</x-typography>
     <div class="timeline">
       <x-timeline-item
         id="live"
@@ -226,7 +218,7 @@
       </x-timeline-item>
     </div>
 
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Waiting for events…</div>
 
     <script>

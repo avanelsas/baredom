@@ -13,8 +13,7 @@
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+            .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
       .controls input[type=text] {
@@ -40,54 +39,54 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-search-field demo</h1>
+    <x-typography variant="h1">x-search-field demo</x-typography>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Standalone</h2>
+    <x-typography variant="overline">Standalone</x-typography>
     <div class="stack">
       <x-search-field id="standalone" name="q" label="Search" placeholder="Search…"></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With required</h2>
+    <x-typography variant="overline">With required</x-typography>
     <div class="stack">
       <x-search-field name="q2" label="Required search" placeholder="Must fill in" required></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-search-field name="q3" label="Disabled" placeholder="Cannot search" disabled value="pre-filled"></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-typography variant="overline">Inside x-form (submit / reset integration)</x-typography>
     <x-form id="search-form">
       <x-search-field name="q" label="Site search" placeholder="Search the site…" required></x-search-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <button type="submit" class="btn btn-primary">Search</button>
-        <button type="reset"  class="btn btn-secondary">Reset</button>
+        <x-button onclick="document.getElementById('search-form').submit()">Search</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('search-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
       <label>label       <input type="text" id="ctrl-label" value="Search"></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
       <label>autocomplete
-        <select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+        <x-select id="ctrl-autocomplete" value="off">
           <option value="off">off</option>
           <option value="on">on</option>
-        </select>
+        </x-select>
       </label>
     </div>
     <x-search-field id="live-field" name="live" label="Search" placeholder="Search…"></x-search-field>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>
@@ -133,7 +132,7 @@
         if (required) liveField.setAttribute('required', ''); else liveField.removeAttribute('required');
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

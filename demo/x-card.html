@@ -95,13 +95,7 @@
         text-transform: uppercase;
       }
 
-      h1 {
-        margin: 14px 0 10px;
-        font-size: clamp(2rem, 3vw, 3rem);
-        line-height: 1.05;
-        letter-spacing: -0.03em;
-      }
-
+      
       .subtitle {
         max-width: 760px;
         margin: 0;
@@ -236,7 +230,7 @@
     <main class="page">
       <section class="hero">
         <div class="eyebrow">Web Component · Light & Dark Mode</div>
-        <h1>x-card</h1>
+        <x-typography variant="h1">x-card</x-typography>
         <p class="subtitle">
           Themeable surface container for grouping related content. This demo
           follows your system light and dark mode setting and uses a more
@@ -246,7 +240,7 @@
 
       <section class="stack">
         <section class="section-card">
-          <h2>Surface variants</h2>
+          <x-typography variant="overline">Surface variants</x-typography>
           <p>
             The card supports elevated, outlined, filled, and ghost treatments
             while keeping a consistent content structure.
@@ -304,7 +298,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Padding and radius</h2>
+          <x-typography variant="overline">Padding and radius</x-typography>
           <p>
             Spacing and corner radius can be tuned without changing the content model.
           </p>
@@ -327,7 +321,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Interactive behavior</h2>
+          <x-typography variant="overline">Interactive behavior</x-typography>
           <p>
             Interactive cards expose button-like activation while preserving the default slot content model.
           </p>
@@ -364,7 +358,7 @@
         </section>
 
         <section class="section-card">
-          <h2>Disabled state</h2>
+          <x-typography variant="overline">Disabled state</x-typography>
           <p>
             Disabled cards suppress interaction and present a muted visual state.
           </p>

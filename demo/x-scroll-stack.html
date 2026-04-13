@@ -10,9 +10,7 @@
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; margin: 0 auto; }
 
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-
+            
       .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
 
       /* ── Controls panel ─────────────────────────────────────── */
@@ -63,7 +61,7 @@
   <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
-    <h1>x-scroll-stack</h1>
+    <x-typography variant="h1">x-scroll-stack</x-typography>
     <p style="color: var(--muted); margin: 0 0 12px;">Scroll down to see cards stack on top of each other. Scroll back to unstack.</p>
 
     <!-- Controls -->
@@ -86,14 +84,14 @@
       </label>
       <label>
         Align
-        <select id="ctrl-align">
+        <x-select id="ctrl-align" value="center">
           <option value="top">top</option>
           <option value="center" selected>center</option>
           <option value="bottom">bottom</option>
-        </select>
+        </x-select>
       </label>
       <label>
-        <input type="checkbox" id="ctrl-disabled">
+        <x-switch id="ctrl-disabled"></x-switch>
         Disabled
       </label>
     </div>

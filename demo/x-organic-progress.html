@@ -17,23 +17,12 @@
       color: var(--page-fg);
       background: var(--page-bg);
     }
-    h1 { margin-bottom: 0.25rem; }
-    h2 { margin-top: 2rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
-    
+            
     .controls {
       display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center;
     }
-    .controls button {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface-bg);
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-    
-    .controls button:hover { background: var(--surface-bg); }
-    
+        
+        
     .controls label {
       display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
     }
@@ -63,11 +52,11 @@
 </head>
 <body>
 
-<h1>&lt;x-organic-progress&gt;</h1>
+<x-typography variant="h1">&lt;x-organic-progress&gt;</x-typography>
 <p>A progress indicator that grows a vine or honeycomb lattice structure.</p>
 
 <!-- ── Interactive demo ──────────────────────────────────────────────── -->
-<h2>Interactive</h2>
+<x-typography variant="overline">Interactive</x-typography>
 
 <div class="controls">
   <label>Progress:
@@ -75,27 +64,27 @@
     <span id="progress-value">0%</span>
   </label>
   <label>Variant:
-    <select id="variant-select">
+    <x-select id="variant-select" value="vine">
       <option value="vine">vine</option>
       <option value="honeycomb">honeycomb</option>
-    </select>
+    </x-select>
   </label>
   <label>Density:
-    <select id="density-select">
+    <x-select id="density-select" value="normal">
       <option value="sparse">sparse</option>
       <option value="normal" selected>normal</option>
       <option value="dense">dense</option>
-    </select>
+    </x-select>
   </label>
   <label>Seed:
     <input type="number" id="seed-input" value="42" min="1" max="9999" style="width:5rem;">
   </label>
   <label>
-    <input type="checkbox" id="bloom-check" checked>
+    <x-switch id="bloom-check" checked></x-switch>
     Bloom
   </label>
-  <button id="btn-indeterminate">Indeterminate</button>
-  <button id="btn-reset">Reset</button>
+  <x-button id="btn-indeterminate">Indeterminate</x-button>
+  <x-button id="btn-reset">Reset</x-button>
 </div>
 
 <div class="demo-box">
@@ -103,31 +92,31 @@
 </div>
 
 <!-- ── Vine variant ──────────────────────────────────────────────────── -->
-<h2>Vine (default)</h2>
+<x-typography variant="overline">Vine (default)</x-typography>
 <div class="demo-box">
   <x-organic-progress progress="65" variant="vine" label="Vine progress"></x-organic-progress>
 </div>
 
 <!-- ── Honeycomb variant ──────────────────────────────────────────────── -->
-<h2>Honeycomb</h2>
+<x-typography variant="overline">Honeycomb</x-typography>
 <div class="demo-box">
   <x-organic-progress progress="55" variant="honeycomb" label="Honeycomb progress"></x-organic-progress>
 </div>
 
 <!-- ── Indeterminate ─────────────────────────────────────────────────── -->
-<h2>Indeterminate</h2>
+<x-typography variant="overline">Indeterminate</x-typography>
 <div class="demo-box">
   <x-organic-progress label="Loading..."></x-organic-progress>
 </div>
 
 <!-- ── Dense ─────────────────────────────────────────────────────────── -->
-<h2>Dense</h2>
+<x-typography variant="overline">Dense</x-typography>
 <div class="demo-box">
   <x-organic-progress progress="70" density="dense" label="Dense progress"></x-organic-progress>
 </div>
 
 <!-- ── Custom colors ─────────────────────────────────────────────────── -->
-<h2>Custom Colors</h2>
+<x-typography variant="overline">Custom Colors</x-typography>
 <div class="demo-box">
   <x-organic-progress
     progress="80"
@@ -139,7 +128,7 @@
 </div>
 
 <!-- ── Event log ─────────────────────────────────────────────────────── -->
-<h2>Events</h2>
+<x-typography variant="overline">Events</x-typography>
 <div id="event-log">Waiting for events...</div>
 
 <script>

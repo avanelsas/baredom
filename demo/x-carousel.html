@@ -21,17 +21,8 @@
         background: var(--page-bg);
       }
 
-      h1 { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
-
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 32px 0 10px;
-      }
-
+      
+      
       .stack {
         display: flex;
         flex-direction: column;
@@ -77,17 +68,7 @@
         font-size: 13px;
       }
 
-      .controls button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
-      .controls button:hover { background: #1e40af; }
-
+            
       #event-log {
         font-family: monospace;
         font-size: 12px;
@@ -106,12 +87,12 @@
     <script src="demo-theme.js" defer></script>
     <script src="/js/main.js"></script>
 
-    <h1>x-carousel</h1>
+    <x-typography variant="h1">x-carousel</x-typography>
 
     <div class="stack">
 
       <!-- Basic carousel -->
-      <h2>Basic Slide Carousel</h2>
+      <x-typography variant="overline">Basic Slide Carousel</x-typography>
       <x-carousel id="basic" aria-label="Basic demo" style="--x-carousel-height:250px;">
         <div class="slide" style="background:#3b82f6;">Slide 1</div>
         <div class="slide" style="background:#ef4444;">Slide 2</div>
@@ -120,13 +101,13 @@
       </x-carousel>
 
       <!-- Controls -->
-      <h2>Controls</h2>
+      <x-typography variant="overline">Controls</x-typography>
       <div class="controls">
-        <label><input type="checkbox" id="ctl-autoplay"> Autoplay</label>
-        <label><input type="checkbox" id="ctl-loop"> Loop</label>
-        <label><input type="checkbox" id="ctl-disabled"> Disabled</label>
-        <label><input type="checkbox" id="ctl-arrows" checked> Arrows</label>
-        <label><input type="checkbox" id="ctl-dots" checked> Dots</label>
+        <label><x-switch id="ctl-autoplay"></x-switch> Autoplay</label>
+        <label><x-switch id="ctl-loop"></x-switch> Loop</label>
+        <label><x-switch id="ctl-disabled"></x-switch> Disabled</label>
+        <label><x-switch id="ctl-arrows" checked></x-switch> Arrows</label>
+        <label><x-switch id="ctl-dots" checked></x-switch> Dots</label>
         <label>Interval:
           <input type="number" id="ctl-interval" value="3000" min="100" step="500">
         </label>
@@ -134,16 +115,16 @@
           <input type="number" id="ctl-current" value="0" min="0">
         </label>
         <label>Transition:
-          <select id="ctl-transition">
+          <x-select id="ctl-transition" value="slide">
             <option value="slide">slide</option>
             <option value="fade">fade</option>
-          </select>
+          </x-select>
         </label>
         <label>Direction:
-          <select id="ctl-direction">
+          <x-select id="ctl-direction" value="horizontal">
             <option value="horizontal">horizontal</option>
             <option value="vertical">vertical</option>
-          </select>
+          </x-select>
         </label>
         <label>Duration:
           <input type="number" id="ctl-duration" value="300" min="0" step="50">ms
@@ -154,7 +135,7 @@
       </div>
 
       <!-- Autoplay + loop -->
-      <h2>Autoplay + Loop</h2>
+      <x-typography variant="overline">Autoplay + Loop</x-typography>
       <x-carousel autoplay loop interval="3000" aria-label="Autoplay demo" style="--x-carousel-height:200px;">
         <div class="slide" style="background:#6366f1;">Auto 1</div>
         <div class="slide" style="background:#ec4899;">Auto 2</div>
@@ -162,7 +143,7 @@
       </x-carousel>
 
       <!-- Fade transition -->
-      <h2>Fade Transition</h2>
+      <x-typography variant="overline">Fade Transition</x-typography>
       <x-carousel transition="fade" aria-label="Fade demo" style="--x-carousel-height:200px;">
         <div class="slide" style="background:#8b5cf6;">Fade 1</div>
         <div class="slide" style="background:#f43f5e;">Fade 2</div>
@@ -170,7 +151,7 @@
       </x-carousel>
 
       <!-- Vertical -->
-      <h2>Vertical Carousel</h2>
+      <x-typography variant="overline">Vertical Carousel</x-typography>
       <x-carousel direction="vertical" aria-label="Vertical demo" style="--x-carousel-height:250px;">
         <div class="slide" style="background:#059669;">Vertical 1</div>
         <div class="slide" style="background:#7c3aed;">Vertical 2</div>
@@ -178,7 +159,7 @@
       </x-carousel>
 
       <!-- Peek mode -->
-      <h2>Peek Mode</h2>
+      <x-typography variant="overline">Peek Mode</x-typography>
       <x-carousel peek="40px" loop aria-label="Peek demo" style="--x-carousel-height:200px;">
         <div class="slide" style="background:#0891b2;">Peek 1</div>
         <div class="slide" style="background:#c026d3;">Peek 2</div>
@@ -186,23 +167,23 @@
       </x-carousel>
 
       <!-- Disabled -->
-      <h2>Disabled</h2>
+      <x-typography variant="overline">Disabled</x-typography>
       <x-carousel disabled aria-label="Disabled demo" style="--x-carousel-height:150px;">
         <div class="slide" style="background:#94a3b8;">Disabled 1</div>
         <div class="slide" style="background:#64748b;">Disabled 2</div>
       </x-carousel>
 
       <!-- Single slide -->
-      <h2>Single Slide (controls hidden)</h2>
+      <x-typography variant="overline">Single Slide (controls hidden)</x-typography>
       <x-carousel aria-label="Single slide" style="--x-carousel-height:150px;">
         <div class="slide" style="background:#0ea5e9;">Only Slide</div>
       </x-carousel>
 
       <!-- Dynamic -->
-      <h2>Dynamic Slides</h2>
+      <x-typography variant="overline">Dynamic Slides</x-typography>
       <div class="controls">
-        <button id="add-slide">Add Slide</button>
-        <button id="remove-slide">Remove Slide</button>
+        <x-button id="add-slide">Add Slide</x-button>
+        <x-button id="remove-slide">Remove Slide</x-button>
       </div>
       <x-carousel id="dynamic" loop aria-label="Dynamic demo" style="--x-carousel-height:200px;">
         <div class="slide" style="background:#22c55e;">Dynamic 1</div>
@@ -210,7 +191,7 @@
       </x-carousel>
 
       <!-- Event log -->
-      <h2>Event Log</h2>
+      <x-typography variant="overline">Event Log</x-typography>
       <div id="event-log"></div>
 
     </div>

@@ -37,9 +37,7 @@
       line-height: 1.4;
     }
 
-    h1 { margin: 0 0 1.5rem; font-size: 1.5rem; }
-    h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 1rem; }
-
+        
     .card {
       background: var(--surface-bg);
       border: 1px solid var(--surface-border);
@@ -66,22 +64,7 @@
       min-width: 140px;
     }
 
-    button {
-      padding: 5px 12px;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      background: var(--x-color-primary, #1d4ed8);
-      color: #ffffff;
-    }
-    button:hover { background: var(--x-color-primary-hover, #1e40af); }
-    button.secondary { background: var(--surface-bg); color: var(--page-fg); border-color: var(--surface-border); }
-    button.secondary:hover { opacity: 0.8; }
-    button.danger { background: #dc2626; }
-    button.danger:hover { background: #b91c1c; }
-
+                        
     pre {
       background: var(--log-bg);
       color: var(--log-fg);
@@ -111,33 +94,33 @@
 </head>
 <body>
 
-<h1>x-toaster</h1>
+<x-typography variant="h1">x-toaster</x-typography>
 
 <!-- ── Quick-fire buttons ───────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Quick fire</h2>
+  <x-typography variant="overline">Quick fire</x-typography>
   <div class="row">
-    <button onclick="fire('info')">Info</button>
-    <button onclick="fire('success')">Success</button>
-    <button onclick="fire('warning')">Warning</button>
-    <button onclick="fire('error')">Error</button>
-    <button class="secondary" onclick="fireWithProgress()">With progress</button>
-    <button class="secondary" onclick="fireHeading()">With heading</button>
-    <button class="danger"    onclick="fireMany()">Spam × 8</button>
+    <x-button onclick="fire('info')">Info</x-button>
+    <x-button onclick="fire('success')">Success</x-button>
+    <x-button onclick="fire('warning')">Warning</x-button>
+    <x-button onclick="fire('error')">Error</x-button>
+    <x-button variant="secondary" onclick="fireWithProgress()">With progress</x-button>
+    <x-button variant="secondary" onclick="fireHeading()">With heading</x-button>
+    <x-button variant="danger"    onclick="fireMany()">Spam × 8</x-button>
   </div>
 </div>
 
 <!-- ── Custom toast builder ─────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Custom toast</h2>
+  <x-typography variant="overline">Custom toast</x-typography>
   <div class="grid">
     <label>Type
-      <select id="sel-type">
+      <x-select id="sel-type" value="info">
         <option value="info">info</option>
         <option value="success">success</option>
         <option value="warning">warning</option>
         <option value="error">error</option>
-      </select>
+      </x-select>
     </label>
     <label>Heading
       <input id="inp-heading" type="text" placeholder="(optional)" />
@@ -152,48 +135,48 @@
       <input id="inp-max" type="number" value="5" min="1" max="20" />
     </label>
     <label>Show progress
-      <select id="sel-progress">
+      <x-select id="sel-progress" value="no">
         <option value="no">No</option>
         <option value="yes">Yes</option>
-      </select>
+      </x-select>
     </label>
     <label>Dismissible
-      <select id="sel-dismissible">
+      <x-select id="sel-dismissible" value="yes">
         <option value="yes">Yes</option>
         <option value="no">No</option>
-      </select>
+      </x-select>
     </label>
   </div>
   <div class="row" style="margin-top:1rem;">
-    <button onclick="fireCustom()">Add toast</button>
-    <button class="danger" onclick="clearAll()">Clear all</button>
+    <x-button onclick="fireCustom()">Add toast</x-button>
+    <x-button variant="danger" onclick="clearAll()">Clear all</x-button>
   </div>
 </div>
 
 <!-- ── Position control ──────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Position</h2>
+  <x-typography variant="overline">Position</x-typography>
   <div class="row">
     <label>Corner / edge
-      <select id="sel-position" onchange="changePosition(this.value)">
+      <x-select id="sel-position" onchange="changePosition(this.value)" value="top-end">
         <option value="top-start">top-start</option>
         <option value="top-center">top-center</option>
         <option value="top-end" selected>top-end</option>
         <option value="bottom-start">bottom-start</option>
         <option value="bottom-center">bottom-center</option>
         <option value="bottom-end">bottom-end</option>
-      </select>
+      </x-select>
     </label>
-    <button onclick="fire('info')">Test position</button>
+    <x-button onclick="fire('info')">Test position</x-button>
   </div>
 </div>
 
 <!-- ── Event log ─────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Event log — <code>x-toaster-dismiss</code></h2>
+  <x-typography variant="overline">Event log — <code>x-toaster-dismiss</code></x-typography>
   <pre id="log"><span class="log-empty">Dismiss a toast to see events here…</span></pre>
   <div class="row" style="margin-top:0.75rem;">
-    <button class="secondary" onclick="clearLog()">Clear log</button>
+    <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </div>
 

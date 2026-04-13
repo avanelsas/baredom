@@ -17,9 +17,7 @@
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 800px; }
-      h1 { font-size: 1.5rem; margin: 0 0 4px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
+                  .row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
       .controls select, .controls input[type=text] {
@@ -44,10 +42,10 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-menu demo</h1>
+    <x-typography variant="h1">x-menu demo</x-typography>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Basic menu</h2>
+    <x-typography variant="overline">Basic menu</x-typography>
     <div class="row">
       <x-menu id="menu-basic" label="Actions">
         <button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></button>
@@ -60,7 +58,7 @@
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With icons</h2>
+    <x-typography variant="overline">With icons</x-typography>
     <div class="row">
       <x-menu id="menu-icons" label="File actions">
         <button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></button>
@@ -85,7 +83,7 @@
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With disabled items</h2>
+    <x-typography variant="overline">With disabled items</x-typography>
     <div class="row">
       <x-menu id="menu-disabled" label="Options">
         <button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></button>
@@ -98,7 +96,7 @@
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Placements</h2>
+    <x-typography variant="overline">Placements</x-typography>
     <div class="row" style="margin-top: 80px; justify-content: center;">
       <x-menu placement="top-start" label="Top start">
         <button slot="trigger" class="trigger-btn">top-start ↑</button>
@@ -127,18 +125,18 @@
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>placement
-        <select id="ctrl-placement">
+        <x-select id="ctrl-placement" value="bottom-start">
           <option value="bottom-start">bottom-start</option>
           <option value="bottom-end">bottom-end</option>
           <option value="top-start">top-start</option>
           <option value="top-end">top-end</option>
-        </select>
+        </x-select>
       </label>
       <label>label <input type="text" id="ctrl-label" value="Live menu"></label>
-      <label>open <input type="checkbox" id="ctrl-open"></label>
+      <label>open <x-switch id="ctrl-open"></x-switch></label>
     </div>
     <x-menu id="menu-live" label="Live menu">
       <button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></button>
@@ -149,7 +147,7 @@
     </x-menu>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>

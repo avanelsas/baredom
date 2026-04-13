@@ -13,8 +13,7 @@
       * { box-sizing: border-box; }
       
       body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 640px; }
-      h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 10px; }
-      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+            .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
       .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
       .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
       .controls input[type=text] {
@@ -40,44 +39,44 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-currency-field demo</h1>
+    <x-typography variant="h1">x-currency-field demo</x-typography>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Standalone (USD default)</h2>
+    <x-typography variant="overline">Standalone (USD default)</x-typography>
     <div class="stack">
       <x-currency-field id="standalone" name="amount" label="Amount" placeholder="0.00"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With hint and pre-filled value</h2>
+    <x-typography variant="overline">With hint and pre-filled value</x-typography>
     <div class="stack">
       <x-currency-field name="price" label="Price" hint="Enter the product price" value="1234.56" currency="USD"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Required validation</h2>
+    <x-typography variant="overline">Required validation</x-typography>
     <div class="stack">
       <x-currency-field name="required-amount" label="Required amount" required placeholder="Must fill in"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-currency-field name="disabled-amount" label="Disabled" disabled value="999.99" currency="EUR"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-typography variant="overline">Inside x-form (submit / reset integration)</x-typography>
     <x-form id="price-form">
       <x-currency-field name="price" label="Product price" placeholder="0.00" required currency="USD"></x-currency-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <button type="submit" class="btn btn-primary">Submit</button>
-        <button type="reset"  class="btn btn-secondary">Reset</button>
+        <x-button onclick="document.getElementById('price-form').submit()">Submit</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('price-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>currency    <input type="text" id="ctrl-currency" value="USD"></label>
       <label>locale      <input type="text" id="ctrl-locale" value=""></label>
@@ -87,14 +86,14 @@
       <label>placeholder <input type="text" id="ctrl-placeholder" value="0.00"></label>
       <label>hint        <input type="text" id="ctrl-hint" value=""></label>
       <label>error       <input type="text" id="ctrl-error" value=""></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
-      <label>readonly    <input type="checkbox" id="ctrl-readonly"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
+      <label>readonly    <x-switch id="ctrl-readonly"></x-switch></label>
     </div>
     <x-currency-field id="live-field" name="live" label="Amount" placeholder="0.00"></x-currency-field>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>
@@ -148,7 +147,7 @@
         if (readonly)    liveField.setAttribute('readonly', '');         else liveField.removeAttribute('readonly');
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

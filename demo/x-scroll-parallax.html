@@ -10,9 +10,7 @@
       html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
       body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; padding: 24px; max-width: 900px; }
 
-      h1 { font-size: 1.25rem; margin: 0 0 4px; }
-      h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-
+            
       .spacer { height: 60vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.2rem; }
 
       /* ── Controls panel ─────────────────────────────────────── */
@@ -25,8 +23,7 @@
       }
       .controls label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
       .controls select, .controls input[type="checkbox"] { accent-color: #3b82f6; }
-      .controls select { background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
-
+      
       /* ── Parallax sections ──────────────────────────────────── */
       .parallax-section {
         position: relative;
@@ -84,7 +81,7 @@
   <link rel="stylesheet" href="demo-responsive.css" />
   </head>
   <body>
-    <h1>x-scroll-parallax</h1>
+    <x-typography variant="h1">x-scroll-parallax</x-typography>
     <p style="color: var(--muted); margin: 0 0 16px;">Scroll down to see parallax effects in action.</p>
 
     <!-- Controls -->
@@ -92,20 +89,20 @@
       <strong>Controls</strong>
       <label>
         Direction
-        <select id="ctrl-direction">
+        <x-select id="ctrl-direction" value="vertical">
           <option value="vertical" selected>vertical</option>
           <option value="horizontal">horizontal</option>
-        </select>
+        </x-select>
       </label>
       <label>
         Easing
-        <select id="ctrl-easing">
+        <x-select id="ctrl-easing" value="none">
           <option value="none" selected>none</option>
           <option value="smooth">smooth</option>
-        </select>
+        </x-select>
       </label>
       <label>
-        <input type="checkbox" id="ctrl-disabled" />
+        <x-switch id="ctrl-disabled"></x-switch>
         Disabled
       </label>
     </div>
@@ -113,7 +110,7 @@
     <div class="spacer">Scroll down</div>
 
     <!-- ── Section 1: Three-layer depth ───────────────────── -->
-    <h2>Three-layer depth</h2>
+    <x-typography variant="overline">Three-layer depth</x-typography>
     <x-scroll-parallax id="demo1" class="parallax-section" label="Depth demo">
       <div class="layer bg" data-speed="0.3">Background (0.3)</div>
       <div class="layer mid" data-speed="0.7">Midground (0.7)</div>
@@ -123,7 +120,7 @@
     <div class="spacer">Keep scrolling</div>
 
     <!-- ── Section 2: Fade + scale ────────────────────────── -->
-    <h2>Fade + scale effects</h2>
+    <x-typography variant="overline">Fade + scale effects</x-typography>
     <x-scroll-parallax id="demo2" label="Card reveal" easing="smooth">
       <div class="card-layer" data-speed="0.6" data-opacity="fade" data-scale="grow">
         <div class="card">
@@ -136,7 +133,7 @@
     <div class="spacer">Keep scrolling</div>
 
     <!-- ── Section 3: Mixed speeds ────────────────────────── -->
-    <h2>Mixed speeds</h2>
+    <x-typography variant="overline">Mixed speeds</x-typography>
     <x-scroll-parallax id="demo3" class="parallax-section" label="Mixed speeds">
       <div class="layer bg" data-speed="0" style="font-size:1.2rem;">Fixed (0) - stays in place</div>
       <div class="layer mid" data-speed="0.5" data-opacity="fade">Half speed (0.5) + fade</div>
@@ -144,7 +141,7 @@
     </x-scroll-parallax>
 
     <!-- ── Section 4: Offset demo ──────────────────────────── -->
-    <h2>Offset positioning</h2>
+    <x-typography variant="overline">Offset positioning</x-typography>
     <x-scroll-parallax id="demo4" class="parallax-section" label="Offset demo">
       <div class="layer bg" data-speed="0.5" data-offset="-40">Offset -40px (starts higher)</div>
       <div class="layer mid" data-speed="0.5" data-offset="0">No offset (default)</div>

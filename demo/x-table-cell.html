@@ -15,9 +15,7 @@
       padding: 2rem;
     }
     
-    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
-    h2 { font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
-    .row {
+            .row {
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -66,24 +64,8 @@
     .log-entry { margin-bottom: 4px; }
     .log-entry span { color: var(--muted); }
     select, input[type=checkbox] { font-size: 0.875rem; }
-    select {
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background: var(--surface-bg);
-      color: var(--page-fg);
-    }
-    
-    button.action-btn {
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background: var(--surface-bg);
-      font-size: 0.875rem;
-      cursor: pointer;
-      color: var(--page-fg);
-    }
-    
+        
+        
     x-table-cell {
       --x-table-cell-border-color: var(--surface-border);
       --x-table-cell-sticky-bg: #f9fafb;
@@ -106,10 +88,10 @@
   <link rel="stylesheet" href="demo-responsive.css" />
 </head>
 <body>
-  <h1>x-table-cell</h1>
+  <x-typography variant="h1">x-table-cell</x-typography>
 
   <!-- ── Basic data cells ───────────────────────────────────────────────── -->
-  <h2>Data cells — alignment</h2>
+  <x-typography variant="overline">Data cells — alignment</x-typography>
   <div class="panel">
     <div class="grid-row">
       <x-table-cell align="start">Start (default)</x-table-cell>
@@ -126,7 +108,7 @@
   </div>
 
   <!-- ── Header cells ───────────────────────────────────────────────────── -->
-  <h2>Header cells</h2>
+  <x-typography variant="overline">Header cells</x-typography>
   <div class="panel">
     <div class="grid-row">
       <x-table-cell type="header">Name</x-table-cell>
@@ -137,7 +119,7 @@
   </div>
 
   <!-- ── Sortable header cells ──────────────────────────────────────────── -->
-  <h2>Sortable header cells</h2>
+  <x-typography variant="overline">Sortable header cells</x-typography>
   <div class="panel">
     <p style="font-size:0.875rem;margin:0 0 0.75rem;">Click a sort button to cycle: none → asc → desc → none</p>
     <div class="grid-row">
@@ -149,7 +131,7 @@
   </div>
 
   <!-- ── Truncate ───────────────────────────────────────────────────────── -->
-  <h2>Truncation</h2>
+  <x-typography variant="overline">Truncation</x-typography>
   <div class="panel">
     <div class="truncate-container">
       <x-table-cell truncate>This is a very long text string that will be cut off with an ellipsis</x-table-cell>
@@ -158,7 +140,7 @@
   </div>
 
   <!-- ── Column span ────────────────────────────────────────────────────── -->
-  <h2>Column span</h2>
+  <x-typography variant="overline">Column span</x-typography>
   <div class="panel">
     <div class="grid-row">
       <x-table-cell type="header" col-span="2">Spans 2</x-table-cell>
@@ -178,7 +160,7 @@
   </div>
 
   <!-- ── Sticky ─────────────────────────────────────────────────────────── -->
-  <h2>Sticky column (scroll horizontally)</h2>
+  <x-typography variant="overline">Sticky column (scroll horizontally)</x-typography>
   <div class="panel">
     <div class="scroll-container">
       <div class="scroll-row">
@@ -209,7 +191,7 @@
   </div>
 
   <!-- ── Disabled ───────────────────────────────────────────────────────── -->
-  <h2>Disabled state</h2>
+  <x-typography variant="overline">Disabled state</x-typography>
   <div class="panel">
     <div class="grid-row">
       <x-table-cell disabled>Data (disabled)</x-table-cell>
@@ -220,7 +202,7 @@
   </div>
 
   <!-- ── Custom sort icon ───────────────────────────────────────────────── -->
-  <h2>Custom sort icon via slot</h2>
+  <x-typography variant="overline">Custom sort icon via slot</x-typography>
   <div class="panel">
     <div class="grid-row">
       <x-table-cell type="header" sortable sort-direction="none">
@@ -239,77 +221,77 @@
   </div>
 
   <!-- ── Live control panel ─────────────────────────────────────────────── -->
-  <h2>Live control panel</h2>
+  <x-typography variant="overline">Live control panel</x-typography>
   <div class="panel">
     <div class="grid-row" style="margin-bottom:1.5rem;">
       <x-table-cell id="demo-cell" type="data">Preview cell</x-table-cell>
     </div>
     <div class="row">
       <label>type:
-        <select id="ctrl-type">
+        <x-select id="ctrl-type" value="data">
           <option value="data">data</option>
           <option value="header">header</option>
-        </select>
+        </x-select>
       </label>
       <label>scope:
-        <select id="ctrl-scope">
+        <x-select id="ctrl-scope" value="col">
           <option value="col">col</option>
           <option value="row">row</option>
           <option value="colgroup">colgroup</option>
           <option value="rowgroup">rowgroup</option>
-        </select>
+        </x-select>
       </label>
       <label>align:
-        <select id="ctrl-align">
+        <x-select id="ctrl-align" value="start">
           <option value="start">start</option>
           <option value="center">center</option>
           <option value="end">end</option>
-        </select>
+        </x-select>
       </label>
       <label>valign:
-        <select id="ctrl-valign">
+        <x-select id="ctrl-valign" value="middle">
           <option value="top">top</option>
           <option value="middle" selected>middle</option>
           <option value="bottom">bottom</option>
-        </select>
+        </x-select>
       </label>
     </div>
     <div class="row">
       <label>sticky:
-        <select id="ctrl-sticky">
+        <x-select id="ctrl-sticky" value="none">
           <option value="none">none</option>
           <option value="start">start</option>
           <option value="end">end</option>
-        </select>
+        </x-select>
       </label>
       <label>sort-direction:
-        <select id="ctrl-sort-dir">
+        <x-select id="ctrl-sort-dir" value="none">
           <option value="none">none</option>
           <option value="asc">asc</option>
           <option value="desc">desc</option>
-        </select>
+        </x-select>
       </label>
       <label>col-span:
-        <select id="ctrl-col-span">
+        <x-select id="ctrl-col-span" value="1">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
-        </select>
+        </x-select>
       </label>
     </div>
     <div class="row">
-      <label><input type="checkbox" id="ctrl-sortable"> sortable</label>
-      <label><input type="checkbox" id="ctrl-truncate"> truncate</label>
-      <label><input type="checkbox" id="ctrl-disabled"> disabled</label>
+      <label><x-switch id="ctrl-sortable"></x-switch> sortable</label>
+      <label><x-switch id="ctrl-truncate"></x-switch> truncate</label>
+      <label><x-switch id="ctrl-disabled"></x-switch> disabled</label>
     </div>
   </div>
 
   <!-- ── Event log ──────────────────────────────────────────────────────── -->
-  <h2>Event log</h2>
+  <x-typography variant="overline">Event log</x-typography>
   <div class="panel">
     <div class="row" style="margin-bottom:0.75rem;">
-      <button class="action-btn" id="clear-log">Clear log</button>
-      <button class="action-btn" id="cancel-next-sort">Cancel next sort</button>
+      <x-button variant="secondary" id="clear-log">Clear log</x-button>
+      <x-button variant="secondary" id="cancel-next-sort">Cancel next sort</x-button>
     </div>
     <div id="event-log" class="log">
       <div class="log-entry"><span>— events will appear here —</span></div>
