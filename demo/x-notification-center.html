@@ -103,7 +103,7 @@
           </x-select>
         </label>
         <label>max
-          <input type="number" id="ctrl-max" value="5" min="1" max="20" style="width:60px">
+          <x-form-field type="number" id="ctrl-max" value="5" style="width:60px"></x-form-field>
         </label>
         <x-button id="apply-settings-btn">Apply</x-button>
       </div>
@@ -129,15 +129,15 @@
           </x-select>
         </label>
         <label>text
-          <input type="text" id="push-text" value="Notification message" style="width:200px">
+          <x-form-field type="text" id="push-text" value="Notification message" style="width:200px"></x-form-field>
         </label>
       </div>
       <div class="row">
         <label>icon
-          <input type="text" id="push-icon" placeholder="glyph or 'none'" style="width:90px">
+          <x-form-field type="text" id="push-icon" placeholder="glyph or 'none'" style="width:90px"></x-form-field>
         </label>
         <label>timeoutMs
-          <input type="number" id="push-timeout" placeholder="none" style="width:80px">
+          <x-form-field type="number" id="push-timeout" placeholder="none" style="width:80px"></x-form-field>
         </label>
         <label>dismissible
           <x-select id="push-dismissible" value="">
@@ -146,7 +146,7 @@
           </x-select>
         </label>
         <label>id
-          <input type="text" id="push-id" placeholder="auto" style="width:100px">
+          <x-form-field type="text" id="push-id" placeholder="auto" style="width:100px"></x-form-field>
         </label>
       </div>
       <div class="row">

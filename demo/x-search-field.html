@@ -72,8 +72,12 @@
     <!-- ------------------------------------------------------------------ -->
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
-      <label>label       <input type="text" id="ctrl-label" value="Search"></label>
+      <label>placeholder
+        <x-form-field type="text" id="ctrl-placeholder" value="Search…"></x-form-field>
+      </label>
+      <label>label
+        <x-form-field type="text" id="ctrl-label" value="Search"></x-form-field>
+      </label>
       <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
       <label>required    <x-switch id="ctrl-required"></x-switch></label>
       <label>autocomplete
