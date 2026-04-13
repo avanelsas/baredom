@@ -59,7 +59,7 @@
         </x-select>
       </label>
       <label>height
-        <input type="number" id="ctrl-height" value="180" style="width:70px" min="60">
+        <x-form-field type="number" id="ctrl-height" value="180" style="width:70px"></x-form-field>
       </label>
       <label>grid <x-switch id="ctrl-grid" checked></x-switch></label>
       <label>axes <x-switch id="ctrl-axes" checked></x-switch></label>
@@ -156,7 +156,7 @@
         if (xfmt) live.setAttribute("x-format", xfmt); else live.removeAttribute("x-format");
         if (yfmt) live.setAttribute("y-format", yfmt); else live.removeAttribute("y-format");
       }
-      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

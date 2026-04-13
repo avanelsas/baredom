@@ -156,7 +156,7 @@
         update();
       });
 
-      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input', update);
       });

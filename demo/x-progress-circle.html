@@ -90,7 +90,7 @@
         <span id="ctrl-value-display">40</span>
       </label>
       <label>max
-        <input type="number" id="ctrl-max" value="100" min="1" style="width:60px">
+        <x-form-field type="number" id="ctrl-max" value="100" style="width:60px"></x-form-field>
       </label>
       <label>variant
         <x-select id="ctrl-variant" value="default">
@@ -128,16 +128,19 @@
       const valDisplay = document.getElementById('ctrl-value-display');
 
       function update() {
-        const value   = valSlider.value;
-        const max     = document.getElementById('ctrl-max').value;
+        const max     = document.getElementById('ctrl-max').value || '100';
         const variant = document.getElementById('ctrl-variant').value;
         const size    = document.getElementById('ctrl-size').value;
         const showVal = document.getElementById('ctrl-show-value').checked;
         const indet   = document.getElementById('ctrl-indeterminate').checked;
 
+        // Sync slider range with the max field so value can reach the new max
+        valSlider.max = max;
+        const value = valSlider.value;
+
         valDisplay.textContent = value;
         live.setAttribute('value', value);
-        live.setAttribute('max', max || '100');
+        live.setAttribute('max', max);
         live.setAttribute('variant', variant);
         live.setAttribute('size', size);
 
@@ -153,7 +156,7 @@
         update();
       });
 
-      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input', update);
       });

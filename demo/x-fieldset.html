@@ -125,7 +125,7 @@
         liveFs.disabled = document.getElementById("ctrl-disabled").checked;
       }
 
-      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

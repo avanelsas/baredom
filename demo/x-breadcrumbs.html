@@ -136,7 +136,7 @@
         if (max) live.setAttribute("max-items", max); else live.removeAttribute("max-items");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

@@ -182,8 +182,9 @@
 
       <!-- Interval -->
       <div class="control-group">
-        <label>Interval (ms)</label>
-        <input type="number" id="ctrl-interval" value="5000" min="500" step="500">
+        <label>Interval (ms)
+          <x-form-field type="number" id="ctrl-interval" value="5000"></x-form-field>
+        </label>
       </div>
 
       <!-- Show controls -->
@@ -253,8 +254,9 @@
       <div class="nav-row">
         <x-button id="btn-prev">Prev</x-button>
         <x-button id="btn-next">Next</x-button>
-        <span style="color:var(--muted);font-size:13px;">Go to:</span>
-        <input type="number" id="goto-idx" min="0" max="9" value="0">
+        <label style="color:var(--muted);font-size:13px;">Go to:
+          <x-form-field type="number" id="goto-idx" value="0"></x-form-field>
+        </label>
         <x-button id="btn-goto">Go</x-button>
       </div>
     </div>
