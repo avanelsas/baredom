@@ -117,13 +117,13 @@
 <div class="card">
   <x-typography variant="overline">Quick fire</x-typography>
   <div class="row">
-    <button onclick="fire('info')">Info</button>
-    <button onclick="fire('success')">Success</button>
-    <button onclick="fire('warning')">Warning</button>
-    <button onclick="fire('error')">Error</button>
-    <button class="secondary" onclick="fireWithProgress()">With progress</button>
-    <button class="secondary" onclick="fireHeading()">With heading</button>
-    <button class="danger"    onclick="fireMany()">Spam × 8</button>
+    <x-button onclick="fire('info')">Info</x-button>
+    <x-button onclick="fire('success')">Success</x-button>
+    <x-button onclick="fire('warning')">Warning</x-button>
+    <x-button onclick="fire('error')">Error</x-button>
+    <x-button class="secondary" onclick="fireWithProgress()">With progress</x-button>
+    <x-button class="secondary" onclick="fireHeading()">With heading</x-button>
+    <x-button class="danger"    onclick="fireMany()">Spam × 8</x-button>
   </div>
 </div>
 
@@ -165,8 +165,8 @@
     </label>
   </div>
   <div class="row" style="margin-top:1rem;">
-    <button onclick="fireCustom()">Add toast</button>
-    <button class="danger" onclick="clearAll()">Clear all</button>
+    <x-button onclick="fireCustom()">Add toast</x-button>
+    <x-button class="danger" onclick="clearAll()">Clear all</x-button>
   </div>
 </div>
 
@@ -184,7 +184,7 @@
         <option value="bottom-end">bottom-end</option>
       </select>
     </label>
-    <button onclick="fire('info')">Test position</button>
+    <x-button onclick="fire('info')">Test position</x-button>
   </div>
 </div>
 
@@ -193,7 +193,7 @@
   <x-typography variant="overline">Event log — <code>x-toaster-dismiss</code></x-typography>
   <pre id="log"><span class="log-empty">Dismiss a toast to see events here…</span></pre>
   <div class="row" style="margin-top:0.75rem;">
-    <button class="secondary" onclick="clearLog()">Clear log</button>
+    <x-button class="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </div>
 

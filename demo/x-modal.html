@@ -59,11 +59,11 @@
 
     <x-typography variant="overline">Size Variants</x-typography>
     <div class="row">
-      <button onclick="openModal('sm')">Small (sm)</button>
-      <button onclick="openModal('md')">Medium (md)</button>
-      <button onclick="openModal('lg')">Large (lg)</button>
-      <button onclick="openModal('xl')">Extra Large (xl)</button>
-      <button onclick="openModal('full')">Full Screen</button>
+      <x-button onclick="openModal('sm')">Small (sm)</x-button>
+      <x-button onclick="openModal('md')">Medium (md)</x-button>
+      <x-button onclick="openModal('lg')">Large (lg)</x-button>
+      <x-button onclick="openModal('xl')">Extra Large (xl)</x-button>
+      <x-button onclick="openModal('full')">Full Screen</x-button>
     </div>
 
     <x-typography variant="overline">Live Controls</x-typography>
@@ -80,15 +80,15 @@
       <label>Label:
         <input type="text" id="ctrl-label" value="Modal" style="width:140px" />
       </label>
-      <button onclick="applyControls()">Apply &amp; Open</button>
+      <x-button onclick="applyControls()">Apply &amp; Open</x-button>
     </div>
 
     <x-typography variant="overline">API</x-typography>
     <div class="row">
-      <button onclick="document.getElementById('demo-modal').show()">show()</button>
-      <button onclick="document.getElementById('demo-modal').hide()">hide()</button>
-      <button onclick="document.getElementById('demo-modal').toggle()">toggle()</button>
-      <button class="secondary" onclick="clearLog()">Clear log</button>
+      <x-button onclick="document.getElementById('demo-modal').show()">show()</x-button>
+      <x-button onclick="document.getElementById('demo-modal').hide()">hide()</x-button>
+      <x-button onclick="document.getElementById('demo-modal').toggle()">toggle()</x-button>
+      <x-button class="secondary" onclick="clearLog()">Clear log</x-button>
     </div>
 
     <div class="log" id="event-log">Events will appear here…</div>
@@ -97,7 +97,7 @@
     <x-modal id="demo-modal" size="md" label="Modal">
       <div slot="header" class="modal-header">
         <span id="modal-title">Modal</span>
-        <button class="modal-close" onclick="document.getElementById('demo-modal').hide()" aria-label="Close">&#x2715;</button>
+        <x-button class="modal-close" onclick="document.getElementById('demo-modal').hide()" aria-label="Close">&#x2715;</x-button>
       </div>
 
       <div class="modal-body-content">
@@ -108,8 +108,8 @@
       </div>
 
       <div slot="footer" class="modal-footer">
-        <button class="secondary" onclick="document.getElementById('demo-modal').hide()">Cancel</button>
-        <button onclick="handleConfirm()">Confirm</button>
+        <x-button class="secondary" onclick="document.getElementById('demo-modal').hide()">Cancel</x-button>
+        <x-button onclick="handleConfirm()">Confirm</x-button>
       </div>
     </x-modal>
 

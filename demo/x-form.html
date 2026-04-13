@@ -45,8 +45,8 @@
       <x-form-field label="Email"    name="email"    type="email"    placeholder="you@example.com" required></x-form-field>
       <x-form-field label="Password" name="password" type="password" placeholder="••••••••"        required></x-form-field>
       <div style="display:flex;gap:8px;">
-        <button type="submit" class="btn btn-primary"   id="login-submit">Sign in</button>
-        <button type="reset"  class="btn btn-secondary">Reset</button>
+        <x-button type="submit" class="btn btn-primary"   id="login-submit">Sign in</x-button>
+        <x-button type="reset"  class="btn btn-secondary">Reset</x-button>
       </div>
     </x-form>
 
@@ -58,8 +58,8 @@
       <x-form-field label="Message" name="message" placeholder="Your message here"></x-form-field>
       <x-checkbox name="subscribe" id="subscribe-check">Subscribe to newsletter</x-checkbox>
       <div style="display:flex;gap:8px;">
-        <button type="submit" class="btn btn-primary">Send</button>
-        <button type="reset"  class="btn btn-secondary">Clear</button>
+        <x-button type="submit" class="btn btn-primary">Send</x-button>
+        <x-button type="reset"  class="btn btn-secondary">Clear</x-button>
       </div>
     </x-form>
 
@@ -74,8 +74,8 @@
           <option value="off">off</option>
         </select>
       </label>
-      <button class="btn btn-primary"   style="font-size:12px;padding:5px 10px;" id="ctrl-set-error">Inject email error</button>
-      <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;" id="ctrl-clear-errors">Clear errors</button>
+      <x-button class="btn btn-primary"   style="font-size:12px;padding:5px 10px;" id="ctrl-set-error">Inject email error</x-button>
+      <x-button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;" id="ctrl-clear-errors">Clear errors</x-button>
     </div>
 
     <!-- ------------------------------------------------------------------ -->

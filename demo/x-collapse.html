@@ -209,18 +209,18 @@
     <div class="row">
       <label for="ctrl-header">header:</label>
       <input id="ctrl-header" type="text" value="Live demo panel" style="flex:1;min-width:160px;" />
-      <button class="demo-btn" onclick="applyHeader()">Apply</button>
+      <x-button class="demo-btn" onclick="applyHeader()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-duration">duration-ms:</label>
       <input id="ctrl-duration" type="number" value="300" min="0" max="2000" style="width:90px;" />
-      <button class="demo-btn" onclick="applyDuration()">Apply</button>
+      <x-button class="demo-btn" onclick="applyDuration()">Apply</x-button>
     </div>
     <div class="row">
-      <button class="demo-btn" onclick="toggleOpen()">toggle()</button>
-      <button class="demo-btn" onclick="setOpen(true)">Set open</button>
-      <button class="demo-btn" onclick="setOpen(false)">Set closed</button>
-      <button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</button>
+      <x-button class="demo-btn" onclick="toggleOpen()">toggle()</x-button>
+      <x-button class="demo-btn" onclick="setOpen(true)">Set open</x-button>
+      <x-button class="demo-btn" onclick="setOpen(false)">Set closed</x-button>
+      <x-button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</x-button>
     </div>
     <div class="row">
       <label>
@@ -236,7 +236,7 @@
   <x-typography variant="overline">Event log</x-typography>
   <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
   <div class="row" style="margin-top:10px;">
-    <button class="demo-btn" onclick="clearLog()">Clear log</button>
+    <x-button class="demo-btn" onclick="clearLog()">Clear log</x-button>
   </div>
 </section>
 

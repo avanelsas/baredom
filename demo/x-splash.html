@@ -75,8 +75,8 @@
   <x-typography variant="overline">Basic Splash</x-typography>
   <p>Default splash with spinner. Click "Show" to activate, "Hide" to dismiss.</p>
   <div class="controls">
-    <button onclick="showSplash('basic')">Show</button>
-    <button onclick="hideSplash('basic')">Hide</button>
+    <x-button onclick="showSplash('basic')">Show</x-button>
+    <x-button onclick="hideSplash('basic')">Hide</x-button>
   </div>
   <x-splash id="basic"></x-splash>
 
@@ -84,7 +84,7 @@
   <x-typography variant="overline">With Progress Bar</x-typography>
   <p>Shows a progress bar that fills over 3 seconds, then auto-hides.</p>
   <div class="controls">
-    <button onclick="showProgressSplash()">Start Loading</button>
+    <x-button onclick="showProgressSplash()">Start Loading</x-button>
   </div>
   <x-splash id="progress-splash" spinner="false"></x-splash>
 
@@ -92,8 +92,8 @@
   <x-typography variant="overline">Custom Content (Slot)</x-typography>
   <p>Uses the default slot for a logo and message.</p>
   <div class="controls">
-    <button onclick="showSplash('custom')">Show</button>
-    <button onclick="hideSplash('custom')">Hide</button>
+    <x-button onclick="showSplash('custom')">Show</x-button>
+    <x-button onclick="hideSplash('custom')">Hide</x-button>
   </div>
   <x-splash id="custom">
     <div class="splash-custom-content">
@@ -109,15 +109,15 @@
   <!-- ── Variant + Overlay combos ───────────────────────────────── -->
   <x-typography variant="overline">Variants &amp; Overlays</x-typography>
   <div class="controls">
-    <button onclick="showCombo('minimal', 'transparent')">Minimal + Transparent</button>
-    <button onclick="showCombo('branded', 'solid')">Branded + Solid</button>
-    <button onclick="showCombo('default', 'blur')">Default + Blur</button>
-    <button onclick="hideSplash('combo')">Hide</button>
+    <x-button onclick="showCombo('minimal', 'transparent')">Minimal + Transparent</x-button>
+    <x-button onclick="showCombo('branded', 'solid')">Branded + Solid</x-button>
+    <x-button onclick="showCombo('default', 'blur')">Default + Blur</x-button>
+    <x-button onclick="hideSplash('combo')">Hide</x-button>
   </div>
   <x-splash id="combo"></x-splash>
 
   <!-- Demo-only close button (floats above the splash overlay) -->
-  <button class="demo-close-btn" id="demo-close" title="Close splash (demo only)">&times;</button>
+  <x-button class="demo-close-btn" id="demo-close" title="Close splash (demo only)">&times;</x-button>
 
   <!-- ── Event log ──────────────────────────────────────────────── -->
   <x-typography variant="overline">Event Log</x-typography>

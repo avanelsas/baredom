@@ -249,9 +249,9 @@
         </div>
       </x-morph-stack>
       <div class="controls">
-        <button data-stack="ms-1" data-action="goto" data-arg="card">Card</button>
-        <button data-stack="ms-1" data-action="goto" data-arg="detail">Detail</button>
-        <button data-stack="ms-1" data-action="next">Next</button>
+        <x-button data-stack="ms-1" data-action="goto" data-arg="card">Card</x-button>
+        <x-button data-stack="ms-1" data-action="goto" data-arg="detail">Detail</x-button>
+        <x-button data-stack="ms-1" data-action="next">Next</x-button>
       </div>
       <div class="log" id="log-1"></div>
     </div>
@@ -271,8 +271,8 @@
         </div>
       </x-morph-stack>
       <div class="controls">
-        <button data-stack="ms-2" data-action="goto" data-arg="closed">Closed</button>
-        <button data-stack="ms-2" data-action="goto" data-arg="open">Open</button>
+        <x-button data-stack="ms-2" data-action="goto" data-arg="closed">Closed</x-button>
+        <x-button data-stack="ms-2" data-action="goto" data-arg="open">Open</x-button>
       </div>
       <div class="log" id="log-2"></div>
     </div>
@@ -292,11 +292,11 @@
         </div>
       </x-morph-stack>
       <div class="controls">
-        <button data-stack="ms-3" data-action="prev">Prev</button>
-        <button data-stack="ms-3" data-action="next">Next</button>
-        <button data-stack="ms-3" data-action="goto" data-arg="welcome">Welcome</button>
-        <button data-stack="ms-3" data-action="goto" data-arg="profile">Profile</button>
-        <button data-stack="ms-3" data-action="goto" data-arg="done">Done</button>
+        <x-button data-stack="ms-3" data-action="prev">Prev</x-button>
+        <x-button data-stack="ms-3" data-action="next">Next</x-button>
+        <x-button data-stack="ms-3" data-action="goto" data-arg="welcome">Welcome</x-button>
+        <x-button data-stack="ms-3" data-action="goto" data-arg="profile">Profile</x-button>
+        <x-button data-stack="ms-3" data-action="goto" data-arg="done">Done</x-button>
       </div>
       <div class="log" id="log-3"></div>
     </div>
@@ -330,9 +330,9 @@
         </div>
       </x-morph-stack>
       <div class="controls">
-        <button data-stack="ms-4" data-action="goto" data-arg="apart">Apart</button>
-        <button data-stack="ms-4" data-action="goto" data-arg="together">Together</button>
-        <button data-stack="ms-4" data-action="next">Toggle</button>
+        <x-button data-stack="ms-4" data-action="goto" data-arg="apart">Apart</x-button>
+        <x-button data-stack="ms-4" data-action="goto" data-arg="together">Together</x-button>
+        <x-button data-stack="ms-4" data-action="next">Toggle</x-button>
       </div>
       <div class="log" id="log-4"></div>
     </div>
@@ -356,7 +356,7 @@
           <input type="range" id="dur" min="0" max="3000" step="50" value="0">
         </label>
         <label><input type="checkbox" id="dis-toggle"> disabled (instant)</label>
-        <button type="button" id="reset-tuning">Reset overrides</button>
+        <x-button type="button" id="reset-tuning">Reset overrides</x-button>
       </div>
       <p style="color: var(--muted); font-size: 12px; margin-top: 8px;">
         The variant selector applies to all three demos. The sliders override the

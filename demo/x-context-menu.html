@@ -49,7 +49,7 @@
 
     <x-typography variant="overline">Basic (bottom-start)</x-typography>
     <div class="row">
-      <button class="trigger-btn" id="btn-basic">Open menu ▾</button>
+      <x-button class="trigger-btn" id="btn-basic">Open menu ▾</x-button>
       <x-context-menu id="menu-basic">
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Edit</div>
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Duplicate</div>
@@ -71,28 +71,28 @@
     <x-typography variant="overline">Placement variants</x-typography>
     <div class="row">
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-        <button class="trigger-btn" data-placement="bottom-start">bottom-start ▾</button>
+        <x-button class="trigger-btn" data-placement="bottom-start">bottom-start ▾</x-button>
         <x-context-menu class="placement-menu" placement="bottom-start">
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">bottom-start</div>
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Option 2</div>
         </x-context-menu>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-        <button class="trigger-btn" data-placement="bottom-end">bottom-end ▾</button>
+        <x-button class="trigger-btn" data-placement="bottom-end">bottom-end ▾</x-button>
         <x-context-menu class="placement-menu" placement="bottom-end">
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">bottom-end</div>
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Option 2</div>
         </x-context-menu>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-        <button class="trigger-btn" data-placement="top-start">top-start ▴</button>
+        <x-button class="trigger-btn" data-placement="top-start">top-start ▴</x-button>
         <x-context-menu class="placement-menu" placement="top-start">
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">top-start</div>
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Option 2</div>
         </x-context-menu>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
-        <button class="trigger-btn" data-placement="right-start">right-start ▶</button>
+        <x-button class="trigger-btn" data-placement="right-start">right-start ▶</x-button>
         <x-context-menu class="placement-menu" placement="right-start">
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">right-start</div>
           <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Option 2</div>
@@ -102,7 +102,7 @@
 
     <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
-      <button class="trigger-btn" disabled>Open menu ▾ (disabled)</button>
+      <x-button class="trigger-btn" disabled>Open menu ▾ (disabled)</x-button>
       <x-context-menu disabled>
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Edit</div>
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Delete</div>
@@ -127,7 +127,7 @@
       <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
     </div>
     <div class="row">
-      <button class="trigger-btn" id="btn-live">Open menu ▾</button>
+      <x-button class="trigger-btn" id="btn-live">Open menu ▾</x-button>
       <x-context-menu id="menu-live">
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Edit</div>
         <div class="menu-item" role="menuitem" style="padding:8px 16px;font-size:14px;white-space:nowrap;cursor:pointer;">Duplicate</div>

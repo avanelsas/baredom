@@ -63,7 +63,7 @@
     <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Normal, danger, and divider in a single menu.</p>
     <div class="row">
       <x-menu id="menu-variants" label="Actions">
-        <button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></button>
+        <x-button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></x-button>
         <x-menu-item value="edit">Edit</x-menu-item>
         <x-menu-item value="duplicate">Duplicate</x-menu-item>
         <x-menu-item value="archive">Archive</x-menu-item>
@@ -77,7 +77,7 @@
     <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Assigning content to <code>slot="icon"</code> activates the icon gap.</p>
     <div class="row">
       <x-menu id="menu-icons" label="File">
-        <button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></button>
+        <x-button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></x-button>
         <x-menu-item value="new">
           <span slot="icon">📄</span>
           New file
@@ -103,7 +103,7 @@
     <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Disabled items are shown at reduced opacity and do not respond to clicks or keyboard.</p>
     <div class="row">
       <x-menu id="menu-disabled" label="Options">
-        <button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></button>
+        <x-button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></x-button>
         <x-menu-item value="copy">Copy</x-menu-item>
         <x-menu-item value="cut" disabled>Cut (disabled)</x-menu-item>
         <x-menu-item value="paste" disabled>Paste (disabled)</x-menu-item>
@@ -155,7 +155,7 @@
     </div>
     <div class="row">
       <x-menu id="menu-live" label="Live menu">
-        <button slot="trigger" class="trigger-btn">Live menu <span class="chevron">▾</span></button>
+        <x-button slot="trigger" class="trigger-btn">Live menu <span class="chevron">▾</span></x-button>
         <x-menu-item value="before">Item before</x-menu-item>
         <x-menu-item id="live-item" value="live-action">Live item</x-menu-item>
         <x-menu-item value="after">Item after</x-menu-item>

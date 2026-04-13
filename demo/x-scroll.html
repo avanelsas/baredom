@@ -274,11 +274,11 @@
 
       <!-- Manual navigation -->
       <div class="nav-row">
-        <button id="btn-prev">Prev</button>
-        <button id="btn-next">Next</button>
+        <x-button id="btn-prev">Prev</x-button>
+        <x-button id="btn-next">Next</x-button>
         <span style="color:var(--muted);font-size:13px;">Go to:</span>
         <input type="number" id="goto-idx" min="0" max="9" value="0">
-        <button id="btn-goto">Go</button>
+        <x-button id="btn-goto">Go</x-button>
       </div>
     </div>
 
@@ -307,7 +307,7 @@
 
     <div class="log-header">
       <x-typography variant="overline" style="margin:0;">Event Log</x-typography>
-      <button id="btn-clear">Clear</button>
+      <x-button id="btn-clear">Clear</x-button>
     </div>
     <div id="log"></div>
 

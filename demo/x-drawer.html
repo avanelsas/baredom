@@ -64,10 +64,10 @@
 
     <x-typography variant="overline">Placement</x-typography>
     <div class="row">
-      <button onclick="openDrawer('right')">Right (default)</button>
-      <button onclick="openDrawer('left')">Left</button>
-      <button onclick="openDrawer('top')">Top</button>
-      <button onclick="openDrawer('bottom')">Bottom</button>
+      <x-button onclick="openDrawer('right')">Right (default)</x-button>
+      <x-button onclick="openDrawer('left')">Left</x-button>
+      <x-button onclick="openDrawer('top')">Top</x-button>
+      <x-button onclick="openDrawer('bottom')">Bottom</x-button>
     </div>
 
     <x-typography variant="overline">Live Controls</x-typography>
@@ -86,15 +86,15 @@
       <label>Size (CSS):
         <input type="text" id="ctrl-size" value="20rem" style="width:100px" />
       </label>
-      <button onclick="applyControls()">Apply &amp; Open</button>
+      <x-button onclick="applyControls()">Apply &amp; Open</x-button>
     </div>
 
     <x-typography variant="overline">API</x-typography>
     <div class="row">
-      <button onclick="document.getElementById('demo-drawer').show()">show()</button>
-      <button onclick="document.getElementById('demo-drawer').hide()">hide()</button>
-      <button onclick="document.getElementById('demo-drawer').toggle()">toggle()</button>
-      <button class="secondary" onclick="clearLog()">Clear log</button>
+      <x-button onclick="document.getElementById('demo-drawer').show()">show()</x-button>
+      <x-button onclick="document.getElementById('demo-drawer').hide()">hide()</x-button>
+      <x-button onclick="document.getElementById('demo-drawer').toggle()">toggle()</x-button>
+      <x-button class="secondary" onclick="clearLog()">Clear log</x-button>
     </div>
 
     <div class="log" id="event-log">Events will appear here…</div>
@@ -103,7 +103,7 @@
     <x-drawer id="demo-drawer" placement="right" label="Drawer">
       <div slot="header" class="drawer-header">
         <span id="drawer-title">Drawer</span>
-        <button class="drawer-close" onclick="document.getElementById('demo-drawer').hide()" aria-label="Close">&#x2715;</button>
+        <x-button class="drawer-close" onclick="document.getElementById('demo-drawer').hide()" aria-label="Close">&#x2715;</x-button>
       </div>
 
       <div class="drawer-body-content">
@@ -114,8 +114,8 @@
       </div>
 
       <div slot="footer" class="drawer-footer">
-        <button class="secondary" onclick="document.getElementById('demo-drawer').hide()">Cancel</button>
-        <button onclick="handleSave()">Save changes</button>
+        <x-button class="secondary" onclick="document.getElementById('demo-drawer').hide()">Cancel</x-button>
+        <x-button onclick="handleSave()">Save changes</x-button>
       </div>
     </x-drawer>
 

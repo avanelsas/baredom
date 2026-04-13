@@ -404,17 +404,17 @@
               <div class="field">
                 <label>Property API</label>
                 <div class="button-row">
-                  <button id="set-open-true" type="button" class="primary">sidebar.open = true</button>
-                  <button id="set-open-false" type="button">sidebar.open = false</button>
-                  <button id="set-collapsed-true" type="button">sidebar.collapsed = true</button>
-                  <button id="set-collapsed-false" type="button">sidebar.collapsed = false</button>
+                  <x-button id="set-open-true" type="button" class="primary">sidebar.open = true</x-button>
+                  <x-button id="set-open-false" type="button">sidebar.open = false</x-button>
+                  <x-button id="set-collapsed-true" type="button">sidebar.collapsed = true</x-button>
+                  <x-button id="set-collapsed-false" type="button">sidebar.collapsed = false</x-button>
                 </div>
               </div>
 
               <div class="field">
                 <label>Utilities</label>
                 <div class="button-row">
-                  <button id="reset-button" type="button">Reset demo</button>
+                  <x-button id="reset-button" type="button">Reset demo</x-button>
                 </div>
               </div>
             </div>
@@ -428,7 +428,7 @@
           <section class="card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
               <x-typography variant="overline" style="margin:0">Events</x-typography>
-              <button id="clear-event-log-button" type="button" style="font-size:0.8rem;padding:6px 10px">Clear</button>
+              <x-button id="clear-event-log-button" type="button" style="font-size:0.8rem;padding:6px 10px">Clear</x-button>
             </div>
             <p>
               All <code>toggle</code> and <code>dismiss</code> events fired by
@@ -467,15 +467,15 @@
                   <a href="#reports">Reports</a>
                   <a href="#team">Team</a>
                   <a href="#settings">Settings</a>
-                  <button id="inner-close-button" type="button">Close via consumer button</button>
+                  <x-button id="inner-close-button" type="button">Close via consumer button</x-button>
                 </nav>
               </x-sidebar>
 
               <div class="demo-main">
                 <div class="button-row">
-                  <button id="main-toggle-button" type="button" class="primary">Toggle open</button>
-                  <button id="main-modal-button" type="button">Force modal variant</button>
-                  <button id="main-docked-button" type="button">Force docked variant</button>
+                  <x-button id="main-toggle-button" type="button" class="primary">Toggle open</x-button>
+                  <x-button id="main-modal-button" type="button">Force modal variant</x-button>
+                  <x-button id="main-docked-button" type="button">Force docked variant</x-button>
                 </div>
 
                 <x-typography variant="overline">App content area</x-typography>

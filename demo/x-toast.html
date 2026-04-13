@@ -194,7 +194,7 @@
     <x-toast id="td1" type="success" message="Auto-dismisses in 5 seconds." timeout-ms="5000"></x-toast>
   </div>
   <br>
-  <button onclick="resetAutoToast()">Reset auto-dismiss toast</button>
+  <x-button onclick="resetAutoToast()">Reset auto-dismiss toast</x-button>
 </div>
 
 <!-- ── Progress bar ──────────────────────────────────────────────────────── -->
@@ -206,7 +206,7 @@
     <x-toast id="tp2" type="warning" message="Session expiring soon." timeout-ms="8000" show-progress></x-toast>
   </div>
   <br>
-  <button onclick="resetProgressToasts()">Reset progress toasts</button>
+  <x-button onclick="resetProgressToasts()">Reset progress toasts</x-button>
 </div>
 
 <!-- ── Spawn control panel ───────────────────────────────────────────────── -->
@@ -253,7 +253,7 @@
       </select>
     </label>
   </div>
-  <button class="btn-primary" onclick="spawnToast()">Spawn toast</button>
+  <x-button class="btn-primary" onclick="spawnToast()">Spawn toast</x-button>
   <div id="spawn-zone" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
 </div>
 
@@ -262,7 +262,7 @@
   <x-typography variant="overline">Event log — x-toast-dismiss</x-typography>
   <div id="log"><span class="empty-log">No events yet.</span></div>
   <br>
-  <button onclick="document.getElementById('log').innerHTML='<span class=\'empty-log\'>No events yet.</span>'">Clear log</button>
+  <x-button onclick="document.getElementById('log').innerHTML='<span class=\'empty-log\'>No events yet.</span>'">Clear log</x-button>
 </div>
 
 <script>
