@@ -127,7 +127,7 @@
         <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
       </label>
       <label>disabled
-        <input type="checkbox" id="ctrl-disabled">
+        <x-switch id="ctrl-disabled"></x-switch>
       </label>
     </div>
     <div style="margin-top:8px">
@@ -151,7 +151,7 @@
         if (maxVal) live.setAttribute("max", maxVal); else live.removeAttribute("max");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

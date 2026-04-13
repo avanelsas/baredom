@@ -268,7 +268,7 @@
         }
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

@@ -83,6 +83,26 @@ x-typography[variant="overline"] {
   display: inline-block;
 }
 
+/* x-switch is 24px tall — taller than the native checkbox it replaced.
+   In flex labels (the common "<x-switch> Autoplay" demo control pattern)
+   align-items:center aligns the geometric centers of the flex items, so
+   the surrounding text and the switch end up on the same line — but only
+   if the label is actually a flex container with a definite min-height
+   matching the switch and a tight text line-height. Force all three on
+   any label that has an x-switch child. The selector specificity (one
+   class + one pseudo-class is enough to win against per-file ".controls
+   label" rules. */
+label:has(> x-switch),
+.controls label:has(> x-switch),
+.row label:has(> x-switch),
+.panel label:has(> x-switch) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  line-height: 1;
+}
+
 /* Grid/panel-stacked control layouts: x-select replaced a native <select>
    that was width:100% and ~32px tall via the demos' inline CSS. Recreate
    that footprint so the dogfooded select fills its grid cell at the same

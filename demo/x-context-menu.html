@@ -124,7 +124,7 @@
       <label>offset
         <input type="number" id="ctrl-offset" value="8" style="width:60px" min="0">
       </label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <div class="row">
       <x-button class="trigger-btn" id="btn-live">Open menu ▾</x-button>
@@ -197,7 +197,7 @@
           btnLive.disabled = false;
         }
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

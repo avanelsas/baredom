@@ -109,8 +109,8 @@
           <option value="lg">lg</option>
         </x-select>
       </label>
-      <label>show-value <input type="checkbox" id="ctrl-show-value" checked></label>
-      <label>indeterminate <input type="checkbox" id="ctrl-indeterminate"></label>
+      <label>show-value <x-switch id="ctrl-show-value" checked></x-switch></label>
+      <label>indeterminate <x-switch id="ctrl-indeterminate"></x-switch></label>
     </div>
 
     <div class="row">
@@ -155,7 +155,7 @@
         update();
       });
 
-      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value)').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input', update);
       });

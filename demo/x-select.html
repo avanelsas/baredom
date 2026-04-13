@@ -132,8 +132,8 @@
 
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required <x-switch id="ctrl-required"></x-switch></label>
       <label>
         size
         <select id="ctrl-size">
@@ -194,7 +194,7 @@
         if (value)    liveSel.setAttribute("value", value);       else liveSel.removeAttribute("value");
       }
 
-      document.querySelectorAll(".controls input, .controls select").forEach(el => {
+      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

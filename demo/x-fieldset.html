@@ -90,9 +90,9 @@
 
       <x-typography variant="overline">Custom legend text (checkboxes)</x-typography>
       <x-fieldset legend="Notification Preferences">
-        <div class="row"><input type="checkbox" id="n1" /><label for="n1">Email updates</label></div>
-        <div class="row"><input type="checkbox" id="n2" /><label for="n2">SMS alerts</label></div>
-        <div class="row"><input type="checkbox" id="n3" checked /><label for="n3">Weekly digest</label></div>
+        <div class="row"><x-checkbox id="n1"></x-checkbox><label for="n1">Email updates</label></div>
+        <div class="row"><x-checkbox id="n2"></x-checkbox><label for="n2">SMS alerts</label></div>
+        <div class="row"><x-checkbox id="n3" checked></x-checkbox><label for="n3">Weekly digest</label></div>
       </x-fieldset>
 
       <x-typography variant="overline">Live controls</x-typography>
@@ -103,7 +103,7 @@
         </label>
         <label>
           disabled
-          <input type="checkbox" id="ctrl-disabled" />
+          <x-switch id="ctrl-disabled"></x-switch>
         </label>
       </div>
       <x-fieldset id="live-fs" legend="Billing Address">
@@ -126,7 +126,7 @@
         liveFs.disabled = document.getElementById("ctrl-disabled").checked;
       }
 
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

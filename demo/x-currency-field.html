@@ -87,9 +87,9 @@
       <label>placeholder <input type="text" id="ctrl-placeholder" value="0.00"></label>
       <label>hint        <input type="text" id="ctrl-hint" value=""></label>
       <label>error       <input type="text" id="ctrl-error" value=""></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
-      <label>readonly    <input type="checkbox" id="ctrl-readonly"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
+      <label>readonly    <x-switch id="ctrl-readonly"></x-switch></label>
     </div>
     <x-currency-field id="live-field" name="live" label="Amount" placeholder="0.00"></x-currency-field>
 
@@ -148,7 +148,7 @@
         if (readonly)    liveField.setAttribute('readonly', '');         else liveField.removeAttribute('readonly');
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

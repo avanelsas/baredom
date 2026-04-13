@@ -62,9 +62,9 @@
       <label>height
         <input type="number" id="ctrl-height" value="180" style="width:70px" min="60">
       </label>
-      <label>grid <input type="checkbox" id="ctrl-grid" checked></label>
-      <label>axes <input type="checkbox" id="ctrl-axes" checked></label>
-      <label>tooltip <input type="checkbox" id="ctrl-tooltip"></label>
+      <label>grid <x-switch id="ctrl-grid" checked></x-switch></label>
+      <label>axes <x-switch id="ctrl-axes" checked></x-switch></label>
+      <label>tooltip <x-switch id="ctrl-tooltip"></x-switch></label>
       <label>cursor
         <x-select id="ctrl-cursor" value="nearest">
           <option value="nearest" selected>nearest</option>
@@ -89,8 +89,8 @@
           <option value="fixed:2">fixed:2</option>
         </x-select>
       </label>
-      <label>loading <input type="checkbox" id="ctrl-loading"></label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>loading <x-switch id="ctrl-loading"></x-switch></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <x-chart id="chart-live" type="line"></x-chart>
 
@@ -157,7 +157,7 @@
         if (xfmt) live.setAttribute("x-format", xfmt); else live.removeAttribute("x-format");
         if (yfmt) live.setAttribute("y-format", yfmt); else live.removeAttribute("y-format");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

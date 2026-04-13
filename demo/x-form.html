@@ -66,8 +66,8 @@
     <!-- ------------------------------------------------------------------ -->
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>loading      <input type="checkbox" id="ctrl-loading"></label>
-      <label>novalidate   <input type="checkbox" id="ctrl-novalidate"></label>
+      <label>loading      <x-switch id="ctrl-loading"></x-switch></label>
+      <label>novalidate   <x-switch id="ctrl-novalidate"></x-switch></label>
       <label>autocomplete
         <x-select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);" value="on">
           <option value="on">on</option>
@@ -137,7 +137,7 @@
         contactForm.setAttribute('autocomplete', autocomplete);
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
       });
 

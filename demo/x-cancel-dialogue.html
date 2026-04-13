@@ -78,7 +78,7 @@
       <label>cancel-text
         <input type="text" id="ctrl-cancel" value="Keep editing" style="width:90px">
       </label>
-      <label>danger <input type="checkbox" id="ctrl-danger"></label>
+      <label>danger <x-switch id="ctrl-danger"></x-switch></label>
     </div>
     <div class="row">
       <x-cancel-dialogue id="dlg-live"></x-cancel-dialogue>
@@ -128,7 +128,7 @@
         else
           liveDlg.removeAttribute("danger");
       }
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

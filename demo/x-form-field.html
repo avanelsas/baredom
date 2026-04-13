@@ -97,9 +97,9 @@
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Enter value"></label>
       <label>hint        <input type="text" id="ctrl-hint" value=""></label>
       <label>error       <input type="text" id="ctrl-error" value=""></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>readonly    <input type="checkbox" id="ctrl-readonly"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>readonly    <x-switch id="ctrl-readonly"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
     </div>
     <x-form-field id="live-field" label="Email address" placeholder="Enter value" name="live"></x-form-field>
 
@@ -145,7 +145,7 @@
         if (required) liveField.setAttribute("required", ""); else liveField.removeAttribute("required");
       }
 
-      document.querySelectorAll(".controls input, .controls select").forEach(el => {
+      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

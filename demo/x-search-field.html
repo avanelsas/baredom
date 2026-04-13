@@ -75,8 +75,8 @@
     <div class="controls">
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
       <label>label       <input type="text" id="ctrl-label" value="Search"></label>
-      <label>disabled    <input type="checkbox" id="ctrl-disabled"></label>
-      <label>required    <input type="checkbox" id="ctrl-required"></label>
+      <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>required    <x-switch id="ctrl-required"></x-switch></label>
       <label>autocomplete
         <x-select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);" value="off">
           <option value="off">off</option>
@@ -133,7 +133,7 @@
         if (required) liveField.setAttribute('required', ''); else liveField.removeAttribute('required');
       }
 
-      document.querySelectorAll('.controls input, .controls select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

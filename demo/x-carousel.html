@@ -122,11 +122,11 @@
       <!-- Controls -->
       <x-typography variant="overline">Controls</x-typography>
       <div class="controls">
-        <label><input type="checkbox" id="ctl-autoplay"> Autoplay</label>
-        <label><input type="checkbox" id="ctl-loop"> Loop</label>
-        <label><input type="checkbox" id="ctl-disabled"> Disabled</label>
-        <label><input type="checkbox" id="ctl-arrows" checked> Arrows</label>
-        <label><input type="checkbox" id="ctl-dots" checked> Dots</label>
+        <label><x-switch id="ctl-autoplay"></x-switch> Autoplay</label>
+        <label><x-switch id="ctl-loop"></x-switch> Loop</label>
+        <label><x-switch id="ctl-disabled"></x-switch> Disabled</label>
+        <label><x-switch id="ctl-arrows" checked></x-switch> Arrows</label>
+        <label><x-switch id="ctl-dots" checked></x-switch> Dots</label>
         <label>Interval:
           <input type="number" id="ctl-interval" value="3000" min="100" step="500">
         </label>

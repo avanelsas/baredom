@@ -116,7 +116,7 @@
       <label>max-items
         <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
       </label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <x-breadcrumbs id="live">
       <a href="#home">Home</a>
@@ -137,7 +137,7 @@
         if (max) live.setAttribute("max-items", max); else live.removeAttribute("max-items");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

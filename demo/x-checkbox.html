@@ -128,7 +128,7 @@
         if (required) liveCb.setAttribute("required", "");       else liveCb.removeAttribute("required");
         if (value)    liveCb.setAttribute("value", value);       else liveCb.removeAttribute("value");
       }
-      document.querySelectorAll(".controls input").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

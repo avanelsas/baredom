@@ -94,8 +94,8 @@
       <label>text
         <input type="text" id="ctrl-text" placeholder="none" style="width:80px">
       </label>
-      <label>dot <input type="checkbox" id="ctrl-dot"></label>
-      <label>pill <input type="checkbox" id="ctrl-pill"></label>
+      <label>dot <x-switch id="ctrl-dot"></x-switch></label>
+      <label>pill <x-switch id="ctrl-pill"></x-switch></label>
     </div>
     <div class="row">
       <x-badge id="live" variant="info">Label</x-badge>
@@ -123,7 +123,7 @@
         if (!count && !text && !dot) live.textContent = "Label";
         else live.textContent = "";
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

@@ -87,7 +87,7 @@
           <option value="false">false</option>
         </x-select>
       </label>
-      <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
     <div class="row">
       <x-copy id="copy-live">
@@ -125,7 +125,7 @@
           document.getElementById("live-btn").removeAttribute("disabled");
         }
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

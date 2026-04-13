@@ -108,7 +108,7 @@
         </label>
         <label>
           disabled
-          <input type="checkbox" id="ctrl-disabled" />
+          <x-switch id="ctrl-disabled"></x-switch>
         </label>
       </div>
       <div class="row">
@@ -138,7 +138,7 @@
         else          liveDl.removeAttribute('disabled');
       }
 
-      document.querySelectorAll('.controls input').forEach(el => {
+      document.querySelectorAll('.controls input, .controls x-switch').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

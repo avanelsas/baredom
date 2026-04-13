@@ -174,6 +174,25 @@
     }
   });
 
+  // x-switch compatibility shim. x-switch fires "x-switch-change" with
+  // detail.checked after the state has updated. Re-dispatch a synthetic
+  // native "change" event so existing demo JS that listens for "change"
+  // and reads el.checked keeps working without per-file edits.
+  document.addEventListener('x-switch-change', function (e) {
+    var sw = e.target;
+    if (sw && sw.tagName === 'X-SWITCH') {
+      sw.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+  // x-checkbox compatibility shim — same idea as x-switch.
+  document.addEventListener('x-checkbox-change', function (e) {
+    var cb = e.target;
+    if (cb && cb.tagName === 'X-CHECKBOX') {
+      cb.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     var preset = getInitialPreset();
     var themeEl = null;

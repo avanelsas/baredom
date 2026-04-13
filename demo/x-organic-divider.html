@@ -202,10 +202,10 @@
         </x-select>
       </label>
       <label>
-        <input type="checkbox" id="ctrl-flip"> flip
+        <x-switch id="ctrl-flip"></x-switch> flip
       </label>
       <label>
-        <input type="checkbox" id="ctrl-mirror"> mirror
+        <x-switch id="ctrl-mirror"></x-switch> mirror
       </label>
       <label>path
         <input type="text" id="ctrl-path" placeholder="custom SVG d" style="width:220px">
@@ -244,7 +244,7 @@
         else      live.removeAttribute('path');
       }
 
-      document.querySelectorAll('.controls select, .controls input').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

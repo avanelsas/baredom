@@ -99,10 +99,10 @@
       <label>placeholder
         <input type="text" id="ctrl-placeholder" value="Select a date" style="width:140px">
       </label>
-      <label>disabled  <input type="checkbox" id="ctrl-disabled"></label>
-      <label>readonly  <input type="checkbox" id="ctrl-readonly"></label>
-      <label>required  <input type="checkbox" id="ctrl-required"></label>
-      <label>close-on-select <input type="checkbox" id="ctrl-close"></label>
+      <label>disabled  <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>readonly  <x-switch id="ctrl-readonly"></x-switch></label>
+      <label>required  <x-switch id="ctrl-required"></x-switch></label>
+      <label>close-on-select <x-switch id="ctrl-close"></x-switch></label>
     </div>
     <div class="stack">
       <x-date-picker id="dp-live" placeholder="Select a date"></x-date-picker>
@@ -141,7 +141,7 @@
         if (document.getElementById("ctrl-required").checked) live.setAttribute("required", ""); else live.removeAttribute("required");
         if (document.getElementById("ctrl-close").checked)    live.setAttribute("close-on-select", ""); else live.removeAttribute("close-on-select");
       }
-      document.querySelectorAll(".controls select, .controls input").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });
