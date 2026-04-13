@@ -49,6 +49,15 @@ html, body {
   color: var(--page-fg);
 }
 
+/* ── Dogfooded demo typography ────────────────────────
+   x-typography is purely presentational (no UA margins),
+   so give the overline eyebrow heading the same vertical
+   rhythm the old <h2> element had by default. */
+x-typography[variant="overline"] {
+  display: block;
+  margin: 32px 0 10px;
+}
+
 /* ── Dogfooded demo control rows ──────────────────────
    x-form-field is block-level (owns label + input + hint)
    while x-select / x-switch / x-button are inline-block.
