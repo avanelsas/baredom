@@ -281,7 +281,6 @@
         cy (/ bh 2.0)
         dx (- px cx)
         dy (- py cy)
-        dist (js/Math.max 1.0 (js/Math.sqrt (+ (* dx dx) (* dy dy))))
         ;; Base angle: away from center (from center toward press point, reversed)
         base-angle (js/Math.atan2 (- dy) (- dx))
         ;; Add random spread

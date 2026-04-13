@@ -86,12 +86,12 @@
     (is (approx= l 50 1))))
 
 (deftest rgb-hsl-white-test
-  (let [{:keys [h s l]} (model/rgb->hsl 255 255 255)]
+  (let [{:keys [s l]} (model/rgb->hsl 255 255 255)]
     (is (= s 0))
     (is (approx= l 100 1))))
 
 (deftest rgb-hsl-black-test
-  (let [{:keys [h s l]} (model/rgb->hsl 0 0 0)]
+  (let [{:keys [s l]} (model/rgb->hsl 0 0 0)]
     (is (= s 0))
     (is (approx= l 0 1))))
 
@@ -127,7 +127,7 @@
     (is (approx= l 50 2))))
 
 (deftest hsl-hsv-black-test
-  (let [{:keys [s v]} (model/hsl->hsv 0 0 0)]
+  (let [{:keys [v]} (model/hsl->hsv 0 0 0)]
     (is (approx= v 0 1))))
 
 (deftest hsl-hsv-white-test

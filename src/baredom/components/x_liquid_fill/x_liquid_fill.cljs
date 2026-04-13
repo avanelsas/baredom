@@ -341,7 +341,6 @@
     (when (and w h (> w 0) (> h 0))
       (dotimes [i n]
         (let [^js p  (aget paths i)
-              lp     (model/layer-params i n)
               amp    (aget wa i)
               phase  (aget wp i)]
           (if vert?

@@ -216,7 +216,7 @@
       (.appendChild ol (make-ellipsis-el el separator))))
   nil)
 
-(defn- apply-model! [^js el {:keys [size variant wrap disabled aria-label aria-describedby] :as m}]
+(defn- apply-model! [^js el {:keys [size variant wrap aria-label aria-describedby] :as m}]
   (let [{:keys [nav]} (ensure-refs! el)
         ^js nav nav]
     ;; Data attributes drive CSS selectors
@@ -344,7 +344,7 @@
                      nil)))
 
     (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [attr-name old-val new-val]
+          (fn [_attr-name old-val new-val]
             (this-as ^js this
                      (when (not= old-val new-val)
                        ;; disabled is managed inside apply-model!, no special case needed

@@ -137,7 +137,7 @@
     (let [^js el (append! (make-el))
           seen   (atom nil)]
       (.addEventListener el model/event-grab
-                         (fn [^js e] (reset! seen true)))
+                         (fn [^js _e] (reset! seen true)))
       (.dispatchEvent el (js/PointerEvent. "pointerdown"
                                            #js {:bubbles true}))
       (js/setTimeout
@@ -153,7 +153,7 @@
     (let [^js el (append! (make-el))
           seen   (atom nil)]
       (.addEventListener el model/event-release
-                         (fn [^js e] (reset! seen true)))
+                         (fn [^js _e] (reset! seen true)))
       (.dispatchEvent el (js/PointerEvent. "pointerup"
                                            #js {:bubbles true}))
       (js/setTimeout

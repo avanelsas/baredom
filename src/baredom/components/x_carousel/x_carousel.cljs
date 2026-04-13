@@ -359,7 +359,7 @@
           ^js nxt    (gobj/get refs "next")
           ^js dots   (gobj/get refs "dots")
           ^js live   (gobj/get refs "live")
-          ^js vp     (gobj/get refs "viewport")
+          ^js _vp    (gobj/get refs "viewport")
           current    (:current m)
           sc         (:slide-count m)
           transition (:transition m)

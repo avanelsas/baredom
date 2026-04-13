@@ -182,7 +182,7 @@
     (.dispatchEvent el ev)))
 
 ;; ── Announce to live region ─────────────────────────────────────────────────
-(defn- announce! [^js el ^js live msg]
+(defn- announce! [^js _el ^js live msg]
   (set! (.-textContent live) msg)
   (js/setTimeout (fn [] (set! (.-textContent live) "")) 3000))
 
@@ -553,10 +553,9 @@
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [layout split disabled? label] :as m}]
-  (let [{:keys [container media live]} (ensure-refs! el)
+  (let [{:keys [container media]} (ensure-refs! el)
         ^js container container
-        ^js media     media
-        ^js live      live]
+        ^js media     media]
     ;; Data attributes for CSS selectors
     (.setAttribute el "data-layout" layout)
 

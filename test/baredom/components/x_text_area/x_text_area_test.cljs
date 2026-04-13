@@ -382,7 +382,6 @@
     (sut/init!)
     (async done
       (let [^js el   (mount!)
-            ^js ta   (get-textarea el)
             counter  (atom 0)]
         (.addEventListener el model/event-input (fn [_] (swap! counter inc)))
         ;; Disconnect then reconnect

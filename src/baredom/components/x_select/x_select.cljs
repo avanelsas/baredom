@@ -215,7 +215,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Render
 ;; ---------------------------------------------------------------------------
-(defn- apply-model! [^js el refs m]
+(defn- apply-model! [^js _el refs m]
   (let [^js wrapper-el (gobj/get refs "wrapper")
         ^js select-el  (gobj/get refs "select")
         ^js ph-opt-el  (gobj/get refs "placeholder-opt")

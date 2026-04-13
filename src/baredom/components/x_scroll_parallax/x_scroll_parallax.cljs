@@ -230,7 +230,7 @@
         (.removeEventListener js/window "scroll" scroll-h)
         (gobj/set hs "scrollAttached" false)))))
 
-(defn- announce! [^js el ^js live msg]
+(defn- announce! [^js _el ^js live msg]
   (set! (.-textContent live) msg)
   (js/setTimeout (fn [] (set! (.-textContent live) "")) 1000))
 
@@ -314,10 +314,9 @@
   nil)
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el {:keys [direction easing disabled? label] :as m}]
-  (let [{:keys [viewport live]} (ensure-refs! el)
-        ^js viewport viewport
-        ^js live     live]
+(defn- apply-model! [^js el {:keys [direction disabled? label] :as m}]
+  (let [{:keys [viewport]} (ensure-refs! el)
+        ^js viewport viewport]
     ;; Data attributes for CSS selectors
     (.setAttribute el "data-direction" direction)
 

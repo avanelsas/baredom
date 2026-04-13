@@ -536,7 +536,7 @@
   (when-let [refs (du/getv el k-refs)]
     (let [m (read-model el)
           {:keys [h s l a hex hex-full mode
-                  disabled? readonly? alpha? open?
+                  disabled? readonly? alpha?
                   label swatches]} m
 
           ;; Convert to HSV for area positioning
@@ -546,7 +546,7 @@
           ^js area-el       (gobj/get refs "area")
           ^js hue-strip     (gobj/get refs "hue-strip")
           ^js alpha-strip   (gobj/get refs "alpha-strip")
-          ^js alpha-gradient (gobj/get refs "alpha-gradient")
+          ^js _alpha-gradient (gobj/get refs "alpha-gradient")
           ^js preview-color (gobj/get refs "preview-color")
           ^js hex-input     (gobj/get refs "hex-input")
           ^js trigger-swatch (gobj/get refs "trigger-swatch")

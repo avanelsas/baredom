@@ -301,7 +301,7 @@
             ^js input   (gobj/get refs "input")
             ^js overlay (gobj/get refs "overlay")
             ^js empty-el (gobj/get refs "empty")
-            query       (or (gobj/get el k-query) "")
+            _query      (or (gobj/get el k-query) "")
             label       (:label m)
             placeholder (:placeholder m)
             empty-text  (:empty-text m)]

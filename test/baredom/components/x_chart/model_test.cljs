@@ -145,7 +145,7 @@
 
 (deftest tooltip-position-flip-left-test
   ;; cursor at right edge — tooltip flips left
-  (let [{:keys [left top]} (model/tooltip-position 360 50 80 30 400 200 8 12)]
+  (let [{:keys [left]} (model/tooltip-position 360 50 80 30 400 200 8 12)]
     (is (< left 360))))
 
 (deftest tooltip-position-clamped-test

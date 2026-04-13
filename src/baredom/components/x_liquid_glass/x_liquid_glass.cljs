@@ -33,7 +33,7 @@
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
 
 ;; ── Styles ──────────────────────────────────────────────────────────────────
-(defn- build-style-text [uid]
+(defn- build-style-text [_uid]
   (str
    ":host{"
    "display:block;"

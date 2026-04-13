@@ -314,8 +314,7 @@
 ;; ---------------------------------------------------------------------------
 
 (deftest value-clamped-to-max-test
-  (let [el       (append! (make-el))
-        input-el (shadow-part el "[part=input]")]
+  (let [el (append! (make-el))]
     (.setAttribute el model/attr-max "100")
     (.setAttribute el model/attr-value "150")
     (is (= "100.00%"

@@ -48,7 +48,6 @@
   "Read all observed attrs, canonicalize, cache result on element."
   [^js el]
   (let [mode-raw  (.getAttribute el model/attr-mode)
-        mode      (model/parse-mode mode-raw)
         canon     (model/canonicalize
                    {:mode       mode-raw
                     :value      (.getAttribute el model/attr-value)
@@ -228,7 +227,7 @@
     (when refs
       (let [^js inp     (gobj/get refs "input")
             ^js btn     (gobj/get refs "btn")
-            ^js sr      (gobj/get refs "sr")
+            ^js _sr     (gobj/get refs "sr")
             disabled?   (.hasAttribute el model/attr-disabled)
             readonly?   (.hasAttribute el model/attr-readonly)
             placeholder (.getAttribute el model/attr-placeholder)
@@ -296,8 +295,7 @@
               (render! el)))
           ;; Range mode
           (let [step (or (gobj/get el k-range-step) 0)
-                cur-start (:start-d canon)
-                cur-end   (:end-d canon)]
+                cur-start (:start-d canon)]
             (cond
               ;; Step 0: no selection yet — set start
               (= step 0)

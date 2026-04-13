@@ -206,7 +206,7 @@
 
 (defn- reconcile-blobs!
   "Adds/removes blob divs to match the model, then updates sizes and colors."
-  [^js el {:keys [blob-count blob-size colors] :as m}]
+  [^js el {:keys [blob-count blob-size colors]}]
   (let [{:keys [viewport]} (gobj/get el k-refs)
         ^js viewport viewport
         ^js arr      (gobj/get el k-blobs)

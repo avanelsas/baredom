@@ -629,7 +629,6 @@
         (let [ps (read-public-state el)
               base-size (:particle-size ps)
               mode (:mode ps)
-              mode-cfg (model/mode-physics mode)
               [min-s max-s] (model/particle-size-range ptype base-size mode)
               [min-lt max-lt] (model/particle-lifetime-range ptype mode)
               [min-op max-op] (model/particle-opacity-range ptype mode)
@@ -869,8 +868,6 @@
                 (let [sy (* (aget p "sizeY") dpr)
                       tlen (aget p "tlen")
                       ;; Offset trail positions by pad too
-                      tx0 (+ (* (aget p "tx0") dpr) pad)
-                      ty0 (+ (* (aget p "ty0") dpr) pad)
                       tx1 (+ (* (aget p "tx1") dpr) pad)
                       ty1 (+ (* (aget p "ty1") dpr) pad)
                       tx2 (+ (* (aget p "tx2") dpr) pad)
