@@ -70,8 +70,8 @@
     <x-form id="price-form">
       <x-currency-field name="price" label="Product price" placeholder="0.00" required currency="USD"></x-currency-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <x-button type="submit" class="btn btn-primary">Submit</x-button>
-        <x-button type="reset"  class="btn btn-secondary">Reset</x-button>
+        <x-button onclick="document.getElementById('price-form').submit()">Submit</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('price-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
