@@ -51,8 +51,14 @@ html, body {
 
 /* ── Dogfooded demo typography ────────────────────────
    x-typography is purely presentational (no UA margins),
-   so give the overline eyebrow heading the same vertical
-   rhythm the old <h2> element had by default. */
+   so give the page title and overline eyebrow heading the
+   same vertical rhythm the old <h1> / <h2> elements had
+   by default. */
+x-typography[variant="h1"] {
+  display: block;
+  margin: 0 0 24px;
+}
+
 x-typography[variant="overline"] {
   display: block;
   margin: 32px 0 10px;
