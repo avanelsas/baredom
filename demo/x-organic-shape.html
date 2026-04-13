@@ -166,7 +166,7 @@
     <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>shape
-        <select id="ctrl-shape">
+        <x-select id="ctrl-shape" value="blob-1">
           <option value="blob-1" selected>blob-1</option>
           <option value="blob-2">blob-2</option>
           <option value="blob-3">blob-3</option>
@@ -175,34 +175,34 @@
           <option value="droplet">droplet</option>
           <option value="cloud">cloud</option>
           <option value="wave">wave</option>
-        </select>
+        </x-select>
       </label>
       <label>ratio
-        <select id="ctrl-ratio">
+        <x-select id="ctrl-ratio" value="1/1">
           <option value="1/1" selected>1/1</option>
           <option value="4/3">4/3</option>
           <option value="3/2">3/2</option>
           <option value="16/9">16/9</option>
           <option value="auto">auto</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="none">
           <option value="none" selected>none</option>
           <option value="morph">morph</option>
           <option value="pulse">pulse</option>
           <option value="float">float</option>
           <option value="spin">spin</option>
-        </select>
+        </x-select>
       </label>
       <label>speed
-        <select id="ctrl-speed">
+        <x-select id="ctrl-speed" value="">
           <option value="">default (8s)</option>
           <option value="2s">fast (2s)</option>
           <option value="4s">medium (4s)</option>
           <option value="12s">slow (12s)</option>
           <option value="20s">very slow (20s)</option>
-        </select>
+        </x-select>
       </label>
       <label>width
         <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:80px">

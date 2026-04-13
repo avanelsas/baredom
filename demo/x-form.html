@@ -69,10 +69,10 @@
       <label>loading      <input type="checkbox" id="ctrl-loading"></label>
       <label>novalidate   <input type="checkbox" id="ctrl-novalidate"></label>
       <label>autocomplete
-        <select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+        <x-select id="ctrl-autocomplete" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);" value="on">
           <option value="on">on</option>
           <option value="off">off</option>
-        </select>
+        </x-select>
       </label>
       <x-button size="sm" id="ctrl-set-error">Inject email error</x-button>
       <x-button size="sm" variant="secondary" id="ctrl-clear-errors">Clear errors</x-button>

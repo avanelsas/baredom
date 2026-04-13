@@ -215,12 +215,12 @@
   <div class="controls">
     <label>
       Type
-      <select id="ctrl-type">
+      <x-select id="ctrl-type" value="info">
         <option value="info">info</option>
         <option value="success">success</option>
         <option value="warning">warning</option>
         <option value="error">error</option>
-      </select>
+      </x-select>
     </label>
     <label>
       Heading
@@ -236,10 +236,10 @@
     </label>
     <label>
       Dismissible
-      <select id="ctrl-dismissible">
+      <x-select id="ctrl-dismissible" value="true">
         <option value="true">true</option>
         <option value="false">false</option>
-      </select>
+      </x-select>
     </label>
     <label>
       timeout-ms (blank = none)
@@ -247,10 +247,10 @@
     </label>
     <label>
       Show progress bar
-      <select id="ctrl-progress">
+      <x-select id="ctrl-progress" value="false">
         <option value="false">false</option>
         <option value="true">true</option>
-      </select>
+      </x-select>
     </label>
   </div>
   <x-button class="btn-primary" onclick="spawnToast()">Spawn toast</x-button>

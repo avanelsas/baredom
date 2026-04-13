@@ -384,7 +384,7 @@
     <x-typography variant="overline">Live Control Panel</x-typography>
     <div class="row">
       <label for="preset-picker">Preset:</label>
-      <select id="preset-picker">
+      <x-select id="preset-picker" value="default">
         <option value="default">default</option>
         <option value="ocean">ocean</option>
         <option value="forest">forest</option>
@@ -393,7 +393,7 @@
         <option value="aurora">aurora</option>
         <option value="mono-ai">mono-ai</option>
         <option value="warm-mineral">warm-mineral</option>
-      </select>
+      </x-select>
     </div>
     <x-theme id="live-theme" preset="default">
       <div class="preset-card">

@@ -75,17 +75,17 @@
     <span id="progress-value">0%</span>
   </label>
   <label>Variant:
-    <select id="variant-select">
+    <x-select id="variant-select" value="vine">
       <option value="vine">vine</option>
       <option value="honeycomb">honeycomb</option>
-    </select>
+    </x-select>
   </label>
   <label>Density:
-    <select id="density-select">
+    <x-select id="density-select" value="normal">
       <option value="sparse">sparse</option>
       <option value="normal" selected>normal</option>
       <option value="dense">dense</option>
-    </select>
+    </x-select>
   </label>
   <label>Seed:
     <input type="number" id="seed-input" value="42" min="1" max="9999" style="width:5rem;">

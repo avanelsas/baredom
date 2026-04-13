@@ -264,7 +264,7 @@
         <input type="text" id="ctrl-text" value="Edit me with the controls" style="width:200px">
       </label>
       <label>preset
-        <select id="ctrl-preset">
+        <x-select id="ctrl-preset" value="wave">
           <option value="wave" selected>wave</option>
           <option value="circle">circle</option>
           <option value="arc">arc</option>
@@ -273,21 +273,21 @@
           <option value="sine">sine</option>
           <option value="line">line</option>
           <option value="crawl">crawl</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="scroll">
           <option value="scroll" selected>scroll</option>
           <option value="bounce">bounce</option>
           <option value="oscillate">oscillate</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>direction
-        <select id="ctrl-direction">
+        <x-select id="ctrl-direction" value="normal">
           <option value="normal" selected>normal</option>
           <option value="reverse">reverse</option>
-        </select>
+        </x-select>
       </label>
     </div>
     <div class="controls">

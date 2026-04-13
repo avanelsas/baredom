@@ -53,11 +53,11 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>type
-        <select id="ctrl-type">
+        <x-select id="ctrl-type" value="line">
           <option value="line" selected>line</option>
           <option value="bar">bar</option>
           <option value="area">area</option>
-        </select>
+        </x-select>
       </label>
       <label>height
         <input type="number" id="ctrl-height" value="180" style="width:70px" min="60">
@@ -66,28 +66,28 @@
       <label>axes <input type="checkbox" id="ctrl-axes" checked></label>
       <label>tooltip <input type="checkbox" id="ctrl-tooltip"></label>
       <label>cursor
-        <select id="ctrl-cursor">
+        <x-select id="ctrl-cursor" value="nearest">
           <option value="nearest" selected>nearest</option>
           <option value="x">x</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>x-format
-        <select id="ctrl-xfmt">
+        <x-select id="ctrl-xfmt" value="">
           <option value="" selected>(default)</option>
           <option value="int">int</option>
           <option value="raw">raw</option>
           <option value="abbr">abbr</option>
-        </select>
+        </x-select>
       </label>
       <label>y-format
-        <select id="ctrl-yfmt">
+        <x-select id="ctrl-yfmt" value="">
           <option value="" selected>(default)</option>
           <option value="int">int</option>
           <option value="pct">pct</option>
           <option value="abbr">abbr</option>
           <option value="fixed:2">fixed:2</option>
-        </select>
+        </x-select>
       </label>
       <label>loading <input type="checkbox" id="ctrl-loading"></label>
       <label>disabled <input type="checkbox" id="ctrl-disabled"></label>

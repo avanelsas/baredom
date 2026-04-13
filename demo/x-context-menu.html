@@ -112,14 +112,14 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>placement
-        <select id="ctrl-placement">
+        <x-select id="ctrl-placement" value="bottom-start">
           <option value="bottom-start" selected>bottom-start</option>
           <option value="bottom-end">bottom-end</option>
           <option value="top-start">top-start</option>
           <option value="top-end">top-end</option>
           <option value="right-start">right-start</option>
           <option value="left-start">left-start</option>
-        </select>
+        </x-select>
       </label>
       <label>offset
         <input type="number" id="ctrl-offset" value="8" style="width:60px" min="0">

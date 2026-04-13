@@ -134,16 +134,16 @@
           <input type="number" id="ctl-current" value="0" min="0">
         </label>
         <label>Transition:
-          <select id="ctl-transition">
+          <x-select id="ctl-transition" value="slide">
             <option value="slide">slide</option>
             <option value="fade">fade</option>
-          </select>
+          </x-select>
         </label>
         <label>Direction:
-          <select id="ctl-direction">
+          <x-select id="ctl-direction" value="horizontal">
             <option value="horizontal">horizontal</option>
             <option value="vertical">vertical</option>
-          </select>
+          </x-select>
         </label>
         <label>Duration:
           <input type="number" id="ctl-duration" value="300" min="0" step="50">ms

@@ -85,14 +85,14 @@
     <div class="controls">
       <label>label     <input type="text" id="ctrl-label" value="Email address"></label>
       <label>type
-        <select id="ctrl-type" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
+        <x-select id="ctrl-type" style="font-size:13px;padding:4px 6px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);" value="text">
           <option value="text">text</option>
           <option value="email">email</option>
           <option value="password">password</option>
           <option value="url">url</option>
           <option value="number">number</option>
           <option value="tel">tel</option>
-        </select>
+        </x-select>
       </label>
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Enter value"></label>
       <label>hint        <input type="text" id="ctrl-hint" value=""></label>

@@ -88,18 +88,18 @@
     <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="rect">
           <option value="rect" selected>rect</option>
           <option value="text">text</option>
           <option value="circle">circle</option>
-        </select>
+        </x-select>
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="pulse">
           <option value="pulse" selected>pulse</option>
           <option value="wave">wave</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <label>width
         <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:100px">

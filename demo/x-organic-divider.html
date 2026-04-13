@@ -171,7 +171,7 @@
     </div>
     <div class="controls">
       <label>shape
-        <select id="ctrl-shape">
+        <x-select id="ctrl-shape" value="wave">
           <option value="wave" selected>wave</option>
           <option value="waves">waves</option>
           <option value="blob-edge">blob-edge</option>
@@ -180,26 +180,26 @@
           <option value="slant">slant</option>
           <option value="scallop">scallop</option>
           <option value="cloud">cloud</option>
-        </select>
+        </x-select>
       </label>
       <label>layers
-        <select id="ctrl-layers">
+        <x-select id="ctrl-layers" value="1">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
           <option value="5">5</option>
-        </select>
+        </x-select>
       </label>
       <label>height
         <input type="text" id="ctrl-height" value="" placeholder="e.g. 80px" style="width:80px">
       </label>
       <label>animation
-        <select id="ctrl-animation">
+        <x-select id="ctrl-animation" value="none">
           <option value="none" selected>none</option>
           <option value="drift">drift</option>
           <option value="morph">morph</option>
-        </select>
+        </x-select>
       </label>
       <label>
         <input type="checkbox" id="ctrl-flip"> flip

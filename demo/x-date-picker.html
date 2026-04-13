@@ -76,16 +76,16 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>mode
-        <select id="ctrl-mode">
+        <x-select id="ctrl-mode" value="single">
           <option value="single" selected>single</option>
           <option value="range">range</option>
-        </select>
+        </x-select>
       </label>
       <label>format
-        <select id="ctrl-format">
+        <x-select id="ctrl-format" value="iso">
           <option value="iso" selected>iso</option>
           <option value="localized">localized</option>
-        </select>
+        </x-select>
       </label>
       <label>locale
         <input type="text" id="ctrl-locale" value="" placeholder="default" style="width:80px">

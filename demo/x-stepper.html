@@ -139,17 +139,17 @@
     <div>
       <x-typography variant="overline">Orientation</x-typography>
       <label for="ctrl-orientation">orientation</label>
-      <select id="ctrl-orientation">
+      <x-select id="ctrl-orientation" value="horizontal">
         <option value="horizontal" selected>horizontal</option>
         <option value="vertical">vertical</option>
-      </select>
+      </x-select>
 
       <label for="ctrl-size">size</label>
-      <select id="ctrl-size">
+      <x-select id="ctrl-size" value="md">
         <option value="sm">sm</option>
         <option value="md" selected>md</option>
         <option value="lg">lg</option>
-      </select>
+      </x-select>
 
       <div class="check-row">
         <input type="checkbox" id="ctrl-disabled">

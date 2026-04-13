@@ -71,19 +71,19 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="info">
           <option value="neutral">neutral</option>
           <option value="info" selected>info</option>
           <option value="success">success</option>
           <option value="warning">warning</option>
           <option value="error">error</option>
-        </select>
+        </x-select>
       </label>
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="md" selected>md</option>
           <option value="sm">sm</option>
-        </select>
+        </x-select>
       </label>
       <label>count
         <input type="number" id="ctrl-count" placeholder="none" style="width:60px" min="0">

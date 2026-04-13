@@ -67,25 +67,37 @@ x-typography[variant="overline"] {
 /* ── Dogfooded demo control rows ──────────────────────
    x-form-field is block-level (owns label + input + hint)
    while x-select / x-switch / x-button are inline-block.
-   Force a consistent single-line layout in every common
-   control-row container so dogfooded library controls
-   line up the same way the old native ones did. */
-.row label,
-.panel label,
-.controls label,
-.control-group label {
+   Force a consistent single-line layout for the .row
+   pattern (the pilot's x-alert layout, used the same way
+   across modal/drawer/toaster/etc.). Other container
+   classes (.panel, .controls, .control-group) are used
+   inconsistently across demos — some want stacked, some
+   want inline — so we leave them to per-file CSS. */
+.row label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.row x-form-field,
-.panel x-form-field,
-.controls x-form-field,
-.control-group x-form-field,
-.field x-form-field {
+.row x-form-field {
   display: inline-block;
 }
+
+/* Grid/panel-stacked control layouts: x-select replaced a native <select>
+   that was width:100% and ~32px tall via the demos' inline CSS. Recreate
+   that footprint so the dogfooded select fills its grid cell at the same
+   compact size. */
+.grid x-select,
+.panel x-select,
+.controls x-select,
+.control-group x-select,
+.field x-select {
+  width: 100%;
+  min-width: 0;
+  --x-select-height-md: 2rem;
+  --x-select-font-size-md: 0.8125rem;
+}
+
 
 /* ── Tablet & below (768px) ──────────────────────────── */
 @media (max-width: 768px) {

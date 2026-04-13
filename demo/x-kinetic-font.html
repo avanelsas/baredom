@@ -134,15 +134,15 @@
 <div class="controls">
   <div class="control-group">
     <label>Trigger</label>
-    <select id="ctrl-trigger">
+    <x-select id="ctrl-trigger" value="cursor">
       <option value="cursor" selected>cursor</option>
       <option value="scroll">scroll</option>
       <option value="both">both</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label>Mode</label>
-    <select id="ctrl-mode">
+    <x-select id="ctrl-mode" value="bulge">
       <option value="bulge" selected>bulge</option>
       <option value="lean">lean</option>
       <option value="stretch">stretch</option>
@@ -150,14 +150,14 @@
       <option value="bulge lean">bulge + lean</option>
       <option value="bulge stretch">bulge + stretch</option>
       <option value="bulge lean stretch breathe">all</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label>Per-char</label>
-    <select id="ctrl-perchar">
+    <x-select id="ctrl-perchar" value="false">
       <option value="false" selected>off</option>
       <option value="true">on</option>
-    </select>
+    </x-select>
   </div>
   <div class="control-group">
     <label>Mass <span class="val" id="val-mass">1.0</span></label>

@@ -184,17 +184,17 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="row">
       <label>orientation
-        <select id="ctrl-orientation">
+        <x-select id="ctrl-orientation" value="horizontal">
           <option value="horizontal">horizontal</option>
           <option value="vertical">vertical</option>
-        </select>
+        </x-select>
       </label>
       <label>variant
-        <select id="ctrl-variant">
+        <x-select id="ctrl-variant" value="solid">
           <option value="solid">solid</option>
           <option value="dashed">dashed</option>
           <option value="dotted">dotted</option>
-        </select>
+        </x-select>
       </label>
       <label>thickness
         <input type="text" id="ctrl-thickness" placeholder="e.g. 2px" style="width:80px">
@@ -209,18 +209,18 @@
         <input type="text" id="ctrl-label" placeholder="optional text" style="width:120px">
       </label>
       <label>align
-        <select id="ctrl-align">
+        <x-select id="ctrl-align" value="center">
           <option value="center">center</option>
           <option value="start">start</option>
           <option value="end">end</option>
-        </select>
+        </x-select>
       </label>
       <label>role
-        <select id="ctrl-role">
+        <x-select id="ctrl-role" value="separator">
           <option value="separator">separator</option>
           <option value="presentation">presentation</option>
           <option value="none">none</option>
-        </select>
+        </x-select>
       </label>
       <x-button id="apply-btn">Apply</x-button>
       <x-button id="reset-btn">Reset</x-button>

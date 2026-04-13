@@ -170,26 +170,26 @@
     <div class="surface">
       <div class="row">
         <label>status
-          <select id="ctrl-status">
+          <x-select id="ctrl-status" value="pending">
             <option value="pending">pending</option>
             <option value="active">active</option>
             <option value="complete">complete</option>
             <option value="error">error</option>
             <option value="warning">warning</option>
-          </select>
+          </x-select>
         </label>
         <label>connector
-          <select id="ctrl-connector">
+          <x-select id="ctrl-connector" value="solid">
             <option value="solid">solid</option>
             <option value="dashed">dashed</option>
             <option value="none">none</option>
-          </select>
+          </x-select>
         </label>
         <label>position
-          <select id="ctrl-position">
+          <x-select id="ctrl-position" value="start">
             <option value="start">start</option>
             <option value="end">end</option>
-          </select>
+          </x-select>
         </label>
       </div>
       <div class="row">

@@ -160,6 +160,20 @@
     return bar;
   }
 
+  // x-select compatibility shim for dogfooded demos.
+  // x-select fires "select-change" with detail.value but does not auto-set
+  // the value attribute, so el.value would otherwise stay stale. Echo it
+  // back and re-dispatch a synthetic native "change" event so existing
+  // demo JS that listens for "change" and reads el.value keeps working
+  // without any per-file edits.
+  document.addEventListener('select-change', function (e) {
+    var sel = e.target;
+    if (sel && sel.tagName === 'X-SELECT') {
+      sel.setAttribute('value', e.detail.value);
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     var preset = getInitialPreset();
     var themeEl = null;

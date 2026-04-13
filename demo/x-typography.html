@@ -185,7 +185,7 @@
 
         <div class="field">
           <label for="ctl-variant">variant</label>
-          <select id="ctl-variant">
+          <x-select id="ctl-variant" value="">
             <option value="">— per element —</option>
             <option value="h1">h1</option>
             <option value="h2">h2</option>
@@ -203,18 +203,18 @@
             <option value="blockquote">blockquote</option>
             <option value="code">code</option>
             <option value="kbd">kbd</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="field">
           <label for="ctl-align">align</label>
-          <select id="ctl-align">
+          <x-select id="ctl-align" value="">
             <option value="">— per element —</option>
             <option value="left">left</option>
             <option value="center">center</option>
             <option value="right">right</option>
             <option value="justify">justify</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="checkbox-field">
@@ -231,7 +231,7 @@
 
         <div class="field">
           <label for="ctl-font-family">--x-typography-font-family</label>
-          <select id="ctl-font-family">
+          <x-select id="ctl-font-family" value="">
             <option value="">default</option>
             <option value="system-ui, -apple-system, sans-serif">System UI</option>
             <option value="Georgia, 'Times New Roman', serif">Serif</option>
@@ -239,26 +239,26 @@
             <option value="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">Segoe / Roboto</option>
             <option value="Garamond, Baskerville, 'Baskerville Old Face', serif">Garamond</option>
             <option value="Futura, 'Trebuchet MS', Arial, sans-serif">Futura</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="field">
           <label for="ctl-font-scale">font-size scale</label>
-          <select id="ctl-font-scale">
+          <x-select id="ctl-font-scale" value="">
             <option value="">default (1x)</option>
             <option value="0.75">0.75x</option>
             <option value="0.875">0.875x</option>
             <option value="1.25">1.25x</option>
             <option value="1.5">1.5x</option>
             <option value="2">2x</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="panel-section">Color</div>
 
         <div class="field">
           <label for="ctl-color">--x-typography-color</label>
-          <select id="ctl-color">
+          <x-select id="ctl-color" value="">
             <option value="">inherit (default)</option>
             <option value="#0f172a">Slate 900</option>
             <option value="#334155">Slate 700</option>
@@ -268,7 +268,7 @@
             <option value="#16a34a">Green 600</option>
             <option value="#9333ea">Purple 600</option>
             <option value="custom">Custom...</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="field" id="custom-color-field" style="display:none;">
@@ -280,26 +280,26 @@
 
         <div class="field">
           <label for="ctl-code-bg">--x-typography-code-bg</label>
-          <select id="ctl-code-bg">
+          <x-select id="ctl-code-bg" value="">
             <option value="">default</option>
             <option value="rgba(0,0,0,0.04)">Lighter</option>
             <option value="rgba(0,0,0,0.1)">Darker</option>
             <option value="rgba(59,130,246,0.1)">Blue tint</option>
             <option value="rgba(16,185,129,0.1)">Green tint</option>
             <option value="rgba(168,85,247,0.1)">Purple tint</option>
-          </select>
+          </x-select>
         </div>
 
         <div class="field">
           <label for="ctl-bq-border">--x-typography-blockquote-border-color</label>
-          <select id="ctl-bq-border">
+          <x-select id="ctl-bq-border" value="">
             <option value="">default</option>
             <option value="rgba(0,0,0,0.4)">Darker</option>
             <option value="#2563eb">Blue</option>
             <option value="#16a34a">Green</option>
             <option value="#dc2626">Red</option>
             <option value="#9333ea">Purple</option>
-          </select>
+          </x-select>
         </div>
 
         <x-button id="ctl-reset" type="button">Reset all</x-button>

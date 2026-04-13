@@ -107,21 +107,21 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>size
-        <select id="ctrl-size">
+        <x-select id="ctrl-size" value="md">
           <option value="xs">xs</option>
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
           <option value="xl">xl</option>
-        </select>
+        </x-select>
       </label>
       <label>overlap
-        <select id="ctrl-overlap">
+        <x-select id="ctrl-overlap" value="md">
           <option value="none">none</option>
           <option value="sm">sm</option>
           <option value="md" selected>md</option>
           <option value="lg">lg</option>
-        </select>
+        </x-select>
       </label>
       <label>max
         <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
