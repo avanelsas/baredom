@@ -190,18 +190,6 @@
         margin-top: 10px;
       }
 
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: var(--chip-bg);
-        color: var(--chip-fg);
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
       code {
         font-family:
           ui-monospace,
@@ -371,9 +359,9 @@
               hint="Refreshing live metric feed"
             ></x-stat>
             <div class="chip-row">
-              <span class="chip">role="figure"</span>
-              <span class="chip">aria-busy when loading</span>
-              <span class="chip">Reduced-motion aware</span>
+              <x-chip label='role="figure"' removable="false"></x-chip>
+              <x-chip label="aria-busy when loading" removable="false"></x-chip>
+              <x-chip label="Reduced-motion aware" removable="false"></x-chip>
             </div>
           </div>
         </section>
