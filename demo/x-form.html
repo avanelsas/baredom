@@ -45,8 +45,8 @@
       <x-form-field label="Email"    name="email"    type="email"    placeholder="you@example.com" required></x-form-field>
       <x-form-field label="Password" name="password" type="password" placeholder="••••••••"        required></x-form-field>
       <div style="display:flex;gap:8px;">
-        <x-button type="submit" class="btn btn-primary"   id="login-submit">Sign in</x-button>
-        <x-button type="reset"  class="btn btn-secondary">Reset</x-button>
+        <x-button id="login-submit" onclick="document.getElementById('login-form').submit()">Sign in</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('login-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
@@ -58,8 +58,8 @@
       <x-form-field label="Message" name="message" placeholder="Your message here"></x-form-field>
       <x-checkbox name="subscribe" id="subscribe-check">Subscribe to newsletter</x-checkbox>
       <div style="display:flex;gap:8px;">
-        <x-button type="submit" class="btn btn-primary">Send</x-button>
-        <x-button type="reset"  class="btn btn-secondary">Clear</x-button>
+        <x-button onclick="document.getElementById('contact-form').submit()">Send</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('contact-form').reset()">Clear</x-button>
       </div>
     </x-form>
 
@@ -74,8 +74,8 @@
           <option value="off">off</option>
         </select>
       </label>
-      <x-button class="btn btn-primary"   style="font-size:12px;padding:5px 10px;" id="ctrl-set-error">Inject email error</x-button>
-      <x-button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;" id="ctrl-clear-errors">Clear errors</x-button>
+      <x-button size="sm" id="ctrl-set-error">Inject email error</x-button>
+      <x-button size="sm" variant="secondary" id="ctrl-clear-errors">Clear errors</x-button>
     </div>
 
     <!-- ------------------------------------------------------------------ -->

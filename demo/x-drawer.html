@@ -94,7 +94,7 @@
       <x-button onclick="document.getElementById('demo-drawer').show()">show()</x-button>
       <x-button onclick="document.getElementById('demo-drawer').hide()">hide()</x-button>
       <x-button onclick="document.getElementById('demo-drawer').toggle()">toggle()</x-button>
-      <x-button class="secondary" onclick="clearLog()">Clear log</x-button>
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
     </div>
 
     <div class="log" id="event-log">Events will appear here…</div>
@@ -103,7 +103,7 @@
     <x-drawer id="demo-drawer" placement="right" label="Drawer">
       <div slot="header" class="drawer-header">
         <span id="drawer-title">Drawer</span>
-        <x-button class="drawer-close" onclick="document.getElementById('demo-drawer').hide()" aria-label="Close">&#x2715;</x-button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-drawer').hide()" label="Close">&#x2715;</x-button>
       </div>
 
       <div class="drawer-body-content">
@@ -114,7 +114,7 @@
       </div>
 
       <div slot="footer" class="drawer-footer">
-        <x-button class="secondary" onclick="document.getElementById('demo-drawer').hide()">Cancel</x-button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-drawer').hide()">Cancel</x-button>
         <x-button onclick="handleSave()">Save changes</x-button>
       </div>
     </x-drawer>

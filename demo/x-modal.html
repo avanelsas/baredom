@@ -88,7 +88,7 @@
       <x-button onclick="document.getElementById('demo-modal').show()">show()</x-button>
       <x-button onclick="document.getElementById('demo-modal').hide()">hide()</x-button>
       <x-button onclick="document.getElementById('demo-modal').toggle()">toggle()</x-button>
-      <x-button class="secondary" onclick="clearLog()">Clear log</x-button>
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
     </div>
 
     <div class="log" id="event-log">Events will appear here…</div>
@@ -97,7 +97,7 @@
     <x-modal id="demo-modal" size="md" label="Modal">
       <div slot="header" class="modal-header">
         <span id="modal-title">Modal</span>
-        <x-button class="modal-close" onclick="document.getElementById('demo-modal').hide()" aria-label="Close">&#x2715;</x-button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-modal').hide()" label="Close">&#x2715;</x-button>
       </div>
 
       <div class="modal-body-content">
@@ -108,7 +108,7 @@
       </div>
 
       <div slot="footer" class="modal-footer">
-        <x-button class="secondary" onclick="document.getElementById('demo-modal').hide()">Cancel</x-button>
+        <x-button variant="ghost" onclick="document.getElementById('demo-modal').hide()">Cancel</x-button>
         <x-button onclick="handleConfirm()">Confirm</x-button>
       </div>
     </x-modal>

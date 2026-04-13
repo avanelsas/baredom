@@ -65,8 +65,8 @@
     <x-form id="search-form">
       <x-search-field name="q" label="Site search" placeholder="Search the site…" required></x-search-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <x-button type="submit" class="btn btn-primary">Search</x-button>
-        <x-button type="reset"  class="btn btn-secondary">Reset</x-button>
+        <x-button onclick="document.getElementById('search-form').submit()">Search</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('search-form').reset()">Reset</x-button>
       </div>
     </x-form>
 
