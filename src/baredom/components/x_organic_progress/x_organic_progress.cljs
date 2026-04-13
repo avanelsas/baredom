@@ -223,38 +223,6 @@
       (.setAttribute blur-el "stdDeviation" "2")))
   nil)
 
-(defn- reconcile-nodes!
-  "Add/remove SVG elements for nodes (circles)."
-  [^js el ^js node-data node-count]
-  (let [{:keys [nodes-g]} (gobj/get el k-refs)
-        ^js nodes-g  nodes-g
-        ^js old-els  (or (gobj/get el k-node-els) #js [])
-        old-count    (.-length old-els)
-        new-els      #js []]
-    (dotimes [i node-count]
-      (let [^js nd (aget node-data i)
-            ^js circle (if (< i old-count)
-                         (aget old-els i)
-                         (let [c (.createElementNS js/document svg-ns "circle")]
-                           (.appendChild nodes-g c)
-                           c))
-            x (gobj/get nd "x")
-            y (gobj/get nd "y")]
-        (.setAttribute circle "cx" (str x))
-        (.setAttribute circle "cy" (str y))
-        (.setAttribute circle "r" "2.5")
-        (.setAttribute circle "opacity" "0")
-        (.push new-els circle)))
-    ;; Remove excess
-    (loop [i node-count]
-      (when (< i old-count)
-        (let [^js el-old (aget old-els i)]
-          (when (.-parentNode el-old)
-            (.removeChild nodes-g el-old)))
-        (recur (inc i))))
-    (gobj/set el k-node-els new-els))
-  nil)
-
 (defn- clear-nodes!
   "Remove all lattice node circles."
   [^js el]

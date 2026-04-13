@@ -5,7 +5,6 @@
 ;; ---- Instance field keys ----
 
 (def ^:private k-refs     "__xChartRefs")
-(def ^:private k-handlers "__xChartHandlers")
 (def ^:private k-data     "__xChartData")
 
 ;; ---- SVG namespace ----

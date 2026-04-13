@@ -83,9 +83,6 @@
   (let [{:keys [slot]} (ensure-refs! el)]
     (.assignedElements ^js slot)))
 
-(defn- prefers-reduced-motion? []
-  (boolean (.-matches (.matchMedia js/window "(prefers-reduced-motion:reduce)"))))
-
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch! [^js el event-name detail-map]
   (let [^js ev (js/CustomEvent.

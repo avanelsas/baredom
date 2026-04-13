@@ -1,5 +1,6 @@
 (ns baredom.components.x-command-palette.model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
+            [clojure.string :as str]
             [baredom.components.x-command-palette.model :as model]
             [baredom.utils.model :as mu]))
 
@@ -44,8 +45,8 @@
   (testing "search-str is lowercase and includes label"
     (let [items (model/normalize-items
                  #js [#js {:id "1" :label "GitHub Actions" :keywords #js ["ci" "cd"]}])]
-      (is (clojure.string/includes? (:search-str (first items)) "github actions"))
-      (is (clojure.string/includes? (:search-str (first items)) "ci")))))
+      (is (str/includes? (:search-str (first items)) "github actions"))
+      (is (str/includes? (:search-str (first items)) "ci")))))
 
 (deftest filter-items-test
   (let [items (model/normalize-items

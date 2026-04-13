@@ -5,7 +5,6 @@
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xDividerRefs")
-(def ^:private k-handlers "__xDividerHandlers")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def style-text

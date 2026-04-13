@@ -21,10 +21,6 @@
   [^js tag]
   (.createElement js/document tag))
 
-(defn- get-ref
-  [^js el k]
-  (gobj/get (gobj/get el k-refs) (name k)))
-
 (defn- read-model
   "Read all observed attrs from the element and normalize."
   [^js el]

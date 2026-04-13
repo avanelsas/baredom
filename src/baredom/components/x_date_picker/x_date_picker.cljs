@@ -11,7 +11,6 @@
 (def ^:private k-state    "__xDatePickerState")
 (def ^:private k-focused  "__xDatePickerFocused")
 (def ^:private k-display  "__xDatePickerDisplay")
-(def ^:private k-pending  "__xDatePickerPendingDisplay")
 (def ^:private k-wd-done  "__xDatePickerWeekdaysDone")
 (def ^:private k-handlers "__xDatePickerHandlers")
 (def ^:private k-range-step "__xDatePickerRangeStep")
@@ -24,10 +23,6 @@
 (defn- make-el
   [tag]
   (.createElement js/document tag))
-
-(defn- get-ref
-  [^js el k]
-  (gobj/get (gobj/get el k-refs) (name k)))
 
 (defn- dispatch!
   [^js el event-name cancelable detail]

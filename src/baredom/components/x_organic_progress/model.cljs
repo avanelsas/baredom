@@ -256,8 +256,6 @@
 
 ;; ── L-system ────────────────────────────────────────────────────────────────
 
-(def ^:private vine-rules    {"F" "F[+F]F[-F]F"})
-
 (defn l-system-iterate
   "Apply L-system rules n times to axiom string. Returns final string."
   [axiom rules n]
