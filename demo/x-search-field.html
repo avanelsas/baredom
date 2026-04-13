@@ -43,25 +43,25 @@
     <h1>x-search-field demo</h1>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Standalone</h2>
+    <x-typography variant="overline">Standalone</x-typography>
     <div class="stack">
       <x-search-field id="standalone" name="q" label="Search" placeholder="Search…"></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With required</h2>
+    <x-typography variant="overline">With required</x-typography>
     <div class="stack">
       <x-search-field name="q2" label="Required search" placeholder="Must fill in" required></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-search-field name="q3" label="Disabled" placeholder="Cannot search" disabled value="pre-filled"></x-search-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-typography variant="overline">Inside x-form (submit / reset integration)</x-typography>
     <x-form id="search-form">
       <x-search-field name="q" label="Site search" placeholder="Search the site…" required></x-search-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
@@ -71,7 +71,7 @@
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
       <label>label       <input type="text" id="ctrl-label" value="Search"></label>
@@ -87,7 +87,7 @@
     <x-search-field id="live-field" name="live" label="Search" placeholder="Search…"></x-search-field>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>

@@ -33,7 +33,7 @@
   <body>
     <h1>x-select demo</h1>
 
-    <h2>Default (md)</h2>
+    <x-typography variant="overline">Default (md)</x-typography>
     <div class="row">
       <x-select name="fruit" placeholder="Pick a fruit">
         <option value="apple">Apple</option>
@@ -42,7 +42,7 @@
       </x-select>
     </div>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="row">
       <div class="item">
         <x-select size="sm" name="size-sm" placeholder="Small">
@@ -67,7 +67,7 @@
       </div>
     </div>
 
-    <h2>With pre-selected value</h2>
+    <x-typography variant="overline">With pre-selected value</x-typography>
     <div class="row">
       <x-select name="role" value="editor">
         <option value="admin">Admin</option>
@@ -76,7 +76,7 @@
       </x-select>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-select disabled name="disabled-sel" placeholder="Disabled">
         <option value="x">Option X</option>
@@ -87,7 +87,7 @@
       </x-select>
     </div>
 
-    <h2>Required</h2>
+    <x-typography variant="overline">Required</x-typography>
     <div class="row">
       <x-select required name="required-sel" placeholder="Required field">
         <option value="one">One</option>
@@ -95,7 +95,7 @@
       </x-select>
     </div>
 
-    <h2>Option groups</h2>
+    <x-typography variant="overline">Option groups</x-typography>
     <div class="row">
       <x-select name="city" placeholder="Choose a city">
         <optgroup label="North America">
@@ -111,7 +111,7 @@
       </x-select>
     </div>
 
-    <h2>Interactive — select-change events logged below</h2>
+    <x-typography variant="overline">Interactive — select-change events logged below</x-typography>
     <div class="row">
       <x-select id="interactive-sel" name="plan" placeholder="Choose a plan">
         <option value="free">Free</option>
@@ -120,7 +120,7 @@
       </x-select>
     </div>
 
-    <h2>Consumer-controlled value (reacts to select-change)</h2>
+    <x-typography variant="overline">Consumer-controlled value (reacts to select-change)</x-typography>
     <div class="row">
       <x-select id="controlled-sel" name="controlled" placeholder="Pick one">
         <option value="alpha">Alpha</option>
@@ -130,7 +130,7 @@
       <span id="controlled-display" style="font-size:14px;color:var(--muted)">No selection</span>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>disabled <input type="checkbox" id="ctrl-disabled"></label>
       <label>required <input type="checkbox" id="ctrl-required"></label>

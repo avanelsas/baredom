@@ -30,14 +30,14 @@
   <body>
     <h1>x-copy demo</h1>
 
-    <h2>Basic — copy text</h2>
+    <x-typography variant="overline">Basic — copy text</x-typography>
     <div class="row">
       <x-copy text="Hello, world!" id="c1">
         <x-button variant="default">Copy text</x-button>
       </x-copy>
     </div>
 
-    <h2>Custom success message &amp; tooltip duration</h2>
+    <x-typography variant="overline">Custom success message &amp; tooltip duration</x-typography>
     <div class="row">
       <x-copy text="npm install @vanelsas/baredom"
               success-message="Copied!"
@@ -47,21 +47,21 @@
       </x-copy>
     </div>
 
-    <h2>No tooltip</h2>
+    <x-typography variant="overline">No tooltip</x-typography>
     <div class="row">
       <x-copy text="silent copy" show-tooltip="false" id="c3">
         <x-button variant="default">Copy (no tooltip)</x-button>
       </x-copy>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-copy disabled text="noop" id="c4">
         <x-button variant="default" disabled>Disabled</x-button>
       </x-copy>
     </div>
 
-    <h2>Copy from element (from + from-attr)</h2>
+    <x-typography variant="overline">Copy from element (from + from-attr)</x-typography>
     <div class="row">
       <input id="source-input" type="text" value="Text from input element"
              style="font-size:14px;padding:6px 10px;border-radius:6px;border:1px solid var(--surface-border);background:var(--input-bg);color:var(--input-fg);">
@@ -70,7 +70,7 @@
       </x-copy>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>text
         <input type="text" id="ctrl-text" value="Hello, world!" style="width:200px">

@@ -155,7 +155,7 @@
   <body>
     <h1>x-scroll demo</h1>
 
-    <h2>Component</h2>
+    <x-typography variant="overline">Component</x-typography>
 
     <x-scroll id="scroller" snap="center" show-indicators gap="16" label="Demo carousel">
       <div class="slide">1</div>
@@ -170,7 +170,7 @@
       <div class="slide">10</div>
     </x-scroll>
 
-    <h2>Controls</h2>
+    <x-typography variant="overline">Controls</x-typography>
 
     <div class="controls">
       <!-- Mode -->
@@ -286,7 +286,7 @@
       Keyboard: Arrow Left/Right (or Up/Down in vertical) to navigate, Home/End to jump to first/last slide.
     </p>
 
-    <h2>Auto-play + Loop</h2>
+    <x-typography variant="overline">Auto-play + Loop</x-typography>
     <x-scroll loop auto-play interval="2000" show-indicators gap="12" label="Auto-play demo"
               style="width:100%;height:200px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:33%;">
       <div class="slide">A</div>
@@ -296,7 +296,7 @@
       <div class="slide">E</div>
     </x-scroll>
 
-    <h2>Vertical Mode</h2>
+    <x-typography variant="overline">Vertical Mode</x-typography>
     <x-scroll mode="vertical" show-indicators snap="center" label="Vertical demo"
               style="width:100%;height:300px;border:1px solid var(--border);border-radius:8px;--x-scroll-slide-size:25%;">
       <div class="slide" style="width:25%;margin:0 auto;">1</div>
@@ -306,7 +306,7 @@
     </x-scroll>
 
     <div class="log-header">
-      <h2 style="margin:0;">Event Log</h2>
+      <x-typography variant="overline" style="margin:0;">Event Log</x-typography>
       <button id="btn-clear">Clear</button>
     </div>
     <div id="log"></div>

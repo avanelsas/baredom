@@ -45,7 +45,7 @@
   <body>
     <h1>x-progress-circle demo</h1>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="row">
       <x-progress-circle value="65" variant="default" show-value label="Default"></x-progress-circle>
       <x-progress-circle value="65" variant="success" show-value label="Success"></x-progress-circle>
@@ -53,14 +53,14 @@
       <x-progress-circle value="65" variant="danger"  show-value label="Danger"></x-progress-circle>
     </div>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="row">
       <x-progress-circle value="50" size="sm" show-value label="sm"></x-progress-circle>
       <x-progress-circle value="50" size="md" show-value label="md"></x-progress-circle>
       <x-progress-circle value="50" size="lg" show-value label="lg"></x-progress-circle>
     </div>
 
-    <h2>Without value text</h2>
+    <x-typography variant="overline">Without value text</x-typography>
     <div class="row">
       <x-progress-circle value="30"></x-progress-circle>
       <x-progress-circle value="70" variant="success"></x-progress-circle>
@@ -68,14 +68,14 @@
       <x-progress-circle value="100" variant="success" show-value></x-progress-circle>
     </div>
 
-    <h2>Indeterminate</h2>
+    <x-typography variant="overline">Indeterminate</x-typography>
     <div class="row">
       <x-progress-circle indeterminate label="Loading…"></x-progress-circle>
       <x-progress-circle indeterminate variant="success" size="sm"></x-progress-circle>
       <x-progress-circle indeterminate variant="warning" size="lg"></x-progress-circle>
     </div>
 
-    <h2>Custom theme</h2>
+    <x-typography variant="overline">Custom theme</x-typography>
     <div class="row">
       <x-progress-circle value="72" show-value size="lg"
         style="--x-progress-circle-fill-color:#8b5cf6;--x-progress-circle-track-color:#ede9fe;">
@@ -85,7 +85,7 @@
       </x-progress-circle>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>value
         <input type="range" id="ctrl-value" min="0" max="100" value="40">
@@ -117,7 +117,7 @@
       <x-progress-circle id="live" value="40" show-value></x-progress-circle>
     </div>
 
-    <h2>Event log (<code>x-progress-circle-complete</code>)</h2>
+    <x-typography variant="overline">Event log (<code>x-progress-circle-complete</code>)</x-typography>
     <p style="font-size:13px;color:var(--muted);margin:0 0 6px;">
       Drag the value slider to 100 to trigger the event. Drop below 100 to reset.
     </p>

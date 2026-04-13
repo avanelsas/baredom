@@ -133,7 +133,7 @@
 
 <!-- ── Type variants ─────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Type variants</h2>
+  <x-typography variant="overline">Type variants</x-typography>
   <div class="toast-row" id="variants">
     <x-toast type="info"    message="Informational notification."></x-toast>
     <x-toast type="success" message="Operation completed successfully."></x-toast>
@@ -144,7 +144,7 @@
 
 <!-- ── With heading ──────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>With heading</h2>
+  <x-typography variant="overline">With heading</x-typography>
   <div class="toast-row">
     <x-toast type="success" heading="Saved" message="Your changes have been saved."></x-toast>
     <x-toast type="error"   heading="Upload failed" message="The file exceeds the 10 MB limit."></x-toast>
@@ -153,7 +153,7 @@
 
 <!-- ── Message only ──────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Message only (no heading)</h2>
+  <x-typography variant="overline">Message only (no heading)</x-typography>
   <div class="toast-row">
     <x-toast type="info"    message="Your session will expire in 5 minutes."></x-toast>
     <x-toast type="warning" message="Low disk space detected."></x-toast>
@@ -162,7 +162,7 @@
 
 <!-- ── Non-dismissible ───────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Non-dismissible</h2>
+  <x-typography variant="overline">Non-dismissible</x-typography>
   <div class="toast-row">
     <x-toast type="info" message="Processing in background…" dismissible="false"></x-toast>
   </div>
@@ -170,7 +170,7 @@
 
 <!-- ── Disabled ──────────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Disabled</h2>
+  <x-typography variant="overline">Disabled</x-typography>
   <div class="toast-row">
     <x-toast type="warning" heading="Read-only" message="This notification cannot be dismissed." disabled></x-toast>
   </div>
@@ -178,7 +178,7 @@
 
 <!-- ── Custom icon ───────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Custom icon via attribute</h2>
+  <x-typography variant="overline">Custom icon via attribute</x-typography>
   <div class="toast-row">
     <x-toast type="success" icon="🚀" message="Deployment started successfully."></x-toast>
     <x-toast type="error"   icon="🔥" heading="Fire!" message="Something is on fire."></x-toast>
@@ -188,7 +188,7 @@
 
 <!-- ── Auto-dismiss ──────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Auto-dismiss (timeout-ms)</h2>
+  <x-typography variant="overline">Auto-dismiss (timeout-ms)</x-typography>
   <p style="margin:0 0 12px">Toasts below auto-dismiss. Click "Reset" to re-add them.</p>
   <div class="toast-row" id="auto-dismiss-zone">
     <x-toast id="td1" type="success" message="Auto-dismisses in 5 seconds." timeout-ms="5000"></x-toast>
@@ -199,7 +199,7 @@
 
 <!-- ── Progress bar ──────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Progress bar (show-progress)</h2>
+  <x-typography variant="overline">Progress bar (show-progress)</x-typography>
   <p style="margin:0 0 12px">Progress bar animates from full to empty over the timeout duration.</p>
   <div class="toast-row" id="progress-zone">
     <x-toast id="tp1" type="info" heading="Uploading" message="File upload in progress…" timeout-ms="6000" show-progress></x-toast>
@@ -211,7 +211,7 @@
 
 <!-- ── Spawn control panel ───────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Spawn toast</h2>
+  <x-typography variant="overline">Spawn toast</x-typography>
   <div class="controls">
     <label>
       Type
@@ -259,7 +259,7 @@
 
 <!-- ── Event log ─────────────────────────────────────────────────────────── -->
 <div class="section">
-  <h2>Event log — x-toast-dismiss</h2>
+  <x-typography variant="overline">Event log — x-toast-dismiss</x-typography>
   <div id="log"><span class="empty-log">No events yet.</span></div>
   <br>
   <button onclick="document.getElementById('log').innerHTML='<span class=\'empty-log\'>No events yet.</span>'">Clear log</button>

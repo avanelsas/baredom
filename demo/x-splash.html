@@ -72,7 +72,7 @@
   <p>A full-viewport loading screen overlay with optional spinner, progress bar, and custom content.</p>
 
   <!-- ── Basic splash ───────────────────────────────────────────── -->
-  <h2>Basic Splash</h2>
+  <x-typography variant="overline">Basic Splash</x-typography>
   <p>Default splash with spinner. Click "Show" to activate, "Hide" to dismiss.</p>
   <div class="controls">
     <button onclick="showSplash('basic')">Show</button>
@@ -81,7 +81,7 @@
   <x-splash id="basic"></x-splash>
 
   <!-- ── With progress ──────────────────────────────────────────── -->
-  <h2>With Progress Bar</h2>
+  <x-typography variant="overline">With Progress Bar</x-typography>
   <p>Shows a progress bar that fills over 3 seconds, then auto-hides.</p>
   <div class="controls">
     <button onclick="showProgressSplash()">Start Loading</button>
@@ -89,7 +89,7 @@
   <x-splash id="progress-splash" spinner="false"></x-splash>
 
   <!-- ── Custom content ─────────────────────────────────────────── -->
-  <h2>Custom Content (Slot)</h2>
+  <x-typography variant="overline">Custom Content (Slot)</x-typography>
   <p>Uses the default slot for a logo and message.</p>
   <div class="controls">
     <button onclick="showSplash('custom')">Show</button>
@@ -101,13 +101,13 @@
         <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" opacity="0.3"/>
         <circle cx="24" cy="24" r="10" fill="currentColor" opacity="0.6"/>
       </svg>
-      <h2>MyApp</h2>
+      <x-typography variant="overline">MyApp</x-typography>
       <p>Loading your workspace...</p>
     </div>
   </x-splash>
 
   <!-- ── Variant + Overlay combos ───────────────────────────────── -->
-  <h2>Variants &amp; Overlays</h2>
+  <x-typography variant="overline">Variants &amp; Overlays</x-typography>
   <div class="controls">
     <button onclick="showCombo('minimal', 'transparent')">Minimal + Transparent</button>
     <button onclick="showCombo('branded', 'solid')">Branded + Solid</button>
@@ -120,7 +120,7 @@
   <button class="demo-close-btn" id="demo-close" title="Close splash (demo only)">&times;</button>
 
   <!-- ── Event log ──────────────────────────────────────────────── -->
-  <h2>Event Log</h2>
+  <x-typography variant="overline">Event Log</x-typography>
   <div id="event-log">Waiting for events...</div>
 
   <script>

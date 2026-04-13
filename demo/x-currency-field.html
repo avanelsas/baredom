@@ -43,31 +43,31 @@
     <h1>x-currency-field demo</h1>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Standalone (USD default)</h2>
+    <x-typography variant="overline">Standalone (USD default)</x-typography>
     <div class="stack">
       <x-currency-field id="standalone" name="amount" label="Amount" placeholder="0.00"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>With hint and pre-filled value</h2>
+    <x-typography variant="overline">With hint and pre-filled value</x-typography>
     <div class="stack">
       <x-currency-field name="price" label="Price" hint="Enter the product price" value="1234.56" currency="USD"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Required validation</h2>
+    <x-typography variant="overline">Required validation</x-typography>
     <div class="stack">
       <x-currency-field name="required-amount" label="Required amount" required placeholder="Must fill in"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-currency-field name="disabled-amount" label="Disabled" disabled value="999.99" currency="EUR"></x-currency-field>
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Inside x-form (submit / reset integration)</h2>
+    <x-typography variant="overline">Inside x-form (submit / reset integration)</x-typography>
     <x-form id="price-form">
       <x-currency-field name="price" label="Product price" placeholder="0.00" required currency="USD"></x-currency-field>
       <div style="display:flex;gap:8px;margin-top:12px;">
@@ -77,7 +77,7 @@
     </x-form>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>currency    <input type="text" id="ctrl-currency" value="USD"></label>
       <label>locale      <input type="text" id="ctrl-locale" value=""></label>
@@ -94,7 +94,7 @@
     <x-currency-field id="live-field" name="live" label="Amount" placeholder="0.00"></x-currency-field>
 
     <!-- ------------------------------------------------------------------ -->
-    <h2>Event log</h2>
+    <x-typography variant="overline">Event log</x-typography>
     <div class="log" id="log">Events will appear here.</div>
 
     <script>

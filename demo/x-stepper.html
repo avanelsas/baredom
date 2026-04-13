@@ -117,7 +117,7 @@
 
   <!-- ── Interactive playground ───────────────────────────────────────────── -->
   <div class="section">
-    <h2>Playground</h2>
+    <x-typography variant="overline">Playground</x-typography>
 
     <x-stepper id="playground"
       steps='[{"label":"Account","description":"Create your credentials"},{"label":"Profile","description":"Tell us about yourself"},{"label":"Review","description":"Check everything looks right"},{"label":"Done"}]'
@@ -137,7 +137,7 @@
   <!-- ── Controls ─────────────────────────────────────────────────────────── -->
   <div class="section grid-2">
     <div>
-      <h2>Orientation</h2>
+      <x-typography variant="overline">Orientation</x-typography>
       <label for="ctrl-orientation">orientation</label>
       <select id="ctrl-orientation">
         <option value="horizontal" selected>horizontal</option>
@@ -158,7 +158,7 @@
     </div>
 
     <div>
-      <h2>Step count</h2>
+      <x-typography variant="overline">Step count</x-typography>
       <label for="ctrl-count">Number of steps (integer shorthand)</label>
       <input type="number" id="ctrl-count" min="1" max="8" value="">
       <p style="font-size:0.8125rem;color:var(--muted);margin:0 0 8px">
@@ -169,7 +169,7 @@
 
   <!-- ── Horizontal sizes ──────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>Horizontal — sizes</h2>
+    <x-typography variant="overline">Horizontal — sizes</x-typography>
     <p style="font-size:0.875rem;color:var(--muted);margin:0 0 16px">
       <span class="tag">size="sm"</span>
     </p>
@@ -191,7 +191,7 @@
 
   <!-- ── Step states ───────────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>All step states (current = 0, 1, 2)</h2>
+    <x-typography variant="overline">All step states (current = 0, 1, 2)</x-typography>
 
     <p style="font-size:0.875rem;color:var(--muted);margin:0 0 8px">current=0 (all upcoming)</p>
     <x-stepper steps="4" current="0"></x-stepper>
@@ -205,7 +205,7 @@
 
   <!-- ── Vertical layout ───────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>Vertical orientation</h2>
+    <x-typography variant="overline">Vertical orientation</x-typography>
     <x-stepper
       orientation="vertical"
       steps='[{"label":"Install","description":"Run npm install to get dependencies"},{"label":"Configure","description":"Edit the config file"},{"label":"Test","description":"Run the test suite"},{"label":"Deploy","description":"Ship to production"}]'
@@ -215,19 +215,19 @@
 
   <!-- ── Integer shorthand ─────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>Integer shorthand (<code>steps="5"</code>)</h2>
+    <x-typography variant="overline">Integer shorthand (<code>steps="5"</code>)</x-typography>
     <x-stepper steps="5" current="2"></x-stepper>
   </div>
 
   <!-- ── Disabled ──────────────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <x-stepper steps="4" current="1" disabled></x-stepper>
   </div>
 
   <!-- ── Custom theme ──────────────────────────────────────────────────────── -->
   <div class="section">
-    <h2>Custom theme (purple)</h2>
+    <x-typography variant="overline">Custom theme (purple)</x-typography>
     <x-stepper
       steps='[{"label":"Plan"},{"label":"Build"},{"label":"Launch"}]'
       current="1"

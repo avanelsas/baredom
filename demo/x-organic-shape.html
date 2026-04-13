@@ -32,7 +32,7 @@
   <body>
     <h1>x-organic-shape demo</h1>
 
-    <h2>All presets</h2>
+    <x-typography variant="overline">All presets</x-typography>
     <div class="grid">
       <div>
         <x-organic-shape shape="blob-1"></x-organic-shape>
@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <h2>Animation styles</h2>
+    <x-typography variant="overline">Animation styles</x-typography>
     <div class="row">
       <div>
         <x-organic-shape shape="blob-1" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(139,92,246,0.2);"></x-organic-shape>
@@ -88,7 +88,7 @@
       </div>
     </div>
 
-    <h2>Custom animation timing</h2>
+    <x-typography variant="overline">Custom animation timing</x-typography>
     <div class="row">
       <div>
         <x-organic-shape shape="blob-2" animation="morph" style="width:140px;--x-organic-shape-fill:rgba(99,102,241,0.2);--x-organic-shape-animate-duration:3s;"></x-organic-shape>
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <h2>As content container</h2>
+    <x-typography variant="overline">As content container</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-2" style="width:200px;--x-organic-shape-fill:linear-gradient(135deg,#667eea,#764ba2);">
         <div class="content-demo" style="text-align:center;padding:24px;">Hello World</div>
@@ -118,14 +118,14 @@
       </x-organic-shape>
     </div>
 
-    <h2>Custom path</h2>
+    <x-typography variant="overline">Custom path</x-typography>
     <div class="row">
       <x-organic-shape path="circle(50%)" style="width:140px;--x-organic-shape-fill:rgba(251,191,36,0.25);"></x-organic-shape>
       <x-organic-shape path="polygon(50% 0%,100% 100%,0% 100%)" style="width:140px;--x-organic-shape-fill:rgba(59,130,246,0.2);"></x-organic-shape>
       <x-organic-shape path="ellipse(50% 35% at 50% 50%)" ratio="2/1" style="width:200px;--x-organic-shape-fill:rgba(16,185,129,0.2);"></x-organic-shape>
     </div>
 
-    <h2>Explicit sizes</h2>
+    <x-typography variant="overline">Explicit sizes</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-1" width="100px" height="100px"></x-organic-shape>
       <x-organic-shape shape="pebble" width="200px" height="120px" style="--x-organic-shape-fill:rgba(236,72,153,0.15);"></x-organic-shape>
@@ -133,14 +133,14 @@
       <x-organic-shape shape="cloud" width="250px" height="100px" style="--x-organic-shape-fill:rgba(251,191,36,0.15);"></x-organic-shape>
     </div>
 
-    <h2>Different aspect ratios</h2>
+    <x-typography variant="overline">Different aspect ratios</x-typography>
     <div class="row">
       <x-organic-shape shape="blob-1" ratio="1/1" style="width:120px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
       <x-organic-shape shape="blob-1" ratio="4/3" style="width:160px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
       <x-organic-shape shape="blob-1" ratio="16/9" style="width:200px;--x-organic-shape-fill:rgba(99,102,241,0.15);"></x-organic-shape>
     </div>
 
-    <h2>Custom theming</h2>
+    <x-typography variant="overline">Custom theming</x-typography>
     <div class="row">
       <x-organic-shape
         shape="blob-2"
@@ -163,7 +163,7 @@
       </x-organic-shape>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>shape
         <select id="ctrl-shape">

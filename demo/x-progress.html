@@ -46,7 +46,7 @@
   <body>
     <h1>x-progress demo</h1>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="stack">
       <x-progress value="65" label="Default"  variant="default"  show-value></x-progress>
       <x-progress value="65" label="Success"  variant="success"  show-value></x-progress>
@@ -54,33 +54,33 @@
       <x-progress value="65" label="Danger"   variant="danger"   show-value></x-progress>
     </div>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="stack">
       <x-progress value="50" label="Small (sm)"  size="sm"></x-progress>
       <x-progress value="50" label="Medium (md)" size="md"></x-progress>
       <x-progress value="50" label="Large (lg)"  size="lg"></x-progress>
     </div>
 
-    <h2>Without label</h2>
+    <x-typography variant="overline">Without label</x-typography>
     <div class="stack">
       <x-progress value="30"></x-progress>
       <x-progress value="70" variant="success"></x-progress>
     </div>
 
-    <h2>Indeterminate</h2>
+    <x-typography variant="overline">Indeterminate</x-typography>
     <div class="stack">
       <x-progress indeterminate label="Loading data…"></x-progress>
       <x-progress indeterminate variant="success" size="sm"></x-progress>
     </div>
 
-    <h2>Custom theme</h2>
+    <x-typography variant="overline">Custom theme</x-typography>
     <div class="stack">
       <x-progress value="55" label="Purple theme" show-value
         style="--x-progress-fill-color:#8b5cf6;--x-progress-track-color:#ede9fe;--x-progress-height:10px;">
       </x-progress>
     </div>
 
-    <h2>Live control</h2>
+    <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>value
         <input type="range" id="ctrl-value" min="0" max="100" value="40">
@@ -115,7 +115,7 @@
       <x-progress id="live" value="40" label="Upload progress" show-value></x-progress>
     </div>
 
-    <h2>Event log (<code>x-progress-complete</code>)</h2>
+    <x-typography variant="overline">Event log (<code>x-progress-complete</code>)</x-typography>
     <p style="font-size:13px;color:var(--muted);margin:0 0 6px;">
       Drag the value slider to 100 to trigger the event. Drop below 100 to reset.
     </p>

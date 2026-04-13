@@ -102,7 +102,7 @@
   <body>
     <h1>x-avatar demo</h1>
 
-    <h2>Sizes</h2>
+    <x-typography variant="overline">Sizes</x-typography>
     <div class="row">
       <label>xs</label><x-avatar size="xs" name="Alice Bob"></x-avatar>
       <label>sm</label><x-avatar size="sm" name="Alice Bob"></x-avatar>
@@ -111,21 +111,21 @@
       <label>xl</label><x-avatar size="xl" name="Alice Bob"></x-avatar>
     </div>
 
-    <h2>Shapes</h2>
+    <x-typography variant="overline">Shapes</x-typography>
     <div class="row">
       <label>circle</label><x-avatar shape="circle"  name="Alice Bob"></x-avatar>
       <label>rounded</label><x-avatar shape="rounded" name="Alice Bob"></x-avatar>
       <label>square</label><x-avatar shape="square"  name="Alice Bob"></x-avatar>
     </div>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="row">
       <label>neutral</label><x-avatar variant="neutral" name="Alice Bob" size="lg"></x-avatar>
       <label>brand</label>  <x-avatar variant="brand"   name="Alice Bob" size="lg"></x-avatar>
       <label>subtle</label> <x-avatar variant="subtle"  name="Alice Bob" size="lg"></x-avatar>
     </div>
 
-    <h2>Status indicators</h2>
+    <x-typography variant="overline">Status indicators</x-typography>
     <div class="row">
       <label>online</label> <x-avatar status="online"  name="Alice" size="lg"></x-avatar>
       <label>busy</label>   <x-avatar status="busy"    name="Bob"   size="lg"></x-avatar>
@@ -133,27 +133,27 @@
       <label>offline</label><x-avatar status="offline" name="Dave"  size="lg"></x-avatar>
     </div>
 
-    <h2>Explicit initials</h2>
+    <x-typography variant="overline">Explicit initials</x-typography>
     <div class="row">
       <x-avatar initials="JD" size="lg"></x-avatar>
       <x-avatar initials="AB" size="lg" variant="brand"></x-avatar>
       <x-avatar initials="Z"  size="lg" variant="subtle"></x-avatar>
     </div>
 
-    <h2>Fallback (no name / initials / src)</h2>
+    <x-typography variant="overline">Fallback (no name / initials / src)</x-typography>
     <div class="row">
       <x-avatar size="lg"></x-avatar>
       <x-avatar size="lg" shape="rounded"></x-avatar>
       <x-avatar size="lg" shape="square"></x-avatar>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="row">
       <x-avatar name="Alice Bob" size="lg" disabled></x-avatar>
       <x-avatar name="Alice Bob" size="lg" status="online" disabled></x-avatar>
     </div>
 
-    <h2>Image (loaded / broken)</h2>
+    <x-typography variant="overline">Image (loaded / broken)</x-typography>
     <div class="row">
       <label>loaded</label>
       <x-avatar
@@ -165,7 +165,7 @@
       <x-avatar src="https://localhost/no-such-image.png" name="Alice Bob" size="xl"></x-avatar>
     </div>
 
-    <h2>Badge slot</h2>
+    <x-typography variant="overline">Badge slot</x-typography>
     <div class="row">
       <x-avatar name="Alice Bob" size="xl">
         <span slot="badge" class="demo-badge">3</span>
@@ -175,7 +175,7 @@
       </x-avatar>
     </div>
 
-    <h2>Spawn avatar</h2>
+    <x-typography variant="overline">Spawn avatar</x-typography>
     <div class="ctrl-row">
       <label>name
         <input type="text" id="ctrl-name" value="Alice Bob" style="width:130px">

@@ -32,42 +32,42 @@
   <body>
     <h1>x-form-field demo</h1>
 
-    <h2>Default (text)</h2>
+    <x-typography variant="overline">Default (text)</x-typography>
     <div class="stack">
       <x-form-field label="Full name" placeholder="Jane Doe" name="fullname"></x-form-field>
     </div>
 
-    <h2>With hint</h2>
+    <x-typography variant="overline">With hint</x-typography>
     <div class="stack">
       <x-form-field label="Email" type="email" placeholder="you@example.com" hint="We will never share your email." name="email"></x-form-field>
     </div>
 
-    <h2>With error</h2>
+    <x-typography variant="overline">With error</x-typography>
     <div class="stack">
       <x-form-field label="Username" value="foo" error="Username must be at least 4 characters." name="username"></x-form-field>
     </div>
 
-    <h2>With hint and error</h2>
+    <x-typography variant="overline">With hint and error</x-typography>
     <div class="stack">
       <x-form-field label="Password" type="password" hint="At least 8 characters." error="Password is too short." name="password"></x-form-field>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-form-field label="Disabled field" value="Cannot edit this" disabled name="disabled-field"></x-form-field>
     </div>
 
-    <h2>Readonly</h2>
+    <x-typography variant="overline">Readonly</x-typography>
     <div class="stack">
       <x-form-field label="Read-only field" value="Read only value" readonly name="readonly-field"></x-form-field>
     </div>
 
-    <h2>Required</h2>
+    <x-typography variant="overline">Required</x-typography>
     <div class="stack">
       <x-form-field label="Required field" required placeholder="Must fill in" name="required-field"></x-form-field>
     </div>
 
-    <h2>Input types</h2>
+    <x-typography variant="overline">Input types</x-typography>
     <div class="stack">
       <x-form-field label="Email"    type="email"    placeholder="you@example.com" name="t-email"></x-form-field>
       <x-form-field label="Password" type="password" placeholder="••••••••"        name="t-password"></x-form-field>
@@ -76,12 +76,12 @@
       <x-form-field label="Tel"      type="tel"      placeholder="+1 555 000 0000" name="t-tel"></x-form-field>
     </div>
 
-    <h2>No label</h2>
+    <x-typography variant="overline">No label</x-typography>
     <div class="stack">
       <x-form-field placeholder="No label visible" name="no-label"></x-form-field>
     </div>
 
-    <h2>Live controls</h2>
+    <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>label     <input type="text" id="ctrl-label" value="Email address"></label>
       <label>type
@@ -103,7 +103,7 @@
     </div>
     <x-form-field id="live-field" label="Email address" placeholder="Enter value" name="live"></x-form-field>
 
-    <h2>In a &lt;form&gt; (submit to see FormData)</h2>
+    <x-typography variant="overline">In a &lt;form&gt; (submit to see FormData)</x-typography>
     <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;margin:8px 0;">
       <x-form-field label="First name" name="first" placeholder="Jane"></x-form-field>
       <x-form-field label="Last name"  name="last"  placeholder="Doe"></x-form-field>

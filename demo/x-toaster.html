@@ -115,7 +115,7 @@
 
 <!-- ── Quick-fire buttons ───────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Quick fire</h2>
+  <x-typography variant="overline">Quick fire</x-typography>
   <div class="row">
     <button onclick="fire('info')">Info</button>
     <button onclick="fire('success')">Success</button>
@@ -129,7 +129,7 @@
 
 <!-- ── Custom toast builder ─────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Custom toast</h2>
+  <x-typography variant="overline">Custom toast</x-typography>
   <div class="grid">
     <label>Type
       <select id="sel-type">
@@ -172,7 +172,7 @@
 
 <!-- ── Position control ──────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Position</h2>
+  <x-typography variant="overline">Position</x-typography>
   <div class="row">
     <label>Corner / edge
       <select id="sel-position" onchange="changePosition(this.value)">
@@ -190,7 +190,7 @@
 
 <!-- ── Event log ─────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Event log — <code>x-toaster-dismiss</code></h2>
+  <x-typography variant="overline">Event log — <code>x-toaster-dismiss</code></x-typography>
   <pre id="log"><span class="log-empty">Dismiss a toast to see events here…</span></pre>
   <div class="row" style="margin-top:0.75rem;">
     <button class="secondary" onclick="clearLog()">Clear log</button>
