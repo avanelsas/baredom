@@ -366,7 +366,7 @@
         el.addEventListener('x-morph-stack-changed', (e) => logEvent(id, 'changed', e.detail));
       });
 
-      document.querySelectorAll('button[data-stack]').forEach((btn) => {
+      document.querySelectorAll('x-button[data-stack]').forEach((btn) => {
         btn.addEventListener('click', () => {
           const el = document.getElementById(btn.dataset.stack);
           const action = btn.dataset.action;
