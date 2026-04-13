@@ -109,10 +109,10 @@
         <label><x-switch id="ctl-arrows" checked></x-switch> Arrows</label>
         <label><x-switch id="ctl-dots" checked></x-switch> Dots</label>
         <label>Interval:
-          <input type="number" id="ctl-interval" value="3000" min="100" step="500">
+          <x-form-field type="number" id="ctl-interval" value="3000"></x-form-field>
         </label>
         <label>Slide:
-          <input type="number" id="ctl-current" value="0" min="0">
+          <x-form-field type="number" id="ctl-current" value="0"></x-form-field>
         </label>
         <label>Transition:
           <x-select id="ctl-transition" value="slide">
@@ -127,10 +127,10 @@
           </x-select>
         </label>
         <label>Duration:
-          <input type="number" id="ctl-duration" value="300" min="0" step="50">ms
+          <x-form-field type="number" id="ctl-duration" value="300"></x-form-field>ms
         </label>
         <label>Peek:
-          <input type="number" id="ctl-peek" value="0" min="0" step="10">px
+          <x-form-field type="number" id="ctl-peek" value="0"></x-form-field>px
         </label>
       </div>
 

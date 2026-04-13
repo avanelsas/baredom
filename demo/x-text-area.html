@@ -229,15 +229,15 @@
 <x-typography variant="overline">Live Control Panel</x-typography>
 <div class="controls">
   <div class="control-row">
-    <label>label <input type="text" id="ctrl-label" value="Message" placeholder="Label text"></label>
-    <label>placeholder <input type="text" id="ctrl-placeholder" value="Type here…"></label>
-    <label>hint <input type="text" id="ctrl-hint" placeholder="Hint text"></label>
-    <label>error <input type="text" id="ctrl-error" placeholder="Error message"></label>
+    <label>label <x-form-field type="text" id="ctrl-label" value="Message" placeholder="Label text"></x-form-field></label>
+    <label>placeholder <x-form-field type="text" id="ctrl-placeholder" value="Type here…"></x-form-field></label>
+    <label>hint <x-form-field type="text" id="ctrl-hint" placeholder="Hint text"></x-form-field></label>
+    <label>error <x-form-field type="text" id="ctrl-error" placeholder="Error message"></x-form-field></label>
   </div>
   <div class="control-row">
-    <label>name <input type="text" id="ctrl-name" value="live"></label>
-    <label>rows <input type="number" id="ctrl-rows" value="3" min="1" max="20"></label>
-    <label>maxlength <input type="number" id="ctrl-maxlength" placeholder="none" min="1"></label>
+    <label>name <x-form-field type="text" id="ctrl-name" value="live"></x-form-field></label>
+    <label>rows <x-form-field type="number" id="ctrl-rows" value="3"></x-form-field></label>
+    <label>maxlength <x-form-field type="number" id="ctrl-maxlength" placeholder="none"></x-form-field></label>
     <label>resize
       <x-select id="ctrl-resize" value="vertical">
         <option value="vertical" selected>vertical</option>
