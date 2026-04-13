@@ -50,7 +50,7 @@
     <x-typography variant="overline">Basic menu</x-typography>
     <div class="row">
       <x-menu id="menu-basic" label="Actions">
-        <x-button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></x-button>
+        <button slot="trigger" class="trigger-btn">Actions <span class="chevron">▾</span></button>
         <x-menu-item value="edit">Edit</x-menu-item>
         <x-menu-item value="duplicate">Duplicate</x-menu-item>
         <x-menu-item value="archive">Archive</x-menu-item>
@@ -63,7 +63,7 @@
     <x-typography variant="overline">With icons</x-typography>
     <div class="row">
       <x-menu id="menu-icons" label="File actions">
-        <x-button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></x-button>
+        <button slot="trigger" class="trigger-btn">File <span class="chevron">▾</span></button>
         <x-menu-item value="new">
           <span slot="icon">📄</span>
           New file
@@ -88,7 +88,7 @@
     <x-typography variant="overline">With disabled items</x-typography>
     <div class="row">
       <x-menu id="menu-disabled" label="Options">
-        <x-button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></x-button>
+        <button slot="trigger" class="trigger-btn">Options <span class="chevron">▾</span></button>
         <x-menu-item value="copy">Copy</x-menu-item>
         <x-menu-item value="cut" disabled>Cut (disabled)</x-menu-item>
         <x-menu-item value="paste" disabled>Paste (disabled)</x-menu-item>
@@ -101,25 +101,25 @@
     <x-typography variant="overline">Placements</x-typography>
     <div class="row" style="margin-top: 80px; justify-content: center;">
       <x-menu placement="top-start" label="Top start">
-        <x-button slot="trigger" class="trigger-btn">top-start ↑</x-button>
+        <button slot="trigger" class="trigger-btn">top-start ↑</button>
         <x-menu-item value="a">Item A</x-menu-item>
         <x-menu-item value="b">Item B</x-menu-item>
         <x-menu-item value="c">Item C</x-menu-item>
       </x-menu>
       <x-menu placement="top-end" label="Top end">
-        <x-button slot="trigger" class="trigger-btn">top-end ↑</x-button>
+        <button slot="trigger" class="trigger-btn">top-end ↑</button>
         <x-menu-item value="a">Item A</x-menu-item>
         <x-menu-item value="b">Item B</x-menu-item>
         <x-menu-item value="c">Item C</x-menu-item>
       </x-menu>
       <x-menu placement="bottom-start" label="Bottom start">
-        <x-button slot="trigger" class="trigger-btn">bottom-start ↓</x-button>
+        <button slot="trigger" class="trigger-btn">bottom-start ↓</button>
         <x-menu-item value="a">Item A</x-menu-item>
         <x-menu-item value="b">Item B</x-menu-item>
         <x-menu-item value="c">Item C</x-menu-item>
       </x-menu>
       <x-menu placement="bottom-end" label="Bottom end">
-        <x-button slot="trigger" class="trigger-btn">bottom-end ↓</x-button>
+        <button slot="trigger" class="trigger-btn">bottom-end ↓</button>
         <x-menu-item value="a">Item A</x-menu-item>
         <x-menu-item value="b">Item B</x-menu-item>
         <x-menu-item value="c">Item C</x-menu-item>
@@ -141,7 +141,7 @@
       <label>open <input type="checkbox" id="ctrl-open"></label>
     </div>
     <x-menu id="menu-live" label="Live menu">
-      <x-button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></x-button>
+      <button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></button>
       <x-menu-item value="action-1">Action 1</x-menu-item>
       <x-menu-item value="action-2">Action 2</x-menu-item>
       <x-menu-item type="divider"></x-menu-item>

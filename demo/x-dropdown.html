@@ -127,20 +127,20 @@
   <div class="toolbar">
 
     <x-dropdown label="Actions">
-      <x-button class="menu-item">Edit</x-button>
-      <x-button class="menu-item">Duplicate</x-button>
+      <button class="menu-item">Edit</button>
+      <button class="menu-item">Duplicate</button>
       <div class="menu-separator"></div>
-      <x-button class="menu-item danger">Delete</x-button>
+      <button class="menu-item danger">Delete</button>
     </x-dropdown>
 
     <x-dropdown label="Pre-opened" open>
-      <x-button class="menu-item">Option A</x-button>
-      <x-button class="menu-item">Option B</x-button>
-      <x-button class="menu-item">Option C</x-button>
+      <button class="menu-item">Option A</button>
+      <button class="menu-item">Option B</button>
+      <button class="menu-item">Option C</button>
     </x-dropdown>
 
     <x-dropdown label="Disabled" disabled>
-      <x-button class="menu-item">Hidden</x-button>
+      <button class="menu-item">Hidden</button>
     </x-dropdown>
 
   </div>
@@ -152,26 +152,26 @@
   <div style="display:flex; justify-content:space-between; padding: 60px 20px;">
 
     <x-dropdown label="↙ bottom-start" placement="bottom-start">
-      <x-button class="menu-item">Item 1</x-button>
-      <x-button class="menu-item">Item 2</x-button>
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
     </x-dropdown>
 
     <x-dropdown label="bottom-end ↘" placement="bottom-end">
-      <x-button class="menu-item">Item 1</x-button>
-      <x-button class="menu-item">Item 2</x-button>
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
     </x-dropdown>
 
   </div>
   <div style="display:flex; justify-content:space-between; padding: 0 20px 60px;">
 
     <x-dropdown label="↖ top-start" placement="top-start">
-      <x-button class="menu-item">Item 1</x-button>
-      <x-button class="menu-item">Item 2</x-button>
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
     </x-dropdown>
 
     <x-dropdown label="top-end ↗" placement="top-end">
-      <x-button class="menu-item">Item 1</x-button>
-      <x-button class="menu-item">Item 2</x-button>
+      <button class="menu-item">Item 1</button>
+      <button class="menu-item">Item 2</button>
     </x-dropdown>
 
   </div>
@@ -204,9 +204,9 @@
         --x-dropdown-panel-radius: 12px;
         --x-dropdown-panel-shadow: 0 8px 24px rgba(99,102,241,0.35);
       ">
-      <x-button class="menu-item">Option 1</x-button>
-      <x-button class="menu-item">Option 2</x-button>
-      <x-button class="menu-item">Option 3</x-button>
+      <button class="menu-item">Option 1</button>
+      <button class="menu-item">Option 2</button>
+      <button class="menu-item">Option 3</button>
     </x-dropdown>
 
     <x-dropdown label="Danger"
@@ -218,8 +218,8 @@
         --x-dropdown-trigger-border: 1px solid #fca5a5;
         --x-dropdown-chevron-color: #dc2626;
       ">
-      <x-button class="menu-item danger">Remove all</x-button>
-      <x-button class="menu-item danger">Reset</x-button>
+      <button class="menu-item danger">Remove all</button>
+      <button class="menu-item danger">Reset</button>
     </x-dropdown>
   </div>
 </section>
@@ -229,10 +229,10 @@
   <x-typography variant="overline">Live control panel</x-typography>
 
   <x-dropdown id="live-dd" label="Live dropdown">
-    <x-button class="menu-item" onclick="logLine('Clicked: Edit')">Edit</x-button>
-    <x-button class="menu-item" onclick="logLine('Clicked: Duplicate')">Duplicate</x-button>
+    <button class="menu-item" onclick="logLine('Clicked: Edit')">Edit</button>
+    <button class="menu-item" onclick="logLine('Clicked: Duplicate')">Duplicate</button>
     <div class="menu-separator"></div>
-    <x-button class="menu-item danger" onclick="logLine('Clicked: Delete')">Delete</x-button>
+    <button class="menu-item danger" onclick="logLine('Clicked: Delete')">Delete</button>
   </x-dropdown>
 
   <div class="stack" style="margin-top:16px;">
