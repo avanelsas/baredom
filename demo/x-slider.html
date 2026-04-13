@@ -168,14 +168,8 @@
       <x-slider name="contrast" value="50" min="0" max="100"
                 label="Contrast" show-value></x-slider>
       <div style="display:flex;gap:8px;">
-        <x-button type="submit"
-                style="padding:6px 16px;border-radius:6px;border:none;background:#3b82f6;color:#fff;cursor:pointer;font-size:14px;">
-          Submit
-        </x-button>
-        <x-button type="reset"
-                style="padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--input-bg);color:var(--page-fg);cursor:pointer;font-size:14px;">
-          Reset
-        </x-button>
+        <x-button type="submit">Submit</x-button>
+        <x-button type="reset" variant="secondary">Reset</x-button>
       </div>
     </form>
     <div class="log" id="form-log" style="margin-top:8px;">Form output will appear here…</div>
