@@ -184,18 +184,6 @@
         line-height: 1.55;
       }
 
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: var(--chip-bg);
-        color: var(--chip-fg);
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
       .row {
         display: flex;
         flex-wrap: wrap;
@@ -251,7 +239,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Elevated</h3>
-                  <span class="chip">Default</span>
+                  <x-chip label="Default" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   Soft elevation for content that should feel distinct from the page.
@@ -263,7 +251,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Outlined</h3>
-                  <span class="chip">Structured</span>
+                  <x-chip label="Structured" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   Clear edge definition for forms, settings panels, and grouped metadata.
@@ -275,7 +263,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Filled</h3>
-                  <span class="chip">Emphasis</span>
+                  <x-chip label="Emphasis" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   A stronger surface treatment for highlighted summaries and dashboard modules.
@@ -287,7 +275,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Ghost</h3>
-                  <span class="chip">Minimal</span>
+                  <x-chip label="Minimal" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   Minimal chrome for low-emphasis containers embedded in richer layouts.
@@ -339,16 +327,16 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Interactive card</h3>
-                  <span class="chip">Click · Enter · Space</span>
+                  <x-chip label="Click · Enter · Space" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   Activate this card with a pointer, Enter, or Space to emit a
                   <code>press</code> event.
                 </p>
                 <div class="row">
-                  <span class="chip">Focusable</span>
-                  <span class="chip">Visible focus ring</span>
-                  <span class="chip">Reduced-motion aware</span>
+                  <x-chip label="Focusable" removable="false"></x-chip>
+                  <x-chip label="Visible focus ring" removable="false"></x-chip>
+                  <x-chip label="Reduced-motion aware" removable="false"></x-chip>
                 </div>
               </div>
             </x-card>
@@ -376,7 +364,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <h3 class="card-title">Disabled interactive card</h3>
-                  <span class="chip">Unavailable</span>
+                  <x-chip label="Unavailable" removable="false"></x-chip>
                 </div>
                 <p class="card-body">
                   Interaction is disabled, so no <code>press</code> event is emitted.

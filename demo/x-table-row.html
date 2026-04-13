@@ -128,18 +128,6 @@
 
     
     
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .badge-green  { background: #d1fae5; color: #065f46; }
-    .badge-yellow { background: #fef9c3; color: #713f12; }
-    .badge-red    { background: #fee2e2; color: #991b1b; }
-
     @media (prefers-color-scheme: dark) {
       x-table-row { --x-table-cell-border-color: rgba(255,255,255,0.06); }
     }
@@ -168,28 +156,28 @@
 
       <x-table-row interactive row-index="1" id="row-alice">
         <x-table-cell truncate>Alice Wonderland</x-table-cell>
-        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell><x-badge variant="success">Active</x-badge></x-table-cell>
         <x-table-cell>Admin</x-table-cell>
         <x-table-cell align="end">2024-01-15</x-table-cell>
       </x-table-row>
 
       <x-table-row interactive selected row-index="2" id="row-bob">
         <x-table-cell truncate>Bob Builder</x-table-cell>
-        <x-table-cell><span class="badge badge-yellow">Pending</span></x-table-cell>
+        <x-table-cell><x-badge variant="warning">Pending</x-badge></x-table-cell>
         <x-table-cell>Member</x-table-cell>
         <x-table-cell align="end">2024-03-02</x-table-cell>
       </x-table-row>
 
       <x-table-row interactive row-index="3" id="row-carol">
         <x-table-cell truncate>Carol Danvers</x-table-cell>
-        <x-table-cell><span class="badge badge-green">Active</span></x-table-cell>
+        <x-table-cell><x-badge variant="success">Active</x-badge></x-table-cell>
         <x-table-cell>Editor</x-table-cell>
         <x-table-cell align="end">2023-11-07</x-table-cell>
       </x-table-row>
 
       <x-table-row interactive disabled row-index="4" id="row-dave">
         <x-table-cell truncate>Dave Grohl</x-table-cell>
-        <x-table-cell><span class="badge badge-red">Suspended</span></x-table-cell>
+        <x-table-cell><x-badge variant="error">Suspended</x-badge></x-table-cell>
         <x-table-cell>Viewer</x-table-cell>
         <x-table-cell align="end">2022-06-19</x-table-cell>
       </x-table-row>

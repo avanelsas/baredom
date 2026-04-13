@@ -121,18 +121,6 @@
         margin-top: 10px;
       }
 
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: var(--chip-bg);
-        color: var(--chip-fg);
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
       x-grid {
         display: block;
       }
@@ -387,7 +375,7 @@
           <div class="mini-grid two">
             <div>
               <div class="chip-row">
-                <span class="chip">gap="sm"</span>
+                <x-chip label='gap="sm"' removable="false"></x-chip>
               </div>
               <x-grid min-column-size="10rem" gap="sm">
                 <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
@@ -407,9 +395,9 @@
 
             <div>
               <div class="chip-row">
-                <span class="chip">gap="lg"</span>
-                <span class="chip">row-gap="xl"</span>
-                <span class="chip">column-gap="sm"</span>
+                <x-chip label='gap="lg"' removable="false"></x-chip>
+                <x-chip label='row-gap="xl"' removable="false"></x-chip>
+                <x-chip label='column-gap="sm"' removable="false"></x-chip>
               </div>
               <x-grid min-column-size="10rem" gap="lg" row-gap="xl" column-gap="sm">
                 <x-card class="demo-card" variant="ghost" padding="sm" radius="md">
@@ -470,7 +458,7 @@
           <div class="mini-grid two">
             <div>
               <div class="chip-row">
-                <span class="chip">min-column-size="10rem"</span>
+                <x-chip label='min-column-size="10rem"' removable="false"></x-chip>
               </div>
               <x-grid min-column-size="10rem" gap="md">
                 <x-stat class="demo-stat" label="North" value="128" hint="Compact"></x-stat>
@@ -482,7 +470,7 @@
 
             <div>
               <div class="chip-row">
-                <span class="chip">min-column-size="18rem"</span>
+                <x-chip label='min-column-size="18rem"' removable="false"></x-chip>
               </div>
               <x-grid min-column-size="18rem" gap="md">
                 <x-stat class="demo-stat" label="North" value="128" hint="More spacious"></x-stat>

@@ -80,15 +80,6 @@
 
     .log-empty { color: #6b7280; font-style: italic; }
 
-    .chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;
-      background: var(--surface-border); color: var(--muted);
-    }
-    .chip.info    { background: #cff4fc; color: #055160; }
-    .chip.success { background: #d1e7dd; color: #0a3622; }
-    .chip.warning { background: #fff3cd; color: #664d03; }
-    .chip.error   { background: #f8d7da; color: #58151c; }
   </style>
   <link rel="stylesheet" href="demo-responsive.css" />
 </head>
@@ -258,7 +249,7 @@
       return;
     }
     log.innerHTML = logEntries.map(e =>
-      `<span class="chip ${e.type}">${e.type}</span> ` +
+      `<x-badge variant="${e.type}">${e.type}</x-badge> ` +
       `<strong>${e.time}</strong>  reason=<em>${e.reason}</em>` +
       (e.heading ? `  heading=<em>${e.heading}</em>` : '') +
       (e.message ? `  msg=<em>${e.message}</em>` : '')

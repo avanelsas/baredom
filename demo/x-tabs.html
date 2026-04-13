@@ -121,18 +121,6 @@
         margin-top: 10px;
       }
 
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: var(--chip-bg);
-        color: var(--chip-fg);
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
       .demo-block {
         display: grid;
         gap: 16px;
@@ -347,9 +335,9 @@
             </x-tabs>
 
             <div class="chip-row">
-              <span class="chip">activation="manual"</span>
-              <span class="chip">Arrow keys move focus</span>
-              <span class="chip">Enter / Space select</span>
+              <x-chip label='activation="manual"' removable="false"></x-chip>
+              <x-chip label="Arrow keys move focus" removable="false"></x-chip>
+              <x-chip label="Enter / Space select" removable="false"></x-chip>
             </div>
 
             <div class="panel-grid">
@@ -420,9 +408,9 @@
             </x-tabs>
 
             <div class="chip-row">
-              <span class="chip">loop</span>
-              <span class="chip">Disabled tabs skipped</span>
-              <span class="chip">Home / End supported</span>
+              <x-chip label="loop" removable="false"></x-chip>
+              <x-chip label="Disabled tabs skipped" removable="false"></x-chip>
+              <x-chip label="Home / End supported" removable="false"></x-chip>
             </div>
 
             <div class="panel-grid">
