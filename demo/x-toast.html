@@ -81,6 +81,16 @@
       color: var(--input-fg);
     }
 
+    /* Match x-form-field sizing/background to the demo's native inputs. */
+    .controls x-form-field {
+      --x-form-field-label-font-size: 0.8125rem;
+      --x-form-field-input-padding: 6px 10px;
+      --x-form-field-input-bg: var(--input-bg);
+    }
+    .controls x-form-field::part(input) {
+      font-size: 0.875rem;
+    }
+
         
     .btn-primary {
       background: var(--x-color-primary, #1d4ed8);
@@ -210,18 +220,9 @@
         <option value="error">error</option>
       </x-select>
     </label>
-    <label>
-      Heading
-      <input type="text" id="ctrl-heading" placeholder="Optional title">
-    </label>
-    <label>
-      Message
-      <input type="text" id="ctrl-message" value="Something happened.">
-    </label>
-    <label>
-      Icon (glyph or "none")
-      <input type="text" id="ctrl-icon" placeholder="Leave blank for default">
-    </label>
+    <x-form-field label="Heading" type="text" id="ctrl-heading" placeholder="Optional title"></x-form-field>
+    <x-form-field label="Message" type="text" id="ctrl-message" value="Something happened."></x-form-field>
+    <x-form-field label='Icon (glyph or "none")' type="text" id="ctrl-icon" placeholder="Leave blank for default"></x-form-field>
     <label>
       Dismissible
       <x-select id="ctrl-dismissible" value="true">
@@ -229,10 +230,7 @@
         <option value="false">false</option>
       </x-select>
     </label>
-    <label>
-      timeout-ms (blank = none)
-      <input type="number" id="ctrl-timeout" placeholder="e.g. 4000">
-    </label>
+    <x-form-field label="timeout-ms (blank = none)" type="number" id="ctrl-timeout" placeholder="e.g. 4000"></x-form-field>
     <label>
       Show progress bar
       <x-select id="ctrl-progress" value="false">
