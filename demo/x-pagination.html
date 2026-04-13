@@ -76,7 +76,6 @@
     }
 
     .event-log p { margin: 0.15rem 0; }
-    .section-sep { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
     /* Custom theme example */
     .themed-pagination {
@@ -134,7 +133,7 @@
     </div>
   </div>
 
-  <hr class="section-sep">
+  <x-divider style="margin:2.5rem 0"></x-divider>
 
   <!-- ── Sizes ─────────────────────────────────────────────────────── -->
   <x-typography variant="overline">Sizes</x-typography>
@@ -153,7 +152,7 @@
     </div>
   </div>
 
-  <hr class="section-sep">
+  <x-divider style="margin:2.5rem 0"></x-divider>
 
   <!-- ── Ellipsis variants ─────────────────────────────────────────── -->
   <x-typography variant="overline">Ellipsis behaviour</x-typography>
@@ -176,13 +175,13 @@
     </div>
   </div>
 
-  <hr class="section-sep">
+  <x-divider style="margin:2.5rem 0"></x-divider>
 
   <!-- ── Disabled ───────────────────────────────────────────────────── -->
   <x-typography variant="overline">Disabled</x-typography>
   <x-pagination page="3" total-pages="10" disabled></x-pagination>
 
-  <hr class="section-sep">
+  <x-divider style="margin:2.5rem 0"></x-divider>
 
   <!-- ── Custom slot content ────────────────────────────────────────── -->
   <x-typography variant="overline">Custom prev/next slot content</x-typography>
@@ -191,7 +190,7 @@
     <span slot="next">Forward &#8594;</span>
   </x-pagination>
 
-  <hr class="section-sep">
+  <x-divider style="margin:2.5rem 0"></x-divider>
 
   <!-- ── Custom theme ───────────────────────────────────────────────── -->
   <x-typography variant="overline">Custom theme (purple pill buttons)</x-typography>
