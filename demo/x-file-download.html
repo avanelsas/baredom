@@ -98,11 +98,11 @@
       <div class="controls">
         <label>
           href
-          <input type="text" id="ctrl-href" value="data:text/plain,Live+file+content" />
+          <x-form-field id="ctrl-href" type="text" value="data:text/plain,Live+file+content"></x-form-field>
         </label>
         <label>
           filename
-          <input type="text" id="ctrl-filename" value="live-file.txt" />
+          <x-form-field id="ctrl-filename" type="text" value="live-file.txt"></x-form-field>
         </label>
         <label>
           disabled
@@ -136,7 +136,7 @@
         else          liveDl.removeAttribute('disabled');
       }
 
-      document.querySelectorAll('.controls input, .controls x-switch').forEach(el => {
+      document.querySelectorAll('.controls input, .controls x-switch, .controls x-form-field').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

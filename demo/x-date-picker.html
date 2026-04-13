@@ -87,16 +87,16 @@
         </x-select>
       </label>
       <label>locale
-        <input type="text" id="ctrl-locale" value="" placeholder="default" style="width:80px">
+        <x-form-field type="text" id="ctrl-locale" value="" placeholder="default" style="width:80px"></x-form-field>
       </label>
       <label>min
-        <input type="text" id="ctrl-min" placeholder="YYYY-MM-DD" style="width:110px">
+        <x-form-field type="text" id="ctrl-min" placeholder="YYYY-MM-DD" style="width:110px"></x-form-field>
       </label>
       <label>max
-        <input type="text" id="ctrl-max" placeholder="YYYY-MM-DD" style="width:110px">
+        <x-form-field type="text" id="ctrl-max" placeholder="YYYY-MM-DD" style="width:110px"></x-form-field>
       </label>
       <label>placeholder
-        <input type="text" id="ctrl-placeholder" value="Select a date" style="width:140px">
+        <x-form-field type="text" id="ctrl-placeholder" value="Select a date" style="width:140px"></x-form-field>
       </label>
       <label>disabled  <x-switch id="ctrl-disabled"></x-switch></label>
       <label>readonly  <x-switch id="ctrl-readonly"></x-switch></label>
@@ -140,7 +140,7 @@
         if (document.getElementById("ctrl-required").checked) live.setAttribute("required", ""); else live.removeAttribute("required");
         if (document.getElementById("ctrl-close").checked)    live.setAttribute("close-on-select", ""); else live.removeAttribute("close-on-select");
       }
-      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

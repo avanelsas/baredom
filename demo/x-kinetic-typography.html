@@ -259,7 +259,7 @@
     <x-typography variant="overline">Live control</x-typography>
     <div class="controls">
       <label>text
-        <input type="text" id="ctrl-text" value="Edit me with the controls" style="width:200px">
+        <x-form-field type="text" id="ctrl-text" value="Edit me with the controls" style="width:200px"></x-form-field>
       </label>
       <label>preset
         <x-select id="ctrl-preset" value="wave">
@@ -294,38 +294,38 @@
         <span id="speed-val">1</span>
       </label>
       <label>repeat
-        <input type="number" id="ctrl-repeat" value="1" min="1" max="10" style="width:50px">
+        <x-form-field type="number" id="ctrl-repeat" value="1" style="width:50px"></x-form-field>
       </label>
       <label>effect
-        <input type="text" id="ctrl-effect" value="" placeholder="opacity-wave color-wave ..." style="width:200px">
+        <x-form-field type="text" id="ctrl-effect" value="" placeholder="opacity-wave color-wave ..." style="width:200px"></x-form-field>
       </label>
       <label>font-size
-        <input type="text" id="ctrl-font-size" value="" placeholder="e.g. 32px" style="width:70px">
+        <x-form-field type="text" id="ctrl-font-size" value="" placeholder="e.g. 32px" style="width:70px"></x-form-field>
       </label>
     </div>
     <div class="controls">
       <label>echo-count
-        <input type="number" id="ctrl-echo-count" value="0" min="0" max="5" style="width:50px">
+        <x-form-field type="number" id="ctrl-echo-count" value="0" style="width:50px"></x-form-field>
       </label>
       <label>echo-delay
-        <input type="text" id="ctrl-echo-delay" value="" placeholder="0.3" style="width:50px">
+        <x-form-field type="text" id="ctrl-echo-delay" value="" placeholder="0.3" style="width:50px"></x-form-field>
       </label>
       <label>echo-opacity
-        <input type="text" id="ctrl-echo-opacity" value="" placeholder="0.5" style="width:50px">
+        <x-form-field type="text" id="ctrl-echo-opacity" value="" placeholder="0.5" style="width:50px"></x-form-field>
       </label>
       <label>echo-scale
-        <input type="text" id="ctrl-echo-scale" value="" placeholder="0.85" style="width:50px">
+        <x-form-field type="text" id="ctrl-echo-scale" value="" placeholder="0.85" style="width:50px"></x-form-field>
       </label>
     </div>
     <div class="controls">
       <label>custom path
-        <input type="text" id="ctrl-path" value="" placeholder="M0,0 L100,100 ..." style="width:260px">
+        <x-form-field type="text" id="ctrl-path" value="" placeholder="M0,0 L100,100 ..." style="width:260px"></x-form-field>
       </label>
       <label>start-size
-        <input type="text" id="ctrl-start-size" value="" placeholder="12px" style="width:60px">
+        <x-form-field type="text" id="ctrl-start-size" value="" placeholder="12px" style="width:60px"></x-form-field>
       </label>
       <label>end-size
-        <input type="text" id="ctrl-end-size" value="" placeholder="48px" style="width:60px">
+        <x-form-field type="text" id="ctrl-end-size" value="" placeholder="48px" style="width:60px"></x-form-field>
       </label>
     </div>
     <x-kinetic-typography id="live" text="Edit me with the controls" preset="wave" animation="scroll" style="height:200px;"></x-kinetic-typography>
@@ -363,7 +363,7 @@
         setOrRemove('echo-scale', document.getElementById('ctrl-echo-scale').value.trim());
       }
 
-      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

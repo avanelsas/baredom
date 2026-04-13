@@ -136,7 +136,9 @@
     <x-typography variant="overline">Live controls</x-typography>
     <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Adjust the attributes of the live item below.</p>
     <div class="controls">
-      <label>value <input type="text" id="ctrl-value" value="live-action" style="width:120px"></label>
+      <label>value
+        <x-form-field type="text" id="ctrl-value" value="live-action" style="width:120px"></x-form-field>
+      </label>
       <label>variant
         <x-select id="ctrl-variant" value="">
           <option value="">default</option>

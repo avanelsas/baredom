@@ -85,7 +85,7 @@
         <span id="ctrl-value-display">40</span>
       </label>
       <label>max
-        <input type="number" id="ctrl-max" value="100" min="1" style="width:60px">
+        <x-form-field type="number" id="ctrl-max" value="100" style="width:60px"></x-form-field>
       </label>
       <label>variant
         <x-select id="ctrl-variant" value="default">
@@ -103,7 +103,7 @@
         </x-select>
       </label>
       <label>label
-        <input type="text" id="ctrl-label" value="Upload progress" style="width:130px">
+        <x-form-field type="text" id="ctrl-label" value="Upload progress" style="width:130px"></x-form-field>
       </label>
       <label>show-value <x-switch id="ctrl-show-value" checked></x-switch></label>
       <label>indeterminate <x-switch id="ctrl-indeterminate"></x-switch></label>
@@ -156,7 +156,7 @@
         update();
       });
 
-      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input:not(#ctrl-value), .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input', update);
       });

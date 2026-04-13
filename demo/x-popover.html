@@ -287,13 +287,15 @@
 
   <div class="stack" style="margin-top:16px;">
     <div class="row">
-      <label for="ctrl-heading">heading:</label>
-      <input id="ctrl-heading" type="text" value="Live popover" style="flex:1;min-width:180px;" />
+      <label>heading:
+        <x-form-field id="ctrl-heading" type="text" value="Live popover" style="flex:1;min-width:180px;"></x-form-field>
+      </label>
       <x-button variant="secondary" onclick="applyHeading()">Apply</x-button>
     </div>
     <div class="row">
-      <label for="ctrl-close-label">close-label:</label>
-      <input id="ctrl-close-label" type="text" value="Close" style="flex:1;min-width:180px;" />
+      <label>close-label:
+        <x-form-field id="ctrl-close-label" type="text" value="Close" style="flex:1;min-width:180px;"></x-form-field>
+      </label>
       <x-button variant="secondary" onclick="applyCloseLabel()">Apply</x-button>
     </div>
     <div class="row">

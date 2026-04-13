@@ -96,7 +96,7 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>separator
-        <input type="text" id="ctrl-sep" value="/" style="width:40px">
+        <x-form-field type="text" id="ctrl-sep" value="/" style="width:40px"></x-form-field>
       </label>
       <label>variant
         <x-select id="ctrl-variant" value="default">
@@ -113,7 +113,7 @@
         </x-select>
       </label>
       <label>max-items
-        <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
+        <x-form-field type="number" id="ctrl-max" placeholder="none" style="width:60px"></x-form-field>
       </label>
       <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
@@ -136,7 +136,7 @@
         if (max) live.setAttribute("max-items", max); else live.removeAttribute("max-items");
         if (disabled) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
       }
-      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

@@ -124,20 +124,25 @@
     <x-slider id="live-slider" label="Live slider" show-value value="50" min="0" max="100" step="1"></x-slider>
 
     <div class="controls" style="margin-top:16px;">
-      <label for="ctrl-value">value</label>
-      <input type="number" id="ctrl-value" value="50" min="0" max="100" />
+      <label>value
+        <x-form-field type="number" id="ctrl-value" value="50"></x-form-field>
+      </label>
 
-      <label for="ctrl-min">min</label>
-      <input type="number" id="ctrl-min" value="0" />
+      <label>min
+        <x-form-field type="number" id="ctrl-min" value="0"></x-form-field>
+      </label>
 
-      <label for="ctrl-max">max</label>
-      <input type="number" id="ctrl-max" value="100" />
+      <label>max
+        <x-form-field type="number" id="ctrl-max" value="100"></x-form-field>
+      </label>
 
-      <label for="ctrl-step">step</label>
-      <input type="text" id="ctrl-step" value="1" />
+      <label>step
+        <x-form-field type="text" id="ctrl-step" value="1"></x-form-field>
+      </label>
 
-      <label for="ctrl-label">label</label>
-      <input type="text" id="ctrl-label" value="Live slider" />
+      <label>label
+        <x-form-field type="text" id="ctrl-label" value="Live slider"></x-form-field>
+      </label>
 
       <label for="ctrl-size">size</label>
       <x-select id="ctrl-size" value="md">

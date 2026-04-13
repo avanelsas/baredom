@@ -85,13 +85,13 @@
         </x-select>
       </label>
       <label>count
-        <input type="number" id="ctrl-count" placeholder="none" style="width:60px" min="0">
+        <x-form-field type="number" id="ctrl-count" placeholder="none" style="width:60px"></x-form-field>
       </label>
       <label>max
-        <input type="number" id="ctrl-max" value="99" style="width:60px" min="1">
+        <x-form-field type="number" id="ctrl-max" value="99" style="width:60px"></x-form-field>
       </label>
       <label>text
-        <input type="text" id="ctrl-text" placeholder="none" style="width:80px">
+        <x-form-field type="text" id="ctrl-text" placeholder="none" style="width:80px"></x-form-field>
       </label>
       <label>dot <x-switch id="ctrl-dot"></x-switch></label>
       <label>pill <x-switch id="ctrl-pill"></x-switch></label>
@@ -122,7 +122,7 @@
         if (!count && !text && !dot) live.textContent = "Label";
         else live.textContent = "";
       }
-      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", update);
         el.addEventListener("input", update);
       });

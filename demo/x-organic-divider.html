@@ -189,7 +189,7 @@
         </x-select>
       </label>
       <label>height
-        <input type="text" id="ctrl-height" value="" placeholder="e.g. 80px" style="width:80px">
+        <x-form-field type="text" id="ctrl-height" value="" placeholder="e.g. 80px" style="width:80px"></x-form-field>
       </label>
       <label>animation
         <x-select id="ctrl-animation" value="none">
@@ -205,7 +205,7 @@
         <x-switch id="ctrl-mirror"></x-switch> mirror
       </label>
       <label>path
-        <input type="text" id="ctrl-path" placeholder="custom SVG d" style="width:220px">
+        <x-form-field type="text" id="ctrl-path" placeholder="custom SVG d" style="width:220px"></x-form-field>
       </label>
     </div>
     <x-organic-divider id="live"></x-organic-divider>
@@ -241,7 +241,7 @@
         else      live.removeAttribute('path');
       }
 
-      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

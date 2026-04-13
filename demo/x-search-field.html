@@ -72,8 +72,12 @@
     <!-- ------------------------------------------------------------------ -->
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
-      <label>placeholder <input type="text" id="ctrl-placeholder" value="Search…"></label>
-      <label>label       <input type="text" id="ctrl-label" value="Search"></label>
+      <label>placeholder
+        <x-form-field type="text" id="ctrl-placeholder" value="Search…"></x-form-field>
+      </label>
+      <label>label
+        <x-form-field type="text" id="ctrl-label" value="Search"></x-form-field>
+      </label>
       <label>disabled    <x-switch id="ctrl-disabled"></x-switch></label>
       <label>required    <x-switch id="ctrl-required"></x-switch></label>
       <label>autocomplete
@@ -132,7 +136,7 @@
         if (required) liveField.setAttribute('required', ''); else liveField.removeAttribute('required');
       }
 
-      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls input, .controls select, .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', updateLive);
         el.addEventListener('input',  updateLive);
       });

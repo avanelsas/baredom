@@ -141,8 +141,12 @@
           <option value="lg">lg</option>
         </select>
       </label>
-      <label>placeholder <input type="text" id="ctrl-placeholder" value="Select…" style="width:120px"></label>
-      <label>value <input type="text" id="ctrl-value" style="width:80px" placeholder="(attr)"></label>
+      <label>placeholder
+        <x-form-field type="text" id="ctrl-placeholder" value="Select…" style="width:120px"></x-form-field>
+      </label>
+      <label>value
+        <x-form-field type="text" id="ctrl-value" style="width:80px" placeholder="(attr)"></x-form-field>
+      </label>
     </div>
     <div class="row">
       <x-select id="live-sel" name="live" placeholder="Select…">
@@ -193,7 +197,7 @@
         if (value)    liveSel.setAttribute("value", value);       else liveSel.removeAttribute("value");
       }
 
-      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select").forEach(el => {
+      document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input",  updateLive);
       });

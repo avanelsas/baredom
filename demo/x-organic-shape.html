@@ -202,16 +202,16 @@
         </x-select>
       </label>
       <label>width
-        <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:80px">
+        <x-form-field type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:80px"></x-form-field>
       </label>
       <label>height
-        <input type="text" id="ctrl-height" value="" placeholder="e.g. 150px" style="width:80px">
+        <x-form-field type="text" id="ctrl-height" value="" placeholder="e.g. 150px" style="width:80px"></x-form-field>
       </label>
       <label>path
-        <input type="text" id="ctrl-path" placeholder="e.g. circle(50%)" style="width:160px">
+        <x-form-field type="text" id="ctrl-path" placeholder="e.g. circle(50%)" style="width:160px"></x-form-field>
       </label>
       <label>image url
-        <input type="text" id="ctrl-image" placeholder="https://..." style="width:220px">
+        <x-form-field type="text" id="ctrl-image" placeholder="https://..." style="width:220px"></x-form-field>
       </label>
     </div>
     <x-organic-shape id="live"></x-organic-shape>
@@ -265,7 +265,7 @@
         }
       }
 
-      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

@@ -193,6 +193,24 @@
     }
   });
 
+  // x-form-field compatibility shim. x-form-field fires x-form-field-input
+  // and x-form-field-change with {name, value}. Re-dispatch as synthetic
+  // native "input" / "change" events so existing demo JS that listens for
+  // the native events keeps working without per-file edits. el.value reads
+  // already work transparently (x-form-field exposes a live value getter).
+  document.addEventListener('x-form-field-input', function (e) {
+    var ff = e.target;
+    if (ff && ff.tagName === 'X-FORM-FIELD') {
+      ff.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+  document.addEventListener('x-form-field-change', function (e) {
+    var ff = e.target;
+    if (ff && ff.tagName === 'X-FORM-FIELD') {
+      ff.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     var preset = getInitialPreset();
     var themeEl = null;

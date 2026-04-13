@@ -100,10 +100,10 @@
         </x-select>
       </label>
       <label>width
-        <input type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:100px">
+        <x-form-field type="text" id="ctrl-width" value="" placeholder="e.g. 200px" style="width:100px"></x-form-field>
       </label>
       <label>height
-        <input type="text" id="ctrl-height" value="3rem" style="width:80px">
+        <x-form-field type="text" id="ctrl-height" value="3rem" style="width:80px"></x-form-field>
       </label>
     </div>
     <x-skeleton id="live" height="3rem"></x-skeleton>
@@ -127,7 +127,7 @@
         else        live.removeAttribute('height');
       }
 
-      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select').forEach(el => {
+      document.querySelectorAll('.controls select, .controls input, .controls x-switch, .controls x-select, .controls x-form-field').forEach(el => {
         el.addEventListener('change', update);
         el.addEventListener('input',  update);
       });

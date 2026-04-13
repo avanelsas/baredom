@@ -74,7 +74,7 @@
       <label>readonly   <input type="checkbox" id="ctrl-readonly"></label>
       <label>required   <input type="checkbox" id="ctrl-required"></label>
       <label>value
-        <input type="text" id="ctrl-value" value="on" style="width:80px">
+        <x-form-field type="text" id="ctrl-value" value="on" style="width:80px"></x-form-field>
       </label>
     </div>
     <div class="row">
@@ -127,7 +127,7 @@
         if (required) liveCb.setAttribute("required", "");       else liveCb.removeAttribute("required");
         if (value)    liveCb.setAttribute("value", value);       else liveCb.removeAttribute("value");
       }
-      document.querySelectorAll(".controls input, .controls x-switch").forEach(el => {
+      document.querySelectorAll(".controls input, .controls x-switch, .controls x-form-field").forEach(el => {
         el.addEventListener("change", updateLive);
         el.addEventListener("input", updateLive);
       });

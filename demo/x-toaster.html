@@ -114,16 +114,16 @@
       </x-select>
     </label>
     <label>Heading
-      <input id="inp-heading" type="text" placeholder="(optional)" />
+      <x-form-field id="inp-heading" type="text" placeholder="(optional)"></x-form-field>
     </label>
     <label>Message
-      <input id="inp-message" type="text" value="Something happened." />
+      <x-form-field id="inp-message" type="text" value="Something happened."></x-form-field>
     </label>
     <label>Timeout (ms)
-      <input id="inp-timeout" type="number" placeholder="(none)" min="500" step="500" />
+      <x-form-field id="inp-timeout" type="number" placeholder="(none)"></x-form-field>
     </label>
     <label>Max toasts
-      <input id="inp-max" type="number" value="5" min="1" max="20" />
+      <x-form-field id="inp-max" type="number" value="5"></x-form-field>
     </label>
     <label>Show progress
       <x-select id="sel-progress" value="no">
