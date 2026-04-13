@@ -49,7 +49,7 @@ jobs:
           version: '2026.01.19'
 
       - name: Lint with clj-kondo
-        run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}' || true
+        run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
       - name: Build ESM library
         run: npm run build
