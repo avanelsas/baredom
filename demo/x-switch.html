@@ -162,19 +162,19 @@
     addLog('x-switch-change → checked=' + e.detail.checked + ', value=' + e.detail.value);
   });
 
-  document.getElementById('btn-toggle').addEventListener('click', () => {
+  document.getElementById('btn-toggle').addEventListener('press', () => {
     demo.checked = !demo.checked;
   });
 
-  document.getElementById('btn-disable').addEventListener('click', () => {
+  document.getElementById('btn-disable').addEventListener('press', () => {
     demo.disabled = !demo.disabled;
   });
 
-  document.getElementById('btn-readonly').addEventListener('click', () => {
+  document.getElementById('btn-readonly').addEventListener('press', () => {
     demo.readOnly = !demo.readOnly;
   });
 
-  document.getElementById('btn-cancel').addEventListener('click', () => {
+  document.getElementById('btn-cancel').addEventListener('press', () => {
     cancelNext = true;
     addLog('Next toggle will be cancelled via preventDefault()');
   });
