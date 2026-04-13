@@ -19,12 +19,8 @@
         line-height: 1.4;
       }
 
-      h2 {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
+      x-typography[variant="overline"] {
+        display: block;
         margin: 32px 0 10px;
       }
 
@@ -43,39 +39,22 @@
         margin: 12px 0;
       }
 
-      .row label { font-size: 13px; }
-
-      .row select,
-      .row input {
+      .row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         font-size: 13px;
-        padding: 4px 8px;
-        border-radius: 6px;
-        border: 1px solid var(--surface-border);
-        background: var(--input-bg);
-        color: var(--input-fg);
       }
 
-      .row button {
-        font-size: 13px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: none;
-        background: #1d4ed8;
-        color: #ffffff;
-        cursor: pointer;
-      }
+      .row x-form-field { display: inline-block; }
 
-      .row button:hover { background: #1e40af; }
+      .log-card { margin-top: 24px; max-width: 640px; }
 
       .log {
-        margin-top: 24px;
-        padding: 12px;
-        border-radius: 8px;
-        background: #111827;
-        color: #f9fafb;
+        margin: 0;
         min-height: 72px;
         white-space: pre-wrap;
-        font-family: monospace;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 12px;
       }
     </style>
@@ -84,9 +63,9 @@
     <script src="demo-theme.js" defer></script>
   </head>
   <body>
-    <h1>x-alert demo</h1>
+    <x-typography variant="h1">x-alert demo</x-typography>
 
-    <h2>Variants</h2>
+    <x-typography variant="overline">Variants</x-typography>
     <div class="stack">
       <x-alert type="info"    text="Your session will expire in 5 minutes."></x-alert>
       <x-alert type="success" text="Changes saved successfully."></x-alert>
@@ -94,66 +73,68 @@
       <x-alert type="error"   text="Failed to connect. Please check your network."></x-alert>
     </div>
 
-    <h2>Non-dismissible</h2>
+    <x-typography variant="overline">Non-dismissible</x-typography>
     <div class="stack">
       <x-alert type="warning" text="You are in read-only mode." dismissible="false"></x-alert>
     </div>
 
-    <h2>Disabled</h2>
+    <x-typography variant="overline">Disabled</x-typography>
     <div class="stack">
       <x-alert type="error" text="System maintenance in progress." disabled></x-alert>
     </div>
 
-    <h2>Custom icon (attribute)</h2>
+    <x-typography variant="overline">Custom icon (attribute)</x-typography>
     <div class="stack">
       <x-alert type="info" icon="★" text="New features are available in this release."></x-alert>
     </div>
 
-    <h2>Icon hidden</h2>
+    <x-typography variant="overline">Icon hidden</x-typography>
     <div class="stack">
       <x-alert type="success" icon="none" text="Minimal alert — no icon shown."></x-alert>
     </div>
 
-    <h2>Auto-dismiss (3 s)</h2>
+    <x-typography variant="overline">Auto-dismiss (3 s)</x-typography>
     <div class="stack" id="auto-zone">
       <x-alert id="auto-alert" type="success"
                text="This alert dismisses automatically in 3 seconds."
                timeout-ms="3000"></x-alert>
     </div>
     <div class="row">
-      <button id="reset-btn">Reset</button>
+      <x-button id="reset-btn" variant="primary">Reset</x-button>
     </div>
 
-    <h2>Spawn alert</h2>
+    <x-typography variant="overline">Spawn alert</x-typography>
     <div class="row">
       <label>type
-        <select id="ctrl-type">
+        <x-select id="ctrl-type" value="info">
           <option value="info">info</option>
           <option value="success">success</option>
           <option value="warning">warning</option>
           <option value="error">error</option>
-        </select>
+        </x-select>
       </label>
       <label>text
-        <input type="text" id="ctrl-text" value="Alert message here" style="width:180px">
+        <x-form-field id="ctrl-text" type="text" value="Alert message here"></x-form-field>
       </label>
       <label>icon
-        <input type="text" id="ctrl-icon" placeholder="glyph or 'none'" style="width:90px">
+        <x-form-field id="ctrl-icon" type="text" placeholder="glyph or 'none'"></x-form-field>
       </label>
       <label>dismissible
-        <select id="ctrl-dismissible">
+        <x-select id="ctrl-dismissible" value="">
           <option value="">true</option>
           <option value="false">false</option>
-        </select>
+        </x-select>
       </label>
       <label>timeout-ms
-        <input type="number" id="ctrl-timeout" placeholder="none" style="width:80px">
+        <x-form-field id="ctrl-timeout" type="number" placeholder="none"></x-form-field>
       </label>
-      <button id="spawn-btn">Spawn</button>
+      <x-button id="spawn-btn" variant="primary">Spawn</x-button>
     </div>
     <div class="stack" id="live-zone"></div>
 
-    <div class="log" id="log">Event log will appear here.</div>
+    <x-card class="log-card" variant="filled" padding="md">
+      <pre class="log" id="log">Event log will appear here.</pre>
+    </x-card>
 
     <script>
       const log = document.getElementById("log");
@@ -171,7 +152,15 @@
 
       document.querySelectorAll("x-alert").forEach(watch);
 
-      document.getElementById("reset-btn").addEventListener("click", () => {
+      // Echo x-select changes back onto the value attribute so that
+      // reading `.value` later returns the user's current selection.
+      document.querySelectorAll("x-select").forEach(sel => {
+        sel.addEventListener("select-change", e => {
+          sel.setAttribute("value", e.detail.value);
+        });
+      });
+
+      document.getElementById("reset-btn").addEventListener("press", () => {
         const zone = document.getElementById("auto-zone");
         const old  = document.getElementById("auto-alert");
         if (old) old.remove();
@@ -184,7 +173,7 @@
         zone.appendChild(el);
       });
 
-      document.getElementById("spawn-btn").addEventListener("click", () => {
+      document.getElementById("spawn-btn").addEventListener("press", () => {
         const type = document.getElementById("ctrl-type").value;
         const text = document.getElementById("ctrl-text").value || "Alert message";
         const icon = document.getElementById("ctrl-icon").value.trim();
