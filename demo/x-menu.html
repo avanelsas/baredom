@@ -135,16 +135,20 @@
           <option value="top-end">top-end</option>
         </x-select>
       </label>
-      <label>label <input type="text" id="ctrl-label" value="Live menu"></label>
+      <label>label
+        <x-form-field type="text" id="ctrl-label" value="Live menu"></x-form-field>
+      </label>
       <label>open <x-switch id="ctrl-open"></x-switch></label>
     </div>
-    <x-menu id="menu-live" label="Live menu">
-      <button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></button>
-      <x-menu-item value="action-1">Action 1</x-menu-item>
-      <x-menu-item value="action-2">Action 2</x-menu-item>
-      <x-menu-item type="divider"></x-menu-item>
-      <x-menu-item value="danger-action" variant="danger">Danger action</x-menu-item>
-    </x-menu>
+    <div style="margin-left: 2rem;">
+      <x-menu id="menu-live" label="Live menu">
+        <button slot="trigger" class="trigger-btn" id="live-trigger">Live menu <span class="chevron">▾</span></button>
+        <x-menu-item value="action-1">Action 1</x-menu-item>
+        <x-menu-item value="action-2">Action 2</x-menu-item>
+        <x-menu-item type="divider"></x-menu-item>
+        <x-menu-item value="danger-action" variant="danger">Danger action</x-menu-item>
+      </x-menu>
+    </div>
 
     <!-- ------------------------------------------------------------------ -->
     <x-typography variant="overline">Event log</x-typography>
@@ -171,9 +175,13 @@
       const ctrlLabel = document.getElementById('ctrl-label');
       const ctrlOpen = document.getElementById('ctrl-open');
 
+      const liveTrigger = document.getElementById('live-trigger');
+
       function updateLive() {
+        const labelText = ctrlLabel.value || '';
         liveMenu.setAttribute('placement', ctrlPlacement.value);
-        liveMenu.setAttribute('label', ctrlLabel.value || '');
+        liveMenu.setAttribute('label', labelText);
+        liveTrigger.innerHTML = `${labelText} <span class="chevron">▾</span>`;
         if (ctrlOpen.checked) {
           liveMenu.setAttribute('open', '');
         } else {

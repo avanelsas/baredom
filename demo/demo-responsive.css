@@ -79,7 +79,17 @@ x-typography[variant="overline"] {
   gap: 6px;
 }
 
-.row x-form-field {
+.row x-form-field,
+.ctrl-row x-form-field {
+  display: inline-block;
+}
+
+/* When x-form-field is wrapped in an external <label> (the pattern
+   used for inline-row control layouts across the gallery), force it
+   to inline-block so the wrapping <label> can flow its text and the
+   field on a single line. x-form-field defaults to block, which would
+   otherwise push the label text onto its own line. */
+label > x-form-field {
   display: inline-block;
 }
 
@@ -136,7 +146,8 @@ label:has(> x-switch),
 .controls x-form-field,
 .control-group x-form-field,
 .field x-form-field,
-.row x-form-field {
+.row x-form-field,
+.ctrl-row x-form-field {
   --x-form-field-label-font-size: 0.8125rem;
   --x-form-field-input-padding: 6px 10px;
   --x-form-field-input-bg: var(--input-bg);
@@ -149,7 +160,8 @@ label:has(> x-switch),
 .controls x-form-field::part(input),
 .control-group x-form-field::part(input),
 .field x-form-field::part(input),
-.row x-form-field::part(input) {
+.row x-form-field::part(input),
+.ctrl-row x-form-field::part(input) {
   font-size: 0.875rem;
 }
 

@@ -96,7 +96,7 @@
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>separator
-        <input type="text" id="ctrl-sep" value="/" style="width:40px">
+        <x-form-field type="text" id="ctrl-sep" value="/" style="width:40px"></x-form-field>
       </label>
       <label>variant
         <x-select id="ctrl-variant" value="default">
@@ -113,7 +113,7 @@
         </x-select>
       </label>
       <label>max-items
-        <input type="number" id="ctrl-max" placeholder="none" style="width:60px" min="1">
+        <x-form-field type="number" id="ctrl-max" placeholder="none" style="width:60px"></x-form-field>
       </label>
       <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
     </div>
