@@ -49,6 +49,29 @@ html, body {
   color: var(--page-fg);
 }
 
+/* ── Dogfooded demo control rows ──────────────────────
+   x-form-field is block-level (owns label + input + hint)
+   while x-select / x-switch / x-button are inline-block.
+   Force a consistent single-line layout in every common
+   control-row container so dogfooded library controls
+   line up the same way the old native ones did. */
+.row label,
+.panel label,
+.controls label,
+.control-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row x-form-field,
+.panel x-form-field,
+.controls x-form-field,
+.control-group x-form-field,
+.field x-form-field {
+  display: inline-block;
+}
+
 /* ── Tablet & below (768px) ──────────────────────────── */
 @media (max-width: 768px) {
   .page {
