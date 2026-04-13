@@ -137,8 +137,9 @@
       (.removeChild parent child)
       (recur))))
 
-(defn- ensure-label-dom! [^js el]
+(defn- ensure-label-dom!
   "Switches the container to label mode if not already in that mode."
+  [^js el]
   (let [refs      (gobj/get el k-refs)
         cur-mode  (gobj/get refs "mode")]
     (when (= cur-mode "no-label")
@@ -168,8 +169,9 @@
           (gobj/set refs "mode"       "label"))))
     nil))
 
-(defn- ensure-no-label-dom! [^js el]
+(defn- ensure-no-label-dom!
   "Switches the container to no-label mode if not already in that mode."
+  [^js el]
   (let [refs     (gobj/get el k-refs)
         cur-mode (gobj/get refs "mode")]
     (when (= cur-mode "label")

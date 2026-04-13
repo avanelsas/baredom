@@ -38,8 +38,8 @@
     (is (some? (shadow-part el "[part=remove]")))))
 
 ;; ── Default state ─────────────────────────────────────────────────────────
+;; removable defaults to true when attribute absent
 (deftest default-removable-true-test
-  "removable defaults to true when attribute absent"
   (let [^js el (append! (make-el))]
     (is (true? (.hasAttribute el "data-removable")))))
 
@@ -47,8 +47,8 @@
   (let [^js el (append! (make-el))]
     (is (false? (.hasAttribute el model/attr-disabled)))))
 
+;; tabIndex should be 0 when removable and not disabled
 (deftest default-tabindex-removable-test
-  "tabIndex should be 0 when removable and not disabled"
   (let [^js el (append! (make-el))]
     (is (= 0 (.-tabIndex el)))))
 
@@ -282,8 +282,8 @@
       (.appendChild (.-body js/document) el)
       (is (= root1 (.-shadowRoot el))))))
 
+;; After reconnect, clicking remove should fire exactly one event.
 (deftest reconnect-event-fires-once-test
-  "After reconnect, clicking remove should fire exactly one event."
   (async done
     (let [^js el    (make-el)
           count     (atom 0)]
