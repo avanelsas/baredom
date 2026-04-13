@@ -393,3 +393,25 @@
 
     (.click (shadow-part el "[part=sort-btn]"))
     (is (= 1 @counter))))
+
+;; ── [part=cell] fills host height so border-bottoms align ────────────────────
+;; Regression test for the "disconnected border-bottom" bug: when the host is
+;; stretched by a parent layout to a definite height, the inner [part=cell]
+;; wrapper must fill it, otherwise the border-bottom sits at content height
+;; and lines don't connect across columns with different intrinsic heights.
+(deftest part-cell-fills-host-height-test
+  (let [^js container (.createElement js/document "div")
+        ^js el        (make-el)]
+    (set! (.-cssText (.-style container)) "height:80px;display:block;")
+    ;; Force the host to a definite height — mimics what grid stretch does.
+    (set! (.-cssText (.-style el)) "height:100%;display:block;")
+    (.appendChild container el)
+    (.appendChild (.-body js/document) container)
+
+    (let [^js cell (shadow-part el "[part=cell]")]
+      (is (= 80 (.-offsetHeight el))
+          "host should be stretched to container height")
+      (is (= 80 (.-offsetHeight cell))
+          "[part=cell] should fill the host height so border-bottom aligns"))
+
+    (.remove container)))

@@ -80,6 +80,11 @@
    "color:var(--x-table-cell-color);"
    "font-size:var(--x-table-cell-font-size);"
    "min-width:0;"
+   ;; Fill the host's height so border-bottom sits at the host's bottom edge.
+   ;; When x-table-row's subgrid stretches the host to the row height, this
+   ;; keeps border-bottoms aligned across columns regardless of per-cell
+   ;; intrinsic content height (e.g. header cell with sort button vs plain).
+   "height:100%;"
    "box-sizing:border-box;}"
 
    ":host([data-type='header']) [part=cell]{"
