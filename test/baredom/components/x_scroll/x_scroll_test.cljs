@@ -77,10 +77,10 @@
     (is (= "Products" (.getAttribute (shadow-part el "[part=viewport]") "aria-label")))))
 
 (deftest indicators-a11y-test
-  (let [^js el (append! (make-el))]
-    (let [^js ind (shadow-part el "[part=indicators]")]
-      (is (= "tablist" (.getAttribute ind "role")))
-      (is (= "Slide indicators" (.getAttribute ind "aria-label"))))))
+  (let [^js el (append! (make-el))
+        ^js ind (shadow-part el "[part=indicators]")]
+    (is (= "tablist" (.getAttribute ind "role")))
+    (is (= "Slide indicators" (.getAttribute ind "aria-label")))))
 
 (deftest live-region-exists-test
   (let [^js el (append! (make-el))

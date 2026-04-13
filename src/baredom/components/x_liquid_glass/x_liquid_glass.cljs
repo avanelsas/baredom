@@ -445,9 +445,9 @@
     ;; Mode-dependent styling
     (let [submerged? (= :submerged (:mode m))
           ^js content-el (:content refs)
-          ^js grain-el   (:grain refs)]
-      (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
-        (if submerged?
+          ^js grain-el   (:grain refs)
+          mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+      (if submerged?
           (do
             ;; Content is "submerged" — sits below the glass layers
             ;; with a direct blur and mask to clip it to the blob shape.
@@ -476,7 +476,7 @@
             (set! (.. content-el -style -webkitMask) "")
             (.setAttribute g "opacity" "0.35")
             (when grain-el (set! (.. grain-el -style -opacity) "0.4"))
-            (set! (.. el -style -contain) "")))))
+            (set! (.. el -style -contain) ""))))
 
     ;; Specular visibility
     (when-not (:specular? m)

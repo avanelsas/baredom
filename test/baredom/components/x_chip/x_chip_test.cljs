@@ -60,9 +60,9 @@
       (is (= "Clojure" (.-textContent lbl))))))
 
 (deftest label-empty-default-test
-  (let [^js el (append! (make-el))]
-    (let [^js lbl (shadow-part el "[part=label]")]
-      (is (= "" (.-textContent lbl))))))
+  (let [^js el (append! (make-el))
+        ^js lbl (shadow-part el "[part=label]")]
+    (is (= "" (.-textContent lbl)))))
 
 ;; ── Removable attribute ───────────────────────────────────────────────────
 (deftest removable-false-removes-data-attr-test

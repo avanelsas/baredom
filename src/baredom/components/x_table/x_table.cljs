@@ -103,15 +103,15 @@
 (defn- update-stripe-attrs! [^js el]
   ;; Walk direct x-table-row children, assigning data-stripe="even" on even
   ;; (1-indexed) rows and removing it from odd rows.
-  (let [^js rows (.querySelectorAll el "x-table-row")]
-    (let [len (.-length rows)]
-      (loop [i 0]
-        (when (< i len)
-          (let [^js row (aget rows i)]
-            (if (zero? (mod (inc i) 2))
-              (.setAttribute row "data-stripe" "even")
-              (.removeAttribute row "data-stripe")))
-          (recur (inc i))))))
+  (let [^js rows (.querySelectorAll el "x-table-row")
+        len (.-length rows)]
+    (loop [i 0]
+      (when (< i len)
+        (let [^js row (aget rows i)]
+          (if (zero? (mod (inc i) 2))
+            (.setAttribute row "data-stripe" "even")
+            (.removeAttribute row "data-stripe")))
+        (recur (inc i)))))
   nil)
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────

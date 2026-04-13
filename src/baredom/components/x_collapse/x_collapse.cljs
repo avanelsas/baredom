@@ -212,16 +212,16 @@
                      (set! (.-style.height content) "")
                      (set! (.-style.transition content) ""))
                    (+ dur 80))
-              handler-ref #js {:fn nil}]
-          (let [handler (fn []
-                          (js/clearTimeout tid)
-                          (set! (.-style.height content) "")
-                          (set! (.-style.transition content) "")
-                          (.removeEventListener
-                           content "transitionend"
-                           (gobj/get handler-ref "fn")))]
-            (gobj/set handler-ref "fn" handler)
-            (.addEventListener content "transitionend" handler)))))))
+              handler-ref #js {:fn nil}
+              handler (fn []
+                        (js/clearTimeout tid)
+                        (set! (.-style.height content) "")
+                        (set! (.-style.transition content) "")
+                        (.removeEventListener
+                         content "transitionend"
+                         (gobj/get handler-ref "fn")))]
+          (gobj/set handler-ref "fn" handler)
+          (.addEventListener content "transitionend" handler))))))
 
 (defn- start-close! [^js el ^js content]
   (if (prefers-reduced-motion?)
@@ -241,16 +241,16 @@
                    (set! (.-style.height content) "")
                    (set! (.-style.transition content) ""))
                  (+ dur 80))
-            handler-ref #js {:fn nil}]
-        (let [handler (fn []
-                        (js/clearTimeout tid)
-                        (set! (.-style.height content) "")
-                        (set! (.-style.transition content) "")
-                        (.removeEventListener
-                         content "transitionend"
-                         (gobj/get handler-ref "fn")))]
-          (gobj/set handler-ref "fn" handler)
-          (.addEventListener content "transitionend" handler))))))
+            handler-ref #js {:fn nil}
+            handler (fn []
+                      (js/clearTimeout tid)
+                      (set! (.-style.height content) "")
+                      (set! (.-style.transition content) "")
+                      (.removeEventListener
+                       content "transitionend"
+                       (gobj/get handler-ref "fn")))]
+        (gobj/set handler-ref "fn" handler)
+        (.addEventListener content "transitionend" handler)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Render

@@ -380,10 +380,10 @@
 
 (deftest non-readonly-allows-arrow-keys-test
   (let [el       (append! (make-el))
-        input-el (shadow-part el "[part=input]")]
-    (let [evt (dispatch-key! input-el "ArrowRight")]
-      (is (false? (.-defaultPrevented evt))
-          "ArrowRight should not be prevented when not readonly"))))
+        input-el (shadow-part el "[part=input]")
+        evt      (dispatch-key! input-el "ArrowRight")]
+    (is (false? (.-defaultPrevented evt))
+        "ArrowRight should not be prevented when not readonly")))
 
 ;; ---------------------------------------------------------------------------
 ;; ARIA sync after attribute changes

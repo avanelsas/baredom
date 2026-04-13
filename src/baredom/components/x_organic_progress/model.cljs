@@ -286,10 +286,10 @@
   (let [segments  #js []
         stack     #js []
         rng       (make-rng seed)
-        seg-index #js [0]]
-    ;; Mutable turtle state as JS arrays for performance
-    (let [state #js [start-x start-y 0.0 0]]  ;; x y angle depth
-      (dotimes [k (.-length l-string)]
+        seg-index #js [0]
+        ;; Mutable turtle state as JS arrays for performance
+        state     #js [start-x start-y 0.0 0]]  ;; x y angle depth
+    (dotimes [k (.-length l-string)]
         (let [ch (.charAt l-string k)]
           (case ch
             "F"
@@ -345,7 +345,7 @@
                               dy-b (- (gobj/get b "y2") start-y)]
                           (- (+ (* dx-a dx-a) (* dy-a dy-a))
                              (+ (* dx-b dx-b) (* dy-b dy-b))))))
-      #js [segments (.-length segments)])))
+    #js [segments (.-length segments)]))
 
 ;; ── Honeycomb: hexagonal lattice ─────────────────────────────────────────────
 

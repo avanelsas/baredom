@@ -311,9 +311,9 @@
                        (str "var(" model/css-color-primary ","
                             (if honeycomb? "#818cf8" "#22c55e") ")"))
         secondary-css (str "var(" model/css-color-secondary ","
-                           (if honeycomb? "#a5b4fc" "#16a34a") ")")]
-    (let [base-w   (resolve-css-float el model/css-branch-width (if honeycomb? 1.5 3.0))]
-      (if honeycomb?
+                           (if honeycomb? "#a5b4fc" "#16a34a") ")")
+        base-w   (resolve-css-float el model/css-branch-width (if honeycomb? 1.5 3.0))]
+    (if honeycomb?
         ;; Honeycomb: thin uniform hex edges with depth-based opacity
         (dotimes [i total]
           (let [^js line (aget lines i)
@@ -334,7 +334,7 @@
             (.setAttribute line "stroke-width" (str w))
             (set! (.. line -style -stroke) color)
             (.setAttribute line "stroke-linecap" "round")
-            (.setAttribute line "stroke-opacity" "1"))))))
+            (.setAttribute line "stroke-opacity" "1")))))
   nil)
 
 ;; ── Segment rendering (progressive reveal) ─────────────────────────────────

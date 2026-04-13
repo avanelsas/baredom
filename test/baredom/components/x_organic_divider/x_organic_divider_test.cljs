@@ -199,9 +199,9 @@
 
 ;; ── Layer opacity ─────────────────────────────────────────────────────────
 (deftest single-layer-has-full-opacity-test
-  (let [el (append! (make-el))]
-    (let [^js p (aget (shadow-paths el) 0)]
-      (is (= "1" (.getAttribute p "opacity"))))))
+  (let [el (append! (make-el))
+        ^js p (aget (shadow-paths el) 0)]
+    (is (= "1" (.getAttribute p "opacity")))))
 
 (deftest multi-layer-opacity-range-test
   (let [el (append! (make-el))]
