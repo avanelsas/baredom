@@ -103,17 +103,24 @@ label:has(> x-switch),
   line-height: 1;
 }
 
-/* Grid/panel-stacked control layouts: x-select replaced a native <select>
-   that was width:100% and ~32px tall via the demos' inline CSS. Recreate
-   that footprint so the dogfooded select fills its grid cell at the same
-   compact size. */
+/* Grid-stacked control layouts: x-select replaced a native <select>
+   that was width:100% and ~32px tall via the demos' inline CSS.
+   Recreate that footprint so the dogfooded select fills its grid cell
+   at the same compact size. Note: only .grid is targeted for the
+   width:100%, because .controls / .panel are used inconsistently
+   across demos — some layouts want the select to fill its cell,
+   others want it to sit inline at intrinsic width. The compact size
+   override is safe everywhere. */
+.grid x-select {
+  width: 100%;
+  min-width: 0;
+}
+
 .grid x-select,
 .panel x-select,
 .controls x-select,
 .control-group x-select,
 .field x-select {
-  width: 100%;
-  min-width: 0;
   --x-select-height-md: 2rem;
   --x-select-font-size-md: 0.8125rem;
 }
