@@ -152,12 +152,12 @@
   <div class="row">
 
     <x-popover heading="Details">
-      <x-button class="trigger-btn" slot="trigger">Open popover</x-button>
+      <x-button variant="secondary" slot="trigger">Open popover</x-button>
       <p class="pop-text">This is the main body of the popover. It can contain any content.</p>
     </x-popover>
 
     <x-popover heading="Pre-opened" open>
-      <x-button class="trigger-btn" slot="trigger">Pre-opened</x-button>
+      <x-button variant="secondary" slot="trigger">Pre-opened</x-button>
       <p class="pop-text">This popover starts open via the <code>open</code> attribute.</p>
     </x-popover>
 
@@ -175,7 +175,7 @@
   <div class="row">
 
     <x-popover heading="Info" no-close>
-      <x-button class="trigger-btn" slot="trigger">? Info</x-button>
+      <x-button variant="secondary" slot="trigger">? Info</x-button>
       <p class="pop-text">Click outside or press Escape to close this popover. The close button is hidden via <code>no-close</code>.</p>
     </x-popover>
 
@@ -188,16 +188,16 @@
   <div class="row">
 
     <x-popover heading="Confirm deletion" id="confirm-pop">
-      <x-button class="trigger-btn" slot="trigger">Delete item</x-button>
+      <x-button variant="secondary" slot="trigger">Delete item</x-button>
       <p class="pop-text">This action cannot be undone. Are you sure you want to delete this item?</p>
       <div class="pop-footer-row" slot="footer">
-        <x-button class="pop-footer-btn" onclick="document.getElementById('confirm-pop').hide()">Cancel</x-button>
-        <x-button class="pop-footer-btn primary" onclick="logLine('Confirmed delete!'); document.getElementById('confirm-pop').hide()">Confirm</x-button>
+        <x-button variant="ghost" onclick="document.getElementById('confirm-pop').hide()">Cancel</x-button>
+        <x-button onclick="logLine('Confirmed delete!'); document.getElementById('confirm-pop').hide()">Confirm</x-button>
       </div>
     </x-popover>
 
     <x-popover heading="No footer">
-      <x-button class="trigger-btn" slot="trigger">No footer</x-button>
+      <x-button variant="secondary" slot="trigger">No footer</x-button>
       <p class="pop-text">This popover has no footer slot. The footer area is hidden via CSS <code>:has()</code>.</p>
     </x-popover>
 
@@ -212,7 +212,7 @@
     <div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">bottom-start (default)</p>
       <x-popover placement="bottom-start" heading="Bottom start">
-        <x-button class="trigger-btn" slot="trigger">↙ bottom-start</x-button>
+        <x-button variant="secondary" slot="trigger">↙ bottom-start</x-button>
         <p class="pop-text">Panel opens below, aligned to the left edge.</p>
       </x-popover>
     </div>
@@ -221,7 +221,7 @@
       <div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">bottom-end</p>
         <x-popover placement="bottom-end" heading="Bottom end">
-          <x-button class="trigger-btn" slot="trigger">bottom-end ↘</x-button>
+          <x-button variant="secondary" slot="trigger">bottom-end ↘</x-button>
           <p class="pop-text">Panel opens below, aligned to the right edge.</p>
         </x-popover>
       </div>
@@ -230,7 +230,7 @@
     <div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">top-start</p>
       <x-popover placement="top-start" heading="Top start">
-        <x-button class="trigger-btn" slot="trigger">↖ top-start</x-button>
+        <x-button variant="secondary" slot="trigger">↖ top-start</x-button>
         <p class="pop-text">Panel opens above, aligned to the left edge.</p>
       </x-popover>
     </div>
@@ -239,7 +239,7 @@
       <div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">top-end</p>
         <x-popover placement="top-end" heading="Top end">
-          <x-button class="trigger-btn" slot="trigger">top-end ↗</x-button>
+          <x-button variant="secondary" slot="trigger">top-end ↗</x-button>
           <p class="pop-text">Panel opens above, aligned to the right edge.</p>
         </x-popover>
       </div>
@@ -269,7 +269,7 @@
         --x-popover-arrow-border: #4338ca;
       "
     >
-      <x-button class="trigger-btn" slot="trigger">Indigo</x-button>
+      <x-button variant="secondary" slot="trigger">Indigo</x-button>
       <p class="pop-text" style="color:#c7d2fe">A custom dark indigo theme applied via CSS custom properties.</p>
     </x-popover>
 
@@ -288,7 +288,7 @@
         --x-popover-arrow-border: #86efac;
       "
     >
-      <x-button class="trigger-btn" slot="trigger">Success</x-button>
+      <x-button variant="secondary" slot="trigger">Success</x-button>
       <p class="pop-text" style="color:#15803d">A success-colored theme to indicate positive actions.</p>
     </x-popover>
 
@@ -300,10 +300,10 @@
   <x-typography variant="overline">Live control panel</x-typography>
 
   <x-popover id="live-pop" heading="Live popover">
-    <x-button class="trigger-btn" slot="trigger">Click me</x-button>
+    <x-button variant="secondary" slot="trigger">Click me</x-button>
     <p class="pop-text">Use the controls below to change attributes at runtime.</p>
     <div class="pop-footer-row" slot="footer">
-      <x-button class="pop-footer-btn" onclick="document.getElementById('live-pop').hide()">Close</x-button>
+      <x-button variant="ghost" onclick="document.getElementById('live-pop').hide()">Close</x-button>
     </div>
   </x-popover>
 
@@ -311,12 +311,12 @@
     <div class="row">
       <label for="ctrl-heading">heading:</label>
       <input id="ctrl-heading" type="text" value="Live popover" style="flex:1;min-width:180px;" />
-      <x-button class="demo-btn" onclick="applyHeading()">Apply</x-button>
+      <x-button variant="secondary" onclick="applyHeading()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-close-label">close-label:</label>
       <input id="ctrl-close-label" type="text" value="Close" style="flex:1;min-width:180px;" />
-      <x-button class="demo-btn" onclick="applyCloseLabel()">Apply</x-button>
+      <x-button variant="secondary" onclick="applyCloseLabel()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-placement">placement:</label>
@@ -326,14 +326,14 @@
         <option value="top-start">top-start</option>
         <option value="top-end">top-end</option>
       </select>
-      <x-button class="demo-btn" onclick="applyPlacement()">Apply</x-button>
+      <x-button variant="secondary" onclick="applyPlacement()">Apply</x-button>
     </div>
     <div class="row">
-      <x-button class="demo-btn" onclick="livePop.toggle()">toggle()</x-button>
-      <x-button class="demo-btn" onclick="livePop.show()">show()</x-button>
-      <x-button class="demo-btn" onclick="livePop.hide()">hide()</x-button>
-      <x-button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</x-button>
-      <x-button class="demo-btn" onclick="toggleNoClose()">Toggle no-close</x-button>
+      <x-button variant="secondary" onclick="livePop.toggle()">toggle()</x-button>
+      <x-button variant="secondary" onclick="livePop.show()">show()</x-button>
+      <x-button variant="secondary" onclick="livePop.hide()">hide()</x-button>
+      <x-button variant="secondary" onclick="toggleDisabled()">Toggle disabled</x-button>
+      <x-button variant="secondary" onclick="toggleNoClose()">Toggle no-close</x-button>
     </div>
     <div class="row">
       <label>
@@ -349,7 +349,7 @@
   <x-typography variant="overline">Event log</x-typography>
   <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
   <div class="row" style="margin-top:10px;">
-    <x-button class="demo-btn" onclick="clearLog()">Clear log</x-button>
+    <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </section>
 

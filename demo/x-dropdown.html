@@ -239,7 +239,7 @@
     <div class="row">
       <label for="ctrl-label">label:</label>
       <input id="ctrl-label" type="text" value="Live dropdown" style="flex:1;min-width:160px;" />
-      <x-button class="demo-btn" onclick="applyLabel()">Apply</x-button>
+      <x-button variant="secondary" onclick="applyLabel()">Apply</x-button>
     </div>
     <div class="row">
       <label for="ctrl-placement">placement:</label>
@@ -249,13 +249,13 @@
         <option value="top-start">top-start</option>
         <option value="top-end">top-end</option>
       </select>
-      <x-button class="demo-btn" onclick="applyPlacement()">Apply</x-button>
+      <x-button variant="secondary" onclick="applyPlacement()">Apply</x-button>
     </div>
     <div class="row">
-      <x-button class="demo-btn" onclick="liveDD.toggle()">toggle()</x-button>
-      <x-button class="demo-btn" onclick="liveDD.show()">show()</x-button>
-      <x-button class="demo-btn" onclick="liveDD.hide()">hide()</x-button>
-      <x-button class="demo-btn" onclick="toggleDisabled()">Toggle disabled</x-button>
+      <x-button variant="secondary" onclick="liveDD.toggle()">toggle()</x-button>
+      <x-button variant="secondary" onclick="liveDD.show()">show()</x-button>
+      <x-button variant="secondary" onclick="liveDD.hide()">hide()</x-button>
+      <x-button variant="secondary" onclick="toggleDisabled()">Toggle disabled</x-button>
     </div>
     <div class="row">
       <label>
@@ -271,7 +271,7 @@
   <x-typography variant="overline">Event log</x-typography>
   <div id="log" class="log"><span class="muted">— events will appear here —</span></div>
   <div class="row" style="margin-top:10px;">
-    <x-button class="demo-btn" onclick="clearLog()">Clear log</x-button>
+    <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
   </div>
 </section>
 
