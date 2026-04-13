@@ -1,7 +1,6 @@
 (ns baredom.components.x-color-picker.x-color-picker
   (:require [goog.object :as gobj]
             [baredom.utils.dom :as du]
-            [baredom.utils.model :as mu]
             [baredom.components.x-color-picker.model :as model]))
 
 ;; ---------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 (ns baredom.components.x-carousel.x-carousel
   (:require [goog.object :as gobj]
             [baredom.utils.dom :as du]
-            [baredom.utils.model :as mu]
             [baredom.components.x-carousel.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
