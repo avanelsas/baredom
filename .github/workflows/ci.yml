@@ -30,9 +30,11 @@ jobs:
       - run: npm ci
 
       - name: Setup clj-kondo
-        uses: DeLaGuardo/setup-clj-kondo@v1
-        with:
-          version: '2026.01.19'
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          clj-kondo --version
 
       - name: Lint with clj-kondo
         run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
