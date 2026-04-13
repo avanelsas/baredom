@@ -1,5 +1,5 @@
 (ns baredom.components.x-spacer.x-spacer-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-spacer.x-spacer :as x]
             [baredom.components.x-spacer.model    :as model]))
 

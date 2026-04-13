@@ -1,9 +1,8 @@
 (ns baredom.components.x-notification-center.x-notification-center-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-alert.x-alert :as xa]
             [baredom.components.x-notification-center.x-notification-center :as nc]
-            [baredom.components.x-notification-center.model :as model]
-            [baredom.components.x-alert.model :as alert-model]))
+            [baredom.components.x-notification-center.model :as model]))
 
 ;; Register both elements at top level
 (xa/init!)

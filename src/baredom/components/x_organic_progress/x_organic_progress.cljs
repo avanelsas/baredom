@@ -223,38 +223,6 @@
       (.setAttribute blur-el "stdDeviation" "2")))
   nil)
 
-(defn- reconcile-nodes!
-  "Add/remove SVG elements for nodes (circles)."
-  [^js el ^js node-data node-count]
-  (let [{:keys [nodes-g]} (gobj/get el k-refs)
-        ^js nodes-g  nodes-g
-        ^js old-els  (or (gobj/get el k-node-els) #js [])
-        old-count    (.-length old-els)
-        new-els      #js []]
-    (dotimes [i node-count]
-      (let [^js nd (aget node-data i)
-            ^js circle (if (< i old-count)
-                         (aget old-els i)
-                         (let [c (.createElementNS js/document svg-ns "circle")]
-                           (.appendChild nodes-g c)
-                           c))
-            x (gobj/get nd "x")
-            y (gobj/get nd "y")]
-        (.setAttribute circle "cx" (str x))
-        (.setAttribute circle "cy" (str y))
-        (.setAttribute circle "r" "2.5")
-        (.setAttribute circle "opacity" "0")
-        (.push new-els circle)))
-    ;; Remove excess
-    (loop [i node-count]
-      (when (< i old-count)
-        (let [^js el-old (aget old-els i)]
-          (when (.-parentNode el-old)
-            (.removeChild nodes-g el-old)))
-        (recur (inc i))))
-    (gobj/set el k-node-els new-els))
-  nil)
-
 (defn- clear-nodes!
   "Remove all lattice node circles."
   [^js el]
@@ -311,9 +279,9 @@
                        (str "var(" model/css-color-primary ","
                             (if honeycomb? "#818cf8" "#22c55e") ")"))
         secondary-css (str "var(" model/css-color-secondary ","
-                           (if honeycomb? "#a5b4fc" "#16a34a") ")")]
-    (let [base-w   (resolve-css-float el model/css-branch-width (if honeycomb? 1.5 3.0))]
-      (if honeycomb?
+                           (if honeycomb? "#a5b4fc" "#16a34a") ")")
+        base-w   (resolve-css-float el model/css-branch-width (if honeycomb? 1.5 3.0))]
+    (if honeycomb?
         ;; Honeycomb: thin uniform hex edges with depth-based opacity
         (dotimes [i total]
           (let [^js line (aget lines i)
@@ -334,7 +302,7 @@
             (.setAttribute line "stroke-width" (str w))
             (set! (.. line -style -stroke) color)
             (.setAttribute line "stroke-linecap" "round")
-            (.setAttribute line "stroke-opacity" "1"))))))
+            (.setAttribute line "stroke-opacity" "1")))))
   nil)
 
 ;; ── Segment rendering (progressive reveal) ─────────────────────────────────

@@ -1,5 +1,5 @@
 (ns baredom.components.x-divider.x-divider-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-divider.x-divider :as x]
             [baredom.components.x-divider.model     :as model]))
 

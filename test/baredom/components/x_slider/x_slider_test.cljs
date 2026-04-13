@@ -1,5 +1,5 @@
 (ns baredom.components.x-slider.x-slider-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-slider.x-slider :as x]
             [baredom.components.x-slider.model :as model]))
 
@@ -314,8 +314,7 @@
 ;; ---------------------------------------------------------------------------
 
 (deftest value-clamped-to-max-test
-  (let [el       (append! (make-el))
-        input-el (shadow-part el "[part=input]")]
+  (let [el (append! (make-el))]
     (.setAttribute el model/attr-max "100")
     (.setAttribute el model/attr-value "150")
     (is (= "100.00%"
@@ -381,10 +380,10 @@
 
 (deftest non-readonly-allows-arrow-keys-test
   (let [el       (append! (make-el))
-        input-el (shadow-part el "[part=input]")]
-    (let [evt (dispatch-key! input-el "ArrowRight")]
-      (is (false? (.-defaultPrevented evt))
-          "ArrowRight should not be prevented when not readonly"))))
+        input-el (shadow-part el "[part=input]")
+        evt      (dispatch-key! input-el "ArrowRight")]
+    (is (false? (.-defaultPrevented evt))
+        "ArrowRight should not be prevented when not readonly")))
 
 ;; ---------------------------------------------------------------------------
 ;; ARIA sync after attribute changes

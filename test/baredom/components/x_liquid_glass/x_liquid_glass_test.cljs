@@ -1,6 +1,6 @@
 (ns baredom.components.x-liquid-glass.x-liquid-glass-test
   (:require
-   [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.x-liquid-glass.x-liquid-glass :as x-liquid-glass]
    [baredom.components.x-liquid-glass.model :as model]))
 

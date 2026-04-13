@@ -1,5 +1,5 @@
 (ns baredom.components.x-container.x-container-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-container.x-container :as x]
             [baredom.components.x-container.model :as model]))
 

@@ -1,5 +1,5 @@
 (ns baredom.components.x-tabs.x-tabs-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-tabs.x-tabs :as x]
             [baredom.components.x-tabs.model :as model]))
 
@@ -181,8 +181,7 @@
 
 (deftest host-attributes-are-not-rewritten-by-normalization-test
   (let [el (make-el)
-        {:keys [tab-a tab-b]} (setup-basic-tabs! el)
-        base nil]
+        {:keys [tab-a tab-b]} (setup-basic-tabs! el)]
     (.setAttribute el model/attr-orientation "bad")
     (.setAttribute el model/attr-activation "bad")
     (append! el)
@@ -230,7 +229,7 @@
 
 (deftest panel-visibility-coordination-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c panel-a panel-b panel-c]} (setup-tabs-with-panels! el)]
+        {:keys [tab-a tab-c panel-a panel-b panel-c]} (setup-tabs-with-panels! el)]
     (append! el)
 
     (is (.hasAttribute tab-a "selected"))
@@ -279,7 +278,7 @@
 
 (deftest vertical-arrow-navigation-auto-activation-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)
+        {:keys [tab-a tab-b]} (setup-basic-tabs! el)
         event (js/KeyboardEvent. "keydown" #js {:key "ArrowDown"
                                                 :bubbles true
                                                 :cancelable true})]
@@ -294,7 +293,7 @@
 
 (deftest home-and-end-navigation-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)
+        {:keys [tab-a tab-c]} (setup-basic-tabs! el)
         end-event (js/KeyboardEvent. "keydown" #js {:key "End"
                                                     :bubbles true
                                                     :cancelable true})
@@ -314,7 +313,7 @@
 
 (deftest loop-navigation-wraps-when-enabled-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)
+        {:keys [tab-a tab-c]} (setup-basic-tabs! el)
         event (js/KeyboardEvent. "keydown" #js {:key "ArrowRight"
                                                 :bubbles true
                                                 :cancelable true})]
@@ -329,7 +328,7 @@
 
 (deftest loop-navigation-clamps-when-disabled-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)
+        {:keys [tab-c]} (setup-basic-tabs! el)
         event (js/KeyboardEvent. "keydown" #js {:key "ArrowRight"
                                                 :bubbles true
                                                 :cancelable true})]
@@ -400,7 +399,7 @@
 
 (deftest value-change-not-dispatched-for-redundant-selection-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)
+        {:keys [tab-a]} (setup-basic-tabs! el)
         calls (atom 0)]
     (.addEventListener el "value-change" (fn [_] (swap! calls inc)))
     (append! el)
@@ -424,7 +423,7 @@
 
 (deftest dynamic-child-addition-recoordinates-test
   (let [el (make-el)
-        {:keys [tab-a tab-b]} (setup-basic-tabs! el)]
+        {:keys [tab-a]} (setup-basic-tabs! el)]
     (append! el)
 
     (is (= "overview" (.getAttribute el model/attr-value)))
@@ -436,7 +435,7 @@
 
 (deftest dynamic-child-removal-recoordinates-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)]
+        {:keys [tab-a]} (setup-basic-tabs! el)]
     (append! el)
 
     (.click tab-a)
@@ -450,7 +449,7 @@
 
 (deftest external-disabled-toggle-recoordinates-test
   (let [el (make-el)
-        {:keys [tab-a tab-b tab-c]} (setup-basic-tabs! el)]
+        {:keys [tab-a]} (setup-basic-tabs! el)]
     (append! el)
 
     (is (.hasAttribute tab-a "selected"))

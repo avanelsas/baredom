@@ -1,5 +1,5 @@
 (ns baredom.components.x-organic-shape.x-organic-shape-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-organic-shape.x-organic-shape :as x-organic-shape]
             [baredom.components.x-organic-shape.model :as model]))
 

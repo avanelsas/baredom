@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - run: npm ci
+
+      - name: Setup clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          clj-kondo --version
+
+      - name: Lint with clj-kondo
+        run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+
+      - name: Build ESM library
+        run: npm run build
+
+      - name: Check bundle sizes
+        run: bash scripts/check-bundle-size.sh
+
+      - name: Run tests
+        run: npm test
+        env:
+          CHROMIUM_FLAGS: "--no-sandbox"

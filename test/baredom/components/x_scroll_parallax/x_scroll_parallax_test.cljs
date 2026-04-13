@@ -1,5 +1,5 @@
 (ns baredom.components.x-scroll-parallax.x-scroll-parallax-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-scroll-parallax.x-scroll-parallax :as x-scroll-parallax]
             [baredom.components.x-scroll-parallax.model :as model]))
 
@@ -273,8 +273,7 @@
       (append! el)
       (js/setTimeout
        (fn []
-         (let [^js live (shadow-part el "[part=live]")
-               text (.-textContent live)]
+         (let [^js live (shadow-part el "[part=live]")]
            ;; Live region should have been set (may already be cleared by timeout)
            ;; We check it was set at some point by checking enter event fired
            (is (some? live)))

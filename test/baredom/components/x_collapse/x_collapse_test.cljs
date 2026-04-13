@@ -1,5 +1,5 @@
 (ns baredom.components.x-collapse.x-collapse-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-collapse.x-collapse :as x]
             [baredom.components.x-collapse.model :as model]))
 

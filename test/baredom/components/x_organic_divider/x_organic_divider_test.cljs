@@ -1,5 +1,5 @@
 (ns baredom.components.x-organic-divider.x-organic-divider-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-organic-divider.x-organic-divider :as x-organic-divider]
             [baredom.components.x-organic-divider.model :as model]))
 
@@ -199,9 +199,9 @@
 
 ;; ── Layer opacity ─────────────────────────────────────────────────────────
 (deftest single-layer-has-full-opacity-test
-  (let [el (append! (make-el))]
-    (let [^js p (aget (shadow-paths el) 0)]
-      (is (= "1" (.getAttribute p "opacity"))))))
+  (let [el (append! (make-el))
+        ^js p (aget (shadow-paths el) 0)]
+    (is (= "1" (.getAttribute p "opacity")))))
 
 (deftest multi-layer-opacity-range-test
   (let [el (append! (make-el))]

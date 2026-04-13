@@ -1,5 +1,5 @@
 (ns baredom.components.x-modal.x-modal-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-modal.x-modal :as x]
             [baredom.components.x-modal.model :as model]))
 

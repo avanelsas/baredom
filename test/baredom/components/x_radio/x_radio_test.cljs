@@ -1,5 +1,5 @@
 (ns baredom.components.x-radio.x-radio-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-radio.x-radio :as x]
             [baredom.components.x-radio.model :as model]))
 
@@ -311,7 +311,7 @@
   (async done
     (let [r1 (make-radio "nav")
           r2 (make-radio "nav")
-          r3 (make-radio "nav")]
+          _r3 (make-radio "nav")]
       (.setAttribute r1 model/attr-checked "")
       (dispatch-key! (shadow-part r1 "[part=control]") "ArrowDown")
       (js/setTimeout
@@ -325,7 +325,7 @@
   (async done
     (let [r1 (make-radio "nav2")
           r2 (make-radio "nav2")
-          r3 (make-radio "nav2")]
+          _r3 (make-radio "nav2")]
       (.setAttribute r2 model/attr-checked "")
       (dispatch-key! (shadow-part r2 "[part=control]") "ArrowUp")
       (js/setTimeout
@@ -338,7 +338,7 @@
 (deftest arrow-wraps-around-test
   (async done
     (let [r1 (make-radio "wrap")
-          r2 (make-radio "wrap")
+          _r2 (make-radio "wrap")
           r3 (make-radio "wrap")]
       (.setAttribute r3 model/attr-checked "")
       (dispatch-key! (shadow-part r3 "[part=control]") "ArrowDown")

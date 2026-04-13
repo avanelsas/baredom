@@ -5,7 +5,6 @@
 ;; ---- Instance field keys ----
 
 (def ^:private k-refs     "__xChartRefs")
-(def ^:private k-handlers "__xChartHandlers")
 (def ^:private k-data     "__xChartData")
 
 ;; ---- SVG namespace ----
@@ -303,7 +302,7 @@
        (assoc pt :px px :py py :si series-idx :i i)))
    (:data s)))
 
-(defn- draw-line-series! [^js svg series-idx pts color]
+(defn- draw-line-series! [^js svg _series-idx pts color]
   (when-let [d (build-line-d pts)]
     (let [^js path (make-svg-el "path")]
       (set-attr! path "d" d)
@@ -314,7 +313,7 @@
       (set-attr! path "stroke-linecap" "round")
       (.appendChild svg path))))
 
-(defn- draw-area-series! [^js svg series-idx pts color baseline-y]
+(defn- draw-area-series! [^js svg _series-idx pts color baseline-y]
   (when-let [d (build-area-d pts baseline-y)]
     (let [^js path (make-svg-el "path")]
       (set-attr! path "d" d)
@@ -559,7 +558,7 @@
 
 ;; ---- Main render ----
 
-(defn- chart-width [^js el refs]
+(defn- chart-width [^js _el refs]
   (let [^js container (gobj/get refs "container")
         w (if container (.-clientWidth container) 0)]
     (if (pos? w) w 400)))
@@ -570,7 +569,7 @@
       (let [^js svg    (gobj/get refs "svg")
             ^js sr-el  (gobj/get refs "sr")
             m          (read-model el)
-            {:keys [type height padding series x-kind y-domain y-ticks
+            {:keys [type height padding series x-kind y-domain
                     grid? axes? tooltip? cursor loading? disabled? x-fmt y-fmt]} m
             W          (chart-width el refs)
             H          height
@@ -702,8 +701,7 @@
         ^js tooltip-el (make-el "div")
         ^js header-el  (make-el "div")
         ^js body-el    (make-el "div")
-        row-arr        (js/Array. model/max-tooltip-rows)
-        m              (read-model el)]
+        row-arr        (js/Array. model/max-tooltip-rows)]
 
     (set! (.-textContent style-el) style-text)
 

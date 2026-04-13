@@ -1,5 +1,5 @@
 (ns baredom.components.x-file-download.x-file-download-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-file-download.x-file-download :as x]
             [baredom.components.x-file-download.model :as model]))
 

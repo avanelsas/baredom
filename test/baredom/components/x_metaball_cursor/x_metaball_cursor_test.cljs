@@ -1,5 +1,5 @@
 (ns baredom.components.x-metaball-cursor.x-metaball-cursor-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-metaball-cursor.x-metaball-cursor :as x]
             [baredom.components.x-metaball-cursor.model             :as model]))
 

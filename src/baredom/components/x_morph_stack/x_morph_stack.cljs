@@ -755,9 +755,6 @@
                   true)))))))))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────
-(defn- go-to! [^js el ^String name reason]
-  (start-transition! el name reason))
-
 (defn- next-state! [^js el reason]
   (let [names (state-names el)
         len (.-length names)

@@ -1,5 +1,5 @@
 (ns baredom.components.x-spinner.x-spinner-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-spinner.x-spinner :as x-spinner]
             [baredom.components.x-spinner.model     :as model]))
 

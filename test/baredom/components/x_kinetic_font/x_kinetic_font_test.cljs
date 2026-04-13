@@ -1,6 +1,6 @@
 (ns baredom.components.x-kinetic-font.x-kinetic-font-test
   (:require
-   [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+   [cljs.test :refer-macros [deftest is use-fixtures]]
    [baredom.components.x-kinetic-font.x-kinetic-font :as x-kinetic-font]
    [baredom.components.x-kinetic-font.model :as model]))
 

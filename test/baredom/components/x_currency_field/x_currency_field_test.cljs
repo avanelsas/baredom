@@ -1,5 +1,5 @@
 (ns baredom.components.x-currency-field.x-currency-field-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-currency-field.x-currency-field :as x]
             [baredom.components.x-currency-field.model :as model]))
 

@@ -149,7 +149,7 @@
                        oy     (* 10 (js/Math.cos (* i js/Math.PI)))
                        ;; Size variation: 70%-130% of base
                        sin-v  (js/Math.sin (* i 1.618))
-                       scale  (+ 0.7 (* 0.6 (* sin-v sin-v)))
+                       scale  (+ 0.7 (* sin-v sin-v 0.6))
                        ;; Duration variation: 80%-120% of base
                        dur-f  (+ 0.8 (* 0.4 (js/Math.sin (* i 1.3))))
                        ;; Negative delay so each blob starts at different phase

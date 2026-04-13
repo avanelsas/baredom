@@ -1,5 +1,5 @@
 (ns baredom.components.x-tab.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-tab.model :as model]))
 
 ;; ---------- valid-enum ----------

@@ -1,6 +1,6 @@
 (ns baredom.components.x-organic-progress.x-organic-progress-test
   (:require
-   [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.x-organic-progress.x-organic-progress :as x-organic-progress]
    [baredom.components.x-organic-progress.model :as model]))
 

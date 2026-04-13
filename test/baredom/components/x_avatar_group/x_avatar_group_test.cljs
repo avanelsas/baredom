@@ -1,5 +1,5 @@
 (ns baredom.components.x-avatar-group.x-avatar-group-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-avatar-group.x-avatar-group :as x]
             [baredom.components.x-avatar-group.model          :as model]))
 

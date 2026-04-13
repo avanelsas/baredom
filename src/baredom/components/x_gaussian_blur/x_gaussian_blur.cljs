@@ -150,7 +150,7 @@
     nil))
 
 (defn- apply-blob-style! [^js blob-div {:keys [color x y size anim-index duration-factor delay-factor]}
-                          animation speed-s blur]
+                          animation speed-s _blur]
   (let [^js s (.-style blob-div)
         sz    (str size "%")]
     (.setProperty s "left"   (str x "%"))

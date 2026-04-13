@@ -375,7 +375,7 @@
 ;; ── Child attribute management ──────────────────────────────────────────────
 (defn- assign-child-attrs!
   "Set data-side and data-index on each child based on layout."
-  [^js el children layout]
+  [^js _el children layout]
   (dotimes [i (.-length children)]
     (let [^js child (aget children i)
           side (model/entry-side layout i)]

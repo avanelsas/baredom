@@ -154,7 +154,7 @@
       (or sym currency))
     (catch :default _ currency)))
 
-(defn- format-display [value currency locale]
+(defn- format-display [value _currency locale]
   (let [num (js/parseFloat value)]
     (if (js/isNaN num)
       value

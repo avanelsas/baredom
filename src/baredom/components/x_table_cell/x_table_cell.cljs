@@ -209,7 +209,7 @@
   nil)
 
 (defn- apply-host-attrs! [^js el {:keys [type align valign sticky truncate?
-                                          disabled? sortable? sort-direction] :as m}]
+                                          disabled?] :as m}]
   (.setAttribute el "role" (model/role-for-cell m))
 
   (let [aria-sort (model/aria-sort-value m)]

@@ -1,5 +1,5 @@
 (ns baredom.components.x-grid.x-grid-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures testing]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-grid.x-grid :as x]
             [baredom.components.x-grid.model :as model]))
 

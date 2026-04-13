@@ -53,22 +53,22 @@
 (deftest parse-series-data-valid-test
   (let [json (js/JSON.stringify
               (clj->js [{:id "s0" :label "Alpha"
-                         :data [{:x 1 :y 10} {:x 2 :y 20}]}]))]
-    (let [result (model/parse-series-data json)]
-      (is (= 1 (count result)))
-      (is (= "s0" (:id (first result))))
-      (is (= "Alpha" (:label (first result))))
-      (is (= 2 (count (:data (first result)))))
-      (is (= {:x 1 :y 10} (first (:data (first result))))))))
+                         :data [{:x 1 :y 10} {:x 2 :y 20}]}]))
+        result (model/parse-series-data json)]
+    (is (= 1 (count result)))
+    (is (= "s0" (:id (first result))))
+    (is (= "Alpha" (:label (first result))))
+    (is (= 2 (count (:data (first result)))))
+    (is (= {:x 1 :y 10} (first (:data (first result)))))))
 
 (deftest parse-series-data-auto-id-test
   (let [json (js/JSON.stringify
               (clj->js [{:data [{:x 0 :y 5}]}
-                        {:data [{:x 0 :y 3}]}]))]
-    (let [result (model/parse-series-data json)]
-      (is (= 2 (count result)))
-      (is (= "s0" (:id (first result))))
-      (is (= "s1" (:id (second result)))))))
+                        {:data [{:x 0 :y 3}]}]))
+        result (model/parse-series-data json)]
+    (is (= 2 (count result)))
+    (is (= "s0" (:id (first result))))
+    (is (= "s1" (:id (second result))))))
 
 ;; ---- domain-y ----
 
@@ -145,7 +145,7 @@
 
 (deftest tooltip-position-flip-left-test
   ;; cursor at right edge — tooltip flips left
-  (let [{:keys [left top]} (model/tooltip-position 360 50 80 30 400 200 8 12)]
+  (let [{:keys [left]} (model/tooltip-position 360 50 80 30 400 200 8 12)]
     (is (< left 360))))
 
 (deftest tooltip-position-clamped-test

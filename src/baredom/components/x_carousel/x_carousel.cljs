@@ -1,7 +1,6 @@
 (ns baredom.components.x-carousel.x-carousel
   (:require [goog.object :as gobj]
             [baredom.utils.dom :as du]
-            [baredom.utils.model :as mu]
             [baredom.components.x-carousel.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -359,7 +358,7 @@
           ^js nxt    (gobj/get refs "next")
           ^js dots   (gobj/get refs "dots")
           ^js live   (gobj/get refs "live")
-          ^js vp     (gobj/get refs "viewport")
+          ^js _vp    (gobj/get refs "viewport")
           current    (:current m)
           sc         (:slide-count m)
           transition (:transition m)

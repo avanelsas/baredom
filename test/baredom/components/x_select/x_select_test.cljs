@@ -1,5 +1,5 @@
 (ns baredom.components.x-select.x-select-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-select.x-select :as x]
             [baredom.components.x-select.model :as model]))
 

@@ -1,5 +1,5 @@
 (ns baredom.components.x-neural-glow.x-neural-glow-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-neural-glow.x-neural-glow :as x]
             [baredom.components.x-neural-glow.model          :as model]))
 

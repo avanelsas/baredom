@@ -296,11 +296,10 @@
 
       (if-let [v aria-label]
         (set-attr! input-el "aria-label" v)
-        (do
-          ;; Fall back to label text as aria-label when no explicit aria-label
-          (if (some? label)
-            (set-attr! input-el "aria-label" label)
-            (remove-attr! input-el "aria-label"))))
+        ;; Fall back to label text as aria-label when no explicit aria-label
+        (if (some? label)
+          (set-attr! input-el "aria-label" label)
+          (remove-attr! input-el "aria-label")))
 
       (if-let [v aria-labelledby]
         (set-attr! input-el "aria-labelledby" v)

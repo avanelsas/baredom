@@ -1,6 +1,6 @@
 (ns baredom.components.x-soft-body.x-soft-body-test
   (:require
-   [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.x-soft-body.x-soft-body :as x-soft-body]
    [baredom.components.x-soft-body.model :as model]))
 
@@ -137,7 +137,7 @@
     (let [^js el (append! (make-el))
           seen   (atom nil)]
       (.addEventListener el model/event-grab
-                         (fn [^js e] (reset! seen true)))
+                         (fn [^js _e] (reset! seen true)))
       (.dispatchEvent el (js/PointerEvent. "pointerdown"
                                            #js {:bubbles true}))
       (js/setTimeout
@@ -153,7 +153,7 @@
     (let [^js el (append! (make-el))
           seen   (atom nil)]
       (.addEventListener el model/event-release
-                         (fn [^js e] (reset! seen true)))
+                         (fn [^js _e] (reset! seen true)))
       (.dispatchEvent el (js/PointerEvent. "pointerup"
                                            #js {:bubbles true}))
       (js/setTimeout

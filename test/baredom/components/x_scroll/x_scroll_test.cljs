@@ -1,5 +1,5 @@
 (ns baredom.components.x-scroll.x-scroll-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-scroll.x-scroll :as x-scroll]
             [baredom.components.x-scroll.model :as model]))
 
@@ -77,10 +77,10 @@
     (is (= "Products" (.getAttribute (shadow-part el "[part=viewport]") "aria-label")))))
 
 (deftest indicators-a11y-test
-  (let [^js el (append! (make-el))]
-    (let [^js ind (shadow-part el "[part=indicators]")]
-      (is (= "tablist" (.getAttribute ind "role")))
-      (is (= "Slide indicators" (.getAttribute ind "aria-label"))))))
+  (let [^js el (append! (make-el))
+        ^js ind (shadow-part el "[part=indicators]")]
+    (is (= "tablist" (.getAttribute ind "role")))
+    (is (= "Slide indicators" (.getAttribute ind "aria-label")))))
 
 (deftest live-region-exists-test
   (let [^js el (append! (make-el))

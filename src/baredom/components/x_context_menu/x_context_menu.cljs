@@ -5,7 +5,6 @@
 ;; ---- Instance field keys ----
 
 (def ^:private k-refs     "__xContextMenuRefs")
-(def ^:private k-handlers "__xContextMenuHandlers")
 (def ^:private k-layer    "__xContextMenuLayer")
 
 ;; ---- Forward declarations ----

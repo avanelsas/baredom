@@ -68,7 +68,6 @@
 (def ^:private default-threshold       "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7")
 (def ^:private default-ripple-scale    8)
 (def ^:private default-ripple-speed    0.03)
-(def ^:private default-color           "#6366f1")
 (def ^:private default-magnet-radius   150)
 (def ^:private default-magnet-strength 0.6)
 (def ^:private default-bob-intensity   1.0)

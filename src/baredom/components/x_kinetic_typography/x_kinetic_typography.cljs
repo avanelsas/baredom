@@ -356,7 +356,7 @@
       (gobj/set el k-animate-el anim))))
 
 ;; ── Echo management ──────────────────────────────────────────────────────
-(defn- clear-echoes! [^js el ^js svg]
+(defn- clear-echoes! [^js el ^js _svg]
   (let [^js echo-els (gobj/get el k-echo-els)]
     (when echo-els
       (dotimes [i (.-length echo-els)]
@@ -366,7 +366,7 @@
 
 (defn- render-echoes!
   [^js el ^js svg display-text echo-count echo-delay echo-opacity echo-scale
-   animation direction duration-s font-size]
+   animation direction duration-s _font-size]
   (clear-echoes! el svg)
   (when (pos? echo-count)
     (let [path-id     (gobj/get el k-path-id)
@@ -406,8 +406,8 @@
 
 ;; ── Render ───────────────────────────────────────────────────────────────
 (defn- render! [^js el]
-  (let [{:keys [text path-d view-box crawl? animation direction speed duration-s
-                repeat effects font-size start-size end-size preset
+  (let [{:keys [text path-d view-box crawl? animation direction duration-s
+                repeat effects font-size start-size end-size
                 echo-count echo-delay echo-opacity echo-scale]}
         (model/derive-state (read-inputs el))
 

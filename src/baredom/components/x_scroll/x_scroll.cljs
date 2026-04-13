@@ -265,7 +265,7 @@
 
 (defn- loop-rest-transform
   "Compute the resting transform for the track in loop mode."
-  [m cnt size gap snap-off horiz?]
+  [_m cnt size gap snap-off horiz?]
   (let [half  (quot cnt 2)
         shift (- (* half (+ size gap)) snap-off)]
     (if horiz?
@@ -591,8 +591,6 @@
             dt        (- (.now js/Date) (gobj/get ds dk-last-time))
             velocity  (if (pos? dt) (/ (js/Math.abs delta) dt) 0)
             m         (or (gobj/get el k-model) (read-model el))
-            {:keys [viewport]} (ensure-refs! el)
-            ^js viewport viewport
             size      (slide-size el m)
             cnt       (or (gobj/get el k-child-count) (child-count el))
             active    (:active-index m)

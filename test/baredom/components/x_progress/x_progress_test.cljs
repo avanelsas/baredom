@@ -1,5 +1,5 @@
 (ns baredom.components.x-progress.x-progress-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-progress.x-progress :as x-progress]
             [baredom.components.x-progress.model :as model]))
 

@@ -21,10 +21,6 @@
   [^js tag]
   (.createElement js/document tag))
 
-(defn- get-ref
-  [^js el k]
-  (gobj/get (gobj/get el k-refs) (name k)))
-
 (defn- read-model
   "Read all observed attrs from the element and normalize."
   [^js el]
@@ -301,7 +297,7 @@
             ^js input   (gobj/get refs "input")
             ^js overlay (gobj/get refs "overlay")
             ^js empty-el (gobj/get refs "empty")
-            query       (or (gobj/get el k-query) "")
+            _query      (or (gobj/get el k-query) "")
             label       (:label m)
             placeholder (:placeholder m)
             empty-text  (:empty-text m)]

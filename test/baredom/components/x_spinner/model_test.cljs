@@ -1,5 +1,5 @@
 (ns baredom.components.x-spinner.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-spinner.model :as model]))
 
 ;; ── normalize-size ────────────────────────────────────────────────────────

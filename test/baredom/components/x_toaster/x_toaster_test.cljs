@@ -72,33 +72,33 @@
 
 ;; ── toast() API ──────────────────────────────────────────────────────────────
 (deftest toast-method-creates-element-test
-  (let [^js el (append! (make-toaster))]
-    (let [^js t (.toast el #js {:type "success" :message "Hello"})]
-      (is (some? t))
-      (is (= "X-TOAST" (.-tagName t)))
-      (is (= "success" (.getAttribute t "type")))
-      (is (= "Hello"   (.getAttribute t "message"))))))
+  (let [^js el (append! (make-toaster))
+        ^js t (.toast el #js {:type "success" :message "Hello"})]
+    (is (some? t))
+    (is (= "X-TOAST" (.-tagName t)))
+    (is (= "success" (.getAttribute t "type")))
+    (is (= "Hello"   (.getAttribute t "message")))))
 
 (deftest toast-method-sets-heading-test
-  (let [^js el (append! (make-toaster))]
-    (let [^js t (.toast el #js {:heading "Title" :message "Body"})]
-      (is (= "Title" (.getAttribute t "heading")))
-      (is (= "Body"  (.getAttribute t "message"))))))
+  (let [^js el (append! (make-toaster))
+        ^js t (.toast el #js {:heading "Title" :message "Body"})]
+    (is (= "Title" (.getAttribute t "heading")))
+    (is (= "Body"  (.getAttribute t "message")))))
 
 (deftest toast-method-sets-timeout-test
-  (let [^js el (append! (make-toaster))]
-    (let [^js t (.toast el #js {:timeoutMs 3000})]
-      (is (= "3000" (.getAttribute t "timeout-ms"))))))
+  (let [^js el (append! (make-toaster))
+        ^js t (.toast el #js {:timeoutMs 3000})]
+    (is (= "3000" (.getAttribute t "timeout-ms")))))
 
 (deftest toast-method-sets-show-progress-test
-  (let [^js el (append! (make-toaster))]
-    (let [^js t (.toast el #js {:timeoutMs 3000 :showProgress true})]
-      (is (.hasAttribute t "show-progress")))))
+  (let [^js el (append! (make-toaster))
+        ^js t (.toast el #js {:timeoutMs 3000 :showProgress true})]
+    (is (.hasAttribute t "show-progress"))))
 
 (deftest toast-method-sets-dismissible-false-test
-  (let [^js el (append! (make-toaster))]
-    (let [^js t (.toast el #js {:dismissible false})]
-      (is (= "false" (.getAttribute t "dismissible"))))))
+  (let [^js el (append! (make-toaster))
+        ^js t (.toast el #js {:dismissible false})]
+    (is (= "false" (.getAttribute t "dismissible")))))
 
 (deftest toast-method-appends-to-toaster-test
   (let [^js el (append! (make-toaster))]
@@ -108,9 +108,9 @@
       (is (= 2 (.-length toasts))))))
 
 (deftest toast-method-returns-element-test
-  (let [^js el (append! (make-toaster))]
-    (let [result (.toast el #js {})]
-      (is (instance? js/HTMLElement result)))))
+  (let [^js el (append! (make-toaster))
+        result (.toast el #js {})]
+    (is (instance? js/HTMLElement result))))
 
 ;; ── max-toasts eviction ──────────────────────────────────────────────────────
 (deftest max-toasts-eviction-test
@@ -135,24 +135,24 @@
 (deftest dismiss-coordination-test
   (async done
     (let [^js el    (append! (make-toaster))
-          ^js toast (.toast el #js {:message "Test" :type "info"})]
+          ^js toast (.toast el #js {:message "Test" :type "info"})
+          received  (atom nil)]
       ;; Listen for x-toaster-dismiss
-      (let [received (atom nil)]
-        (.addEventListener el model/event-dismiss
-                           (fn [^js e]
-                             (reset! received (.-detail e))))
-        ;; Programmatically dismiss the toast via toaster-remove so
-        ;; the toaster doesn't intercept it (it's already a toaster-remove reason)
-        ;; Instead, call dismiss with a non-toaster reason to trigger full flow
-        (.dismiss toast "test-reason")
-        (js/setTimeout
-         (fn []
-           (let [d @received]
-             (is (some? d))
-             (is (= "test-reason" (gobj/get d "reason")))
-             (is (= "info"        (gobj/get d "type")))
-             (done))
-         50))))))
+      (.addEventListener el model/event-dismiss
+                         (fn [^js e]
+                           (reset! received (.-detail e))))
+      ;; Programmatically dismiss the toast via toaster-remove so
+      ;; the toaster doesn't intercept it (it's already a toaster-remove reason)
+      ;; Instead, call dismiss with a non-toaster reason to trigger full flow
+      (.dismiss toast "test-reason")
+      (js/setTimeout
+       (fn []
+         (let [d @received]
+           (is (some? d))
+           (is (= "test-reason" (gobj/get d "reason")))
+           (is (= "info"        (gobj/get d "type")))
+           (done)))
+       50))))
 
 (deftest dismiss-preventDefault-keeps-toast-test
   (async done

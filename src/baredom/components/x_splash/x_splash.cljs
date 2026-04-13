@@ -8,7 +8,6 @@
 (def ^:private k-model      "__xSplashModel")
 (def ^:private k-fade-timer "__xSplashFadeTimer")
 (def ^:private k-fading-out "__xSplashFadingOut")
-(def ^:private k-handlers   "__xSplashHandlers")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def style-text

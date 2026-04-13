@@ -130,8 +130,9 @@
   nil)
 
 ;; ── Removal logic ─────────────────────────────────────────────────────────
-(defn- dispatch-remove! [^js el m]
+(defn- dispatch-remove!
   "Dispatches x-chip-remove. Returns true if NOT prevented (proceed), false if cancelled."
+  [^js el m]
   (let [detail (model/remove-detail m)
         ev     (js/CustomEvent. model/event-remove
                                 #js {:detail    detail
@@ -141,8 +142,9 @@
     (.dispatchEvent el ev)
     (not (.-defaultPrevented ev))))
 
-(defn- do-exit! [^js el]
+(defn- do-exit!
   "Starts exit animation. Removes element after animationend or 400ms fallback."
+  [^js el]
   (let [timeout-id (js/setTimeout
                     (fn [] (.remove el))
                     400)
@@ -153,8 +155,9 @@
     (.addEventListener el "animationend" on-end)
     (.setAttribute el "data-exiting" "")))
 
-(defn- try-remove! [^js el]
+(defn- try-remove!
   "Checks eligibility, fires event, starts exit if not cancelled."
+  [^js el]
   (let [m (model/normalize
            {:label-raw       (.getAttribute el model/attr-label)
             :value-raw       (.getAttribute el model/attr-value)

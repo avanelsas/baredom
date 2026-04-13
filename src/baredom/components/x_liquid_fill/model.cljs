@@ -238,7 +238,7 @@
   "Generate SVG path d-string for horizontal fill (fills left to right).
    fill-x = X coordinate of the liquid surface at rest.
    width, height = SVG viewport dimensions."
-  [fill-x width height t amplitude phase]
+  [fill-x _width height t amplitude phase]
   (let [sb #js []
         n  wave-points]
     ;; Start at top edge

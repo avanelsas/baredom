@@ -1,2 +1,6 @@
 {:linters {:unresolved-symbol {:exclude [(js*)]}
-           :unresolved-namespace {:exclude [goog.object]}}}
+           :unresolved-namespace {:exclude [goog.object]}}
+ :config-in-ns {baredom.dev.hot-reload
+                {:linters {:private-call {:level :off}}}
+                baredom.components.x-select.x-select-test
+                {:linters {:private-call {:level :off}}}}}

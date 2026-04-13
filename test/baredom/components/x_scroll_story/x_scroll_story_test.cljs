@@ -1,6 +1,6 @@
 (ns baredom.components.x-scroll-story.x-scroll-story-test
   (:require
-   [cljs.test :refer [deftest testing is use-fixtures async]]
+   [cljs.test :refer [deftest is use-fixtures async]]
    [baredom.components.x-scroll-story.x-scroll-story :as x]
    [baredom.components.x-scroll-story.model :as model]))
 

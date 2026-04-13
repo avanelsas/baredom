@@ -1,5 +1,5 @@
 (ns baredom.components.x-badge.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-badge.model :as model]
             [baredom.utils.model :as mu]))
 

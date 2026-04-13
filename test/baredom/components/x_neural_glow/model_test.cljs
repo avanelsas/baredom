@@ -1,5 +1,5 @@
 (ns baredom.components.x-neural-glow.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-neural-glow.model :as model]))
 
 ;; ── parse-orb-count ─────────────────────────────────────────────────────────
