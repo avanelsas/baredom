@@ -28,6 +28,10 @@
   "keywords" : [ "web-components", "custom-elements", "baredom", "ui-library", "clojurescript", "esm", "framework-agnostic" ],
   "author" : "Alexander van Elsas",
   "exports" : {
+    "./x-icon" : {
+      "import" : "./dist/x-icon.js",
+      "default" : "./dist/x-icon.js"
+    },
     "./x-image" : {
       "import" : "./dist/x-image.js",
       "default" : "./dist/x-image.js"
