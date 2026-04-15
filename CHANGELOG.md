@@ -2,6 +2,17 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.2.0] - 2026-04-15
+
+### Added
+
+- **x-image** — Stateless image component that wraps a native `<img>` in shadow DOM with a skeleton shimmer placeholder, fade-in on load, optional `ratio` attribute to reserve space and prevent layout shift, a default or slotted error fallback, and enforced `alt` hygiene (decorative mode available). Attributes: `src`, `alt`, `decorative`, `ratio`, `fit`, `position`, `loading`. Events: `x-image-load`, `x-image-error`. Read-only properties: `naturalWidth`, `naturalHeight`, `state`.
+- **x-icon** — Stateless slot-based wrapper for SVG icons. Handles sizing (`sm`/`md`/`lg`/`xl` tokens or a numeric pixel value), theme-aware colour via `currentColor` inheritance or the `color` attribute (`inherit`/`primary`/`secondary`/`tertiary`/`success`/`warning`/`danger`/`muted`), and accessibility (decorative by default; `label` attribute flips on `role="img"` + `aria-label`). Consumers provide the `<svg>` in the default slot using `fill="currentColor"` / `stroke="currentColor"` for colour propagation.
+
+### Changed
+
+- **x-navbar** default look is now a site header instead of a rounded card. `--x-navbar-radius` defaults to `0` (was `1rem`) and the full four-sided border has been replaced with a single 1px bottom separator. Variant overrides (`subtle`, `inverted`, `transparent`) updated to target `border-bottom-color` accordingly. The rounded card look remains reachable via `style="--x-navbar-radius: 1rem"` — no public API changes. Visual regression for consumers who relied on the previous default; the escape hatch is one line.
+
 ## [2.1.1] - 2026-04-13
 
 ### Fixed
