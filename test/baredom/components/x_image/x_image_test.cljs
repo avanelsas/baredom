@@ -1,5 +1,5 @@
 (ns baredom.components.x-image.x-image-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-image.x-image :as x]
             [baredom.components.x-image.model   :as model]))
 
