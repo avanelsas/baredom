@@ -333,3 +333,24 @@
     ;; After reconnection, focus-visible state should be clean
     ;; (disconnectedCallback resets the internal flag)
     (is (some? (shadow-part el "[part='base']")))))
+
+;; ── Default look: bottom border only, no radius ──────────────────────────────
+(deftest default-has-bottom-border-only-test
+  (let [^js el   (append! (make-el))
+        ^js base (shadow-part el "[part='base']")
+        ^js cs   (js/getComputedStyle base)]
+    (is (= "none" (.getPropertyValue cs "border-top-style")))
+    (is (= "none" (.getPropertyValue cs "border-left-style")))
+    (is (= "none" (.getPropertyValue cs "border-right-style")))
+    (is (not= "none" (.getPropertyValue cs "border-bottom-style")))
+    (is (= "0px" (.getPropertyValue cs "border-top-left-radius")))
+    (is (= "0px" (.getPropertyValue cs "border-top-right-radius")))
+    (is (= "0px" (.getPropertyValue cs "border-bottom-left-radius")))
+    (is (= "0px" (.getPropertyValue cs "border-bottom-right-radius")))))
+
+(deftest radius-escape-hatch-test
+  (let [^js el (append! (make-el))]
+    (.setProperty (.-style el) "--x-navbar-radius" "1rem")
+    (let [^js base (shadow-part el "[part='base']")
+          ^js cs   (js/getComputedStyle base)]
+      (is (not= "0px" (.getPropertyValue cs "border-top-left-radius"))))))
