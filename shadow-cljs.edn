@@ -456,6 +456,11 @@
      {init baredom.exports.x-particle-button/init}
      :depends-on #{:base}}
 
+    :x-image
+    {:exports
+     {init baredom.exports.x-image/init}
+     :depends-on #{:base}}
+
     :x-theme
     {:exports
      {init baredom.exports.x-theme/init

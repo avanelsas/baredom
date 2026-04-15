@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-image demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        max-width: 900px;
+        margin: 0 0 24px 0;
+      }
+
+      .grid figure {
+        margin: 0;
+      }
+
+      .grid figcaption {
+        font-size: 12px;
+        color: var(--page-fg, #444);
+        margin-top: 6px;
+        text-align: center;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .target {
+        max-width: 360px;
+      }
+
+      .log-card { margin-top: 24px; max-width: 640px; }
+
+      .log {
+        margin: 0;
+        min-height: 72px;
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-image demo</x-typography>
+
+    <x-typography variant="overline">Aspect ratios</x-typography>
+    <div class="grid">
+      <figure>
+        <x-image
+          src="https://picsum.photos/seed/square/600/600"
+          alt="1:1 sample"
+          ratio="1:1"></x-image>
+        <figcaption>ratio="1:1"</figcaption>
+      </figure>
+      <figure>
+        <x-image
+          src="https://picsum.photos/seed/wide/800/450"
+          alt="16:9 sample"
+          ratio="16:9"></x-image>
+        <figcaption>ratio="16:9"</figcaption>
+      </figure>
+      <figure>
+        <x-image
+          src="https://picsum.photos/seed/classic/800/600"
+          alt="4:3 sample"
+          ratio="4:3"></x-image>
+        <figcaption>ratio="4:3"</figcaption>
+      </figure>
+      <figure>
+        <x-image
+          src="https://picsum.photos/seed/auto/600/400"
+          alt="auto sample"></x-image>
+        <figcaption>ratio omitted (auto)</figcaption>
+      </figure>
+    </div>
+
+    <x-typography variant="overline">Fit variants (square frame, landscape image)</x-typography>
+    <div class="grid">
+      <figure>
+        <x-image ratio="1:1" fit="cover"
+                 src="https://picsum.photos/seed/fit/800/450"
+                 alt="cover"></x-image>
+        <figcaption>fit="cover"</figcaption>
+      </figure>
+      <figure>
+        <x-image ratio="1:1" fit="contain"
+                 src="https://picsum.photos/seed/fit/800/450"
+                 alt="contain"></x-image>
+        <figcaption>fit="contain"</figcaption>
+      </figure>
+      <figure>
+        <x-image ratio="1:1" fit="fill"
+                 src="https://picsum.photos/seed/fit/800/450"
+                 alt="fill"></x-image>
+        <figcaption>fit="fill"</figcaption>
+      </figure>
+      <figure>
+        <x-image ratio="1:1" fit="none"
+                 src="https://picsum.photos/seed/fit/800/450"
+                 alt="none"></x-image>
+        <figcaption>fit="none"</figcaption>
+      </figure>
+      <figure>
+        <x-image ratio="1:1" fit="scale-down"
+                 src="https://picsum.photos/seed/fit/800/450"
+                 alt="scale-down"></x-image>
+        <figcaption>fit="scale-down"</figcaption>
+      </figure>
+    </div>
+
+    <x-typography variant="overline">Decorative</x-typography>
+    <div class="grid">
+      <figure>
+        <x-image ratio="16:9" decorative
+                 src="https://picsum.photos/seed/deco/800/450"></x-image>
+        <figcaption>decorative (aria-hidden)</figcaption>
+      </figure>
+    </div>
+
+    <x-typography variant="overline">Error state (default)</x-typography>
+    <div class="grid">
+      <figure>
+        <x-image ratio="4:3"
+                 src="https://definitely-not-a-host.invalid/missing.png"
+                 alt="Preview of the quarterly report"></x-image>
+        <figcaption>404 / DNS failure → default fallback</figcaption>
+      </figure>
+      <figure>
+        <x-image ratio="4:3"
+                 src="https://definitely-not-a-host.invalid/missing.png"
+                 alt="Preview">
+          <div slot="error" style="padding:8px;text-align:center;">
+            <strong>Image unavailable</strong><br />
+            <a href="#">Report a problem</a>
+          </div>
+        </x-image>
+        <figcaption>Custom slot="error" fallback</figcaption>
+      </figure>
+    </div>
+
+    <x-typography variant="overline">Live editor</x-typography>
+    <div class="row">
+      <label>src
+        <x-form-field id="ctrl-src" type="text"
+          value="https://picsum.photos/seed/live/800/600"></x-form-field>
+      </label>
+      <label>alt
+        <x-form-field id="ctrl-alt" type="text" value="Live preview"></x-form-field>
+      </label>
+      <label>ratio
+        <x-select id="ctrl-ratio" value="16:9">
+          <option value="auto">auto</option>
+          <option value="1:1">1:1</option>
+          <option value="4:3">4:3</option>
+          <option value="16:9">16:9</option>
+          <option value="21:9">21:9</option>
+        </x-select>
+      </label>
+      <label>fit
+        <x-select id="ctrl-fit" value="cover">
+          <option value="cover">cover</option>
+          <option value="contain">contain</option>
+          <option value="fill">fill</option>
+          <option value="none">none</option>
+          <option value="scale-down">scale-down</option>
+        </x-select>
+      </label>
+      <label>loading
+        <x-select id="ctrl-loading" value="lazy">
+          <option value="lazy">lazy</option>
+          <option value="eager">eager</option>
+        </x-select>
+      </label>
+      <label>decorative
+        <x-checkbox id="ctrl-decorative"></x-checkbox>
+      </label>
+      <x-button id="apply-btn" variant="primary">Apply</x-button>
+      <x-button id="reload-btn">Reload</x-button>
+    </div>
+    <div class="target">
+      <x-image id="live-image"
+               ratio="16:9"
+               alt="Live preview"
+               src="https://picsum.photos/seed/live/800/600"></x-image>
+      <p class="a11y-note">
+        <strong>Accessibility state</strong> <span id="a11y-readout"></span><br />
+        <em>decorative</em> is an a11y-only toggle — it strips <code>alt</code>,
+        removes <code>role="img"</code>, and sets <code>aria-hidden="true"</code>.
+        It has no visual effect.
+      </p>
+    </div>
+
+    <style>
+      .a11y-note {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--page-fg, #444);
+      }
+      .a11y-note code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        padding: 0 3px;
+        border-radius: 3px;
+        background: var(--surface-bg, rgba(0, 0, 0, 0.06));
+      }
+      #a11y-readout {
+        display: inline-block;
+        margin-left: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+    </style>
+
+    <x-card class="log-card" variant="filled" padding="md">
+      <pre class="log" id="log">Event log will appear here.</pre>
+    </x-card>
+
+    <script>
+      const log = document.getElementById("log");
+
+      function logEvent(label, e) {
+        const d = e.detail || {};
+        const nw = d.naturalWidth != null ? `  ${d.naturalWidth}x${d.naturalHeight}` : "";
+        log.textContent = `${label}  src=${d.src}${nw}\n` + log.textContent;
+      }
+
+      function watch(el) {
+        el.addEventListener("x-image-load",  (e) => logEvent("x-image-load  ", e));
+        el.addEventListener("x-image-error", (e) => logEvent("x-image-error ", e));
+      }
+
+      document.querySelectorAll("x-image").forEach(watch);
+
+      document.querySelectorAll("x-select").forEach(sel => {
+        sel.addEventListener("select-change", (e) => {
+          sel.setAttribute("value", e.detail.value);
+        });
+      });
+
+      const live = document.getElementById("live-image");
+      const a11yReadout = document.getElementById("a11y-readout");
+
+      function refreshA11y() {
+        const altAttr    = live.getAttribute("alt");
+        const ariaHidden = live.getAttribute("aria-hidden");
+        const role       = live.getAttribute("role");
+        a11yReadout.textContent =
+          `alt=${JSON.stringify(altAttr ?? "")}  ` +
+          `role=${role ?? "(none)"}  ` +
+          `aria-hidden=${ariaHidden ?? "(none)"}`;
+      }
+
+      function applyLive() {
+        const src  = document.getElementById("ctrl-src").value;
+        const alt  = document.getElementById("ctrl-alt").value;
+        const rat  = document.getElementById("ctrl-ratio").value;
+        const fit  = document.getElementById("ctrl-fit").value;
+        const ldg  = document.getElementById("ctrl-loading").value;
+        const dec  = document.getElementById("ctrl-decorative").checked;
+
+        live.setAttribute("alt", alt);
+        live.setAttribute("ratio", rat);
+        live.setAttribute("fit", fit);
+        live.setAttribute("loading", ldg);
+        if (dec) live.setAttribute("decorative", "");
+        else     live.removeAttribute("decorative");
+        live.setAttribute("src", src);
+        refreshA11y();
+      }
+
+      refreshA11y();
+
+      document.getElementById("apply-btn").addEventListener("press", applyLive);
+      document.getElementById("reload-btn").addEventListener("press", () => {
+        const base = document.getElementById("ctrl-src").value.split("#")[0];
+        document.getElementById("ctrl-src").value = base + "#" + Date.now();
+        applyLive();
+      });
+    </script>
+  </body>
+</html>

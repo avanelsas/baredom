@@ -82,6 +82,7 @@
    [baredom.exports.x-liquid-fill     :as x-liquid-fill]
    [baredom.exports.x-morph-stack     :as x-morph-stack]
    [baredom.exports.x-particle-button :as x-particle-button]
+   [baredom.exports.x-image           :as x-image]
    [baredom.exports.x-theme           :as x-theme]))
 
 (defn register!
@@ -168,6 +169,7 @@
   (x-liquid-fill/register!)
   (x-morph-stack/register!)
   (x-particle-button/register!)
+  (x-image/register!)
   (x-theme/register!))
 
 (defn ^:export init
