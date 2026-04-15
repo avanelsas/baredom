@@ -83,6 +83,7 @@
    [baredom.exports.x-morph-stack    :as x-morph-stack]
    [baredom.exports.x-particle-button :as x-particle-button]
    [baredom.exports.x-image          :as x-image]
+   [baredom.exports.x-icon           :as x-icon]
    [baredom.exports.x-theme          :as x-theme]
    [baredom.dev.hot-reload             :as hot-reload]))
 
@@ -171,6 +172,7 @@
   (x-morph-stack/register!)
   (x-particle-button/register!)
   (x-image/register!)
+  (x-icon/register!)
   (x-theme/register!)
   (hot-reload/refresh-styles!))
 

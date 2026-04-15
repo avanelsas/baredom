@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-icon demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      .grid {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 8px 0 24px 0;
+      }
+
+      .cell {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--page-fg, #444);
+      }
+
+      .hover-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.1));
+        color: var(--page-fg, #444);
+        transition: color .18s ease, background .18s ease;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .hover-box:hover { color: hotpink; background: rgba(255, 105, 180, .08); }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .target-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.1));
+      }
+
+      .a11y-note {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--page-fg, #444);
+      }
+
+      #a11y-readout {
+        display: inline-block;
+        margin-left: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-icon demo</x-typography>
+
+    <!-- One reusable inline SVG template for the demo grids. -->
+    <template id="check-svg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 13l4 4L19 7" />
+      </svg>
+    </template>
+
+    <template id="heart-svg">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/>
+      </svg>
+    </template>
+
+    <x-typography variant="overline">Size tokens</x-typography>
+    <div class="grid">
+      <div class="cell">
+        <x-icon size="sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>sm · 16</span>
+      </div>
+      <div class="cell">
+        <x-icon size="md"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>md · 20</span>
+      </div>
+      <div class="cell">
+        <x-icon size="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>lg · 24</span>
+      </div>
+      <div class="cell">
+        <x-icon size="xl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>xl · 32</span>
+      </div>
+      <div class="cell">
+        <x-icon size="48"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>size="48"</span>
+      </div>
+    </div>
+
+    <x-typography variant="overline">Theme colours</x-typography>
+    <div class="grid">
+      <div class="cell">
+        <x-icon color="primary" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>primary</span>
+      </div>
+      <div class="cell">
+        <x-icon color="secondary" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>secondary</span>
+      </div>
+      <div class="cell">
+        <x-icon color="tertiary" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>tertiary</span>
+      </div>
+      <div class="cell">
+        <x-icon color="success" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>success</span>
+      </div>
+      <div class="cell">
+        <x-icon color="warning" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>warning</span>
+      </div>
+      <div class="cell">
+        <x-icon color="danger" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>danger</span>
+      </div>
+      <div class="cell">
+        <x-icon color="muted" size="lg"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        <span>muted</span>
+      </div>
+    </div>
+
+    <x-typography variant="overline">currentColor propagation (hover me)</x-typography>
+    <div class="grid">
+      <div class="hover-box">
+        <x-icon size="md"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9.5C.7 7.6 3.2 3.5 7 3.5c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3.8 0 6.3 4.1 4.5 8C19 16.65 12 21 12 21z"/></svg></x-icon>
+        Hover to turn hotpink
+      </div>
+    </div>
+
+    <x-typography variant="overline">Labelled vs decorative</x-typography>
+    <div class="grid">
+      <div class="cell">
+        <x-icon label="Save document" size="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>label="Save document"</span>
+      </div>
+      <div class="cell">
+        <x-icon size="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></x-icon>
+        <span>decorative</span>
+      </div>
+    </div>
+
+    <x-typography variant="overline">Live editor</x-typography>
+    <div class="row">
+      <label>size
+        <x-select id="ctrl-size" value="md">
+          <option value="sm">sm</option>
+          <option value="md">md</option>
+          <option value="lg">lg</option>
+          <option value="xl">xl</option>
+          <option value="48">48</option>
+          <option value="64">64</option>
+        </x-select>
+      </label>
+      <label>color
+        <x-select id="ctrl-color" value="inherit">
+          <option value="inherit">inherit</option>
+          <option value="primary">primary</option>
+          <option value="secondary">secondary</option>
+          <option value="tertiary">tertiary</option>
+          <option value="success">success</option>
+          <option value="warning">warning</option>
+          <option value="danger">danger</option>
+          <option value="muted">muted</option>
+        </x-select>
+      </label>
+      <label>label
+        <x-form-field id="ctrl-label" type="text" placeholder="empty = decorative"></x-form-field>
+      </label>
+      <x-button id="apply-btn" variant="primary">Apply</x-button>
+    </div>
+
+    <div class="target-row">
+      <x-icon id="live-icon" size="md">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+      </x-icon>
+      <span>Live icon (above)</span>
+    </div>
+
+    <p class="a11y-note">
+      <strong>Accessibility state</strong> <span id="a11y-readout"></span>
+    </p>
+
+    <script>
+      document.querySelectorAll("x-select").forEach(sel => {
+        sel.addEventListener("select-change", (e) => {
+          sel.setAttribute("value", e.detail.value);
+        });
+      });
+
+      const live = document.getElementById("live-icon");
+      const readout = document.getElementById("a11y-readout");
+
+      function refreshA11y() {
+        readout.textContent =
+          `role=${live.getAttribute("role") ?? "(none)"}  ` +
+          `aria-label=${JSON.stringify(live.getAttribute("aria-label") ?? "")}  ` +
+          `aria-hidden=${live.getAttribute("aria-hidden") ?? "(none)"}`;
+      }
+
+      function applyLive() {
+        const s = document.getElementById("ctrl-size").value;
+        const c = document.getElementById("ctrl-color").value;
+        const l = document.getElementById("ctrl-label").value;
+
+        live.setAttribute("size", s);
+        live.setAttribute("color", c);
+        if (l) live.setAttribute("label", l);
+        else   live.removeAttribute("label");
+
+        refreshA11y();
+      }
+
+      document.getElementById("apply-btn").addEventListener("press", applyLive);
+      refreshA11y();
+    </script>
+  </body>
+</html>
