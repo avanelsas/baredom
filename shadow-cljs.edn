@@ -336,6 +336,11 @@
      {init baredom.exports.x-toaster/init}
      :depends-on #{:base}}
 
+    :x-tooltip
+    {:exports
+     {init baredom.exports.x-tooltip/init}
+     :depends-on #{:base}}
+
     :x-organic-shape
     {:exports
      {init baredom.exports.x-organic-shape/init}
