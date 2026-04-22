@@ -27,6 +27,12 @@ Runs `npm run clean && npx shadow-cljs release lib`, producing per-component ESM
 npm run pack:local
 ```
 
+**Lint (clj-kondo):**
+```
+clj-kondo --lint src test
+```
+Code must have **zero lint warnings and errors** before pushing to GitHub. Always run the linter and fix any issues before `git push`.
+
 ## Releasing a New Version
 
 When bumping the version, update **all four** locations — they must match:
