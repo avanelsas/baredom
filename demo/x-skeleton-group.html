@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-skeleton-group demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    h3 { font-size: 0.95rem; margin-bottom: 8px; margin-top: 20px; color: var(--muted); }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    .demo-box {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-bg);
+      margin-bottom: 16px;
+      max-width: 400px;
+    }
+
+    .demo-box.wide { max-width: 600px; }
+
+    .side-by-side {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .side-by-side .demo-box { flex: 1; min-width: 280px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+    }
+
+    .controls select {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-skeleton-group</h1>
+  <p>Synchronized animation and layout presets for skeleton loading placeholders.</p>
+
+  <!-- ── Presets ──────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Presets</h2>
+
+    <h3>Card</h3>
+    <div class="demo-box">
+      <x-skeleton-group preset="card"></x-skeleton-group>
+    </div>
+
+    <h3>Profile</h3>
+    <div class="demo-box">
+      <x-skeleton-group preset="profile"></x-skeleton-group>
+    </div>
+
+    <h3>Paragraph</h3>
+    <div class="demo-box">
+      <x-skeleton-group preset="paragraph"></x-skeleton-group>
+    </div>
+
+    <h3>List Item (x3)</h3>
+    <div class="demo-box">
+      <x-skeleton-group preset="list-item" count="3" style="--x-skeleton-group-gap:16px;"></x-skeleton-group>
+    </div>
+
+    <h3>Table Row (x4)</h3>
+    <div class="demo-box wide">
+      <x-skeleton-group preset="table-row" count="4" style="--x-skeleton-group-gap:8px;"></x-skeleton-group>
+    </div>
+  </section>
+
+  <!-- ── No animation ──────────────────────────────────────────────── -->
+  <section>
+    <h2>No animation (static)</h2>
+    <div class="demo-box">
+      <x-skeleton-group preset="profile" animation="none"></x-skeleton-group>
+    </div>
+  </section>
+
+  <!-- ── Wave animation ──────────────────────────────────────────────── -->
+  <section>
+    <h2>Wave animation</h2>
+    <div class="demo-box">
+      <x-skeleton-group preset="card" animation="wave"></x-skeleton-group>
+    </div>
+  </section>
+
+  <!-- ── Sync comparison ─────────────────────────────────────────────── -->
+  <section>
+    <h2>Sync comparison</h2>
+    <p>Left: independent (no group). Right: synchronized (with group).</p>
+    <div class="side-by-side">
+      <div class="demo-box">
+        <h3>Without group</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <x-skeleton variant="text" width="80%"></x-skeleton>
+          <x-skeleton variant="text" width="60%"></x-skeleton>
+          <x-skeleton variant="text" width="40%"></x-skeleton>
+        </div>
+      </div>
+      <div class="demo-box">
+        <h3>With group</h3>
+        <x-skeleton-group>
+          <x-skeleton variant="text" width="80%"></x-skeleton>
+          <x-skeleton variant="text" width="60%"></x-skeleton>
+          <x-skeleton variant="text" width="40%"></x-skeleton>
+        </x-skeleton-group>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Custom children ─────────────────────────────────────────────── -->
+  <section>
+    <h2>Custom children (synchronized)</h2>
+    <div class="demo-box">
+      <x-skeleton-group animation="wave">
+        <x-skeleton variant="circle" width="48px" height="48px"></x-skeleton>
+        <x-skeleton variant="rect" height="120px"></x-skeleton>
+        <x-skeleton variant="text" width="70%"></x-skeleton>
+        <x-skeleton variant="text" width="50%"></x-skeleton>
+      </x-skeleton-group>
+    </div>
+  </section>
+
+  <!-- ── Interactive controls ────────────────────────────────────────── -->
+  <section>
+    <h2>Interactive controls</h2>
+    <div class="controls">
+      <label>
+        Preset
+        <select id="ctrl-preset">
+          <option value="">(none — custom slot)</option>
+          <option value="card" selected>card</option>
+          <option value="list-item">list-item</option>
+          <option value="paragraph">paragraph</option>
+          <option value="table-row">table-row</option>
+          <option value="profile">profile</option>
+        </select>
+      </label>
+      <label>
+        Animation
+        <select id="ctrl-animation">
+          <option value="pulse" selected>pulse</option>
+          <option value="wave">wave</option>
+          <option value="none">none</option>
+        </select>
+      </label>
+      <label>
+        Count
+        <select id="ctrl-count">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="5">5</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="demo-box wide">
+      <x-skeleton-group id="demo-group" preset="card"></x-skeleton-group>
+    </div>
+  </section>
+
+  <script>
+    const group = document.getElementById('demo-group');
+
+    document.getElementById('ctrl-preset').addEventListener('change', e => {
+      if (e.target.value) group.setAttribute('preset', e.target.value);
+      else group.removeAttribute('preset');
+    });
+    document.getElementById('ctrl-animation').addEventListener('change', e => {
+      group.setAttribute('animation', e.target.value);
+    });
+    document.getElementById('ctrl-count').addEventListener('change', e => {
+      group.setAttribute('count', e.target.value);
+    });
+  </script>
+</body>
+</html>

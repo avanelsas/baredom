@@ -116,6 +116,10 @@
       "import" : "./dist/x-skeleton.js",
       "default" : "./dist/x-skeleton.js"
     },
+    "./x-skeleton-group" : {
+      "import" : "./dist/x-skeleton-group.js",
+      "default" : "./dist/x-skeleton-group.js"
+    },
     "./x-badge" : {
       "import" : "./dist/x-badge.js",
       "default" : "./dist/x-badge.js"

@@ -46,6 +46,7 @@
    [baredom.exports.x-radio               :as x-radio]
    [baredom.exports.x-select              :as x-select]
    [baredom.exports.x-skeleton            :as x-skeleton]
+   [baredom.exports.x-skeleton-group     :as x-skeleton-group]
    [baredom.exports.x-slider              :as x-slider]
    [baredom.exports.x-spacer              :as x-spacer]
    [baredom.exports.x-spinner             :as x-spinner]
@@ -137,6 +138,7 @@
   (x-radio/register!)
   (x-select/register!)
   (x-skeleton/register!)
+  (x-skeleton-group/register!)
   (x-slider/register!)
   (x-spacer/register!)
   (x-spinner/register!)
