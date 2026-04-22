@@ -2,6 +2,18 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.3.0] - 2026-04-22
+
+### Added
+
+- **x-tooltip** — Lightweight non-interactive overlay showing supplementary text on hover/focus. Supports 4 placements (top, bottom, left, right), configurable show delay, rich content via named slot, and full keyboard/screen-reader accessibility (role=tooltip, aria-describedby, Escape to dismiss, instant show on focusin).
+- **x-combobox** — Single-select combobox with type-ahead filtering over slot-based `<option>` children. Case-insensitive substring matching with highlighted results, keyboard navigation (Arrow Up/Down, Enter, Escape, Home, End), clear button, WAI-ARIA combobox pattern (role=combobox, aria-activedescendant, role=listbox/option).
+- **x-skeleton-group** — Container that wraps `x-skeleton` children to synchronize animation timing and generate common skeleton layouts from a `preset` attribute (card, list-item, paragraph, table-row, profile). Uses inherited `--x-skeleton-delay` CSS custom property for phase alignment.
+
+### Changed
+
+- **x-skeleton** — Added `animation-delay: var(--x-skeleton-delay, 0s)` to pulse and wave CSS rules (non-breaking; enables synchronization when used inside `x-skeleton-group`).
+
 ## [2.2.0] - 2026-04-15
 
 ### Added
