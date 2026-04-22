@@ -182,9 +182,6 @@
 (defn- set-attr! [^js el attr val]
   (.setAttribute el attr val))
 
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------

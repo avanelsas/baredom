@@ -1,5 +1,5 @@
 (ns baredom.components.x-tooltip.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-tooltip.model :as model]))
 
 ;; ── normalize-placement ─────────────────────────────────────────────────────
@@ -22,11 +22,11 @@
   (is (= 400  (model/parse-delay "400")))
   (is (= 5000 (model/parse-delay "5000"))))
 
-(deftest parse-delay-clamps-test
-  (testing "negative clamped to 0"
-    (is (= 0 (model/parse-delay "-100"))))
-  (testing "over max clamped to 5000"
-    (is (= 5000 (model/parse-delay "9999")))))
+(deftest parse-delay-clamps-negative-test
+  (is (= 0 (model/parse-delay "-100"))))
+
+(deftest parse-delay-clamps-over-max-test
+  (is (= 5000 (model/parse-delay "9999"))))
 
 (deftest parse-delay-fallback-test
   (is (= 400 (model/parse-delay nil)))
