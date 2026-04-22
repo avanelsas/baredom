@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-tooltip demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .center-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      padding: 40px 0;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.85; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+    }
+
+    .controls input, .controls select {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    #event-log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      white-space: pre-wrap;
+      color: var(--page-fg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-tooltip</h1>
+  <p>Lightweight non-interactive overlay for supplementary text on hover/focus.</p>
+
+  <!-- ── Basic text tooltip ──────────────────────────────────────────── -->
+  <section>
+    <h2>Basic text tooltip</h2>
+    <div class="row">
+      <x-tooltip text="Save document">
+        <button>Save</button>
+      </x-tooltip>
+
+      <x-tooltip text="Delete this item permanently">
+        <button>Delete</button>
+      </x-tooltip>
+
+      <x-tooltip text="Copy to clipboard">
+        <button>Copy</button>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Placements ──────────────────────────────────────────────────── -->
+  <section>
+    <h2>Placements</h2>
+    <div class="center-row">
+      <x-tooltip text="Top (default)" placement="top">
+        <button>Top</button>
+      </x-tooltip>
+
+      <x-tooltip text="Bottom" placement="bottom">
+        <button>Bottom</button>
+      </x-tooltip>
+
+      <x-tooltip text="Left" placement="left">
+        <button>Left</button>
+      </x-tooltip>
+
+      <x-tooltip text="Right" placement="right">
+        <button>Right</button>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Rich content ────────────────────────────────────────────────── -->
+  <section>
+    <h2>Rich content (slot)</h2>
+    <div class="row">
+      <x-tooltip>
+        <button>Keyboard shortcut</button>
+        <div slot="content">
+          <strong>Save:</strong> Ctrl+S<br/>
+          <strong>Undo:</strong> Ctrl+Z
+        </div>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Delay variations ────────────────────────────────────────────── -->
+  <section>
+    <h2>Delay variations</h2>
+    <div class="row">
+      <x-tooltip text="No delay" delay="0">
+        <button>Instant (0ms)</button>
+      </x-tooltip>
+
+      <x-tooltip text="Default delay">
+        <button>Default (400ms)</button>
+      </x-tooltip>
+
+      <x-tooltip text="Slow tooltip" delay="1000">
+        <button>Slow (1000ms)</button>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Disabled ────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-tooltip text="You won't see this" disabled>
+        <button>Disabled tooltip</button>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Programmatic open ───────────────────────────────────────────── -->
+  <section>
+    <h2>Programmatic open</h2>
+    <div class="row">
+      <x-tooltip text="Pinned tooltip" open id="pinned-tip">
+        <button>Always visible</button>
+      </x-tooltip>
+      <button onclick="document.getElementById('pinned-tip').hide()">Hide</button>
+      <button onclick="document.getElementById('pinned-tip').show()">Show</button>
+    </div>
+  </section>
+
+  <!-- ── Interactive controls ────────────────────────────────────────── -->
+  <section>
+    <h2>Interactive controls</h2>
+    <div class="controls">
+      <label>
+        Text
+        <input type="text" id="ctrl-text" value="Custom tooltip" />
+      </label>
+      <label>
+        Placement
+        <select id="ctrl-placement">
+          <option value="top" selected>top</option>
+          <option value="bottom">bottom</option>
+          <option value="left">left</option>
+          <option value="right">right</option>
+        </select>
+      </label>
+      <label>
+        Delay (ms)
+        <input type="number" id="ctrl-delay" value="400" min="0" max="5000" step="100" />
+      </label>
+      <label>
+        Disabled
+        <input type="checkbox" id="ctrl-disabled" />
+      </label>
+    </div>
+
+    <div class="row" style="padding: 40px 0;">
+      <x-tooltip id="demo-tip" text="Custom tooltip">
+        <button>Hover me</button>
+      </x-tooltip>
+    </div>
+  </section>
+
+  <!-- ── Event log ───────────────────────────────────────────────────── -->
+  <section>
+    <h2>Event log</h2>
+    <pre id="event-log">(events appear here)</pre>
+  </section>
+
+  <script>
+    const tip = document.getElementById('demo-tip');
+
+    document.getElementById('ctrl-text').addEventListener('input', e => {
+      tip.setAttribute('text', e.target.value);
+    });
+    document.getElementById('ctrl-placement').addEventListener('change', e => {
+      tip.setAttribute('placement', e.target.value);
+    });
+    document.getElementById('ctrl-delay').addEventListener('input', e => {
+      tip.setAttribute('delay', e.target.value);
+    });
+    document.getElementById('ctrl-disabled').addEventListener('change', e => {
+      if (e.target.checked) tip.setAttribute('disabled', '');
+      else tip.removeAttribute('disabled');
+    });
+
+    const log = document.getElementById('event-log');
+    document.addEventListener('x-tooltip-show', e => {
+      const text = e.target.getAttribute('text') || '(slot content)';
+      log.textContent = `x-tooltip-show  text="${text}"\n` + log.textContent;
+    });
+    document.addEventListener('x-tooltip-hide', e => {
+      const text = e.target.getAttribute('text') || '(slot content)';
+      log.textContent = `x-tooltip-hide  text="${text}"\n` + log.textContent;
+    });
+  </script>
+</body>
+</html>
