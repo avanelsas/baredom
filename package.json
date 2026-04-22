@@ -152,6 +152,10 @@
       "import" : "./dist/x-timeline.js",
       "default" : "./dist/x-timeline.js"
     },
+    "./x-combobox" : {
+      "import" : "./dist/x-combobox.js",
+      "default" : "./dist/x-combobox.js"
+    },
     "./x-notification-center" : {
       "import" : "./dist/x-notification-center.js",
       "default" : "./dist/x-notification-center.js"

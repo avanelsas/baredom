@@ -21,6 +21,7 @@
    [baredom.exports.x-chip             :as x-chip]
    [baredom.exports.x-collapse         :as x-collapse]
    [baredom.exports.x-color-picker     :as x-color-picker]
+   [baredom.exports.x-combobox         :as x-combobox]
    [baredom.exports.x-command-palette  :as x-command-palette]
    [baredom.exports.x-context-menu     :as x-context-menu]
    [baredom.exports.x-copy             :as x-copy]
@@ -110,6 +111,7 @@
   (x-chip/register!)
   (x-collapse/register!)
   (x-color-picker/register!)
+  (x-combobox/register!)
   (x-command-palette/register!)
   (x-context-menu/register!)
   (x-copy/register!)

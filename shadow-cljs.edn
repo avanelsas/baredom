@@ -156,6 +156,11 @@
      {init baredom.exports.x-color-picker/init}
      :depends-on #{:base}}
 
+    :x-combobox
+    {:exports
+     {init baredom.exports.x-combobox/init}
+     :depends-on #{:base}}
+
     :x-command-palette
     {:exports
      {init baredom.exports.x-command-palette/init}
