@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-combobox demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    x-combobox { min-width: 220px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+    }
+
+    .controls input, .controls select {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      cursor: pointer;
+    }
+
+    #event-log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      white-space: pre-wrap;
+      color: var(--page-fg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-combobox</h1>
+  <p>Single-select combobox with type-ahead filtering.</p>
+
+  <!-- ── Basic ───────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Basic</h2>
+    <div class="row">
+      <x-combobox placeholder="Select a country">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+        <option value="es">Spain</option>
+        <option value="it">Italy</option>
+        <option value="pt">Portugal</option>
+        <option value="se">Sweden</option>
+        <option value="no">Norway</option>
+      </x-combobox>
+    </div>
+  </section>
+
+  <!-- ── Pre-selected ────────────────────────────────────────────────── -->
+  <section>
+    <h2>Pre-selected value</h2>
+    <div class="row">
+      <x-combobox value="nl" placeholder="Select a country">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+      </x-combobox>
+    </div>
+  </section>
+
+  <!-- ── Disabled ────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-combobox disabled placeholder="Not available" value="uk">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+      </x-combobox>
+    </div>
+  </section>
+
+  <!-- ── Placements ──────────────────────────────────────────────────── -->
+  <section>
+    <h2>Placements</h2>
+    <div class="row">
+      <x-combobox placement="bottom-start" placeholder="bottom-start">
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+        <option value="c">Charlie</option>
+      </x-combobox>
+
+      <x-combobox placement="bottom-end" placeholder="bottom-end">
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+        <option value="c">Charlie</option>
+      </x-combobox>
+
+      <x-combobox placement="top-start" placeholder="top-start">
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+        <option value="c">Charlie</option>
+      </x-combobox>
+
+      <x-combobox placement="top-end" placeholder="top-end">
+        <option value="a">Alpha</option>
+        <option value="b">Bravo</option>
+        <option value="c">Charlie</option>
+      </x-combobox>
+    </div>
+  </section>
+
+  <!-- ── Many options (scroll) ───────────────────────────────────────── -->
+  <section>
+    <h2>Many options (scroll test)</h2>
+    <div class="row">
+      <x-combobox placeholder="Pick a fruit" id="fruit-cb">
+        <option value="apple">Apple</option>
+        <option value="apricot">Apricot</option>
+        <option value="avocado">Avocado</option>
+        <option value="banana">Banana</option>
+        <option value="blackberry">Blackberry</option>
+        <option value="blueberry">Blueberry</option>
+        <option value="cherry">Cherry</option>
+        <option value="coconut">Coconut</option>
+        <option value="cranberry">Cranberry</option>
+        <option value="fig">Fig</option>
+        <option value="grape">Grape</option>
+        <option value="grapefruit">Grapefruit</option>
+        <option value="kiwi">Kiwi</option>
+        <option value="lemon">Lemon</option>
+        <option value="lime">Lime</option>
+        <option value="mango">Mango</option>
+        <option value="melon">Melon</option>
+        <option value="orange">Orange</option>
+        <option value="papaya">Papaya</option>
+        <option value="peach">Peach</option>
+        <option value="pear">Pear</option>
+        <option value="pineapple">Pineapple</option>
+        <option value="plum">Plum</option>
+        <option value="raspberry">Raspberry</option>
+        <option value="strawberry">Strawberry</option>
+        <option value="watermelon">Watermelon</option>
+      </x-combobox>
+    </div>
+  </section>
+
+  <!-- ── Interactive controls ────────────────────────────────────────── -->
+  <section>
+    <h2>Interactive controls</h2>
+    <div class="controls">
+      <label>
+        Value
+        <input type="text" id="ctrl-value" placeholder="e.g. us" />
+      </label>
+      <label>
+        Placement
+        <select id="ctrl-placement">
+          <option value="bottom-start" selected>bottom-start</option>
+          <option value="bottom-end">bottom-end</option>
+          <option value="top-start">top-start</option>
+          <option value="top-end">top-end</option>
+        </select>
+      </label>
+      <label>
+        Disabled
+        <input type="checkbox" id="ctrl-disabled" />
+      </label>
+    </div>
+
+    <div class="row">
+      <x-combobox id="demo-cb" placeholder="Controlled combobox">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+      </x-combobox>
+      <button onclick="document.getElementById('demo-cb').show()">Show</button>
+      <button onclick="document.getElementById('demo-cb').hide()">Hide</button>
+    </div>
+  </section>
+
+  <!-- ── Event log ───────────────────────────────────────────────────── -->
+  <section>
+    <h2>Event log</h2>
+    <pre id="event-log">(events appear here)</pre>
+  </section>
+
+  <script>
+    const cb = document.getElementById('demo-cb');
+
+    document.getElementById('ctrl-value').addEventListener('input', e => {
+      cb.value = e.target.value;
+    });
+    document.getElementById('ctrl-placement').addEventListener('change', e => {
+      cb.placement = e.target.value;
+    });
+    document.getElementById('ctrl-disabled').addEventListener('change', e => {
+      cb.disabled = e.target.checked;
+    });
+
+    const log = document.getElementById('event-log');
+    function logEvent(name, detail) {
+      const parts = Object.entries(detail || {}).map(([k,v]) => `${k}="${v}"`).join('  ');
+      log.textContent = `${name}  ${parts}\n` + log.textContent;
+    }
+
+    document.addEventListener('x-combobox-change', e => logEvent('x-combobox-change', e.detail));
+    document.addEventListener('x-combobox-input', e => logEvent('x-combobox-input', e.detail));
+    document.addEventListener('x-combobox-toggle', e => logEvent('x-combobox-toggle', e.detail));
+  </script>
+</body>
+</html>
