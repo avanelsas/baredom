@@ -276,6 +276,11 @@
      {init baredom.exports.x-skeleton/init}
      :depends-on #{:base}}
 
+    :x-skeleton-group
+    {:exports
+     {init baredom.exports.x-skeleton-group/init}
+     :depends-on #{:base}}
+
     :x-slider
     {:exports
      {init baredom.exports.x-slider/init}

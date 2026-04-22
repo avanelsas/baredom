@@ -67,11 +67,13 @@
    "100%{transform:translateX(200%);}}"
 
    "[part=base][data-animation='pulse']{"
-   "animation:x-skeleton-pulse var(--x-skeleton-duration,1.5s) ease-in-out infinite;}"
+   "animation:x-skeleton-pulse var(--x-skeleton-duration,1.5s) ease-in-out infinite;"
+   "animation-delay:var(--x-skeleton-delay,0s);}"
 
    "[part=base][data-animation='wave'] [part=shimmer]{"
    "display:block;"
-   "animation:x-skeleton-wave var(--x-skeleton-duration,1.5s) linear infinite;}"
+   "animation:x-skeleton-wave var(--x-skeleton-duration,1.5s) linear infinite;"
+   "animation-delay:var(--x-skeleton-delay,0s);}"
 
    ;; Reduced motion
    "@media (prefers-reduced-motion:reduce){"
