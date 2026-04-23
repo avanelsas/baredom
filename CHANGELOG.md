@@ -2,6 +2,17 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.3.1] - 2026-04-23
+
+### Added
+
+- **x-popover** — New `portal` boolean attribute that renders the panel in a document-level overlay layer, escaping CSS stacking contexts (sticky navbars with `backdrop-filter`, modals, etc.). Content nodes are moved (not cloned) to preserve event listeners and returned to the host on close.
+- **baredom.utils.overlay** — New shared utility module for document-level overlay root management (`ensure-overlay-root!`, `make-layer!`, `remove-layer!`).
+
+### Changed
+
+- **x-context-menu** — Refactored to use shared `baredom.utils.overlay` module (no behavior change).
+
 ## [2.3.0] - 2026-04-22
 
 ### Added
