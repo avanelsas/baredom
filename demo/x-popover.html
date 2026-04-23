@@ -399,5 +399,31 @@
   });
 </script>
 
+<!-- ── Portal mode ───────────────────────────────────────────────── -->
+<x-typography variant="overline">Portal mode</x-typography>
+<p style="margin:8px 0 16px;color:var(--muted);">
+  The popover below is inside a sticky navbar with <code>backdrop-filter</code>.
+  Without <code>portal</code>, the panel would render behind content below.
+  With <code>portal</code>, it escapes the stacking context.
+</p>
+
+<div style="position:relative;height:200px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+  <x-navbar sticky>
+    <span>My App</span>
+    <x-popover portal heading="Cart" placement="bottom-end" style="margin-left:auto;">
+      <button slot="trigger">Cart (3)</button>
+      <div>
+        <p style="margin:0 0 8px;">3 items in your cart</p>
+        <p style="margin:0;font-weight:600;">Total: $49.99</p>
+      </div>
+    </x-popover>
+  </x-navbar>
+  <div style="padding:16px;">
+    <p>Page content that would normally cover the popover panel.</p>
+    <p>Scroll down to verify the navbar stays sticky and the portal popover floats above.</p>
+    <div style="height:400px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
