@@ -1,5 +1,6 @@
 (ns baredom.components.x-context-menu.x-context-menu
   (:require [baredom.components.x-context-menu.model :as model]
+            [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
 
 ;; ---- Instance field keys ----
@@ -90,34 +91,7 @@
     (.dispatchEvent el ev)
     (not (.-defaultPrevented ev))))
 
-;; ---- Overlay root ----
-
-(def ^:private overlay-root-id "__xOverlayRoot")
-
-(defn- find-theme-host
-  "Walk up from el to find the nearest x-theme ancestor, or fall back to body."
-  [^js el]
-  (or (when el (.closest el "x-theme"))
-      (.-body js/document)))
-
-(defn- ensure-overlay-root!
-  "Return (or create) the fixed overlay container. When an x-theme wrapper
-   exists, the root is placed inside it so theme tokens cascade into panels."
-  [^js trigger-el]
-  (let [^js host   (find-theme-host trigger-el)
-        ^js existing (.getElementById js/document overlay-root-id)]
-    ;; If existing root is inside the right host, reuse it
-    (if (and existing (.contains host existing))
-      existing
-      (let [^js div (make-el "div")]
-        (.setAttribute div "id" overlay-root-id)
-        (set! (.. div -style -position) "fixed")
-        (set! (.. div -style -inset) "0")
-        (set! (.. div -style -pointerEvents) "none")
-        (set! (.. div -style -zIndex) "0")
-        (when existing (.remove existing))
-        (.appendChild host div)
-        div))))
+;; ---- Overlay root (via shared utility) ----
 
 ;; ---- Keyboard navigation in panel ----
 
@@ -146,34 +120,17 @@
 ;; ---- Layer management ----
 
 (defn- make-layer! [^js el z-index]
-  (let [^js overlay (ensure-overlay-root! el)
-        ^js layer   (make-el "div")
-        ^js shadow  (.attachShadow layer #js {:mode "open"})
-        ^js style   (make-el "style")
-        ^js panel   (make-el "div")]
-
-    (set! (.. layer -style -position) "fixed")
-    (set! (.. layer -style -inset) "0")
-    (set! (.. layer -style -pointerEvents) "none")
-    (set! (.. layer -style -zIndex) (str z-index))
-
-    (set! (.-textContent style) panel-style-text)
+  (let [^js layer (overlay/make-layer! el panel-style-text z-index)
+        ^js panel (make-el "div")]
     (.setAttribute panel "part"     "panel")
     (.setAttribute panel "role"     "menu")
     (.setAttribute panel "tabindex" "-1")
-
-    (.appendChild shadow style)
-    (.appendChild shadow panel)
-    (.appendChild overlay layer)
+    (.appendChild (.-shadowRoot layer) panel)
     layer))
-
-(defn- get-panel [^js layer]
-  (when layer
-    (.querySelector (.-shadowRoot layer) "[part=panel]")))
 
 (defn- position-layer! [^js layer x y {:keys [z-index max-height]}]
   (set! (.. layer -style -zIndex) (str z-index))
-  (let [^js panel (get-panel layer)]
+  (let [^js panel (overlay/get-panel layer)]
     (when panel
       (set! (.. panel -style -left)      (str x "px"))
       (set! (.. panel -style -top)       (str y "px"))
@@ -184,7 +141,7 @@
     (.appendChild panel (.cloneNode child true))))
 
 (defn- add-layer-listeners! [^js el ^js layer]
-  (let [^js panel (get-panel layer)
+  (let [^js panel (overlay/get-panel layer)
 
         on-key
         (fn [^js ev]
@@ -219,7 +176,7 @@
         on-click-backdrop
         (fn [^js ev]
           ;; Click outside panel closes
-          (let [^js panel (get-panel layer)]
+          (let [^js panel (overlay/get-panel layer)]
             (when (and panel
                        (not (.contains panel (.-target ev))))
               (close! el "backdrop"))))
@@ -244,17 +201,7 @@
     (gobj/set layer "__onItemClick"       on-item-click)))
 
 (defn- remove-layer! [^js layer]
-  (when layer
-    (let [on-key            (gobj/get layer "__onKey")
-          on-click-backdrop (gobj/get layer "__onClickBackdrop")
-          on-item-click     (gobj/get layer "__onItemClick")
-          ^js panel         (get-panel layer)]
-      (when on-key           (.removeEventListener layer "keydown" on-key true))
-      (when on-click-backdrop (.removeEventListener layer "click" on-click-backdrop))
-      (when (and panel on-item-click)
-        (.removeEventListener panel "click" on-item-click))
-      (when (.-parentNode layer)
-        (.removeChild (.-parentNode layer) layer)))))
+  (overlay/remove-layer! layer))
 
 ;; ---- close! ----
 
@@ -287,7 +234,7 @@
                            {:width vw :height vh} 8)
               ^js layer   (make-layer! el z-index)]
 
-          (clone-children-to-panel! el (get-panel layer))
+          (clone-children-to-panel! el (overlay/get-panel layer))
           (add-layer-listeners! el layer)
           (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
 
@@ -297,7 +244,7 @@
           ;; Re-position after actual panel dimensions are known
           (js/requestAnimationFrame
            (fn []
-             (let [^js panel (get-panel layer)]
+             (let [^js panel (overlay/get-panel layer)]
                (when panel
                  (let [pw  (.-offsetWidth panel)
                        ph  (.-offsetHeight panel)
@@ -326,7 +273,7 @@
                          placement offset anchor panel-est {:width vw :height vh} 8)
               ^js layer (make-layer! el z-index)]
 
-          (clone-children-to-panel! el (get-panel layer))
+          (clone-children-to-panel! el (overlay/get-panel layer))
           (add-layer-listeners! el layer)
           (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
 
@@ -335,7 +282,7 @@
 
           (js/requestAnimationFrame
            (fn []
-             (let [^js panel (get-panel layer)]
+             (let [^js panel (overlay/get-panel layer)]
                (when panel
                  (let [pw  (.-offsetWidth panel)
                        ph  (.-offsetHeight panel)

@@ -72,3 +72,34 @@
   (let [d (model/toggle-detail false "escape")]
     (is (= false    (.-open d)))
     (is (= "escape" (.-source d)))))
+
+;; ---------------------------------------------------------------------------
+;; normalize portal
+;; ---------------------------------------------------------------------------
+
+(deftest normalize-portal-test
+  (is (false? (:portal? (model/normalize {}))))
+  (is (true?  (:portal? (model/normalize {:portal-present? true})))))
+
+;; ---------------------------------------------------------------------------
+;; compute-position
+;; ---------------------------------------------------------------------------
+
+(deftest compute-position-bottom-start-test
+  (let [pos (model/compute-position
+             "bottom-start" 4
+             {:x 100 :y 50 :width 100 :height 40}
+             {:width 200 :height 150}
+             {:width 1024 :height 768} 8)]
+    (is (= "bottom-start" (:final-placement pos)))
+    (is (>= (:x pos) 8))
+    (is (= 94 (:y pos)))))
+
+(deftest compute-position-flips-when-no-space-test
+  (testing "flips from bottom to top when panel would overflow viewport"
+    (let [pos (model/compute-position
+               "bottom-start" 4
+               {:x 100 :y 700 :width 100 :height 40}
+               {:width 200 :height 150}
+               {:width 1024 :height 768} 8)]
+      (is (= "top-start" (:final-placement pos))))))

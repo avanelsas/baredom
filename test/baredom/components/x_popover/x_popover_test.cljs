@@ -527,3 +527,133 @@
           "heading text should be preserved after reconnect")
       (is (= "top-start" (.getAttribute panel "data-placement"))
           "placement should be preserved after reconnect"))))
+
+;; ---------------------------------------------------------------------------
+;; Portal mode
+;; ---------------------------------------------------------------------------
+
+(deftest portal-property-reflects-test
+  (let [^js el (append! (make-el))]
+    (set! (.-portal el) true)
+    (is (.hasAttribute el model/attr-portal))
+    (set! (.-portal el) false)
+    (is (not (.hasAttribute el model/attr-portal)))))
+
+(deftest portal-show-creates-overlay-layer-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (is (some? (.getElementById js/document "__xOverlayRoot"))
+             "overlay root should exist")
+         (.hide el)
+         (done))
+       50))))
+
+(deftest portal-panel-has-dialog-role-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (let [^js root (.getElementById js/document "__xOverlayRoot")
+               ^js layer (when root (.-firstElementChild root))
+               ^js panel (when layer (.querySelector (.-shadowRoot layer) "[part=panel]"))]
+           (is (some? panel) "portal panel should exist")
+           (is (= "dialog" (.getAttribute panel "role"))))
+         (.hide el)
+         (done))
+       50))))
+
+(deftest portal-content-moved-on-open-test
+  (async done
+    (let [^js el  (make-el)
+          ^js div (.createElement js/document "div")]
+      (.setAttribute el model/attr-portal "")
+      (set! (.-textContent div) "Cart content")
+      (.appendChild el div)
+      (append! el)
+      (js/setTimeout
+       (fn []
+         (.show el)
+         (js/setTimeout
+          (fn []
+            ;; Content should have moved out of the host
+            (is (not (.contains el div))
+                "content should be moved to portal on open")
+            (.hide el)
+            ;; Content should be back
+            (is (.contains el div)
+                "content should be returned on close")
+            (done))
+          50))
+       50))))
+
+(deftest portal-disabled-blocks-open-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-portal "")
+    (.setAttribute el model/attr-disabled "")
+    (.show el)
+    (is (not (.hasAttribute el model/attr-open)))))
+
+(deftest portal-toggle-event-fires-test
+  (async done
+    (let [^js el (append! (make-el))
+          events (atom [])]
+      (.setAttribute el model/attr-portal "")
+      (.addEventListener el model/event-toggle
+                         (fn [^js e] (swap! events conj (.-detail e))))
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (is (= 1 (count @events)))
+         (is (= true (.-open (first @events))))
+         (.hide el)
+         (done))
+       50))))
+
+(deftest portal-cancel-prevents-open-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-portal "")
+    (.addEventListener el model/event-toggle
+                       (fn [^js e] (.preventDefault e)))
+    (.show el)
+    (is (not (.hasAttribute el model/attr-open)))))
+
+(deftest portal-escape-closes-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (.dispatchEvent js/document
+                         (js/KeyboardEvent. "keydown" #js {:key "Escape" :bubbles true}))
+         (js/setTimeout
+          (fn []
+            (is (not (.hasAttribute el model/attr-open))
+                "portal should close on Escape")
+            (done))
+          50))
+       50))))
+
+(deftest portal-outside-click-closes-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         ;; Click on body (outside the portal panel)
+         (.dispatchEvent (.-body js/document)
+                         (js/PointerEvent. "click" #js {:bubbles true}))
+         (js/setTimeout
+          (fn []
+            (is (not (.hasAttribute el model/attr-open))
+                "portal should close on outside click")
+            (done))
+          50))
+       50))))

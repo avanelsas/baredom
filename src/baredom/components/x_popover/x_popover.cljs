@@ -1,12 +1,16 @@
 (ns baredom.components.x-popover.x-popover
   (:require [goog.object :as gobj]
-            [baredom.components.x-popover.model :as model]))
+            [baredom.components.x-popover.model :as model]
+            [baredom.utils.overlay :as overlay]))
 
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
-(def ^:private k-refs     "__xPopoverRefs")
-(def ^:private k-handlers "__xPopoverHandlers")
+(def ^:private k-refs         "__xPopoverRefs")
+(def ^:private k-handlers     "__xPopoverHandlers")
+(def ^:private k-layer        "__xPopoverLayer")
+(def ^:private k-moved-body   "__xPopoverMovedBody")
+(def ^:private k-moved-footer "__xPopoverMovedFooter")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -203,6 +207,12 @@
    "border-top:var(--x-popover-footer-border);"
    "}"
    "[part=footer][hidden]{display:none;}"
+   ;; Portal mode: hide shadow panel even when open
+   ":host([portal][open]) [part=panel]{"
+   "visibility:hidden !important;"
+   "pointer-events:none !important;"
+   "opacity:0 !important;"
+   "}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=panel]{transition:none !important;}"
    "[part=close-button]{transition:none !important;}"
@@ -314,6 +324,160 @@
       refs)))
 
 ;; ---------------------------------------------------------------------------
+;; Portal panel style (used inside overlay layer shadow DOM)
+;; ---------------------------------------------------------------------------
+(def ^:private portal-panel-style-text
+  (str
+   ;; Define --x-popover-* variables from theme tokens (same as main :host)
+   ":host{"
+   "color-scheme:light dark;"
+   "--x-popover-panel-bg:var(--x-color-bg,#ffffff);"
+   "--x-popover-panel-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-popover-panel-radius:var(--x-radius-md,8px);"
+   "--x-popover-panel-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
+   "--x-popover-panel-min-width:12rem;"
+   "--x-popover-panel-max-height:24rem;"
+   "--x-popover-header-padding:0.625rem 0.75rem 0.625rem 0.875rem;"
+   "--x-popover-header-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-popover-heading-color:var(--x-color-text,#0f172a);"
+   "--x-popover-heading-font-size:0.9375rem;"
+   "--x-popover-heading-font-weight:600;"
+   "--x-popover-close-bg:transparent;"
+   "--x-popover-close-bg-hover:var(--x-color-surface-active,#f1f5f9);"
+   "--x-popover-close-color:var(--x-color-text-muted,#64748b);"
+   "--x-popover-close-color-hover:var(--x-color-text,#0f172a);"
+   "--x-popover-close-radius:4px;"
+   "--x-popover-close-size:1.5rem;"
+   "--x-popover-focus-ring:var(--x-color-focus-ring,#60a5fa);"
+   "--x-popover-body-padding:0.875rem;"
+   "--x-popover-body-color:var(--x-color-text-muted,#334155);"
+   "--x-popover-body-font-size:0.9375rem;"
+   "--x-popover-footer-padding:0.625rem 0.875rem;"
+   "--x-popover-footer-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-popover-arrow-size:8px;"
+   "--x-popover-arrow-bg:var(--x-color-bg,#ffffff);"
+   "--x-popover-arrow-border:var(--x-color-border,#e2e8f0);"
+   "--x-popover-transition-duration:var(--x-transition-duration,150ms);"
+   "--x-popover-transition-easing:var(--x-transition-easing,ease);"
+   "}"
+   "@media (prefers-color-scheme:dark){"
+   ":host{"
+   "--x-popover-panel-bg:var(--x-color-bg,#1e293b);"
+   "--x-popover-panel-border:1px solid var(--x-color-border,#334155);"
+   "--x-popover-panel-shadow:0 4px 24px rgba(0,0,0,0.4);"
+   "--x-popover-header-border:1px solid var(--x-color-border,#334155);"
+   "--x-popover-heading-color:var(--x-color-text,#e2e8f0);"
+   "--x-popover-close-bg-hover:var(--x-color-text-muted,#334155);"
+   "--x-popover-close-color:var(--x-color-text-muted,#94a3b8);"
+   "--x-popover-close-color-hover:var(--x-color-text,#e2e8f0);"
+   "--x-popover-focus-ring:var(--x-color-focus-ring,#93c5fd);"
+   "--x-popover-body-color:var(--x-color-text-muted,#cbd5e1);"
+   "--x-popover-footer-border:1px solid var(--x-color-border,#334155);"
+   "--x-popover-arrow-bg:var(--x-color-bg,#1e293b);"
+   "--x-popover-arrow-border:var(--x-color-border,#334155);"
+   "}"
+   "}"
+   ;; Panel
+   "[part=panel]{"
+   "position:absolute;"
+   "box-sizing:border-box;"
+   "background:var(--x-popover-panel-bg);"
+   "border:var(--x-popover-panel-border);"
+   "border-radius:var(--x-popover-panel-radius);"
+   "box-shadow:var(--x-popover-panel-shadow);"
+   "min-width:var(--x-popover-panel-min-width);"
+   "max-width:calc(100vw - 1rem);"
+   "max-height:var(--x-popover-panel-max-height);"
+   "overflow-y:auto;"
+   "pointer-events:auto;"
+   "opacity:0;"
+   "transform:scale(0.96);"
+   "transition:"
+   "opacity var(--x-popover-transition-duration) var(--x-popover-transition-easing),"
+   "transform var(--x-popover-transition-duration) var(--x-popover-transition-easing);"
+   "}"
+   "[part=panel][data-open]{"
+   "opacity:1;"
+   "transform:scale(1);"
+   "}"
+   ;; Arrow
+   "[part=arrow]{"
+   "position:absolute;"
+   "width:var(--x-popover-arrow-size);"
+   "height:var(--x-popover-arrow-size);"
+   "background:var(--x-popover-arrow-bg);"
+   "transform:rotate(45deg);"
+   "pointer-events:none;"
+   "}"
+   "[part=arrow][data-side=bottom]{"
+   "top:calc(var(--x-popover-arrow-size) / -2);"
+   "border-left:1px solid var(--x-popover-arrow-border);"
+   "border-top:1px solid var(--x-popover-arrow-border);"
+   "}"
+   "[part=arrow][data-side=top]{"
+   "bottom:calc(var(--x-popover-arrow-size) / -2);"
+   "border-right:1px solid var(--x-popover-arrow-border);"
+   "border-bottom:1px solid var(--x-popover-arrow-border);"
+   "}"
+   ;; Header
+   "[part=header]{"
+   "display:flex;align-items:center;justify-content:space-between;"
+   "padding:var(--x-popover-header-padding);"
+   "border-bottom:var(--x-popover-header-border);"
+   "gap:0.5rem;"
+   "}"
+   "[part=header][hidden]{display:none;}"
+   "[part=heading]{"
+   "flex:1;"
+   "font-size:var(--x-popover-heading-font-size);"
+   "font-weight:var(--x-popover-heading-font-weight);"
+   "color:var(--x-popover-heading-color);"
+   "font-family:inherit;"
+   "}"
+   ;; Close button
+   "[part=close-button]{"
+   "all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;"
+   "width:var(--x-popover-close-size);height:var(--x-popover-close-size);"
+   "background:var(--x-popover-close-bg);"
+   "color:var(--x-popover-close-color);"
+   "border-radius:var(--x-popover-close-radius);"
+   "cursor:pointer;flex-shrink:0;"
+   "}"
+   "[part=close-button]:hover{"
+   "background:var(--x-popover-close-bg-hover);"
+   "color:var(--x-popover-close-color-hover);"
+   "}"
+   "[part=close-button]:focus-visible{"
+   "outline:none;box-shadow:0 0 0 2px var(--x-popover-focus-ring);"
+   "}"
+   "[part=close-button][hidden]{display:none;}"
+   ;; Body
+   "[part=body]{"
+   "padding:var(--x-popover-body-padding);"
+   "color:var(--x-popover-body-color);"
+   "font-size:var(--x-popover-body-font-size);"
+   "font-family:inherit;"
+   "}"
+   ;; Footer
+   "[part=footer]{"
+   "padding:var(--x-popover-footer-padding);"
+   "border-top:var(--x-popover-footer-border);"
+   "}"
+   "[part=footer][hidden]{display:none;}"
+   "@media (prefers-reduced-motion:reduce){"
+   "[part=panel]{transition:none !important;}"
+   "}"))
+
+;; ---------------------------------------------------------------------------
+;; Close button SVG (shared between shadow and portal)
+;; ---------------------------------------------------------------------------
+(def ^:private close-btn-svg
+  (str "<svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\""
+       " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
+       "<path d=\"M1 1L13 13M13 1L1 13\" stroke=\"currentColor\""
+       " stroke-width=\"2\" stroke-linecap=\"round\"/></svg>"))
+
+;; ---------------------------------------------------------------------------
 ;; Model reading
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
@@ -321,6 +485,7 @@
    {:open-present?     (has-attr? el model/attr-open)
     :disabled-present? (has-attr? el model/attr-disabled)
     :no-close-present? (has-attr? el model/attr-no-close)
+    :portal-present?   (has-attr? el model/attr-portal)
     :heading-raw       (get-attr el model/attr-heading)
     :placement-raw     (get-attr el model/attr-placement)
     :close-label-raw   (get-attr el model/attr-close-label)}))
@@ -372,6 +537,169 @@
          :cancelable false})))
 
 ;; ---------------------------------------------------------------------------
+;; Forward declarations
+;; ---------------------------------------------------------------------------
+(declare do-close!)
+
+;; ---------------------------------------------------------------------------
+;; Portal: build panel inside overlay layer
+;; ---------------------------------------------------------------------------
+(defn- build-portal-panel! [^js layer {:keys [heading close-label no-close?]}]
+  (let [^js shadow  (.-shadowRoot layer)
+        ^js panel   (make-el "div")
+        ^js arrow   (make-el "div")
+        ^js header  (make-el "div")
+        ^js heading-el (make-el "span")
+        ^js close-btn  (make-el "button")
+        ^js body    (make-el "div")
+        ^js footer  (make-el "div")]
+
+    (set-attr! panel "part" "panel")
+    (set-attr! panel "role" "dialog")
+
+    (set-attr! arrow "part" "arrow")
+    (set-attr! arrow "aria-hidden" "true")
+
+    (set-attr! header "part" "header")
+    (set-attr! heading-el "part" "heading")
+    (set! (.-textContent heading-el) heading)
+
+    (set-attr! close-btn "part" "close-button")
+    (set-attr! close-btn "type" "button")
+    (set-attr! close-btn "aria-label" close-label)
+    (set! (.-innerHTML close-btn) close-btn-svg)
+
+    (when no-close?
+      (set-attr! close-btn "hidden" ""))
+    (when (and (= heading "") no-close?)
+      (set-attr! header "hidden" ""))
+    (when (not= heading "")
+      (set-attr! panel "aria-labelledby" "portal-heading")
+      (set-attr! heading-el "id" "portal-heading"))
+
+    (set-attr! body "part" "body")
+    (set-attr! footer "part" "footer")
+    (set-attr! footer "hidden" "")
+
+    (.appendChild header heading-el)
+    (.appendChild header close-btn)
+    (.appendChild panel arrow)
+    (.appendChild panel header)
+    (.appendChild panel body)
+    (.appendChild panel footer)
+    (.appendChild shadow panel)
+
+    {:panel panel :arrow arrow :header header :heading heading-el
+     :closeBtn close-btn :body body :footer footer}))
+
+(defn- move-nodes-to! [^js source-slot ^js target-el]
+  (let [^js nodes (.assignedNodes source-slot #js {:flatten true})
+        moved     (into [] (array-seq nodes))]
+    (doseq [^js node moved]
+      (.appendChild target-el node))
+    moved))
+
+(defn- return-nodes! [^js el moved-nodes]
+  (when (.-isConnected el)
+    (doseq [^js node moved-nodes]
+      (.appendChild el node))))
+
+(defn- position-portal-panel! [^js panel ^js arrow ^js trigger-el placement]
+  (let [^js rect (.getBoundingClientRect trigger-el)
+        anchor   {:x (.-left rect) :y (.-top rect)
+                  :width (.-width rect) :height (.-height rect)}
+        pw       (.-offsetWidth panel)
+        ph       (.-offsetHeight panel)
+        vw       (.-innerWidth js/window)
+        vh       (.-innerHeight js/window)
+        pos      (model/compute-position
+                  placement model/default-offset anchor
+                  {:width (max pw 200) :height (max ph 100)}
+                  {:width vw :height vh} model/default-margin)
+        fp       (:final-placement pos)]
+    (set! (.. panel -style -left) (str (:x pos) "px"))
+    (set! (.. panel -style -top)  (str (:y pos) "px"))
+    (set! (.. panel -style -maxHeight) (str (:max-height pos) "px"))
+    ;; Arrow
+    (let [trigger-cx (+ (.-left rect) (/ (.-width rect) 2))
+          arrow-size 8
+          side       (if (or (= fp "bottom-start") (= fp "bottom-end")) "bottom" "top")
+          arrow-x    (-> (- trigger-cx (:x pos))
+                         (max 12)
+                         (min (- (max pw 200) 12 arrow-size)))]
+      (set-attr! arrow "data-side" side)
+      (set! (.. arrow -style -left) (str arrow-x "px")))))
+
+(defn- portal-open! [^js el _source]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [m          (read-model el)
+          ^js trigger (gobj/get refs "trigger")
+          z-index    1000
+          ^js layer  (overlay/make-layer! el portal-panel-style-text z-index)
+          portal-refs (build-portal-panel! layer m)
+          ^js p-body      (:body portal-refs)
+          ^js p-footer    (:footer portal-refs)
+          ^js p-panel     (:panel portal-refs)
+          ^js p-arrow     (:arrow portal-refs)
+          ^js p-close-btn (:closeBtn portal-refs)]
+
+      ;; Move body content (from default slot)
+      (let [^js default-slot (.querySelector (.-shadowRoot el) "slot:not([name])")
+            moved-body (move-nodes-to! default-slot p-body)]
+        (gobj/set el k-moved-body (to-array moved-body)))
+
+      ;; Move footer content
+      (let [^js footer-slot (gobj/get refs "footerSlot")
+            moved-footer (move-nodes-to! footer-slot p-footer)]
+        (gobj/set el k-moved-footer (to-array moved-footer))
+        ;; Show footer if it has content
+        (when (pos? (count moved-footer))
+          (.removeAttribute p-footer "hidden")))
+
+      ;; Position
+      (position-portal-panel! p-panel p-arrow trigger (:placement m))
+
+      ;; Layer listeners
+      (let [on-close-btn (fn [^js _e] (do-close! el "close-button"))
+            on-escape    (fn [^js e]
+                          (when (= (.-key e) "Escape")
+                            (.preventDefault e)
+                            (do-close! el "escape")))
+            on-backdrop  (fn [^js e]
+                          (when-not (.contains p-panel (.-target e))
+                            (do-close! el "outside-click")))]
+        (.addEventListener p-close-btn "click"   on-close-btn)
+        (.addEventListener layer       "keydown" on-escape true)
+        (.addEventListener layer       "click"   on-backdrop)
+        (gobj/set layer "__onKey"           on-escape)
+        (gobj/set layer "__onClickBackdrop" on-backdrop)
+        (gobj/set layer "__onCloseBtn"      on-close-btn)
+        (gobj/set layer "__closeBtnEl"      p-close-btn))
+
+      (gobj/set el k-layer layer)
+
+      ;; Animate in after paint
+      (js/requestAnimationFrame
+       (fn []
+         (when (and p-panel (.-isConnected el))
+           ;; Reposition with actual dimensions
+           (position-portal-panel! p-panel p-arrow trigger (:placement m))
+           (set-attr! p-panel "data-open" "")))))))
+
+(defn- portal-close! [^js el]
+  (when-let [^js layer (gobj/get el k-layer)]
+    ;; Return moved nodes
+    (when-let [moved-body (gobj/get el k-moved-body)]
+      (return-nodes! el (array-seq moved-body)))
+    (when-let [moved-footer (gobj/get el k-moved-footer)]
+      (return-nodes! el (array-seq moved-footer)))
+    ;; Remove layer
+    (overlay/remove-layer! layer)
+    (gobj/set el k-layer nil)
+    (gobj/set el k-moved-body nil)
+    (gobj/set el k-moved-footer nil)))
+
+;; ---------------------------------------------------------------------------
 ;; Open / Close
 ;; ---------------------------------------------------------------------------
 (defn- do-open! [^js el source]
@@ -381,6 +709,8 @@
           allowed? (dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
         (set-attr! el model/attr-open "")
+        (when (has-attr? el model/attr-portal)
+          (portal-open! el source))
         (dispatch! el model/event-change #js {:open true})))))
 
 (defn- do-close! [^js el source]
@@ -389,6 +719,7 @@
     (let [detail   (model/toggle-detail false source)
           allowed? (dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
+        (portal-close! el)
         (remove-attr! el model/attr-open)
         (dispatch! el model/event-change #js {:open false})))))
 
@@ -508,6 +839,7 @@
   (render! el))
 
 (defn- disconnected! [^js el]
+  (portal-close! el)
   (remove-static-listeners! el)
   (remove-doc-listeners! el))
 
@@ -555,6 +887,7 @@
     (define-bool-prop!   proto "open"       model/attr-open)
     (define-bool-prop!   proto "disabled"   model/attr-disabled)
     (define-bool-prop!   proto "noClose"    model/attr-no-close)
+    (define-bool-prop!   proto "portal"     model/attr-portal)
     (define-string-prop! proto "placement"  model/attr-placement)
     (define-string-prop! proto "heading"    model/attr-heading)
     (define-string-prop! proto "closeLabel" model/attr-close-label)

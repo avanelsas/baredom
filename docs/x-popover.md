@@ -18,6 +18,7 @@ A floating overlay panel anchored to an inline slotted trigger element. The trig
 | `close-label` | string | `"Close"` | Accessible label for the close button |
 | `no-close` | boolean | `false` | Hide the close button |
 | `disabled` | boolean | `false` | Prevent opening/closing |
+| `portal` | boolean | `false` | Render panel in document-level overlay to escape stacking contexts |
 
 ### Placement values
 
@@ -33,6 +34,7 @@ A floating overlay panel anchored to an inline slotted trigger element. The trig
 | `closeLabel` | string | `close-label` |
 | `noClose` | boolean | `no-close` |
 | `disabled` | boolean | `disabled` |
+| `portal` | boolean | `portal` |
 
 ## Public methods
 
@@ -260,3 +262,29 @@ el.addEventListener('x-popover-toggle', e => {
   <p>Themed popover content.</p>
 </x-popover>
 ```
+
+## Portal mode
+
+When a popover is placed inside an element that creates a CSS stacking context (e.g., a sticky navbar with `backdrop-filter`), the panel can render behind other content on the page. The `portal` attribute solves this by rendering the panel in a document-level overlay that escapes all stacking contexts.
+
+```html
+<x-navbar sticky>
+  <x-popover portal heading="Cart">
+    <button slot="trigger">Cart (3)</button>
+    <p>Your cart items here...</p>
+  </x-popover>
+</x-navbar>
+```
+
+### How it works
+
+- The panel is rendered in a fixed overlay root (`#__xOverlayRoot`) at the document level
+- Content is **moved** (not cloned) into the portal, preserving event listeners
+- On close, content is moved back to the host element
+- Positioning uses `getBoundingClientRect()` for viewport-relative coordinates
+- The overlay root is placed inside the nearest `<x-theme>` element, so theme tokens cascade correctly
+
+### Limitations
+
+- CSS custom properties set via inline `style` on the `<x-popover>` host don't cascade into the portal panel (they're in different DOM subtrees). Theme tokens from `<x-theme>` do work.
+- No automatic repositioning on scroll. For sticky/fixed triggers this is not an issue since the trigger position doesn't change.
