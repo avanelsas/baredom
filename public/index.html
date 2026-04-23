@@ -55,7 +55,6 @@
     *, *::before, *::after { box-sizing: border-box; }
 
     html, body {
-      height: 100%;
       margin: 0;
       background: var(--page-bg);
       color: var(--page-fg);
@@ -64,9 +63,9 @@
     body {
       font-family: system-ui, -apple-system, sans-serif;
       line-height: 1.5;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     /* ── Header ─────────────────────────────────────────── */
@@ -262,8 +261,6 @@
       gap: 14px;
       align-content: start;
       flex: 1;
-      overflow-y: auto;
-      min-height: 0;
     }
 
     /* ── Component card ──────────────────────────────────── */
