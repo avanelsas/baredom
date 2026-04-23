@@ -2,6 +2,12 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.3.2] - 2026-04-23
+
+### Fixed
+
+- **Demo gallery** — Fixed scroll issue on iOS Safari and Android landscape. Replaced app-shell layout (`height:100%` + `overflow:hidden` on body) with natural document scrolling using `min-height:100dvh`.
+
 ## [2.3.1] - 2026-04-23
 
 ### Added
