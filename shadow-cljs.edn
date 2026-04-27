@@ -201,6 +201,11 @@
      {init baredom.exports.x-file-download/init}
      :depends-on #{:base}}
 
+    :x-file-upload
+    {:exports
+     {init baredom.exports.x-file-upload/init}
+     :depends-on #{:base}}
+
     :x-form-field
     {:exports
      {init baredom.exports.x-form-field/init}

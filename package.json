@@ -236,6 +236,10 @@
       "import" : "./dist/x-file-download.js",
       "default" : "./dist/x-file-download.js"
     },
+    "./x-file-upload" : {
+      "import" : "./dist/x-file-upload.js",
+      "default" : "./dist/x-file-upload.js"
+    },
     "./x-toast" : {
       "import" : "./dist/x-toast.js",
       "default" : "./dist/x-toast.js"
