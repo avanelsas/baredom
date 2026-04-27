@@ -2,6 +2,18 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.4.0] - 2026-04-27
+
+### Added
+
+- **x-welcome-tour** — Guided product tour component with spotlight backdrop (SVG mask cutout + glow ring), anchored popover, and configurable connectors (`arrow`, `line`, `curve`, `none`). Compound pattern with `x-welcome-tour-step` child elements for declarative step definitions. 8-placement positioning with automatic flip, smooth step transitions, focus trap, keyboard navigation, and full x-theme integration.
+- **x-file-upload** — Drag-and-drop file upload component with click-to-browse fallback, file type filtering via `accept` attribute, size limits, and multi-file support.
+- **SRI integrity.json** — Build now generates `dist/integrity.json` containing Subresource Integrity hashes for all ESM output files.
+
+### Fixed
+
+- **x-file-upload** — `matches-accept?` now returns a boolean instead of nil for non-matching types.
+
 ## [2.3.2] - 2026-04-23
 
 ### Fixed
