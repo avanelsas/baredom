@@ -31,6 +31,7 @@
    [baredom.exports.x-dropdown         :as x-dropdown]
    [baredom.exports.x-fieldset         :as x-fieldset]
    [baredom.exports.x-file-download    :as x-file-download]
+   [baredom.exports.x-file-upload     :as x-file-upload]
    [baredom.exports.x-form-field       :as x-form-field]
    [baredom.exports.x-form             :as x-form]
    [baredom.exports.x-search-field     :as x-search-field]
@@ -123,6 +124,7 @@
   (x-dropdown/register!)
   (x-fieldset/register!)
   (x-file-download/register!)
+  (x-file-upload/register!)
   (x-form-field/register!)
   (x-form/register!)
   (x-search-field/register!)

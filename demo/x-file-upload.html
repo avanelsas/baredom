@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-file-upload demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    x-file-upload { max-width: 500px; }
+
+    #event-log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      white-space: pre-wrap;
+      color: var(--page-fg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-file-upload</h1>
+  <p>Drag-and-drop file upload zone with validation and image thumbnails.</p>
+
+  <!-- ── Basic image upload ──────────────────────────────────────────── -->
+  <section>
+    <h2>Image upload (multiple)</h2>
+    <x-file-upload accept="image/*" multiple>
+      <p style="margin:0;">Drop images here or click to browse</p>
+    </x-file-upload>
+  </section>
+
+  <!-- ── Constrained upload ──────────────────────────────────────────── -->
+  <section>
+    <h2>PDF upload (max 3 files, 10MB each)</h2>
+    <x-file-upload accept=".pdf" multiple max-size="10485760" max-files="3">
+      <p style="margin:0;">Drop PDFs here (max 3 files, 10MB each)</p>
+    </x-file-upload>
+  </section>
+
+  <!-- ── Single file ─────────────────────────────────────────────────── -->
+  <section>
+    <h2>Single file (any type)</h2>
+    <x-file-upload>
+      <p style="margin:0;">Drop a file here or click to browse</p>
+    </x-file-upload>
+  </section>
+
+  <!-- ── Disabled ────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Disabled</h2>
+    <x-file-upload disabled>
+      <p style="margin:0;">Upload disabled</p>
+    </x-file-upload>
+  </section>
+
+  <!-- ── Event log ───────────────────────────────────────────────────── -->
+  <section>
+    <h2>Event log</h2>
+    <pre id="event-log">(events appear here)</pre>
+  </section>
+
+  <script>
+    const log = document.getElementById('event-log');
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    document.addEventListener('x-file-upload-select', e => {
+      const files = e.detail.files;
+      const rejected = e.detail.rejected;
+      let msg = `x-file-upload-select  accepted=${files.length}  rejected=${rejected.length}\n`;
+      files.forEach(f => {
+        msg += `  + ${f.name}  (${f.type || 'unknown'}, ${formatSize(f.size)})\n`;
+      });
+      rejected.forEach(r => {
+        msg += `  ✗ ${r.file.name}  — ${r.reason}\n`;
+      });
+      log.textContent = msg + log.textContent;
+    });
+
+    document.addEventListener('x-file-upload-remove', e => {
+      log.textContent = `x-file-upload-remove  "${e.detail.file.name}"  remaining=${e.detail.remaining.length}\n` + log.textContent;
+    });
+  </script>
+</body>
+</html>
