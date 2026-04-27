@@ -88,7 +88,7 @@
     (let [file-type (str/lower-case (or (.-type file) ""))
           file-ext  (get-extension (.-name file))
           tokens    (map str/trim (str/split accept-str #","))]
-      (some (fn [token]
+      (boolean (some (fn [token]
               (let [t (str/lower-case token)]
                 (cond
                   ;; Extension match: .pdf, .jpg etc
@@ -103,7 +103,7 @@
                   ;; Exact MIME match
                   :else
                   (= t file-type))))
-            tokens))))
+            tokens)))))
 
 ;; ---------------------------------------------------------------------------
 ;; File validation
