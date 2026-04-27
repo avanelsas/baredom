@@ -12,7 +12,7 @@
   "name" : "@vanelsas/baredom",
   "scripts" : {
     "clean" : "rm -rf dist .shadow-cljs",
-    "build" : "npm run clean && npx shadow-cljs release lib",
+    "build" : "npm run clean && npx shadow-cljs release lib && ./scripts/generate-integrity.sh",
     "build:demo" : "npx shadow-cljs release demo",
     "pack:local" : "npm pack",
     "test" : "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run"
