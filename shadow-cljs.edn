@@ -356,6 +356,11 @@
      {init baredom.exports.x-tooltip/init}
      :depends-on #{:base}}
 
+    :x-welcome-tour
+    {:exports
+     {init baredom.exports.x-welcome-tour/init}
+     :depends-on #{:base}}
+
     :x-organic-shape
     {:exports
      {init baredom.exports.x-organic-shape/init}

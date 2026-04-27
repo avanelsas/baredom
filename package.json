@@ -248,6 +248,10 @@
       "import" : "./dist/x-tooltip.js",
       "default" : "./dist/x-tooltip.js"
     },
+    "./x-welcome-tour" : {
+      "import" : "./dist/x-welcome-tour.js",
+      "default" : "./dist/x-welcome-tour.js"
+    },
     "./x-fieldset" : {
       "import" : "./dist/x-fieldset.js",
       "default" : "./dist/x-fieldset.js"
