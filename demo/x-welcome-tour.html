@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-welcome-tour demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--page-bg);
+      color: var(--fg);
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    /* --- Fake app layout for tour targets --- */
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--surface-bg);
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .app-header .logo { font-weight: 700; font-size: 1.1rem; }
+    .app-header .search {
+      flex: 1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg, var(--page-bg));
+      color: inherit;
+      font-size: 0.875rem;
+    }
+    .app-header .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #3b82f6;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.75rem;
+    }
+
+    .app-sidebar {
+      float: left;
+      width: 180px;
+      padding: 12px;
+      background: var(--surface-bg);
+      border-radius: 8px;
+      margin-right: 24px;
+      margin-bottom: 24px;
+    }
+    .app-sidebar a {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 4px;
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    .app-sidebar a:hover { background: rgba(0,0,0,0.05); }
+
+    .app-content {
+      overflow: hidden;
+      padding: 16px;
+      background: var(--surface-bg);
+      border-radius: 8px;
+      min-height: 200px;
+    }
+
+    .controls {
+      clear: both;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 16px;
+      background: var(--surface-bg);
+      border-radius: 8px;
+      margin-top: 24px;
+      align-items: center;
+    }
+    .controls label { font-size: 0.8125rem; font-weight: 500; }
+    .controls select, .controls button {
+      font-size: 0.8125rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg, var(--page-bg));
+      color: inherit;
+      cursor: pointer;
+    }
+    .controls button {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      font-weight: 500;
+    }
+
+    #event-log {
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--surface-bg);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #event-log div { padding: 2px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body>
+
+  <h1>&lt;x-welcome-tour&gt;</h1>
+  <p>Guided product tour with spotlight backdrop, popover steps, and configurable connectors.</p>
+
+  <!-- ===== Fake App UI (tour targets) ===== -->
+  <div class="app-header">
+    <span class="logo" id="logo">MyApp</span>
+    <input class="search" id="search-box" type="text" placeholder="Search..." />
+    <span class="avatar" id="user-avatar">JD</span>
+  </div>
+
+  <div class="app-sidebar" id="sidebar">
+    <a href="#">Dashboard</a>
+    <a href="#">Projects</a>
+    <a href="#">Settings</a>
+    <a href="#">Help</a>
+  </div>
+
+  <div class="app-content" id="main-content">
+    <h2>Welcome to MyApp</h2>
+    <p>This is a demo page showing the x-welcome-tour component in action.</p>
+    <p>Use the controls below to start the tour with different connector styles.</p>
+  </div>
+
+  <!-- ===== Tour Definition ===== -->
+  <x-welcome-tour id="tour" counter>
+    <x-welcome-tour-step target="#logo" title="Brand" placement="bottom-start">
+      <p>This is the app logo. Click it to go back to the home page.</p>
+    </x-welcome-tour-step>
+    <x-welcome-tour-step target="#search-box" title="Search" placement="bottom">
+      <p>Use the search bar to find projects, files, and people quickly.</p>
+    </x-welcome-tour-step>
+    <x-welcome-tour-step target="#user-avatar" title="Profile" placement="bottom-end">
+      <p>Click your avatar to access account settings and sign out.</p>
+    </x-welcome-tour-step>
+    <x-welcome-tour-step target="#sidebar" title="Navigation" placement="right">
+      <p>The sidebar gives you quick access to all major sections of the app.</p>
+    </x-welcome-tour-step>
+    <x-welcome-tour-step target="#main-content" title="Content Area" placement="top">
+      <p>This is where your main content appears. Explore dashboards, projects, and more.</p>
+    </x-welcome-tour-step>
+  </x-welcome-tour>
+
+  <!-- ===== Controls ===== -->
+  <div class="controls">
+    <label>Connector:</label>
+    <select id="connector-select">
+      <option value="arrow" selected>Arrow</option>
+      <option value="line">Line</option>
+      <option value="curve">Curve</option>
+      <option value="none">None</option>
+    </select>
+    <button id="start-btn">Start Tour</button>
+    <button id="start-dots-btn">Start with Dots</button>
+  </div>
+
+  <!-- ===== Event Log ===== -->
+  <h2>Event Log</h2>
+  <div id="event-log"></div>
+
+  <script>
+    const tour = document.getElementById('tour');
+    const log  = document.getElementById('event-log');
+    const connectorSelect = document.getElementById('connector-select');
+
+    function logEvent(name, detail) {
+      const div = document.createElement('div');
+      const ts  = new Date().toLocaleTimeString();
+      div.textContent = `${ts} ${name} ${JSON.stringify(detail)}`;
+      log.prepend(div);
+    }
+
+    // Log all tour events
+    ['x-welcome-tour-start', 'x-welcome-tour-step-change',
+     'x-welcome-tour-complete', 'x-welcome-tour-skip'].forEach(name => {
+      tour.addEventListener(name, e => logEvent(name, e.detail));
+    });
+
+    // Start button
+    document.getElementById('start-btn').addEventListener('click', () => {
+      tour.connector = connectorSelect.value;
+      if (tour.hasAttribute('dots')) tour.removeAttribute('dots');
+      if (!tour.hasAttribute('counter')) tour.setAttribute('counter', '');
+      tour.start();
+    });
+
+    // Start with dots
+    document.getElementById('start-dots-btn').addEventListener('click', () => {
+      tour.connector = connectorSelect.value;
+      tour.removeAttribute('counter');
+      tour.setAttribute('dots', '');
+      tour.start();
+    });
+  </script>
+
+</body>
+</html>

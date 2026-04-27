@@ -62,6 +62,7 @@
    [baredom.exports.x-toast               :as x-toast]
    [baredom.exports.x-toaster             :as x-toaster]
    [baredom.exports.x-tooltip             :as x-tooltip]
+   [baredom.exports.x-welcome-tour       :as x-welcome-tour]
    [baredom.exports.x-organic-shape       :as x-organic-shape]
    [baredom.exports.x-typography          :as x-typography]
    [baredom.exports.x-kinetic-typography :as x-kinetic-typography]
@@ -154,6 +155,7 @@
   (x-toast/register!)
   (x-toaster/register!)
   (x-tooltip/register!)
+  (x-welcome-tour/register!)
   (x-organic-shape/register!)
   (x-typography/register!)
   (x-kinetic-typography/register!)
