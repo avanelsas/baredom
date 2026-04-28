@@ -396,6 +396,6 @@
     "shadow-cljs" : "^3.3.6"
   },
   "files" : [ "dist", "README.md", "LICENSE", "CHANGELOG.md" ],
-  "version" : "2.4.0",
+  "version" : "2.4.1",
   "sideEffects" : [ "./dist/*.js" ]
 }
