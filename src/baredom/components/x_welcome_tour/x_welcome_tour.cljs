@@ -280,8 +280,7 @@
     (.appendChild mask mask-cut)
 
     (.setAttribute filter-el "id" "tour-glow")
-    (.setAttribute blur "stdDeviation"
-                   "var(--x-welcome-tour-glow-blur,8)")
+    (.setAttribute blur "stdDeviation" "8")
     (.setAttribute blur "in" "SourceGraphic")
     (.appendChild filter-el blur)
 

@@ -134,7 +134,6 @@ Set these on `x-welcome-tour` or an ancestor to customise appearance.
 | `--x-welcome-tour-backdrop`               | `rgba(0,0,0,0.5)`                             |
 | `--x-welcome-tour-backdrop-z`             | `var(--x-z-modal, 1100)`                      |
 | `--x-welcome-tour-glow-color`             | `rgba(255,255,255,0.15)`                       |
-| `--x-welcome-tour-glow-blur`              | `8px`                                          |
 | `--x-welcome-tour-popover-bg`             | `var(--x-color-bg, #ffffff)`                   |
 | `--x-welcome-tour-popover-fg`             | `var(--x-color-text, #0f172a)`                 |
 | `--x-welcome-tour-popover-border`         | `1px solid var(--x-color-border, #e2e8f0)`     |
