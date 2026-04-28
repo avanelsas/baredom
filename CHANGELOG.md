@@ -2,6 +2,12 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.4.1] - 2026-04-28
+
+### Fixed
+
+- **x-welcome-tour** — Fixed console error caused by `feGaussianBlur` `stdDeviation` attribute receiving a CSS `var()` value instead of a number. SVG filter attributes don't support CSS custom properties.
+
 ## [2.4.0] - 2026-04-27
 
 ### Added
