@@ -76,3 +76,5 @@
    :duration  (parse-duration duration-raw)
    :frequency (parse-frequency frequency-raw)
    :disabled? (boolean disabled-present?)})
+
+(def method-api nil)

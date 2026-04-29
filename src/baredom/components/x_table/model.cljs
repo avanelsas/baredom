@@ -130,3 +130,5 @@
   {:rowIndex      (or row-index 0)
    :selected      selected?
    :selectionMode selectable})
+
+(def method-api nil)

@@ -56,3 +56,5 @@
    :delay     (parse-delay delay-raw)
    :disabled? (boolean disabled-present?)
    :open?     (boolean open-present?)})
+
+(def method-api nil)

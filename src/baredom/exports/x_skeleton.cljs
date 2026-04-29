@@ -10,6 +10,7 @@
   {:tag-name            model/tag-name
    :properties          model/property-api
    :events              {}
+   :methods             model/method-api
    :observed-attributes model/observed-attributes})
 
 (defn ^:export init

@@ -63,3 +63,5 @@
   "Produces the CustomEvent detail object for toggle/change events."
   [open? source]
   #js {:open open? :source source})
+
+(def method-api nil)

@@ -71,3 +71,5 @@
    :color       {:type 'string}
    :inset       {:type 'string}
    :length      {:type 'string}})
+
+(def method-api nil)

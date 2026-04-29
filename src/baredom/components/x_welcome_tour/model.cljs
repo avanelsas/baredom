@@ -366,6 +366,15 @@
          :margin-left (str "-" half "px")
          :border-bottom-color "var(--x-welcome-tour-popover-bg)"}))))
 
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:start    {:args [] :returns 'void}
+   :next     {:args [] :returns 'void}
+   :prev     {:args [] :returns 'void}
+   :goTo     {:args [{:name "step" :type 'number}] :returns 'void}
+   :complete {:args [] :returns 'void}
+   :skip     {:args [] :returns 'void}})
+
 ;; ── Event detail builders ───────────────────────────────────────────────────
 (defn step-change-detail
   [step previous-step]

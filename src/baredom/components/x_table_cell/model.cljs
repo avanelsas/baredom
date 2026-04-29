@@ -197,3 +197,5 @@
    :colSpan col-span
    :rowSpan row-span
    :align   align})
+
+(def method-api nil)

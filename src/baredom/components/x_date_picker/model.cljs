@@ -314,3 +314,5 @@
           (:start-d canon)
           (format-date (:start-d canon) config)
           :else "")))))
+
+(def method-api nil)

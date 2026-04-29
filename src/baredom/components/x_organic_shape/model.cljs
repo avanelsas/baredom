@@ -111,3 +111,5 @@
      :ratio     (normalize-ratio ratio)
      :width     (normalize-css-value width)
      :height    (normalize-css-value height)}))
+
+(def method-api nil)

@@ -167,3 +167,5 @@
   (and (:is-modal prev-state)
        (:open prev-state)
        (not (and (:is-modal next-state) (:open next-state)))))
+
+(def method-api nil)

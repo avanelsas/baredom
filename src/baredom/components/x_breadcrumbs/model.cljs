@@ -108,3 +108,5 @@
    :items-before {:type 'number}
    :items-after  {:type 'number}
    :disabled     {:type 'boolean}})
+
+(def method-api nil)

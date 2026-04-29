@@ -237,3 +237,5 @@
 
 (defn loop-detail [direction]
   {:direction direction})
+
+(def method-api nil)

@@ -120,3 +120,7 @@
   {event-copy-request {:cancelable true  :detail {:text 'string :mode 'string :from 'string :fromAttr 'string}}
    event-copy-success {:cancelable false :detail {:text 'string}}
    event-copy-error   {:cancelable false :detail {:error 'string}}})
+
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:copy {:args [] :returns 'void}})

@@ -97,3 +97,5 @@
   (when (and (not has-default-text?)
              (mu/non-empty-string? label))
     label))
+
+(def method-api nil)

@@ -226,3 +226,5 @@
         dx (* amplitude (pseudo-noise seed 0.0 (* t speed)))
         dy (* amplitude (pseudo-noise 0.0 seed (* t speed)))]
     #js [(+ rest-x dx) (+ rest-y dy)]))
+
+(def method-api nil)

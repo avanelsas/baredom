@@ -103,3 +103,5 @@
     (if (or (:fits primary) (not (:fits flipped)))
       primary
       flipped)))
+
+(def method-api nil)

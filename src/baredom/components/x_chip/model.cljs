@@ -65,3 +65,5 @@
 (def event-schema
   {event-remove {:detail     {:value 'string :label 'string}
                  :cancelable true}})
+
+(def method-api nil)

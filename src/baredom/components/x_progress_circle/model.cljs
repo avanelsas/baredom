@@ -89,3 +89,5 @@
      :show-value     show-val?
      :indeterminate  indet?
      :aria-valuetext (if indet? "Loading\u2026" (str (js/Math.round percent) "%"))}))
+
+(def method-api nil)

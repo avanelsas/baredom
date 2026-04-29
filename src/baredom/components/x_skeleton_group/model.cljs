@@ -99,3 +99,5 @@
               :flex   "1"
               :items  [{:variant "text" :width "120px"}
                        {:variant "text" :width "80px"}]}]}})
+
+(def method-api nil)

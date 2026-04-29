@@ -598,3 +598,5 @@
          ":host{"
          (tokens->css dark-tokens)
          "}}")))
+
+(def method-api nil)

@@ -97,3 +97,5 @@
   {:rowIndex (or row-index 0)
    :selected selected?
    :disabled disabled?})
+
+(def method-api nil)

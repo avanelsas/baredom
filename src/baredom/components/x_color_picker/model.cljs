@@ -355,3 +355,5 @@
   "Returns true when the element can accept user input."
   [{:keys [disabled? readonly?]}]
   (and (not disabled?) (not readonly?)))
+
+(def method-api nil)

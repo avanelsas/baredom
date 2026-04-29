@@ -114,3 +114,5 @@
    :cutout-padding (parse-cutout-padding cutout-padding-raw)
    :cutout-radius  (parse-cutout-radius cutout-radius-raw)
    :scroll-to?     (parse-scroll-to scroll-to-raw)})
+
+(def method-api nil)

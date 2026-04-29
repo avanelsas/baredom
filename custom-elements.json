@@ -1,0 +1,7338 @@
+{
+  "schemaVersion" : "1.0.0",
+  "readme" : "README.md",
+  "modules" : [ {
+    "kind" : "javascript-module",
+    "path" : "dist/x-grid.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XGrid",
+      "tagName" : "x-grid",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-grid",
+      "declaration" : {
+        "name" : "XGrid"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-fieldset.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XFieldset",
+      "tagName" : "x-fieldset",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "legend",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-fieldset",
+      "declaration" : {
+        "name" : "XFieldset"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-file-download.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XFileDownload",
+      "tagName" : "x-file-download",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "href",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "filename",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-file-download-click",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-file-download",
+      "declaration" : {
+        "name" : "XFileDownload"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-button.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XButton",
+      "tagName" : "x-button",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pressed",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "press",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "press-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "press-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "hover-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "hover-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "focus-visible",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      }, {
+        "name" : "icon-start"
+      }, {
+        "name" : "icon-end"
+      }, {
+        "name" : "spinner"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-button",
+      "declaration" : {
+        "name" : "XButton"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-search-field.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSearchField",
+      "tagName" : "x-search-field",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-search-field-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-search-field-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-search-field-search",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-search-field-clear",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-search-field",
+      "declaration" : {
+        "name" : "XSearchField"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-date-picker.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDatePicker",
+      "tagName" : "x-date-picker",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-date-picker",
+      "declaration" : {
+        "name" : "XDatePicker"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-pagination.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XPagination",
+      "tagName" : "x-pagination",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "page",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "total-pages",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sibling-count",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "boundary-count",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : ":page-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "prev"
+      }, {
+        "name" : "next"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-pagination",
+      "declaration" : {
+        "name" : "XPagination"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-modal.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XModal",
+      "tagName" : "x-modal",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-modal-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-modal-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-modal",
+      "declaration" : {
+        "name" : "XModal"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-organic-shape.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XOrganicShape",
+      "tagName" : "x-organic-shape",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "ratio",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "width",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-organic-shape",
+      "declaration" : {
+        "name" : "XOrganicShape"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-switch.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSwitch",
+      "tagName" : "x-switch",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-switch-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-switch-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-switch",
+      "declaration" : {
+        "name" : "XSwitch"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-avatar.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XAvatar",
+      "tagName" : "x-avatar",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "initials",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "alt",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-avatar",
+      "declaration" : {
+        "name" : "XAvatar"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-file-upload.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XFileUpload",
+      "tagName" : "x-file-upload",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "accept",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "multiple",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxFiles",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "files",
+        "type" : {
+          "text" : "any"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "x-file-upload-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-file-upload-remove",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-file-upload",
+      "declaration" : {
+        "name" : "XFileUpload"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-morph-stack.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XMorphStack",
+      "tagName" : "x-morph-stack",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "activeState",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activeIndex",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "stiffness",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "damping",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mass",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "duration",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-morph-stack-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-morph-stack-changed",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "state"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-morph-stack",
+      "declaration" : {
+        "name" : "XMorphStack"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-icon.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XIcon",
+      "tagName" : "x-icon",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-icon",
+      "declaration" : {
+        "name" : "XIcon"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-skeleton-group.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSkeletonGroup",
+      "tagName" : "x-skeleton-group",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "count",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-skeleton-group",
+      "declaration" : {
+        "name" : "XSkeletonGroup"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-liquid-fill.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XLiquidFill",
+      "tagName" : "x-liquid-fill",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "waveIntensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "splashIntensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "theme",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "layers",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "target",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "x-liquid-fill-progress",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-liquid-fill",
+      "declaration" : {
+        "name" : "XLiquidFill"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-cancel-dialogue.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCancelDialogue",
+      "tagName" : "x-cancel-dialogue",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "headline",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "message",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "confirmText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "cancelText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "danger",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "close",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "confirm",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "cancel",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "reason",
+          "type" : {
+            "text" : "string"
+          }
+        } ]
+      } ],
+      "events" : [ {
+        "name" : "x-cancel-dialogue-cancel-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-cancel-dialogue-cancel",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-cancel-dialogue-confirm-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-cancel-dialogue-confirm",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-cancel-dialogue",
+      "declaration" : {
+        "name" : "XCancelDialogue"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-copy.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCopy",
+      "tagName" : "x-copy",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "errorMessage",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "textValue",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fromAttr",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "tooltipMs",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "hotkey",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "from",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showTooltip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "successMessage",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "copy",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-copy-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-copy-success",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-copy-error",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      }, {
+        "name" : "tooltip"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-copy",
+      "declaration" : {
+        "name" : "XCopy"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-scroll-timeline.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XScrollTimeline",
+      "tagName" : "x-scroll-timeline",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "autoplayLoop",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplaySpeed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplayIndicator",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "layout",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activeIndex",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "marker",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "threshold",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplayPaused",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "noProgress",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "track",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-scroll-timeline-entry-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-entry-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-entry-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-progress",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-autoplay-pause",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-timeline-autoplay-resume",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-scroll-timeline",
+      "declaration" : {
+        "name" : "XScrollTimeline"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-kinetic-font.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XKineticFont",
+      "tagName" : "x-kinetic-font",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "mass",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "tension",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "perChar",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "radius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "intensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fontFamily",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "friction",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "trigger",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-kinetic-font-spring-activate",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-kinetic-font-spring-settle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-kinetic-font",
+      "declaration" : {
+        "name" : "XKineticFont"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-badge.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XBadge",
+      "tagName" : "x-badge",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pill",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dot",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "count",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-badge",
+      "declaration" : {
+        "name" : "XBadge"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-combobox.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCombobox",
+      "tagName" : "x-combobox",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-combobox-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-combobox-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-combobox-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-combobox",
+      "declaration" : {
+        "name" : "XCombobox"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-divider.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDivider",
+      "tagName" : "x-divider",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "thickness",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "inset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "length",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-divider",
+      "declaration" : {
+        "name" : "XDivider"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-organic-divider.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XOrganicDivider",
+      "tagName" : "x-organic-divider",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "layers",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "flip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mirror",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-organic-divider",
+      "declaration" : {
+        "name" : "XOrganicDivider"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-scroll-story.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XScrollStory",
+      "tagName" : "x-scroll-story",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "autoplayLoop",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplaySpeed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplayIndicator",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "layout",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activeIndex",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "threshold",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplayPaused",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "split",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "x-scroll-story-step-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-step-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-step-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-progress",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-autoplay-pause",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-story-autoplay-resume",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-scroll-story",
+      "declaration" : {
+        "name" : "XScrollStory"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-timeline.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTimeline",
+      "tagName" : "x-timeline",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "striped",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-timeline-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-timeline",
+      "declaration" : {
+        "name" : "XTimeline"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-timeline-item.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTimelineItem",
+      "tagName" : "x-timeline-item",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "title",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-timeline-item-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-timeline-item-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-timeline-item-click",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-timeline-item",
+      "declaration" : {
+        "name" : "XTimelineItem"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-table.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTable",
+      "tagName" : "x-table",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "columns",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "caption",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "selectable",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "striped",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "bordered",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fullWidth",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "compact",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowCount",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-table-sort",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-row-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-table",
+      "declaration" : {
+        "name" : "XTable"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-table-row.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTableRow",
+      "tagName" : "x-table-row",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowIndex",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-table-row-click",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-row-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-row-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-table-row",
+      "declaration" : {
+        "name" : "XTableRow"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-table-cell.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTableCell",
+      "tagName" : "x-table-cell",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "truncate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "valign",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "scope",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sticky",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sortable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sortDirection",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-table-cell-sort",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-cell-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-cell-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "sort-icon"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-table-cell",
+      "declaration" : {
+        "name" : "XTableCell"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-theme.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTheme",
+      "tagName" : "x-theme",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-theme",
+      "declaration" : {
+        "name" : "XTheme"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-select.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSelect",
+      "tagName" : "x-select",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "select-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-select",
+      "declaration" : {
+        "name" : "XSelect"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-menu.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XMenu",
+      "tagName" : "x-menu",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-menu-open",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-menu-close",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-menu-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-menu",
+      "declaration" : {
+        "name" : "XMenu"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-text-area.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTextArea",
+      "tagName" : "x-text-area",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "minLength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rows",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxLength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-text-area-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-text-area-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-text-area",
+      "declaration" : {
+        "name" : "XTextArea"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-kinetic-typography.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XKineticTypography",
+      "tagName" : "x-kinetic-typography",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "startSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "echoCount",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "echoScale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "echoOpacity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "repeat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fontSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "effect",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "echoDelay",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "endSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-kinetic-typography",
+      "declaration" : {
+        "name" : "XKineticTypography"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-neural-glow.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XNeuralGlow",
+      "tagName" : "x-neural-glow",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "colorBackground",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "orbCount",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "restRate",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colorPrimary",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "orbSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "opacity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colorSecondary",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pulseSpeed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "connectionDistance",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-neural-glow",
+      "declaration" : {
+        "name" : "XNeuralGlow"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-timeline-item.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTimelineItem",
+      "tagName" : "x-timeline-item",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "title",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-timeline-item-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-timeline-item-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-timeline-item-click",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-timeline-item",
+      "declaration" : {
+        "name" : "XTimelineItem"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-popover.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XPopover",
+      "tagName" : "x-popover",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "heading",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "closeLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "noClose",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "portal",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-popover-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-popover-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-popover",
+      "declaration" : {
+        "name" : "XPopover"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-stat.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XStat",
+      "tagName" : "x-stat",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "trend",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "emphasis",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-stat",
+      "declaration" : {
+        "name" : "XStat"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-gaussian-blur.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XGaussianBlur",
+      "tagName" : "x-gaussian-blur",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "paused",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colors",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blur",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "opacity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "count",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blend",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-gaussian-blur",
+      "declaration" : {
+        "name" : "XGaussianBlur"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-context-menu.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XContextMenu",
+      "tagName" : "x-context-menu",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "offset",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "z-index",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-context-menu",
+      "declaration" : {
+        "name" : "XContextMenu"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-scroll-stack.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XScrollStack",
+      "tagName" : "x-scroll-stack",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "peek",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rotation",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "scrollDistance",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "stackedCount",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "refresh",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-scroll-stack-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-stack-progress",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-scroll-stack",
+      "declaration" : {
+        "name" : "XScrollStack"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-avatar-group.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XAvatarGroup",
+      "tagName" : "x-avatar-group",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "overlap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-avatar-group",
+      "declaration" : {
+        "name" : "XAvatarGroup"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-menu-item.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XMenuItem",
+      "tagName" : "x-menu-item",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-menu-item-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-menu-item",
+      "declaration" : {
+        "name" : "XMenuItem"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-alert.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XAlert",
+      "tagName" : "x-alert",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dismissible",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "timeoutMs",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-alert-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-alert",
+      "declaration" : {
+        "name" : "XAlert"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-stepper.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XStepper",
+      "tagName" : "x-stepper",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "steps",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "current",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-stepper-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-stepper",
+      "declaration" : {
+        "name" : "XStepper"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-ripple-effect.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XRippleEffect",
+      "tagName" : "x-ripple-effect",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "intensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "duration",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "frequency",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-ripple-effect-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-ripple-effect-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-ripple-effect",
+      "declaration" : {
+        "name" : "XRippleEffect"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-drawer.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDrawer",
+      "tagName" : "x-drawer",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-drawer-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-drawer-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-drawer",
+      "declaration" : {
+        "name" : "XDrawer"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-welcome-tour.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XWelcomeTour",
+      "tagName" : "x-welcome-tour",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "prevLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "nextLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "counter",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "totalSteps",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "doneLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "skipLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dots",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "step",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "start",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "next",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "prev",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "goTo",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "step",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "complete",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "skip",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-welcome-tour-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-welcome-tour-step-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-welcome-tour-complete",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-welcome-tour-skip",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-welcome-tour",
+      "declaration" : {
+        "name" : "XWelcomeTour"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-welcome-tour-step.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XWelcomeTourStep",
+      "tagName" : "x-welcome-tour-step",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "target",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "title",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "cutoutPadding",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "cutoutRadius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "scrollTo",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-welcome-tour-step-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-welcome-tour-step-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-welcome-tour-step",
+      "declaration" : {
+        "name" : "XWelcomeTourStep"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-progress.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XProgress",
+      "tagName" : "x-progress",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-progress-complete",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-progress",
+      "declaration" : {
+        "name" : "XProgress"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-splash.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSplash",
+      "tagName" : "x-splash",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "active",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "spinner",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "overlay",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-splash-hidden",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-splash",
+      "declaration" : {
+        "name" : "XSplash"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-toast.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XToast",
+      "tagName" : "x-toast",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "heading",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "message",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dismissible",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "timeoutMs",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showProgress",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-toast-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-toast",
+      "declaration" : {
+        "name" : "XToast"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-chart.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XChart",
+      "tagName" : "x-chart",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "axes",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "grid",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "cursor",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "padding",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "tooltip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "height",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "data",
+        "type" : {
+          "text" : "any"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-chart",
+      "declaration" : {
+        "name" : "XChart"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-navbar.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XNavbar",
+      "tagName" : "x-navbar",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "sticky",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "elevated",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "alignment",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "breakpoint",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "focus-visible",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "navigate",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "brand-activate",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "brand"
+      }, {
+        "name" : "actions"
+      }, {
+        "name" : "toggle"
+      }, {
+        "name" : "start"
+      }, {
+        "name" : "end"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-navbar",
+      "declaration" : {
+        "name" : "XNavbar"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-spinner.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSpinner",
+      "tagName" : "x-spinner",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-spinner",
+      "declaration" : {
+        "name" : "XSpinner"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-metaball-cursor.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XMetaballCursor",
+      "tagName" : "x-metaball-cursor",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blobSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "noiseIntensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "palette",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "noiseScale",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "noise",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "threshold",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blur",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "noiseSpeed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blobCount",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-metaball-cursor",
+      "declaration" : {
+        "name" : "XMetaballCursor"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-chip.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XChip",
+      "tagName" : "x-chip",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "removable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-chip-remove",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-chip",
+      "declaration" : {
+        "name" : "XChip"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-scroll-parallax.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XScrollParallax",
+      "tagName" : "x-scroll-parallax",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "source",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "easing",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "x-scroll-parallax-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-parallax-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-parallax-progress",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-scroll-parallax",
+      "declaration" : {
+        "name" : "XScrollParallax"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-soft-body.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSoftBody",
+      "tagName" : "x-soft-body",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "stiffness",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "damping",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "radius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "intensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "grabRadius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-soft-body-grab",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-soft-body-release",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-soft-body",
+      "declaration" : {
+        "name" : "XSoftBody"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-table-row.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTableRow",
+      "tagName" : "x-table-row",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowIndex",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-table-row-click",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-row-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-row-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-table-row",
+      "declaration" : {
+        "name" : "XTableRow"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-bento-item.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XBentoItem",
+      "tagName" : "x-bento-item",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-bento-item",
+      "declaration" : {
+        "name" : "XBentoItem"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-dropdown.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDropdown",
+      "tagName" : "x-dropdown",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-dropdown-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-dropdown-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-dropdown",
+      "declaration" : {
+        "name" : "XDropdown"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-notification-center.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XNotificationCenter",
+      "tagName" : "x-notification-center",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "count",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "x-notification-center-push",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-notification-center-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-notification-center-empty",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-notification-center",
+      "declaration" : {
+        "name" : "XNotificationCenter"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-scroll.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XScroll",
+      "tagName" : "x-scroll",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showIndicators",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "snap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "activeIndex",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showControls",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loop",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gap",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoPlay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "interval",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-scroll-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-scroll-loop",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-scroll",
+      "declaration" : {
+        "name" : "XScroll"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-image.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XImage",
+      "tagName" : "x-image",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "alt",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fit",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "state",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "decorative",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "ratio",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "naturalHeight",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "naturalWidth",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-image-load",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-image-error",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-image",
+      "declaration" : {
+        "name" : "XImage"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-progress-circle.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XProgressCircle",
+      "tagName" : "x-progress-circle",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-progress-circle-complete",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-progress-circle",
+      "declaration" : {
+        "name" : "XProgressCircle"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-particle-button.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XParticleButton",
+      "tagName" : "x-particle-button",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pressed",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "press",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "press-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "press-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "hover-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "hover-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "focus-visible",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "burst",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "reform",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      }, {
+        "name" : "icon-start"
+      }, {
+        "name" : "icon-end"
+      }, {
+        "name" : "spinner"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-particle-button",
+      "declaration" : {
+        "name" : "XParticleButton"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-typography.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTypography",
+      "tagName" : "x-typography",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "truncate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "lineClamp",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-typography",
+      "declaration" : {
+        "name" : "XTypography"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-carousel.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCarousel",
+      "tagName" : "x-carousel",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "arrows",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "slideCount",
+        "type" : {
+          "text" : "number"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "transition",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "loop",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "interval",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoplay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "peek",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dots",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "currentSlide",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-carousel-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-carousel",
+      "declaration" : {
+        "name" : "XCarousel"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-table-cell.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTableCell",
+      "tagName" : "x-table-cell",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "truncate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "valign",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "scope",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sticky",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sortable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "sortDirection",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-table-cell-sort",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-cell-connected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-table-cell-disconnected",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "sort-icon"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-table-cell",
+      "declaration" : {
+        "name" : "XTableCell"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-collapse.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCollapse",
+      "tagName" : "x-collapse",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "header",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "durationMs",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-collapse-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-collapse-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "content"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-collapse",
+      "declaration" : {
+        "name" : "XCollapse"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-tab.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTab",
+      "tagName" : "x-tab",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "tab-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-tab",
+      "declaration" : {
+        "name" : "XTab"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-form-field.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XFormField",
+      "tagName" : "x-form-field",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readonly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-form-field-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-form-field-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-form-field",
+      "declaration" : {
+        "name" : "XFormField"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-card.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCard",
+      "tagName" : "x-card",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : ":press",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-card",
+      "declaration" : {
+        "name" : "XCard"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-currency-field.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCurrencyField",
+      "tagName" : "x-currency-field",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "currency",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-currency-field-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-currency-field-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-currency-field",
+      "declaration" : {
+        "name" : "XCurrencyField"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-container.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XContainer",
+      "tagName" : "x-container",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "center",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fluid",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-container",
+      "declaration" : {
+        "name" : "XContainer"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-liquid-glass.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XLiquidGlass",
+      "tagName" : "x-liquid-glass",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "frost",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "goo",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "amplitude",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "specularSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "speed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "specular",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "tint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color2",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blur",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blobs",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color1",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "specularIntensity",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-liquid-glass",
+      "declaration" : {
+        "name" : "XLiquidGlass"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-breadcrumbs.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XBreadcrumbs",
+      "tagName" : "x-breadcrumbs",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "separator",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "wrap",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max-items",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "items-before",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "items-after",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-breadcrumbs",
+      "declaration" : {
+        "name" : "XBreadcrumbs"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-checkbox.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCheckbox",
+      "tagName" : "x-checkbox",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-checkbox-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-checkbox-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-checkbox",
+      "declaration" : {
+        "name" : "XCheckbox"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-spacer.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSpacer",
+      "tagName" : "x-spacer",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "axis",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "grow",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-spacer",
+      "declaration" : {
+        "name" : "XSpacer"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-liquid-dock.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XLiquidDock",
+      "tagName" : "x-liquid-dock",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "rippleScale",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "magnetStrength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "threshold",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "magnetRadius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "bobIntensity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "blur",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rippleSpeed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gap",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-liquid-dock-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-liquid-dock",
+      "declaration" : {
+        "name" : "XLiquidDock"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-radio.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XRadio",
+      "tagName" : "x-radio",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-radio-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-radio-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-radio",
+      "declaration" : {
+        "name" : "XRadio"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-toaster.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XToaster",
+      "tagName" : "x-toaster",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxToasts",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toast",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "options",
+          "type" : {
+            "text" : "Record<string, any>"
+          }
+        } ]
+      } ],
+      "events" : [ {
+        "name" : "x-toaster-dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-toaster",
+      "declaration" : {
+        "name" : "XToaster"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-bento-grid.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XBentoGrid",
+      "tagName" : "x-bento-grid",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-bento-grid",
+      "declaration" : {
+        "name" : "XBentoGrid"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-sidebar.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSidebar",
+      "tagName" : "x-sidebar",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "collapsed",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "dismiss",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-sidebar",
+      "declaration" : {
+        "name" : "XSidebar"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-form.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XForm",
+      "tagName" : "x-form",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "novalidate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-form-submit",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-form-reset",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-form",
+      "declaration" : {
+        "name" : "XForm"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-organic-progress.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XOrganicProgress",
+      "tagName" : "x-organic-progress",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "progress",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "bloom",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "density",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "seed",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-organic-progress-complete",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-organic-progress-bloom-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-organic-progress",
+      "declaration" : {
+        "name" : "XOrganicProgress"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-tabs.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTabs",
+      "tagName" : "x-tabs",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "value-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-tabs",
+      "declaration" : {
+        "name" : "XTabs"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-tab.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTab",
+      "tagName" : "x-tab",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "tab-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-tab",
+      "declaration" : {
+        "name" : "XTab"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-tooltip.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XTooltip",
+      "tagName" : "x-tooltip",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "delay",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-tooltip-show",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-tooltip-hide",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-tooltip",
+      "declaration" : {
+        "name" : "XTooltip"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-skeleton.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSkeleton",
+      "tagName" : "x-skeleton",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "width",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-skeleton",
+      "declaration" : {
+        "name" : "XSkeleton"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-color-picker.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XColorPicker",
+      "tagName" : "x-color-picker",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "swatches",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "alpha",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-color-picker-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-color-picker-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-color-picker",
+      "declaration" : {
+        "name" : "XColorPicker"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-command-palette.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCommandPalette",
+      "tagName" : "x-command-palette",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "items",
+        "type" : {
+          "text" : "any"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-command-palette-open-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-open",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-close-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-close",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-select-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-command-palette-query-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-command-palette",
+      "declaration" : {
+        "name" : "XCommandPalette"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-slider.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSlider",
+      "tagName" : "x-slider",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "step",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-slider-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-slider-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-slider",
+      "declaration" : {
+        "name" : "XSlider"
+      }
+    } ]
+  } ]
+}

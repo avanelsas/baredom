@@ -449,3 +449,5 @@
   [t]
   (let [t1 (- 1.0 t)]
     (- 1.0 (* t1 t1 t1))))
+
+(def method-api nil)

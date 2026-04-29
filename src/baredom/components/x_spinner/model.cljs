@@ -61,3 +61,5 @@
   {:size    (normalize-size size)
    :variant (normalize-variant variant)
    :label   (normalize-label label)})
+
+(def method-api nil)

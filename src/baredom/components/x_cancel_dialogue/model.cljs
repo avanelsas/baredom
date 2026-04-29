@@ -65,3 +65,9 @@
    event-cancel          {:cancelable false :detail {}}
    event-confirm-request {:cancelable true  :detail {}}
    event-confirm         {:cancelable false :detail {}}})
+
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:close   {:args [] :returns 'void}
+   :confirm {:args [] :returns 'void}
+   :cancel  {:args [{:name "reason" :type 'string}] :returns 'void}})

@@ -118,11 +118,16 @@ This is a ClojureScript library that compiles to standalone native Web Component
 
 Every component under `src/baredom/components/<name>/` follows:
 
-1. **`model.cljs`** — Pure functions only. Defines tag name, attribute names, event names, slot names, allowed enum values with normalization, and derived view-model logic. No DOM or side effects. All types described with ClojureScript predicates (`string?`, `boolean?`, etc.) — never TypeScript syntax.
+1. **`model.cljs`** — Pure functions only. Defines tag name, attribute names, event names, slot names, allowed enum values with normalization, and derived view-model logic. No DOM or side effects. All types described with ClojureScript predicates (`string?`, `boolean?`, etc.) — never TypeScript syntax. **Required metadata defs:**
+   - `tag-name` — string constant
+   - `observed-attributes` — `#js [...]` array of attribute name constants
+   - `property-api` — map of camelCase property name to `{:type 'string|'boolean|'number}` (add `:reflects-attribute attr-name` when applicable, `:readonly true` for read-only)
+   - `event-schema` — map of event constant symbol to `{:cancelable bool :detail {:key 'type ...}}` (use `{}` for empty detail)
+   - `method-api` — map of method name to `{:args [...] :returns 'void}`. **Always include this def**, even as `(def method-api nil)` when the component has no public methods. Args entries: `{:name "param" :type 'number}`. This metadata drives automatic TypeScript `.d.ts` generation — omitting it breaks type output.
 
 2. **`<name>.cljs`** — DOM and lifecycle layer. Implements shadow DOM creation, imperative `render!`, event wiring, and lifecycle callbacks (`connected!`, `disconnected!`, `attribute-changed!`, `define-element!`, `init!`). All browser interop must be Closure Advanced safe.
 
-3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init` (called by the `:lib` shadow-cljs build) and `register!`. Also exposes `public-api` metadata derived from the model.
+3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init` (called by the `:lib` shadow-cljs build) and `register!`. Also exposes `public-api` metadata derived from the model. The `public-api` map must include all model metadata keys: `:tag-name`, `:properties`, `:events`, `:methods`, `:observed-attributes`.
 
 ### Additional files per component
 

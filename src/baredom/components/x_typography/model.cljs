@@ -77,3 +77,5 @@
    :align      (parse-align align-raw)
    :truncate?  (parse-truncate truncate-raw)
    :line-clamp (parse-line-clamp line-clamp-raw)})
+
+(def method-api nil)

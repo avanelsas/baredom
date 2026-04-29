@@ -93,3 +93,5 @@
      :tabindex tabindex
      :aria-label (normalize-label label)
      :aria-disabled (when disabled* "true")}))
+
+(def method-api nil)

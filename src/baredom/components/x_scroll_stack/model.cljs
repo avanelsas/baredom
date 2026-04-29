@@ -146,3 +146,7 @@
 
 (defn progress-detail [progress stacked-count total-count]
   {:progress progress :stackedCount stacked-count :totalCount total-count})
+
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:refresh {:args [] :returns 'void}})

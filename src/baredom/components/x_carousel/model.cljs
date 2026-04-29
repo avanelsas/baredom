@@ -234,3 +234,5 @@
   (contains?
    (if (= direction "vertical") vertical-next-keys horizontal-next-keys)
    key))
+
+(def method-api nil)

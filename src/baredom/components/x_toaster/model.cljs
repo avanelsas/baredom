@@ -92,3 +92,7 @@
   [position]
   (or (= position "top-center")
       (= position "bottom-center")))
+
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:toast {:args [{:name "options" :type 'object}] :returns 'void}})

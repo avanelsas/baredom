@@ -241,3 +241,5 @@
        ", 'wdth' " (.toFixed (aget axes 1) 1)
        ", 'slnt' " (.toFixed (aget axes 2) 1)
        ", 'opsz' " (.toFixed (aget axes 3) 1)))
+
+(def method-api nil)
