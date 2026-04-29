@@ -392,19 +392,19 @@
         }
       }, {
         "kind" : "field",
-        "name" : "total-pages",
+        "name" : "totalPages",
         "type" : {
           "text" : "number"
         }
       }, {
         "kind" : "field",
-        "name" : "sibling-count",
+        "name" : "siblingCount",
         "type" : {
           "text" : "number"
         }
       }, {
         "kind" : "field",
-        "name" : "boundary-count",
+        "name" : "boundaryCount",
         "type" : {
           "text" : "number"
         }
@@ -3281,7 +3281,7 @@
         }
       }, {
         "kind" : "field",
-        "name" : "z-index",
+        "name" : "zIndex",
         "type" : {
           "text" : "number"
         }
@@ -6218,19 +6218,19 @@
         }
       }, {
         "kind" : "field",
-        "name" : "max-items",
+        "name" : "maxItems",
         "type" : {
           "text" : "number"
         }
       }, {
         "kind" : "field",
-        "name" : "items-before",
+        "name" : "itemsBefore",
         "type" : {
           "text" : "number"
         }
       }, {
         "kind" : "field",
-        "name" : "items-after",
+        "name" : "itemsAfter",
         "type" : {
           "text" : "number"
         }
