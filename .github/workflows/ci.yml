@@ -40,6 +40,13 @@ jobs:
           sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
           clj-kondo --version
 
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
       - name: Lint with clj-kondo
         run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
