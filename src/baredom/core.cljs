@@ -90,7 +90,8 @@
    [baredom.exports.x-image          :as x-image]
    [baredom.exports.x-icon           :as x-icon]
    [baredom.exports.x-theme          :as x-theme]
-   [baredom.dev.hot-reload             :as hot-reload]))
+   [baredom.dev.hot-reload             :as hot-reload]
+   [baredom.dev.x-debug.x-debug        :as x-debug]))
 
 (defn ^:dev/after-load start!
   []
@@ -184,6 +185,7 @@
   (x-image/register!)
   (x-icon/register!)
   (x-theme/register!)
+  (x-debug/register!)
   (hot-reload/refresh-styles!))
 
 (defn init!
