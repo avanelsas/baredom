@@ -40,7 +40,7 @@ export const XScrollTimeline = forwardRef<XScrollTimelineElement, XScrollTimelin
     const innerRef = useRef<XScrollTimelineElement>(null);
 
     const setRef = (el: XScrollTimelineElement | null) => {
-      (innerRef as React.MutableRefObject<XScrollTimelineElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

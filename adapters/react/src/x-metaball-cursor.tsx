@@ -31,7 +31,7 @@ export const XMetaballCursor = forwardRef<XMetaballCursorElement, XMetaballCurso
     const innerRef = useRef<XMetaballCursorElement>(null);
 
     const setRef = (el: XMetaballCursorElement | null) => {
-      (innerRef as React.MutableRefObject<XMetaballCursorElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

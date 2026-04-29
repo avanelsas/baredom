@@ -31,7 +31,7 @@ export const XNeuralGlow = forwardRef<XNeuralGlowElement, XNeuralGlowProps>(
     const innerRef = useRef<XNeuralGlowElement>(null);
 
     const setRef = (el: XNeuralGlowElement | null) => {
-      (innerRef as React.MutableRefObject<XNeuralGlowElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

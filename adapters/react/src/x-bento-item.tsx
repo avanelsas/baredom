@@ -21,7 +21,7 @@ export const XBentoItem = forwardRef<XBentoItemElement, XBentoItemProps>(
     const innerRef = useRef<XBentoItemElement>(null);
 
     const setRef = (el: XBentoItemElement | null) => {
-      (innerRef as React.MutableRefObject<XBentoItemElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

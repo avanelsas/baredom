@@ -29,7 +29,7 @@ export const XDivider = forwardRef<XDividerElement, XDividerProps>(
     const innerRef = useRef<XDividerElement>(null);
 
     const setRef = (el: XDividerElement | null) => {
-      (innerRef as React.MutableRefObject<XDividerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

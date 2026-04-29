@@ -25,7 +25,7 @@ export const XTab = forwardRef<XTabElement, XTabProps>(
     const innerRef = useRef<XTabElement>(null);
 
     const setRef = (el: XTabElement | null) => {
-      (innerRef as React.MutableRefObject<XTabElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

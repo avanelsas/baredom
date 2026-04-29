@@ -36,7 +36,7 @@ export const XCurrencyField = forwardRef<XCurrencyFieldElement, XCurrencyFieldPr
     const innerRef = useRef<XCurrencyFieldElement>(null);
 
     const setRef = (el: XCurrencyFieldElement | null) => {
-      (innerRef as React.MutableRefObject<XCurrencyFieldElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

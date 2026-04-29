@@ -33,7 +33,7 @@ export const XLiquidDock = forwardRef<XLiquidDockElement, XLiquidDockProps>(
     const innerRef = useRef<XLiquidDockElement>(null);
 
     const setRef = (el: XLiquidDockElement | null) => {
-      (innerRef as React.MutableRefObject<XLiquidDockElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

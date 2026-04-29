@@ -25,7 +25,7 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
     const innerRef = useRef<XSelectElement>(null);
 
     const setRef = (el: XSelectElement | null) => {
-      (innerRef as React.MutableRefObject<XSelectElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

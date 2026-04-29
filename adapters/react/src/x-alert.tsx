@@ -28,7 +28,7 @@ export const XAlert = forwardRef<XAlertElement, XAlertProps>(
     const innerRef = useRef<XAlertElement>(null);
 
     const setRef = (el: XAlertElement | null) => {
-      (innerRef as React.MutableRefObject<XAlertElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

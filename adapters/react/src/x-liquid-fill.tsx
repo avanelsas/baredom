@@ -30,7 +30,7 @@ export const XLiquidFill = forwardRef<XLiquidFillElement, XLiquidFillProps>(
     const innerRef = useRef<XLiquidFillElement>(null);
 
     const setRef = (el: XLiquidFillElement | null) => {
-      (innerRef as React.MutableRefObject<XLiquidFillElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

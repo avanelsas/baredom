@@ -24,7 +24,7 @@ export const XSpacer = forwardRef<XSpacerElement, XSpacerProps>(
     const innerRef = useRef<XSpacerElement>(null);
 
     const setRef = (el: XSpacerElement | null) => {
-      (innerRef as React.MutableRefObject<XSpacerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

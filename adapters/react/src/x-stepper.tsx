@@ -27,7 +27,7 @@ export const XStepper = forwardRef<XStepperElement, XStepperProps>(
     const innerRef = useRef<XStepperElement>(null);
 
     const setRef = (el: XStepperElement | null) => {
-      (innerRef as React.MutableRefObject<XStepperElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

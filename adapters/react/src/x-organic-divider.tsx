@@ -28,7 +28,7 @@ export const XOrganicDivider = forwardRef<XOrganicDividerElement, XOrganicDivide
     const innerRef = useRef<XOrganicDividerElement>(null);
 
     const setRef = (el: XOrganicDividerElement | null) => {
-      (innerRef as React.MutableRefObject<XOrganicDividerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

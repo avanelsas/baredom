@@ -27,7 +27,7 @@ export const XRippleEffect = forwardRef<XRippleEffectElement, XRippleEffectProps
     const innerRef = useRef<XRippleEffectElement>(null);
 
     const setRef = (el: XRippleEffectElement | null) => {
-      (innerRef as React.MutableRefObject<XRippleEffectElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

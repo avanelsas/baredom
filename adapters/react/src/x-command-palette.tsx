@@ -31,7 +31,7 @@ export const XCommandPalette = forwardRef<XCommandPaletteElement, XCommandPalett
     const innerRef = useRef<XCommandPaletteElement>(null);
 
     const setRef = (el: XCommandPaletteElement | null) => {
-      (innerRef as React.MutableRefObject<XCommandPaletteElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

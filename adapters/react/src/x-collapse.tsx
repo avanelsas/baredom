@@ -27,7 +27,7 @@ export const XCollapse = forwardRef<XCollapseElement, XCollapseProps>(
     const innerRef = useRef<XCollapseElement>(null);
 
     const setRef = (el: XCollapseElement | null) => {
-      (innerRef as React.MutableRefObject<XCollapseElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

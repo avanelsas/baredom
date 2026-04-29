@@ -26,7 +26,7 @@ export const XNotificationCenter = forwardRef<XNotificationCenterElement, XNotif
     const innerRef = useRef<XNotificationCenterElement>(null);
 
     const setRef = (el: XNotificationCenterElement | null) => {
-      (innerRef as React.MutableRefObject<XNotificationCenterElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

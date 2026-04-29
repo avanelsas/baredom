@@ -25,7 +25,7 @@ export const XSidebar = forwardRef<XSidebarElement, XSidebarProps>(
     const innerRef = useRef<XSidebarElement>(null);
 
     const setRef = (el: XSidebarElement | null) => {
-      (innerRef as React.MutableRefObject<XSidebarElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

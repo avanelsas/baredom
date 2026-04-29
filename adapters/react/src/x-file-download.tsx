@@ -25,7 +25,7 @@ export const XFileDownload = forwardRef<XFileDownloadElement, XFileDownloadProps
     const innerRef = useRef<XFileDownloadElement>(null);
 
     const setRef = (el: XFileDownloadElement | null) => {
-      (innerRef as React.MutableRefObject<XFileDownloadElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

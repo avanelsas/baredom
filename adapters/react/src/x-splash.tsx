@@ -27,7 +27,7 @@ export const XSplash = forwardRef<XSplashElement, XSplashProps>(
     const innerRef = useRef<XSplashElement>(null);
 
     const setRef = (el: XSplashElement | null) => {
-      (innerRef as React.MutableRefObject<XSplashElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

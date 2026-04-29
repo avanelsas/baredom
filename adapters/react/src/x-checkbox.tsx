@@ -30,7 +30,7 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
     const innerRef = useRef<XCheckboxElement>(null);
 
     const setRef = (el: XCheckboxElement | null) => {
-      (innerRef as React.MutableRefObject<XCheckboxElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

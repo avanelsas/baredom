@@ -29,7 +29,7 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
     const innerRef = useRef<XRadioElement>(null);
 
     const setRef = (el: XRadioElement | null) => {
-      (innerRef as React.MutableRefObject<XRadioElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

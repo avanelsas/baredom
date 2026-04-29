@@ -32,7 +32,7 @@ export const XCarousel = forwardRef<XCarouselElement, XCarouselProps>(
     const innerRef = useRef<XCarouselElement>(null);
 
     const setRef = (el: XCarouselElement | null) => {
-      (innerRef as React.MutableRefObject<XCarouselElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

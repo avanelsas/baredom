@@ -153,7 +153,7 @@
          "    const { " (str/join ", " destructured) ", ...rest } = props;\n"
          "    const innerRef = useRef<" interface-name "Element>(null);\n\n"
          "    const setRef = (el: " interface-name "Element | null) => {\n"
-         "      (innerRef as React.MutableRefObject<" interface-name "Element | null>).current = el;\n"
+         "      innerRef.current = el;\n"
          "      if (typeof forwardedRef === \"function\") forwardedRef(el);\n"
          "      else if (forwardedRef) forwardedRef.current = el;\n"
          "    };\n\n"

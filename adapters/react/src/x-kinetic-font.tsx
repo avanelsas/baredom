@@ -33,7 +33,7 @@ export const XKineticFont = forwardRef<XKineticFontElement, XKineticFontProps>(
     const innerRef = useRef<XKineticFontElement>(null);
 
     const setRef = (el: XKineticFontElement | null) => {
-      (innerRef as React.MutableRefObject<XKineticFontElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

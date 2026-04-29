@@ -29,7 +29,7 @@ export const XSoftBody = forwardRef<XSoftBodyElement, XSoftBodyProps>(
     const innerRef = useRef<XSoftBodyElement>(null);
 
     const setRef = (el: XSoftBodyElement | null) => {
-      (innerRef as React.MutableRefObject<XSoftBodyElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

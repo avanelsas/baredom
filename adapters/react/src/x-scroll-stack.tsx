@@ -28,7 +28,7 @@ export const XScrollStack = forwardRef<XScrollStackElement, XScrollStackProps>(
     const innerRef = useRef<XScrollStackElement>(null);
 
     const setRef = (el: XScrollStackElement | null) => {
-      (innerRef as React.MutableRefObject<XScrollStackElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

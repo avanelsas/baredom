@@ -38,7 +38,7 @@ export const XScrollStory = forwardRef<XScrollStoryElement, XScrollStoryProps>(
     const innerRef = useRef<XScrollStoryElement>(null);
 
     const setRef = (el: XScrollStoryElement | null) => {
-      (innerRef as React.MutableRefObject<XScrollStoryElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

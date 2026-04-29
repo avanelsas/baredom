@@ -30,7 +30,7 @@ export const XOrganicProgress = forwardRef<XOrganicProgressElement, XOrganicProg
     const innerRef = useRef<XOrganicProgressElement>(null);
 
     const setRef = (el: XOrganicProgressElement | null) => {
-      (innerRef as React.MutableRefObject<XOrganicProgressElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

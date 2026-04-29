@@ -29,7 +29,7 @@ export const XBreadcrumbs = forwardRef<XBreadcrumbsElement, XBreadcrumbsProps>(
     const innerRef = useRef<XBreadcrumbsElement>(null);
 
     const setRef = (el: XBreadcrumbsElement | null) => {
-      (innerRef as React.MutableRefObject<XBreadcrumbsElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -21,7 +21,7 @@ export const XGrid = forwardRef<XGridElement, XGridProps>(
     const innerRef = useRef<XGridElement>(null);
 
     const setRef = (el: XGridElement | null) => {
-      (innerRef as React.MutableRefObject<XGridElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

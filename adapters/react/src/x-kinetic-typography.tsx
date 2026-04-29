@@ -36,7 +36,7 @@ export const XKineticTypography = forwardRef<XKineticTypographyElement, XKinetic
     const innerRef = useRef<XKineticTypographyElement>(null);
 
     const setRef = (el: XKineticTypographyElement | null) => {
-      (innerRef as React.MutableRefObject<XKineticTypographyElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

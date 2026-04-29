@@ -30,7 +30,7 @@ export const XPopover = forwardRef<XPopoverElement, XPopoverProps>(
     const innerRef = useRef<XPopoverElement>(null);
 
     const setRef = (el: XPopoverElement | null) => {
-      (innerRef as React.MutableRefObject<XPopoverElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

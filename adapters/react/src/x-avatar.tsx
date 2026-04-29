@@ -30,7 +30,7 @@ export const XAvatar = forwardRef<XAvatarElement, XAvatarProps>(
     const innerRef = useRef<XAvatarElement>(null);
 
     const setRef = (el: XAvatarElement | null) => {
-      (innerRef as React.MutableRefObject<XAvatarElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

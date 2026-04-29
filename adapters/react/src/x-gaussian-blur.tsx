@@ -30,7 +30,7 @@ export const XGaussianBlur = forwardRef<XGaussianBlurElement, XGaussianBlurProps
     const innerRef = useRef<XGaussianBlurElement>(null);
 
     const setRef = (el: XGaussianBlurElement | null) => {
-      (innerRef as React.MutableRefObject<XGaussianBlurElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -35,7 +35,7 @@ export const XCopy = forwardRef<XCopyElement, XCopyProps>(
     const innerRef = useRef<XCopyElement>(null);
 
     const setRef = (el: XCopyElement | null) => {
-      (innerRef as React.MutableRefObject<XCopyElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

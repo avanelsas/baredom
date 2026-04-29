@@ -31,7 +31,7 @@ export const XNavbar = forwardRef<XNavbarElement, XNavbarProps>(
     const innerRef = useRef<XNavbarElement>(null);
 
     const setRef = (el: XNavbarElement | null) => {
-      (innerRef as React.MutableRefObject<XNavbarElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

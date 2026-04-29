@@ -24,7 +24,7 @@ export const XSkeletonGroup = forwardRef<XSkeletonGroupElement, XSkeletonGroupPr
     const innerRef = useRef<XSkeletonGroupElement>(null);
 
     const setRef = (el: XSkeletonGroupElement | null) => {
-      (innerRef as React.MutableRefObject<XSkeletonGroupElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -64,7 +64,7 @@ jobs:
       - name: Check React adapter is up to date
         run: |
           bb scripts/generate_react.bb
-          git diff --exit-code adapters/react/src/ || (echo "React adapter is out of date. Run: bb scripts/generate_react.bb" && exit 1)
+          git diff --exit-code adapters/react/src/ adapters/react/package.json || (echo "React adapter is out of date. Run: bb scripts/generate_react.bb" && exit 1)
 
       - name: Run tests
         run: npm test

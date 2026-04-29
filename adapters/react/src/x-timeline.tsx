@@ -25,7 +25,7 @@ export const XTimeline = forwardRef<XTimelineElement, XTimelineProps>(
     const innerRef = useRef<XTimelineElement>(null);
 
     const setRef = (el: XTimelineElement | null) => {
-      (innerRef as React.MutableRefObject<XTimelineElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -26,7 +26,7 @@ export const XChip = forwardRef<XChipElement, XChipProps>(
     const innerRef = useRef<XChipElement>(null);
 
     const setRef = (el: XChipElement | null) => {
-      (innerRef as React.MutableRefObject<XChipElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

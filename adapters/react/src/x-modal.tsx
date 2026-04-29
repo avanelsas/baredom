@@ -26,7 +26,7 @@ export const XModal = forwardRef<XModalElement, XModalProps>(
     const innerRef = useRef<XModalElement>(null);
 
     const setRef = (el: XModalElement | null) => {
-      (innerRef as React.MutableRefObject<XModalElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

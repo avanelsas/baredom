@@ -23,7 +23,7 @@ export const XFieldset = forwardRef<XFieldsetElement, XFieldsetProps>(
     const innerRef = useRef<XFieldsetElement>(null);
 
     const setRef = (el: XFieldsetElement | null) => {
-      (innerRef as React.MutableRefObject<XFieldsetElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

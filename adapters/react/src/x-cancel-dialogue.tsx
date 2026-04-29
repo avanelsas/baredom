@@ -32,7 +32,7 @@ export const XCancelDialogue = forwardRef<XCancelDialogueElement, XCancelDialogu
     const innerRef = useRef<XCancelDialogueElement>(null);
 
     const setRef = (el: XCancelDialogueElement | null) => {
-      (innerRef as React.MutableRefObject<XCancelDialogueElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -29,7 +29,7 @@ export const XDatePicker = forwardRef<XDatePickerElement, XDatePickerProps>(
     const innerRef = useRef<XDatePickerElement>(null);
 
     const setRef = (el: XDatePickerElement | null) => {
-      (innerRef as React.MutableRefObject<XDatePickerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

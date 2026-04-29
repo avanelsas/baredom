@@ -24,7 +24,7 @@ export const XSpinner = forwardRef<XSpinnerElement, XSpinnerProps>(
     const innerRef = useRef<XSpinnerElement>(null);
 
     const setRef = (el: XSpinnerElement | null) => {
-      (innerRef as React.MutableRefObject<XSpinnerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -30,7 +30,7 @@ export const XImage = forwardRef<XImageElement, XImageProps>(
     const innerRef = useRef<XImageElement>(null);
 
     const setRef = (el: XImageElement | null) => {
-      (innerRef as React.MutableRefObject<XImageElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

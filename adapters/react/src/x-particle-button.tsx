@@ -32,7 +32,7 @@ export const XParticleButton = forwardRef<XParticleButtonElement, XParticleButto
     const innerRef = useRef<XParticleButtonElement>(null);
 
     const setRef = (el: XParticleButtonElement | null) => {
-      (innerRef as React.MutableRefObject<XParticleButtonElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -32,7 +32,7 @@ export const XSearchField = forwardRef<XSearchFieldElement, XSearchFieldProps>(
     const innerRef = useRef<XSearchFieldElement>(null);
 
     const setRef = (el: XSearchFieldElement | null) => {
-      (innerRef as React.MutableRefObject<XSearchFieldElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -25,7 +25,7 @@ export const XToaster = forwardRef<XToasterElement, XToasterProps>(
     const innerRef = useRef<XToasterElement>(null);
 
     const setRef = (el: XToasterElement | null) => {
-      (innerRef as React.MutableRefObject<XToasterElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

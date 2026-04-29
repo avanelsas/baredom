@@ -30,7 +30,7 @@ export const XButton = forwardRef<XButtonElement, XButtonProps>(
     const innerRef = useRef<XButtonElement>(null);
 
     const setRef = (el: XButtonElement | null) => {
-      (innerRef as React.MutableRefObject<XButtonElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

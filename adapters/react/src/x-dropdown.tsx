@@ -27,7 +27,7 @@ export const XDropdown = forwardRef<XDropdownElement, XDropdownProps>(
     const innerRef = useRef<XDropdownElement>(null);
 
     const setRef = (el: XDropdownElement | null) => {
-      (innerRef as React.MutableRefObject<XDropdownElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

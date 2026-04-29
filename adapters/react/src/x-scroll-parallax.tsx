@@ -29,7 +29,7 @@ export const XScrollParallax = forwardRef<XScrollParallaxElement, XScrollParalla
     const innerRef = useRef<XScrollParallaxElement>(null);
 
     const setRef = (el: XScrollParallaxElement | null) => {
-      (innerRef as React.MutableRefObject<XScrollParallaxElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

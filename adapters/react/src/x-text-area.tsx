@@ -32,7 +32,7 @@ export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
     const innerRef = useRef<XTextAreaElement>(null);
 
     const setRef = (el: XTextAreaElement | null) => {
-      (innerRef as React.MutableRefObject<XTextAreaElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

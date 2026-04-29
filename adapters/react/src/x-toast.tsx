@@ -30,7 +30,7 @@ export const XToast = forwardRef<XToastElement, XToastProps>(
     const innerRef = useRef<XToastElement>(null);
 
     const setRef = (el: XToastElement | null) => {
-      (innerRef as React.MutableRefObject<XToastElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

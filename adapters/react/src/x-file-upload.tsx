@@ -30,7 +30,7 @@ export const XFileUpload = forwardRef<XFileUploadElement, XFileUploadProps>(
     const innerRef = useRef<XFileUploadElement>(null);
 
     const setRef = (el: XFileUploadElement | null) => {
-      (innerRef as React.MutableRefObject<XFileUploadElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

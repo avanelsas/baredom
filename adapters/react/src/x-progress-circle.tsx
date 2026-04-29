@@ -26,7 +26,7 @@ export const XProgressCircle = forwardRef<XProgressCircleElement, XProgressCircl
     const innerRef = useRef<XProgressCircleElement>(null);
 
     const setRef = (el: XProgressCircleElement | null) => {
-      (innerRef as React.MutableRefObject<XProgressCircleElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

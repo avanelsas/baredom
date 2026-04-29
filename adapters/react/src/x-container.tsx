@@ -23,7 +23,7 @@ export const XContainer = forwardRef<XContainerElement, XContainerProps>(
     const innerRef = useRef<XContainerElement>(null);
 
     const setRef = (el: XContainerElement | null) => {
-      (innerRef as React.MutableRefObject<XContainerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

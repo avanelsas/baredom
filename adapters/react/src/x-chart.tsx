@@ -32,7 +32,7 @@ export const XChart = forwardRef<XChartElement, XChartProps>(
     const innerRef = useRef<XChartElement>(null);
 
     const setRef = (el: XChartElement | null) => {
-      (innerRef as React.MutableRefObject<XChartElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

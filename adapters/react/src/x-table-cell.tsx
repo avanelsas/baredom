@@ -35,7 +35,7 @@ export const XTableCell = forwardRef<XTableCellElement, XTableCellProps>(
     const innerRef = useRef<XTableCellElement>(null);
 
     const setRef = (el: XTableCellElement | null) => {
-      (innerRef as React.MutableRefObject<XTableCellElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

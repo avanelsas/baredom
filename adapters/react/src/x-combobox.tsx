@@ -31,7 +31,7 @@ export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
     const innerRef = useRef<XComboboxElement>(null);
 
     const setRef = (el: XComboboxElement | null) => {
-      (innerRef as React.MutableRefObject<XComboboxElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

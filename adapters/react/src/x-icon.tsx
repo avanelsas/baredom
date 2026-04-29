@@ -24,7 +24,7 @@ export const XIcon = forwardRef<XIconElement, XIconProps>(
     const innerRef = useRef<XIconElement>(null);
 
     const setRef = (el: XIconElement | null) => {
-      (innerRef as React.MutableRefObject<XIconElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -26,7 +26,7 @@ export const XDrawer = forwardRef<XDrawerElement, XDrawerProps>(
     const innerRef = useRef<XDrawerElement>(null);
 
     const setRef = (el: XDrawerElement | null) => {
-      (innerRef as React.MutableRefObject<XDrawerElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

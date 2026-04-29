@@ -27,7 +27,7 @@ export const XOrganicShape = forwardRef<XOrganicShapeElement, XOrganicShapeProps
     const innerRef = useRef<XOrganicShapeElement>(null);
 
     const setRef = (el: XOrganicShapeElement | null) => {
-      (innerRef as React.MutableRefObject<XOrganicShapeElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

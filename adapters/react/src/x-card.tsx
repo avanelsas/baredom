@@ -24,7 +24,7 @@ export const XCard = forwardRef<XCardElement, XCardProps>(
     const innerRef = useRef<XCardElement>(null);
 
     const setRef = (el: XCardElement | null) => {
-      (innerRef as React.MutableRefObject<XCardElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

@@ -33,7 +33,7 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
     const innerRef = useRef<XSliderElement>(null);
 
     const setRef = (el: XSliderElement | null) => {
-      (innerRef as React.MutableRefObject<XSliderElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

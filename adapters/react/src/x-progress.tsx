@@ -29,7 +29,7 @@ export const XProgress = forwardRef<XProgressElement, XProgressProps>(
     const innerRef = useRef<XProgressElement>(null);
 
     const setRef = (el: XProgressElement | null) => {
-      (innerRef as React.MutableRefObject<XProgressElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

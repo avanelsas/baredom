@@ -26,7 +26,7 @@ export const XContextMenu = forwardRef<XContextMenuElement, XContextMenuProps>(
     const innerRef = useRef<XContextMenuElement>(null);
 
     const setRef = (el: XContextMenuElement | null) => {
-      (innerRef as React.MutableRefObject<XContextMenuElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

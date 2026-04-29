@@ -27,7 +27,7 @@ export const XAvatarGroup = forwardRef<XAvatarGroupElement, XAvatarGroupProps>(
     const innerRef = useRef<XAvatarGroupElement>(null);
 
     const setRef = (el: XAvatarGroupElement | null) => {
-      (innerRef as React.MutableRefObject<XAvatarGroupElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

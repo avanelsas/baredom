@@ -34,7 +34,7 @@ export const XWelcomeTour = forwardRef<XWelcomeTourElement, XWelcomeTourProps>(
     const innerRef = useRef<XWelcomeTourElement>(null);
 
     const setRef = (el: XWelcomeTourElement | null) => {
-      (innerRef as React.MutableRefObject<XWelcomeTourElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

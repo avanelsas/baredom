@@ -35,7 +35,7 @@ export const XLiquidGlass = forwardRef<XLiquidGlassElement, XLiquidGlassProps>(
     const innerRef = useRef<XLiquidGlassElement>(null);
 
     const setRef = (el: XLiquidGlassElement | null) => {
-      (innerRef as React.MutableRefObject<XLiquidGlassElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

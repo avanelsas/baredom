@@ -26,7 +26,7 @@ export const XForm = forwardRef<XFormElement, XFormProps>(
     const innerRef = useRef<XFormElement>(null);
 
     const setRef = (el: XFormElement | null) => {
-      (innerRef as React.MutableRefObject<XFormElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

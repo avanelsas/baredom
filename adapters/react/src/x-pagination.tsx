@@ -29,7 +29,7 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
     const innerRef = useRef<XPaginationElement>(null);
 
     const setRef = (el: XPaginationElement | null) => {
-      (innerRef as React.MutableRefObject<XPaginationElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };

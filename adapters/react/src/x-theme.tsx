@@ -22,7 +22,7 @@ export const XTheme = forwardRef<XThemeElement, XThemeProps>(
     const innerRef = useRef<XThemeElement>(null);
 
     const setRef = (el: XThemeElement | null) => {
-      (innerRef as React.MutableRefObject<XThemeElement | null>).current = el;
+      innerRef.current = el;
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
