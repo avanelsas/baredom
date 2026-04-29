@@ -59,6 +59,14 @@
   [tag-name]
   tag-name)
 
+(defn kebab->camel
+  "Convert kebab-case to camelCase.
+   e.g. 'max-items' -> 'maxItems', 'timeout-ms' -> 'timeoutMs'"
+  [s]
+  (let [parts (str/split s #"-")]
+    (str (first parts)
+         (str/join (map str/capitalize (rest parts))))))
+
 ;; ── EDN parsing helpers ─────────────────────────────────────────────────────
 (defn preprocess-cljs
   "Strip ClojureScript-specific syntax for EDN parsing."
@@ -208,12 +216,12 @@
 
     (set? detail)
     ;; Set of keywords — treat each as string-typed field
-    (let [fields (map #(str (name %) ": string") (sort detail))]
+    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
       (str "{ " (str/join "; " fields) " }"))
 
     (map? detail)
     (let [fields (map (fn [[k v]]
-                        (str (name k) ": " (cljs-type->ts v)))
+                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
                       detail)]
       (str "{ " (str/join "; " fields) " }"))
 
@@ -249,7 +257,7 @@
                             (remove (fn [[k _]] (contains? html-element-conflicts (name k))))
                             (map (fn [[k {:keys [type readonly read-only]}]]
                                    (let [ro (or readonly read-only)]
-                                     (str "  " (when ro "readonly ") (name k) ": " (cljs-type->ts type) ";"))))))
+                                     (str "  " (when ro "readonly ") (kebab->camel (name k)) ": " (cljs-type->ts type) ";"))))))
         method-lines (when methods
                        (map (fn [[k {:keys [args returns]}]]
                               (let [params (when (seq args)
@@ -339,14 +347,14 @@
                       (when properties
                         (map (fn [[k {:keys [type readonly read-only]}]]
                                (cond-> {:kind "field"
-                                        :name (name k)
+                                        :name (kebab->camel (name k))
                                         :type {:text (cljs-type->ts type)}}
                                  (or readonly read-only) (assoc :readonly true)))
                              properties))
                       (when methods
                         (map (fn [[k {:keys [args returns]}]]
                                (cond-> {:kind   "method"
-                                        :name   (name k)
+                                        :name   (kebab->camel (name k))
                                         :return {:type {:text (cljs-type->ts (or returns 'void))}}}
                                  (seq args)
                                  (assoc :parameters
