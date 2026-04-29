@@ -39,5 +39,7 @@
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}})
 
 (def event-schema
-  {:submit {:name event-submit :cancelable true  :detail #{:values}}
-   :reset  {:name event-reset  :cancelable false :detail #{}}})
+  {event-submit {:cancelable true  :detail {:values 'object}}
+   event-reset  {:cancelable false :detail {}}})
+
+(def method-api nil)

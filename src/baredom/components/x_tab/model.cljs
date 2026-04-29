@@ -66,3 +66,5 @@
      :label label
      :controls controls
      :tabindex tabindex}))
+
+(def method-api nil)

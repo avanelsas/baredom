@@ -114,3 +114,5 @@
           {:before (.substring label 0 idx)
            :match  (.substring label idx end)
            :after  (.substring label end)})))))
+
+(def method-api nil)

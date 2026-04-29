@@ -73,3 +73,5 @@
    :direction {:type 'string}
    :disabled  {:type 'boolean}
    :label     {:type 'string}})
+
+(def method-api nil)

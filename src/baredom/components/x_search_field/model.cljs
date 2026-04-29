@@ -43,10 +43,10 @@
    :required     {:type 'boolean :reflects-attribute attr-required}})
 
 (def event-schema
-  {:input  {:name event-input  :cancelable false :detail #{:name :value}}
-   :change {:name event-change :cancelable false :detail #{:name :value}}
-   :search {:name event-search :cancelable true  :detail #{:name :value}}
-   :clear  {:name event-clear  :cancelable false :detail #{:name}}})
+  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
+   event-change {:cancelable false :detail {:name 'string :value 'string}}
+   event-search {:cancelable true  :detail {:name 'string :value 'string}}
+   event-clear  {:cancelable false :detail {:name 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
@@ -59,3 +59,5 @@
    :disabled?    (boolean disabled-present?)
    :required?    (boolean required-present?)
    :autocomplete (normalize-autocomplete autocomplete-raw)})
+
+(def method-api nil)

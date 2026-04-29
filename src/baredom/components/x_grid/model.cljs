@@ -94,3 +94,5 @@
      :justify-items justify*
      :auto-flow flow*
      :inline (boolean inline)}))
+
+(def method-api nil)

@@ -103,3 +103,5 @@
    :variant  {:type 'string}
    :status   {:type 'string}
    :disabled {:type 'boolean}})
+
+(def method-api nil)

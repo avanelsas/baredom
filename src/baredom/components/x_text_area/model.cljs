@@ -64,8 +64,8 @@
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}})
 
 (def event-schema
-  {:input  {:name event-input  :cancelable false :detail #{:name :value}}
-   :change {:name event-change :cancelable false :detail #{:name :value}}})
+  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
+   event-change {:cancelable false :detail {:name 'string :value 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
@@ -93,3 +93,5 @@
      :has-error?   (and (string? error-raw) (not= error-raw "") (some? error-raw))
      :has-hint?    (and (string? hint-raw)  (not= hint-raw "")  (some? hint-raw))
      :has-label?   (and (string? label-raw) (not= label-raw "") (some? label-raw))}))
+
+(def method-api nil)

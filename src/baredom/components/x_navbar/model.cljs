@@ -99,3 +99,5 @@
   [{:keys [label]}]
   (when (mu/non-empty-string? label)
     label))
+
+(def method-api nil)

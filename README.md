@@ -4,7 +4,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="public/assets/baredom_darkmode.svg">
     <source media="(prefers-color-scheme: light)" srcset="public/assets/baredom_lightmode.svg">
-    <img alt="Project Logo" src="public/assets/baredom_lightmode.svg" width="200">
+    <img alt="Project Logo" src="public/assets/baredom_lightmode.svg" width="160">
   </picture>
 </p>
 
@@ -13,6 +13,7 @@
 [![npm version](https://img.shields.io/npm/v/%40vanelsas%2Fbaredom.svg)](https://www.npmjs.com/package/@vanelsas/baredom)
 [![license](https://img.shields.io/npm/l/%40vanelsas%2Fbaredom.svg)](./LICENSE)
 [![ESM](https://img.shields.io/badge/module-ESM-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+[![TypeScript](https://img.shields.io/badge/types-included-blue.svg)](https://www.typescriptlang.org/)
 [![Custom Elements v1](https://img.shields.io/badge/Custom%20Elements-v1-green.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
 
 ---
@@ -62,6 +63,55 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 **Mobile-ready.** All components are tested on viewports from 320px up. Overlay panels cap their width to avoid overflow. Touch targets meet the 44px minimum on coarse-pointer devices. Pointer events are used throughout for unified mouse and touch input.
 
 **Open Shadow DOM.** Shadow roots are `mode: "open"` — inspectable in DevTools, styleable via `::part()`, and testable with standard DOM APIs.
+
+**First-class TypeScript support.** Every component ships with auto-generated `.d.ts` type declarations and a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest). TypeScript consumers get typed element interfaces, typed custom events with detail payloads, and `HTMLElementTagNameMap` augmentation for `querySelector` type narrowing — all without installing a separate `@types` package.
+
+---
+
+## TypeScript
+
+BareDOM includes TypeScript declarations for every component. Types are auto-generated from component metadata and ship alongside the ESM files — no additional setup required.
+
+### What you get
+
+- **Typed element interfaces** extending `HTMLElement` with all properties and methods
+- **Typed custom events** with full `detail` payload types
+- **`HTMLElementTagNameMap` augmentation** so `document.querySelector('x-button')` returns `XButton`
+- **[Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest)** (`custom-elements.json`) for IDE tooling and HTML intellisense
+
+### Usage
+
+```typescript
+import '@vanelsas/baredom/x-button';
+import '@vanelsas/baredom/x-alert';
+
+// querySelector returns typed XButton
+const btn = document.querySelector('x-button')!;
+btn.disabled = true;    // type-checked
+btn.loading = true;     // autocomplete works
+
+// Event listeners have typed detail payloads
+btn.addEventListener('press', (e) => {
+  console.log(e.detail.source);  // string — fully typed
+});
+
+// Custom events on other components
+const alert = document.querySelector('x-alert')!;
+alert.addEventListener('x-alert-dismiss', (e) => {
+  console.log(e.detail.reason);  // string
+  console.log(e.detail.type);    // string
+});
+
+// Components with methods
+import '@vanelsas/baredom/x-modal';
+const modal = document.querySelector('x-modal')!;
+modal.show();   // typed method
+modal.hide();   // typed method
+```
+
+### IDE support
+
+The `custom-elements.json` manifest enables HTML intellisense in editors that support it. For VS Code, install the [Lit Plugin](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) or the [Custom Elements Language Server](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) to get attribute autocomplete and validation in HTML templates.
 
 ---
 
@@ -453,7 +503,7 @@ BareDOM compiles to lightweight ES modules. Sizes below are gzipped:
 
 Each component loads `base.js` once plus its own module. A typical page using 5-10 components weighs **40-65 KB** gzipped total.
 
-> **ESM only.** BareDOM ships ES modules exclusively — there is no CommonJS or UMD build. This works natively in all modern browsers and with any bundler that supports ESM (webpack 5+, Vite, esbuild, Rollup, Parcel). If you need server-side rendering, pre-render the HTML and hydrate with component registration on the client.
+> **ESM only.** BareDOM ships ES modules exclusively — there is no CommonJS or UMD build. This works natively in all modern browsers and with any bundler that supports ESM (webpack 5+, Vite, esbuild, Rollup, Parcel). TypeScript declarations (`.d.ts`) are included for every component. If you need server-side rendering, pre-render the HTML and hydrate with component registration on the client.
 
 ---
 

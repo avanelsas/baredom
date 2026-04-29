@@ -237,3 +237,5 @@
   "Linear interpolation: moves current toward target by speed fraction."
   [current target speed]
   (+ current (* (- target current) speed)))
+
+(def method-api nil)

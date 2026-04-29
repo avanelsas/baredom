@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@vanelsas/baredom/*": ["../../dist/*"]
+    }
+  },
+  "include": ["*.ts"]
+}

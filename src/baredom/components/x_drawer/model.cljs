@@ -71,3 +71,9 @@
 (def event-schema
   {event-toggle  {:cancelable false :detail {:open 'boolean}}
    event-dismiss {:cancelable false :detail {:reason 'string}}})
+
+;; ── Method API metadata ──────────────────────────────────────────────────────
+(def method-api
+  {:show   {:args [] :returns 'void}
+   :hide   {:args [] :returns 'void}
+   :toggle {:args [] :returns 'void}})

@@ -12,6 +12,7 @@
   {:tag-name            model/tag-name
    :properties          model/property-api
    :events              model/event-schema
+   :methods             model/method-api
    :observed-attributes model/observed-attributes
    :step-tag-name       step-model/tag-name
    :step-properties     step-model/property-api})

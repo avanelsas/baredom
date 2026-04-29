@@ -98,3 +98,5 @@
                        indeterminate? "mixed"
                        checked?       "true"
                        :else          "false")}))
+
+(def method-api nil)

@@ -24,9 +24,8 @@
    :disabled {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
-  {:click {:name       event-click
-           :cancelable true
-           :detail     #{:href :filename}}})
+  {event-click {:cancelable true
+                :detail     {:href 'string :filename 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
@@ -38,3 +37,5 @@
 
 (defn data-url? [href]
   (and (string? href) (.startsWith ^string href "data:")))
+
+(def method-api nil)

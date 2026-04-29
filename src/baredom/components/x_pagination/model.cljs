@@ -135,3 +135,5 @@
 
 (def event-schema
   {:page-change {:detail {:page 'number}}})
+
+(def method-api nil)

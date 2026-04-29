@@ -298,3 +298,5 @@
   "Build event detail map for x-liquid-fill-progress."
   [progress velocity]
   {:progress progress :velocity velocity})
+
+(def method-api nil)

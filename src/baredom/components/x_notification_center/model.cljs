@@ -54,3 +54,5 @@
   {event-push    {:detail {:id 'string :count 'number} :cancelable false}
    event-dismiss {:detail {:id 'string :type 'string :reason 'string :text 'string :count 'number} :cancelable false}
    event-empty   {:detail {} :cancelable false}})
+
+(def method-api nil)

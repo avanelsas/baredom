@@ -155,3 +155,5 @@
   "Return true when both show-progress is set and timeout-ms is a valid positive integer."
   [{:keys [show-progress? timeout-ms]}]
   (boolean (and show-progress? (some? timeout-ms) (pos? timeout-ms))))
+
+(def method-api nil)

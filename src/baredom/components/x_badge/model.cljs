@@ -95,3 +95,5 @@
    :count   {:type 'number}
    :max     {:type 'number}
    :text    {:type 'string}})
+
+(def method-api nil)

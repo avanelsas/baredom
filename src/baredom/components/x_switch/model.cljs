@@ -108,3 +108,5 @@
      :aria-describedby aria-describedby-raw
      :aria-labelledby  aria-labelledby-raw
      :aria-checked     (if checked? "true" "false")}))
+
+(def method-api nil)

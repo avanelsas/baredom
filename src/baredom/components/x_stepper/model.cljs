@@ -149,3 +149,5 @@
   "Build event detail map for an x-stepper-change event."
   [from to]
   {:from from :to to})
+
+(def method-api nil)

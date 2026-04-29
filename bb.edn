@@ -2,4 +2,6 @@
  :tasks
  {release {:doc "Cut a new release. Usage: bb release :patch|:minor|:major"
            :requires ([release])
-           :task (release/-main *command-line-args*)}}}
+           :task (release/-main *command-line-args*)}
+  generate-types {:doc "Generate .d.ts and custom-elements.json from model metadata"
+                  :task (load-file "scripts/generate_types.bb")}}}

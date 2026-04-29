@@ -338,3 +338,5 @@
   "Build the detail map for an x-morph-stack-changed event."
   [from to]
   {:from (or from "") :to (or to "")})
+
+(def method-api nil)

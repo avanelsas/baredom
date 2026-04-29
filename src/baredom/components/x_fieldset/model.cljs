@@ -31,3 +31,5 @@
      :disabled?        disabled?
      :aria-label       aria-label-raw
      :aria-describedby aria-describedby-raw}))
+
+(def method-api nil)

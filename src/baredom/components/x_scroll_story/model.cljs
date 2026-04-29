@@ -204,3 +204,5 @@
 
 (defn autoplay-resume-detail [progress active-index active-id]
   {:progress progress :activeIndex active-index :activeId active-id})
+
+(def method-api nil)

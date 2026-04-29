@@ -50,3 +50,5 @@
    :placeholder placeholder-raw
    :value       value-raw
    :name        name-raw})
+
+(def method-api nil)

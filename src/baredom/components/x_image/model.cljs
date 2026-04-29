@@ -160,3 +160,5 @@
   "Build the event detail map for x-image-error."
   [src]
   {:src (or src "")})
+
+(def method-api nil)

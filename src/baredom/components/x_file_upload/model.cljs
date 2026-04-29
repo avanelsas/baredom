@@ -152,3 +152,5 @@
     (< bytes 1048576)    (str (.toFixed (/ bytes 1024) 1) " KB")
     (< bytes 1073741824) (str (.toFixed (/ bytes 1048576) 1) " MB")
     :else                (str (.toFixed (/ bytes 1073741824) 1) " GB")))
+
+(def method-api nil)

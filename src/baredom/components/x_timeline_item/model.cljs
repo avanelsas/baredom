@@ -213,3 +213,5 @@
   [{:keys [status label]}]
   {:status (status->attr status)
    :label  label})
+
+(def method-api nil)

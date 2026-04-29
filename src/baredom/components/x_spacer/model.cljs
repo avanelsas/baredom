@@ -59,3 +59,5 @@
   {:size {:type 'string}
    :axis {:type 'string}
    :grow {:type 'boolean}})
+
+(def method-api nil)

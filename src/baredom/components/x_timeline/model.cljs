@@ -81,3 +81,5 @@
   {:index  (or index 0)
    :status (or status "")
    :label  (or label "")})
+
+(def method-api nil)

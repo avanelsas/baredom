@@ -160,3 +160,5 @@
 
 (defn progress-detail [progress]
   {:progress progress})
+
+(def method-api nil)

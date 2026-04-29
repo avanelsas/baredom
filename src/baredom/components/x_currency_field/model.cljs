@@ -56,8 +56,8 @@
    :required    {:type 'boolean :reflects-attribute attr-required}})
 
 (def event-schema
-  {:input  {:name event-input  :cancelable false :detail #{:name :value}}
-   :change {:name event-change :cancelable false :detail #{:name :value}}})
+  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
+   event-change {:cancelable false :detail {:name 'string :value 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
@@ -103,3 +103,5 @@
       (str "Value must be at most " max ".")
 
       :else "")))
+
+(def method-api nil)

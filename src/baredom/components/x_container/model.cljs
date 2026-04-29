@@ -60,3 +60,5 @@
    :center (boolean center)
    :fluid (boolean fluid)
    :label (when (mu/non-empty-string? label) label)})
+
+(def method-api nil)
