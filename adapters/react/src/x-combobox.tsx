@@ -15,6 +15,7 @@ export interface XComboboxProps {
   required?: boolean;
   open?: boolean;
   placement?: string;
+  onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;
   onToggle?: (e: CustomEvent<{ open: boolean; source: string }>) => void;
@@ -27,7 +28,7 @@ export interface XComboboxProps {
 
 export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
   function XCombobox(props, forwardedRef) {
-    const { onChange, onInput, onToggle, children, ...rest } = props;
+    const { onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
     const innerRef = useRef<XComboboxElement>(null);
 
     const setRef = (el: XComboboxElement | null) => {
@@ -41,6 +42,10 @@ export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-combobox-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-combobox-change-request", onChangeRequest as EventListener));
+      }
       if (onChange) {
         el.addEventListener("x-combobox-change", onChange as EventListener);
         cleanup.push(() => el.removeEventListener("x-combobox-change", onChange as EventListener));
@@ -55,7 +60,7 @@ export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChange, onInput, onToggle]);
+    }, [onChangeRequest, onChange, onInput, onToggle]);
 
     return <x-combobox ref={setRef} {...rest}>{children}</x-combobox>;
   }

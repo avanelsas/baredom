@@ -22,8 +22,9 @@
 ;; ---------------------------------------------------------------------------
 ;; Event name constants
 ;; ---------------------------------------------------------------------------
-(def event-input  "x-slider-input")
-(def event-change "x-slider-change")
+(def event-change-request "x-slider-change-request")
+(def event-input          "x-slider-input")
+(def event-change         "x-slider-change")
 
 ;; ---------------------------------------------------------------------------
 ;; Defaults and allowed values
@@ -70,8 +71,10 @@
    :size      {:type 'string  :reflects-attribute attr-size}})
 
 (def event-schema
-  {event-input  {:detail {:value 'number :min 'number :max 'number}}
-   event-change {:detail {:value 'number :min 'number :max 'number}}})
+  {event-change-request {:cancelable true
+                         :detail {:value 'number :previousValue 'number :min 'number :max 'number}}
+   event-input          {:detail {:value 'number :min 'number :max 'number}}
+   event-change         {:detail {:value 'number :min 'number :max 'number}}})
 
 ;; ---------------------------------------------------------------------------
 ;; Normalization helpers

@@ -396,3 +396,40 @@
              (is (= 1 @counter))
              (done))
            0))))))
+
+;; ---------------------------------------------------------------------------
+;; Cancelable change-request
+;; ---------------------------------------------------------------------------
+(deftest input-dispatches-change-request-test
+  (async done
+    (let [^js el  (mount! {"value" "hello"})
+          ^js ta  (get-textarea el)
+          seen    (atom nil)]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev]
+          (reset! seen {:value          (.-value (.-detail ev))
+                        :previous-value (.-previousValue (.-detail ev))})))
+      (set! (.-value ta) "world")
+      (.dispatchEvent ta (js/Event. "input" #js {:bubbles true}))
+      (js/setTimeout
+       (fn []
+         (is (some? @seen) "change-request event should fire")
+         (is (= "world" (:value @seen)))
+         (is (= "hello" (:previous-value @seen)))
+         (done))
+       0))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [^js el (mount! {"value" "keep"})
+          ^js ta (get-textarea el)]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev] (.preventDefault ev)))
+      (set! (.-value ta) "discard")
+      (.dispatchEvent ta (js/Event. "input" #js {:bubbles true}))
+      (js/setTimeout
+       (fn []
+         (is (= "keep" (.-value ta))
+             "textarea value should revert when change-request is cancelled")
+         (done))
+       0))))

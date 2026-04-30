@@ -15,6 +15,7 @@ export interface XPaginationProps {
   size?: string;
   disabled?: boolean;
   label?: string;
+  onPageChangeRequest?: (e: CustomEvent<{ page: number; previousPage: number }>) => void;
   onPageChange?: (e: CustomEvent<{ page: number }>) => void;
   children?: React.ReactNode;
   className?: string;
@@ -25,7 +26,7 @@ export interface XPaginationProps {
 
 export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
   function XPagination(props, forwardedRef) {
-    const { onPageChange, children, ...rest } = props;
+    const { onPageChangeRequest, onPageChange, children, ...rest } = props;
     const innerRef = useRef<XPaginationElement>(null);
 
     const setRef = (el: XPaginationElement | null) => {
@@ -39,13 +40,17 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onPageChangeRequest) {
+        el.addEventListener("page-change-request", onPageChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("page-change-request", onPageChangeRequest as EventListener));
+      }
       if (onPageChange) {
         el.addEventListener("page-change", onPageChange as EventListener);
         cleanup.push(() => el.removeEventListener("page-change", onPageChange as EventListener));
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onPageChange]);
+    }, [onPageChangeRequest, onPageChange]);
 
     return <x-pagination ref={setRef} {...rest}>{children}</x-pagination>;
   }

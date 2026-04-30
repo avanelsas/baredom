@@ -182,3 +182,38 @@
 (deftest size-sets-data-size-test
   (let [^js el (make-el {"size" "lg"})]
     (is (= "lg" (.getAttribute el "data-size")))))
+
+;; ── Cancelable change-request ────────────────────────────────────────────
+(deftest next-dispatches-change-request-test
+  (async done
+    (let [^js el   (make-el {"page" "1" "total-pages" "5"})
+          root     (.-shadowRoot el)
+          seen     (atom nil)]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev]
+          (reset! seen {:page          (.-page (.-detail ev))
+                        :previous-page (.-previousPage (.-detail ev))})))
+      (let [next-btn (.querySelector root "[part~='button-next']")]
+        (.click next-btn))
+      (js/setTimeout
+       (fn []
+         (is (some? @seen) "change-request event should fire")
+         (is (= 2 (:page @seen)))
+         (is (= 1 (:previous-page @seen)))
+         (done))
+       0))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [^js el   (make-el {"page" "1" "total-pages" "5"})
+          root     (.-shadowRoot el)]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev] (.preventDefault ev)))
+      (let [next-btn (.querySelector root "[part~='button-next']")]
+        (.click next-btn))
+      (js/setTimeout
+       (fn []
+         (is (= "1" (.getAttribute el "page"))
+             "page should NOT change when change-request is cancelled")
+         (done))
+       0))))

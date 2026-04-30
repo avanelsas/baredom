@@ -255,3 +255,52 @@
             (done))
           0))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Cancelable change-request
+;; ---------------------------------------------------------------------------
+
+(deftest input-dispatches-change-request-test
+  (async done
+    (let [el       (append! (make-el))
+          input-el (shadow-part el "[part=input]")
+          seen     (atom nil)]
+      (.setAttribute el model/attr-value "10")
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev]
+             (reset! seen {:value          (.-value (.-detail ev))
+                           :previous-value (.-previousValue (.-detail ev))})))
+         ;; Focus to get raw mode, then type a new value
+         (.focus input-el)
+         (set! (.-value input-el) "20")
+         (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
+         (js/setTimeout
+          (fn []
+            (is (some? @seen) "change-request event should fire")
+            (is (= "20" (:value @seen)))
+            (is (= "10" (:previous-value @seen)))
+            (done))
+          0))
+       0))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [el       (append! (make-el))
+          input-el (shadow-part el "[part=input]")]
+      (.setAttribute el model/attr-value "10")
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev] (.preventDefault ev)))
+         (.focus input-el)
+         (set! (.-value input-el) "99")
+         (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
+         (js/setTimeout
+          (fn []
+            (is (= "10" (.-value input-el))
+                "input value should revert when change-request is cancelled")
+            (done))
+          0))
+       0))))

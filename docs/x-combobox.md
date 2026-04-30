@@ -45,6 +45,19 @@ A single-select combobox with type-ahead filtering. The user types to filter a l
 
 ## Events
 
+### `x-combobox-change-request`
+
+Fired before the selected value changes. **Cancelable** — call `event.preventDefault()` to block the update (controlled mode).
+
+| Property | Value |
+|----------|-------|
+| `bubbles` | `true` |
+| `composed` | `true` |
+| `cancelable` | **`true`** |
+| `detail.value` | Proposed new value (string) |
+| `detail.label` | Proposed new label (string) |
+| `detail.previousValue` | Current value before change (string) |
+
 ### `x-combobox-change`
 
 Fired when the selected value changes (option selection or clear).

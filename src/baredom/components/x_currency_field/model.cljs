@@ -18,8 +18,9 @@
 (def attr-readonly    "readonly")
 
 ;; Event name constants
-(def event-input  "x-currency-field-input")
-(def event-change "x-currency-field-change")
+(def event-change-request "x-currency-field-change-request")
+(def event-input          "x-currency-field-input")
+(def event-change         "x-currency-field-change")
 
 (def observed-attributes
   #js [attr-name
@@ -56,8 +57,9 @@
    :required    {:type 'boolean :reflects-attribute attr-required}})
 
 (def event-schema
-  {event-input  {:cancelable false :detail {:name 'string :value 'string}}
-   event-change {:cancelable false :detail {:name 'string :value 'string}}})
+  {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}
+   event-input          {:cancelable false :detail {:name 'string :value 'string}}
+   event-change         {:cancelable false :detail {:name 'string :value 'string}}})
 
 (defn normalize
   "Derives a complete view-model map from raw attribute values."

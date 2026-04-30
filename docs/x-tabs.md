@@ -76,6 +76,27 @@ tabs.value = "analytics";
 
 # Events
 
+## value-change-request
+
+Fired before the selected tab changes. **Cancelable** — call `event.preventDefault()` to block the tab switch (controlled mode).
+
+```javascript
+tabs.addEventListener("value-change-request", event => {
+  console.log(event.detail.value);         // proposed new tab
+  console.log(event.detail.previousValue); // current tab
+  event.preventDefault(); // block the switch
+});
+```
+
+Event detail:
+
+```javascript
+{
+  value: string,
+  previousValue: string
+}
+```
+
 ## value-change
 
 Fired when the selected tab changes.

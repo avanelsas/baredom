@@ -400,3 +400,68 @@
              0))
           0))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Cancelable change-request
+;; ---------------------------------------------------------------------------
+
+(deftest change-dispatches-change-request-test
+  (async done
+    (let [el    (make-el)
+          opt-a (.createElement js/document "option")
+          opt-b (.createElement js/document "option")
+          seen  (atom nil)]
+      (x/set-attr! opt-a "value" "a")
+      (set! (.-textContent opt-a) "A")
+      (x/set-attr! opt-b "value" "b")
+      (set! (.-textContent opt-b) "B")
+      (.appendChild el opt-a)
+      (.appendChild el opt-b)
+      (.setAttribute el "value" "a")
+      (.appendChild (.-body js/document) el)
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev]
+             (reset! seen {:value          (.-value (.-detail ev))
+                           :previous-value (.-previousValue (.-detail ev))})))
+         (let [^js sel (shadow-part el "[part=select]")]
+           (set! (.-value sel) "b")
+           (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
+         (js/setTimeout
+          (fn []
+            (is (some? @seen) "change-request event should fire")
+            (is (= "b" (:value @seen)))
+            (is (= "a" (:previous-value @seen)))
+            (done))
+          0))
+       0))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [el    (make-el)
+          opt-a (.createElement js/document "option")
+          opt-b (.createElement js/document "option")]
+      (x/set-attr! opt-a "value" "a")
+      (set! (.-textContent opt-a) "A")
+      (x/set-attr! opt-b "value" "b")
+      (set! (.-textContent opt-b) "B")
+      (.appendChild el opt-a)
+      (.appendChild el opt-b)
+      (.setAttribute el "value" "a")
+      (.appendChild (.-body js/document) el)
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev] (.preventDefault ev)))
+         (let [^js sel (shadow-part el "[part=select]")]
+           (set! (.-value sel) "b")
+           (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
+         (js/setTimeout
+          (fn []
+            (let [^js sel (shadow-part el "[part=select]")]
+              (is (= "a" (.-value sel))
+                  "select value should revert when change-request is cancelled"))
+            (done))
+          0))
+       0))))

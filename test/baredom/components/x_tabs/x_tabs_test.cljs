@@ -1,5 +1,5 @@
 (ns baredom.components.x-tabs.x-tabs-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
             [baredom.components.x-tabs.x-tabs :as x]
             [baredom.components.x-tabs.model :as model]))
 
@@ -465,3 +465,53 @@
     (is (not= -1 (.indexOf css-text ":host")))
     (is (not= -1 (.indexOf css-text ".base")))
     (is (not= -1 (.indexOf css-text "::slotted(x-tab)")))))
+
+;; ---------------------------------------------------------------------------
+;; Cancelable change-request
+;; ---------------------------------------------------------------------------
+
+(deftest tab-click-dispatches-change-request-test
+  (async done
+    (let [el    (append! (make-el))
+          tab-a (make-tab "a" "Tab A")
+          tab-b (make-tab "b" "Tab B")
+          seen  (atom nil)]
+      (.appendChild el tab-a)
+      (.appendChild el tab-b)
+      (.setAttribute el "value" "a")
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev]
+             (reset! seen {:value          (.-value (.-detail ev))
+                           :previous-value (.-previousValue (.-detail ev))})))
+         (.click tab-b)
+         (js/setTimeout
+          (fn []
+            (is (some? @seen) "change-request event should fire")
+            (is (= "b" (:value @seen)))
+            (is (= "a" (:previous-value @seen)))
+            (done))
+          50))
+       50))))
+
+(deftest tab-change-request-can-be-cancelled-test
+  (async done
+    (let [el    (append! (make-el))
+          tab-a (make-tab "a" "Tab A")
+          tab-b (make-tab "b" "Tab B")]
+      (.appendChild el tab-a)
+      (.appendChild el tab-b)
+      (.setAttribute el "value" "a")
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev] (.preventDefault ev)))
+         (.click tab-b)
+         (js/setTimeout
+          (fn []
+            (is (= "a" (.getAttribute el "value"))
+                "value should NOT change when change-request is cancelled")
+            (done))
+          50))
+       50))))
