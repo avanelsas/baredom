@@ -45,9 +45,11 @@ A form-associated multi-line text input web component. Wraps a native `<textarea
 
 | Event                | Bubbles | Composed | Cancelable | Detail |
 |---------------------|---------|----------|------------|--------|
+| `x-text-area-change-request` | `true` | `true` | **`true`** | `{ name: string, value: string, previousValue: string }` |
 | `x-text-area-input` | `true`  | `true`   | `false`    | `{ name: string, value: string }` |
 | `x-text-area-change`| `true`  | `true`   | `false`    | `{ name: string, value: string }` |
 
+- **`x-text-area-change-request`** — fires before the value updates. Call `preventDefault()` to block the change (controlled mode).
 - **`x-text-area-input`** — fires on every keystroke (mirrors native `input` event).
 - **`x-text-area-change`** — fires when the value is committed (mirrors native `change` event, e.g. on blur).
 

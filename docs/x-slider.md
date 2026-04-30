@@ -55,11 +55,13 @@ All properties reflect to their corresponding attributes.
 
 | Event | Cancelable | Detail |
 |-------|-----------|--------|
+| `x-slider-change-request` | **yes** | `{ value: number, previousValue: number, min: number, max: number }` — call `preventDefault()` to block the update |
 | `x-slider-input` | no | `{ value: number, min: number, max: number }` |
 | `x-slider-change` | no | `{ value: number, min: number, max: number }` |
 
-Both events bubble and are composed (cross shadow-DOM boundary).
+All events bubble and are composed (cross shadow-DOM boundary).
 
+- `x-slider-change-request` — fires before the value updates. Prevent to keep the current value (controlled mode).
 - `x-slider-input` — fires continuously while the user drags.
 - `x-slider-change` — fires once when the user commits a value (mouseup / touchend).
 

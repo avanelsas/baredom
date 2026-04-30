@@ -35,9 +35,11 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 
 | Event           | Bubbles | Composed | Cancelable | Detail                          |
 |-----------------|---------|----------|------------|---------------------------------|
+| `x-select-change-request` | yes | yes | **yes** | `{ value: string, label: string, previousValue: string }` |
 | `select-change` | yes     | yes      | no         | `{ value: string, label: string }` |
 
-The component does **not** auto-set the `value` attribute on change. The consumer controls `value` by reacting to `select-change` and setting it explicitly if desired.
+- **`x-select-change-request`** — fires before the selection updates. Call `preventDefault()` to block the change (controlled mode).
+- **`select-change`** — fires after the selection has changed.
 
 ## Slots
 

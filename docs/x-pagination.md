@@ -51,13 +51,22 @@ el.label = "Go to page"; // sets attribute label="Go to page"
 
 ## Events
 
-| Event         | Detail              | Fires when |
-|---------------|---------------------|------------|
-| `page-change` | `{ page: number }`  | A page button, prev, or next is clicked |
+| Event         | Detail              | Cancelable | Fires when |
+|---------------|---------------------|------------|------------|
+| `page-change-request` | `{ page: number, previousPage: number }` | **yes** | Before a page navigation — call `preventDefault()` to block |
+| `page-change` | `{ page: number }`  | no | After a page button, prev, or next is clicked |
 
-The event bubbles and is composed (crosses shadow DOM boundary).
+Both events bubble and are composed (cross shadow DOM boundary).
 
 ```js
+// Controlled mode — block and handle externally
+el.addEventListener('page-change-request', e => {
+  e.preventDefault();
+  // validate, then apply manually:
+  el.setAttribute('page', String(e.detail.page));
+});
+
+// Uncontrolled mode — react to the change
 el.addEventListener('page-change', e => {
   console.log(e.detail.page); // e.g. 4
   el.setAttribute('page', String(e.detail.page));

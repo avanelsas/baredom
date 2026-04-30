@@ -52,8 +52,11 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 
 | Event                       | Bubbles | Composed | Cancelable | Detail                     |
 |-----------------------------|---------|----------|------------|----------------------------|
+| `x-currency-field-change-request` | yes | yes | **yes** | `{ name: string, value: string, previousValue: string }` |
 | `x-currency-field-input`    | yes     | yes      | no         | `{ name: string, value: string }` |
 | `x-currency-field-change`   | yes     | yes      | no         | `{ name: string, value: string }` |
+
+- **`x-currency-field-change-request`** — fires before the value updates. Call `preventDefault()` to block the change (controlled mode).
 
 `value` in the event detail is always the raw numeric string (what will be submitted with the form). On `x-currency-field-change`, the value is canonicalized via `parseFloat` (e.g. `"1234.5"` not `"1,234.50"`).
 
