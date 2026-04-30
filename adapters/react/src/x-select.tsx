@@ -11,6 +11,7 @@ export interface XSelectProps {
   disabled?: boolean;
   required?: boolean;
   value?: string;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onSelectChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
   children?: React.ReactNode;
@@ -22,7 +23,7 @@ export interface XSelectProps {
 
 export const XSelect = forwardRef<XSelectElement, XSelectProps>(
   function XSelect(props, forwardedRef) {
-    const { onChangeRequest, onSelectChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onSelectChange, children, ...rest } = props;
     const innerRef = useRef<XSelectElement>(null);
 
     const setRef = (el: XSelectElement | null) => {
@@ -30,6 +31,23 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when value is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("x-select-change-request", handler);
+      return () => el.removeEventListener("x-select-change-request", handler);
+    }, [value]);
+
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -48,6 +66,6 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onChangeRequest, onSelectChange]);
 
-    return <x-select ref={setRef} {...rest}>{children}</x-select>;
+    return <x-select ref={setRef} value={value} {...rest}>{children}</x-select>;
   }
 );

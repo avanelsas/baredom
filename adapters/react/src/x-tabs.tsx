@@ -9,6 +9,7 @@ init();
 
 export interface XTabsProps {
   value?: string;
+  defaultValue?: string;
   onValueChangeRequest?: (e: CustomEvent<{ value: string; previousValue: string }>) => void;
   onValueChange?: (e: CustomEvent<{ value: string }>) => void;
   children?: React.ReactNode;
@@ -20,7 +21,7 @@ export interface XTabsProps {
 
 export const XTabs = forwardRef<XTabsElement, XTabsProps>(
   function XTabs(props, forwardedRef) {
-    const { onValueChangeRequest, onValueChange, children, ...rest } = props;
+    const { value, defaultValue, onValueChangeRequest, onValueChange, children, ...rest } = props;
     const innerRef = useRef<XTabsElement>(null);
 
     const setRef = (el: XTabsElement | null) => {
@@ -28,6 +29,23 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when value is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("value-change-request", handler);
+      return () => el.removeEventListener("value-change-request", handler);
+    }, [value]);
+
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -46,6 +64,6 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onValueChangeRequest, onValueChange]);
 
-    return <x-tabs ref={setRef} {...rest}>{children}</x-tabs>;
+    return <x-tabs ref={setRef} value={value} {...rest}>{children}</x-tabs>;
   }
 );

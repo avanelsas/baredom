@@ -11,6 +11,23 @@
 (def react-src-dir "adapters/react/src")
 (def react-pkg    "adapters/react/package.json")
 
+;; Components that support controlled mode.
+;; :control-prop — the React prop that activates controlled mode
+;; :default-prop — the uncontrolled initial-value prop
+;; :change-request-event — the DOM event to intercept with preventDefault()
+;; :prop-type — TypeScript type for the control/default props
+(def controlled-components
+  {"x-checkbox"       {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-checkbox-change-request"       :prop-type "boolean"}
+   "x-switch"         {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-switch-change-request"         :prop-type "boolean"}
+   "x-radio"          {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-radio-change-request"          :prop-type "boolean"}
+   "x-slider"         {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-slider-change-request"         :prop-type "string"}
+   "x-text-area"      {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-text-area-change-request"      :prop-type "string"}
+   "x-select"         {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-select-change-request"         :prop-type "string"}
+   "x-combobox"       {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-combobox-change-request"       :prop-type "string"}
+   "x-currency-field" {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-currency-field-change-request" :prop-type "string"}
+   "x-tabs"           {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "value-change-request"            :prop-type "string"}
+   "x-pagination"     {:control-prop "page"     :default-prop "defaultPage"    :change-request-event "page-change-request"             :prop-type "number"}})
+
 ;; ── React-specific helpers ──────────────────────────────────────────────────
 
 (defn kebab->camel
@@ -85,6 +102,11 @@
   [{:keys [tag-name properties events methods string-defs]}]
   (let [interface-name (tag->interface-name tag-name)
         sdefs          (or string-defs {})
+        ctrl           (get controlled-components tag-name)
+        ctrl-prop      (when ctrl (:control-prop ctrl))
+        default-prop   (when ctrl (:default-prop ctrl))
+        ctrl-event     (when ctrl (:change-request-event ctrl))
+        ctrl-type      (when ctrl (:prop-type ctrl))
         ;; Properties: filter out readonly, build props
         writable-props (when properties
                          (->> properties
@@ -107,6 +129,9 @@
                       (map (fn [[k m]]
                              (str "  " (kebab->camel (name k)) "?: " (prop-type->ts m) ";"))
                            writable-props))
+                    ;; Default prop for controlled components
+                    (when ctrl
+                      [(str "  " default-prop "?: " ctrl-type ";")])
                     ;; Event handler props
                     (when event-entries
                       (map (fn [{:keys [react-prop detail-ts]}]
@@ -121,8 +146,11 @@
         ;; Event prop names for destructuring
         event-prop-names (when event-entries
                            (map :react-prop event-entries))
-        ;; All prop names to destructure (events + children)
-        destructured (concat (or event-prop-names []) ["children"])
+        ;; Props to destructure (events + controlled props + children)
+        destructured (concat
+                      (when ctrl [ctrl-prop default-prop])
+                      (or event-prop-names [])
+                      ["children"])
         ;; useEffect event binding blocks
         effect-blocks (when event-entries
                         (map (fn [{:keys [dom-name react-prop]}]
@@ -134,11 +162,35 @@
         ;; useEffect dependency array
         effect-deps (if event-entries
                       (str "[" (str/join ", " (map :react-prop event-entries)) "]")
-                      "[]")]
-    (let [has-events (boolean (seq event-entries))
-          react-imports (if has-events
-                          "forwardRef, useRef, useEffect"
-                          "forwardRef, useRef")]
+                      "[]")
+        has-events  (boolean (seq event-entries))
+        ;; Controlled components always need useEffect
+        needs-effect (or has-events (some? ctrl))
+        react-imports (if needs-effect
+                        "forwardRef, useRef, useEffect"
+                        "forwardRef, useRef")
+        ;; Controlled mode: useEffect that intercepts change-request
+        ctrl-effect (when ctrl
+                      (str "    // Controlled mode: intercept change-request when " ctrl-prop " is provided\n"
+                           "    useEffect(() => {\n"
+                           "      const el = innerRef.current;\n"
+                           "      if (!el || " ctrl-prop " === undefined) return;\n"
+                           "      const handler = (e: Event) => { e.preventDefault(); };\n"
+                           "      el.addEventListener(\"" ctrl-event "\", handler);\n"
+                           "      return () => el.removeEventListener(\"" ctrl-event "\", handler);\n"
+                           "    }, [" ctrl-prop "]);\n\n"))
+        ;; Controlled mode: set initial value from defaultProp
+        ctrl-init (when ctrl
+                    (str "    // Set initial value from " default-prop " (uncontrolled mode)\n"
+                         "    useEffect(() => {\n"
+                         "      const el = innerRef.current;\n"
+                         "      if (!el || " ctrl-prop " !== undefined || " default-prop " === undefined) return;\n"
+                         (if (= ctrl-type "boolean")
+                           (str "      if (" default-prop ") el.setAttribute(\"" ctrl-prop "\", \"\");\n"
+                                "      else el.removeAttribute(\"" ctrl-prop "\");\n")
+                           (str "      el.setAttribute(\"" ctrl-prop "\", String(" default-prop "));\n"))
+                         "    // eslint-disable-next-line react-hooks/exhaustive-deps\n"
+                         "    }, []);\n\n"))]
     (str "\"use client\";\n"
          "// " tag-name ".tsx — auto-generated by generate_react.bb, do not edit\n\n"
          "import React, { " react-imports " } from \"react\";\n"
@@ -157,7 +209,11 @@
          "      if (typeof forwardedRef === \"function\") forwardedRef(el);\n"
          "      else if (forwardedRef) forwardedRef.current = el;\n"
          "    };\n\n"
-         (if event-entries
+         ;; Controlled mode effects
+         (or ctrl-effect "")
+         (or ctrl-init "")
+         ;; Event binding effect
+         (if has-events
            (str "    useEffect(() => {\n"
                 "      const el = innerRef.current;\n"
                 "      if (!el) return;\n"
@@ -166,9 +222,12 @@
                 "      return () => cleanup.forEach(fn => fn());\n"
                 "    }, " effect-deps ");\n\n")
            "")
-         "    return <" tag-name " ref={setRef} {...rest}>{children}</" tag-name ">;\n"
+         ;; For controlled components, pass the control prop explicitly since it's destructured out of rest
+         (if ctrl
+           (str "    return <" tag-name " ref={setRef} " ctrl-prop "={" ctrl-prop "} {...rest}>{children}</" tag-name ">;\n")
+           (str "    return <" tag-name " ref={setRef} {...rest}>{children}</" tag-name ">;\n"))
          "  }\n"
-         ");\n"))))
+         ");\n")))
 
 (defn generate-index
   "Generate the barrel index.ts file."
@@ -193,7 +252,7 @@
        "    interface IntrinsicElements {\n"
        (str/join "\n"
                  (map (fn [{:keys [tag-name]}]
-                        (str "      \"" tag-name "\": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;"))
+                        (str "      \"" tag-name "\": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & Record<string, any>;"))
                       (sort-by :tag-name models)))
        "\n    }\n"
        "  }\n"

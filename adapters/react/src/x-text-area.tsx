@@ -17,6 +17,7 @@ export interface XTextAreaProps {
   maxLength?: number;
   autocomplete?: string;
   required?: boolean;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -29,7 +30,7 @@ export interface XTextAreaProps {
 
 export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
   function XTextArea(props, forwardedRef) {
-    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XTextAreaElement>(null);
 
     const setRef = (el: XTextAreaElement | null) => {
@@ -37,6 +38,23 @@ export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when value is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("x-text-area-change-request", handler);
+      return () => el.removeEventListener("x-text-area-change-request", handler);
+    }, [value]);
+
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -59,6 +77,6 @@ export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onChangeRequest, onInput, onChange]);
 
-    return <x-text-area ref={setRef} {...rest}>{children}</x-text-area>;
+    return <x-text-area ref={setRef} value={value} {...rest}>{children}</x-text-area>;
   }
 );

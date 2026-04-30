@@ -18,6 +18,7 @@ export interface XSliderProps {
   max?: string;
   label?: string;
   step?: string;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: number; previousValue: number; min: number; max: number }>) => void;
   onInput?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
   onChange?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
@@ -30,7 +31,7 @@ export interface XSliderProps {
 
 export const XSlider = forwardRef<XSliderElement, XSliderProps>(
   function XSlider(props, forwardedRef) {
-    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XSliderElement>(null);
 
     const setRef = (el: XSliderElement | null) => {
@@ -38,6 +39,23 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when value is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("x-slider-change-request", handler);
+      return () => el.removeEventListener("x-slider-change-request", handler);
+    }, [value]);
+
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -60,6 +78,6 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onChangeRequest, onInput, onChange]);
 
-    return <x-slider ref={setRef} {...rest}>{children}</x-slider>;
+    return <x-slider ref={setRef} value={value} {...rest}>{children}</x-slider>;
   }
 );

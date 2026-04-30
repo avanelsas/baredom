@@ -14,6 +14,7 @@ export interface XRadioProps {
   required?: boolean;
   name?: string;
   value?: string;
+  defaultChecked?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
   onChange?: (e: CustomEvent<{ value: string; checked: boolean }>) => void;
   children?: React.ReactNode;
@@ -25,7 +26,7 @@ export interface XRadioProps {
 
 export const XRadio = forwardRef<XRadioElement, XRadioProps>(
   function XRadio(props, forwardedRef) {
-    const { onChangeRequest, onChange, children, ...rest } = props;
+    const { checked, defaultChecked, onChangeRequest, onChange, children, ...rest } = props;
     const innerRef = useRef<XRadioElement>(null);
 
     const setRef = (el: XRadioElement | null) => {
@@ -33,6 +34,24 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when checked is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("x-radio-change-request", handler);
+      return () => el.removeEventListener("x-radio-change-request", handler);
+    }, [checked]);
+
+    // Set initial value from defaultChecked (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked !== undefined || defaultChecked === undefined) return;
+      if (defaultChecked) el.setAttribute("checked", "");
+      else el.removeAttribute("checked");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -51,6 +70,6 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onChangeRequest, onChange]);
 
-    return <x-radio ref={setRef} {...rest}>{children}</x-radio>;
+    return <x-radio ref={setRef} checked={checked} {...rest}>{children}</x-radio>;
   }
 );

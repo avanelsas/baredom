@@ -14,6 +14,7 @@ export interface XSwitchProps {
   required?: boolean;
   name?: string;
   value?: string;
+  defaultChecked?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
   onChange?: (e: CustomEvent<{ value: string; checked: boolean }>) => void;
   children?: React.ReactNode;
@@ -25,7 +26,7 @@ export interface XSwitchProps {
 
 export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
   function XSwitch(props, forwardedRef) {
-    const { onChangeRequest, onChange, children, ...rest } = props;
+    const { checked, defaultChecked, onChangeRequest, onChange, children, ...rest } = props;
     const innerRef = useRef<XSwitchElement>(null);
 
     const setRef = (el: XSwitchElement | null) => {
@@ -33,6 +34,24 @@ export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when checked is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("x-switch-change-request", handler);
+      return () => el.removeEventListener("x-switch-change-request", handler);
+    }, [checked]);
+
+    // Set initial value from defaultChecked (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked !== undefined || defaultChecked === undefined) return;
+      if (defaultChecked) el.setAttribute("checked", "");
+      else el.removeAttribute("checked");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -51,6 +70,6 @@ export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onChangeRequest, onChange]);
 
-    return <x-switch ref={setRef} {...rest}>{children}</x-switch>;
+    return <x-switch ref={setRef} checked={checked} {...rest}>{children}</x-switch>;
   }
 );

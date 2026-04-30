@@ -15,6 +15,7 @@ export interface XPaginationProps {
   size?: string;
   disabled?: boolean;
   label?: string;
+  defaultPage?: number;
   onPageChangeRequest?: (e: CustomEvent<{ page: number; previousPage: number }>) => void;
   onPageChange?: (e: CustomEvent<{ page: number }>) => void;
   children?: React.ReactNode;
@@ -26,7 +27,7 @@ export interface XPaginationProps {
 
 export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
   function XPagination(props, forwardedRef) {
-    const { onPageChangeRequest, onPageChange, children, ...rest } = props;
+    const { page, defaultPage, onPageChangeRequest, onPageChange, children, ...rest } = props;
     const innerRef = useRef<XPaginationElement>(null);
 
     const setRef = (el: XPaginationElement | null) => {
@@ -34,6 +35,23 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Controlled mode: intercept change-request when page is provided
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || page === undefined) return;
+      const handler = (e: Event) => { e.preventDefault(); };
+      el.addEventListener("page-change-request", handler);
+      return () => el.removeEventListener("page-change-request", handler);
+    }, [page]);
+
+    // Set initial value from defaultPage (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || page !== undefined || defaultPage === undefined) return;
+      el.setAttribute("page", String(defaultPage));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -52,6 +70,6 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       return () => cleanup.forEach(fn => fn());
     }, [onPageChangeRequest, onPageChange]);
 
-    return <x-pagination ref={setRef} {...rest}>{children}</x-pagination>;
+    return <x-pagination ref={setRef} page={page} {...rest}>{children}</x-pagination>;
   }
 );
