@@ -1,0 +1,81 @@
+name: release-react
+
+on:
+  push:
+    tags:
+      - 'react-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish React Adapter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
+      - run: npm ci
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#react-v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./adapters/react/package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "Tag version (${{ steps.version.outputs.version }}) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Generate React wrappers
+        run: bb scripts/generate_react.bb
+
+      - name: Check generated files are up to date
+        run: git diff --exit-code adapters/react/src/ adapters/react/package.json
+
+      - name: Install adapter dependencies
+        run: cd adapters/react && npm install
+
+      - name: Build adapter
+        run: cd adapters/react && npx tsc
+
+      - name: Publish to npm
+        run: |
+          cd adapters/react
+          npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "@vanelsas/baredom-react v${{ steps.version.outputs.version }}"
+          body: |
+            React 19 adapter for BareDOM web components.
+
+            ```bash
+            npm install @vanelsas/baredom-react
+            ```
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
