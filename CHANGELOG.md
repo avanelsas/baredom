@@ -2,6 +2,20 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.6.0] - 2026-04-30
+
+### Added
+
+- **Cancelable change-request events** — Seven input components now fire a cancelable `change-request` event before applying user-initiated value changes. Call `preventDefault()` to block the update (enables controlled component patterns in framework adapters). Components: x-slider, x-text-area, x-select, x-combobox, x-currency-field, x-tabs, x-pagination.
+
+### Fixed
+
+- **x-context-menu** — Escape key and click-outside now correctly dismiss the menu. Handlers moved from the overlay layer (which has `pointer-events: none`) to document-level listeners.
+- **x-button** — Fixed missing press events on mobile Safari. Added `touch-action: manipulation` and `-webkit-tap-highlight-color: transparent` to the internal button element (reset by `all: unset`).
+- **x-carousel demo** — Control panel now uses correct BareDOM event names (`x-switch-change`, `x-form-field-input`, `select-change`, `press`) instead of native DOM events.
+- **x-welcome-tour test** — Added missing `^js` type hint to fix Closure Advanced compilation warning.
+- **x-combobox** — Fixed undefined category in demo gallery (changed from `"input"` to `"form"`).
+
 ## [2.5.0] - 2026-04-29
 
 ### Added
