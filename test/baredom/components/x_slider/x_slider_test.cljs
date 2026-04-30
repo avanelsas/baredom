@@ -447,3 +447,41 @@
              "x-slider-input should not fire when disabled")
          (done))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Cancelable change-request
+;; ---------------------------------------------------------------------------
+
+(deftest input-dispatches-change-request-test
+  (async done
+    (let [el       (append! (make-el))
+          seen     (atom nil)
+          input-el (shadow-part el "[part=input]")]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev]
+          (reset! seen {:value          (.-value (.-detail ev))
+                        :previous-value (.-previousValue (.-detail ev))})))
+      (set! (.-value input-el) "50")
+      (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
+      (js/setTimeout
+       (fn []
+         (is (some? @seen) "change-request event should fire")
+         (is (= 50 (:value @seen)))
+         (is (= 0  (:previous-value @seen)))
+         (done))
+       0))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [el       (append! (make-el))
+          input-el (shadow-part el "[part=input]")]
+      (.addEventListener el model/event-change-request
+        (fn [^js ev] (.preventDefault ev)))
+      (set! (.-value input-el) "75")
+      (.dispatchEvent input-el (js/Event. "input" #js {:bubbles true}))
+      (js/setTimeout
+       (fn []
+         (is (= "0" (or (.getAttribute el model/attr-value) "0"))
+             "value attr should NOT change when change-request is cancelled")
+         (done))
+       0))))

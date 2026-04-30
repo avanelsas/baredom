@@ -327,3 +327,38 @@
          (is (not (.hasAttribute el "data-has-value")))
          (done))
        50))))
+
+;; ── Cancelable change-request ───────────────────────────────────────────────
+(deftest enter-dispatches-change-request-test
+  (async done
+    (let [^js el (append! (make-el))
+          seen   (atom nil)]
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev]
+             (reset! seen {:value          (.-value (.-detail ev))
+                           :previous-value (.-previousValue (.-detail ev))})))
+         (.show el)
+         (.dispatchEvent (shadow-part el "[part=input]")
+                         (js/KeyboardEvent. "keydown" #js {:key "Enter" :bubbles true}))
+         (is (some? @seen) "change-request event should fire")
+         (is (= "us" (:value @seen)))
+         (is (= ""   (:previous-value @seen)))
+         (done))
+       50))))
+
+(deftest change-request-can-be-cancelled-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (js/setTimeout
+       (fn []
+         (.addEventListener el model/event-change-request
+           (fn [^js ev] (.preventDefault ev)))
+         (.show el)
+         (.dispatchEvent (shadow-part el "[part=input]")
+                         (js/KeyboardEvent. "keydown" #js {:key "Enter" :bubbles true}))
+         (is (nil? (.getAttribute el model/attr-value))
+             "value should NOT be set when change-request is cancelled")
+         (done))
+       50))))
