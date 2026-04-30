@@ -207,12 +207,12 @@
     "{}"
 
     (set? detail)
-    (let [fields (map #(str (name %) ": string") (sort detail))]
+    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
       (str "{ " (str/join "; " fields) " }"))
 
     (map? detail)
     (let [fields (map (fn [[k v]]
-                        (str (name k) ": " (cljs-type->ts v)))
+                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
                       detail)]
       (str "{ " (str/join "; " fields) " }"))
 
