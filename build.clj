@@ -2,7 +2,7 @@
   (:require [clojure.tools.build.api :as b]))
 
 (def lib       'com.github.avanelsas/baredom)
-(def version   "2.5.0")
+(def version   "2.6.0")
 (def class-dir "target/classes")
 (def jar-file  (format "target/%s-%s.jar" (name lib) version))
 (def pom-file  (format "target/classes/META-INF/maven/%s/%s/pom.xml"
