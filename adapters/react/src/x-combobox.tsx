@@ -15,6 +15,7 @@ export interface XComboboxProps {
   required?: boolean;
   open?: boolean;
   placement?: string;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;
@@ -28,7 +29,7 @@ export interface XComboboxProps {
 
 export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
   function XCombobox(props, forwardedRef) {
-    const { onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
     const innerRef = useRef<XComboboxElement>(null);
 
     const setRef = (el: XComboboxElement | null) => {
@@ -37,14 +38,27 @@ export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-combobox-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-combobox-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-combobox-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-combobox-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-combobox-change", onChange as EventListener);
@@ -60,8 +74,8 @@ export const XCombobox = forwardRef<XComboboxElement, XComboboxProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange, onInput, onToggle]);
+    }, [value, onChangeRequest, onChange, onInput, onToggle]);
 
-    return <x-combobox ref={setRef} {...rest}>{children}</x-combobox>;
+    return <x-combobox ref={setRef} value={value} {...rest}>{children}</x-combobox>;
   }
 );

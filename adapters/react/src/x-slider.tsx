@@ -18,6 +18,7 @@ export interface XSliderProps {
   max?: string;
   label?: string;
   step?: string;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: number; previousValue: number; min: number; max: number }>) => void;
   onInput?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
   onChange?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
@@ -30,7 +31,7 @@ export interface XSliderProps {
 
 export const XSlider = forwardRef<XSliderElement, XSliderProps>(
   function XSlider(props, forwardedRef) {
-    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XSliderElement>(null);
 
     const setRef = (el: XSliderElement | null) => {
@@ -39,14 +40,27 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-slider-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-slider-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-slider-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-slider-change-request", wrappedHandler));
       }
       if (onInput) {
         el.addEventListener("x-slider-input", onInput as EventListener);
@@ -58,8 +72,8 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onInput, onChange]);
+    }, [value, onChangeRequest, onInput, onChange]);
 
-    return <x-slider ref={setRef} {...rest}>{children}</x-slider>;
+    return <x-slider ref={setRef} value={value} {...rest}>{children}</x-slider>;
   }
 );

@@ -21,6 +21,7 @@ export interface XCurrencyFieldProps {
   label?: string;
   error?: string;
   required?: boolean;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -33,7 +34,7 @@ export interface XCurrencyFieldProps {
 
 export const XCurrencyField = forwardRef<XCurrencyFieldElement, XCurrencyFieldProps>(
   function XCurrencyField(props, forwardedRef) {
-    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XCurrencyFieldElement>(null);
 
     const setRef = (el: XCurrencyFieldElement | null) => {
@@ -42,14 +43,27 @@ export const XCurrencyField = forwardRef<XCurrencyFieldElement, XCurrencyFieldPr
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-currency-field-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-currency-field-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-currency-field-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-currency-field-change-request", wrappedHandler));
       }
       if (onInput) {
         el.addEventListener("x-currency-field-input", onInput as EventListener);
@@ -61,8 +75,8 @@ export const XCurrencyField = forwardRef<XCurrencyFieldElement, XCurrencyFieldPr
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onInput, onChange]);
+    }, [value, onChangeRequest, onInput, onChange]);
 
-    return <x-currency-field ref={setRef} {...rest}>{children}</x-currency-field>;
+    return <x-currency-field ref={setRef} value={value} {...rest}>{children}</x-currency-field>;
   }
 );

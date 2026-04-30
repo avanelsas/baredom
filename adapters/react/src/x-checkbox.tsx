@@ -15,6 +15,7 @@ export interface XCheckboxProps {
   required?: boolean;
   name?: string;
   value?: string;
+  defaultChecked?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
   onChange?: (e: CustomEvent<{ value: string; checked: boolean }>) => void;
   children?: React.ReactNode;
@@ -26,7 +27,7 @@ export interface XCheckboxProps {
 
 export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
   function XCheckbox(props, forwardedRef) {
-    const { onChangeRequest, onChange, children, ...rest } = props;
+    const { checked, defaultChecked, onChangeRequest, onChange, children, ...rest } = props;
     const innerRef = useRef<XCheckboxElement>(null);
 
     const setRef = (el: XCheckboxElement | null) => {
@@ -35,14 +36,28 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultChecked (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked !== undefined || defaultChecked === undefined) return;
+      if (defaultChecked) el.setAttribute("checked", "");
+      else el.removeAttribute("checked");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-checkbox-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-checkbox-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = checked !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-checkbox-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-checkbox-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-checkbox-change", onChange as EventListener);
@@ -50,8 +65,8 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange]);
+    }, [checked, onChangeRequest, onChange]);
 
-    return <x-checkbox ref={setRef} {...rest}>{children}</x-checkbox>;
+    return <x-checkbox ref={setRef} checked={checked} {...rest}>{children}</x-checkbox>;
   }
 );

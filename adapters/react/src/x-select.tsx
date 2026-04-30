@@ -11,6 +11,7 @@ export interface XSelectProps {
   disabled?: boolean;
   required?: boolean;
   value?: string;
+  defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onSelectChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
   children?: React.ReactNode;
@@ -22,7 +23,7 @@ export interface XSelectProps {
 
 export const XSelect = forwardRef<XSelectElement, XSelectProps>(
   function XSelect(props, forwardedRef) {
-    const { onChangeRequest, onSelectChange, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onSelectChange, children, ...rest } = props;
     const innerRef = useRef<XSelectElement>(null);
 
     const setRef = (el: XSelectElement | null) => {
@@ -31,14 +32,27 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-select-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-select-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-select-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-select-change-request", wrappedHandler));
       }
       if (onSelectChange) {
         el.addEventListener("select-change", onSelectChange as EventListener);
@@ -46,8 +60,8 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onSelectChange]);
+    }, [value, onChangeRequest, onSelectChange]);
 
-    return <x-select ref={setRef} {...rest}>{children}</x-select>;
+    return <x-select ref={setRef} value={value} {...rest}>{children}</x-select>;
   }
 );

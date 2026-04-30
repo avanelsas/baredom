@@ -60,6 +60,51 @@ BareDOM event names are automatically converted to React-style callback props:
 
 The component's tag-name prefix (e.g. `x-alert-`) is stripped, and the remainder is camelCased with an `on` prefix.
 
+## Controlled inputs
+
+Input components support React's controlled component pattern. When you pass a `value` (or `checked`) prop, the wrapper prevents the component from updating its own state — React becomes the source of truth.
+
+```tsx
+import { useState } from "react";
+import { XCheckbox } from "@vanelsas/baredom-react/x-checkbox";
+import { XSlider } from "@vanelsas/baredom-react/x-slider";
+
+function Form() {
+  const [checked, setChecked] = useState(false);
+  const [volume, setVolume] = useState("50");
+
+  return (
+    <>
+      {/* Controlled: React owns the state */}
+      <XCheckbox
+        checked={checked}
+        onChangeRequest={(e) => setChecked(e.detail.nextChecked)}
+      />
+
+      <XSlider
+        value={volume}
+        min="0" max="100"
+        onChangeRequest={(e) => setVolume(String(e.detail.value))}
+      />
+
+      {/* Uncontrolled: component manages itself */}
+      <XCheckbox
+        defaultChecked={true}
+        onChange={(e) => console.log(e.detail.checked)}
+      />
+    </>
+  );
+}
+```
+
+**Controlled components:** XCheckbox, XSwitch, XRadio (`checked`), XSlider, XTextArea, XSelect, XCombobox, XCurrencyField, XTabs (`value`), XPagination (`page`).
+
+| Mode | Prop | Behavior |
+|------|------|----------|
+| Controlled | `checked` / `value` / `page` | Component state blocked, React owns updates via `onChangeRequest` |
+| Uncontrolled | `defaultChecked` / `defaultValue` / `defaultPage` | Sets initial value, component manages itself afterwards |
+| Uncontrolled | *(neither)* | Component manages itself from default |
+
 ## Refs and methods
 
 Access the underlying DOM element and its methods via ref:
@@ -102,7 +147,7 @@ function App() {
 ## Requirements
 
 - React 19+
-- @vanelsas/baredom 2.4.1+
+- @vanelsas/baredom 2.5.0+
 
 ## Auto-generated
 

@@ -3,6 +3,8 @@ import { XTheme } from "@vanelsas/baredom-react/x-theme";
 import { XButton } from "@vanelsas/baredom-react/x-button";
 import { XAlert } from "@vanelsas/baredom-react/x-alert";
 import { XSwitch } from "@vanelsas/baredom-react/x-switch";
+import { XCheckbox } from "@vanelsas/baredom-react/x-checkbox";
+import { XSlider } from "@vanelsas/baredom-react/x-slider";
 import { XBadge } from "@vanelsas/baredom-react/x-badge";
 import { XSpinner } from "@vanelsas/baredom-react/x-spinner";
 import { XDivider } from "@vanelsas/baredom-react/x-divider";
@@ -13,6 +15,9 @@ export function App() {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(true);
+  const [checked, setChecked] = useState(false);
+  const [switchOn, setSwitchOn] = useState(false);
+  const [sliderVal, setSliderVal] = useState("25");
   const buttonRef = useRef<XButtonElement>(null);
 
   const addLog = (msg: string) => {
@@ -76,19 +81,76 @@ export function App() {
 
         <XDivider style={{ margin: "1.5rem 0" }} />
 
-        {/* --- Test 3: Switch with toggle event --- */}
+        {/* --- Test 3: Controlled checkbox --- */}
         <section>
-          <h2>3. XSwitch — toggle event</h2>
+          <h2>3. XCheckbox — controlled</h2>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <XCheckbox
+              checked={checked}
+              onChangeRequest={(e) => {
+                addLog(`Checkbox change-request: ${e.detail.previousChecked} → ${e.detail.nextChecked}`);
+                setChecked(e.detail.nextChecked);
+              }}
+            />
+            <span>Controlled: {checked ? "checked" : "unchecked"}</span>
+            <button onClick={() => setChecked((c) => !c)}>Toggle from React</button>
+          </div>
+        </section>
+
+        <XDivider style={{ margin: "1.5rem 0" }} />
+
+        {/* --- Test 4: Controlled switch --- */}
+        <section>
+          <h2>4. XSwitch — controlled</h2>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <XSwitch
+              checked={switchOn}
+              onChangeRequest={(e) => {
+                addLog(`Switch change-request: ${e.detail.previousChecked} → ${e.detail.nextChecked}`);
+                setSwitchOn(e.detail.nextChecked);
+              }}
+            />
+            <span>Controlled: {switchOn ? "on" : "off"}</span>
+          </div>
+        </section>
+
+        <XDivider style={{ margin: "1.5rem 0" }} />
+
+        {/* --- Test 5: Controlled slider --- */}
+        <section>
+          <h2>5. XSlider — controlled</h2>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <XSlider
+              value={sliderVal}
+              min="0"
+              max="100"
+              showValue
+              onChangeRequest={(e) => {
+                addLog(`Slider change-request: ${e.detail.previousValue} → ${e.detail.value}`);
+                setSliderVal(String(e.detail.value));
+              }}
+              style={{ flex: 1 }}
+            />
+            <span style={{ minWidth: 40 }}>{sliderVal}</span>
+          </div>
+        </section>
+
+        <XDivider style={{ margin: "1.5rem 0" }} />
+
+        {/* --- Test 6: Uncontrolled switch (defaultChecked) --- */}
+        <section>
+          <h2>6. XSwitch — uncontrolled (defaultChecked)</h2>
           <XSwitch
-            onChange={(e) => addLog(`Switch changed: checked=${e.detail.checked}`)}
+            defaultChecked={true}
+            onChange={(e) => addLog(`Uncontrolled switch changed: checked=${e.detail.checked}`)}
           />
         </section>
 
         <XDivider style={{ margin: "1.5rem 0" }} />
 
-        {/* --- Test 4: Components without events --- */}
+        {/* --- Test 7: Static components --- */}
         <section>
-          <h2>4. Static components — badge, spinner</h2>
+          <h2>7. Static components — badge, spinner</h2>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <XBadge text="React" variant="primary" />
             <XBadge text="Adapter" variant="secondary" />

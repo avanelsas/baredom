@@ -14,6 +14,7 @@ export interface XSwitchProps {
   required?: boolean;
   name?: string;
   value?: string;
+  defaultChecked?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
   onChange?: (e: CustomEvent<{ value: string; checked: boolean }>) => void;
   children?: React.ReactNode;
@@ -25,7 +26,7 @@ export interface XSwitchProps {
 
 export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
   function XSwitch(props, forwardedRef) {
-    const { onChangeRequest, onChange, children, ...rest } = props;
+    const { checked, defaultChecked, onChangeRequest, onChange, children, ...rest } = props;
     const innerRef = useRef<XSwitchElement>(null);
 
     const setRef = (el: XSwitchElement | null) => {
@@ -34,14 +35,28 @@ export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultChecked (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || checked !== undefined || defaultChecked === undefined) return;
+      if (defaultChecked) el.setAttribute("checked", "");
+      else el.removeAttribute("checked");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-switch-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-switch-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = checked !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-switch-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-switch-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-switch-change", onChange as EventListener);
@@ -49,8 +64,8 @@ export const XSwitch = forwardRef<XSwitchElement, XSwitchProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange]);
+    }, [checked, onChangeRequest, onChange]);
 
-    return <x-switch ref={setRef} {...rest}>{children}</x-switch>;
+    return <x-switch ref={setRef} checked={checked} {...rest}>{children}</x-switch>;
   }
 );

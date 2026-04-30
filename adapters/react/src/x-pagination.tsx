@@ -15,6 +15,7 @@ export interface XPaginationProps {
   size?: string;
   disabled?: boolean;
   label?: string;
+  defaultPage?: number;
   onPageChangeRequest?: (e: CustomEvent<{ page: number; previousPage: number }>) => void;
   onPageChange?: (e: CustomEvent<{ page: number }>) => void;
   children?: React.ReactNode;
@@ -26,7 +27,7 @@ export interface XPaginationProps {
 
 export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
   function XPagination(props, forwardedRef) {
-    const { onPageChangeRequest, onPageChange, children, ...rest } = props;
+    const { page, defaultPage, onPageChangeRequest, onPageChange, children, ...rest } = props;
     const innerRef = useRef<XPaginationElement>(null);
 
     const setRef = (el: XPaginationElement | null) => {
@@ -35,14 +36,27 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultPage (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || page !== undefined || defaultPage === undefined) return;
+      el.setAttribute("page", String(defaultPage));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onPageChangeRequest) {
-        el.addEventListener("page-change-request", onPageChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("page-change-request", onPageChangeRequest as EventListener));
+      {
+        const controlled = page !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onPageChangeRequest) (onPageChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("page-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("page-change-request", wrappedHandler));
       }
       if (onPageChange) {
         el.addEventListener("page-change", onPageChange as EventListener);
@@ -50,8 +64,8 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onPageChangeRequest, onPageChange]);
+    }, [page, onPageChangeRequest, onPageChange]);
 
-    return <x-pagination ref={setRef} {...rest}>{children}</x-pagination>;
+    return <x-pagination ref={setRef} page={page} {...rest}>{children}</x-pagination>;
   }
 );
