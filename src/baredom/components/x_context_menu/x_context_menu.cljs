@@ -7,6 +7,7 @@
 
 (def ^:private k-refs     "__xContextMenuRefs")
 (def ^:private k-layer    "__xContextMenuLayer")
+(def ^:private k-doc-handlers "__xContextMenuDocH")
 
 ;; ---- Forward declarations ----
 
@@ -148,11 +149,6 @@
           (let [key (.-key ev)
                 ^js focused (.-activeElement (.-shadowRoot layer))]
             (cond
-              (= key "Escape")
-              (do (.preventDefault ev)
-                  (.stopPropagation ev)
-                  (close! el "keyboard"))
-
               (= key "Tab")
               (close! el "keyboard")
 
@@ -173,14 +169,6 @@
                 (.preventDefault ev)
                 (.click focused)))))
 
-        on-click-backdrop
-        (fn [^js ev]
-          ;; Click outside panel closes
-          (let [^js panel (overlay/get-panel layer)]
-            (when (and panel
-                       (not (.contains panel (.-target ev))))
-              (close! el "backdrop"))))
-
         on-item-click
         (fn [^js ev]
           (.stopPropagation ev)
@@ -191,14 +179,45 @@
               (close! el "select"))))]
 
     (.addEventListener layer "keydown" on-key true)
-    (.addEventListener layer "click"   on-click-backdrop)
     (when panel
       (.addEventListener panel "click" on-item-click))
 
     ;; store for cleanup
     (gobj/set layer "__onKey"             on-key)
-    (gobj/set layer "__onClickBackdrop"   on-click-backdrop)
     (gobj/set layer "__onItemClick"       on-item-click)))
+
+;; ---- Document-level listeners (Escape + click-outside) ----
+
+(defn- add-doc-listeners! [^js el]
+  (let [on-doc-keydown
+        (fn [^js ev]
+          (when (= (.-key ev) "Escape")
+            (.preventDefault ev)
+            (close! el "keyboard")))
+
+        on-doc-click
+        (fn [^js ev]
+          (when-let [^js lyr (gobj/get el k-layer)]
+            (let [^js panel (overlay/get-panel lyr)]
+              (when (and panel
+                         (not (.contains panel (.-target ev))))
+                (close! el "backdrop")))))]
+
+    ;; Delay by one tick so the opening click/contextmenu does not immediately close
+    (js/setTimeout
+     (fn []
+       (when (.hasAttribute el model/attr-open)
+         (.addEventListener js/document "keydown" on-doc-keydown)
+         (.addEventListener js/document "click"   on-doc-click)
+         (gobj/set el k-doc-handlers
+                   #js {:keydown on-doc-keydown :click on-doc-click})))
+     0)))
+
+(defn- remove-doc-listeners! [^js el]
+  (when-let [handlers (gobj/get el k-doc-handlers)]
+    (.removeEventListener js/document "keydown" (gobj/get handlers "keydown"))
+    (.removeEventListener js/document "click"   (gobj/get handlers "click"))
+    (gobj/set el k-doc-handlers nil)))
 
 (defn- remove-layer! [^js layer]
   (overlay/remove-layer! layer))
@@ -209,6 +228,7 @@
   (when (.hasAttribute el model/attr-open)
     (let [proceed? (dispatch! el model/event-close-request true #js {:reason reason})]
       (when proceed?
+        (remove-doc-listeners! el)
         (.removeAttribute el model/attr-open)
         (let [^js layer (gobj/get el k-layer)]
           (remove-layer! layer)
@@ -240,6 +260,7 @@
 
           (.setAttribute el model/attr-open "")
           (gobj/set el k-layer layer)
+          (add-doc-listeners! el)
 
           ;; Re-position after actual panel dimensions are known
           (js/requestAnimationFrame
@@ -279,6 +300,7 @@
 
           (.setAttribute el model/attr-open "")
           (gobj/set el k-layer layer)
+          (add-doc-listeners! el)
 
           (js/requestAnimationFrame
            (fn []

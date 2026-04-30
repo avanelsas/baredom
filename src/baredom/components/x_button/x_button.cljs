@@ -228,6 +228,8 @@
    "line-height:1;"
    "cursor:pointer;"
    "user-select:none;"
+   "touch-action:manipulation;"
+   "-webkit-tap-highlight-color:transparent;"
    "box-shadow:var(--x-button-shadow);"
    "transition:"
    "background var(--x-button-transition-duration) var(--x-button-transition-easing),"

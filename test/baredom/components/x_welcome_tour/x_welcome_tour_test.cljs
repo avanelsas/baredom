@@ -244,7 +244,7 @@
          (.next el)
          (.next el)
          (.complete el)
-         (is (= 3 (.-stepsCompleted @detail)))
+         (is (= 3 (.-stepsCompleted ^js @detail)))
          (done))
        100))))
 

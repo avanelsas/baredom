@@ -200,46 +200,46 @@
       // ── Control panel wiring ──
       const basic = document.getElementById('basic');
 
-      document.getElementById('ctl-autoplay').addEventListener('change', e => {
-        basic.autoplay = e.target.checked;
+      document.getElementById('ctl-autoplay').addEventListener('x-switch-change', e => {
+        basic.autoplay = e.detail.checked;
       });
-      document.getElementById('ctl-loop').addEventListener('change', e => {
-        basic.loop = e.target.checked;
+      document.getElementById('ctl-loop').addEventListener('x-switch-change', e => {
+        basic.loop = e.detail.checked;
       });
-      document.getElementById('ctl-disabled').addEventListener('change', e => {
-        basic.disabled = e.target.checked;
+      document.getElementById('ctl-disabled').addEventListener('x-switch-change', e => {
+        basic.disabled = e.detail.checked;
       });
-      document.getElementById('ctl-arrows').addEventListener('change', e => {
-        basic.arrows = e.target.checked;
+      document.getElementById('ctl-arrows').addEventListener('x-switch-change', e => {
+        basic.arrows = e.detail.checked;
       });
-      document.getElementById('ctl-dots').addEventListener('change', e => {
-        basic.dots = e.target.checked;
+      document.getElementById('ctl-dots').addEventListener('x-switch-change', e => {
+        basic.dots = e.detail.checked;
       });
-      document.getElementById('ctl-interval').addEventListener('input', e => {
-        basic.interval = parseInt(e.target.value, 10) || 3000;
+      document.getElementById('ctl-interval').addEventListener('x-form-field-input', e => {
+        basic.interval = parseInt(e.detail.value, 10) || 3000;
       });
-      document.getElementById('ctl-current').addEventListener('input', e => {
-        basic.currentSlide = parseInt(e.target.value, 10) || 0;
+      document.getElementById('ctl-current').addEventListener('x-form-field-input', e => {
+        basic.currentSlide = parseInt(e.detail.value, 10) || 0;
       });
-      document.getElementById('ctl-transition').addEventListener('change', e => {
-        basic.transition = e.target.value;
+      document.getElementById('ctl-transition').addEventListener('select-change', e => {
+        basic.transition = e.detail.value;
       });
-      document.getElementById('ctl-direction').addEventListener('change', e => {
-        basic.direction = e.target.value;
+      document.getElementById('ctl-direction').addEventListener('select-change', e => {
+        basic.direction = e.detail.value;
       });
-      document.getElementById('ctl-duration').addEventListener('input', e => {
-        const v = parseInt(e.target.value, 10) || 300;
+      document.getElementById('ctl-duration').addEventListener('x-form-field-input', e => {
+        const v = parseInt(e.detail.value, 10) || 300;
         basic.style.setProperty('--x-carousel-transition-duration', v + 'ms');
       });
-      document.getElementById('ctl-peek').addEventListener('input', e => {
-        const v = parseInt(e.target.value, 10) || 0;
+      document.getElementById('ctl-peek').addEventListener('x-form-field-input', e => {
+        const v = parseInt(e.detail.value, 10) || 0;
         basic.peek = v + 'px';
       });
 
       // ── Dynamic slides ──
       let dynamicCount = 2;
       const colors = ['#f97316','#06b6d4','#84cc16','#e11d48','#8b5cf6','#14b8a6'];
-      document.getElementById('add-slide').addEventListener('click', () => {
+      document.getElementById('add-slide').addEventListener('press', () => {
         dynamicCount++;
         const d = document.createElement('div');
         d.className = 'slide';
@@ -247,7 +247,7 @@
         d.textContent = 'Dynamic ' + dynamicCount;
         document.getElementById('dynamic').appendChild(d);
       });
-      document.getElementById('remove-slide').addEventListener('click', () => {
+      document.getElementById('remove-slide').addEventListener('press', () => {
         const el = document.getElementById('dynamic');
         if (el.lastElementChild) {
           el.lastElementChild.remove();
