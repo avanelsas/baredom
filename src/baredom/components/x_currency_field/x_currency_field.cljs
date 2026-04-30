@@ -409,13 +409,19 @@
             raw          (.-value input-el)
             num          (js/parseFloat raw)
             canonical    (if (js/isNaN num) raw (str num))
-            name         (or (get-attr el model/attr-name) "")]
-        ;; Update value attribute — triggers attribute-changed! → render! (reformats display)
-        (set-attr! el model/attr-value canonical)
-        (when-let [^js internals (gobj/get el k-internals)]
-          (.setFormValue internals canonical)
-          (sync-validity! el internals input-el canonical))
-        (dispatch! el model/event-change #js {:name name :value canonical})))))
+            prev-value   (or (get-attr el model/attr-value) "")
+            name         (or (get-attr el model/attr-name) "")
+            allowed?     (dispatch-cancelable!
+                          el model/event-change-request
+                          #js {:name name :value canonical :previousValue prev-value})]
+        (if allowed?
+          (do
+            (set-attr! el model/attr-value canonical)
+            (when-let [^js internals (gobj/get el k-internals)]
+              (.setFormValue internals canonical)
+              (sync-validity! el internals input-el canonical))
+            (dispatch! el model/event-change #js {:name name :value canonical}))
+          (set! (.-value input-el) prev-value))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
