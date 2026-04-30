@@ -9,6 +9,7 @@ init();
 
 export interface XTabsProps {
   value?: string;
+  onValueChangeRequest?: (e: CustomEvent<{ value: string; previousValue: string }>) => void;
   onValueChange?: (e: CustomEvent<{ value: string }>) => void;
   children?: React.ReactNode;
   className?: string;
@@ -19,7 +20,7 @@ export interface XTabsProps {
 
 export const XTabs = forwardRef<XTabsElement, XTabsProps>(
   function XTabs(props, forwardedRef) {
-    const { onValueChange, children, ...rest } = props;
+    const { onValueChangeRequest, onValueChange, children, ...rest } = props;
     const innerRef = useRef<XTabsElement>(null);
 
     const setRef = (el: XTabsElement | null) => {
@@ -33,13 +34,17 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onValueChangeRequest) {
+        el.addEventListener("value-change-request", onValueChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("value-change-request", onValueChangeRequest as EventListener));
+      }
       if (onValueChange) {
         el.addEventListener("value-change", onValueChange as EventListener);
         cleanup.push(() => el.removeEventListener("value-change", onValueChange as EventListener));
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onValueChange]);
+    }, [onValueChangeRequest, onValueChange]);
 
     return <x-tabs ref={setRef} {...rest}>{children}</x-tabs>;
   }

@@ -13,9 +13,10 @@
 (def attr-placement   "placement")
 
 ;; Event name constants
-(def event-change "x-combobox-change")
-(def event-input  "x-combobox-input")
-(def event-toggle "x-combobox-toggle")
+(def event-change-request "x-combobox-change-request")
+(def event-change         "x-combobox-change")
+(def event-input          "x-combobox-input")
+(def event-toggle         "x-combobox-toggle")
 
 ;; Placement constants
 (def allowed-placements #{"bottom-start" "bottom-end" "top-start" "top-end"})
@@ -38,12 +39,14 @@
    :placement   {:type 'string  :reflects-attribute attr-placement}})
 
 (def event-schema
-  {event-change {:cancelable false
-                 :detail     {:value 'string :label 'string}}
-   event-input  {:cancelable false
-                 :detail     {:query 'string}}
-   event-toggle {:cancelable true
-                 :detail     {:open 'boolean :source 'string}}})
+  {event-change-request {:cancelable true
+                         :detail     {:value 'string :label 'string :previousValue 'string}}
+   event-change         {:cancelable false
+                         :detail     {:value 'string :label 'string}}
+   event-input          {:cancelable false
+                         :detail     {:query 'string}}
+   event-toggle         {:cancelable true
+                         :detail     {:open 'boolean :source 'string}}})
 
 ;; ---------------------------------------------------------------------------
 ;; Normalization

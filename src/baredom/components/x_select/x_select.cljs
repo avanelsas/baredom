@@ -307,18 +307,35 @@
          :composed   true
          :cancelable false})))
 
+(defn- dispatch-cancelable! [^js el event-name detail]
+  (let [^js ev (js/CustomEvent.
+                event-name
+                #js {:detail     detail
+                     :bubbles    true
+                     :composed   true
+                     :cancelable true})]
+    (.dispatchEvent el ev)
+    (not (.-defaultPrevented ev))))
+
 ;; ---------------------------------------------------------------------------
-;; Change handler — dispatches select-change, does NOT set value attr
+;; Change handler — dispatches change-request then select-change
 ;; ---------------------------------------------------------------------------
 (defn- make-change-handler [^js el]
   (fn [^js _]
     (when-let [refs (gobj/get el k-refs)]
-      (let [^js sel (gobj/get refs "select")
-            value   (.-value sel)
-            label   (if (> (alength (.-selectedOptions sel)) 0)
-                      (.-text (aget (.-selectedOptions sel) 0))
-                      "")]
-        (dispatch! el model/event-select-change #js {:value value :label label})))))
+      (let [^js sel    (gobj/get refs "select")
+            value      (.-value sel)
+            prev-value (or (get-attr el model/attr-value) "")
+            label      (if (> (alength (.-selectedOptions sel)) 0)
+                         (.-text (aget (.-selectedOptions sel) 0))
+                         "")
+            allowed?   (dispatch-cancelable!
+                        el model/event-change-request
+                        #js {:value value :label label :previousValue prev-value})]
+        (if allowed?
+          (dispatch! el model/event-select-change #js {:value value :label label})
+          ;; Revert native select to previous value
+          (set! (.-value sel) prev-value))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Slotchange handler

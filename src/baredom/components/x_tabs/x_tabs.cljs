@@ -103,6 +103,16 @@
       (and host-value (contains? values host-value)) host-value
       :else (derive-initial-selection tabs))))
 
+(defn- dispatch-cancelable! [^js el event-name detail]
+  (let [^js ev (js/CustomEvent.
+                event-name
+                #js {:detail     detail
+                     :bubbles    true
+                     :composed   true
+                     :cancelable true})]
+    (.dispatchEvent el ev)
+    (not (.-defaultPrevented ev))))
+
 (defn dispatch-value-change! [^js el value]
   (.dispatchEvent
    el
@@ -125,9 +135,13 @@
 (defn activate-tab-by-value! [^js el value]
   (let [current (.getAttribute el model/attr-value)]
     (when (and value (not= current value))
-      (set-host-value-if-needed! el value)
-      (coordinate-tabs! el)
-      (dispatch-value-change! el value))))
+      (let [allowed? (dispatch-cancelable!
+                      el model/event-change-request
+                      #js {:value value :previousValue (or current "")})]
+        (when allowed?
+          (set-host-value-if-needed! el value)
+          (coordinate-tabs! el)
+          (dispatch-value-change! el value))))))
 
 (defn on-tab-select [^js el ^js e]
   (.stopPropagation e)

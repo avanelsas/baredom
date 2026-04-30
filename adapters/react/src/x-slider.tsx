@@ -18,6 +18,7 @@ export interface XSliderProps {
   max?: string;
   label?: string;
   step?: string;
+  onChangeRequest?: (e: CustomEvent<{ value: number; previousValue: number; min: number; max: number }>) => void;
   onInput?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
   onChange?: (e: CustomEvent<{ value: number; min: number; max: number }>) => void;
   children?: React.ReactNode;
@@ -29,7 +30,7 @@ export interface XSliderProps {
 
 export const XSlider = forwardRef<XSliderElement, XSliderProps>(
   function XSlider(props, forwardedRef) {
-    const { onInput, onChange, children, ...rest } = props;
+    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XSliderElement>(null);
 
     const setRef = (el: XSliderElement | null) => {
@@ -43,6 +44,10 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-slider-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-slider-change-request", onChangeRequest as EventListener));
+      }
       if (onInput) {
         el.addEventListener("x-slider-input", onInput as EventListener);
         cleanup.push(() => el.removeEventListener("x-slider-input", onInput as EventListener));
@@ -53,7 +58,7 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onInput, onChange]);
+    }, [onChangeRequest, onInput, onChange]);
 
     return <x-slider ref={setRef} {...rest}>{children}</x-slider>;
   }

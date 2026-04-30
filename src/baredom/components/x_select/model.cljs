@@ -11,7 +11,8 @@
 (def attr-name        "name")
 
 ;; Event name constants
-(def event-select-change "select-change")
+(def event-change-request "x-select-change-request")
+(def event-select-change  "select-change")
 
 ;; Size enum
 (def default-size "md")
@@ -31,8 +32,10 @@
    :value    {:type 'string  :reflects-attribute attr-value}})
 
 (def event-schema
-  {event-select-change {:cancelable false
-                        :detail {:value 'string :label 'string}}})
+  {event-change-request {:cancelable true
+                         :detail {:value 'string :label 'string :previousValue 'string}}
+   event-select-change  {:cancelable false
+                         :detail {:value 'string :label 'string}}})
 
 (defn normalize-enum
   "Returns value if it is in allowed, otherwise default-value."

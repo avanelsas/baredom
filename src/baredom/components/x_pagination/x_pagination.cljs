@@ -238,15 +238,31 @@
   nil)
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────
+(defn- dispatch-cancelable! [^js el event-name detail]
+  (let [^js ev (js/CustomEvent.
+                event-name
+                #js {:detail     detail
+                     :bubbles    true
+                     :composed   true
+                     :cancelable true})]
+    (.dispatchEvent el ev)
+    (not (.-defaultPrevented ev))))
+
 (defn- dispatch-page-change! [^js el page]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    model/event-page-change
-    #js {:detail    #js {:page page}
-         :bubbles   true
-         :composed  true
-         :cancelable false})))
+  (let [m        (read-model el)
+        cur-page (:page m)
+        allowed? (dispatch-cancelable!
+                  el model/event-change-request
+                  #js {:page page :previousPage cur-page})]
+    (when allowed?
+      (.dispatchEvent
+       el
+       (js/CustomEvent.
+        model/event-page-change
+        #js {:detail    #js {:page page}
+             :bubbles   true
+             :composed  true
+             :cancelable false})))))
 
 ;; ── Click handler (event delegation) ─────────────────────────────────────
 (defn- find-button-in-path [^js ev]

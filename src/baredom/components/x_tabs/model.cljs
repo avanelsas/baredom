@@ -18,13 +18,15 @@
 (def orientation-values #{"horizontal" "vertical"})
 (def activation-values #{"auto" "manual"})
 
-(def event-value-change "value-change")
+(def event-change-request "value-change-request")
+(def event-value-change   "value-change")
 
 (def property-api
   {:value {:type 'string}})
 
 (def event-schema
-  {event-value-change {:detail {:value 'string}}})
+  {event-change-request {:cancelable true  :detail {:value 'string :previousValue 'string}}
+   event-value-change   {:detail {:value 'string}}})
 
 (defn valid-enum [v allowed fallback]
   (if (contains? allowed v) v fallback))

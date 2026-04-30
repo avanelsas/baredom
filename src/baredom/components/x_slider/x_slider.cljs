@@ -331,6 +331,16 @@
          :composed   true
          :cancelable false})))
 
+(defn- dispatch-cancelable! [^js el event-name detail]
+  (let [^js ev (js/CustomEvent.
+                event-name
+                #js {:detail     detail
+                     :bubbles    true
+                     :composed   true
+                     :cancelable true})]
+    (.dispatchEvent el ev)
+    (not (.-defaultPrevented ev))))
+
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
@@ -341,14 +351,24 @@
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
             num-val      (js/parseFloat raw-val)
+            prev-val     (js/parseFloat (or (get-attr el model/attr-value) "0"))
             min-num      (js/parseFloat (or (get-attr el model/attr-min) "0"))
-            max-num      (js/parseFloat (or (get-attr el model/attr-max) "100"))]
-        ;; Write new value back to host attribute (triggers attribute-changed! → render!)
-        (set-attr! el model/attr-value raw-val)
-        (dispatch! el model/event-input
-                   #js {:value num-val
-                        :min   min-num
-                        :max   max-num})))))
+            max-num      (js/parseFloat (or (get-attr el model/attr-max) "100"))
+            allowed?     (dispatch-cancelable!
+                          el model/event-change-request
+                          #js {:value         num-val
+                               :previousValue prev-val
+                               :min           min-num
+                               :max           max-num})]
+        (if allowed?
+          (do
+            (set-attr! el model/attr-value raw-val)
+            (dispatch! el model/event-input
+                       #js {:value num-val
+                            :min   min-num
+                            :max   max-num}))
+          ;; Revert the native input to the current attribute value
+          (set! (.-value input-el) (or (get-attr el model/attr-value) "0")))))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]

@@ -11,7 +11,8 @@
 (def attr-label        "label")
 
 ;; ── Event & slot constants ─────────────────────────────────────────────────
-(def event-page-change "page-change")
+(def event-change-request "page-change-request")
+(def event-page-change    "page-change")
 (def slot-prev         "prev")
 (def slot-next         "next")
 
@@ -134,6 +135,7 @@
    :label          {:type 'string}})
 
 (def event-schema
-  {:page-change {:detail {:page 'number}}})
+  {event-change-request {:cancelable true :detail {:page 'number :previousPage 'number}}
+   event-page-change    {:detail {:page 'number}}})
 
 (def method-api nil)

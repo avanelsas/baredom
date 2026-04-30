@@ -499,11 +499,16 @@
 ;; Selection
 ;; ---------------------------------------------------------------------------
 (defn- select-option! [^js el value label]
-  (.setAttribute el model/attr-value value)
-  (when-let [refs (du/getv el k-refs)]
-    (set! (.-value (gobj/get refs "input")) label))
-  (close-panel! el "select")
-  (dispatch! el model/event-change #js {:value value :label label}))
+  (let [prev-value (or (du/get-attr el model/attr-value) "")
+        allowed?   (dispatch-cancelable!
+                    el model/event-change-request
+                    #js {:value value :label label :previousValue prev-value})]
+    (when allowed?
+      (.setAttribute el model/attr-value value)
+      (when-let [refs (du/getv el k-refs)]
+        (set! (.-value (gobj/get refs "input")) label))
+      (close-panel! el "select")
+      (dispatch! el model/event-change #js {:value value :label label}))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -598,13 +603,18 @@
 
         on-clear-click
         (fn [^js _evt]
-          (.removeAttribute el model/attr-value)
-          (.removeAttribute el "data-has-value")
-          (when-let [refs (du/getv el k-refs)]
-            (let [^js input-el (gobj/get refs "input")]
-              (set! (.-value input-el) "")
-              (.focus input-el)))
-          (dispatch! el model/event-change #js {:value "" :label ""}))
+          (let [prev-value (or (du/get-attr el model/attr-value) "")
+                allowed?   (dispatch-cancelable!
+                            el model/event-change-request
+                            #js {:value "" :label "" :previousValue prev-value})]
+            (when allowed?
+              (.removeAttribute el model/attr-value)
+              (.removeAttribute el "data-has-value")
+              (when-let [refs (du/getv el k-refs)]
+                (let [^js input-el (gobj/get refs "input")]
+                  (set! (.-value input-el) "")
+                  (.focus input-el)))
+              (dispatch! el model/event-change #js {:value "" :label ""}))))
 
         on-chevron-pointerdown
         (fn [^js evt]

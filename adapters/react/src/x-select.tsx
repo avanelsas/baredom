@@ -11,6 +11,7 @@ export interface XSelectProps {
   disabled?: boolean;
   required?: boolean;
   value?: string;
+  onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onSelectChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
   children?: React.ReactNode;
   className?: string;
@@ -21,7 +22,7 @@ export interface XSelectProps {
 
 export const XSelect = forwardRef<XSelectElement, XSelectProps>(
   function XSelect(props, forwardedRef) {
-    const { onSelectChange, children, ...rest } = props;
+    const { onChangeRequest, onSelectChange, children, ...rest } = props;
     const innerRef = useRef<XSelectElement>(null);
 
     const setRef = (el: XSelectElement | null) => {
@@ -35,13 +36,17 @@ export const XSelect = forwardRef<XSelectElement, XSelectProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-select-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-select-change-request", onChangeRequest as EventListener));
+      }
       if (onSelectChange) {
         el.addEventListener("select-change", onSelectChange as EventListener);
         cleanup.push(() => el.removeEventListener("select-change", onSelectChange as EventListener));
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onSelectChange]);
+    }, [onChangeRequest, onSelectChange]);
 
     return <x-select ref={setRef} {...rest}>{children}</x-select>;
   }

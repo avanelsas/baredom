@@ -17,6 +17,7 @@ export interface XTextAreaProps {
   maxLength?: number;
   autocomplete?: string;
   required?: boolean;
+  onChangeRequest?: (e: CustomEvent<{ name: string; value: string; previousValue: string }>) => void;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   children?: React.ReactNode;
@@ -28,7 +29,7 @@ export interface XTextAreaProps {
 
 export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
   function XTextArea(props, forwardedRef) {
-    const { onInput, onChange, children, ...rest } = props;
+    const { onChangeRequest, onInput, onChange, children, ...rest } = props;
     const innerRef = useRef<XTextAreaElement>(null);
 
     const setRef = (el: XTextAreaElement | null) => {
@@ -42,6 +43,10 @@ export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
+      if (onChangeRequest) {
+        el.addEventListener("x-text-area-change-request", onChangeRequest as EventListener);
+        cleanup.push(() => el.removeEventListener("x-text-area-change-request", onChangeRequest as EventListener));
+      }
       if (onInput) {
         el.addEventListener("x-text-area-input", onInput as EventListener);
         cleanup.push(() => el.removeEventListener("x-text-area-input", onInput as EventListener));
@@ -52,7 +57,7 @@ export const XTextArea = forwardRef<XTextAreaElement, XTextAreaProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onInput, onChange]);
+    }, [onChangeRequest, onInput, onChange]);
 
     return <x-text-area ref={setRef} {...rest}>{children}</x-text-area>;
   }

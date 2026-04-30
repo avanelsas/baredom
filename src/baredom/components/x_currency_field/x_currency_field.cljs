@@ -364,6 +364,16 @@
          :composed   true
          :cancelable false})))
 
+(defn- dispatch-cancelable! [^js el event-name detail]
+  (let [^js ev (js/CustomEvent.
+                event-name
+                #js {:detail     detail
+                     :bubbles    true
+                     :composed   true
+                     :cancelable true})]
+    (.dispatchEvent el ev)
+    (not (.-defaultPrevented ev))))
+
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
@@ -379,11 +389,18 @@
     (when-let [refs (gobj/get el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             value        (.-value input-el)
-            name         (or (get-attr el model/attr-name) "")]
-        (when-let [^js internals (gobj/get el k-internals)]
-          (.setFormValue internals value)
-          (sync-validity! el internals input-el value))
-        (dispatch! el model/event-input #js {:name name :value value})))))
+            prev-value   (or (get-attr el model/attr-value) "")
+            name         (or (get-attr el model/attr-name) "")
+            allowed?     (dispatch-cancelable!
+                          el model/event-change-request
+                          #js {:name name :value value :previousValue prev-value})]
+        (if allowed?
+          (do
+            (when-let [^js internals (gobj/get el k-internals)]
+              (.setFormValue internals value)
+              (sync-validity! el internals input-el value))
+            (dispatch! el model/event-input #js {:name name :value value}))
+          (set! (.-value input-el) prev-value))))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
