@@ -74,7 +74,7 @@ jobs:
         run: |
           cd adapters/react
           npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
-          npm publish --access public
+          npm publish --access public --no-workspaces
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
