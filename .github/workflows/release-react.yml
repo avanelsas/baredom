@@ -15,10 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
 
       - name: Setup Babashka
         run: |
@@ -28,6 +38,9 @@ jobs:
           bb --version
 
       - run: npm ci
+
+      - name: Build core library
+        run: npm run build
 
       - name: Derive version from tag
         id: version
