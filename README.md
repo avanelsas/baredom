@@ -166,13 +166,13 @@ BareDOM can be consumed three ways: as a **ClojureScript source dependency** (Cl
 Add BareDOM to your `deps.edn`:
 
 ```clojure
-{:deps {com.github.avanelsas/baredom {:mvn/version "2.4.1"}}}
+{:deps {com.github.avanelsas/baredom {:mvn/version "2.5.0"}}}
 ```
 
 Or in your `shadow-cljs.edn` dependencies:
 
 ```clojure
-:dependencies [[com.github.avanelsas/baredom "2.4.1"]]
+:dependencies [[com.github.avanelsas/baredom "2.5.0"]]
 ```
 
 Then require component namespaces directly and call their `init!` function once at startup:
@@ -229,7 +229,7 @@ Add the npm package to your `package.json`:
 ```json
 {
   "dependencies": {
-    "@vanelsas/baredom": "^2.4.1"
+    "@vanelsas/baredom": "^2.5.0"
   }
 }
 ```

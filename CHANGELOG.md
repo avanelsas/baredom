@@ -2,6 +2,17 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.5.0] - 2026-04-29
+
+### Added
+
+- **TypeScript support** — First-class `.d.ts` type declarations auto-generated from component model metadata. Per-component interfaces with typed properties, methods, and `addEventListener` overloads. Custom Elements Manifest (`custom-elements.json`) for IDE support.
+- **Debug mode** — Dev-only visual debugging overlay for all BareDOM components. Activate via `?baredom-debug` URL param or `window.BAREDOM_DEBUG = true`. Shows dashed outlines, tag labels on hover, and a floating inspection panel with live attribute/property editing and structured console logging. Excluded from the production `:lib` build.
+
+### Fixed
+
+- **TypeScript declarations** — Fixed invalid kebab-case identifiers in generated `.d.ts` files. Property names like `max-items` and event detail keys like `press-x` are now correctly output as camelCase (`maxItems`, `pressX`). Affected components: x-breadcrumbs, x-context-menu, x-pagination, x-particle-button.
+
 ## [2.4.1] - 2026-04-28
 
 ### Fixed
