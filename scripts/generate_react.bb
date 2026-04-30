@@ -151,34 +151,42 @@
                       (when ctrl [ctrl-prop default-prop])
                       (or event-prop-names [])
                       ["children"])
-        ;; useEffect event binding blocks
+        ;; Find the change-request event entry (for controlled wrapping)
+        change-request-entry (when ctrl
+                               (some (fn [e] (when (= (:dom-name e) ctrl-event) e))
+                                     event-entries))
+        ;; useEffect event binding blocks — controlled change-request gets special handling
         effect-blocks (when event-entries
-                        (map (fn [{:keys [dom-name react-prop]}]
-                               (str "      if (" react-prop ") {\n"
-                                    "        el.addEventListener(\"" dom-name "\", " react-prop " as EventListener);\n"
-                                    "        cleanup.push(() => el.removeEventListener(\"" dom-name "\", " react-prop " as EventListener));\n"
-                                    "      }"))
+                        (map (fn [{:keys [dom-name react-prop] :as entry}]
+                               (if (and ctrl (= entry change-request-entry))
+                                 ;; Controlled mode: wrap the change-request handler to call preventDefault
+                                 (str "      {\n"
+                                      "        const controlled = " ctrl-prop " !== undefined;\n"
+                                      "        const wrappedHandler = (e: Event) => {\n"
+                                      "          if (controlled) e.preventDefault();\n"
+                                      "          if (" react-prop ") (" react-prop " as EventListener)(e);\n"
+                                      "        };\n"
+                                      "        el.addEventListener(\"" dom-name "\", wrappedHandler);\n"
+                                      "        cleanup.push(() => el.removeEventListener(\"" dom-name "\", wrappedHandler));\n"
+                                      "      }")
+                                 ;; Normal event binding
+                                 (str "      if (" react-prop ") {\n"
+                                      "        el.addEventListener(\"" dom-name "\", " react-prop " as EventListener);\n"
+                                      "        cleanup.push(() => el.removeEventListener(\"" dom-name "\", " react-prop " as EventListener));\n"
+                                      "      }")))
                              event-entries))
-        ;; useEffect dependency array
-        effect-deps (if event-entries
-                      (str "[" (str/join ", " (map :react-prop event-entries)) "]")
+        ;; useEffect dependency array — add control prop for controlled components
+        effect-dep-names (concat
+                          (when ctrl [ctrl-prop])
+                          (map :react-prop event-entries))
+        effect-deps (if (seq effect-dep-names)
+                      (str "[" (str/join ", " effect-dep-names) "]")
                       "[]")
         has-events  (boolean (seq event-entries))
-        ;; Controlled components always need useEffect
         needs-effect (or has-events (some? ctrl))
         react-imports (if needs-effect
                         "forwardRef, useRef, useEffect"
                         "forwardRef, useRef")
-        ;; Controlled mode: useEffect that intercepts change-request
-        ctrl-effect (when ctrl
-                      (str "    // Controlled mode: intercept change-request when " ctrl-prop " is provided\n"
-                           "    useEffect(() => {\n"
-                           "      const el = innerRef.current;\n"
-                           "      if (!el || " ctrl-prop " === undefined) return;\n"
-                           "      const handler = (e: Event) => { e.preventDefault(); };\n"
-                           "      el.addEventListener(\"" ctrl-event "\", handler);\n"
-                           "      return () => el.removeEventListener(\"" ctrl-event "\", handler);\n"
-                           "    }, [" ctrl-prop "]);\n\n"))
         ;; Controlled mode: set initial value from defaultProp
         ctrl-init (when ctrl
                     (str "    // Set initial value from " default-prop " (uncontrolled mode)\n"
@@ -209,10 +217,9 @@
          "      if (typeof forwardedRef === \"function\") forwardedRef(el);\n"
          "      else if (forwardedRef) forwardedRef.current = el;\n"
          "    };\n\n"
-         ;; Controlled mode effects
-         (or ctrl-effect "")
+         ;; Controlled mode: set initial default value
          (or ctrl-init "")
-         ;; Event binding effect
+         ;; Event binding (includes controlled change-request interception)
          (if has-events
            (str "    useEffect(() => {\n"
                 "      const el = innerRef.current;\n"

@@ -40,15 +40,6 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
-    // Controlled mode: intercept change-request when value is provided
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el || value === undefined) return;
-      const handler = (e: Event) => { e.preventDefault(); };
-      el.addEventListener("x-slider-change-request", handler);
-      return () => el.removeEventListener("x-slider-change-request", handler);
-    }, [value]);
-
     // Set initial value from defaultValue (uncontrolled mode)
     useEffect(() => {
       const el = innerRef.current;
@@ -62,9 +53,14 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-slider-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-slider-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-slider-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-slider-change-request", wrappedHandler));
       }
       if (onInput) {
         el.addEventListener("x-slider-input", onInput as EventListener);
@@ -76,7 +72,7 @@ export const XSlider = forwardRef<XSliderElement, XSliderProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onInput, onChange]);
+    }, [value, onChangeRequest, onInput, onChange]);
 
     return <x-slider ref={setRef} value={value} {...rest}>{children}</x-slider>;
   }

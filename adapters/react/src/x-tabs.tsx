@@ -30,15 +30,6 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
-    // Controlled mode: intercept change-request when value is provided
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el || value === undefined) return;
-      const handler = (e: Event) => { e.preventDefault(); };
-      el.addEventListener("value-change-request", handler);
-      return () => el.removeEventListener("value-change-request", handler);
-    }, [value]);
-
     // Set initial value from defaultValue (uncontrolled mode)
     useEffect(() => {
       const el = innerRef.current;
@@ -52,9 +43,14 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onValueChangeRequest) {
-        el.addEventListener("value-change-request", onValueChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("value-change-request", onValueChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onValueChangeRequest) (onValueChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("value-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("value-change-request", wrappedHandler));
       }
       if (onValueChange) {
         el.addEventListener("value-change", onValueChange as EventListener);
@@ -62,7 +58,7 @@ export const XTabs = forwardRef<XTabsElement, XTabsProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onValueChangeRequest, onValueChange]);
+    }, [value, onValueChangeRequest, onValueChange]);
 
     return <x-tabs ref={setRef} value={value} {...rest}>{children}</x-tabs>;
   }

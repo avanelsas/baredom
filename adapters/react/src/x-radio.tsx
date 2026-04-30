@@ -35,15 +35,6 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
-    // Controlled mode: intercept change-request when checked is provided
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el || checked === undefined) return;
-      const handler = (e: Event) => { e.preventDefault(); };
-      el.addEventListener("x-radio-change-request", handler);
-      return () => el.removeEventListener("x-radio-change-request", handler);
-    }, [checked]);
-
     // Set initial value from defaultChecked (uncontrolled mode)
     useEffect(() => {
       const el = innerRef.current;
@@ -58,9 +49,14 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-radio-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-radio-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = checked !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-radio-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-radio-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-radio-change", onChange as EventListener);
@@ -68,7 +64,7 @@ export const XRadio = forwardRef<XRadioElement, XRadioProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange]);
+    }, [checked, onChangeRequest, onChange]);
 
     return <x-radio ref={setRef} checked={checked} {...rest}>{children}</x-radio>;
   }

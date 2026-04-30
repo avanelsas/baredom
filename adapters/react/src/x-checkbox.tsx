@@ -36,15 +36,6 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
-    // Controlled mode: intercept change-request when checked is provided
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el || checked === undefined) return;
-      const handler = (e: Event) => { e.preventDefault(); };
-      el.addEventListener("x-checkbox-change-request", handler);
-      return () => el.removeEventListener("x-checkbox-change-request", handler);
-    }, [checked]);
-
     // Set initial value from defaultChecked (uncontrolled mode)
     useEffect(() => {
       const el = innerRef.current;
@@ -59,9 +50,14 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-checkbox-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-checkbox-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = checked !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-checkbox-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-checkbox-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-checkbox-change", onChange as EventListener);
@@ -69,7 +65,7 @@ export const XCheckbox = forwardRef<XCheckboxElement, XCheckboxProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange]);
+    }, [checked, onChangeRequest, onChange]);
 
     return <x-checkbox ref={setRef} checked={checked} {...rest}>{children}</x-checkbox>;
   }

@@ -36,15 +36,6 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       else if (forwardedRef) forwardedRef.current = el;
     };
 
-    // Controlled mode: intercept change-request when page is provided
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el || page === undefined) return;
-      const handler = (e: Event) => { e.preventDefault(); };
-      el.addEventListener("page-change-request", handler);
-      return () => el.removeEventListener("page-change-request", handler);
-    }, [page]);
-
     // Set initial value from defaultPage (uncontrolled mode)
     useEffect(() => {
       const el = innerRef.current;
@@ -58,9 +49,14 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onPageChangeRequest) {
-        el.addEventListener("page-change-request", onPageChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("page-change-request", onPageChangeRequest as EventListener));
+      {
+        const controlled = page !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onPageChangeRequest) (onPageChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("page-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("page-change-request", wrappedHandler));
       }
       if (onPageChange) {
         el.addEventListener("page-change", onPageChange as EventListener);
@@ -68,7 +64,7 @@ export const XPagination = forwardRef<XPaginationElement, XPaginationProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onPageChangeRequest, onPageChange]);
+    }, [page, onPageChangeRequest, onPageChange]);
 
     return <x-pagination ref={setRef} page={page} {...rest}>{children}</x-pagination>;
   }
