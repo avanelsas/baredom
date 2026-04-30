@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>BareDOM React Adapter Test</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      background: light-dark(#f8fafc, #0f172a);
+      color: light-dark(#0f172a, #f1f5f9);
+    }
+    button {
+      font: inherit;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid light-dark(#cbd5e1, #475569);
+      background: light-dark(#f1f5f9, #1e293b);
+      color: inherit;
+      cursor: pointer;
+    }
+    button:hover {
+      background: light-dark(#e2e8f0, #334155);
+    }
+    h1, h2 { margin-top: 0; }
+    h2 { font-size: 1rem; color: light-dark(#475569, #94a3b8); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

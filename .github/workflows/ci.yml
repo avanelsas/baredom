@@ -56,6 +56,16 @@ jobs:
       - name: Check bundle sizes
         run: bash scripts/check-bundle-size.sh
 
+      - name: Build React adapter
+        run: |
+          bb scripts/generate_react.bb
+          cd adapters/react && npm install && npx tsc
+
+      - name: Check React adapter is up to date
+        run: |
+          bb scripts/generate_react.bb
+          git diff --exit-code adapters/react/src/ adapters/react/package.json || (echo "React adapter is out of date. Run: bb scripts/generate_react.bb" && exit 1)
+
       - name: Run tests
         run: npm test
         env:

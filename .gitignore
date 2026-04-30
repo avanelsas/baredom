@@ -31,3 +31,8 @@ pom.xml
 
 # Ignore all npm pack tarballs for this project
 vanelsas-baredom-*.tgz
+
+# Adapter build output (generated src/ is tracked, dist/ is not)
+adapters/*/dist/
+adapters/*/node_modules/
+adapters/*/test-app/node_modules/

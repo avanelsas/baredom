@@ -492,6 +492,9 @@
     "framework-agnostic"
   ],
   "type": "module",
+  "workspaces": [
+    "adapters/*"
+  ],
   "bugs": {
     "url": "https://github.com/avanelsas/baredom/issues"
   },
@@ -506,6 +509,7 @@
     "build:demo": "npx shadow-cljs release demo",
     "pack:local": "npm pack",
     "test": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run",
-    "test:types": "npx tsc -p test/types/tsconfig.json"
+    "test:types": "npx tsc -p test/types/tsconfig.json",
+    "build:react": "bb scripts/generate_react.bb && cd adapters/react && npx tsc"
   }
 }
