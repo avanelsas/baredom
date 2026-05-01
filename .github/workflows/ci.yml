@@ -61,6 +61,9 @@ jobs:
           bb scripts/generate_react.bb
           cd adapters/react && npm install && npx tsc
 
+      - name: Build React adapter test app
+        run: cd adapters/react/test-app && npm install && npx vite build
+
       - name: Check React adapter is up to date
         run: |
           bb scripts/generate_react.bb
