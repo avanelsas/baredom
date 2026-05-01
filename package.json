@@ -22,454 +22,454 @@
   },
   "exports": {
     "./x-avatar": {
+      "types": "./dist/x-avatar.d.ts",
       "import": "./dist/x-avatar.js",
-      "default": "./dist/x-avatar.js",
-      "types": "./dist/x-avatar.d.ts"
+      "default": "./dist/x-avatar.js"
     },
     "./x-table": {
+      "types": "./dist/x-table.d.ts",
       "import": "./dist/x-table.js",
-      "default": "./dist/x-table.js",
-      "types": "./dist/x-table.d.ts"
+      "default": "./dist/x-table.js"
     },
     "./x-soft-body": {
+      "types": "./dist/x-soft-body.d.ts",
       "import": "./dist/x-soft-body.js",
-      "default": "./dist/x-soft-body.js",
-      "types": "./dist/x-soft-body.d.ts"
+      "default": "./dist/x-soft-body.js"
     },
     "./x-dropdown": {
+      "types": "./dist/x-dropdown.d.ts",
       "import": "./dist/x-dropdown.js",
-      "default": "./dist/x-dropdown.js",
-      "types": "./dist/x-dropdown.d.ts"
+      "default": "./dist/x-dropdown.js"
     },
     "./x-currency-field": {
+      "types": "./dist/x-currency-field.d.ts",
       "import": "./dist/x-currency-field.js",
-      "default": "./dist/x-currency-field.js",
-      "types": "./dist/x-currency-field.d.ts"
+      "default": "./dist/x-currency-field.js"
     },
     "./x-organic-progress": {
+      "types": "./dist/x-organic-progress.d.ts",
       "import": "./dist/x-organic-progress.js",
-      "default": "./dist/x-organic-progress.js",
-      "types": "./dist/x-organic-progress.d.ts"
+      "default": "./dist/x-organic-progress.js"
     },
     "./x-container": {
+      "types": "./dist/x-container.d.ts",
       "import": "./dist/x-container.js",
-      "default": "./dist/x-container.js",
-      "types": "./dist/x-container.d.ts"
+      "default": "./dist/x-container.js"
     },
     "./x-checkbox": {
+      "types": "./dist/x-checkbox.d.ts",
       "import": "./dist/x-checkbox.js",
-      "default": "./dist/x-checkbox.js",
-      "types": "./dist/x-checkbox.d.ts"
+      "default": "./dist/x-checkbox.js"
     },
     "./x-organic-divider": {
+      "types": "./dist/x-organic-divider.d.ts",
       "import": "./dist/x-organic-divider.js",
-      "default": "./dist/x-organic-divider.js",
-      "types": "./dist/x-organic-divider.d.ts"
+      "default": "./dist/x-organic-divider.js"
     },
     "./x-popover": {
+      "types": "./dist/x-popover.d.ts",
       "import": "./dist/x-popover.js",
-      "default": "./dist/x-popover.js",
-      "types": "./dist/x-popover.d.ts"
+      "default": "./dist/x-popover.js"
     },
     "./x-icon": {
+      "types": "./dist/x-icon.d.ts",
       "import": "./dist/x-icon.js",
-      "default": "./dist/x-icon.js",
-      "types": "./dist/x-icon.d.ts"
+      "default": "./dist/x-icon.js"
     },
     "./x-command-palette": {
+      "types": "./dist/x-command-palette.d.ts",
       "import": "./dist/x-command-palette.js",
-      "default": "./dist/x-command-palette.js",
-      "types": "./dist/x-command-palette.d.ts"
+      "default": "./dist/x-command-palette.js"
     },
     "./x-tooltip": {
+      "types": "./dist/x-tooltip.d.ts",
       "import": "./dist/x-tooltip.js",
-      "default": "./dist/x-tooltip.js",
-      "types": "./dist/x-tooltip.d.ts"
+      "default": "./dist/x-tooltip.js"
     },
     "./x-radio": {
+      "types": "./dist/x-radio.d.ts",
       "import": "./dist/x-radio.js",
-      "default": "./dist/x-radio.js",
-      "types": "./dist/x-radio.d.ts"
+      "default": "./dist/x-radio.js"
     },
     "./x-table-cell": {
+      "types": "./dist/x-table-cell.d.ts",
       "import": "./dist/x-table-cell.js",
-      "default": "./dist/x-table-cell.js",
-      "types": "./dist/x-table-cell.d.ts"
+      "default": "./dist/x-table-cell.js"
     },
     "./x-stat": {
+      "types": "./dist/x-stat.d.ts",
       "import": "./dist/x-stat.js",
-      "default": "./dist/x-stat.js",
-      "types": "./dist/x-stat.d.ts"
+      "default": "./dist/x-stat.js"
     },
     "./x-tab": {
+      "types": "./dist/x-tab.d.ts",
       "import": "./dist/x-tab.js",
-      "default": "./dist/x-tab.js",
-      "types": "./dist/x-tab.d.ts"
+      "default": "./dist/x-tab.js"
     },
     "./x-toaster": {
+      "types": "./dist/x-toaster.d.ts",
       "import": "./dist/x-toaster.js",
-      "default": "./dist/x-toaster.js",
-      "types": "./dist/x-toaster.d.ts"
+      "default": "./dist/x-toaster.js"
     },
     "./x-select": {
+      "types": "./dist/x-select.d.ts",
       "import": "./dist/x-select.js",
-      "default": "./dist/x-select.js",
-      "types": "./dist/x-select.d.ts"
+      "default": "./dist/x-select.js"
     },
     "./x-date-picker": {
+      "types": "./dist/x-date-picker.d.ts",
       "import": "./dist/x-date-picker.js",
-      "default": "./dist/x-date-picker.js",
-      "types": "./dist/x-date-picker.d.ts"
+      "default": "./dist/x-date-picker.js"
     },
     "./x-neural-glow": {
+      "types": "./dist/x-neural-glow.d.ts",
       "import": "./dist/x-neural-glow.js",
-      "default": "./dist/x-neural-glow.js",
-      "types": "./dist/x-neural-glow.d.ts"
+      "default": "./dist/x-neural-glow.js"
     },
     "./x-skeleton": {
+      "types": "./dist/x-skeleton.d.ts",
       "import": "./dist/x-skeleton.js",
-      "default": "./dist/x-skeleton.js",
-      "types": "./dist/x-skeleton.d.ts"
+      "default": "./dist/x-skeleton.js"
     },
     "./x-gaussian-blur": {
+      "types": "./dist/x-gaussian-blur.d.ts",
       "import": "./dist/x-gaussian-blur.js",
-      "default": "./dist/x-gaussian-blur.js",
-      "types": "./dist/x-gaussian-blur.d.ts"
+      "default": "./dist/x-gaussian-blur.js"
     },
     "./x-metaball-cursor": {
+      "types": "./dist/x-metaball-cursor.d.ts",
       "import": "./dist/x-metaball-cursor.js",
-      "default": "./dist/x-metaball-cursor.js",
-      "types": "./dist/x-metaball-cursor.d.ts"
+      "default": "./dist/x-metaball-cursor.js"
     },
     "./x-drawer": {
+      "types": "./dist/x-drawer.d.ts",
       "import": "./dist/x-drawer.js",
-      "default": "./dist/x-drawer.js",
-      "types": "./dist/x-drawer.d.ts"
+      "default": "./dist/x-drawer.js"
     },
     "./x-context-menu": {
+      "types": "./dist/x-context-menu.d.ts",
       "import": "./dist/x-context-menu.js",
-      "default": "./dist/x-context-menu.js",
-      "types": "./dist/x-context-menu.d.ts"
+      "default": "./dist/x-context-menu.js"
     },
     "./x-cancel-dialogue": {
+      "types": "./dist/x-cancel-dialogue.d.ts",
       "import": "./dist/x-cancel-dialogue.js",
-      "default": "./dist/x-cancel-dialogue.js",
-      "types": "./dist/x-cancel-dialogue.d.ts"
+      "default": "./dist/x-cancel-dialogue.js"
     },
     "./x-image": {
+      "types": "./dist/x-image.d.ts",
       "import": "./dist/x-image.js",
-      "default": "./dist/x-image.js",
-      "types": "./dist/x-image.d.ts"
+      "default": "./dist/x-image.js"
     },
     "./x-kinetic-font": {
+      "types": "./dist/x-kinetic-font.d.ts",
       "import": "./dist/x-kinetic-font.js",
-      "default": "./dist/x-kinetic-font.js",
-      "types": "./dist/x-kinetic-font.d.ts"
+      "default": "./dist/x-kinetic-font.js"
     },
     "./x-menu": {
+      "types": "./dist/x-menu.d.ts",
       "import": "./dist/x-menu.js",
-      "default": "./dist/x-menu.js",
-      "types": "./dist/x-menu.d.ts"
+      "default": "./dist/x-menu.js"
     },
     "./x-organic-shape": {
+      "types": "./dist/x-organic-shape.d.ts",
       "import": "./dist/x-organic-shape.js",
-      "default": "./dist/x-organic-shape.js",
-      "types": "./dist/x-organic-shape.d.ts"
+      "default": "./dist/x-organic-shape.js"
     },
     "./x-collapse": {
+      "types": "./dist/x-collapse.d.ts",
       "import": "./dist/x-collapse.js",
-      "default": "./dist/x-collapse.js",
-      "types": "./dist/x-collapse.d.ts"
+      "default": "./dist/x-collapse.js"
     },
     "./x-slider": {
+      "types": "./dist/x-slider.d.ts",
       "import": "./dist/x-slider.js",
-      "default": "./dist/x-slider.js",
-      "types": "./dist/x-slider.d.ts"
+      "default": "./dist/x-slider.js"
     },
     "./x-particle-button": {
+      "types": "./dist/x-particle-button.d.ts",
       "import": "./dist/x-particle-button.js",
-      "default": "./dist/x-particle-button.js",
-      "types": "./dist/x-particle-button.d.ts"
+      "default": "./dist/x-particle-button.js"
     },
     "./x-toast": {
+      "types": "./dist/x-toast.d.ts",
       "import": "./dist/x-toast.js",
-      "default": "./dist/x-toast.js",
-      "types": "./dist/x-toast.d.ts"
+      "default": "./dist/x-toast.js"
     },
     "./x-spinner": {
+      "types": "./dist/x-spinner.d.ts",
       "import": "./dist/x-spinner.js",
-      "default": "./dist/x-spinner.js",
-      "types": "./dist/x-spinner.d.ts"
+      "default": "./dist/x-spinner.js"
     },
     "./x-morph-stack": {
+      "types": "./dist/x-morph-stack.d.ts",
       "import": "./dist/x-morph-stack.js",
-      "default": "./dist/x-morph-stack.js",
-      "types": "./dist/x-morph-stack.d.ts"
+      "default": "./dist/x-morph-stack.js"
     },
     "./x-carousel": {
+      "types": "./dist/x-carousel.d.ts",
       "import": "./dist/x-carousel.js",
-      "default": "./dist/x-carousel.js",
-      "types": "./dist/x-carousel.d.ts"
+      "default": "./dist/x-carousel.js"
     },
     "./x-chart": {
+      "types": "./dist/x-chart.d.ts",
       "import": "./dist/x-chart.js",
-      "default": "./dist/x-chart.js",
-      "types": "./dist/x-chart.d.ts"
+      "default": "./dist/x-chart.js"
     },
     "./x-scroll": {
+      "types": "./dist/x-scroll.d.ts",
       "import": "./dist/x-scroll.js",
-      "default": "./dist/x-scroll.js",
-      "types": "./dist/x-scroll.d.ts"
+      "default": "./dist/x-scroll.js"
     },
     "./x-liquid-glass": {
+      "types": "./dist/x-liquid-glass.d.ts",
       "import": "./dist/x-liquid-glass.js",
-      "default": "./dist/x-liquid-glass.js",
-      "types": "./dist/x-liquid-glass.d.ts"
+      "default": "./dist/x-liquid-glass.js"
     },
     "./x-avatar-group": {
+      "types": "./dist/x-avatar-group.d.ts",
       "import": "./dist/x-avatar-group.js",
-      "default": "./dist/x-avatar-group.js",
-      "types": "./dist/x-avatar-group.d.ts"
+      "default": "./dist/x-avatar-group.js"
     },
     "./x-tabs": {
+      "types": "./dist/x-tabs.d.ts",
       "import": "./dist/x-tabs.js",
-      "default": "./dist/x-tabs.js",
-      "types": "./dist/x-tabs.d.ts"
+      "default": "./dist/x-tabs.js"
     },
     "./x-sidebar": {
+      "types": "./dist/x-sidebar.d.ts",
       "import": "./dist/x-sidebar.js",
-      "default": "./dist/x-sidebar.js",
-      "types": "./dist/x-sidebar.d.ts"
+      "default": "./dist/x-sidebar.js"
     },
     "./x-text-area": {
+      "types": "./dist/x-text-area.d.ts",
       "import": "./dist/x-text-area.js",
-      "default": "./dist/x-text-area.js",
-      "types": "./dist/x-text-area.d.ts"
+      "default": "./dist/x-text-area.js"
     },
     "./x-form-field": {
+      "types": "./dist/x-form-field.d.ts",
       "import": "./dist/x-form-field.js",
-      "default": "./dist/x-form-field.js",
-      "types": "./dist/x-form-field.d.ts"
+      "default": "./dist/x-form-field.js"
     },
     "./x-modal": {
+      "types": "./dist/x-modal.d.ts",
       "import": "./dist/x-modal.js",
-      "default": "./dist/x-modal.js",
-      "types": "./dist/x-modal.d.ts"
+      "default": "./dist/x-modal.js"
     },
     "./x-stepper": {
+      "types": "./dist/x-stepper.d.ts",
       "import": "./dist/x-stepper.js",
-      "default": "./dist/x-stepper.js",
-      "types": "./dist/x-stepper.d.ts"
+      "default": "./dist/x-stepper.js"
     },
     "./x-breadcrumbs": {
+      "types": "./dist/x-breadcrumbs.d.ts",
       "import": "./dist/x-breadcrumbs.js",
-      "default": "./dist/x-breadcrumbs.js",
-      "types": "./dist/x-breadcrumbs.d.ts"
+      "default": "./dist/x-breadcrumbs.js"
     },
     "./x-file-upload": {
+      "types": "./dist/x-file-upload.d.ts",
       "import": "./dist/x-file-upload.js",
-      "default": "./dist/x-file-upload.js",
-      "types": "./dist/x-file-upload.d.ts"
+      "default": "./dist/x-file-upload.js"
     },
     "./x-table-row": {
+      "types": "./dist/x-table-row.d.ts",
       "import": "./dist/x-table-row.js",
-      "default": "./dist/x-table-row.js",
-      "types": "./dist/x-table-row.d.ts"
+      "default": "./dist/x-table-row.js"
     },
     "./x-navbar": {
+      "types": "./dist/x-navbar.d.ts",
       "import": "./dist/x-navbar.js",
-      "default": "./dist/x-navbar.js",
-      "types": "./dist/x-navbar.d.ts"
+      "default": "./dist/x-navbar.js"
     },
     "./x-switch": {
+      "types": "./dist/x-switch.d.ts",
       "import": "./dist/x-switch.js",
-      "default": "./dist/x-switch.js",
-      "types": "./dist/x-switch.d.ts"
+      "default": "./dist/x-switch.js"
     },
     "./x-liquid-fill": {
+      "types": "./dist/x-liquid-fill.d.ts",
       "import": "./dist/x-liquid-fill.js",
-      "default": "./dist/x-liquid-fill.js",
-      "types": "./dist/x-liquid-fill.d.ts"
+      "default": "./dist/x-liquid-fill.js"
     },
     "./x-divider": {
+      "types": "./dist/x-divider.d.ts",
       "import": "./dist/x-divider.js",
-      "default": "./dist/x-divider.js",
-      "types": "./dist/x-divider.d.ts"
+      "default": "./dist/x-divider.js"
     },
     "./x-color-picker": {
+      "types": "./dist/x-color-picker.d.ts",
       "import": "./dist/x-color-picker.js",
-      "default": "./dist/x-color-picker.js",
-      "types": "./dist/x-color-picker.d.ts"
+      "default": "./dist/x-color-picker.js"
     },
     "./x-button": {
+      "types": "./dist/x-button.d.ts",
       "import": "./dist/x-button.js",
-      "default": "./dist/x-button.js",
-      "types": "./dist/x-button.d.ts"
+      "default": "./dist/x-button.js"
     },
     "./x-theme": {
+      "types": "./dist/x-theme.d.ts",
       "import": "./dist/x-theme.js",
-      "default": "./dist/x-theme.js",
-      "types": "./dist/x-theme.d.ts"
+      "default": "./dist/x-theme.js"
     },
     "./x-search-field": {
+      "types": "./dist/x-search-field.d.ts",
       "import": "./dist/x-search-field.js",
-      "default": "./dist/x-search-field.js",
-      "types": "./dist/x-search-field.d.ts"
+      "default": "./dist/x-search-field.js"
     },
     "./x-form": {
+      "types": "./dist/x-form.d.ts",
       "import": "./dist/x-form.js",
-      "default": "./dist/x-form.js",
-      "types": "./dist/x-form.d.ts"
+      "default": "./dist/x-form.js"
     },
     "./x-typography": {
+      "types": "./dist/x-typography.d.ts",
       "import": "./dist/x-typography.js",
-      "default": "./dist/x-typography.js",
-      "types": "./dist/x-typography.d.ts"
+      "default": "./dist/x-typography.js"
     },
     "./x-bento-grid": {
+      "types": "./dist/x-bento-grid.d.ts",
       "import": "./dist/x-bento-grid.js",
-      "default": "./dist/x-bento-grid.js",
-      "types": "./dist/x-bento-grid.d.ts"
+      "default": "./dist/x-bento-grid.js"
     },
     "./x-scroll-timeline": {
+      "types": "./dist/x-scroll-timeline.d.ts",
       "import": "./dist/x-scroll-timeline.js",
-      "default": "./dist/x-scroll-timeline.js",
-      "types": "./dist/x-scroll-timeline.d.ts"
+      "default": "./dist/x-scroll-timeline.js"
     },
     "./x-pagination": {
+      "types": "./dist/x-pagination.d.ts",
       "import": "./dist/x-pagination.js",
-      "default": "./dist/x-pagination.js",
-      "types": "./dist/x-pagination.d.ts"
+      "default": "./dist/x-pagination.js"
     },
     "./x-splash": {
+      "types": "./dist/x-splash.d.ts",
       "import": "./dist/x-splash.js",
-      "default": "./dist/x-splash.js",
-      "types": "./dist/x-splash.d.ts"
+      "default": "./dist/x-splash.js"
     },
     "./x-timeline": {
+      "types": "./dist/x-timeline.d.ts",
       "import": "./dist/x-timeline.js",
-      "default": "./dist/x-timeline.js",
-      "types": "./dist/x-timeline.d.ts"
+      "default": "./dist/x-timeline.js"
     },
     "./x-chip": {
+      "types": "./dist/x-chip.d.ts",
       "import": "./dist/x-chip.js",
-      "default": "./dist/x-chip.js",
-      "types": "./dist/x-chip.d.ts"
+      "default": "./dist/x-chip.js"
     },
     "./x-grid": {
+      "types": "./dist/x-grid.d.ts",
       "import": "./dist/x-grid.js",
-      "default": "./dist/x-grid.js",
-      "types": "./dist/x-grid.d.ts"
+      "default": "./dist/x-grid.js"
     },
     "./x-scroll-parallax": {
+      "types": "./dist/x-scroll-parallax.d.ts",
       "import": "./dist/x-scroll-parallax.js",
-      "default": "./dist/x-scroll-parallax.js",
-      "types": "./dist/x-scroll-parallax.d.ts"
+      "default": "./dist/x-scroll-parallax.js"
     },
     "./x-spacer": {
+      "types": "./dist/x-spacer.d.ts",
       "import": "./dist/x-spacer.js",
-      "default": "./dist/x-spacer.js",
-      "types": "./dist/x-spacer.d.ts"
+      "default": "./dist/x-spacer.js"
     },
     "./x-liquid-dock": {
+      "types": "./dist/x-liquid-dock.d.ts",
       "import": "./dist/x-liquid-dock.js",
-      "default": "./dist/x-liquid-dock.js",
-      "types": "./dist/x-liquid-dock.d.ts"
+      "default": "./dist/x-liquid-dock.js"
     },
     "./x-skeleton-group": {
+      "types": "./dist/x-skeleton-group.d.ts",
       "import": "./dist/x-skeleton-group.js",
-      "default": "./dist/x-skeleton-group.js",
-      "types": "./dist/x-skeleton-group.d.ts"
+      "default": "./dist/x-skeleton-group.js"
     },
     "./x-combobox": {
+      "types": "./dist/x-combobox.d.ts",
       "import": "./dist/x-combobox.js",
-      "default": "./dist/x-combobox.js",
-      "types": "./dist/x-combobox.d.ts"
+      "default": "./dist/x-combobox.js"
     },
     "./x-menu-item": {
+      "types": "./dist/x-menu-item.d.ts",
       "import": "./dist/x-menu-item.js",
-      "default": "./dist/x-menu-item.js",
-      "types": "./dist/x-menu-item.d.ts"
+      "default": "./dist/x-menu-item.js"
     },
     "./x-kinetic-typography": {
+      "types": "./dist/x-kinetic-typography.d.ts",
       "import": "./dist/x-kinetic-typography.js",
-      "default": "./dist/x-kinetic-typography.js",
-      "types": "./dist/x-kinetic-typography.d.ts"
+      "default": "./dist/x-kinetic-typography.js"
     },
     "./x-welcome-tour": {
+      "types": "./dist/x-welcome-tour.d.ts",
       "import": "./dist/x-welcome-tour.js",
-      "default": "./dist/x-welcome-tour.js",
-      "types": "./dist/x-welcome-tour.d.ts"
+      "default": "./dist/x-welcome-tour.js"
     },
     "./x-bento-item": {
+      "types": "./dist/x-bento-item.d.ts",
       "import": "./dist/x-bento-item.js",
-      "default": "./dist/x-bento-item.js",
-      "types": "./dist/x-bento-item.d.ts"
+      "default": "./dist/x-bento-item.js"
     },
     "./x-ripple-effect": {
+      "types": "./dist/x-ripple-effect.d.ts",
       "import": "./dist/x-ripple-effect.js",
-      "default": "./dist/x-ripple-effect.js",
-      "types": "./dist/x-ripple-effect.d.ts"
+      "default": "./dist/x-ripple-effect.js"
     },
     "./x-scroll-stack": {
+      "types": "./dist/x-scroll-stack.d.ts",
       "import": "./dist/x-scroll-stack.js",
-      "default": "./dist/x-scroll-stack.js",
-      "types": "./dist/x-scroll-stack.d.ts"
+      "default": "./dist/x-scroll-stack.js"
     },
     "./x-scroll-story": {
+      "types": "./dist/x-scroll-story.d.ts",
       "import": "./dist/x-scroll-story.js",
-      "default": "./dist/x-scroll-story.js",
-      "types": "./dist/x-scroll-story.d.ts"
+      "default": "./dist/x-scroll-story.js"
     },
     "./x-badge": {
+      "types": "./dist/x-badge.d.ts",
       "import": "./dist/x-badge.js",
-      "default": "./dist/x-badge.js",
-      "types": "./dist/x-badge.d.ts"
+      "default": "./dist/x-badge.js"
     },
     "./x-timeline-item": {
+      "types": "./dist/x-timeline-item.d.ts",
       "import": "./dist/x-timeline-item.js",
-      "default": "./dist/x-timeline-item.js",
-      "types": "./dist/x-timeline-item.d.ts"
+      "default": "./dist/x-timeline-item.js"
     },
     "./x-alert": {
+      "types": "./dist/x-alert.d.ts",
       "import": "./dist/x-alert.js",
-      "default": "./dist/x-alert.js",
-      "types": "./dist/x-alert.d.ts"
+      "default": "./dist/x-alert.js"
     },
     "./x-fieldset": {
+      "types": "./dist/x-fieldset.d.ts",
       "import": "./dist/x-fieldset.js",
-      "default": "./dist/x-fieldset.js",
-      "types": "./dist/x-fieldset.d.ts"
+      "default": "./dist/x-fieldset.js"
     },
     "./x-progress": {
+      "types": "./dist/x-progress.d.ts",
       "import": "./dist/x-progress.js",
-      "default": "./dist/x-progress.js",
-      "types": "./dist/x-progress.d.ts"
+      "default": "./dist/x-progress.js"
     },
     "./x-progress-circle": {
+      "types": "./dist/x-progress-circle.d.ts",
       "import": "./dist/x-progress-circle.js",
-      "default": "./dist/x-progress-circle.js",
-      "types": "./dist/x-progress-circle.d.ts"
+      "default": "./dist/x-progress-circle.js"
     },
     "./x-notification-center": {
+      "types": "./dist/x-notification-center.d.ts",
       "import": "./dist/x-notification-center.js",
-      "default": "./dist/x-notification-center.js",
-      "types": "./dist/x-notification-center.d.ts"
+      "default": "./dist/x-notification-center.js"
     },
     "./x-file-download": {
+      "types": "./dist/x-file-download.d.ts",
       "import": "./dist/x-file-download.js",
-      "default": "./dist/x-file-download.js",
-      "types": "./dist/x-file-download.d.ts"
+      "default": "./dist/x-file-download.js"
     },
     "./x-copy": {
+      "types": "./dist/x-copy.d.ts",
       "import": "./dist/x-copy.js",
-      "default": "./dist/x-copy.js",
-      "types": "./dist/x-copy.d.ts"
+      "default": "./dist/x-copy.js"
     },
     "./x-card": {
+      "types": "./dist/x-card.d.ts",
       "import": "./dist/x-card.js",
-      "default": "./dist/x-card.js",
-      "types": "./dist/x-card.d.ts"
+      "default": "./dist/x-card.js"
     }
   },
   "homepage": "https://github.com/avanelsas/baredom#readme",

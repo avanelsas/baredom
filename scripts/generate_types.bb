@@ -164,7 +164,7 @@
 
 ;; ── Extra exports per component ─────────────────────────────────────────────
 (def extra-export-signatures
-  {"x-theme" ["export function registerPreset(presetName: string, data: Record<string, string>): void;"]})
+  {"x-theme" ["export function registerPreset(presetName: string, data: { light: Record<string, string>; dark?: Record<string, string> }): void;"]})
 
 ;; ── Main ────────────────────────────────────────────────────────────────────
 (defn -main []

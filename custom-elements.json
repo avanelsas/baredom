@@ -428,7 +428,12 @@
         }
       } ],
       "events" : [ {
-        "name" : ":page-change",
+        "name" : "page-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "page-change",
         "type" : {
           "text" : "CustomEvent"
         }
@@ -1735,6 +1740,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-combobox-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "x-combobox-change",
         "type" : {
           "text" : "CustomEvent"
@@ -2527,6 +2537,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-select-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "select-change",
         "type" : {
           "text" : "CustomEvent"
@@ -2677,6 +2692,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-text-area-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "x-text-area-input",
         "type" : {
           "text" : "CustomEvent"
@@ -6001,6 +6021,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-currency-field-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "x-currency-field-input",
         "type" : {
           "text" : "CustomEvent"
@@ -6864,6 +6889,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "value-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "value-change",
         "type" : {
           "text" : "CustomEvent"
@@ -7307,6 +7337,11 @@
         }
       } ],
       "events" : [ {
+        "name" : "x-slider-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
         "name" : "x-slider-input",
         "type" : {
           "text" : "CustomEvent"
