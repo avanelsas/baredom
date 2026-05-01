@@ -1,6 +1,7 @@
 (ns baredom.components.x-drawer.x-drawer
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-drawer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────────
@@ -179,15 +180,6 @@
     :label-raw     (.getAttribute el model/attr-label)}))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   event-name
-                   #js {:detail   detail
-                        :bubbles  true
-                        :composed true
-                        :cancelable false})))
-
 ;; ── Focus trap ────────────────────────────────────────────────────────────────
 (defn- collect-tabbables [^js el]
   ;; Query the host element's light DOM — slotted content lives there,
@@ -258,7 +250,7 @@
 
 ;; ── Dismiss (user-initiated close) ───────────────────────────────────────────
 (defn- do-dismiss! [^js el reason]
-  (dispatch! el model/event-dismiss (model/dismiss-event-detail reason))
+  (du/dispatch! el model/event-dismiss (model/dismiss-event-detail reason))
   (.removeAttribute el model/attr-open)
   nil)
 
@@ -302,7 +294,7 @@
     ;; Detect open state transition
     (when (not= prev-open open?)
       (gobj/set el k-prev-open open?)
-      (dispatch! el model/event-toggle (model/toggle-event-detail open?))
+      (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
       (if open?
         (js/setTimeout (fn [] (activate-focus-trap! el)) 0)
         (deactivate-focus-trap! el))))

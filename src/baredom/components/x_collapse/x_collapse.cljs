@@ -1,5 +1,6 @@
 (ns baredom.components.x-collapse.x-collapse
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-collapse.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -107,21 +108,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -138,20 +124,20 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! container-el    "part" "container")
-    (set-attr! trigger-el      "part" "trigger")
-    (set-attr! trigger-el      "type" "button")
-    (set-attr! trigger-el      "id"   "trigger")
-    (set-attr! trigger-el      "aria-controls" "panel")
-    (set-attr! header-text-el  "part" "header-text")
-    (set-attr! chevron-el      "part" "chevron")
-    (set-attr! chevron-el      "aria-hidden" "true")
-    (set-attr! content-el      "part" "content")
-    (set-attr! content-el      "id"   "panel")
-    (set-attr! content-el      "role" "region")
-    (set-attr! content-el      "aria-labelledby" "trigger")
-    (set-attr! content-inner-el "part" "content-inner")
-    (set-attr! slot-el         "name" model/slot-content)
+    (du/set-attr! container-el    "part" "container")
+    (du/set-attr! trigger-el      "part" "trigger")
+    (du/set-attr! trigger-el      "type" "button")
+    (du/set-attr! trigger-el      "id"   "trigger")
+    (du/set-attr! trigger-el      "aria-controls" "panel")
+    (du/set-attr! header-text-el  "part" "header-text")
+    (du/set-attr! chevron-el      "part" "chevron")
+    (du/set-attr! chevron-el      "aria-hidden" "true")
+    (du/set-attr! content-el      "part" "content")
+    (du/set-attr! content-el      "id"   "panel")
+    (du/set-attr! content-el      "role" "region")
+    (du/set-attr! content-el      "aria-labelledby" "trigger")
+    (du/set-attr! content-inner-el "part" "content-inner")
+    (du/set-attr! slot-el         "name" model/slot-content)
 
     (set! (.-textContent chevron-el) "\u25BC")
 
@@ -185,7 +171,7 @@
 ;; Duration helper
 ;; ---------------------------------------------------------------------------
 (defn- get-duration-ms [^js el]
-  (let [d (get-attr el model/attr-duration-ms)]
+  (let [d (du/get-attr el model/attr-duration-ms)]
     (if d
       (let [n (js/parseInt d 10)]
         (if (js/isNaN n) model/default-duration-ms (max 0 (min 2000 n))))
@@ -259,57 +245,37 @@
   (when-let [refs (gobj/get el k-refs)]
     (let [^js trigger-el     (gobj/get refs "trigger")
           ^js header-text-el (gobj/get refs "header-text")
-          open?              (has-attr? el model/attr-open)
-          disabled?          (has-attr? el model/attr-disabled)
-          header             (or (get-attr el model/attr-header) "")]
+          open?              (du/has-attr? el model/attr-open)
+          disabled?          (du/has-attr? el model/attr-disabled)
+          header             (or (du/get-attr el model/attr-header) "")]
 
       (set! (.-textContent header-text-el) header)
 
-      (set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
+      (du/set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
 
       (if disabled?
-        (do (set-attr! trigger-el "disabled" "")
-            (set-attr! trigger-el "aria-disabled" "true"))
-        (do (remove-attr! trigger-el "disabled")
-            (remove-attr! trigger-el "aria-disabled"))))))
+        (do (du/set-attr! trigger-el "disabled" "")
+            (du/set-attr! trigger-el "aria-disabled" "true"))
+        (do (du/remove-attr! trigger-el "disabled")
+            (du/remove-attr! trigger-el "aria-disabled"))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Toggle
 ;; ---------------------------------------------------------------------------
 (defn- toggle! [^js el source]
-  (when-not (has-attr? el model/attr-disabled)
-    (let [currently-open? (has-attr? el model/attr-open)
+  (when-not (du/has-attr? el model/attr-disabled)
+    (let [currently-open? (du/has-attr? el model/attr-open)
           next-open?      (not currently-open?)
           detail          (model/toggle-detail next-open? source)
-          allowed?        (dispatch-cancelable! el model/event-toggle detail)]
+          allowed?        (du/dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
         (if next-open?
-          (set-attr! el model/attr-open "")
-          (remove-attr! el model/attr-open))
-        (dispatch! el model/event-change #js {:open next-open?})))))
+          (du/set-attr! el model/attr-open "")
+          (du/remove-attr! el model/attr-open))
+        (du/dispatch! el model/event-change #js {:open next-open?})))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -363,7 +329,7 @@
     (when (= name model/attr-open)
       (let [refs       (gobj/get el k-refs)
             ^js content-el (when refs (gobj/get refs "content"))
-            open?      (has-attr? el model/attr-open)]
+            open?      (du/has-attr? el model/attr-open)]
         (when content-el
           (if open?
             (start-open! el content-el)
@@ -377,19 +343,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 (defn- define-number-prop! [^js proto prop-name attr-name]
   (.defineProperty
@@ -398,7 +364,7 @@
         :enumerable   true
         :get (fn []
                (this-as ^js this
-                        (let [raw (get-attr this attr-name)]
+                        (let [raw (du/get-attr this attr-name)]
                           (if raw
                             (let [n (js/parseInt raw 10)]
                               (if (js/isNaN n) model/default-duration-ms n))
@@ -406,8 +372,8 @@
         :set (fn [v]
                (this-as ^js this
                         (if (and (number? v) (not (js/isNaN v)))
-                          (set-attr! this attr-name (str (js/Math.round v)))
-                          (remove-attr! this attr-name))))}))
+                          (du/set-attr! this attr-name (str (js/Math.round v)))
+                          (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

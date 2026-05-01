@@ -1,6 +1,7 @@
 (ns baredom.components.x-copy.x-copy
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-copy.model :as model]))
 
 ;; ── Instance-field keys (always use gobj/get, gobj/set) ─────────────────────
@@ -247,34 +248,24 @@
   nil)
 
 ;; ── Copy handler ──────────────────────────────────────────────────────────────
-(defn- dispatch-event! [^js el event-name detail cancelable?]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable cancelable?})]
-    (.dispatchEvent el ev)
-    ev))
-
 (defn- copy! [^js el]
   (if (.hasAttribute el model/attr-disabled)
     (js/Promise.resolve nil)
     (let [m          (read-model el)
           req-detail (model/request-detail m)
-          ^js req-ev (dispatch-event! el model/event-copy-request req-detail true)]
-      (if (.-defaultPrevented req-ev)
+          allowed? (du/dispatch-cancelable! el model/event-copy-request req-detail)]
+      (if (not allowed?)
         (js/Promise.resolve nil)
         (-> (do-copy! el)
             (.then
              (fn [text]
-               (dispatch-event! el model/event-copy-success (model/success-detail text) false)
+               (du/dispatch! el model/event-copy-success (model/success-detail text))
                (when (:show-tooltip? m)
                  (show-tooltip! el "success" (:success-message m) (:tooltip-ms m)))
                text))
             (.catch
              (fn [err]
-               (dispatch-event! el model/event-copy-error (model/error-detail err) false)
+               (du/dispatch! el model/event-copy-error (model/error-detail err))
                (when (:show-tooltip? m)
                  (show-tooltip! el "error" (:error-message m) (:tooltip-ms m)))
                (js/Promise.reject err))))))))

@@ -307,12 +307,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -354,59 +348,59 @@
     (set! (.-textContent style-el) style-text)
 
     ;; Parts
-    (set-attr! container "part" "container")
-    (set-attr! trigger "part" "trigger")
-    (set-attr! trigger "type" "button")
-    (set-attr! trigger "aria-label" "Pick color")
-    (set-attr! trigger-swatch "part" "trigger-swatch")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! trigger "part" "trigger")
+    (du/set-attr! trigger "type" "button")
+    (du/set-attr! trigger "aria-label" "Pick color")
+    (du/set-attr! trigger-swatch "part" "trigger-swatch")
 
-    (set-attr! panel "part" "panel")
-    (set-attr! area "part" "area")
-    (set-attr! area "role" "slider")
-    (set-attr! area "tabindex" "0")
-    (set-attr! area "aria-label" "Color")
-    (set-attr! area-thumb "part" "area-thumb")
+    (du/set-attr! panel "part" "panel")
+    (du/set-attr! area "part" "area")
+    (du/set-attr! area "role" "slider")
+    (du/set-attr! area "tabindex" "0")
+    (du/set-attr! area "aria-label" "Color")
+    (du/set-attr! area-thumb "part" "area-thumb")
 
-    (set-attr! strips "part" "strips")
-    (set-attr! hue-strip "part" "hue-strip")
-    (set-attr! hue-strip "role" "slider")
-    (set-attr! hue-strip "tabindex" "0")
-    (set-attr! hue-strip "aria-label" "Hue")
-    (set-attr! hue-strip "aria-valuemin" "0")
-    (set-attr! hue-strip "aria-valuemax" "360")
-    (set-attr! hue-thumb "part" "hue-thumb")
+    (du/set-attr! strips "part" "strips")
+    (du/set-attr! hue-strip "part" "hue-strip")
+    (du/set-attr! hue-strip "role" "slider")
+    (du/set-attr! hue-strip "tabindex" "0")
+    (du/set-attr! hue-strip "aria-label" "Hue")
+    (du/set-attr! hue-strip "aria-valuemin" "0")
+    (du/set-attr! hue-strip "aria-valuemax" "360")
+    (du/set-attr! hue-thumb "part" "hue-thumb")
 
-    (set-attr! alpha-strip "part" "alpha-strip")
-    (set-attr! alpha-strip "role" "slider")
-    (set-attr! alpha-strip "tabindex" "0")
-    (set-attr! alpha-strip "aria-label" "Opacity")
-    (set-attr! alpha-strip "aria-valuemin" "0")
-    (set-attr! alpha-strip "aria-valuemax" "100")
-    (set-attr! alpha-gradient "part" "alpha-gradient")
-    (set-attr! alpha-thumb "part" "alpha-thumb")
+    (du/set-attr! alpha-strip "part" "alpha-strip")
+    (du/set-attr! alpha-strip "role" "slider")
+    (du/set-attr! alpha-strip "tabindex" "0")
+    (du/set-attr! alpha-strip "aria-label" "Opacity")
+    (du/set-attr! alpha-strip "aria-valuemin" "0")
+    (du/set-attr! alpha-strip "aria-valuemax" "100")
+    (du/set-attr! alpha-gradient "part" "alpha-gradient")
+    (du/set-attr! alpha-thumb "part" "alpha-thumb")
 
-    (set-attr! controls "part" "controls")
-    (set-attr! preview "part" "preview")
-    (set-attr! preview-color "part" "preview-color")
-    (set-attr! hex-input "part" "hex-input")
-    (set-attr! hex-input "type" "text")
-    (set-attr! hex-input "spellcheck" "false")
-    (set-attr! hex-input "autocomplete" "off")
-    (set-attr! hex-input "aria-label" "Hex color value")
+    (du/set-attr! controls "part" "controls")
+    (du/set-attr! preview "part" "preview")
+    (du/set-attr! preview-color "part" "preview-color")
+    (du/set-attr! hex-input "part" "hex-input")
+    (du/set-attr! hex-input "type" "text")
+    (du/set-attr! hex-input "spellcheck" "false")
+    (du/set-attr! hex-input "autocomplete" "off")
+    (du/set-attr! hex-input "aria-label" "Hex color value")
 
-    (set-attr! eyedropper-btn "part" "eyedropper")
-    (set-attr! eyedropper-btn "type" "button")
-    (set-attr! eyedropper-btn "aria-label" "Pick color from screen")
+    (du/set-attr! eyedropper-btn "part" "eyedropper")
+    (du/set-attr! eyedropper-btn "type" "button")
+    (du/set-attr! eyedropper-btn "aria-label" "Pick color from screen")
     (set! (.-innerHTML eyedropper-btn) eyedropper-svg)
 
-    (set-attr! copy-btn "part" "copy")
-    (set-attr! copy-btn "type" "button")
-    (set-attr! copy-btn "aria-label" "Copy color value")
+    (du/set-attr! copy-btn "part" "copy")
+    (du/set-attr! copy-btn "type" "button")
+    (du/set-attr! copy-btn "aria-label" "Copy color value")
     (set! (.-innerHTML copy-btn) copy-svg)
 
-    (set-attr! swatches "part" "swatches")
-    (set-attr! swatches "role" "listbox")
-    (set-attr! swatches "aria-label" "Preset colors")
+    (du/set-attr! swatches "part" "swatches")
+    (du/set-attr! swatches "role" "listbox")
+    (du/set-attr! swatches "aria-label" "Preset colors")
 
     ;; Build tree
     (.appendChild trigger trigger-swatch)
@@ -473,22 +467,13 @@
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name cancelable detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     (clj->js detail)
-                     :bubbles    true
-                     :composed   true
-                     :cancelable (boolean cancelable)})]
-    (.dispatchEvent el ev)))
-
 (defn- dispatch-input! [^js el m]
-  (dispatch! el model/event-input false
-             (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m))))
+  (du/dispatch! el model/event-input
+                (clj->js (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m)))))
 
 (defn- dispatch-change! [^js el m]
-  (dispatch! el model/event-change true
-             (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m))))
+  (du/dispatch-cancelable! el model/event-change
+                           (clj->js (model/make-detail (:hex-full m) (:h m) (:s m) (:l m) (:a m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Value update helper
@@ -500,7 +485,7 @@
         hex (if (and alpha? (< a 1.0))
               (model/rgba->hex8 r g b a)
               (model/rgb->hex r g b))]
-    (set-attr! el model/attr-value hex)))
+    (du/set-attr! el model/attr-value hex)))
 
 ;; ---------------------------------------------------------------------------
 ;; Render swatches
@@ -513,18 +498,18 @@
       (set! (.-innerHTML swatches-el) "")
       (doseq [hex swatch-list]
         (let [btn (make-el "button")]
-          (set-attr! btn "part" "swatch")
-          (set-attr! btn "type" "button")
-          (set-attr! btn "role" "option")
-          (set-attr! btn "aria-label" hex)
-          (set-attr! btn "data-color" hex)
+          (du/set-attr! btn "part" "swatch")
+          (du/set-attr! btn "type" "button")
+          (du/set-attr! btn "role" "option")
+          (du/set-attr! btn "aria-label" hex)
+          (du/set-attr! btn "data-color" hex)
           (set! (.-backgroundColor (.-style btn)) hex)
           (.appendChild swatches-el btn)))))
   ;; Update aria-selected on all swatch buttons
   (let [buttons (.querySelectorAll swatches-el "[part=swatch]")]
     (.forEach buttons
               (fn [^js btn]
-                (set-attr! btn "aria-selected"
+                (du/set-attr! btn "aria-selected"
                            (if (= (.getAttribute btn "data-color") current-hex)
                              "true" "false"))))))
 
@@ -552,7 +537,7 @@
           ^js swatches-el   (gobj/get refs "swatches")]
 
       ;; Data attribute on host for CSS selector matching
-      (set-attr! el "data-mode" mode)
+      (du/set-attr! el "data-mode" mode)
 
       ;; Area gradient hue
       (.setProperty (.-style el) "--_x-cp-hue" (str (js/Math.round h)))
@@ -562,13 +547,13 @@
       (.setProperty (.-style area-el) "--_x-cp-area-y" (str (.toFixed (:y area-pos) 2) "%"))
 
       ;; Area ARIA
-      (set-attr! area-el "aria-valuetext" (model/color-value-text h s l a))
-      (when label (set-attr! area-el "aria-label" label))
+      (du/set-attr! area-el "aria-valuetext" (model/color-value-text h s l a))
+      (when label (du/set-attr! area-el "aria-label" label))
 
       ;; Hue thumb position
       (.setProperty (.-style hue-strip) "--_x-cp-hue-pos"
                     (str (.toFixed (model/hue->pct h) 2) "%"))
-      (set-attr! hue-strip "aria-valuenow" (str (js/Math.round h)))
+      (du/set-attr! hue-strip "aria-valuenow" (str (js/Math.round h)))
 
       ;; Alpha strip
       (if alpha?
@@ -577,7 +562,7 @@
                           (str "hsl(" (js/Math.round h) "," (js/Math.round s) "%," (js/Math.round l) "%)"))
             (.setProperty (.-style alpha-strip) "--_x-cp-alpha-pos"
                           (str (.toFixed (model/alpha->pct a) 2) "%"))
-            (set-attr! alpha-strip "aria-valuenow" (str (js/Math.round (* a 100)))))
+            (du/set-attr! alpha-strip "aria-valuenow" (str (js/Math.round (* a 100)))))
         (set! (.-display (.-style alpha-strip)) "none"))
 
       ;; Preview swatch
@@ -790,7 +775,7 @@
           m (read-model el)]
       (when (model/interactable? m)
         (if (model/valid-hex? raw)
-          (do (set-attr! el model/attr-value raw)
+          (do (du/set-attr! el model/attr-value raw)
               (dispatch-change! el (read-model el)))
           ;; Revert to current value on invalid input
           (set! (.-value hex-input) (:hex-full m)))))))
@@ -804,7 +789,7 @@
       (let [^js target (.-target evt)]
         (when (.hasAttribute target "data-color")
           (let [hex (.getAttribute target "data-color")]
-            (set-attr! el model/attr-value hex)
+            (du/set-attr! el model/attr-value hex)
             (dispatch-change! el (read-model el))))))))
 
 ;; ---------------------------------------------------------------------------
@@ -817,7 +802,7 @@
         (-> (.open picker)
             (.then (fn [^js result]
                      (let [hex (.-sRGBHex result)]
-                       (set-attr! el model/attr-value hex)
+                       (du/set-attr! el model/attr-value hex)
                        (dispatch-change! el (read-model el)))))
             (.catch (fn [_] nil)))))))
 
@@ -1007,7 +992,7 @@
   (render! el))
 
 (defn- form-reset! [^js el]
-  (set-attr! el model/attr-value model/default-value)
+  (du/set-attr! el model/attr-value model/default-value)
   (render! el))
 
 ;; ---------------------------------------------------------------------------
@@ -1047,8 +1032,8 @@
         :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

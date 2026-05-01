@@ -17,9 +17,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
 ;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
@@ -216,27 +213,27 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! drop-zone "part"     "drop-zone")
-    (set-attr! drop-zone "role"     "button")
-    (set-attr! drop-zone "tabindex" "0")
+    (du/set-attr! drop-zone "part"     "drop-zone")
+    (du/set-attr! drop-zone "role"     "button")
+    (du/set-attr! drop-zone "tabindex" "0")
 
-    (set-attr! file-input "type"        "file")
-    (set-attr! file-input "aria-hidden" "true")
-    (set-attr! file-input "tabindex"    "-1")
+    (du/set-attr! file-input "type"        "file")
+    (du/set-attr! file-input "aria-hidden" "true")
+    (du/set-attr! file-input "tabindex"    "-1")
 
-    (set-attr! content-el "part" "content")
+    (du/set-attr! content-el "part" "content")
     (.appendChild content-el slot-el)
 
-    (set-attr! drag-overlay "part"   "drag-overlay")
-    (set-attr! drag-overlay "hidden" "")
+    (du/set-attr! drag-overlay "part"   "drag-overlay")
+    (du/set-attr! drag-overlay "hidden" "")
     (set! (.-textContent drag-overlay) model/msg-drop-here)
 
-    (set-attr! file-list "part" "file-list")
-    (set-attr! file-list "role" "list")
+    (du/set-attr! file-list "part" "file-list")
+    (du/set-attr! file-list "role" "list")
 
-    (set-attr! live-region "part"        "live-region")
-    (set-attr! live-region "aria-live"   "polite")
-    (set-attr! live-region "aria-atomic" "true")
+    (du/set-attr! live-region "part"        "live-region")
+    (du/set-attr! live-region "aria-live"   "polite")
+    (du/set-attr! live-region "aria-atomic" "true")
 
     (.appendChild drop-zone file-input)
     (.appendChild drop-zone content-el)
@@ -282,12 +279,12 @@
           ^js drop-zone  (gobj/get refs "dropZone")]
       (if (= accept "")
         (.removeAttribute file-input "accept")
-        (set-attr! file-input "accept" accept))
+        (du/set-attr! file-input "accept" accept))
       (if multiple?
-        (set-attr! file-input "multiple" "")
+        (du/set-attr! file-input "multiple" "")
         (.removeAttribute file-input "multiple"))
-      (set-attr! drop-zone "tabindex" (if disabled? "-1" "0"))
-      (set-attr! drop-zone "aria-disabled" (str disabled?)))))
+      (du/set-attr! drop-zone "tabindex" (if disabled? "-1" "0"))
+      (du/set-attr! drop-zone "aria-disabled" (str disabled?)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Blob URL management
@@ -325,27 +322,27 @@
               ^js remove-el (make-el "button")
               fname (.-name file)]
 
-          (set-attr! item "part" "file-item")
-          (set-attr! item "role" "listitem")
+          (du/set-attr! item "part" "file-item")
+          (du/set-attr! item "role" "listitem")
 
           ;; Thumbnail for images
           (when (model/file-is-image? file)
             (let [^js img (make-el "img")]
-              (set-attr! img "part" "thumbnail")
+              (du/set-attr! img "part" "thumbnail")
               (set! (.-src img) (js/URL.createObjectURL file))
-              (set-attr! img "alt" fname)
+              (du/set-attr! img "alt" fname)
               (.appendChild item img)))
 
-          (set-attr! name-el "part" "file-name")
+          (du/set-attr! name-el "part" "file-name")
           (set! (.-textContent name-el) fname)
 
-          (set-attr! size-el "part" "file-size")
+          (du/set-attr! size-el "part" "file-size")
           (set! (.-textContent size-el) (model/format-file-size (.-size file)))
 
-          (set-attr! remove-el "part"       "remove")
-          (set-attr! remove-el "type"       "button")
-          (set-attr! remove-el "aria-label" (str "Remove " fname))
-          (set-attr! remove-el "data-index" (str i))
+          (du/set-attr! remove-el "part"       "remove")
+          (du/set-attr! remove-el "type"       "button")
+          (du/set-attr! remove-el "aria-label" (str "Remove " fname))
+          (du/set-attr! remove-el "data-index" (str i))
           (set! (.-textContent remove-el) "\u00d7")
 
           (.appendChild item name-el)
@@ -386,16 +383,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; File management
 ;; ---------------------------------------------------------------------------
@@ -416,7 +403,7 @@
     (render-file-list! el)
     (sync-form-value! el)
     (sync-validity! el)
-    (dispatch! el model/event-select
+    (du/dispatch! el model/event-select
                #js {:files    (to-array accepted)
                     :rejected (to-array (map (fn [{:keys [file reason]}]
                                                #js {:file file :reason reason})
@@ -429,7 +416,7 @@
     (render-file-list! el)
     (sync-form-value! el)
     (sync-validity! el)
-    (dispatch! el model/event-remove
+    (du/dispatch! el model/event-remove
                #js {:file file :remaining (.slice files)})))
 
 ;; ---------------------------------------------------------------------------
@@ -466,7 +453,7 @@
             (let [ctr (inc (du/getv el k-drag-ctr))]
               (du/setv! el k-drag-ctr ctr)
               (when (= ctr 1)
-                (set-attr! el "data-drag-over" "")))))
+                (du/set-attr! el "data-drag-over" "")))))
 
         on-dragover
         (fn [^js e]

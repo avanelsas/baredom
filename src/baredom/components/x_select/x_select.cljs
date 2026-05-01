@@ -1,5 +1,6 @@
 (ns baredom.components.x-select.x-select
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-select.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -140,21 +141,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -169,14 +155,14 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! wrapper-el "part" "wrapper")
-    (set-attr! select-el  "part" "select")
-    (set-attr! chevron-el "part" "chevron")
-    (set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! wrapper-el "part" "wrapper")
+    (du/set-attr! select-el  "part" "select")
+    (du/set-attr! chevron-el "part" "chevron")
+    (du/set-attr! chevron-el "aria-hidden" "true")
 
     ;; Placeholder option: empty value, hidden by default, disabled, selected
-    (set-attr! ph-opt-el "data-placeholder" "")
-    (set-attr! ph-opt-el "value" "")
+    (du/set-attr! ph-opt-el "data-placeholder" "")
+    (du/set-attr! ph-opt-el "value" "")
     (set! (.-hidden ph-opt-el) true)
     (set! (.-disabled ph-opt-el) true)
     (set! (.-selected ph-opt-el) true)
@@ -205,12 +191,12 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:disabled-present? (has-attr? el model/attr-disabled)
-    :required-present? (has-attr? el model/attr-required)
-    :size-raw          (get-attr el model/attr-size)
-    :placeholder-raw   (get-attr el model/attr-placeholder)
-    :value-raw         (get-attr el model/attr-value)
-    :name-raw          (get-attr el model/attr-name)}))
+   {:disabled-present? (du/has-attr? el model/attr-disabled)
+    :required-present? (du/has-attr? el model/attr-required)
+    :size-raw          (du/get-attr el model/attr-size)
+    :placeholder-raw   (du/get-attr el model/attr-placeholder)
+    :value-raw         (du/get-attr el model/attr-value)
+    :name-raw          (du/get-attr el model/attr-name)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -231,13 +217,13 @@
 
     ;; Sync required
     (if required?
-      (set-attr! select-el model/attr-required "")
-      (remove-attr! select-el model/attr-required))
+      (du/set-attr! select-el model/attr-required "")
+      (du/remove-attr! select-el model/attr-required))
 
     ;; Sync name
     (if (and (string? name-val) (not= name-val ""))
-      (set-attr! select-el model/attr-name name-val)
-      (remove-attr! select-el model/attr-name))
+      (du/set-attr! select-el model/attr-name name-val)
+      (du/remove-attr! select-el model/attr-name))
 
     ;; Placeholder option visibility
     (if (and (string? placeholder) (not= placeholder ""))
@@ -250,17 +236,17 @@
     (set! (.-value select-el) (or value ""))
 
     ;; data-size on wrapper for CSS size selectors
-    (set-attr! wrapper-el "data-size" size)
+    (du/set-attr! wrapper-el "data-size" size)
 
     ;; data-disabled on wrapper for CSS disabled styles
     (if disabled?
-      (set-attr! wrapper-el "data-disabled" "")
-      (remove-attr! wrapper-el "data-disabled"))
+      (du/set-attr! wrapper-el "data-disabled" "")
+      (du/remove-attr! wrapper-el "data-disabled"))
 
     ;; aria-label on internal select when no name attr present
     (if (or (nil? name-val) (= name-val ""))
-      (set-attr! select-el "aria-label" (or placeholder "select"))
-      (remove-attr! select-el "aria-label"))))
+      (du/set-attr! select-el "aria-label" (or placeholder "select"))
+      (du/remove-attr! select-el "aria-label"))))
 
 (defn- render! [^js el]
   (when-let [refs (gobj/get el k-refs)]
@@ -297,26 +283,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
 ;; ---------------------------------------------------------------------------
 ;; Change handler — dispatches change-request then select-change
 ;; ---------------------------------------------------------------------------
@@ -325,15 +291,15 @@
     (when-let [refs (gobj/get el k-refs)]
       (let [^js sel    (gobj/get refs "select")
             value      (.-value sel)
-            prev-value (or (get-attr el model/attr-value) "")
+            prev-value (or (du/get-attr el model/attr-value) "")
             label      (if (> (alength (.-selectedOptions sel)) 0)
                          (.-text (aget (.-selectedOptions sel) 0))
                          "")
-            allowed?   (dispatch-cancelable!
+            allowed?   (du/dispatch-cancelable!
                         el model/event-change-request
                         #js {:value value :label label :previousValue prev-value})]
         (if allowed?
-          (dispatch! el model/event-select-change #js {:value value :label label})
+          (du/dispatch! el model/event-select-change #js {:value value :label label})
           ;; Revert native select to previous value
           (set! (.-value sel) prev-value))))))
 
@@ -391,19 +357,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) nil)))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

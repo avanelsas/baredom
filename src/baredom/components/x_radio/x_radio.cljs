@@ -1,5 +1,6 @@
 (ns baredom.components.x-radio.x-radio
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-radio.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -85,21 +86,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [^js tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -111,10 +97,10 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! control-el "part" "control")
-    (set-attr! control-el "type" "button")
-    (set-attr! control-el "role" "radio")
-    (set-attr! dot-el     "part" "dot")
+    (du/set-attr! control-el "part" "control")
+    (du/set-attr! control-el "type" "button")
+    (du/set-attr! control-el "role" "radio")
+    (du/set-attr! dot-el     "part" "dot")
 
     (.appendChild control-el dot-el)
     (.appendChild root style-el)
@@ -129,15 +115,15 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:checked-present?     (has-attr? el model/attr-checked)
-    :disabled-present?    (has-attr? el model/attr-disabled)
-    :readonly-present?    (has-attr? el model/attr-readonly)
-    :required-present?    (has-attr? el model/attr-required)
-    :name-raw             (get-attr el model/attr-name)
-    :value-raw            (get-attr el model/attr-value)
-    :aria-label-raw       (get-attr el model/attr-aria-label)
-    :aria-describedby-raw (get-attr el model/attr-aria-describedby)
-    :aria-labelledby-raw  (get-attr el model/attr-aria-labelledby)}))
+   {:checked-present?     (du/has-attr? el model/attr-checked)
+    :disabled-present?    (du/has-attr? el model/attr-disabled)
+    :readonly-present?    (du/has-attr? el model/attr-readonly)
+    :required-present?    (du/has-attr? el model/attr-required)
+    :name-raw             (du/get-attr el model/attr-name)
+    :value-raw            (du/get-attr el model/attr-value)
+    :aria-label-raw       (du/get-attr el model/attr-aria-label)
+    :aria-describedby-raw (du/get-attr el model/attr-aria-describedby)
+    :aria-labelledby-raw  (du/get-attr el model/attr-aria-labelledby)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -150,30 +136,30 @@
           checked?       (:checked? m)]
 
       ;; ARIA on button[part=control]
-      (set-attr! control-el "aria-checked"  (:aria-checked m))
-      (set-attr! control-el "aria-disabled"  (if disabled? "true" "false"))
-      (set-attr! control-el "aria-required"  (if (:required? m) "true" "false"))
-      (set-attr! control-el "aria-readonly"  (if (:readonly? m) "true" "false"))
+      (du/set-attr! control-el "aria-checked"  (:aria-checked m))
+      (du/set-attr! control-el "aria-disabled"  (if disabled? "true" "false"))
+      (du/set-attr! control-el "aria-required"  (if (:required? m) "true" "false"))
+      (du/set-attr! control-el "aria-readonly"  (if (:readonly? m) "true" "false"))
 
       (if-let [v (:aria-label m)]
-        (set-attr! control-el "aria-label" v)
-        (remove-attr! control-el "aria-label"))
+        (du/set-attr! control-el "aria-label" v)
+        (du/remove-attr! control-el "aria-label"))
 
       (if-let [v (:aria-labelledby m)]
-        (set-attr! control-el "aria-labelledby" v)
-        (remove-attr! control-el "aria-labelledby"))
+        (du/set-attr! control-el "aria-labelledby" v)
+        (du/remove-attr! control-el "aria-labelledby"))
 
       (if-let [v (:aria-describedby m)]
-        (set-attr! control-el "aria-describedby" v)
-        (remove-attr! control-el "aria-describedby"))
+        (du/set-attr! control-el "aria-describedby" v)
+        (du/remove-attr! control-el "aria-describedby"))
 
       (if disabled?
-        (set-attr! control-el "disabled" "")
-        (remove-attr! control-el "disabled"))
+        (du/set-attr! control-el "disabled" "")
+        (du/remove-attr! control-el "disabled"))
 
       ;; Data attributes on host for CSS hooks
-      (set-bool-attr! el "data-checked"  checked?)
-      (set-bool-attr! el "data-disabled" disabled?)
+      (du/set-bool-attr! el "data-checked"  checked?)
+      (du/set-bool-attr! el "data-disabled" disabled?)
 
       ;; Form value via ElementInternals
       (when-let [^js internals (gobj/get el k-internals)]
@@ -183,21 +169,21 @@
 ;; Group utilities
 ;; ---------------------------------------------------------------------------
 (defn- group-radios [^js el]
-  (let [name-val (get-attr el model/attr-name)
+  (let [name-val (du/get-attr el model/attr-name)
         ^js form (when (.-form el) (.-form el))
         scope    (or form js/document)]
     (if (and name-val (not= name-val ""))
       (let [all (.querySelectorAll scope model/tag-name)
             result (array)]
         (.forEach all (fn [^js r]
-                        (when (= (get-attr r model/attr-name) name-val)
+                        (when (= (du/get-attr r model/attr-name) name-val)
                           (.push result r))))
         result)
       #js [el])))
 
 (defn- sync-tabindexes! [^js el]
   (let [radios  (group-radios el)
-        checked (.find radios (fn [^js r] (has-attr? r model/attr-checked)))
+        checked (.find radios (fn [^js r] (du/has-attr? r model/attr-checked)))
         first-r (when (pos? (.-length radios)) (aget radios 0))]
     (.forEach radios
               (fn [^js r]
@@ -211,26 +197,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Selection logic
 ;; ---------------------------------------------------------------------------
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 (defn- try-select! [^js el]
   (let [m         (read-model el)
         disabled? (:disabled? m)
@@ -238,24 +204,24 @@
         checked?  (:checked? m)]
     (when-not (or disabled? readonly? checked?)
       (let [value    (:value m)
-            allowed? (dispatch-cancelable!
+            allowed? (du/dispatch-cancelable!
                       el
                       model/event-change-request
                       #js {:value           value
                            :previousChecked false
                            :nextChecked     true})]
         (when allowed?
-          (set-attr! el model/attr-checked "")
+          (du/set-attr! el model/attr-checked "")
           (render! el)
           ;; Silently uncheck siblings
           (let [radios (group-radios el)]
             (.forEach radios
                       (fn [^js r]
-                        (when (and (not= r el) (has-attr? r model/attr-checked))
-                          (remove-attr! r model/attr-checked)
+                        (when (and (not= r el) (du/has-attr? r model/attr-checked))
+                          (du/remove-attr! r model/attr-checked)
                           (render! r)))))
           (sync-tabindexes! el)
-          (dispatch! el model/event-change
+          (du/dispatch! el model/event-change
                      #js {:value   value
                           :checked true}))))))
 
@@ -323,11 +289,11 @@
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
-  (set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
   (render! el))
 
 (defn- form-reset! [^js el]
-  (remove-attr! el model/attr-checked)
+  (du/remove-attr! el model/attr-checked)
   (render! el))
 
 ;; ---------------------------------------------------------------------------
@@ -357,19 +323,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) nil)))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

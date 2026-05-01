@@ -1,5 +1,6 @@
 (ns baredom.components.x-popover.x-popover
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-popover.model :as model]
             [baredom.utils.overlay :as overlay]))
 
@@ -223,21 +224,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Slot helpers
 ;; ---------------------------------------------------------------------------
@@ -264,35 +250,35 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! trigger-el   "part" "trigger")
-    (set-attr! trigger-slot "name" "trigger")
+    (du/set-attr! trigger-el   "part" "trigger")
+    (du/set-attr! trigger-slot "name" "trigger")
 
-    (set-attr! panel-el "part"           "panel")
-    (set-attr! panel-el "role"           "dialog")
-    (set-attr! panel-el "inert"           "")
-    (set-attr! panel-el "data-placement" model/default-placement)
+    (du/set-attr! panel-el "part"           "panel")
+    (du/set-attr! panel-el "role"           "dialog")
+    (du/set-attr! panel-el "inert"           "")
+    (du/set-attr! panel-el "data-placement" model/default-placement)
 
-    (set-attr! arrow-el "part"        "arrow")
-    (set-attr! arrow-el "aria-hidden" "true")
+    (du/set-attr! arrow-el "part"        "arrow")
+    (du/set-attr! arrow-el "aria-hidden" "true")
 
-    (set-attr! header-el "part" "header")
+    (du/set-attr! header-el "part" "header")
 
-    (set-attr! heading-el "part" "heading")
-    (set-attr! heading-el "id"   "popover-heading")
+    (du/set-attr! heading-el "part" "heading")
+    (du/set-attr! heading-el "id"   "popover-heading")
 
-    (set-attr! close-btn "part"       "close-button")
-    (set-attr! close-btn "type"       "button")
-    (set-attr! close-btn "aria-label" model/default-close-label)
+    (du/set-attr! close-btn "part"       "close-button")
+    (du/set-attr! close-btn "type"       "button")
+    (du/set-attr! close-btn "aria-label" model/default-close-label)
     (set! (.-innerHTML close-btn)
           (str "<svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\""
                " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
                "<path d=\"M1 1L13 13M13 1L1 13\" stroke=\"currentColor\""
                " stroke-width=\"2\" stroke-linecap=\"round\"/></svg>"))
 
-    (set-attr! body-el    "part" "body")
-    (set-attr! footer-el  "part" "footer")
-    (set-attr! footer-el  "hidden" "")
-    (set-attr! footer-slot "name" "footer")
+    (du/set-attr! body-el    "part" "body")
+    (du/set-attr! footer-el  "part" "footer")
+    (du/set-attr! footer-el  "hidden" "")
+    (du/set-attr! footer-slot "name" "footer")
 
     (.appendChild trigger-el trigger-slot)
 
@@ -482,13 +468,13 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:open-present?     (has-attr? el model/attr-open)
-    :disabled-present? (has-attr? el model/attr-disabled)
-    :no-close-present? (has-attr? el model/attr-no-close)
-    :portal-present?   (has-attr? el model/attr-portal)
-    :heading-raw       (get-attr el model/attr-heading)
-    :placement-raw     (get-attr el model/attr-placement)
-    :close-label-raw   (get-attr el model/attr-close-label)}))
+   {:open-present?     (du/has-attr? el model/attr-open)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :no-close-present? (du/has-attr? el model/attr-no-close)
+    :portal-present?   (du/has-attr? el model/attr-portal)
+    :heading-raw       (du/get-attr el model/attr-heading)
+    :placement-raw     (du/get-attr el model/attr-placement)
+    :close-label-raw   (du/get-attr el model/attr-close-label)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -501,41 +487,21 @@
           ^js heading-el (gobj/get refs "heading")
           ^js close-btn  (gobj/get refs "closeBtn")]
 
-      (set-attr! panel-el "data-placement" placement)
-      (set-bool-attr! panel-el "inert" (not open?))
+      (du/set-attr! panel-el "data-placement" placement)
+      (du/set-bool-attr! panel-el "inert" (not open?))
 
       (if (not= heading "")
-        (set-attr! panel-el "aria-labelledby" "popover-heading")
-        (remove-attr! panel-el "aria-labelledby"))
+        (du/set-attr! panel-el "aria-labelledby" "popover-heading")
+        (du/remove-attr! panel-el "aria-labelledby"))
 
       (set! (.-textContent heading-el) heading)
-      (set-attr! close-btn "aria-label" close-label)
-      (set-bool-attr! close-btn "hidden" no-close?)
-      (set-bool-attr! header-el "hidden" (and (= heading "") no-close?)))))
+      (du/set-attr! close-btn "aria-label" close-label)
+      (du/set-bool-attr! close-btn "hidden" no-close?)
+      (du/set-bool-attr! header-el "hidden" (and (= heading "") no-close?)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Forward declarations
 ;; ---------------------------------------------------------------------------
@@ -554,32 +520,32 @@
         ^js body    (make-el "div")
         ^js footer  (make-el "div")]
 
-    (set-attr! panel "part" "panel")
-    (set-attr! panel "role" "dialog")
+    (du/set-attr! panel "part" "panel")
+    (du/set-attr! panel "role" "dialog")
 
-    (set-attr! arrow "part" "arrow")
-    (set-attr! arrow "aria-hidden" "true")
+    (du/set-attr! arrow "part" "arrow")
+    (du/set-attr! arrow "aria-hidden" "true")
 
-    (set-attr! header "part" "header")
-    (set-attr! heading-el "part" "heading")
+    (du/set-attr! header "part" "header")
+    (du/set-attr! heading-el "part" "heading")
     (set! (.-textContent heading-el) heading)
 
-    (set-attr! close-btn "part" "close-button")
-    (set-attr! close-btn "type" "button")
-    (set-attr! close-btn "aria-label" close-label)
+    (du/set-attr! close-btn "part" "close-button")
+    (du/set-attr! close-btn "type" "button")
+    (du/set-attr! close-btn "aria-label" close-label)
     (set! (.-innerHTML close-btn) close-btn-svg)
 
     (when no-close?
-      (set-attr! close-btn "hidden" ""))
+      (du/set-attr! close-btn "hidden" ""))
     (when (and (= heading "") no-close?)
-      (set-attr! header "hidden" ""))
+      (du/set-attr! header "hidden" ""))
     (when (not= heading "")
-      (set-attr! panel "aria-labelledby" "portal-heading")
-      (set-attr! heading-el "id" "portal-heading"))
+      (du/set-attr! panel "aria-labelledby" "portal-heading")
+      (du/set-attr! heading-el "id" "portal-heading"))
 
-    (set-attr! body "part" "body")
-    (set-attr! footer "part" "footer")
-    (set-attr! footer "hidden" "")
+    (du/set-attr! body "part" "body")
+    (du/set-attr! footer "part" "footer")
+    (du/set-attr! footer "hidden" "")
 
     (.appendChild header heading-el)
     (.appendChild header close-btn)
@@ -627,7 +593,7 @@
           arrow-x    (-> (- trigger-cx (:x pos))
                          (max 12)
                          (min (- (max pw 200) 12 arrow-size)))]
-      (set-attr! arrow "data-side" side)
+      (du/set-attr! arrow "data-side" side)
       (set! (.. arrow -style -left) (str arrow-x "px")))))
 
 (defn- portal-open! [^js el _source]
@@ -684,7 +650,7 @@
          (when (and p-panel (.-isConnected el))
            ;; Reposition with actual dimensions
            (position-portal-panel! p-panel p-arrow trigger (:placement m))
-           (set-attr! p-panel "data-open" "")))))))
+           (du/set-attr! p-panel "data-open" "")))))))
 
 (defn- portal-close! [^js el]
   (when-let [^js layer (gobj/get el k-layer)]
@@ -703,28 +669,28 @@
 ;; Open / Close
 ;; ---------------------------------------------------------------------------
 (defn- do-open! [^js el source]
-  (when (and (not (has-attr? el model/attr-disabled))
-             (not (has-attr? el model/attr-open)))
+  (when (and (not (du/has-attr? el model/attr-disabled))
+             (not (du/has-attr? el model/attr-open)))
     (let [detail   (model/toggle-detail true source)
-          allowed? (dispatch-cancelable! el model/event-toggle detail)]
+          allowed? (du/dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
-        (set-attr! el model/attr-open "")
-        (when (has-attr? el model/attr-portal)
+        (du/set-attr! el model/attr-open "")
+        (when (du/has-attr? el model/attr-portal)
           (portal-open! el source))
-        (dispatch! el model/event-change #js {:open true})))))
+        (du/dispatch! el model/event-change #js {:open true})))))
 
 (defn- do-close! [^js el source]
-  (when (and (not (has-attr? el model/attr-disabled))
-             (has-attr? el model/attr-open))
+  (when (and (not (du/has-attr? el model/attr-disabled))
+             (du/has-attr? el model/attr-open))
     (let [detail   (model/toggle-detail false source)
-          allowed? (dispatch-cancelable! el model/event-toggle detail)]
+          allowed? (du/dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
         (portal-close! el)
-        (remove-attr! el model/attr-open)
-        (dispatch! el model/event-change #js {:open false})))))
+        (du/remove-attr! el model/attr-open)
+        (du/dispatch! el model/event-change #js {:open false})))))
 
 (defn- toggle! [^js el source]
-  (if (has-attr? el model/attr-open)
+  (if (du/has-attr? el model/attr-open)
     (do-close! el source)
     (do-open! el source)))
 
@@ -738,7 +704,7 @@
       ;; Delay by one tick so the opening click does not immediately re-close
       (js/setTimeout
        (fn []
-         (when (and (.-isConnected el) (has-attr? el model/attr-open))
+         (when (and (.-isConnected el) (du/has-attr? el model/attr-open))
            (.addEventListener js/document "click"   doc-click-h)
            (.addEventListener js/document "keydown" doc-keydown-h)))
        0))))
@@ -764,7 +730,7 @@
 
         host-focusout-h
         (fn [^js evt]
-          (when (has-attr? el model/attr-open)
+          (when (du/has-attr? el model/attr-open)
             (let [related (.-relatedTarget evt)]
               (when (or (nil? related)
                         (not (.contains el related)))
@@ -772,7 +738,7 @@
 
         doc-click-h
         (fn [^js evt]
-          (when (has-attr? el model/attr-open)
+          (when (du/has-attr? el model/attr-open)
             (let [path    (array-seq (.composedPath evt))
                   inside? (some #(identical? % el) path)]
               (when-not inside?
@@ -781,7 +747,7 @@
         doc-keydown-h
         (fn [^js evt]
           (when (and (= (.-key evt) "Escape")
-                     (has-attr? el model/attr-open))
+                     (du/has-attr? el model/attr-open))
             (do-close! el "escape")))
 
         footer-slotchange-h
@@ -789,7 +755,7 @@
           (when-let [refs (gobj/get el k-refs)]
             (let [^js footer-slot (gobj/get refs "footerSlot")
                   ^js footer-el   (gobj/get refs "footer")]
-              (set-bool-attr! footer-el "hidden"
+              (du/set-bool-attr! footer-el "hidden"
                               (not (slot-has-content? footer-slot))))))]
 
     #js {:triggerClick      trigger-click-h
@@ -834,7 +800,7 @@
   (remove-doc-listeners! el)
   (gobj/set el k-handlers (make-handlers el))
   (add-static-listeners! el)
-  (when (has-attr? el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     (add-doc-listeners! el))
   (render! el))
 
@@ -847,7 +813,7 @@
   (when (gobj/get el k-refs)
     (render! el)
     (when (= name model/attr-open)
-      (if (has-attr? el model/attr-open)
+      (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)
         (remove-doc-listeners! el)))))
 
@@ -859,19 +825,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

@@ -1,5 +1,6 @@
 (ns baredom.components.x-chart.x-chart
-  (:require [baredom.components.x-chart.model :as model]
+  (:require [baredom.utils.dom :as du]
+            [baredom.components.x-chart.model :as model]
             [goog.object :as gobj]))
 
 ;; ---- Instance field keys ----
@@ -136,41 +137,28 @@
 
 ;; ---- Read model from element ----
 
-(defn- has-attr? [^js el attr] (.hasAttribute el attr))
-(defn- get-attr  [^js el attr] (.getAttribute  el attr))
-
 (defn- read-model [^js el]
   (model/normalize
-   {:type-raw         (get-attr el model/attr-type)
-    :data-raw         (get-attr el model/attr-data)
-    :height-raw       (get-attr el model/attr-height)
-    :padding-raw      (get-attr el model/attr-padding)
-    :grid-present?    (when (has-attr? el model/attr-grid)
+   {:type-raw         (du/get-attr el model/attr-type)
+    :data-raw         (du/get-attr el model/attr-data)
+    :height-raw       (du/get-attr el model/attr-height)
+    :padding-raw      (du/get-attr el model/attr-padding)
+    :grid-present?    (when (du/has-attr? el model/attr-grid)
                         (.getAttribute el model/attr-grid))
-    :axes-raw         (when (has-attr? el model/attr-axes)
+    :axes-raw         (when (du/has-attr? el model/attr-axes)
                         (.getAttribute el model/attr-axes))
-    :tooltip-present? (when (has-attr? el model/attr-tooltip)
+    :tooltip-present? (when (du/has-attr? el model/attr-tooltip)
                         (.getAttribute el model/attr-tooltip))
-    :cursor-raw       (get-attr el model/attr-cursor)
-    :disabled-present? (when (has-attr? el model/attr-disabled)
+    :cursor-raw       (du/get-attr el model/attr-cursor)
+    :disabled-present? (when (du/has-attr? el model/attr-disabled)
                          (.getAttribute el model/attr-disabled))
-    :loading-present?  (when (has-attr? el model/attr-loading)
+    :loading-present?  (when (du/has-attr? el model/attr-loading)
                          (.getAttribute el model/attr-loading))
-    :selected-raw      (get-attr el model/attr-selected)
-    :x-format-raw      (get-attr el model/attr-x-format)
-    :y-format-raw      (get-attr el model/attr-y-format)}))
+    :selected-raw      (du/get-attr el model/attr-selected)
+    :x-format-raw      (du/get-attr el model/attr-x-format)
+    :y-format-raw      (du/get-attr el model/attr-y-format)}))
 
 ;; ---- Event dispatch ----
-
-(defn- dispatch! [^js el event-name cancelable? detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail    detail
-         :bubbles   true
-         :composed  true
-         :cancelable cancelable?})))
 
 ;; ---- SVG coordinate math ----
 
@@ -205,27 +193,24 @@
 
 ;; ---- SVG element helpers ----
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
 (defn- svg-line! [x1 y1 x2 y2 stroke opacity]
   (let [^js el (make-svg-el "line")]
-    (set-attr! el "x1" (str x1))
-    (set-attr! el "y1" (str y1))
-    (set-attr! el "x2" (str x2))
-    (set-attr! el "y2" (str y2))
-    (set-attr! el "stroke" stroke)
-    (set-attr! el "stroke-opacity" (str opacity))
-    (set-attr! el "stroke-width" "1")
+    (du/set-attr! el "x1" (str x1))
+    (du/set-attr! el "y1" (str y1))
+    (du/set-attr! el "x2" (str x2))
+    (du/set-attr! el "y2" (str y2))
+    (du/set-attr! el "stroke" stroke)
+    (du/set-attr! el "stroke-opacity" (str opacity))
+    (du/set-attr! el "stroke-width" "1")
     el))
 
 (defn- svg-text! [x y text anchor font-size fill]
   (let [^js el (make-svg-el "text")]
-    (set-attr! el "x" (str x))
-    (set-attr! el "y" (str y))
-    (set-attr! el "text-anchor" anchor)
-    (set-attr! el "font-size" (str font-size))
-    (set-attr! el "fill" fill)
+    (du/set-attr! el "x" (str x))
+    (du/set-attr! el "y" (str y))
+    (du/set-attr! el "text-anchor" anchor)
+    (du/set-attr! el "font-size" (str font-size))
+    (du/set-attr! el "fill" fill)
     (set! (.-textContent el) text)
     el))
 
@@ -305,24 +290,24 @@
 (defn- draw-line-series! [^js svg _series-idx pts color]
   (when-let [d (build-line-d pts)]
     (let [^js path (make-svg-el "path")]
-      (set-attr! path "d" d)
-      (set-attr! path "fill" "none")
-      (set-attr! path "stroke" color)
-      (set-attr! path "stroke-width" "2")
-      (set-attr! path "stroke-linejoin" "round")
-      (set-attr! path "stroke-linecap" "round")
+      (du/set-attr! path "d" d)
+      (du/set-attr! path "fill" "none")
+      (du/set-attr! path "stroke" color)
+      (du/set-attr! path "stroke-width" "2")
+      (du/set-attr! path "stroke-linejoin" "round")
+      (du/set-attr! path "stroke-linecap" "round")
       (.appendChild svg path))))
 
 (defn- draw-area-series! [^js svg _series-idx pts color baseline-y]
   (when-let [d (build-area-d pts baseline-y)]
     (let [^js path (make-svg-el "path")]
-      (set-attr! path "d" d)
-      (set-attr! path "fill" color)
-      (set-attr! path "fill-opacity" "0.18")
-      (set-attr! path "stroke" color)
-      (set-attr! path "stroke-width" "2")
-      (set-attr! path "stroke-linejoin" "round")
-      (set-attr! path "stroke-linecap" "round")
+      (du/set-attr! path "d" d)
+      (du/set-attr! path "fill" color)
+      (du/set-attr! path "fill-opacity" "0.18")
+      (du/set-attr! path "stroke" color)
+      (du/set-attr! path "stroke-width" "2")
+      (du/set-attr! path "stroke-linejoin" "round")
+      (du/set-attr! path "stroke-linecap" "round")
       (.appendChild svg path))))
 
 (defn- draw-bar-series! [^js svg series-idx pts color {:keys [x0 x1]} total-series]
@@ -336,12 +321,12 @@
             by (min (:py pt) (:y0-baseline pt))
             bh (js/Math.abs (- (:py pt) (:y0-baseline pt)))
             ^js rect (make-svg-el "rect")]
-        (set-attr! rect "x" (str bx))
-        (set-attr! rect "y" (str by))
-        (set-attr! rect "width" (str (max 1 sw)))
-        (set-attr! rect "height" (str (max 0 bh)))
-        (set-attr! rect "fill" color)
-        (set-attr! rect "rx" "2")
+        (du/set-attr! rect "x" (str bx))
+        (du/set-attr! rect "y" (str by))
+        (du/set-attr! rect "width" (str (max 1 sw)))
+        (du/set-attr! rect "height" (str (max 0 bh)))
+        (du/set-attr! rect "fill" color)
+        (du/set-attr! rect "rx" "2")
         (.appendChild svg rect)))))
 
 ;; ---- Tooltip ----
@@ -393,14 +378,14 @@
               (when row-el
                 (if-let [row (nth rows i nil)]
                   (do
-                    (set-attr! row-el "data-hidden" "false")
+                    (du/set-attr! row-el "data-hidden" "false")
                     (let [^js swatch (.-firstChild row-el)
                           ^js label  (when swatch (.-nextSibling swatch))
                           ^js value  (when label  (.-nextSibling label))]
                       (when swatch (set! (.. swatch -style -backgroundColor) (:color row)))
                       (when label  (set! (.-textContent label) (:label row)))
                       (when value  (set! (.-textContent value) (:value row)))))
-                  (set-attr! row-el "data-hidden" "true"))))))
+                  (du/set-attr! row-el "data-hidden" "true"))))))
 
         ;; Update dot positions and visibility
         (when dot-els
@@ -409,19 +394,19 @@
               (when dot
                 (if-let [dp (nth dot-pts i nil)]
                   (do
-                    (set-attr! dot "cx" (str (:px dp)))
-                    (set-attr! dot "cy" (str (:py dp)))
-                    (set-attr! dot "fill" (:color dp))
-                    (set-attr! dot "visibility" "visible"))
-                  (set-attr! dot "visibility" "hidden"))))))
+                    (du/set-attr! dot "cx" (str (:px dp)))
+                    (du/set-attr! dot "cy" (str (:py dp)))
+                    (du/set-attr! dot "fill" (:color dp))
+                    (du/set-attr! dot "visibility" "visible"))
+                  (du/set-attr! dot "visibility" "hidden"))))))
 
         ;; Show crosshair
-        (when xhair (set-attr! xhair "visibility" "visible"))
-        (when xhair (set-attr! xhair "x1" (str px)))
-        (when xhair (set-attr! xhair "x2" (str px)))
+        (when xhair (du/set-attr! xhair "visibility" "visible"))
+        (when xhair (du/set-attr! xhair "x1" (str px)))
+        (when xhair (du/set-attr! xhair "x2" (str px)))
 
         ;; Position and show tooltip
-        (set-attr! tooltip-el "data-visible" "true")
+        (du/set-attr! tooltip-el "data-visible" "true")
         (let [tw (.-offsetWidth tooltip-el)
               th (.-offsetHeight tooltip-el)
               {:keys [left top]} (model/tooltip-position px py tw th W H
@@ -434,12 +419,12 @@
   (let [^js tooltip-el (gobj/get refs "tooltip")
         ^js xhair      (gobj/get refs "crosshair")
         dot-els        (gobj/get refs "dots")]
-    (when tooltip-el (set-attr! tooltip-el "data-visible" "false"))
-    (when xhair      (set-attr! xhair "visibility" "hidden"))
+    (when tooltip-el (du/set-attr! tooltip-el "data-visible" "false"))
+    (when xhair      (du/set-attr! xhair "visibility" "hidden"))
     (when dot-els
       (dotimes [i model/max-tooltip-rows]
         (let [^js dot (aget dot-els i)]
-          (when dot (set-attr! dot "visibility" "hidden")))))))
+          (when dot (du/set-attr! dot "visibility" "hidden")))))))
 
 ;; ---- Hit area & mouse interaction ----
 
@@ -472,7 +457,7 @@
            (when show-tooltip?
              (let [hd (build-hover-data pts x-fmt y-fmt series)]
                (show-tooltip! refs hd W H)))
-           (dispatch! el model/event-hover false
+           (du/dispatch! el model/event-hover
                       #js {:seriesId (:id pt)
                            :index    (:i pt)
                            :x        (:x pt)
@@ -490,7 +475,7 @@
              my   (- (.-clientY ev) (.-y rect))
              pt   (find-nearest-pt all-pts mx my)]
          (when pt
-           (dispatch! el model/event-select false
+           (du/dispatch! el model/event-select
                       #js {:seriesId (:id pt)
                            :index    (:i pt)
                            :x        (:x pt)
@@ -548,7 +533,7 @@
                  (do (.preventDefault ev)
                    (let [pt (nth (:data s) pt-i nil)]
                      (when pt
-                       (dispatch! el model/event-select false
+                       (du/dispatch! el model/event-select
                                   #js {:seriesId (:id s)
                                        :index    pt-i
                                        :x        (:x pt)
@@ -579,9 +564,9 @@
             baseline-y (scale-y 0 y-domain y0 y1)]
 
         ;; Update viewBox
-        (set-attr! svg "viewBox" (str "0 0 " W " " H))
-        (set-attr! svg "width"   (str W))
-        (set-attr! svg "height"  (str H))
+        (du/set-attr! svg "viewBox" (str "0 0 " W " " H))
+        (du/set-attr! svg "width"   (str W))
+        (du/set-attr! svg "height"  (str H))
 
         ;; Clear SVG (crosshair/dots are re-created each render)
         (remove-children! svg)
@@ -620,13 +605,13 @@
 
             ;; Crosshair line (hidden initially, shown on hover)
             (let [^js xhair (make-svg-el "line")]
-              (set-attr! xhair "x1"           (str x0))
-              (set-attr! xhair "y1"           (str y0))
-              (set-attr! xhair "x2"           (str x0))
-              (set-attr! xhair "y2"           (str y1))
-              (set-attr! xhair "stroke"       "var(--x-chart-crosshair-color)")
-              (set-attr! xhair "stroke-width" "var(--x-chart-crosshair-width)")
-              (set-attr! xhair "visibility"   "hidden")
+              (du/set-attr! xhair "x1"           (str x0))
+              (du/set-attr! xhair "y1"           (str y0))
+              (du/set-attr! xhair "x2"           (str x0))
+              (du/set-attr! xhair "y2"           (str y1))
+              (du/set-attr! xhair "stroke"       "var(--x-chart-crosshair-color)")
+              (du/set-attr! xhair "stroke-width" "var(--x-chart-crosshair-width)")
+              (du/set-attr! xhair "visibility"   "hidden")
               (.appendChild svg xhair)
               (gobj/set refs "crosshair" xhair))
 
@@ -634,22 +619,22 @@
             (let [dot-arr (js/Array. model/max-tooltip-rows)]
               (dotimes [i model/max-tooltip-rows]
                 (let [^js dot (make-svg-el "circle")]
-                  (set-attr! dot "r"          (str model/dot-r))
-                  (set-attr! dot "stroke"     "var(--x-chart-tooltip-bg)")
-                  (set-attr! dot "stroke-width" "2")
-                  (set-attr! dot "visibility" "hidden")
+                  (du/set-attr! dot "r"          (str model/dot-r))
+                  (du/set-attr! dot "stroke"     "var(--x-chart-tooltip-bg)")
+                  (du/set-attr! dot "stroke-width" "2")
+                  (du/set-attr! dot "visibility" "hidden")
                   (.appendChild svg dot)
                   (aset dot-arr i dot)))
               (gobj/set refs "dots" dot-arr))
 
             ;; Hit area (on top of crosshair/dots)
             (let [^js hit (make-svg-el "rect")]
-              (set-attr! hit "x"      (str x0))
-              (set-attr! hit "y"      (str y0))
-              (set-attr! hit "width"  (str (max 0 (- x1 x0))))
-              (set-attr! hit "height" (str (max 0 (- y1 y0))))
-              (set-attr! hit "fill"   "transparent")
-              (set-attr! hit "style"  "cursor:crosshair;")
+              (du/set-attr! hit "x"      (str x0))
+              (du/set-attr! hit "y"      (str y0))
+              (du/set-attr! hit "width"  (str (max 0 (- x1 x0))))
+              (du/set-attr! hit "height" (str (max 0 (- y1 y0))))
+              (du/set-attr! hit "fill"   "transparent")
+              (du/set-attr! hit "style"  "cursor:crosshair;")
               (when-not disabled?
                 (add-mouse-listeners! el hit all-pts refs W H cursor
                                       tooltip? x-fmt y-fmt series))
@@ -682,11 +667,11 @@
         ^js swatch (make-el "span")
         ^js label  (make-el "span")
         ^js value  (make-el "span")]
-    (set-attr! row    "part"       "tooltip-row")
-    (set-attr! row    "data-hidden" "true")
-    (set-attr! swatch "part"       "tooltip-swatch")
-    (set-attr! label  "part"       "tooltip-label")
-    (set-attr! value  "part"       "tooltip-value")
+    (du/set-attr! row    "part"       "tooltip-row")
+    (du/set-attr! row    "data-hidden" "true")
+    (du/set-attr! swatch "part"       "tooltip-swatch")
+    (du/set-attr! label  "part"       "tooltip-label")
+    (du/set-attr! value  "part"       "tooltip-value")
     (.appendChild row swatch)
     (.appendChild row label)
     (.appendChild row value)
@@ -705,24 +690,24 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! container "part"     "container")
-    (set-attr! container "tabindex" "0")
+    (du/set-attr! container "part"     "container")
+    (du/set-attr! container "tabindex" "0")
 
-    (set-attr! svg "part"        "svg")
-    (set-attr! svg "aria-hidden" "true")
-    (set-attr! svg "role"        "img")
+    (du/set-attr! svg "part"        "svg")
+    (du/set-attr! svg "aria-hidden" "true")
+    (du/set-attr! svg "role"        "img")
 
-    (set-attr! sr-el "part"      "sr-only")
-    (set-attr! sr-el "role"      "status")
-    (set-attr! sr-el "aria-live" "polite")
+    (du/set-attr! sr-el "part"      "sr-only")
+    (du/set-attr! sr-el "role"      "status")
+    (du/set-attr! sr-el "aria-live" "polite")
 
-    (set-attr! tooltip-el "part"         "tooltip")
-    (set-attr! tooltip-el "role"         "tooltip")
-    (set-attr! tooltip-el "aria-hidden"  "true")
-    (set-attr! tooltip-el "data-visible" "false")
+    (du/set-attr! tooltip-el "part"         "tooltip")
+    (du/set-attr! tooltip-el "role"         "tooltip")
+    (du/set-attr! tooltip-el "aria-hidden"  "true")
+    (du/set-attr! tooltip-el "data-visible" "false")
 
-    (set-attr! header-el "part" "tooltip-header")
-    (set-attr! body-el   "part" "tooltip-body")
+    (du/set-attr! header-el "part" "tooltip-header")
+    (du/set-attr! body-el   "part" "tooltip-body")
 
     ;; Pre-build max-tooltip-rows row elements
     (dotimes [i model/max-tooltip-rows]

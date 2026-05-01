@@ -1,6 +1,7 @@
 (ns baredom.components.x-chip.x-chip
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-chip.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -99,8 +100,6 @@
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
 (defn- make-el [tag] (.createElement js/document tag))
-(defn- set-attr! [^js el k v] (.setAttribute el k v))
-
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root       (.attachShadow el #js {:mode "open"})
@@ -110,12 +109,12 @@
         ^js remove-btn (make-el "button")
         ^js remove-x   (make-el "span")]
     (set! (.-textContent style) style-text)
-    (set-attr! container  "part" "container")
-    (set-attr! label-el   "part" "label")
-    (set-attr! remove-btn "part" "remove")
-    (set-attr! remove-btn "type" "button")
-    (set-attr! remove-btn "aria-label" "Remove")
-    (set-attr! remove-x   "aria-hidden" "true")
+    (du/set-attr! container  "part" "container")
+    (du/set-attr! label-el   "part" "label")
+    (du/set-attr! remove-btn "part" "remove")
+    (du/set-attr! remove-btn "type" "button")
+    (du/set-attr! remove-btn "aria-label" "Remove")
+    (du/set-attr! remove-x   "aria-hidden" "true")
     (set! (.-textContent remove-x) "\u00D7")
     (.appendChild remove-btn remove-x)
     (.appendChild container label-el)

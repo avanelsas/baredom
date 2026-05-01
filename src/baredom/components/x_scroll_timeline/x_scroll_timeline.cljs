@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-timeline.x-scroll-timeline
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-scroll-timeline.model :as model]))
 
 ;; ── Constants ───────────────────────────────────────────────────────────────
@@ -357,15 +358,6 @@
       id)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name ^js detail-obj]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail-obj
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev)))
-
 ;; ── Announce to live region ─────────────────────────────────────────────────
 (defn- announce! [^js el msg]
   (let [{:keys [live]} (gobj/get el k-refs)]
@@ -567,7 +559,7 @@
                      (entry-id (aget children old-index)))
             new-id (when (and (>= new-index 0) (< new-index (.-length children)))
                      (entry-id (aget children new-index)))]
-        (dispatch! el model/event-entry-change
+        (du/dispatch! el model/event-entry-change
                    #js {:index new-index :id new-id
                         :previousIndex old-index :previousId old-id})
         ;; Announce to live region
@@ -605,11 +597,11 @@
           (cond
             (and (not was-in?) is-in?)
             (do (aset states i true)
-                (dispatch! el model/event-entry-enter
+                (du/dispatch! el model/event-entry-enter
                            #js {:index i :id id :progress progress}))
             (and was-in? (not is-in?))
             (do (aset states i false)
-                (dispatch! el model/event-entry-leave
+                (du/dispatch! el model/event-entry-leave
                            #js {:index i :id id :progress progress}))))))))
 
 ;; ── Scroll update ───────────────────────────────────────────────────────────
@@ -681,7 +673,7 @@
           (gobj/set el k-last-prog progress)
           (let [active-id (when (and (>= active-idx 0) (< active-idx n))
                             (entry-id (aget children active-idx)))]
-            (dispatch! el model/event-progress
+            (du/dispatch! el model/event-progress
                        #js {:progress progress :activeIndex active-idx :activeId active-id}))))))
   ;; Clear rAF handle
   (gobj/set el k-raf nil))
@@ -731,7 +723,7 @@
           children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
-      (dispatch! el model/event-autoplay-pause
+      (du/dispatch! el model/event-autoplay-pause
                  #js {:progress prog :activeIndex idx :activeId aid}))))
 
 (defn- resume-autoplay! [^js el]
@@ -750,7 +742,7 @@
           children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
-      (dispatch! el model/event-autoplay-resume
+      (du/dispatch! el model/event-autoplay-resume
                  #js {:progress prog :activeIndex idx :activeId aid}))))
 
 (defn- stop-autoplay! [^js el]
@@ -852,7 +844,7 @@
         (attach-scroll-listener! el)
         (update-scroll! el)
         (announce! el "Timeline entered viewport")
-        (dispatch! el model/event-enter
+        (du/dispatch! el model/event-enter
                    #js {:progress (or (gobj/get el k-last-prog) 0)})
         ;; Start autoplay if enabled
         (let [m (gobj/get el k-model)]
@@ -863,7 +855,7 @@
         (stop-autoplay! el)
         (when-not (disabled? el)
           (announce! el "Timeline left viewport")
-          (dispatch! el model/event-leave
+          (du/dispatch! el model/event-leave
                      #js {:progress (or (gobj/get el k-last-prog) 0)}))))))
 
 ;; ── Slot change / resize ────────────────────────────────────────────────────
@@ -1101,7 +1093,7 @@
                      (clean-entry-attrs! this)
                      ;; Dispatch leave event if visible
                      (when (gobj/get this k-visible)
-                       (dispatch! this model/event-leave
+                       (du/dispatch! this model/event-leave
                                   #js {:progress (or (gobj/get this k-last-prog) 0)}))
                      (remove-listeners! this)
                      (teardown-observer! this)

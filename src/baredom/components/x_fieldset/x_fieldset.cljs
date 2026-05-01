@@ -1,5 +1,6 @@
 (ns baredom.components.x-fieldset.x-fieldset
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-fieldset.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -104,21 +105,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [^js tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -132,11 +118,11 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! root-el    "part" "root")
-    (set-attr! root-el    "role" "group")
-    (set-attr! legend-el  "part" "legend")
-    (set-attr! legend-el  "id"   "x-fieldset-legend")
-    (set-attr! content-el "part" "content")
+    (du/set-attr! root-el    "part" "root")
+    (du/set-attr! root-el    "role" "group")
+    (du/set-attr! legend-el  "part" "legend")
+    (du/set-attr! legend-el  "id"   "x-fieldset-legend")
+    (du/set-attr! content-el "part" "content")
 
     (.appendChild content-el slot-el)
     (.appendChild root-el legend-el)
@@ -147,7 +133,7 @@
     ;; Inject shared light-DOM style for native inputs (once per document)
     (when-not (.getElementById js/document light-style-id)
       (let [ls (make-el "style")]
-        (set-attr! ls "id" light-style-id)
+        (du/set-attr! ls "id" light-style-id)
         (set! (.-textContent ls) light-dom-style-text)
         (.appendChild (.-head js/document) ls)))
 
@@ -160,10 +146,10 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:legend-raw          (get-attr el model/attr-legend)
-    :disabled-present?   (has-attr? el model/attr-disabled)
-    :aria-label-raw      (get-attr el model/attr-aria-label)
-    :aria-describedby-raw (get-attr el model/attr-aria-describedby)}))
+   {:legend-raw          (du/get-attr el model/attr-legend)
+    :disabled-present?   (du/has-attr? el model/attr-disabled)
+    :aria-label-raw      (du/get-attr el model/attr-aria-label)
+    :aria-describedby-raw (du/get-attr el model/attr-aria-describedby)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -181,29 +167,29 @@
       ;; Legend text and visibility
       (set! (.-textContent legend-el) legend)
       (if visible?
-        (remove-attr! legend-el "hidden")
-        (set-attr! legend-el "hidden" ""))
+        (du/remove-attr! legend-el "hidden")
+        (du/set-attr! legend-el "hidden" ""))
 
       ;; aria-labelledby vs aria-label on root[part=root]
       (if-let [aria-lbl (:aria-label m)]
         (do
-          (set-attr! root-el "aria-label" aria-lbl)
-          (remove-attr! root-el "aria-labelledby"))
+          (du/set-attr! root-el "aria-label" aria-lbl)
+          (du/remove-attr! root-el "aria-labelledby"))
         (do
-          (remove-attr! root-el "aria-label")
+          (du/remove-attr! root-el "aria-label")
           (if visible?
-            (set-attr! root-el "aria-labelledby" "x-fieldset-legend")
-            (remove-attr! root-el "aria-labelledby"))))
+            (du/set-attr! root-el "aria-labelledby" "x-fieldset-legend")
+            (du/remove-attr! root-el "aria-labelledby"))))
 
       ;; aria-describedby
       (if-let [v (:aria-describedby m)]
-        (set-attr! root-el "aria-describedby" v)
-        (remove-attr! root-el "aria-describedby"))
+        (du/set-attr! root-el "aria-describedby" v)
+        (du/remove-attr! root-el "aria-describedby"))
 
       ;; data-disabled on host for CSS hooks
-      (set-bool-attr! el "data-disabled" disabled?)
+      (du/set-bool-attr! el "data-disabled" disabled?)
       ;; inert on content-el blocks all interaction with slotted children
-      (set-bool-attr! content-el "inert" disabled?))))
+      (du/set-bool-attr! content-el "inert" disabled?))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
@@ -226,19 +212,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (get-attr this attr-name)))
+        :get (fn [] (this-as ^js this (du/get-attr this attr-name)))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

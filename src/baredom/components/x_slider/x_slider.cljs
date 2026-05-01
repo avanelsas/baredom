@@ -1,5 +1,6 @@
 (ns baredom.components.x-slider.x-slider
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-slider.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -165,21 +166,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [^js tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -194,12 +180,12 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! base-el   "part" "base")
-    (set-attr! header-el "part" "header")
-    (set-attr! label-el  "part" "label-text")
-    (set-attr! value-el  "part" "value-text")
-    (set-attr! input-el  "part" "input")
-    (set-attr! input-el  "type" "range")
+    (du/set-attr! base-el   "part" "base")
+    (du/set-attr! header-el "part" "header")
+    (du/set-attr! label-el  "part" "label-text")
+    (du/set-attr! value-el  "part" "value-text")
+    (du/set-attr! input-el  "part" "input")
+    (du/set-attr! input-el  "type" "range")
 
     (.appendChild header-el label-el)
     (.appendChild header-el value-el)
@@ -221,19 +207,19 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/derive-state
-   {:value            (get-attr el model/attr-value)
-    :min              (get-attr el model/attr-min)
-    :max              (get-attr el model/attr-max)
-    :step             (get-attr el model/attr-step)
-    :disabled         (has-attr? el model/attr-disabled)
-    :readonly         (has-attr? el model/attr-readonly)
-    :name             (get-attr el model/attr-name)
-    :label            (get-attr el model/attr-label)
-    :show-value       (has-attr? el model/attr-show-value)
-    :size             (get-attr el model/attr-size)
-    :aria-label       (get-attr el model/attr-aria-label)
-    :aria-labelledby  (get-attr el model/attr-aria-labelledby)
-    :aria-describedby (get-attr el model/attr-aria-describedby)}))
+   {:value            (du/get-attr el model/attr-value)
+    :min              (du/get-attr el model/attr-min)
+    :max              (du/get-attr el model/attr-max)
+    :step             (du/get-attr el model/attr-step)
+    :disabled         (du/has-attr? el model/attr-disabled)
+    :readonly         (du/has-attr? el model/attr-readonly)
+    :name             (du/get-attr el model/attr-name)
+    :label            (du/get-attr el model/attr-label)
+    :show-value       (du/has-attr? el model/attr-show-value)
+    :size             (du/get-attr el model/attr-size)
+    :aria-label       (du/get-attr el model/attr-aria-label)
+    :aria-labelledby  (du/get-attr el model/attr-aria-labelledby)
+    :aria-describedby (du/get-attr el model/attr-aria-describedby)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -253,11 +239,11 @@
           show-header?   (or (some? label) show-value?)]
 
       ;; Data attributes on base for CSS size hooks
-      (set-attr! base-el "data-size" size)
+      (du/set-attr! base-el "data-size" size)
 
       ;; Data attributes on host for CSS state hooks
-      (set-bool-attr! el "data-disabled" disabled?)
-      (set-bool-attr! el "data-readonly" readonly?)
+      (du/set-bool-attr! el "data-disabled" disabled?)
+      (du/set-bool-attr! el "data-readonly" readonly?)
 
       ;; Header visibility
       (set! (.-display (.-style header-el))
@@ -279,9 +265,9 @@
                     (str (.toFixed fill-percent 2) "%"))
 
       ;; Sync native input attributes (always safe to set these)
-      (set-attr! input-el "min"  (str min))
-      (set-attr! input-el "max"  (str max))
-      (set-attr! input-el "step" step)
+      (du/set-attr! input-el "min"  (str min))
+      (du/set-attr! input-el "max"  (str max))
+      (du/set-attr! input-el "step" step)
 
       ;; Anti-drag-interruption guard: only update .value when it differs.
       ;; Avoids snapping the thumb back during an active pointer drag.
@@ -289,30 +275,30 @@
         (set! (.-value input-el) (str value)))
 
       ;; ARIA lives on [part=input], not the host (host has no role)
-      (set-attr! input-el "aria-valuemin" (str min))
-      (set-attr! input-el "aria-valuemax" (str max))
-      (set-attr! input-el "aria-valuenow" (str value))
-      (set-attr! input-el "aria-readonly" (if readonly? "true" "false"))
+      (du/set-attr! input-el "aria-valuemin" (str min))
+      (du/set-attr! input-el "aria-valuemax" (str max))
+      (du/set-attr! input-el "aria-valuenow" (str value))
+      (du/set-attr! input-el "aria-readonly" (if readonly? "true" "false"))
 
       (if-let [v aria-label]
-        (set-attr! input-el "aria-label" v)
+        (du/set-attr! input-el "aria-label" v)
         ;; Fall back to label text as aria-label when no explicit aria-label
         (if (some? label)
-          (set-attr! input-el "aria-label" label)
-          (remove-attr! input-el "aria-label")))
+          (du/set-attr! input-el "aria-label" label)
+          (du/remove-attr! input-el "aria-label")))
 
       (if-let [v aria-labelledby]
-        (set-attr! input-el "aria-labelledby" v)
-        (remove-attr! input-el "aria-labelledby"))
+        (du/set-attr! input-el "aria-labelledby" v)
+        (du/remove-attr! input-el "aria-labelledby"))
 
       (if-let [v aria-describedby]
-        (set-attr! input-el "aria-describedby" v)
-        (remove-attr! input-el "aria-describedby"))
+        (du/set-attr! input-el "aria-describedby" v)
+        (du/remove-attr! input-el "aria-describedby"))
 
       ;; Disabled on native input
       (if disabled?
-        (set-attr! input-el "disabled" "")
-        (remove-attr! input-el "disabled"))
+        (du/set-attr! input-el "disabled" "")
+        (du/remove-attr! input-el "disabled"))
 
       ;; Form value via ElementInternals
       (when-let [^js internals (gobj/get el k-internals)]
@@ -321,40 +307,20 @@
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
 (defn- make-input-handler [^js el]
   (fn [^js _evt]
-    (when-not (has-attr? el model/attr-disabled)
+    (when-not (du/has-attr? el model/attr-disabled)
       (let [^js refs     (gobj/get el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
             num-val      (js/parseFloat raw-val)
-            prev-val     (js/parseFloat (or (get-attr el model/attr-value) "0"))
-            min-num      (js/parseFloat (or (get-attr el model/attr-min) "0"))
-            max-num      (js/parseFloat (or (get-attr el model/attr-max) "100"))
-            allowed?     (dispatch-cancelable!
+            prev-val     (js/parseFloat (or (du/get-attr el model/attr-value) "0"))
+            min-num      (js/parseFloat (or (du/get-attr el model/attr-min) "0"))
+            max-num      (js/parseFloat (or (du/get-attr el model/attr-max) "100"))
+            allowed?     (du/dispatch-cancelable!
                           el model/event-change-request
                           #js {:value         num-val
                                :previousValue prev-val
@@ -362,31 +328,31 @@
                                :max           max-num})]
         (if allowed?
           (do
-            (set-attr! el model/attr-value raw-val)
-            (dispatch! el model/event-input
+            (du/set-attr! el model/attr-value raw-val)
+            (du/dispatch! el model/event-input
                        #js {:value num-val
                             :min   min-num
                             :max   max-num}))
           ;; Revert the native input to the current attribute value
-          (set! (.-value input-el) (or (get-attr el model/attr-value) "0")))))))
+          (set! (.-value input-el) (or (du/get-attr el model/attr-value) "0")))))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
-    (when-not (has-attr? el model/attr-disabled)
+    (when-not (du/has-attr? el model/attr-disabled)
       (let [^js refs     (gobj/get el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
             num-val      (js/parseFloat raw-val)
-            min-num      (js/parseFloat (or (get-attr el model/attr-min) "0"))
-            max-num      (js/parseFloat (or (get-attr el model/attr-max) "100"))]
-        (dispatch! el model/event-change
+            min-num      (js/parseFloat (or (du/get-attr el model/attr-min) "0"))
+            max-num      (js/parseFloat (or (du/get-attr el model/attr-max) "100"))]
+        (du/dispatch! el model/event-change
                    #js {:value num-val
                         :min   min-num
                         :max   max-num})))))
 
 (defn- make-keydown-handler [^js el]
   (fn [^js evt]
-    (when (and (has-attr? el model/attr-readonly)
+    (when (and (du/has-attr? el model/attr-readonly)
                (contains? value-changing-keys (.-key evt)))
       (.preventDefault evt))))
 
@@ -420,12 +386,12 @@
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
-  (set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
   (render! el))
 
 (defn- form-reset! [^js el]
   ;; Revert to default value (0)
-  (set-attr! el model/attr-value (str model/default-value))
+  (du/set-attr! el model/attr-value (str model/default-value))
   (render! el))
 
 ;; ---------------------------------------------------------------------------
@@ -454,19 +420,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) nil)))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

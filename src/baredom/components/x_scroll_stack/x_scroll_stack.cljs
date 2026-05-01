@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-stack.x-scroll-stack
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-scroll-stack.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -84,15 +85,6 @@
     (.assignedElements ^js slot)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail-map]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     (clj->js detail-map)
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev)))
-
 ;; ── Natural offset caching ──────────────────────────────────────────────────
 (defn- cache-natural-offsets!
   "Strip transforms, force reflow, read getBoundingClientRect for each child
@@ -199,16 +191,16 @@
         ;; Dispatch change event when stacked count changes
         (when (not= stacked old-stacked)
           (gobj/set el k-stacked-count stacked)
-          (dispatch! el model/event-change
-                     (model/change-detail stacked n progress)))
+          (du/dispatch! el model/event-change
+                     (clj->js (model/change-detail stacked n progress))))
 
         ;; Dispatch progress event
         (let [last-prog (gobj/get el k-last-prog)]
           (when (or (nil? last-prog)
                     (> (js/Math.abs (- progress last-prog)) 0.001))
             (gobj/set el k-last-prog progress)
-            (dispatch! el model/event-progress
-                       (model/progress-detail progress stacked n)))))))
+            (du/dispatch! el model/event-progress
+                       (clj->js (model/progress-detail progress stacked n))))))))
   ;; Clear rAF handle
   (gobj/set el k-raf nil))
 

@@ -78,17 +78,6 @@
   [^js el]
   (model/interactive? (read-public-state el)))
 
-(defn dispatch!
-  [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail detail
-         :bubbles true
-         :composed true
-         :cancelable false})))
-
 (defn assigned-nodes
   [^js slot-el]
   (.assignedNodes slot-el #js {:flatten true}))
@@ -483,7 +472,7 @@
   (let [source (get-active-source el)]
     (when source
       (set-active-source! el nil)
-      (dispatch! el model/event-press-end #js {:source source})
+      (du/dispatch! el model/event-press-end #js {:source source})
       (when-let [state (get-el-state el)]
         (render! el state)))))
 
@@ -503,7 +492,7 @@
        (when-not (get-hover el)
          (set-hover! el true)
          (render! el (get-el-state el))
-         (dispatch! el model/event-hover-start #js {})))))
+         (du/dispatch! el model/event-hover-start #js {})))))
 
   (.addEventListener
    button-el
@@ -513,7 +502,7 @@
        (set-hover! el false)
        (render! el (get-el-state el))
        (when (interactive-el? el)
-         (dispatch! el model/event-hover-end #js {})))
+         (du/dispatch! el model/event-hover-end #js {})))
      (when (= "pointer" (get-active-source el))
        (end-active-press! el)))))
 
@@ -528,7 +517,7 @@
          (set-last-activation-source! el "pointer")
          (set-active-source! el "pointer")
          (render! el (get-el-state el))
-         (dispatch! el model/event-press-start #js {:source "pointer"})))))
+         (du/dispatch! el model/event-press-start #js {:source "pointer"})))))
 
   (.addEventListener
    button-el
@@ -555,7 +544,7 @@
            (set-last-activation-source! el "keyboard")
            (set-active-source! el "keyboard")
            (render! el (get-el-state el))
-           (dispatch! el model/event-press-start #js {:source "keyboard"}))))))
+           (du/dispatch! el model/event-press-start #js {:source "keyboard"}))))))
 
   (.addEventListener
    button-el
@@ -579,7 +568,7 @@
    (fn [_]
      (when (interactive-el? el)
        (let [source (or (get-last-activation-source el) "programmatic")]
-         (dispatch! el model/event-press #js {:source source})
+         (du/dispatch! el model/event-press #js {:source source})
          (set-last-activation-source! el nil)
          (let [btn-type (:type (read-public-state el))
                form (find-owner-form el)]
@@ -598,7 +587,7 @@
        (set-focus-visible! el visible)
        (render! el (get-el-state el))
        (when visible
-         (dispatch! el model/event-focus-visible #js {})))))
+         (du/dispatch! el model/event-focus-visible #js {})))))
 
   (.addEventListener
    button-el

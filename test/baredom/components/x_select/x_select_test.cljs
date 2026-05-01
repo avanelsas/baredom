@@ -217,9 +217,9 @@
     (let [el   (append! (make-el))
           opt1 (.createElement js/document "option")
           opt2 (.createElement js/document "option")]
-      (x/set-attr! opt1 "value" "a")
+      (.setAttribute opt1 "value" "a")
       (set! (.-textContent opt1) "Option A")
-      (x/set-attr! opt2 "value" "b")
+      (.setAttribute opt2 "value" "b")
       (set! (.-textContent opt2) "Option B")
       (.appendChild el opt1)
       (.appendChild el opt2)
@@ -243,8 +243,8 @@
     (let [el    (append! (make-el))
           grp   (.createElement js/document "optgroup")
           opt-a (.createElement js/document "option")]
-      (x/set-attr! grp "label" "Group 1")
-      (x/set-attr! opt-a "value" "a")
+      (.setAttribute grp "label" "Group 1")
+      (.setAttribute opt-a "value" "a")
       (set! (.-textContent opt-a) "Option A")
       (.appendChild grp opt-a)
       (.appendChild el grp)
@@ -267,7 +267,7 @@
   (async done
     (let [el  (append! (make-el))
           opt (.createElement js/document "option")]
-      (x/set-attr! opt "value" "x")
+      (.setAttribute opt "value" "x")
       (.appendChild el opt)
       (js/setTimeout
        (fn []
@@ -288,9 +288,9 @@
           opt-a  (.createElement js/document "option")
           opt-b  (.createElement js/document "option")
           seen   (atom nil)]
-      (x/set-attr! opt-a "value" "alpha")
+      (.setAttribute opt-a "value" "alpha")
       (set! (.-textContent opt-a) "Alpha")
-      (x/set-attr! opt-b "value" "beta")
+      (.setAttribute opt-b "value" "beta")
       (set! (.-textContent opt-b) "Beta")
       (.appendChild el opt-a)
       (.appendChild el opt-b)
@@ -318,7 +318,7 @@
     (let [el    (append! (make-el))
           opt-a (.createElement js/document "option")
           seen  (atom nil)]
-      (x/set-attr! opt-a "value" "a")
+      (.setAttribute opt-a "value" "a")
       (set! (.-textContent opt-a) "A")
       (.appendChild el opt-a)
       (.addEventListener el model/event-select-change
@@ -349,8 +349,8 @@
     (let [el    (append! (make-el))
           opt-a (.createElement js/document "option")
           opt-b (.createElement js/document "option")]
-      (x/set-attr! opt-a "value" "p")
-      (x/set-attr! opt-b "value" "q")
+      (.setAttribute opt-a "value" "p")
+      (.setAttribute opt-b "value" "q")
       (.appendChild el opt-a)
       (.appendChild el opt-b)
       (js/setTimeout
@@ -375,7 +375,7 @@
     (let [el    (make-el)
           opt-a (.createElement js/document "option")
           events (atom [])]
-      (x/set-attr! opt-a "value" "a")
+      (.setAttribute opt-a "value" "a")
       (set! (.-textContent opt-a) "A")
       (.appendChild el opt-a)
       (.addEventListener el model/event-select-change
@@ -411,9 +411,9 @@
           opt-a (.createElement js/document "option")
           opt-b (.createElement js/document "option")
           seen  (atom nil)]
-      (x/set-attr! opt-a "value" "a")
+      (.setAttribute opt-a "value" "a")
       (set! (.-textContent opt-a) "A")
-      (x/set-attr! opt-b "value" "b")
+      (.setAttribute opt-b "value" "b")
       (set! (.-textContent opt-b) "B")
       (.appendChild el opt-a)
       (.appendChild el opt-b)
@@ -442,9 +442,9 @@
     (let [el    (make-el)
           opt-a (.createElement js/document "option")
           opt-b (.createElement js/document "option")]
-      (x/set-attr! opt-a "value" "a")
+      (.setAttribute opt-a "value" "a")
       (set! (.-textContent opt-a) "A")
-      (x/set-attr! opt-b "value" "b")
+      (.setAttribute opt-b "value" "b")
       (set! (.-textContent opt-b) "B")
       (.appendChild el opt-a)
       (.appendChild el opt-b)

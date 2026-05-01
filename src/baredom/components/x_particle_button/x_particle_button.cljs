@@ -94,16 +94,6 @@
 (defn- interactive-el? [^js el]
   (model/interactive? (read-public-state el)))
 
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail detail
-         :bubbles true
-         :composed true
-         :cancelable false})))
-
 ;; ── Slot helpers ────────────────────────────────────────────────────────────
 (defn- assigned-nodes [^js slot-el]
   (.assignedNodes slot-el #js {:flatten true}))
@@ -953,7 +943,7 @@
                 ps (read-public-state el)]
             (when (> elapsed (:reassemble-speed ps))
               (set-phase! el :settling)
-              (dispatch! el model/event-reform
+              (du/dispatch! el model/event-reform
                          #js {:mode (:mode ps)
                               :duration (js/Math.round elapsed)}))))
 
@@ -1008,7 +998,7 @@
   (let [source (get-active-source el)]
     (when source
       (set-active-source! el nil)
-      (dispatch! el model/event-press-end #js {:source source})
+      (du/dispatch! el model/event-press-end #js {:source source})
       (when-let [state (get-el-state el)]
         (render! el state)))))
 
@@ -1056,7 +1046,7 @@
        (when-not (get-hover el)
          (set-hover! el true)
          (render! el (get-el-state el))
-         (dispatch! el model/event-hover-start #js {})
+         (du/dispatch! el model/event-hover-start #js {})
          (when-not (prefers-reduced-motion?)
            (when (#{:idle :settling} (get-phase el))
              (set-phase! el :hover-emit)
@@ -1072,7 +1062,7 @@
        (set-hover! el false)
        (render! el (get-el-state el))
        (when (interactive-el? el)
-         (dispatch! el model/event-hover-end #js {}))
+         (du/dispatch! el model/event-hover-end #js {}))
        (when (= :hover-emit (get-phase el))
          (set-phase! el :settling)
          ;; Clear the ramping blur inline style
@@ -1097,7 +1087,7 @@
          (set-last-activation-source! el "pointer")
          (set-active-source! el "pointer")
          (render! el (get-el-state el))
-         (dispatch! el model/event-press-start #js {:source "pointer"})))))
+         (du/dispatch! el model/event-press-start #js {:source "pointer"})))))
 
   (.addEventListener
    button-el
@@ -1127,7 +1117,7 @@
            (set-last-activation-source! el "keyboard")
            (set-active-source! el "keyboard")
            (render! el (get-el-state el))
-           (dispatch! el model/event-press-start #js {:source "keyboard"}))))))
+           (du/dispatch! el model/event-press-start #js {:source "keyboard"}))))))
 
   (.addEventListener
    button-el
@@ -1152,7 +1142,7 @@
      (when (interactive-el? el)
        (let [source (or (get-last-activation-source el) "programmatic")
              ps (read-public-state el)]
-         (dispatch! el model/event-press #js {:source source})
+         (du/dispatch! el model/event-press #js {:source source})
          ;; Glow pulse
          (trigger-glow-pulse! el)
          ;; Particle burst
@@ -1161,7 +1151,7 @@
              (set-phase! el :press-burst)
              (sp! el k-burst-frame 0)
              (sp! el k-burst-start (js/performance.now))
-             (dispatch! el model/event-burst
+             (du/dispatch! el model/event-burst
                         #js {:mode (:mode ps)
                              :press-x (or (gp el k-press-x) 0)
                              :press-y (or (gp el k-press-y) 0)})
@@ -1183,7 +1173,7 @@
        (set-focus-visible! el visible)
        (render! el (get-el-state el))
        (when visible
-         (dispatch! el model/event-focus-visible #js {})))))
+         (du/dispatch! el model/event-focus-visible #js {})))))
 
   (.addEventListener
    button-el

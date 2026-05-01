@@ -1,6 +1,7 @@
 (ns baredom.components.x-cancel-dialogue.x-cancel-dialogue
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-cancel-dialogue.model :as model]))
 
 ;; ── Instance-field keys (always use gobj/get, gobj/set) ─────────────────────
@@ -257,16 +258,6 @@
     :danger-present?   (.hasAttribute el model/attr-danger)}))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail cancelable?]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable cancelable?})]
-    (.dispatchEvent el ev)
-    ev))
-
 ;; ── Open / close ──────────────────────────────────────────────────────────────
 (defn- do-open! [^js el]
   (when-not (.hasAttribute el model/attr-open)
@@ -284,21 +275,19 @@
 ;; ── Cancel flow ───────────────────────────────────────────────────────────────
 (defn- do-cancel! [^js el reason]
   (when-not (.hasAttribute el model/attr-disabled)
-    (let [^js req-ev (dispatch! el model/event-cancel-request
-                                (model/cancel-request-detail reason) true)]
-      (when-not (.-defaultPrevented req-ev)
-        (do-close! el)
-        (dispatch! el model/event-cancel #js {} false))))
+    (when (du/dispatch-cancelable! el model/event-cancel-request
+                                   (model/cancel-request-detail reason))
+      (do-close! el)
+      (du/dispatch! el model/event-cancel #js {})))
   nil)
 
 ;; ── Confirm flow ──────────────────────────────────────────────────────────────
 (defn- do-confirm! [^js el]
   (when-not (.hasAttribute el model/attr-disabled)
-    (let [^js req-ev (dispatch! el model/event-confirm-request
-                                (model/confirm-request-detail) true)]
-      (when-not (.-defaultPrevented req-ev)
-        (do-close! el)
-        (dispatch! el model/event-confirm #js {} false))))
+    (when (du/dispatch-cancelable! el model/event-confirm-request
+                                   (model/confirm-request-detail))
+      (do-close! el)
+      (du/dispatch! el model/event-confirm #js {})))
   nil)
 
 ;; ── Focus trap ────────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 (ns baredom.components.x-dropdown.x-dropdown
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-dropdown.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -165,21 +166,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -195,23 +181,23 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! trigger-el "part"          "trigger")
-    (set-attr! trigger-el "type"          "button")
-    (set-attr! trigger-el "aria-haspopup" "true")
-    (set-attr! trigger-el "aria-expanded" "false")
-    (set-attr! trigger-el "aria-controls" "panel")
+    (du/set-attr! trigger-el "part"          "trigger")
+    (du/set-attr! trigger-el "type"          "button")
+    (du/set-attr! trigger-el "aria-haspopup" "true")
+    (du/set-attr! trigger-el "aria-expanded" "false")
+    (du/set-attr! trigger-el "aria-controls" "panel")
 
-    (set-attr! label-el   "part"       "trigger-label")
+    (du/set-attr! label-el   "part"       "trigger-label")
 
-    (set-attr! chevron-el "part"       "chevron")
-    (set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! chevron-el "part"       "chevron")
+    (du/set-attr! chevron-el "aria-hidden" "true")
     (set! (.-textContent chevron-el) "\u25BE")
 
-    (set-attr! panel-el "part"           "panel")
-    (set-attr! panel-el "id"             "panel")
-    (set-attr! panel-el "data-placement" model/default-placement)
+    (du/set-attr! panel-el "part"           "panel")
+    (du/set-attr! panel-el "id"             "panel")
+    (du/set-attr! panel-el "data-placement" model/default-placement)
 
-    (set-attr! inner-el "part" "panel-inner")
+    (du/set-attr! inner-el "part" "panel-inner")
 
     (.appendChild trigger-el label-el)
     (.appendChild trigger-el chevron-el)
@@ -238,53 +224,33 @@
     (let [^js trigger-el (gobj/get refs "trigger")
           ^js label-el   (gobj/get refs "label")
           ^js panel-el   (gobj/get refs "panel")
-          open?          (has-attr? el model/attr-open)
-          disabled?      (has-attr? el model/attr-disabled)
-          label          (or (get-attr el model/attr-label) "")
-          placement      (model/normalize-placement (get-attr el model/attr-placement))]
+          open?          (du/has-attr? el model/attr-open)
+          disabled?      (du/has-attr? el model/attr-disabled)
+          label          (or (du/get-attr el model/attr-label) "")
+          placement      (model/normalize-placement (du/get-attr el model/attr-placement))]
 
       (set! (.-textContent label-el) label)
-      (set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
-      (set-bool-attr! trigger-el "disabled" disabled?)
-      (set-attr! panel-el "data-placement" placement))))
+      (du/set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
+      (du/set-bool-attr! trigger-el "disabled" disabled?)
+      (du/set-attr! panel-el "data-placement" placement))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Toggle
 ;; ---------------------------------------------------------------------------
 (defn- toggle! [^js el source]
-  (when-not (has-attr? el model/attr-disabled)
-    (let [currently-open? (has-attr? el model/attr-open)
+  (when-not (du/has-attr? el model/attr-disabled)
+    (let [currently-open? (du/has-attr? el model/attr-open)
           next-open?      (not currently-open?)
           detail          (model/toggle-detail next-open? source)
-          allowed?        (dispatch-cancelable! el model/event-toggle detail)]
+          allowed?        (du/dispatch-cancelable! el model/event-toggle detail)]
       (when allowed?
         (if next-open?
-          (set-attr! el model/attr-open "")
-          (remove-attr! el model/attr-open))
-        (dispatch! el model/event-change #js {:open next-open?})))))
+          (du/set-attr! el model/attr-open "")
+          (du/remove-attr! el model/attr-open))
+        (du/dispatch! el model/event-change #js {:open next-open?})))))
 
 ;; ---------------------------------------------------------------------------
 ;; Document-level listener management
@@ -296,7 +262,7 @@
       ;; Delay by one tick so the opening click does not immediately re-close
       (js/setTimeout
        (fn []
-         (when (has-attr? el model/attr-open)
+         (when (du/has-attr? el model/attr-open)
            (.addEventListener js/document "click"   doc-click-h)
            (.addEventListener js/document "keydown" doc-keydown-h)))
        0))))
@@ -325,7 +291,7 @@
 
         host-focusout-h
         (fn [^js evt]
-          (when (has-attr? el model/attr-open)
+          (when (du/has-attr? el model/attr-open)
             (let [related (.-relatedTarget evt)]
               (when (or (nil? related)
                         (not (.contains el related)))
@@ -333,7 +299,7 @@
 
         doc-click-h
         (fn [^js evt]
-          (when (has-attr? el model/attr-open)
+          (when (du/has-attr? el model/attr-open)
             (let [path    (array-seq (.composedPath evt))
                   inside? (some #(identical? % el) path)]
               (when-not inside?
@@ -342,7 +308,7 @@
         doc-keydown-h
         (fn [^js evt]
           (when (and (= (.-key evt) "Escape")
-                     (has-attr? el model/attr-open))
+                     (du/has-attr? el model/attr-open))
             (toggle! el "escape")))]
 
     #js {:triggerClick   trigger-click-h
@@ -380,7 +346,7 @@
   (remove-doc-listeners! el)
   (gobj/set el k-handlers (make-handlers el))
   (add-static-listeners! el)
-  (when (has-attr? el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     (add-doc-listeners! el))
   (render! el))
 
@@ -392,7 +358,7 @@
   (when (gobj/get el k-refs)
     (render! el)
     (when (= name model/attr-open)
-      (if (has-attr? el model/attr-open)
+      (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)
         (remove-doc-listeners! el)))))
 
@@ -404,19 +370,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
@@ -438,12 +404,12 @@
     ;; Note: open/close are named show/hide to avoid conflict with the open property
     (aset proto "show"
           (fn [] (this-as ^js this
-                          (when-not (has-attr? this model/attr-open)
+                          (when-not (du/has-attr? this model/attr-open)
                             (toggle! this "programmatic")))))
 
     (aset proto "hide"
           (fn [] (this-as ^js this
-                          (when (has-attr? this model/attr-open)
+                          (when (du/has-attr? this model/attr-open)
                             (toggle! this "programmatic")))))
 
     (aset proto "toggle"

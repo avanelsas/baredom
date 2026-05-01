@@ -1,6 +1,7 @@
 (ns baredom.components.x-notification-center.x-notification-center
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-notification-center.model :as model]
    [baredom.components.x-alert.model :as alert-model]))
 
@@ -105,15 +106,6 @@
   nil)
 
 ;; ── Event dispatch helpers ────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent el
-                  (js/CustomEvent. event-name
-                                   #js {:detail   (clj->js detail)
-                                        :bubbles  true
-                                        :composed true
-                                        :cancelable false}))
-  nil)
-
 ;; ── Alert dismiss handler ─────────────────────────────────────────────────────
 (defn- on-alert-dismiss [^js el ^js e]
   (let [refs      (ensure-refs! el)
@@ -125,14 +117,14 @@
         type-val  (.getAttribute alert "type")
         reason    (.. e -detail -reason)
         text-val  (.. e -detail -text)]
-    (dispatch! el model/event-dismiss
-               {:id     id
-                :type   (or type-val "info")
-                :reason (or reason "")
-                :text   (or text-val "")
-                :count  new-count})
+    (du/dispatch! el model/event-dismiss
+                 #js {:id     id
+                      :type   (or type-val "info")
+                      :reason (or reason "")
+                      :text   (or text-val "")
+                      :count  new-count})
     (when (zero? new-count)
-      (dispatch! el model/event-empty {})))
+      (du/dispatch! el model/event-empty #js {})))
   nil)
 
 ;; ── Listener management ───────────────────────────────────────────────────────
@@ -178,7 +170,7 @@
         (when (false? dismissible-val) (.setAttribute alert "dismissible" "false"))
         (.appendChild container alert)
         (let [new-count (.-length (.querySelectorAll container model/alert-tag))]
-          (dispatch! el model/event-push {:id id :count new-count}))
+          (du/dispatch! el model/event-push #js {:id id :count new-count}))
         id))))
 
 ;; ── clear! ───────────────────────────────────────────────────────────────────

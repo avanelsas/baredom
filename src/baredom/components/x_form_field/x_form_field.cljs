@@ -1,5 +1,6 @@
 (ns baredom.components.x-form-field.x-form-field
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-form-field.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -111,21 +112,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -141,21 +127,21 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! field-el   "part" "field")
-    (set-attr! label-el   "part" "label")
-    (set-attr! label-el   "id"   "label")
-    (set-attr! label-el   "for"  "input")
-    (set-attr! wrapper-el "part" "input-wrapper")
-    (set-attr! input-el   "part" "input")
-    (set-attr! input-el   "id"   "input")
-    (set-attr! input-el   "aria-labelledby" "label")
-    (set-attr! hint-el    "part"     "hint")
-    (set-attr! hint-el    "id"       "hint")
-    (set-attr! hint-el    "aria-live" "polite")
-    (set-attr! error-el   "part"     "error")
-    (set-attr! error-el   "id"       "error")
-    (set-attr! error-el   "role"     "alert")
-    (set-attr! error-el   "aria-live" "assertive")
+    (du/set-attr! field-el   "part" "field")
+    (du/set-attr! label-el   "part" "label")
+    (du/set-attr! label-el   "id"   "label")
+    (du/set-attr! label-el   "for"  "input")
+    (du/set-attr! wrapper-el "part" "input-wrapper")
+    (du/set-attr! input-el   "part" "input")
+    (du/set-attr! input-el   "id"   "input")
+    (du/set-attr! input-el   "aria-labelledby" "label")
+    (du/set-attr! hint-el    "part"     "hint")
+    (du/set-attr! hint-el    "id"       "hint")
+    (du/set-attr! hint-el    "aria-live" "polite")
+    (du/set-attr! error-el   "part"     "error")
+    (du/set-attr! error-el   "id"       "error")
+    (du/set-attr! error-el   "role"     "alert")
+    (du/set-attr! error-el   "aria-live" "assertive")
 
     (.appendChild wrapper-el input-el)
     (.appendChild field-el label-el)
@@ -177,9 +163,9 @@
 ;; Validity sync
 ;; ---------------------------------------------------------------------------
 (defn- sync-validity! [^js el ^js internals ^js input-el]
-  (let [has-error? (has-attr? el model/attr-error)
-        error-msg  (or (get-attr el model/attr-error) "")
-        required?  (has-attr? el model/attr-required)
+  (let [has-error? (du/has-attr? el model/attr-error)
+        error-msg  (or (du/get-attr el model/attr-error) "")
+        required?  (du/has-attr? el model/attr-required)
         value      (.-value input-el)]
     (cond
       has-error?
@@ -194,17 +180,17 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:label-raw         (get-attr el model/attr-label)
-    :type-raw          (get-attr el model/attr-type)
-    :name-raw          (get-attr el model/attr-name)
-    :value-raw         (get-attr el model/attr-value)
-    :placeholder-raw   (get-attr el model/attr-placeholder)
-    :hint-raw          (get-attr el model/attr-hint)
-    :error-raw         (get-attr el model/attr-error)
-    :disabled-present? (has-attr? el model/attr-disabled)
-    :readonly-present? (has-attr? el model/attr-readonly)
-    :required-present? (has-attr? el model/attr-required)
-    :autocomplete-raw  (get-attr el model/attr-autocomplete)}))
+   {:label-raw         (du/get-attr el model/attr-label)
+    :type-raw          (du/get-attr el model/attr-type)
+    :name-raw          (du/get-attr el model/attr-name)
+    :value-raw         (du/get-attr el model/attr-value)
+    :placeholder-raw   (du/get-attr el model/attr-placeholder)
+    :hint-raw          (du/get-attr el model/attr-hint)
+    :error-raw         (du/get-attr el model/attr-error)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :readonly-present? (du/has-attr? el model/attr-readonly)
+    :required-present? (du/has-attr? el model/attr-required)
+    :autocomplete-raw  (du/get-attr el model/attr-autocomplete)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -230,8 +216,8 @@
       (set! (.-autocomplete input-el) (:autocomplete m))
 
       ;; ARIA on input
-      (set-attr! input-el "aria-required" (if (:required? m) "true" "false"))
-      (set-attr! input-el "aria-invalid"  (if has-error? "true" "false"))
+      (du/set-attr! input-el "aria-required" (if (:required? m) "true" "false"))
+      (du/set-attr! input-el "aria-invalid"  (if has-error? "true" "false"))
 
       ;; aria-describedby conditionally includes hint and/or error ids
       (let [describedby (cond
@@ -240,8 +226,8 @@
                           has-error?                 "error"
                           :else                      nil)]
         (if describedby
-          (set-attr! input-el "aria-describedby" describedby)
-          (remove-attr! input-el "aria-describedby")))
+          (du/set-attr! input-el "aria-describedby" describedby)
+          (du/remove-attr! input-el "aria-describedby")))
 
       ;; Label
       (set! (.-textContent label-el) (:label m))
@@ -262,7 +248,7 @@
         (.add (.-classList error-el) "error-hidden"))
 
       ;; Data attribute on host for CSS hook
-      (set-bool-attr! el "data-invalid" has-error?)
+      (du/set-bool-attr! el "data-invalid" has-error?)
 
       ;; ElementInternals validity
       (when-let [^js internals (gobj/get el k-internals)]
@@ -271,16 +257,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
@@ -289,22 +265,22 @@
     (when-let [refs (gobj/get el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             value        (.-value input-el)
-            name         (or (get-attr el model/attr-name) "")]
+            name         (or (du/get-attr el model/attr-name) "")]
         (when-let [^js internals (gobj/get el k-internals)]
           (.setFormValue internals value)
           (sync-validity! el internals input-el))
-        (dispatch! el model/event-input #js {:name name :value value})))))
+        (du/dispatch! el model/event-input #js {:name name :value value})))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
     (when-let [refs (gobj/get el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             value        (.-value input-el)
-            name         (or (get-attr el model/attr-name) "")]
+            name         (or (du/get-attr el model/attr-name) "")]
         (when-let [^js internals (gobj/get el k-internals)]
           (.setFormValue internals value)
           (sync-validity! el internals input-el))
-        (dispatch! el model/event-change #js {:name name :value value})))))
+        (du/dispatch! el model/event-change #js {:name name :value value})))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -330,11 +306,11 @@
 ;; Form-associated callbacks
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
-  (set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
   (render! el))
 
 (defn- form-reset! [^js el]
-  (remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-value)
   (when-let [refs (gobj/get el k-refs)]
     (let [^js input-el (gobj/get refs "input")]
       (set! (.-value input-el) "")))
@@ -354,12 +330,12 @@
   ;; Push value attr to input if set
   (when-let [refs (gobj/get el k-refs)]
     (let [^js input-el (gobj/get refs "input")
-          val-attr     (get-attr el model/attr-value)]
+          val-attr     (du/get-attr el model/attr-value)]
       (when val-attr
         (set! (.-value input-el) val-attr))))
   ;; Set initial form value
   (when-let [^js internals (gobj/get el k-internals)]
-    (.setFormValue internals (or (get-attr el model/attr-value) "")))
+    (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
   (add-listeners! el)
   (render! el))
 
@@ -383,19 +359,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 (defn- define-bool-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 ;; Special value property: also syncs input.value when set
 (defn- define-value-prop! [^js proto]
@@ -406,10 +382,10 @@
         :get (fn [] (this-as ^js this
                              (if-let [refs (gobj/get this k-refs)]
                                (.-value (gobj/get refs "input"))
-                               (or (get-attr this model/attr-value) ""))))
+                               (or (du/get-attr this model/attr-value) ""))))
         :set (fn [v] (this-as ^js this
                               (let [str-v (if (and (some? v) (not= v js/undefined)) (str v) "")]
-                                (set-attr! this model/attr-value str-v)
+                                (du/set-attr! this model/attr-value str-v)
                                 (when-let [refs (gobj/get this k-refs)]
                                   (let [^js input-el (gobj/get refs "input")]
                                     (set! (.-value input-el) str-v))))))}))
