@@ -69,6 +69,19 @@ jobs:
           bb scripts/generate_react.bb
           git diff --exit-code adapters/react/src/ adapters/react/package.json || (echo "React adapter is out of date. Run: bb scripts/generate_react.bb" && exit 1)
 
+      - name: Build Angular adapter
+        run: |
+          bb scripts/generate_angular.bb
+          cd adapters/angular && npm install && npx ngc
+
+      - name: Build Angular adapter test app
+        run: cd adapters/angular/test-app && npm install && npx ng build
+
+      - name: Check Angular adapter is up to date
+        run: |
+          bb scripts/generate_angular.bb
+          git diff --exit-code adapters/angular/src/ adapters/angular/package.json || (echo "Angular adapter is out of date. Run: bb scripts/generate_angular.bb" && exit 1)
+
       - name: Run tests
         run: npm test
         env:

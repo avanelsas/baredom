@@ -1,0 +1,28 @@
+{
+  "name": "baredom-angular-test-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "ng serve",
+    "build": "ng build"
+  },
+  "dependencies": {
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "rxjs": "^7.8.0",
+    "zone.js": "~0.14.0",
+    "tslib": "^2.6.0",
+    "@vanelsas/baredom": "file:../../..",
+    "@vanelsas/baredom-angular": "file:.."
+  },
+  "devDependencies": {
+    "@angular/cli": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0",
+    "@angular-devkit/build-angular": "^17.3.0",
+    "typescript": "~5.3.0"
+  }
+}

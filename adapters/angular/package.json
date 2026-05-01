@@ -1,0 +1,444 @@
+{
+  "description" : "Angular 17+ directives for BareDOM web components — auto-generated from component metadata.",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/avanelsas/baredom.git",
+    "directory" : "adapters/angular"
+  },
+  "license" : "MIT",
+  "peerDependencies" : {
+    "@angular/core" : ">=17.0.0",
+    "@angular/forms" : ">=17.0.0",
+    "@vanelsas/baredom" : ">=2.6.0"
+  },
+  "name" : "@vanelsas/baredom-angular",
+  "scripts" : {
+    "generate" : "cd ../.. && bb scripts/generate_angular.bb",
+    "build" : "npm run generate && ngc",
+    "check" : "ngc --noEmit"
+  },
+  "publishConfig" : {
+    "access" : "public"
+  },
+  "type" : "module",
+  "types" : "./dist/index.d.ts",
+  "author" : "Alexander van Elsas",
+  "exports" : {
+    "." : {
+      "import" : "./dist/index.js",
+      "types" : "./dist/index.d.ts"
+    },
+    "./x-alert" : {
+      "import" : "./dist/directives/x-alert.directive.js",
+      "types" : "./dist/directives/x-alert.directive.d.ts"
+    },
+    "./x-avatar" : {
+      "import" : "./dist/directives/x-avatar.directive.js",
+      "types" : "./dist/directives/x-avatar.directive.d.ts"
+    },
+    "./x-avatar-group" : {
+      "import" : "./dist/directives/x-avatar-group.directive.js",
+      "types" : "./dist/directives/x-avatar-group.directive.d.ts"
+    },
+    "./x-badge" : {
+      "import" : "./dist/directives/x-badge.directive.js",
+      "types" : "./dist/directives/x-badge.directive.d.ts"
+    },
+    "./x-bento-grid" : {
+      "import" : "./dist/directives/x-bento-grid.directive.js",
+      "types" : "./dist/directives/x-bento-grid.directive.d.ts"
+    },
+    "./x-bento-item" : {
+      "import" : "./dist/directives/x-bento-item.directive.js",
+      "types" : "./dist/directives/x-bento-item.directive.d.ts"
+    },
+    "./x-breadcrumbs" : {
+      "import" : "./dist/directives/x-breadcrumbs.directive.js",
+      "types" : "./dist/directives/x-breadcrumbs.directive.d.ts"
+    },
+    "./x-button" : {
+      "import" : "./dist/directives/x-button.directive.js",
+      "types" : "./dist/directives/x-button.directive.d.ts"
+    },
+    "./x-cancel-dialogue" : {
+      "import" : "./dist/directives/x-cancel-dialogue.directive.js",
+      "types" : "./dist/directives/x-cancel-dialogue.directive.d.ts"
+    },
+    "./x-card" : {
+      "import" : "./dist/directives/x-card.directive.js",
+      "types" : "./dist/directives/x-card.directive.d.ts"
+    },
+    "./x-carousel" : {
+      "import" : "./dist/directives/x-carousel.directive.js",
+      "types" : "./dist/directives/x-carousel.directive.d.ts"
+    },
+    "./x-chart" : {
+      "import" : "./dist/directives/x-chart.directive.js",
+      "types" : "./dist/directives/x-chart.directive.d.ts"
+    },
+    "./x-checkbox" : {
+      "import" : "./dist/directives/x-checkbox.directive.js",
+      "types" : "./dist/directives/x-checkbox.directive.d.ts"
+    },
+    "./x-checkbox-cva" : {
+      "import" : "./dist/cva/x-checkbox-cva.directive.js",
+      "types" : "./dist/cva/x-checkbox-cva.directive.d.ts"
+    },
+    "./x-chip" : {
+      "import" : "./dist/directives/x-chip.directive.js",
+      "types" : "./dist/directives/x-chip.directive.d.ts"
+    },
+    "./x-collapse" : {
+      "import" : "./dist/directives/x-collapse.directive.js",
+      "types" : "./dist/directives/x-collapse.directive.d.ts"
+    },
+    "./x-color-picker" : {
+      "import" : "./dist/directives/x-color-picker.directive.js",
+      "types" : "./dist/directives/x-color-picker.directive.d.ts"
+    },
+    "./x-combobox" : {
+      "import" : "./dist/directives/x-combobox.directive.js",
+      "types" : "./dist/directives/x-combobox.directive.d.ts"
+    },
+    "./x-combobox-cva" : {
+      "import" : "./dist/cva/x-combobox-cva.directive.js",
+      "types" : "./dist/cva/x-combobox-cva.directive.d.ts"
+    },
+    "./x-command-palette" : {
+      "import" : "./dist/directives/x-command-palette.directive.js",
+      "types" : "./dist/directives/x-command-palette.directive.d.ts"
+    },
+    "./x-container" : {
+      "import" : "./dist/directives/x-container.directive.js",
+      "types" : "./dist/directives/x-container.directive.d.ts"
+    },
+    "./x-context-menu" : {
+      "import" : "./dist/directives/x-context-menu.directive.js",
+      "types" : "./dist/directives/x-context-menu.directive.d.ts"
+    },
+    "./x-copy" : {
+      "import" : "./dist/directives/x-copy.directive.js",
+      "types" : "./dist/directives/x-copy.directive.d.ts"
+    },
+    "./x-currency-field" : {
+      "import" : "./dist/directives/x-currency-field.directive.js",
+      "types" : "./dist/directives/x-currency-field.directive.d.ts"
+    },
+    "./x-currency-field-cva" : {
+      "import" : "./dist/cva/x-currency-field-cva.directive.js",
+      "types" : "./dist/cva/x-currency-field-cva.directive.d.ts"
+    },
+    "./x-date-picker" : {
+      "import" : "./dist/directives/x-date-picker.directive.js",
+      "types" : "./dist/directives/x-date-picker.directive.d.ts"
+    },
+    "./x-divider" : {
+      "import" : "./dist/directives/x-divider.directive.js",
+      "types" : "./dist/directives/x-divider.directive.d.ts"
+    },
+    "./x-drawer" : {
+      "import" : "./dist/directives/x-drawer.directive.js",
+      "types" : "./dist/directives/x-drawer.directive.d.ts"
+    },
+    "./x-dropdown" : {
+      "import" : "./dist/directives/x-dropdown.directive.js",
+      "types" : "./dist/directives/x-dropdown.directive.d.ts"
+    },
+    "./x-fieldset" : {
+      "import" : "./dist/directives/x-fieldset.directive.js",
+      "types" : "./dist/directives/x-fieldset.directive.d.ts"
+    },
+    "./x-file-download" : {
+      "import" : "./dist/directives/x-file-download.directive.js",
+      "types" : "./dist/directives/x-file-download.directive.d.ts"
+    },
+    "./x-file-upload" : {
+      "import" : "./dist/directives/x-file-upload.directive.js",
+      "types" : "./dist/directives/x-file-upload.directive.d.ts"
+    },
+    "./x-form" : {
+      "import" : "./dist/directives/x-form.directive.js",
+      "types" : "./dist/directives/x-form.directive.d.ts"
+    },
+    "./x-form-field" : {
+      "import" : "./dist/directives/x-form-field.directive.js",
+      "types" : "./dist/directives/x-form-field.directive.d.ts"
+    },
+    "./x-gaussian-blur" : {
+      "import" : "./dist/directives/x-gaussian-blur.directive.js",
+      "types" : "./dist/directives/x-gaussian-blur.directive.d.ts"
+    },
+    "./x-grid" : {
+      "import" : "./dist/directives/x-grid.directive.js",
+      "types" : "./dist/directives/x-grid.directive.d.ts"
+    },
+    "./x-icon" : {
+      "import" : "./dist/directives/x-icon.directive.js",
+      "types" : "./dist/directives/x-icon.directive.d.ts"
+    },
+    "./x-image" : {
+      "import" : "./dist/directives/x-image.directive.js",
+      "types" : "./dist/directives/x-image.directive.d.ts"
+    },
+    "./x-kinetic-font" : {
+      "import" : "./dist/directives/x-kinetic-font.directive.js",
+      "types" : "./dist/directives/x-kinetic-font.directive.d.ts"
+    },
+    "./x-kinetic-typography" : {
+      "import" : "./dist/directives/x-kinetic-typography.directive.js",
+      "types" : "./dist/directives/x-kinetic-typography.directive.d.ts"
+    },
+    "./x-liquid-dock" : {
+      "import" : "./dist/directives/x-liquid-dock.directive.js",
+      "types" : "./dist/directives/x-liquid-dock.directive.d.ts"
+    },
+    "./x-liquid-fill" : {
+      "import" : "./dist/directives/x-liquid-fill.directive.js",
+      "types" : "./dist/directives/x-liquid-fill.directive.d.ts"
+    },
+    "./x-liquid-glass" : {
+      "import" : "./dist/directives/x-liquid-glass.directive.js",
+      "types" : "./dist/directives/x-liquid-glass.directive.d.ts"
+    },
+    "./x-menu" : {
+      "import" : "./dist/directives/x-menu.directive.js",
+      "types" : "./dist/directives/x-menu.directive.d.ts"
+    },
+    "./x-menu-item" : {
+      "import" : "./dist/directives/x-menu-item.directive.js",
+      "types" : "./dist/directives/x-menu-item.directive.d.ts"
+    },
+    "./x-metaball-cursor" : {
+      "import" : "./dist/directives/x-metaball-cursor.directive.js",
+      "types" : "./dist/directives/x-metaball-cursor.directive.d.ts"
+    },
+    "./x-modal" : {
+      "import" : "./dist/directives/x-modal.directive.js",
+      "types" : "./dist/directives/x-modal.directive.d.ts"
+    },
+    "./x-morph-stack" : {
+      "import" : "./dist/directives/x-morph-stack.directive.js",
+      "types" : "./dist/directives/x-morph-stack.directive.d.ts"
+    },
+    "./x-navbar" : {
+      "import" : "./dist/directives/x-navbar.directive.js",
+      "types" : "./dist/directives/x-navbar.directive.d.ts"
+    },
+    "./x-neural-glow" : {
+      "import" : "./dist/directives/x-neural-glow.directive.js",
+      "types" : "./dist/directives/x-neural-glow.directive.d.ts"
+    },
+    "./x-notification-center" : {
+      "import" : "./dist/directives/x-notification-center.directive.js",
+      "types" : "./dist/directives/x-notification-center.directive.d.ts"
+    },
+    "./x-organic-divider" : {
+      "import" : "./dist/directives/x-organic-divider.directive.js",
+      "types" : "./dist/directives/x-organic-divider.directive.d.ts"
+    },
+    "./x-organic-progress" : {
+      "import" : "./dist/directives/x-organic-progress.directive.js",
+      "types" : "./dist/directives/x-organic-progress.directive.d.ts"
+    },
+    "./x-organic-shape" : {
+      "import" : "./dist/directives/x-organic-shape.directive.js",
+      "types" : "./dist/directives/x-organic-shape.directive.d.ts"
+    },
+    "./x-pagination" : {
+      "import" : "./dist/directives/x-pagination.directive.js",
+      "types" : "./dist/directives/x-pagination.directive.d.ts"
+    },
+    "./x-pagination-cva" : {
+      "import" : "./dist/cva/x-pagination-cva.directive.js",
+      "types" : "./dist/cva/x-pagination-cva.directive.d.ts"
+    },
+    "./x-particle-button" : {
+      "import" : "./dist/directives/x-particle-button.directive.js",
+      "types" : "./dist/directives/x-particle-button.directive.d.ts"
+    },
+    "./x-popover" : {
+      "import" : "./dist/directives/x-popover.directive.js",
+      "types" : "./dist/directives/x-popover.directive.d.ts"
+    },
+    "./x-progress" : {
+      "import" : "./dist/directives/x-progress.directive.js",
+      "types" : "./dist/directives/x-progress.directive.d.ts"
+    },
+    "./x-progress-circle" : {
+      "import" : "./dist/directives/x-progress-circle.directive.js",
+      "types" : "./dist/directives/x-progress-circle.directive.d.ts"
+    },
+    "./x-radio" : {
+      "import" : "./dist/directives/x-radio.directive.js",
+      "types" : "./dist/directives/x-radio.directive.d.ts"
+    },
+    "./x-radio-cva" : {
+      "import" : "./dist/cva/x-radio-cva.directive.js",
+      "types" : "./dist/cva/x-radio-cva.directive.d.ts"
+    },
+    "./x-ripple-effect" : {
+      "import" : "./dist/directives/x-ripple-effect.directive.js",
+      "types" : "./dist/directives/x-ripple-effect.directive.d.ts"
+    },
+    "./x-scroll" : {
+      "import" : "./dist/directives/x-scroll.directive.js",
+      "types" : "./dist/directives/x-scroll.directive.d.ts"
+    },
+    "./x-scroll-parallax" : {
+      "import" : "./dist/directives/x-scroll-parallax.directive.js",
+      "types" : "./dist/directives/x-scroll-parallax.directive.d.ts"
+    },
+    "./x-scroll-stack" : {
+      "import" : "./dist/directives/x-scroll-stack.directive.js",
+      "types" : "./dist/directives/x-scroll-stack.directive.d.ts"
+    },
+    "./x-scroll-story" : {
+      "import" : "./dist/directives/x-scroll-story.directive.js",
+      "types" : "./dist/directives/x-scroll-story.directive.d.ts"
+    },
+    "./x-scroll-timeline" : {
+      "import" : "./dist/directives/x-scroll-timeline.directive.js",
+      "types" : "./dist/directives/x-scroll-timeline.directive.d.ts"
+    },
+    "./x-search-field" : {
+      "import" : "./dist/directives/x-search-field.directive.js",
+      "types" : "./dist/directives/x-search-field.directive.d.ts"
+    },
+    "./x-select" : {
+      "import" : "./dist/directives/x-select.directive.js",
+      "types" : "./dist/directives/x-select.directive.d.ts"
+    },
+    "./x-select-cva" : {
+      "import" : "./dist/cva/x-select-cva.directive.js",
+      "types" : "./dist/cva/x-select-cva.directive.d.ts"
+    },
+    "./x-sidebar" : {
+      "import" : "./dist/directives/x-sidebar.directive.js",
+      "types" : "./dist/directives/x-sidebar.directive.d.ts"
+    },
+    "./x-skeleton" : {
+      "import" : "./dist/directives/x-skeleton.directive.js",
+      "types" : "./dist/directives/x-skeleton.directive.d.ts"
+    },
+    "./x-skeleton-group" : {
+      "import" : "./dist/directives/x-skeleton-group.directive.js",
+      "types" : "./dist/directives/x-skeleton-group.directive.d.ts"
+    },
+    "./x-slider" : {
+      "import" : "./dist/directives/x-slider.directive.js",
+      "types" : "./dist/directives/x-slider.directive.d.ts"
+    },
+    "./x-slider-cva" : {
+      "import" : "./dist/cva/x-slider-cva.directive.js",
+      "types" : "./dist/cva/x-slider-cva.directive.d.ts"
+    },
+    "./x-soft-body" : {
+      "import" : "./dist/directives/x-soft-body.directive.js",
+      "types" : "./dist/directives/x-soft-body.directive.d.ts"
+    },
+    "./x-spacer" : {
+      "import" : "./dist/directives/x-spacer.directive.js",
+      "types" : "./dist/directives/x-spacer.directive.d.ts"
+    },
+    "./x-spinner" : {
+      "import" : "./dist/directives/x-spinner.directive.js",
+      "types" : "./dist/directives/x-spinner.directive.d.ts"
+    },
+    "./x-splash" : {
+      "import" : "./dist/directives/x-splash.directive.js",
+      "types" : "./dist/directives/x-splash.directive.d.ts"
+    },
+    "./x-stat" : {
+      "import" : "./dist/directives/x-stat.directive.js",
+      "types" : "./dist/directives/x-stat.directive.d.ts"
+    },
+    "./x-stepper" : {
+      "import" : "./dist/directives/x-stepper.directive.js",
+      "types" : "./dist/directives/x-stepper.directive.d.ts"
+    },
+    "./x-switch" : {
+      "import" : "./dist/directives/x-switch.directive.js",
+      "types" : "./dist/directives/x-switch.directive.d.ts"
+    },
+    "./x-switch-cva" : {
+      "import" : "./dist/cva/x-switch-cva.directive.js",
+      "types" : "./dist/cva/x-switch-cva.directive.d.ts"
+    },
+    "./x-tab" : {
+      "import" : "./dist/directives/x-tab.directive.js",
+      "types" : "./dist/directives/x-tab.directive.d.ts"
+    },
+    "./x-table" : {
+      "import" : "./dist/directives/x-table.directive.js",
+      "types" : "./dist/directives/x-table.directive.d.ts"
+    },
+    "./x-table-cell" : {
+      "import" : "./dist/directives/x-table-cell.directive.js",
+      "types" : "./dist/directives/x-table-cell.directive.d.ts"
+    },
+    "./x-table-row" : {
+      "import" : "./dist/directives/x-table-row.directive.js",
+      "types" : "./dist/directives/x-table-row.directive.d.ts"
+    },
+    "./x-tabs" : {
+      "import" : "./dist/directives/x-tabs.directive.js",
+      "types" : "./dist/directives/x-tabs.directive.d.ts"
+    },
+    "./x-tabs-cva" : {
+      "import" : "./dist/cva/x-tabs-cva.directive.js",
+      "types" : "./dist/cva/x-tabs-cva.directive.d.ts"
+    },
+    "./x-text-area" : {
+      "import" : "./dist/directives/x-text-area.directive.js",
+      "types" : "./dist/directives/x-text-area.directive.d.ts"
+    },
+    "./x-text-area-cva" : {
+      "import" : "./dist/cva/x-text-area-cva.directive.js",
+      "types" : "./dist/cva/x-text-area-cva.directive.d.ts"
+    },
+    "./x-theme" : {
+      "import" : "./dist/directives/x-theme.directive.js",
+      "types" : "./dist/directives/x-theme.directive.d.ts"
+    },
+    "./x-timeline" : {
+      "import" : "./dist/directives/x-timeline.directive.js",
+      "types" : "./dist/directives/x-timeline.directive.d.ts"
+    },
+    "./x-timeline-item" : {
+      "import" : "./dist/directives/x-timeline-item.directive.js",
+      "types" : "./dist/directives/x-timeline-item.directive.d.ts"
+    },
+    "./x-toast" : {
+      "import" : "./dist/directives/x-toast.directive.js",
+      "types" : "./dist/directives/x-toast.directive.d.ts"
+    },
+    "./x-toaster" : {
+      "import" : "./dist/directives/x-toaster.directive.js",
+      "types" : "./dist/directives/x-toaster.directive.d.ts"
+    },
+    "./x-tooltip" : {
+      "import" : "./dist/directives/x-tooltip.directive.js",
+      "types" : "./dist/directives/x-tooltip.directive.d.ts"
+    },
+    "./x-typography" : {
+      "import" : "./dist/directives/x-typography.directive.js",
+      "types" : "./dist/directives/x-typography.directive.d.ts"
+    },
+    "./x-welcome-tour" : {
+      "import" : "./dist/directives/x-welcome-tour.directive.js",
+      "types" : "./dist/directives/x-welcome-tour.directive.d.ts"
+    }
+  },
+  "devDependencies" : {
+    "typescript" : "~5.3.0",
+    "@angular/core" : "^17.3.0",
+    "@angular/forms" : "^17.3.0",
+    "@angular/compiler" : "^17.3.0",
+    "@angular/compiler-cli" : "^17.3.0",
+    "@vanelsas/baredom" : "file:../../"
+  },
+  "files" : [ "dist", "README.md", "LICENSE" ],
+  "version" : "2.1.0",
+  "main" : "./dist/index.js",
+  "sideEffects" : true
+}
