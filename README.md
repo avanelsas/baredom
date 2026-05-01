@@ -34,7 +34,7 @@ BareDOM is authored in ClojureScript and compiled to optimised, minified ES modu
 
 BareDOM has been created using Claude Code. The CLAUDE.md file is added to the repository for your convenience.
 
-All web components, including new, modern, and exciting ones such as x-morph-stack, x-liquid-fill, x-liquid-glass, x=soft-body, x-ripple-effect, x-scroll-parallax, x-scroll-story, x-scroll-timeline, x-kinetic-font, x-kinetic-typography, x-organic-shape, x-gaussian-blur, x-neural-glow, x-metaball-cursor, x-organic-progress, and x-particle-button, can be seen [here](https://avanelsas.github.io/baredom/)
+All components can be explored in the [live demo](https://avanelsas.github.io/baredom/).
 
 ---
 
@@ -68,50 +68,18 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 
 ---
 
-## TypeScript
+## BareForge — Visual Page Builder
 
-BareDOM includes TypeScript declarations for every component. Types are auto-generated from component metadata and ship alongside the ESM files — no additional setup required.
+[![GitHub](https://img.shields.io/github/stars/avanelsas/bareforge?style=social)](https://github.com/avanelsas/bareforge)
 
-### What you get
+[BareForge](https://github.com/avanelsas/bareforge) is a companion visual landing-page builder for BareDOM. Drag-and-drop BareDOM components onto a canvas, configure them in the inspector, and export a complete project.
 
-- **Typed element interfaces** extending `HTMLElement` with all properties and methods
-- **Typed custom events** with full `detail` payload types
-- **`HTMLElementTagNameMap` augmentation** so `document.querySelector('x-button')` returns `XButton`
-- **[Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest)** (`custom-elements.json`) for IDE tooling and HTML intellisense
+- **Drag-and-drop canvas** with snap-aware placement
+- **Inspector** with type-aware editors for every BareDOM component
+- **Theme editor** with all 8 BareDOM presets and per-token overrides
+- **Four export modes** — CDN, bundle, ClojureScript, and JavaScript
 
-### Usage
-
-```typescript
-import '@vanelsas/baredom/x-button';
-import '@vanelsas/baredom/x-alert';
-
-// querySelector returns typed XButton
-const btn = document.querySelector('x-button')!;
-btn.disabled = true;    // type-checked
-btn.loading = true;     // autocomplete works
-
-// Event listeners have typed detail payloads
-btn.addEventListener('press', (e) => {
-  console.log(e.detail.source);  // string — fully typed
-});
-
-// Custom events on other components
-const alert = document.querySelector('x-alert')!;
-alert.addEventListener('x-alert-dismiss', (e) => {
-  console.log(e.detail.reason);  // string
-  console.log(e.detail.type);    // string
-});
-
-// Components with methods
-import '@vanelsas/baredom/x-modal';
-const modal = document.querySelector('x-modal')!;
-modal.show();   // typed method
-modal.hide();   // typed method
-```
-
-### IDE support
-
-The `custom-elements.json` manifest enables HTML intellisense in editors that support it. For VS Code, install the [Lit Plugin](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) or the [Custom Elements Language Server](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) to get attribute autocomplete and validation in HTML templates.
+Try the [live editor](https://avanelsas.github.io/bareforge/) or see the [repository](https://github.com/avanelsas/bareforge) for details.
 
 ---
 
@@ -175,7 +143,10 @@ Also available via [Clojars](./docs/installation.md#clojurescript-via-clojars) a
 BareDOM components are native HTML elements. Import, register, and use them in any framework or vanilla HTML.
 
 - **JavaScript / TypeScript** — see the [JavaScript Developer Guide](./docs/javascript-guide.md)
+- **TypeScript types** — see the [TypeScript Guide](./docs/typescript.md)
 - **ClojureScript** — see the [ClojureScript Guide](./docs/clojurescript-guide.md)
+- **React** — see [`@vanelsas/baredom-react`](https://www.npmjs.com/package/@vanelsas/baredom-react)
+- **Angular** — see [`@vanelsas/baredom-angular`](https://www.npmjs.com/package/@vanelsas/baredom-angular)
 
 ---
 
