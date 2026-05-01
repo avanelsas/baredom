@@ -147,7 +147,7 @@ function App() {
 ## Requirements
 
 - React 19+
-- @vanelsas/baredom 2.5.0+
+- @vanelsas/baredom 2.6.0+
 
 ## Auto-generated
 
