@@ -245,7 +245,8 @@
                         (let [iface (tag->interface-name tag-name)]
                           (str "export { " iface ", type " iface "Props } from \"./" tag-name "\";")))
                       (sort-by :tag-name models)))
-       "\n"))
+       "\n\n// Hooks (hand-written)\n"
+       "export { useRegisterPreset, type PresetData, type TokenMap } from \"./hooks/useRegisterPreset\";\n"))
 
 (defn generate-jsx-intrinsics
   "Generate a custom-elements.d.ts that registers all BareDOM tag names
@@ -265,14 +266,22 @@
        "  }\n"
        "}\n"))
 
+;; Exports that are hand-written (not auto-generated) and must be preserved
+;; when the generator rewrites the package.json exports field.
+(def manual-exports
+  {"./hooks" {:import "./dist/hooks/index.js"
+              :types  "./dist/hooks/index.d.ts"}})
+
 (defn update-package-exports
-  "Update the adapters/react/package.json exports field."
+  "Update the adapters/react/package.json exports field.
+   Preserves manual-exports alongside the generated per-component entries."
   [models]
   (let [pkg     (json/parse-string (slurp react-pkg) true)
         exports (into (sorted-map)
                       (concat
                        [["." {:import "./dist/index.js"
                               :types  "./dist/index.d.ts"}]]
+                       manual-exports
                        (map (fn [{:keys [tag-name]}]
                               [(str "./" tag-name)
                                {:import (str "./dist/" tag-name ".js")

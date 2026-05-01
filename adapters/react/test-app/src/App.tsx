@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { XTheme } from "@vanelsas/baredom-react/x-theme";
 import { XButton } from "@vanelsas/baredom-react/x-button";
 import { XAlert } from "@vanelsas/baredom-react/x-alert";
@@ -8,7 +8,34 @@ import { XSlider } from "@vanelsas/baredom-react/x-slider";
 import { XBadge } from "@vanelsas/baredom-react/x-badge";
 import { XSpinner } from "@vanelsas/baredom-react/x-spinner";
 import { XDivider } from "@vanelsas/baredom-react/x-divider";
+import { useRegisterPreset } from "@vanelsas/baredom-react/hooks";
+import type { PresetData } from "@vanelsas/baredom-react/hooks";
 import type { XButton as XButtonElement } from "@vanelsas/baredom/x-button";
+
+const candyPreset: PresetData = {
+  light: {
+    "--x-color-primary": "#e11d48",
+    "--x-color-primary-hover": "#be123c",
+    "--x-color-primary-active": "#9f1239",
+    "--x-color-surface": "#fff1f2",
+    "--x-color-bg": "#ffffff",
+    "--x-color-text": "#1c1917",
+    "--x-color-border": "#fecdd3",
+    "--x-radius-md": "16px",
+    "--x-radius-sm": "12px",
+  },
+  dark: {
+    "--x-color-primary": "#fb7185",
+    "--x-color-primary-hover": "#f43f5e",
+    "--x-color-primary-active": "#e11d48",
+    "--x-color-surface": "#1c1017",
+    "--x-color-bg": "#0c0a09",
+    "--x-color-text": "#fef2f2",
+    "--x-color-border": "#4c0519",
+    "--x-radius-md": "16px",
+    "--x-radius-sm": "12px",
+  },
+};
 
 export function App() {
   const [log, setLog] = useState<string[]>([]);
@@ -18,14 +45,19 @@ export function App() {
   const [checked, setChecked] = useState(false);
   const [switchOn, setSwitchOn] = useState(false);
   const [sliderVal, setSliderVal] = useState("25");
+  const [preset, setPreset] = useState<string | undefined>(undefined);
   const buttonRef = useRef<XButtonElement>(null);
 
   const addLog = (msg: string) => {
     setLog((prev) => [...prev.slice(-19), `${new Date().toLocaleTimeString()} — ${msg}`]);
   };
 
+  // Memoize so the object identity is stable across renders
+  const stableCandy = useMemo(() => candyPreset, []);
+  useRegisterPreset("candy", stableCandy);
+
   return (
-    <XTheme>
+    <XTheme preset={preset}>
       <div style={{ maxWidth: 640, margin: "2rem auto", fontFamily: "var(--x-font-family, system-ui)", color: "var(--x-color-text, inherit)" }}>
         <h1>BareDOM React Adapter Test</h1>
 
@@ -156,6 +188,30 @@ export function App() {
             <XBadge text="Adapter" variant="secondary" />
             <XSpinner size="sm" />
           </div>
+        </section>
+
+        <XDivider style={{ margin: "1.5rem 0" }} />
+
+        {/* --- Test 8: useRegisterPreset hook --- */}
+        <section>
+          <h2>8. useRegisterPreset — custom theme</h2>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <button onClick={() => { setPreset(undefined); addLog("Preset: default"); }}>
+              Default
+            </button>
+            <button onClick={() => { setPreset("candy"); addLog("Preset: candy"); }}>
+              Candy
+            </button>
+            <button onClick={() => { setPreset("aurora"); addLog("Preset: aurora"); }}>
+              Aurora (built-in)
+            </button>
+            <span style={{ fontSize: 14, color: "var(--x-color-text-muted, #888)" }}>
+              Active: {preset ?? "default"}
+            </span>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--x-color-text-muted, #888)", marginTop: 8 }}>
+            Switch presets to see all components above re-theme. "Candy" is registered via useRegisterPreset.
+          </p>
         </section>
 
         <XDivider style={{ margin: "1.5rem 0" }} />

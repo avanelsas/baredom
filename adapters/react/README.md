@@ -144,6 +144,36 @@ function App() {
 }
 ```
 
+### Custom presets
+
+Use the `useRegisterPreset` hook to register a custom theme preset. Any tokens you omit fall back to the default BareDOM preset.
+
+```tsx
+import { useRegisterPreset } from "@vanelsas/baredom-react/hooks";
+import { XTheme } from "@vanelsas/baredom-react/x-theme";
+
+const brandTokens = {
+  light: {
+    "--x-color-primary": "#e11d48",
+    "--x-color-primary-hover": "#be123c",
+    "--x-font-family": "'Inter', sans-serif",
+  },
+  dark: {
+    "--x-color-primary": "#fb7185",
+    "--x-color-primary-hover": "#f43f5e",
+  },
+};
+
+function App() {
+  useRegisterPreset("brand", brandTokens);
+  return (
+    <XTheme preset="brand">
+      {/* Components use your brand tokens */}
+    </XTheme>
+  );
+}
+```
+
 ## Requirements
 
 - React 19+
