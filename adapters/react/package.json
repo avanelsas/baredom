@@ -27,6 +27,10 @@
       "import" : "./dist/index.js",
       "types" : "./dist/index.d.ts"
     },
+    "./hooks" : {
+      "import" : "./dist/hooks/index.js",
+      "types" : "./dist/hooks/index.d.ts"
+    },
     "./x-alert" : {
       "import" : "./dist/x-alert.js",
       "types" : "./dist/x-alert.d.ts"

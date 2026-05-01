@@ -90,3 +90,6 @@ export { XToaster, type XToasterProps } from "./x-toaster";
 export { XTooltip, type XTooltipProps } from "./x-tooltip";
 export { XTypography, type XTypographyProps } from "./x-typography";
 export { XWelcomeTour, type XWelcomeTourProps } from "./x-welcome-tour";
+
+// Hooks (hand-written)
+export { useRegisterPreset, type PresetData, type TokenMap } from "./hooks/useRegisterPreset";
