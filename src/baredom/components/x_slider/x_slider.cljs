@@ -415,25 +415,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -449,18 +430,18 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Boolean properties
-    (define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (define-bool-prop!   proto "readOnly"  model/attr-readonly)
-    (define-bool-prop!   proto "showValue" model/attr-show-value)
+    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+    (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
+    (du/define-bool-prop!   proto "showValue" model/attr-show-value)
 
     ;; String properties
-    (define-string-prop! proto "value" model/attr-value)
-    (define-string-prop! proto "min"   model/attr-min)
-    (define-string-prop! proto "max"   model/attr-max)
-    (define-string-prop! proto "step"  model/attr-step)
-    (define-string-prop! proto "name"  model/attr-name)
-    (define-string-prop! proto "label" model/attr-label)
-    (define-string-prop! proto "size"  model/attr-size)
+    (du/define-string-prop! proto "value" model/attr-value)
+    (du/define-string-prop! proto "min"   model/attr-min)
+    (du/define-string-prop! proto "max"   model/attr-max)
+    (du/define-string-prop! proto "step"  model/attr-step)
+    (du/define-string-prop! proto "name"  model/attr-name)
+    (du/define-string-prop! proto "label" model/attr-label)
+    (du/define-string-prop! proto "size"  model/attr-size)
 
     ;; Lifecycle callbacks
     (aset proto "connectedCallback"

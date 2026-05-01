@@ -338,43 +338,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
-(defn- define-number-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn []
-               (this-as ^js this
-                        (let [raw (du/get-attr this attr-name)]
-                          (if raw
-                            (let [n (js/parseInt raw 10)]
-                              (if (js/isNaN n) model/default-duration-ms n))
-                            model/default-duration-ms))))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (and (number? v) (not (js/isNaN v)))
-                          (du/set-attr! this attr-name (str (js/Math.round v)))
-                          (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -386,10 +349,10 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Properties
-    (define-bool-prop!   proto "open"       model/attr-open)
-    (define-bool-prop!   proto "disabled"   model/attr-disabled)
-    (define-string-prop! proto "header"     model/attr-header)
-    (define-number-prop! proto "durationMs" model/attr-duration-ms)
+    (du/define-bool-prop!   proto "open"       model/attr-open)
+    (du/define-bool-prop!   proto "disabled"   model/attr-disabled)
+    (du/define-string-prop! proto "header"     model/attr-header)
+    (du/define-number-prop! proto "durationMs" model/attr-duration-ms model/default-duration-ms)
 
     ;; Public toggle() method
     (aset proto "toggle"

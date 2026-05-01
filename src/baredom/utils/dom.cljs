@@ -84,17 +84,20 @@
         :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
 
 (defn define-string-prop!
-  "Install a string JS property that reflects to/from an HTML attribute."
-  [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) nil)))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+  "Install a string JS property that reflects to/from an HTML attribute.
+   `default-val` is returned when the attribute is absent (defaults to nil)."
+  ([^js proto prop-name attr-name]
+   (define-string-prop! proto prop-name attr-name nil))
+  ([^js proto prop-name attr-name default-val]
+   (.defineProperty
+    js/Object proto prop-name
+    #js {:configurable true
+         :enumerable   true
+         :get (fn [] (this-as ^js this (or (get-attr this attr-name) default-val)))
+         :set (fn [v] (this-as ^js this
+                               (if (and (some? v) (not= v js/undefined))
+                                 (set-attr! this attr-name (str v))
+                                 (remove-attr! this attr-name))))})))
 
 (defn define-number-prop!
   "Install a numeric JS property that reflects to/from an HTML attribute.

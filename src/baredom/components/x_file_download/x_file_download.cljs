@@ -240,25 +240,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -271,11 +252,11 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; String properties
-    (define-string-prop! proto "href"     model/attr-href)
-    (define-string-prop! proto "filename" model/attr-filename)
+    (du/define-string-prop! proto "href"     model/attr-href "")
+    (du/define-string-prop! proto "filename" model/attr-filename "")
 
     ;; Boolean properties
-    (define-bool-prop! proto "disabled" model/attr-disabled)
+    (du/define-bool-prop! proto "disabled" model/attr-disabled)
 
     ;; Lifecycle
     (aset proto "connectedCallback"

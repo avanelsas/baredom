@@ -380,38 +380,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-int-prop! [^js proto prop-name attr-name default-val]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this
-                             (or (model/parse-positive-int (du/get-attr this attr-name))
-                                 default-val)))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined) (pos? v))
-                                (du/set-attr! this attr-name (str (js/Math.floor v)))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; Special value property: also syncs textarea.value when set
 (defn- define-value-prop! [^js proto]
   (.defineProperty
@@ -447,19 +415,19 @@
     (define-value-prop! proto)
 
     ;; String properties
-    (define-string-prop! proto "name"         model/attr-name)
-    (define-string-prop! proto "placeholder"  model/attr-placeholder)
-    (define-string-prop! proto "autocomplete" model/attr-autocomplete)
+    (du/define-string-prop! proto "name"         model/attr-name "")
+    (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
+    (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
 
     ;; Boolean properties
-    (define-bool-prop! proto "disabled" model/attr-disabled)
-    (define-bool-prop! proto "readOnly" model/attr-readonly)
-    (define-bool-prop! proto "required" model/attr-required)
+    (du/define-bool-prop! proto "disabled" model/attr-disabled)
+    (du/define-bool-prop! proto "readOnly" model/attr-readonly)
+    (du/define-bool-prop! proto "required" model/attr-required)
 
     ;; Integer properties
-    (define-int-prop! proto "rows"      model/attr-rows      3)
-    (define-int-prop! proto "maxLength" model/attr-maxlength nil)
-    (define-int-prop! proto "minLength" model/attr-minlength nil)
+    (du/define-number-prop! proto "rows"      model/attr-rows      3)
+    (du/define-number-prop! proto "maxLength" model/attr-maxlength nil)
+    (du/define-number-prop! proto "minLength" model/attr-minlength nil)
 
     ;; Lifecycle
     (aset proto "connectedCallback"

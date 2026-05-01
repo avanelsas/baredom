@@ -207,25 +207,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/get-attr this attr-name)))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -237,10 +218,10 @@
     (set! (.-observedAttributes cls) model/observed-attributes)
 
     ;; String properties
-    (define-string-prop! proto "legend" model/attr-legend)
+    (du/define-string-prop! proto "legend" model/attr-legend)
 
     ;; Boolean properties
-    (define-bool-prop! proto "disabled" model/attr-disabled)
+    (du/define-bool-prop! proto "disabled" model/attr-disabled)
 
     ;; Lifecycle
     (set! (.-connectedCallback proto)

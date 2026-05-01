@@ -820,25 +820,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -850,13 +831,13 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Reflected attribute properties
-    (define-bool-prop!   proto "open"       model/attr-open)
-    (define-bool-prop!   proto "disabled"   model/attr-disabled)
-    (define-bool-prop!   proto "noClose"    model/attr-no-close)
-    (define-bool-prop!   proto "portal"     model/attr-portal)
-    (define-string-prop! proto "placement"  model/attr-placement)
-    (define-string-prop! proto "heading"    model/attr-heading)
-    (define-string-prop! proto "closeLabel" model/attr-close-label)
+    (du/define-bool-prop!   proto "open"       model/attr-open)
+    (du/define-bool-prop!   proto "disabled"   model/attr-disabled)
+    (du/define-bool-prop!   proto "noClose"    model/attr-no-close)
+    (du/define-bool-prop!   proto "portal"     model/attr-portal)
+    (du/define-string-prop! proto "placement"  model/attr-placement)
+    (du/define-string-prop! proto "heading"    model/attr-heading)
+    (du/define-string-prop! proto "closeLabel" model/attr-close-label)
 
     ;; Public methods
     (aset proto "show"
