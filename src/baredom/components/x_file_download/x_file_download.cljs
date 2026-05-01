@@ -1,5 +1,6 @@
 (ns baredom.components.x-file-download.x-file-download
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-file-download.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -98,21 +99,6 @@
 (defn- make-el [tag]
   (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
-(defn- set-bool-attr! [^js el attr value]
-  (if value (set-attr! el attr "") (remove-attr! el attr)))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -126,9 +112,9 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! anchor-el  "part" "anchor")
-    (set-attr! icon-el    "part" "icon")
-    (set-attr! content-el "part" "content")
+    (du/set-attr! anchor-el  "part" "anchor")
+    (du/set-attr! icon-el    "part" "icon")
+    (du/set-attr! content-el "part" "content")
 
     ;; Set static download icon
     (set! (.-innerHTML icon-el) download-icon-svg)
@@ -148,10 +134,10 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:href-raw          (get-attr el model/attr-href)
-    :filename-raw      (get-attr el model/attr-filename)
-    :disabled-present? (has-attr? el model/attr-disabled)
-    :aria-label-raw    (get-attr el model/attr-aria-label)}))
+   {:href-raw          (du/get-attr el model/attr-href)
+    :filename-raw      (du/get-attr el model/attr-filename)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :aria-label-raw    (du/get-attr el model/attr-aria-label)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -173,33 +159,33 @@
       ;; top-frame navigation to data URLs, so without it clicking fails.
       (cond
         (and (string? filename) (not= filename ""))
-        (set-attr! anchor-el "download" filename)
+        (du/set-attr! anchor-el "download" filename)
 
         (model/data-url? href)
-        (set-attr! anchor-el "download" "")
+        (du/set-attr! anchor-el "download" "")
 
         :else
-        (remove-attr! anchor-el "download"))
+        (du/remove-attr! anchor-el "download"))
 
       ;; aria-disabled on anchor
       (if disabled?
-        (set-attr! anchor-el "aria-disabled" "true")
-        (remove-attr! anchor-el "aria-disabled"))
+        (du/set-attr! anchor-el "aria-disabled" "true")
+        (du/remove-attr! anchor-el "aria-disabled"))
 
       ;; aria-label forwarded to anchor
       (if aria-label
-        (set-attr! anchor-el "aria-label" aria-label)
-        (remove-attr! anchor-el "aria-label"))
+        (du/set-attr! anchor-el "aria-label" aria-label)
+        (du/remove-attr! anchor-el "aria-label"))
 
       ;; data-disabled on host for CSS hooks
-      (set-bool-attr! el "data-disabled" disabled?))))
+      (du/set-bool-attr! el "data-disabled" disabled?))))
 
 ;; ---------------------------------------------------------------------------
 ;; Click handler
 ;; ---------------------------------------------------------------------------
 (defn- make-click-handler [^js el]
   (fn [^js evt]
-    (let [disabled? (has-attr? el model/attr-disabled)]
+    (let [disabled? (du/has-attr? el model/attr-disabled)]
       (if disabled?
         (.preventDefault evt)
         (let [m          (read-model el)
@@ -259,19 +245,19 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 (defn- define-bool-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
+        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration

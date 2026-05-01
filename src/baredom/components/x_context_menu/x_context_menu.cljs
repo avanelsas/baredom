@@ -1,5 +1,6 @@
 (ns baredom.components.x-context-menu.x-context-menu
-  (:require [baredom.components.x-context-menu.model :as model]
+  (:require [baredom.utils.dom :as du]
+            [baredom.components.x-context-menu.model :as model]
             [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
 
@@ -67,30 +68,17 @@
 
 ;; ---- Read model ----
 
-(defn- has-attr? [^js el attr] (.hasAttribute el attr))
-(defn- get-attr  [^js el attr] (.getAttribute  el attr))
-
 (defn- read-model [^js el]
   (model/normalize
-   {:open-present?     (when (has-attr? el model/attr-open)
-                         (get-attr el model/attr-open))
-    :disabled-present? (when (has-attr? el model/attr-disabled)
-                         (get-attr el model/attr-disabled))
-    :placement-raw     (get-attr el model/attr-placement)
-    :offset-raw        (get-attr el model/attr-offset)
-    :z-index-raw       (get-attr el model/attr-z-index)}))
+   {:open-present?     (when (du/has-attr? el model/attr-open)
+                         (du/get-attr el model/attr-open))
+    :disabled-present? (when (du/has-attr? el model/attr-disabled)
+                         (du/get-attr el model/attr-disabled))
+    :placement-raw     (du/get-attr el model/attr-placement)
+    :offset-raw        (du/get-attr el model/attr-offset)
+    :z-index-raw       (du/get-attr el model/attr-z-index)}))
 
 ;; ---- Event dispatch ----
-
-(defn- dispatch! [^js el event-name cancelable? detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail    detail
-                     :bubbles   true
-                     :composed  true
-                     :cancelable cancelable?})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
 
 ;; ---- Overlay root (via shared utility) ----
 
@@ -175,7 +163,7 @@
           (let [^js target (.-target ev)
                 ^js item   (.closest target "[role=menuitem]")]
             (when item
-              (dispatch! el model/event-select false #js {:item item})
+              (du/dispatch! el model/event-select #js {:item item})
               (close! el "select"))))]
 
     (.addEventListener layer "keydown" on-key true)
@@ -226,20 +214,20 @@
 
 (defn- close! [^js el reason]
   (when (.hasAttribute el model/attr-open)
-    (let [proceed? (dispatch! el model/event-close-request true #js {:reason reason})]
+    (let [proceed? (du/dispatch-cancelable! el model/event-close-request #js {:reason reason})]
       (when proceed?
         (remove-doc-listeners! el)
         (.removeAttribute el model/attr-open)
         (let [^js layer (gobj/get el k-layer)]
           (remove-layer! layer)
           (gobj/set el k-layer nil))
-        (dispatch! el model/event-close false #js {:reason reason})))))
+        (du/dispatch! el model/event-close #js {:reason reason})))))
 
 ;; ---- open! ----
 
 (defn- open-at-coords! [^js el x y reason]
   (when-not (.hasAttribute el model/attr-disabled)
-    (let [proceed? (dispatch! el model/event-open-request true #js {:reason reason})]
+    (let [proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
       (when proceed?
         (let [m           (read-model el)
               {:keys [placement offset z-index]} m
@@ -276,7 +264,7 @@
                    (position-layer! layer (:x pos2) (:y pos2) (assoc pos2 :z-index z-index)))
                  (focus-first! panel)))))
 
-          (dispatch! el model/event-open false #js {:reason reason}))))))
+          (du/dispatch! el model/event-open #js {:reason reason}))))))
 
 (defn- open-for-element! [^js el ^js anchor-el reason]
   (when-not (.hasAttribute el model/attr-disabled)
@@ -287,7 +275,7 @@
           vh       (.-innerHeight js/window)
           anchor   {:x (.-left rect) :y (.-top rect)
                     :width (.-width rect) :height (.-height rect)}
-          proceed? (dispatch! el model/event-open-request true #js {:reason reason})]
+          proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
       (when proceed?
         (let [panel-est {:width 200 :height 300}
               pos       (model/compute-position
@@ -315,7 +303,7 @@
                    (position-layer! layer (:x pos2) (:y pos2) (assoc pos2 :z-index z-index)))
                  (focus-first! panel)))))
 
-          (dispatch! el model/event-open false #js {:reason reason}))))))
+          (du/dispatch! el model/event-open #js {:reason reason}))))))
 
 ;; ---- Shadow DOM creation ----
 

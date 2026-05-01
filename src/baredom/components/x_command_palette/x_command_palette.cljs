@@ -36,17 +36,6 @@
     :placeholder-raw     (du/get-attr el model/attr-placeholder)
     :empty-text-raw      (du/get-attr el model/attr-empty-text)}))
 
-(defn- dispatch!
-  [^js el event-name cancelable detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail   detail
-                     :bubbles  true
-                     :composed true
-                     :cancelable (boolean cancelable)})]
-    (.dispatchEvent el ev)
-    ev))
-
 ;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
@@ -339,7 +328,7 @@
         ^js input (when refs (gobj/get refs "input"))]
     (when input (.focus input)))
   (render! el)
-  (dispatch! el model/event-open false #js {}))
+  (du/dispatch! el model/event-open #js {}))
 
 (defn- do-close!
   "Actually close: remove attr, dispatch close event."
@@ -349,21 +338,19 @@
         ^js input (when refs (gobj/get refs "input"))]
     (when input (.removeAttribute input "aria-activedescendant")))
   (render! el)
-  (dispatch! el model/event-close false #js {}))
+  (du/dispatch! el model/event-close #js {}))
 
 (defn- request-open!
   [^js el]
   (when-not (.hasAttribute el model/attr-open)
-    (let [^js ev (dispatch! el model/event-open-request true #js {})]
-      (when-not (.-defaultPrevented ev)
-        (do-open! el)))))
+    (when (du/dispatch-cancelable! el model/event-open-request #js {})
+      (do-open! el))))
 
 (defn- request-close!
   [^js el]
   (when (.hasAttribute el model/attr-open)
-    (let [^js ev (dispatch! el model/event-close-request true #js {})]
-      (when-not (.-defaultPrevented ev)
-        (do-close! el)))))
+    (when (du/dispatch-cancelable! el model/event-close-request #js {})
+      (do-close! el))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -400,11 +387,10 @@
         cur-idx  (or (gobj/get el k-active-idx) 0)
         item     (nth visible cur-idx nil)]
     (when (and item (not (:disabled? item)))
-      (let [^js ev (dispatch! el model/event-select-request true
-                              #js {:item (clj->js item)})]
-        (when-not (.-defaultPrevented ev)
-          (dispatch! el model/event-select false #js {:item (clj->js item)})
-          (request-close! el))))))
+      (when (du/dispatch-cancelable! el model/event-select-request
+                                     #js {:item (clj->js item)})
+        (du/dispatch! el model/event-select #js {:item (clj->js item)})
+        (request-close! el)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Event listeners
@@ -422,7 +408,7 @@
       (if (and q (not= q ""))
         (.removeAttribute clr "hidden")
         (.setAttribute clr "hidden" "")))
-    (dispatch! el model/event-query-change false #js {:query (or q "")})
+    (du/dispatch! el model/event-query-change #js {:query (or q "")})
     (render-items! el)))
 
 (defn- on-input-keydown!
@@ -458,11 +444,10 @@
             visible (active-visible el)
             item (nth visible idx nil)]
         (when (and item (not (:disabled? item)))
-          (let [^js ev (dispatch! el model/event-select-request true
-                                  #js {:item (clj->js item)})]
-            (when-not (.-defaultPrevented ev)
-              (dispatch! el model/event-select false #js {:item (clj->js item)})
-              (request-close! el))))))))
+          (when (du/dispatch-cancelable! el model/event-select-request
+                                         #js {:item (clj->js item)})
+            (du/dispatch! el model/event-select #js {:item (clj->js item)})
+            (request-close! el)))))))
 
 (defn- on-clear-click!
   [^js el ^js _e]
@@ -473,7 +458,7 @@
     (when clr (.setAttribute clr "hidden" ""))
     (gobj/set el k-query "")
     (gobj/set el k-active-idx 0)
-    (dispatch! el model/event-query-change false #js {:query ""})
+    (du/dispatch! el model/event-query-change #js {:query ""})
     (render-items! el)
     (when inp (.focus inp))))
 

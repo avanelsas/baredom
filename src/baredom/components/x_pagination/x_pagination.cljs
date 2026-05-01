@@ -1,6 +1,7 @@
 (ns baredom.components.x-pagination.x-pagination
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-pagination.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -238,20 +239,10 @@
   nil)
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
 (defn- dispatch-page-change! [^js el page]
   (let [m        (read-model el)
         cur-page (:page m)
-        allowed? (dispatch-cancelable!
+        allowed? (du/dispatch-cancelable!
                   el model/event-change-request
                   #js {:page page :previousPage cur-page})]
     (when allowed?

@@ -1,6 +1,7 @@
 (ns baredom.components.x-navbar.x-navbar
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-navbar.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -9,41 +10,16 @@
 
 ;; ── DOM helpers ──────────────────────────────────────────────────────────────
 
-(defn- has-attr?
-  [^js el attr-name]
-  (.hasAttribute el attr-name))
-
-(defn- get-attr
-  [^js el attr-name]
-  (.getAttribute el attr-name))
-
-(defn- set-bool-attr!
-  [^js el attr-name value]
-  (if value
-    (.setAttribute el attr-name "")
-    (.removeAttribute el attr-name)))
-
 (defn- read-public-state
   [^js el]
   (model/public-state
-   {:label       (get-attr el model/attr-label)
-    :orientation (get-attr el model/attr-orientation)
-    :variant     (get-attr el model/attr-variant)
-    :sticky      (has-attr? el model/attr-sticky)
-    :elevated    (has-attr? el model/attr-elevated)
-    :breakpoint  (get-attr el model/attr-breakpoint)
-    :alignment   (get-attr el model/attr-alignment)}))
-
-(defn- dispatch!
-  [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail detail
-         :bubbles true
-         :composed true
-         :cancelable false})))
+   {:label       (du/get-attr el model/attr-label)
+    :orientation (du/get-attr el model/attr-orientation)
+    :variant     (du/get-attr el model/attr-variant)
+    :sticky      (du/has-attr? el model/attr-sticky)
+    :elevated    (du/has-attr? el model/attr-elevated)
+    :breakpoint  (du/get-attr el model/attr-breakpoint)
+    :alignment   (du/get-attr el model/attr-alignment)}))
 
 (defn- assigned-nodes
   [^js slot-el]
@@ -355,12 +331,12 @@
            anchor (closest-anchor target)
            source (source-from-event event)]
        (when anchor
-         (dispatch! el
+         (du/dispatch! el
                     model/event-navigate
                     #js {:href   (or (.getAttribute ^js anchor "href") "")
                          :source source}))
        (when (target-in-brand-slot? refs target)
-         (dispatch! el
+         (du/dispatch! el
                     model/event-brand-activate
                     #js {:source source})))))
 
@@ -373,7 +349,7 @@
          (when-not (gobj/get el k-focus-visible)
            (gobj/set el k-focus-visible true)
            (.setAttribute el "data-focus-visible-within" "true")
-           (dispatch! el model/event-focus-visible #js {}))))))
+           (du/dispatch! el model/event-focus-visible #js {}))))))
 
   (.addEventListener
    base-el
@@ -429,10 +405,10 @@
         :enumerable true
         :get (fn []
                (this-as ^js this
-                        (has-attr? this attr-name)))
+                        (du/has-attr? this attr-name)))
         :set (fn [value]
                (this-as ^js this
-                        (set-bool-attr! this attr-name (boolean value))))}))
+                        (du/set-bool-attr! this attr-name (boolean value))))}))
 
 (defn- install-string-prop!
   [^js proto prop-name attr-name]
@@ -444,7 +420,7 @@
         :enumerable true
         :get (fn []
                (this-as ^js this
-                        (or (get-attr this attr-name) "")))
+                        (or (du/get-attr this attr-name) "")))
         :set (fn [v]
                (this-as ^js this
                         (if v

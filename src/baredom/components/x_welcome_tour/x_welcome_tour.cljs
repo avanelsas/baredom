@@ -525,17 +525,6 @@
   nil)
 
 ;; ── Event dispatching ───────────────────────────────────────────────────────
-(defn- dispatch!
-  "Dispatch a CustomEvent on the host element. Returns true if not cancelled."
-  [^js el event-name detail cancelable?]
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   event-name
-                   #js {:detail     (clj->js detail)
-                        :bubbles    true
-                        :composed   true
-                        :cancelable (boolean cancelable?)})))
-
 ;; ── Scroll target into view ─────────────────────────────────────────────────
 (defn- scroll-target-into-view!
   "Smooth-scroll the target element into view if needed."
@@ -701,24 +690,24 @@
   (let [total (.-length (get-step-els el))
         m     (or (du/getv el k-model) (read-model el))]
     (.removeAttribute el model/attr-open)
-    (dispatch! el model/event-complete
-               (model/complete-detail (inc (model/clamp-step (:step m) total)))
-               false))
+    (du/dispatch! el model/event-complete
+                 (clj->js (model/complete-detail (inc (model/clamp-step (:step m) total))))))
+
   nil)
 
 (defn- do-skip! [^js el]
   (let [m     (or (du/getv el k-model) (read-model el))
         total (.-length (get-step-els el))]
     (.removeAttribute el model/attr-open)
-    (dispatch! el model/event-skip
-               (model/skip-detail (model/clamp-step (:step m) total))
-               false))
+    (du/dispatch! el model/event-skip
+                 (clj->js (model/skip-detail (model/clamp-step (:step m) total)))))
+
   nil)
 
 (defn- do-start! [^js el]
   (.setAttribute el model/attr-step "0")
   (.setAttribute el model/attr-open "")
-  (dispatch! el model/event-start {} false)
+  (du/dispatch! el model/event-start (clj->js {}))
   nil)
 
 (defn- do-next! [^js el]
@@ -728,8 +717,8 @@
     (if (model/last-step? step total)
       (do-complete! el)
       (let [new-step (inc step)]
-        (when (dispatch! el model/event-step-change
-                         (model/step-change-detail new-step step) true)
+        (when (du/dispatch-cancelable! el model/event-step-change
+                                  (clj->js (model/step-change-detail new-step step)))
           (.setAttribute el model/attr-step (str new-step))
           ;; Scroll new target
           (let [step-els (get-step-els el)
@@ -744,8 +733,8 @@
         step  (model/clamp-step (:step m) total)]
     (when-not (model/first-step? step)
       (let [new-step (dec step)]
-        (when (dispatch! el model/event-step-change
-                         (model/step-change-detail new-step step) true)
+        (when (du/dispatch-cancelable! el model/event-step-change
+                                  (clj->js (model/step-change-detail new-step step)))
           (.setAttribute el model/attr-step (str new-step))
           (let [step-els (get-step-els el)
                 step-m   (read-step-model (aget step-els new-step))]
@@ -759,8 +748,8 @@
         old   (model/clamp-step (:step m) total)
         new-s (model/clamp-step n total)]
     (when (and (not= old new-s)
-               (dispatch! el model/event-step-change
-                          (model/step-change-detail new-s old) true))
+               (du/dispatch-cancelable! el model/event-step-change
+                                        (clj->js (model/step-change-detail new-s old))))
       (.setAttribute el model/attr-step (str new-s))))
   nil)
 

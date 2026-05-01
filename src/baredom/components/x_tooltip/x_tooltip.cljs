@@ -179,9 +179,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -199,22 +196,22 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! trigger-el "part" "trigger")
+    (du/set-attr! trigger-el "part" "trigger")
 
-    (set-attr! panel-el "part"           "panel")
-    (set-attr! panel-el "role"           "tooltip")
-    (set-attr! panel-el "id"             tid)
-    (set-attr! panel-el "aria-hidden"    "true")
-    (set-attr! panel-el "data-placement" model/default-placement)
+    (du/set-attr! panel-el "part"           "panel")
+    (du/set-attr! panel-el "role"           "tooltip")
+    (du/set-attr! panel-el "id"             tid)
+    (du/set-attr! panel-el "aria-hidden"    "true")
+    (du/set-attr! panel-el "data-placement" model/default-placement)
 
-    (set-attr! arrow-el "part"        "arrow")
-    (set-attr! arrow-el "aria-hidden" "true")
+    (du/set-attr! arrow-el "part"        "arrow")
+    (du/set-attr! arrow-el "aria-hidden" "true")
 
-    (set-attr! body-el "part" "body")
+    (du/set-attr! body-el "part" "body")
 
-    (set-attr! text-el "part" "text")
+    (du/set-attr! text-el "part" "text")
 
-    (set-attr! content-slot "name" "content")
+    (du/set-attr! content-slot "name" "content")
 
     (.appendChild trigger-el trigger-slot)
 
@@ -260,24 +257,14 @@
           ^js panel-el (gobj/get refs "panel")
           ^js text-el  (gobj/get refs "text")]
 
-      (set-attr! panel-el "data-placement" placement)
-      (set-attr! panel-el "aria-hidden" (str (not open?)))
+      (du/set-attr! panel-el "data-placement" placement)
+      (du/set-attr! panel-el "aria-hidden" (str (not open?)))
 
       (set! (.-textContent text-el) text))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     #js {}
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Timer management
 ;; ---------------------------------------------------------------------------
@@ -297,25 +284,25 @@
     (if (or immediate? (du/has-attr? el model/attr-open))
       (when-not (du/has-attr? el model/attr-open)
         (.setAttribute el model/attr-open "")
-        (dispatch! el model/event-show))
+        (du/dispatch! el model/event-show #js {}))
       (let [{:keys [delay]} (read-model el)]
         (if (zero? delay)
           (do (.setAttribute el model/attr-open "")
-              (dispatch! el model/event-show))
+              (du/dispatch! el model/event-show #js {}))
           (du/setv! el k-show-timer
                     (js/setTimeout
                      (fn []
                        (du/setv! el k-show-timer nil)
                        (when (.-isConnected el)
                          (.setAttribute el model/attr-open "")
-                         (dispatch! el model/event-show)))
+                         (du/dispatch! el model/event-show #js {})))
                      delay)))))))
 
 (defn- do-hide! [^js el]
   (clear-show-timer! el)
   (when (du/has-attr? el model/attr-open)
     (.removeAttribute el model/attr-open)
-    (dispatch! el model/event-hide)))
+    (du/dispatch! el model/event-hide #js {})))
 
 ;; ---------------------------------------------------------------------------
 ;; aria-describedby management
@@ -332,7 +319,7 @@
       ;; Set on new trigger
       (when (pos? (.-length elements))
         (let [^js trigger (aget elements 0)]
-          (set-attr! trigger "aria-describedby" tid)
+          (du/set-attr! trigger "aria-describedby" tid)
           (du/setv! el k-trigger-el trigger))))))
 
 (defn- cleanup-trigger-a11y! [^js el]

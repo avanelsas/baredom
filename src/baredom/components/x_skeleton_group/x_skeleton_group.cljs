@@ -24,9 +24,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
 ;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
@@ -72,8 +69,8 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! container-el "part" "container")
-    (set-attr! preset-el    "part" "preset-container")
+    (du/set-attr! container-el "part" "container")
+    (du/set-attr! preset-el    "part" "preset-container")
 
     (.appendChild container-el preset-el)
     (.appendChild container-el slot-el)
@@ -117,14 +114,14 @@
     ;; Leaf: x-skeleton element
     (let [^js skel (make-el "x-skeleton")]
       (when-let [v (:variant item-def)]
-        (set-attr! skel "variant" v))
+        (du/set-attr! skel "variant" v))
       (when-let [w (:width item-def)]
-        (set-attr! skel "width" w))
+        (du/set-attr! skel "width" w))
       (when-let [h (:height item-def)]
-        (set-attr! skel "height" h))
+        (du/set-attr! skel "height" h))
       (when-let [flex (:flex item-def)]
         (set! (.. skel -style -flex) flex))
-      (set-attr! skel "animation" animation)
+      (du/set-attr! skel "animation" animation)
       skel)))
 
 (defn- build-preset! [^js preset-el preset-name animation cnt]
@@ -159,7 +156,7 @@
           ^js nodes   (.assignedElements slot-el #js {:flatten true})]
       (doseq [^js node (array-seq nodes)]
         (when (= skeleton-tag-upper (.-tagName node))
-          (set-attr! node "animation" animation))))))
+          (du/set-attr! node "animation" animation))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -187,7 +184,7 @@
 
         ;; Accessibility
         (when-not (du/has-attr? el "aria-hidden")
-          (set-attr! el "aria-hidden" "true"))))))
+          (du/set-attr! el "aria-hidden" "true"))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Handlers

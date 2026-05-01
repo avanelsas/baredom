@@ -15,6 +15,7 @@
 (def ^:private k-autoplay-timer "__xCarouselAutoTimer")
 (def ^:private k-paused         "__xCarouselPaused")
 (def ^:private k-dot-count      "__xCarouselDotCount")
+(def ^:private k-model          "__xCarouselModel")
 
 ;; ── SVG arrows ──────────────────────────────────────────────────────────────
 (def ^:private svg-prev
@@ -352,7 +353,10 @@
 (defn- render! [^js el]
   (when (du/initialized? el k-init)
     (let [m          (read-model el)
-          refs       (du/getv el k-refs)
+          old-m      (du/getv el k-model)]
+      (when (not= m old-m)
+        (du/setv! el k-model m)
+        (let [refs       (du/getv el k-refs)
           ^js track  (gobj/get refs "track")
           ^js prev   (gobj/get refs "prev")
           ^js nxt    (gobj/get refs "next")
@@ -428,7 +432,7 @@
       ;; Autoplay live region adjustment
       (if (:autoplay? m)
         (.setAttribute live "aria-live" "off")
-        (.setAttribute live "aria-live" "polite"))))
+        (.setAttribute live "aria-live" "polite"))))))
   nil)
 
 ;; ── Navigation ──────────────────────────────────────────────────────────────

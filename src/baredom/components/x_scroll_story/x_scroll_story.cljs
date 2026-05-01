@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-story.x-scroll-story
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-scroll-story.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -172,15 +173,6 @@
       id)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail-map]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     (clj->js detail-map)
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev)))
-
 ;; ── Announce to live region ─────────────────────────────────────────────────
 (defn- announce! [^js _el ^js live msg]
   (set! (.-textContent live) msg)
@@ -211,8 +203,8 @@
                      (step-id (aget children old-index)))
             new-id (when (and (>= new-index 0) (< new-index (.-length children)))
                      (step-id (aget children new-index)))]
-        (dispatch! el model/event-step-change
-                   (model/step-change-detail new-index new-id old-index old-id))
+        (du/dispatch! el model/event-step-change
+                   (clj->js (model/step-change-detail new-index new-id old-index old-id)))
         ;; Announce to live region
         (let [{:keys [live]} (gobj/get el k-refs)]
           (announce! el live (str "Step " (inc new-index) " active")))))))
@@ -249,12 +241,12 @@
           (cond
             (and (not was-in?) is-in?)
             (do (aset states i true)
-                (dispatch! el model/event-step-enter
-                           (model/step-enter-detail i id progress)))
+                (du/dispatch! el model/event-step-enter
+                           (clj->js (model/step-enter-detail i id progress))))
             (and was-in? (not is-in?))
             (do (aset states i false)
-                (dispatch! el model/event-step-leave
-                           (model/step-leave-detail i id progress)))))))))
+                (du/dispatch! el model/event-step-leave
+                           (clj->js (model/step-leave-detail i id progress))))))))))
 
 ;; ── Transform application ───────────────────────────────────────────────────
 (defn- update-scroll!
@@ -297,8 +289,8 @@
           (gobj/set el k-last-prog progress)
           (let [active-id (when (and (>= active-idx 0) (< active-idx n))
                             (step-id (aget children active-idx)))]
-            (dispatch! el model/event-progress
-                       (model/progress-detail progress active-idx active-id)))))))
+            (du/dispatch! el model/event-progress
+                       (clj->js (model/progress-detail progress active-idx active-id))))))))
   ;; Clear rAF handle
   (gobj/set el k-raf nil))
 
@@ -347,8 +339,8 @@
           children (.-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (step-id (aget children idx)))]
-      (dispatch! el model/event-autoplay-pause
-                 (model/autoplay-pause-detail prog idx aid)))))
+      (du/dispatch! el model/event-autoplay-pause
+                 (clj->js (model/autoplay-pause-detail prog idx aid))))))
 
 (defn- resume-autoplay! [^js el]
   (when (gobj/get el k-autoplay-paused)
@@ -366,8 +358,8 @@
           children (.-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (step-id (aget children idx)))]
-      (dispatch! el model/event-autoplay-resume
-                 (model/autoplay-resume-detail prog idx aid)))))
+      (du/dispatch! el model/event-autoplay-resume
+                 (clj->js (model/autoplay-resume-detail prog idx aid))))))
 
 (defn- stop-autoplay! [^js el]
   ;; Cancel rAF
@@ -469,8 +461,8 @@
         (attach-scroll-listener! el)
         (update-scroll! el)
         (announce! el live "Story section entered viewport")
-        (dispatch! el model/event-enter
-                   (model/enter-detail (or (gobj/get el k-last-prog) 0)))
+        (du/dispatch! el model/event-enter
+                   (clj->js (model/enter-detail (or (gobj/get el k-last-prog) 0))))
         ;; Start autoplay if enabled
         (let [m (gobj/get el k-model)]
           (when (and m (:autoplay? m))
@@ -480,8 +472,8 @@
         (stop-autoplay! el)
         (when-not (disabled? el)
           (announce! el live "Story section left viewport")
-          (dispatch! el model/event-leave
-                     (model/leave-detail (or (gobj/get el k-last-prog) 0))))))))
+          (du/dispatch! el model/event-leave
+                     (clj->js (model/leave-detail (or (gobj/get el k-last-prog) 0)))))))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
@@ -752,8 +744,8 @@
                      (clean-step-attrs! this)
                      ;; Dispatch leave event if visible
                      (when (gobj/get this k-visible)
-                       (dispatch! this model/event-leave
-                                  (model/leave-detail (or (gobj/get this k-last-prog) 0))))
+                       (du/dispatch! this model/event-leave
+                                  (clj->js (model/leave-detail (or (gobj/get this k-last-prog) 0)))))
                      (remove-listeners! this)
                      (teardown-observer! this)
                      (gobj/set this k-visible false)

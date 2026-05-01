@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-parallax.x-scroll-parallax
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-scroll-parallax.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -143,15 +144,6 @@
     (if (or (nil? n) (js/isNaN n)) 0.85 n)))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail-map]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     (clj->js detail-map)
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev)))
-
 ;; ── Transform application ───────────────────────────────────────────────────
 (defn- update-transforms!
   "Compute and apply parallax transforms to all slotted children.
@@ -201,7 +193,7 @@
         (when (or (nil? last-prog)
                   (> (js/Math.abs (- progress last-prog)) 0.001))
           (gobj/set el k-last-prog progress)
-          (dispatch! el model/event-progress (model/progress-detail progress))))))
+          (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress)))))))
   ;; Clear rAF handle
   (gobj/set el k-raf nil))
 
@@ -245,13 +237,13 @@
         ;; Run one immediate update to position children correctly
         (update-transforms! el)
         (announce! el live "Parallax section entered viewport")
-        (dispatch! el model/event-enter
-                   (model/progress-detail (or (gobj/get el k-last-prog) 0))))
+        (du/dispatch! el model/event-enter
+                   (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0)))))
       (do
         (detach-scroll-listener! el)
         (announce! el live "Parallax section left viewport")
-        (dispatch! el model/event-leave
-                   (model/progress-detail (or (gobj/get el k-last-prog) 0)))))))
+        (du/dispatch! el model/event-leave
+                   (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0))))))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
@@ -439,8 +431,8 @@
                      (clean-child-styles! this)
                      ;; Dispatch leave event if the element was visible
                      (when (gobj/get this k-visible)
-                       (dispatch! this model/event-leave
-                                  (model/progress-detail (or (gobj/get this k-last-prog) 0))))
+                       (du/dispatch! this model/event-leave
+                                  (clj->js (model/progress-detail (or (gobj/get this k-last-prog) 0)))))
                      (remove-listeners! this)
                      (teardown-observer! this)
                      (invalidate-child-cache! this)

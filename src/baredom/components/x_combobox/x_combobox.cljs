@@ -29,9 +29,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
 ;; ---------------------------------------------------------------------------
 ;; Style
 ;; ---------------------------------------------------------------------------
@@ -280,34 +277,34 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (set-attr! wrapper-el "part" "wrapper")
+    (du/set-attr! wrapper-el "part" "wrapper")
 
-    (set-attr! input-el "part"              "input")
-    (set-attr! input-el "type"              "text")
-    (set-attr! input-el "role"              "combobox")
-    (set-attr! input-el "aria-expanded"     "false")
-    (set-attr! input-el "aria-autocomplete" "list")
-    (set-attr! input-el "aria-controls"     lb-id)
-    (set-attr! input-el "autocomplete"      "off")
+    (du/set-attr! input-el "part"              "input")
+    (du/set-attr! input-el "type"              "text")
+    (du/set-attr! input-el "role"              "combobox")
+    (du/set-attr! input-el "aria-expanded"     "false")
+    (du/set-attr! input-el "aria-autocomplete" "list")
+    (du/set-attr! input-el "aria-controls"     lb-id)
+    (du/set-attr! input-el "autocomplete"      "off")
 
-    (set-attr! clear-el "part"       "clear")
-    (set-attr! clear-el "type"       "button")
-    (set-attr! clear-el "aria-label" "Clear")
-    (set-attr! clear-el "tabindex"   "-1")
+    (du/set-attr! clear-el "part"       "clear")
+    (du/set-attr! clear-el "type"       "button")
+    (du/set-attr! clear-el "aria-label" "Clear")
+    (du/set-attr! clear-el "tabindex"   "-1")
     (set! (.-textContent clear-el) "\u00d7")
 
-    (set-attr! chevron-el "part"        "chevron")
-    (set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! chevron-el "part"        "chevron")
+    (du/set-attr! chevron-el "aria-hidden" "true")
     (set! (.-innerHTML chevron-el)
           (str "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\""
                " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
                "<path d=\"M2.5 4.5L6 8L9.5 4.5\" stroke=\"currentColor\""
                " stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"))
 
-    (set-attr! panel-el "part" "panel")
-    (set-attr! panel-el "role" "listbox")
-    (set-attr! panel-el "id"   lb-id)
-    (set-attr! panel-el "data-placement" model/default-placement)
+    (du/set-attr! panel-el "part" "panel")
+    (du/set-attr! panel-el "role" "listbox")
+    (du/set-attr! panel-el "id"   lb-id)
+    (du/set-attr! panel-el "data-placement" model/default-placement)
 
     (.appendChild wrapper-el input-el)
     (.appendChild wrapper-el clear-el)
@@ -380,7 +377,7 @@
 
       (if (empty? visible)
         (let [^js msg (make-el "div")]
-          (set-attr! msg "part" "empty-msg")
+          (du/set-attr! msg "part" "empty-msg")
           (set! (.-textContent msg) model/empty-message)
           (.appendChild panel-el msg)
           (.removeAttribute input-el "aria-activedescendant"))
@@ -389,14 +386,14 @@
             (let [^js div    (make-el "div")
                   opt-id     (str opt-id-prefix idx)
                   highlight  (model/highlight-match (:label opt) query)]
-              (set-attr! div "part"       "option")
-              (set-attr! div "role"       "option")
-              (set-attr! div "id"         opt-id)
-              (set-attr! div "data-value" (:value opt))
+              (du/set-attr! div "part"       "option")
+              (du/set-attr! div "role"       "option")
+              (du/set-attr! div "id"         opt-id)
+              (du/set-attr! div "data-value" (:value opt))
               (when (= (:value opt) value)
-                (set-attr! div "aria-selected" "true"))
+                (du/set-attr! div "aria-selected" "true"))
               (when (= idx active-idx)
-                (set-attr! div "data-active" ""))
+                (du/set-attr! div "data-active" ""))
               (if highlight
                 (do
                   (.appendChild div (.createTextNode js/document (:before highlight)))
@@ -407,7 +404,7 @@
                 (set! (.-textContent div) (:label opt)))
               (.appendChild panel-el div)))
           (if (>= active-idx 0)
-            (set-attr! input-el "aria-activedescendant"
+            (du/set-attr! input-el "aria-activedescendant"
                        (str opt-id-prefix active-idx))
             (.removeAttribute input-el "aria-activedescendant")))))))
 
@@ -425,9 +422,9 @@
 
       (set! (.-placeholder input-el) placeholder)
       (set! (.-disabled input-el) disabled?)
-      (set-attr! input-el "aria-expanded" (str open?))
+      (du/set-attr! input-el "aria-expanded" (str open?))
 
-      (set-attr! panel-el "data-placement" placement)
+      (du/set-attr! panel-el "data-placement" placement)
 
       ;; Show selected label when panel is closed
       (when-not open?
@@ -435,32 +432,12 @@
 
       ;; data-has-value drives clear button visibility via CSS
       (if (not= value "")
-        (set-attr! el "data-has-value" "")
+        (du/set-attr! el "data-has-value" "")
         (.removeAttribute el "data-has-value")))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
 ;; ---------------------------------------------------------------------------
-(defn- dispatch-cancelable! [^js el event-name detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
-
-(defn- dispatch! [^js el event-name detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable false})))
-
 ;; ---------------------------------------------------------------------------
 ;; Open / Close (forward declarations)
 ;; ---------------------------------------------------------------------------
@@ -470,7 +447,7 @@
 (defn- open-panel! [^js el source]
   (when (and (not (du/has-attr? el model/attr-disabled))
              (not (du/has-attr? el model/attr-open)))
-    (let [allowed? (dispatch-cancelable! el model/event-toggle
+    (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open true :source source})]
       (when allowed?
         (.setAttribute el model/attr-open "")
@@ -486,7 +463,7 @@
 
 (defn- close-panel! [^js el source]
   (when (du/has-attr? el model/attr-open)
-    (let [allowed? (dispatch-cancelable! el model/event-toggle
+    (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open false :source source})]
       (when allowed?
         (.removeAttribute el model/attr-open)
@@ -500,7 +477,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- select-option! [^js el value label]
   (let [prev-value (or (du/get-attr el model/attr-value) "")
-        allowed?   (dispatch-cancelable!
+        allowed?   (du/dispatch-cancelable!
                     el model/event-change-request
                     #js {:value value :label label :previousValue prev-value})]
     (when allowed?
@@ -508,7 +485,7 @@
       (when-let [refs (du/getv el k-refs)]
         (set! (.-value (gobj/get refs "input")) label))
       (close-panel! el "select")
-      (dispatch! el model/event-change #js {:value value :label label}))))
+      (du/dispatch! el model/event-change #js {:value value :label label}))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -556,7 +533,7 @@
             (when-not (du/has-attr? el model/attr-open)
               (open-panel! el "input"))
             (render-panel! el)
-            (dispatch! el model/event-input #js {:query q})))
+            (du/dispatch! el model/event-input #js {:query q})))
 
         on-input-keydown
         (fn [^js evt]
@@ -604,7 +581,7 @@
         on-clear-click
         (fn [^js _evt]
           (let [prev-value (or (du/get-attr el model/attr-value) "")
-                allowed?   (dispatch-cancelable!
+                allowed?   (du/dispatch-cancelable!
                             el model/event-change-request
                             #js {:value "" :label "" :previousValue prev-value})]
             (when allowed?
@@ -614,7 +591,7 @@
                 (let [^js input-el (gobj/get refs "input")]
                   (set! (.-value input-el) "")
                   (.focus input-el)))
-              (dispatch! el model/event-change #js {:value "" :label ""}))))
+              (du/dispatch! el model/event-change #js {:value "" :label ""}))))
 
         on-chevron-pointerdown
         (fn [^js evt]

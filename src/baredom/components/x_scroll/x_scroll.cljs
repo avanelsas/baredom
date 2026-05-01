@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll.x-scroll
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-scroll.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -384,15 +385,6 @@
       (.setAttribute ^js (aget dots i) "aria-selected" (str (= i active))))))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
-(defn- dispatch! [^js el event-name detail-map cancelable?]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     (clj->js detail-map)
-                     :bubbles    true
-                     :composed   true
-                     :cancelable (boolean cancelable?)})]
-    (.dispatchEvent el ev)))
-
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 (declare go-to!)
 
@@ -447,12 +439,11 @@
                 dir       (model/direction-for-delta raw-delta)]
             ;; Dispatch loop event if crossing boundary (cancelable)
             (when (or (not crosses?)
-                      (let [ok? (dispatch! el model/event-loop
-                                           (model/loop-detail dir) true)]
-                        ok?))
+                      (du/dispatch-cancelable! el model/event-loop
+                                              (clj->js (model/loop-detail dir))))
               ;; Dispatch start event
-              (dispatch! el model/event-start
-                         (model/start-detail dir prev) false)
+              (du/dispatch! el model/event-start
+                           (clj->js (model/start-detail dir prev)))
               ;; Update model and position
               (let [new-m (assoc m :active-index target)]
                 (gobj/set el k-model new-m)
@@ -471,19 +462,19 @@
                   ;; Update live region
                   (set! (.-textContent live) (str "Slide " (inc target) " of " cnt)))
                 ;; Dispatch change and end events
-                (dispatch! el model/event-change
-                           (model/change-detail target prev) false)
+                (du/dispatch! el model/event-change
+                             (clj->js (model/change-detail target prev)))
                 ;; Schedule end event after transition
                 (if (prefers-reduced-motion?)
-                  (dispatch! el model/event-end
-                             (model/end-detail target) false)
+                  (du/dispatch! el model/event-end
+                             (clj->js (model/end-detail target)))
                   (let [{:keys [track]} (ensure-refs! el)
                         ^js track track]
                     (letfn [(handler [^js e]
                               (when (= (.-target e) track)
                                 (.removeEventListener track "transitionend" handler)
-                                (dispatch! el model/event-end
-                                           (model/end-detail target) false)))]
+                                (du/dispatch! el model/event-end
+                                             (clj->js (model/end-detail target)))))]
                       (.addEventListener track "transitionend" handler))))
                 ;; Restart autoplay timer
                 (restart-autoplay! el))))))))))

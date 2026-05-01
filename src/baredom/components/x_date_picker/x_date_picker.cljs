@@ -1,5 +1,6 @@
 (ns baredom.components.x-date-picker.x-date-picker
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
 
@@ -23,17 +24,6 @@
 (defn- make-el
   [tag]
   (.createElement js/document tag))
-
-(defn- dispatch!
-  [^js el event-name cancelable detail]
-  (let [^js ev (js/CustomEvent.
-                event-name
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable (boolean cancelable)})]
-    (.dispatchEvent el ev)
-    ev))
 
 ;; ---------------------------------------------------------------------------
 ;; Read state from element attrs
@@ -275,14 +265,14 @@
           req-detail (if (= mode :single)
                        #js {:value (model/date->iso d) :mode mode-s :reason reason}
                        #js {:date (model/date->iso d) :mode mode-s :reason reason})
-          ^js ev (dispatch! el model/event-change-request true req-detail)]
-      (when-not (.-defaultPrevented ev)
+          allowed? (du/dispatch-cancelable! el model/event-change-request req-detail)]
+      (when allowed?
         (if (= mode :single)
           (let [iso (model/date->iso d)]
             (set-single-value! el d)
             (read-state! el)
             (render! el)
-            (dispatch! el model/event-change false
+            (du/dispatch! el model/event-change
                        #js {:value iso :mode mode-s :reason reason})
             ;; Auto-close if close-on-select
             (when (.hasAttribute el model/attr-close-on-select)
@@ -339,7 +329,7 @@
                   chg-detail (cond-> #js {:mode mode-s :reason reason}
                                s-iso (doto (gobj/set "start" s-iso))
                                e-iso (doto (gobj/set "end" e-iso)))]
-              (dispatch! el model/event-change false chg-detail))))))))
+              (du/dispatch! el model/event-change chg-detail))))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Input commit
@@ -354,24 +344,24 @@
         canon   (when state (gobj/get state "canon"))
         mode    (:mode canon)
         mode-s  (if (= mode :range) "range" "single")]
-    (dispatch! el model/event-input false #js {:value val :mode mode-s})
+    (du/dispatch! el model/event-input #js {:value val :mode mode-s})
     (if (= mode :single)
       (let [{:keys [ok? date]} (model/parse-display->single val)]
         (when ok?
           (let [iso    (model/date->iso date)
-                ^js ev (dispatch! el model/event-change-request true
+                ^js ev (du/dispatch-cancelable! el model/event-change-request
                                   #js {:value iso :mode mode-s :reason reason})]
             (when-not (.-defaultPrevented ev)
               (set-single-value! el date)
               (read-state! el)
               (render! el)
-              (dispatch! el model/event-change false
+              (du/dispatch! el model/event-change
                          #js {:value iso :mode mode-s :reason reason})))))
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
         (when ok?
           (let [s-iso  (model/date->iso start)
                 e-iso  (model/date->iso end)
-                ^js ev (dispatch! el model/event-change-request true
+                ^js ev (du/dispatch-cancelable! el model/event-change-request
                                   #js {:start s-iso :end e-iso
                                        :mode mode-s :reason reason})]
             (when-not (.-defaultPrevented ev)
@@ -380,7 +370,7 @@
               (gobj/set el k-range-step 0)
               (read-state! el)
               (render! el)
-              (dispatch! el model/event-change false
+              (du/dispatch! el model/event-change
                          #js {:start s-iso :end e-iso
                               :mode mode-s :reason reason}))))))))
 
@@ -661,7 +651,7 @@
         canon   (when state (gobj/get state "canon"))
         mode-s  (if (= (:mode canon) :range) "range" "single")]
     (gobj/set el k-display (when inp (.-value inp)))
-    (dispatch! el model/event-input false
+    (du/dispatch! el model/event-input
                #js {:value (when inp (.-value inp)) :mode mode-s})))
 
 (defn- on-input-keydown!

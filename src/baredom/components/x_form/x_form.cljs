@@ -1,5 +1,6 @@
 (ns baredom.components.x-form.x-form
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]
             [baredom.components.x-form.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -29,18 +30,6 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-el [tag] (.createElement js/document tag))
 
-(defn- set-attr! [^js el attr val]
-  (.setAttribute el attr val))
-
-(defn- remove-attr! [^js el attr]
-  (.removeAttribute el attr))
-
-(defn- has-attr? [^js el attr]
-  (.hasAttribute el attr))
-
-(defn- get-attr [^js el attr]
-  (.getAttribute el attr))
-
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
@@ -53,8 +42,8 @@
 
       (set! (.-textContent style-el) style-text)
 
-      (set-attr! form-el "part"       "root")
-      (set-attr! form-el "novalidate" "")
+      (du/set-attr! form-el "part"       "root")
+      (du/set-attr! form-el "novalidate" "")
 
       (.appendChild form-el slot-el)
       (.appendChild root style-el)
@@ -67,9 +56,9 @@
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
   (model/normalize
-   {:loading-raw      (get-attr el model/attr-loading)
-    :novalidate-raw   (when (has-attr? el model/attr-novalidate) "")
-    :autocomplete-raw (get-attr el model/attr-autocomplete)}))
+   {:loading-raw      (du/get-attr el model/attr-loading)
+    :novalidate-raw   (when (du/has-attr? el model/attr-novalidate) "")
+    :autocomplete-raw (du/get-attr el model/attr-autocomplete)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render
@@ -78,12 +67,12 @@
   (when-let [refs (gobj/get el k-refs)]
     (let [^js form-el (gobj/get refs "form")
           m           (read-model el)]
-      (set-attr! form-el "autocomplete" (:autocomplete m))
+      (du/set-attr! form-el "autocomplete" (:autocomplete m))
       (if (:loading? m)
-        (do (set-attr! form-el "aria-busy"     "true")
-            (set-attr! form-el "data-loading"  ""))
-        (do (remove-attr! form-el "aria-busy")
-            (remove-attr! form-el "data-loading"))))))
+        (do (du/set-attr! form-el "aria-busy"     "true")
+            (du/set-attr! form-el "data-loading"  ""))
+        (do (du/remove-attr! form-el "aria-busy")
+            (du/remove-attr! form-el "data-loading"))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Validation
@@ -122,16 +111,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-(defn- dispatch! [^js el event-name detail cancelable?]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail     detail
-         :bubbles    true
-         :composed   true
-         :cancelable cancelable?})))
-
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
@@ -142,7 +121,7 @@
       (let [valid? (or (:novalidate? m) (report-fields-validity! el))]
         (when valid?
           (let [values (collect-values el)]
-            (dispatch! el model/event-submit #js {:values values} true)))))))
+            (du/dispatch-cancelable! el model/event-submit #js {:values values})))))))
 
 (defn- handle-reset! [^js el ^js _e]
   (let [fields (.querySelectorAll el "[name]")]
@@ -150,7 +129,7 @@
       (let [^js field (aget fields i)]
         (when (.-formResetCallback field)
           (.formResetCallback field)))))
-  (dispatch! el model/event-reset #js {} false))
+  (du/dispatch! el model/event-reset #js {}))
 
 (defn- handle-click! [^js el ^js e]
   (when-let [^js btn (.closest (.-target e) "button,input[type=submit],input[type=reset]")]
@@ -209,22 +188,22 @@
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (has-attr? this attr-name)))
+        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
         :set (fn [v] (this-as ^js this
                               (if (boolean v)
-                                (set-attr! this attr-name "")
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name "")
+                                (du/remove-attr! this attr-name))))}))
 
 (defn- define-string-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
    #js {:configurable true
         :enumerable   true
-        :get (fn [] (this-as ^js this (or (get-attr this attr-name) "")))
+        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
         :set (fn [v] (this-as ^js this
                               (if (and (some? v) (not= v js/undefined))
-                                (set-attr! this attr-name (str v))
-                                (remove-attr! this attr-name))))}))
+                                (du/set-attr! this attr-name (str v))
+                                (du/remove-attr! this attr-name))))}))
 
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
@@ -271,15 +250,15 @@
             (this-as ^js this
                      (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
                        (if (or (nil? msg) (= msg "") (= msg js/undefined))
-                         (remove-attr! field "error")
-                         (set-attr! field "error" msg))))))
+                         (du/remove-attr! field "error")
+                         (du/set-attr! field "error" msg))))))
 
     (aset proto "clearErrors"
           (fn []
             (this-as ^js this
                      (let [fields (.querySelectorAll this "[error]")]
                        (dotimes [i (.-length fields)]
-                         (remove-attr! (aget fields i) "error"))))))
+                         (du/remove-attr! (aget fields i) "error"))))))
 
     cls))
 

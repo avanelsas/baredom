@@ -1,6 +1,7 @@
 (ns baredom.components.x-divider.x-divider
   (:require
-   [goog.object :as gobj]
+[baredom.utils.dom :as du]
+               [goog.object :as gobj]
    [baredom.components.x-divider.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -106,19 +107,17 @@
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
 (defn- make-el [tag] (.createElement js/document tag))
-(defn- set-attr! [^js el k v] (.setAttribute el k v))
-
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root      (.attachShadow el #js {:mode "open"})
         ^js style     (make-el "style")
         ^js container (make-el "div")]
     (set! (.-textContent style) style-text)
-    (set-attr! container "part" "container")
+    (du/set-attr! container "part" "container")
 
     ;; Build the no-label subtree: single line div
     (let [^js line (make-el "div")]
-      (set-attr! line "part" "line")
+      (du/set-attr! line "part" "line")
       (.appendChild container line))
 
     (.appendChild root style)
@@ -151,11 +150,11 @@
               ^js slot-el    (make-el "slot")
               ^js label-text (make-el "span")
               ^js line-right (make-el "div")]
-          (set-attr! line-left  "part" "line-left")
-          (set-attr! label-wrap "part" "label")
-          (set-attr! slot-el    "name" "label")
-          (set-attr! label-text "part" "label-text")
-          (set-attr! line-right "part" "line-right")
+          (du/set-attr! line-left  "part" "line-left")
+          (du/set-attr! label-wrap "part" "label")
+          (du/set-attr! slot-el    "name" "label")
+          (du/set-attr! label-text "part" "label-text")
+          (du/set-attr! line-right "part" "line-right")
           (.appendChild label-wrap slot-el)
           (.appendChild label-wrap label-text)
           (.appendChild container line-left)
@@ -177,7 +176,7 @@
       (let [^js container (gobj/get refs "container")]
         (remove-all-children! container)
         (let [^js line (make-el "div")]
-          (set-attr! line "part" "line")
+          (du/set-attr! line "part" "line")
           (.appendChild container line)
           (gobj/set refs "line-left"  nil)
           (gobj/set refs "label-wrap" nil)
