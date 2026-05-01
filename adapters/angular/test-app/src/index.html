@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BareDOM Angular Adapter Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #ffffff;
+      --page-text: #1c1917;
+      --btn-bg: #f5f5f4;
+      --btn-border: #d6d3d1;
+      --btn-hover: #e7e5e4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0c0a09;
+        --page-text: #e7e5e4;
+        --btn-bg: #1c1917;
+        --btn-border: #44403c;
+        --btn-hover: #292524;
+      }
+    }
+    body {
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--page-text);
+    }
+    button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: inherit;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: var(--btn-hover);
+    }
+  </style>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

@@ -4,4 +4,6 @@
            :requires ([release])
            :task (release/-main *command-line-args*)}
   generate-types {:doc "Generate .d.ts and custom-elements.json from model metadata"
-                  :task (load-file "scripts/generate_types.bb")}}}
+                  :task (load-file "scripts/generate_types.bb")}
+  generate-angular {:doc "Generate Angular directives from model metadata"
+                    :task (load-file "scripts/generate_angular.bb")}}}
