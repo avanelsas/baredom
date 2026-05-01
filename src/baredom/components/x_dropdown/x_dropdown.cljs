@@ -365,25 +365,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -395,10 +376,10 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Reflected attribute properties
-    (define-bool-prop!   proto "open"      model/attr-open)
-    (define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (define-string-prop! proto "label"     model/attr-label)
-    (define-string-prop! proto "placement" model/attr-placement)
+    (du/define-bool-prop!   proto "open"      model/attr-open)
+    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+    (du/define-string-prop! proto "label"     model/attr-label)
+    (du/define-string-prop! proto "placement" model/attr-placement)
 
     ;; Public methods
     ;; Note: open/close are named show/hide to avoid conflict with the open property

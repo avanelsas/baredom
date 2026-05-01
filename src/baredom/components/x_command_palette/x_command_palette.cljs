@@ -528,20 +528,6 @@
 ;; Public element API helpers
 ;; ---------------------------------------------------------------------------
 
-(defn- define-bool-prop!
-  [^js proto prop-name attr-name]
-  (.defineProperty js/Object proto prop-name
-                   #js {:configurable true
-                        :enumerable   true
-                        :get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this attr-name)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr-name "")
-                                          (.removeAttribute this attr-name))))}))
-
 (defn- define-items-prop!
   [^js proto]
   (.defineProperty js/Object proto "items"
@@ -583,8 +569,8 @@
   (let [klass (js* "(class extends HTMLElement {})")]
     (set! (.-observedAttributes klass) model/observed-attributes)
     (let [proto (.-prototype klass)]
-      (define-bool-prop!  proto "open"     model/attr-open)
-      (define-bool-prop!  proto "disabled" model/attr-disabled)
+      (du/define-bool-prop!  proto "open"     model/attr-open)
+      (du/define-bool-prop!  proto "disabled" model/attr-disabled)
       (define-items-prop! proto)
       (define-methods!    proto)
       (set! (.-connectedCallback proto)

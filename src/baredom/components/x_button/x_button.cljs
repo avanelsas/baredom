@@ -635,21 +635,6 @@
     (sync-noninteractive-state! el)
     (render! el state)))
 
-(defn define-bool-prop!
-  [proto prop-name attr-name]
-  (.defineProperty
-   js/Object
-   proto
-   prop-name
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as this
-                        (du/has-attr? this attr-name)))
-        :set (fn [value]
-               (this-as this
-                        (du/set-bool-attr! this attr-name (boolean value))))}))
-
 (defn- element-class []
   (let [klass (js* "(class extends HTMLElement {})")]
 
@@ -665,9 +650,7 @@
     (set! (.-attributeChangedCallback (.-prototype klass))
           (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
 
-    (define-bool-prop! (.-prototype klass) "disabled" model/attr-disabled)
-    (define-bool-prop! (.-prototype klass) "loading"  model/attr-loading)
-    (define-bool-prop! (.-prototype klass) "pressed"  model/attr-pressed)
+    (du/install-properties! (.-prototype klass) model/property-api)
 
     klass))
 

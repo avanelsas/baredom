@@ -348,18 +348,6 @@
 
 ;; ---- Property descriptors ----
 
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (.hasAttribute this attr-name)))
-        :set (fn [v]
-               (this-as ^js this
-                        (if v
-                          (.setAttribute this attr-name "")
-                          (.removeAttribute this attr-name))))}))
-
 (defn- define-str-prop! [^js proto prop-name attr-name]
   (.defineProperty
    js/Object proto prop-name
@@ -411,8 +399,8 @@
     (set! (.-attributeChangedCallback (.-prototype klass))
           (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
 
-    (define-bool-prop! (.-prototype klass) "open"      model/attr-open)
-    (define-bool-prop! (.-prototype klass) "disabled"  model/attr-disabled)
+    (du/define-bool-prop! (.-prototype klass) "open"      model/attr-open)
+    (du/define-bool-prop! (.-prototype klass) "disabled"  model/attr-disabled)
     (define-str-prop!  (.-prototype klass) "placement" model/attr-placement)
     (define-str-prop!  (.-prototype klass) "offset"    model/attr-offset)
     (define-str-prop!  (.-prototype klass) "zIndex"    model/attr-z-index)

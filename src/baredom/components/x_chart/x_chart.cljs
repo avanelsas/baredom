@@ -779,18 +779,6 @@
                           (.setAttribute this attr-name (str v))
                           (.removeAttribute this attr-name))))}))
 
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (.hasAttribute this attr-name)))
-        :set (fn [v]
-               (this-as ^js this
-                        (if v
-                          (.setAttribute this attr-name "")
-                          (.removeAttribute this attr-name))))}))
-
 (defn- define-num-prop! [^js proto prop-name attr-name default-val]
   (.defineProperty
    js/Object proto prop-name
@@ -843,11 +831,11 @@
       (define-str-prop!  proto "selected" model/attr-selected)
       (define-num-prop!  proto "height"   model/attr-height  model/default-height)
       (define-num-prop!  proto "padding"  model/attr-padding model/default-padding)
-      (define-bool-prop! proto "grid"     model/attr-grid)
-      (define-bool-prop! proto "axes"     model/attr-axes)
-      (define-bool-prop! proto "tooltip"  model/attr-tooltip)
-      (define-bool-prop! proto "disabled" model/attr-disabled)
-      (define-bool-prop! proto "loading"  model/attr-loading)
+      (du/define-bool-prop! proto "grid"     model/attr-grid)
+      (du/define-bool-prop! proto "axes"     model/attr-axes)
+      (du/define-bool-prop! proto "tooltip"  model/attr-tooltip)
+      (du/define-bool-prop! proto "disabled" model/attr-disabled)
+      (du/define-bool-prop! proto "loading"  model/attr-loading)
       (define-data-prop! proto))
 
     klass))

@@ -574,43 +574,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this
-                              (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (.setAttribute this attr-name (str v))
-                                (.removeAttribute this attr-name))))}))
-
-(defn- define-int-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn []
-               (this-as ^js this
-                        (let [v (du/get-attr this attr-name)]
-                          (when (some? v)
-                            (let [n (js/parseInt v 10)]
-                              (when-not (js/isNaN n) n))))))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (and (some? v) (not= v js/undefined))
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -624,13 +587,13 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Properties
-    (define-string-prop! proto "accept"   model/attr-accept)
-    (define-string-prop! proto "name"     model/attr-name)
-    (define-bool-prop!   proto "multiple" model/attr-multiple)
-    (define-bool-prop!   proto "disabled" model/attr-disabled)
-    (define-bool-prop!   proto "required" model/attr-required)
-    (define-int-prop!    proto "maxSize"  model/attr-max-size)
-    (define-int-prop!    proto "maxFiles" model/attr-max-files)
+    (du/define-string-prop! proto "accept"   model/attr-accept)
+    (du/define-string-prop! proto "name"     model/attr-name)
+    (du/define-bool-prop!   proto "multiple" model/attr-multiple)
+    (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+    (du/define-bool-prop!   proto "required" model/attr-required)
+    (du/define-number-prop! proto "maxSize" model/attr-max-size 0)
+    (du/define-number-prop! proto "maxFiles" model/attr-max-files 0)
 
     ;; Read-only files property
     (.defineProperty

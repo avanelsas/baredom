@@ -420,43 +420,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this
-                              (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (.setAttribute this attr-name (str v))
-                                (.removeAttribute this attr-name))))}))
-
-(defn- define-int-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn []
-               (this-as ^js this
-                        (let [v (du/get-attr this attr-name)]
-                          (when (some? v)
-                            (let [n (js/parseInt v 10)]
-                              (when-not (js/isNaN n) n))))))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (and (some? v) (not= v js/undefined))
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -468,11 +431,11 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Reflected attribute properties
-    (define-string-prop! proto "text"      model/attr-text)
-    (define-string-prop! proto "placement" model/attr-placement)
-    (define-int-prop!    proto "delay"     model/attr-delay)
-    (define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (define-bool-prop!   proto "open"      model/attr-open)
+    (du/define-string-prop! proto "text"      model/attr-text)
+    (du/define-string-prop! proto "placement" model/attr-placement)
+    (du/define-number-prop! proto "delay" model/attr-delay model/default-delay)
+    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+    (du/define-bool-prop!   proto "open"      model/attr-open)
 
     ;; Public methods
     (aset proto "show"

@@ -352,25 +352,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) nil)))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -381,9 +362,9 @@
     (.defineProperty js/Object cls "observedAttributes"
                      #js {:get (fn [] model/observed-attributes)})
 
-    (define-bool-prop!   proto "disabled" model/attr-disabled)
-    (define-bool-prop!   proto "required" model/attr-required)
-    (define-string-prop! proto "value"    model/attr-value)
+    (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+    (du/define-bool-prop!   proto "required" model/attr-required)
+    (du/define-string-prop! proto "value"    model/attr-value)
 
     (aset proto "connectedCallback"
           (fn [] (this-as ^js this (connected! this))))

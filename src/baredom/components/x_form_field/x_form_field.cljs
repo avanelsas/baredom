@@ -354,25 +354,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined))
-                                (du/set-attr! this attr-name (str v))
-                                (du/remove-attr! this attr-name))))}))
-
-(defn- define-bool-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (du/has-attr? this attr-name)))
-        :set (fn [v] (this-as ^js this (du/set-bool-attr! this attr-name (boolean v))))}))
-
 ;; Special value property: also syncs input.value when set
 (defn- define-value-prop! [^js proto]
   (.defineProperty
@@ -408,16 +389,16 @@
     (define-value-prop! proto)
 
     ;; String properties
-    (define-string-prop! proto "label"        model/attr-label)
-    (define-string-prop! proto "type"         model/attr-type)
-    (define-string-prop! proto "name"         model/attr-name)
-    (define-string-prop! proto "placeholder"  model/attr-placeholder)
-    (define-string-prop! proto "autocomplete" model/attr-autocomplete)
+    (du/define-string-prop! proto "label"        model/attr-label "")
+    (du/define-string-prop! proto "type"         model/attr-type "")
+    (du/define-string-prop! proto "name"         model/attr-name "")
+    (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
+    (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
 
     ;; Boolean properties
-    (define-bool-prop! proto "disabled" model/attr-disabled)
-    (define-bool-prop! proto "readOnly" model/attr-readonly)
-    (define-bool-prop! proto "required" model/attr-required)
+    (du/define-bool-prop! proto "disabled" model/attr-disabled)
+    (du/define-bool-prop! proto "readOnly" model/attr-readonly)
+    (du/define-bool-prop! proto "required" model/attr-required)
 
     ;; Lifecycle
     (aset proto "connectedCallback"

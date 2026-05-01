@@ -862,34 +862,6 @@
 ;; Property definitions
 ;; ---------------------------------------------------------------------------
 
-(defn- define-string-prop!
-  [^js proto prop-name attr-name]
-  (.defineProperty js/Object proto prop-name
-                   #js {:configurable true
-                        :enumerable   true
-                        :get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr-name) nil)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (and (string? v) (not= v ""))
-                                          (.setAttribute this attr-name v)
-                                          (.removeAttribute this attr-name))))}))
-
-(defn- define-bool-prop!
-  [^js proto prop-name attr-name]
-  (.defineProperty js/Object proto prop-name
-                   #js {:configurable true
-                        :enumerable   true
-                        :get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this attr-name)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr-name "")
-                                          (.removeAttribute this attr-name))))}))
-
 (defn- define-methods!
   [^js proto]
   (aset proto "focus"
@@ -932,14 +904,14 @@
     (set! (.-attributeChangedCallback proto)
           (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
 
-    (define-string-prop! proto "mode"      model/attr-mode)
-    (define-string-prop! proto "value"     model/attr-value)
-    (define-string-prop! proto "start"     model/attr-start)
-    (define-string-prop! proto "end"       model/attr-end)
-    (define-bool-prop!   proto "open"      "open")
-    (define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (define-bool-prop!   proto "readOnly"  model/attr-readonly)
-    (define-bool-prop!   proto "required"  model/attr-required)
+    (du/define-string-prop! proto "mode"      model/attr-mode)
+    (du/define-string-prop! proto "value"     model/attr-value)
+    (du/define-string-prop! proto "start"     model/attr-start)
+    (du/define-string-prop! proto "end"       model/attr-end)
+    (du/define-bool-prop!   proto "open"      "open")
+    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+    (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
+    (du/define-bool-prop!   proto "required"  model/attr-required)
     (define-methods! proto)
 
     klass))

@@ -234,34 +234,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
 ;; ---------------------------------------------------------------------------
-(defn- define-string-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (or (du/get-attr this attr-name) "")))
-        :set (fn [v] (this-as ^js this
-                              (if (and (some? v) (not= v js/undefined) (not= v ""))
-                                (.setAttribute this attr-name (str v))
-                                (.removeAttribute this attr-name))))}))
-
-(defn- define-int-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn []
-               (this-as ^js this
-                        (let [v (du/get-attr this attr-name)]
-                          (when (some? v)
-                            (let [n (js/parseInt v 10)]
-                              (when-not (js/isNaN n) n))))))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (and (some? v) (not= v js/undefined))
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
@@ -273,9 +245,9 @@
                      #js {:get (fn [] model/observed-attributes)})
 
     ;; Properties
-    (define-string-prop! proto "preset"    model/attr-preset)
-    (define-string-prop! proto "animation" model/attr-animation)
-    (define-int-prop!    proto "count"     model/attr-count)
+    (du/define-string-prop! proto "preset"    model/attr-preset "")
+    (du/define-string-prop! proto "animation" model/attr-animation "")
+    (du/define-number-prop! proto "count" model/attr-count model/default-count)
 
     ;; Lifecycle
     (aset proto "connectedCallback"

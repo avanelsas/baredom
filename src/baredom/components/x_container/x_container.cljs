@@ -26,21 +26,6 @@
     :fluid (du/has-attr? el model/attr-fluid)
     :label (du/get-attr el model/attr-label)}))
 
-(defn define-bool-prop!
-  [^js proto prop attr]
-  (.defineProperty
-   js/Object
-   proto
-   prop
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as ^js this
-                        (du/has-attr? this attr)))
-        :set (fn [v]
-               (this-as ^js this
-                        (du/set-bool-attr! this attr (boolean v))))}))
-
 (defn define-default-true-bool-prop!
   [^js proto prop attr]
   (.defineProperty
@@ -210,7 +195,7 @@
           (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
 
     (define-default-true-bool-prop! (.-prototype klass) "center" model/attr-center)
-    (define-bool-prop! (.-prototype klass) "fluid" model/attr-fluid)
+    (du/define-bool-prop! (.-prototype klass) "fluid" model/attr-fluid)
 
     klass))
 
