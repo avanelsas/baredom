@@ -522,8 +522,14 @@
   (remove-listeners! el))
 
 (defn- attribute-changed!
-  [^js el _name _old _new]
-  (render! el))
+  [^js el name _old new-val]
+  (render! el)
+  ;; Focus input when opened (whether via property, method, or setAttribute)
+  (when (and (= name model/attr-open) (some? new-val))
+    (let [refs (gobj/get el k-refs)
+          ^js input (when refs (gobj/get refs "input"))]
+      (when input
+        (js/requestAnimationFrame (fn [] (.focus input)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Public element API helpers
