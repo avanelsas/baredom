@@ -2,6 +2,18 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.7.0] - 2026-05-02
+
+### Changed
+
+- **Component factory** — All 91 components now register via `component/register!`, eliminating manual `element-class` boilerplate. Shared utility modules (`baredom.utils.dom`, `baredom.utils.model`, `baredom.utils.component`) drive lifecycle wiring, property accessors, event dispatch, and attribute helpers. Net reduction of ~2 285 lines.
+
+### Fixed
+
+- **x-command-palette** — Search field now correctly receives focus when the palette opens.
+- **x-package.json** — Fixed export ordering and regenerated type declarations.
+- **Test runner** — Fixed `classList` TypeError caused by `dom_test` cleanup removing the `cljs-test-display` root element. Suppressed x-image missing-alt warnings in test fixtures.
+
 ## [2.6.0] - 2026-04-30
 
 ### Added
