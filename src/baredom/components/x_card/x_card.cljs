@@ -1,6 +1,7 @@
 (ns baredom.components.x-card.x-card
   (:require
-   [baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+               [baredom.utils.dom :as du]
    [baredom.components.x-card.model :as model]))
 
 (def key-root "__x_card_root")
@@ -263,10 +264,10 @@
   (when (du/initialized? el key-initialized)
     (render! el)))
 
-(defn install-property-accessors! [^js klass]
+(defn install-property-accessors! [^js proto]
   (.defineProperty
    js/Object
-   (.-prototype klass)
+   proto
    "interactive"
    #js {:configurable true
         :enumerable true
@@ -281,7 +282,7 @@
 
   (.defineProperty
    js/Object
-   (.-prototype klass)
+   proto
    "disabled"
    #js {:configurable true
         :enumerable true
@@ -294,31 +295,10 @@
                           (.setAttribute this model/attr-disabled "")
                           (.removeAttribute this model/attr-disabled))))}))
 
-(defn element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-      (fn []
-        (this-as this
-                 (connected-callback this))))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-      (fn []
-        (this-as this
-                 (disconnected-callback this))))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-      (fn [name old-value new-value]
-        (this-as this
-                 (attribute-changed-callback this name old-value new-value))))
-
-    (install-property-accessors! klass)
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :disconnected-fn        disconnected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,6 +1,7 @@
 (ns baredom.components.x-notification-center.x-notification-center
   (:require
-[baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-notification-center.model :as model]
    [baredom.components.x-alert.model :as alert-model]))
@@ -217,51 +218,37 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     (apply-position! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (remove-listeners! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n _old-val _new-val]
-            (this-as ^js this
-                     (cond
-                       (= n model/attr-position) (apply-position! this)
-                       (= n model/attr-max)      (gobj/set this k-max (model/parse-max (.getAttribute this model/attr-max))))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-
-    (set! (.-push (.-prototype klass))
-          (fn [opts]
-            (this-as ^js this (push! this opts))))
-
-    (set! (.-clear (.-prototype klass))
-          (fn []
-            (this-as ^js this (clear! this))))
-
-    klass))
-
-;; ── Public API ────────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (apply-position! el)
   nil)
 
+(defn- disconnected! [^js el]
+  (remove-listeners! el)
+  nil)
+
+(defn- attribute-changed! [^js el n _old-val _new-val]
+  (cond
+  (= n model/attr-position) (apply-position! el)
+  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (.getAttribute el model/attr-max))))
+  nil)
+
+(defn- install-methods! [^js proto]
+  (set! (.-push proto)
+        (fn [opts]
+          (this-as ^js this (push! this opts))))
+  (set! (.-clear proto)
+        (fn []
+          (this-as ^js this (clear! this)))))
+
+;; ── Public API ────────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     (fn [proto] (install-property-accessors! proto) (install-methods! proto))}))

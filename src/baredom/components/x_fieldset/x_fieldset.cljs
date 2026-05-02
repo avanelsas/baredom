@@ -1,5 +1,6 @@
 (ns baredom.components.x-fieldset.x-fieldset
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-fieldset.model :as model]))
 
@@ -210,31 +211,15 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    ;; observedAttributes
-    (set! (.-observedAttributes cls) model/observed-attributes)
-
-    ;; String properties
-    (du/define-string-prop! proto "legend" model/attr-legend)
-
-    ;; Boolean properties
-    (du/define-bool-prop! proto "disabled" model/attr-disabled)
-
-    ;; Lifecycle
-    (set! (.-connectedCallback proto)
-          (fn [] (this-as ^js this (connected! this))))
-
-    (set! (.-disconnectedCallback proto)
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (set! (.-attributeChangedCallback proto)
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "legend" model/attr-legend)
+  (du/define-bool-prop! proto "disabled" model/attr-disabled))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

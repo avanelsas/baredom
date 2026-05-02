@@ -1,5 +1,6 @@
 (ns baredom.components.x-tooltip.x-tooltip
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.components.x-tooltip.model :as model]
             [baredom.utils.dom :as du]))
 
@@ -38,7 +39,7 @@
    "--x-tooltip-radius:var(--x-radius-md,6px);"
    "--x-tooltip-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
    "--x-tooltip-z:var(--x-z-dropdown,1000);"
-   "--x-tooltip-max-width:min(200px,calc(100% - 2rem));"
+   "--x-tooltip-max-width:min(280px,calc(100vw - 2rem));"
    "--x-tooltip-font-size:var(--x-font-size-xs,0.75rem);"
    "--x-tooltip-arrow-size:6px;"
    "--x-tooltip-offset:4px;"
@@ -423,39 +424,22 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Reflected attribute properties
-    (du/define-string-prop! proto "text"      model/attr-text)
-    (du/define-string-prop! proto "placement" model/attr-placement)
-    (du/define-number-prop! proto "delay" model/attr-delay model/default-delay)
-    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (du/define-bool-prop!   proto "open"      model/attr-open)
-
-    ;; Public methods
-    (aset proto "show"
-          (fn [] (this-as ^js this (do-show! this true))))
-
-    (aset proto "hide"
-          (fn [] (this-as ^js this (do-hide! this))))
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "text"      model/attr-text)
+  (du/define-string-prop! proto "placement" model/attr-placement)
+  (du/define-number-prop! proto "delay" model/attr-delay model/default-delay)
+  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+  (du/define-bool-prop!   proto "open"      model/attr-open)
+  (aset proto "show"
+        (fn [] (this-as ^js this (do-show! this true))))
+  (aset proto "hide"
+        (fn [] (this-as ^js this (do-hide! this)))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

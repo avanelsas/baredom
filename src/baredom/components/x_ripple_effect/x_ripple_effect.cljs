@@ -1,6 +1,7 @@
 (ns baredom.components.x-ripple-effect.x-ripple-effect
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-ripple-effect.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -268,38 +269,26 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (remove-listeners! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name _old-val _new-val]
-            ;; Attributes are read at click time, no render needed
-            nil))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
   nil)
 
+(defn- disconnected! [^js el]
+  (remove-listeners! el)
+  nil)
+
+(defn- attribute-changed! [^js _el _name _old-val _new-val]
+  ;; Attributes are read at click time, no render needed
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-dock.x-liquid-dock
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-liquid-dock.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -860,68 +861,55 @@
           (start-animation! el))))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (let [m (read-model this)]
-                       (gobj/set this k-model m)
-                       (gobj/set this k-mouse #js {:x 0 :y 0 :active false})
-                       (gobj/set this k-blobs #js [])
-                       (gobj/set this k-blob-state #js [])
-                       (gobj/set this k-items-rect #js [])
-                       (gobj/set this k-focus-idx -1)
-                       (gobj/set this k-ripple-burst 0)
-                       (ensure-refs! this)
-                       (apply-host-style! this m)
-                       (set-a11y! this)
-                       (remove-listeners! this)
-                       (add-listeners! this)
-                       ;; ResizeObserver (clean up any prior observer on reconnect)
-                       (when-let [^js old-ro (gobj/get this k-ro)]
-                         (.disconnect old-ro))
-                       (let [ro (js/ResizeObserver.
-                                 (fn [_] (on-resize! this)))]
-                         (gobj/set this k-ro ro)
-                         (.observe ro this))
-                       ;; Defer blob/rect setup to after slot assignment
-                       (js/requestAnimationFrame
-                        (fn [_]
-                          (reconcile-blobs! this)
-                          (cache-item-rects! this)
-                          (start-animation! this))))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (stop-animation! this)
-                     (remove-listeners! this)
-                     (reset-item-transforms! this)
-                     (when-let [^js ro (gobj/get this k-ro)]
-                       (.disconnect ro)
-                       (gobj/set this k-ro nil))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-from-attrs! this))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (let [m (read-model el)]
+  (gobj/set el k-model m)
+  (gobj/set el k-mouse #js {:x 0 :y 0 :active false})
+  (gobj/set el k-blobs #js [])
+  (gobj/set el k-blob-state #js [])
+  (gobj/set el k-items-rect #js [])
+  (gobj/set el k-focus-idx -1)
+  (gobj/set el k-ripple-burst 0)
+  (ensure-refs! el)
+  (apply-host-style! el m)
+  (set-a11y! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  ;; ResizeObserver (clean up any prior observer on reconnect)
+  (when-let [^js old-ro (gobj/get el k-ro)]
+  (.disconnect old-ro))
+  (let [ro (js/ResizeObserver.
+  (fn [_] (on-resize! el)))]
+  (gobj/set el k-ro ro)
+  (.observe ro el))
+  ;; Defer blob/rect setup to after slot assignment
+  (js/requestAnimationFrame
+  (fn [_]
+  (reconcile-blobs! el)
+  (cache-item-rects! el)
+  (start-animation! el))))
   nil)
 
+(defn- disconnected! [^js el]
+  (stop-animation! el)
+  (remove-listeners! el)
+  (reset-item-transforms! el)
+  (when-let [^js ro (gobj/get el k-ro)]
+  (.disconnect ro)
+  (gobj/set el k-ro nil))
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-from-attrs! el))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

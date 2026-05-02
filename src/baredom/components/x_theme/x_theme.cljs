@@ -1,6 +1,7 @@
 (ns baredom.components.x-theme.x-theme
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-theme.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
@@ -50,26 +51,13 @@
         :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (connected! this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (disconnected! this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (install-preset-property! (.-prototype klass))
-
-    klass))
-
 ;; ── Registration ────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
 
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-preset-property!
+     }))

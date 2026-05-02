@@ -6,8 +6,8 @@
             [baredom.components.x-welcome-tour-step.model :as step-model]))
 
 ;; ── Setup ───────────────────────────────────────────────────────────────────
-(step/register!)
-(tour/register!)
+(step/init!)
+(tour/init!)
 
 (defn cleanup-dom! []
   ;; Remove tour and step elements

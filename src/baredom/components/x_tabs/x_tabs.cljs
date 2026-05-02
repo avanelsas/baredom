@@ -1,6 +1,7 @@
 (ns baredom.components.x-tabs.x-tabs
   (:require
-   [baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+               [baredom.utils.dom :as du]
    [baredom.components.x-tabs.model :as model]))
 
 (def key-root "__x_tabs_root")
@@ -273,10 +274,10 @@
   (when (du/initialized? el key-init)
     (render! el)))
 
-(defn install-property-accessors! [klass]
+(defn install-property-accessors! [^js proto]
   (.defineProperty
    js/Object
-   (.-prototype klass)
+   proto
    "value"
    #js {:get (fn []
                (this-as this
@@ -289,32 +290,10 @@
         :configurable true
         :enumerable true}))
 
-(defn element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass)
-          model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as this
-              (connected-callback this))))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as this
-              (disconnected-callback this))))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [name old new]
-            (this-as this
-              (attribute-changed-callback this name old new))))
-
-    (install-property-accessors! klass)
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :disconnected-fn        disconnected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     :setup-prototype-fn     install-property-accessors!}))

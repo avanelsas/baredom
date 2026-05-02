@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-glass.x-liquid-glass
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-liquid-glass.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -895,59 +896,46 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (let [m (read-model this)]
-                       (gobj/set this k-model m)
-                       (gobj/set this k-time 0.0)
-                       (gobj/set this k-pointer-active false)
-                       (gobj/set this k-pointer-x 0.0)
-                       (gobj/set this k-pointer-y 0.0)
-                       (gobj/set this k-grad-time 0.0)
-                       (ensure-refs! this)
-                       (apply-model! this)
-                       ;; Set up ResizeObserver
-                       (let [ro (js/ResizeObserver.
-                                 (fn [^js entries] (on-resize! this entries)))]
-                         (gobj/set this k-ro ro)
-                         (.observe ro this))
-                       ;; Add pointer event listeners
-                       (remove-listeners! this)
-                       (add-listeners! this))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (stop-animation! this)
-                     (remove-listeners! this)
-                     (when-let [^js ro (gobj/get this k-ro)]
-                       (.disconnect ro)
-                       (gobj/set this k-ro nil))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (when (gobj/get this k-refs)
-                         (update-from-attrs! this)))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (let [m (read-model el)]
+  (gobj/set el k-model m)
+  (gobj/set el k-time 0.0)
+  (gobj/set el k-pointer-active false)
+  (gobj/set el k-pointer-x 0.0)
+  (gobj/set el k-pointer-y 0.0)
+  (gobj/set el k-grad-time 0.0)
+  (ensure-refs! el)
+  (apply-model! el)
+  ;; Set up ResizeObserver
+  (let [ro (js/ResizeObserver.
+  (fn [^js entries] (on-resize! el entries)))]
+  (gobj/set el k-ro ro)
+  (.observe ro el))
+  ;; Add pointer event listeners
+  (remove-listeners! el)
+  (add-listeners! el))
   nil)
 
+(defn- disconnected! [^js el]
+  (stop-animation! el)
+  (remove-listeners! el)
+  (when-let [^js ro (gobj/get el k-ro)]
+  (.disconnect ro)
+  (gobj/set el k-ro nil))
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (when (gobj/get el k-refs)
+  (update-from-attrs! el)))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

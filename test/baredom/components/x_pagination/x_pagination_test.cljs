@@ -4,7 +4,7 @@
             [baredom.components.x-pagination.model :as model]))
 
 (use-fixtures :each
-  {:before (fn [] (comp/register!))
+  {:before (fn [] (comp/init!))
    :after  (fn []
              (doseq [^js el (array-seq (.querySelectorAll js/document model/tag-name))]
                (.removeChild (.-body js/document) el)))})

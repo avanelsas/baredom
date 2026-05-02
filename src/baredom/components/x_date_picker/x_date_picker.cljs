@@ -1,5 +1,6 @@
 (ns baredom.components.x-date-picker.x-date-picker
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
@@ -679,7 +680,8 @@
 
 (defn- on-btn-click!
   [^js el ^js _e]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (or (.hasAttribute el model/attr-disabled)
+                (.hasAttribute el model/attr-readonly))
     (if (.hasAttribute el "open")
       (close-popover! el)
       (open-popover! el))))
@@ -890,33 +892,21 @@
 ;; Registration
 ;; ---------------------------------------------------------------------------
 
-(defn- element-class
-  []
-  (let [klass (js* "(class extends HTMLElement {})")
-        proto (.-prototype klass)]
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "mode"      model/attr-mode)
+  (du/define-string-prop! proto "value"     model/attr-value)
+  (du/define-string-prop! proto "start"     model/attr-start)
+  (du/define-string-prop! proto "end"       model/attr-end)
+  (du/define-bool-prop!   proto "open"      "open")
+  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+  (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
+  (du/define-bool-prop!   proto "required"  model/attr-required)
+  (define-methods! proto))
 
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback proto)
-          (fn [] (this-as ^js this (connected! this))))
-    (set! (.-disconnectedCallback proto)
-          (fn [] (this-as ^js this (disconnected! this))))
-    (set! (.-attributeChangedCallback proto)
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (du/define-string-prop! proto "mode"      model/attr-mode)
-    (du/define-string-prop! proto "value"     model/attr-value)
-    (du/define-string-prop! proto "start"     model/attr-start)
-    (du/define-string-prop! proto "end"       model/attr-end)
-    (du/define-bool-prop!   proto "open"      "open")
-    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
-    (du/define-bool-prop!   proto "required"  model/attr-required)
-    (define-methods! proto)
-
-    klass))
-
-(defn init!
-  []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+(defn init! []
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

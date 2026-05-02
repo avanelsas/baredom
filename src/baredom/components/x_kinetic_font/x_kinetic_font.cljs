@@ -1,6 +1,7 @@
 (ns baredom.components.x-kinetic-font.x-kinetic-font
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-kinetic-font.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -548,47 +549,34 @@
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-              (ensure-refs! this)
-              (let [m (read-model this)]
-                (gobj/set this k-model nil)
-                (gobj/set this k-mouse-x 0.0)
-                (gobj/set this k-mouse-y 0.0)
-                (gobj/set this k-scroll-delta 0.0)
-                (gobj/set this k-active false)
-                (apply-model! this m))
-              nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-              (stop-animation! this)
-              (remove-listeners! this)
-              nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-              (when (not= old-val new-val)
-                (when (gobj/get this k-refs)
-                  (update-from-attrs! this)))
-              nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (let [m (read-model el)]
+  (gobj/set el k-model nil)
+  (gobj/set el k-mouse-x 0.0)
+  (gobj/set el k-mouse-y 0.0)
+  (gobj/set el k-scroll-delta 0.0)
+  (gobj/set el k-active false)
+  (apply-model! el m))
   nil)
 
+(defn- disconnected! [^js el]
+  (stop-animation! el)
+  (remove-listeners! el)
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (when (gobj/get el k-refs)
+  (update-from-attrs! el)))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-story.x-scroll-story
   (:require
-[baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-scroll-story.model :as model]))
 
@@ -720,56 +721,42 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     (setup-observer! this)
-                     (update-from-attrs! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     ;; Stop autoplay
-                     (stop-autoplay! this)
-                     ;; Clean data-active from children
-                     (clean-step-attrs! this)
-                     ;; Dispatch leave event if visible
-                     (when (gobj/get this k-visible)
-                       (du/dispatch! this model/event-leave
-                                  (clj->js (model/leave-detail (or (gobj/get this k-last-prog) 0)))))
-                     (remove-listeners! this)
-                     (teardown-observer! this)
-                     (gobj/set this k-visible false)
-                     (gobj/set this k-active-index -1)
-                     (gobj/set this k-last-prog nil)
-                     (gobj/set this k-step-states nil)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-from-attrs! this))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (setup-observer! el)
+  (update-from-attrs! el)
   nil)
 
+(defn- disconnected! [^js el]
+  ;; Stop autoplay
+  (stop-autoplay! el)
+  ;; Clean data-active from children
+  (clean-step-attrs! el)
+  ;; Dispatch leave event if visible
+  (when (gobj/get el k-visible)
+  (du/dispatch! el model/event-leave
+  (clj->js (model/leave-detail (or (gobj/get el k-last-prog) 0)))))
+  (remove-listeners! el)
+  (teardown-observer! el)
+  (gobj/set el k-visible false)
+  (gobj/set el k-active-index -1)
+  (gobj/set el k-last-prog nil)
+  (gobj/set el k-step-states nil)
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-from-attrs! el))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

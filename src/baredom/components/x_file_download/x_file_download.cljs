@@ -1,5 +1,6 @@
 (ns baredom.components.x-file-download.x-file-download
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-file-download.model :as model]))
 
@@ -243,33 +244,16 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    ;; observedAttributes
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; String properties
-    (du/define-string-prop! proto "href"     model/attr-href "")
-    (du/define-string-prop! proto "filename" model/attr-filename "")
-
-    ;; Boolean properties
-    (du/define-bool-prop! proto "disabled" model/attr-disabled)
-
-    ;; Lifecycle
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "href"     model/attr-href "")
+  (du/define-string-prop! proto "filename" model/attr-filename "")
+  (du/define-bool-prop! proto "disabled" model/attr-disabled))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,5 +1,6 @@
 (ns baredom.components.x-container.x-container
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [baredom.components.x-container.model :as model]))
 
 (def state-key "__xContainerState")
@@ -180,29 +181,13 @@
   (when-let [state (get-el-state el)]
     (render! el state)))
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (connected! this))))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] nil))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (define-default-true-bool-prop! (.-prototype klass) "center" model/attr-center)
-    (du/define-bool-prop! (.-prototype klass) "fluid" model/attr-fluid)
-
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
+(defn- install-property-accessors! [^js proto]
+  (define-default-true-bool-prop! proto "center" model/attr-center)
+  (du/define-bool-prop! proto "fluid" model/attr-fluid))
 
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,6 +1,7 @@
 (ns baredom.components.x-menu.x-menu
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.utils.dom :as du]
    [baredom.components.x-menu.model :as model]))
 
@@ -249,38 +250,27 @@
   (when (du/initialized? el key-init)
     (render! el)))
 
-(defn install-property-accessors! [^js klass]
+(defn install-property-accessors! [^js proto]
   (.defineProperty
-   js/Object (.-prototype klass) "open"
+   js/Object proto "open"
    #js {:get (fn [] (this-as this (.hasAttribute this model/attr-open)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-open "") (.removeAttribute this model/attr-open))))
         :configurable true :enumerable true})
   (.defineProperty
-   js/Object (.-prototype klass) "placement"
+   js/Object proto "placement"
    #js {:get (fn [] (this-as this (.getAttribute this model/attr-placement)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-placement v) (.removeAttribute this model/attr-placement))))
         :configurable true :enumerable true})
   (.defineProperty
-   js/Object (.-prototype klass) "label"
+   js/Object proto "label"
    #js {:get (fn [] (this-as this (.getAttribute this model/attr-label)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-label v) (.removeAttribute this model/attr-label))))
         :configurable true :enumerable true}))
 
-(defn element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass) model/observed-attributes)
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as this (connected-callback this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as this (disconnected-callback this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as this (attribute-changed-callback this n o v))))
-    (install-property-accessors! klass)
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :disconnected-fn        disconnected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     :setup-prototype-fn     install-property-accessors!}))

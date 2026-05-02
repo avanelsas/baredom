@@ -1,5 +1,6 @@
 (ns baredom.components.x-particle-button.x-particle-button
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-particle-button.model :as model]))
 
@@ -1232,30 +1233,17 @@
       (extract-color-palette! el))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
 
-    (set! (.-formAssociated klass) true)
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (connected! this))))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (du/define-bool-prop! (.-prototype klass) "disabled" model/attr-disabled)
-    (du/define-bool-prop! (.-prototype klass) "loading"  model/attr-loading)
-    (du/define-bool-prop! (.-prototype klass) "pressed"  model/attr-pressed)
-
-    klass))
-
-(defn define-element! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "loading"  model/attr-loading)
+  (du/define-bool-prop! proto "pressed"  model/attr-pressed))
 
 (defn init! []
-  (define-element!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :setup-prototype-fn     install-property-accessors!}))

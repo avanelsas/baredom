@@ -5,7 +5,8 @@
    handling. The host element is invisible — all visible UI lives in a
    portal layer created via the shared overlay utility."
   (:require
-   [baredom.components.x-welcome-tour.model :as model]
+[baredom.utils.component :as component]
+               [baredom.components.x-welcome-tour.model :as model]
    [baredom.components.x-welcome-tour-step.model :as step-model]
    [baredom.utils.dom :as du]
    [baredom.utils.overlay :as overlay]))
@@ -1012,38 +1013,12 @@
                         :writable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (connected! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (disconnected! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [attr-name old-val new-val]
-            (this-as ^js this
-                     (attribute-changed! this attr-name old-val new-val)
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    (install-methods! (.-prototype klass))
-    klass))
-
 ;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
 
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     (fn [proto] (install-property-accessors! proto) (install-methods! proto))}))

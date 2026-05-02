@@ -1,6 +1,7 @@
 (ns baredom.components.x-organic-progress.x-organic-progress
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-organic-progress.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -657,61 +658,47 @@
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
+(defn- connected! [^js el]
+  (let [m (read-model el)]
+  (gobj/set el k-model m)
+  (ensure-refs! el)
+  (update-from-attrs! el nil)
+  (apply-line-styles! el)
+  (if (prefers-reduced-motion?)
+  (render-static! el)
+  (start-animation! el)))
+  nil)
 
-    (set! (.-observedAttributes klass) model/observed-attributes)
+(defn- disconnected! [^js el]
+  (stop-animation! el)
+  ;; Clean up bloom elements
+  (when (gobj/get el k-bloom-active)
+  (let [{:keys [blooms-g]} (gobj/get el k-refs)
+  ^js blooms-g blooms-g
+  ^js bloom-els (gobj/get el k-bloom-els)]
+  (when bloom-els
+  (dotimes [i (.-length bloom-els)]
+  (let [^js c (aget bloom-els i)]
+  (when (.-parentNode c)
+  (.removeChild blooms-g c))))))
+  (gobj/set el k-bloom-els nil)
+  (gobj/set el k-bloom-active false))
+  nil)
 
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (let [m (read-model this)]
-                       (gobj/set this k-model m)
-                       (ensure-refs! this)
-                       (update-from-attrs! this nil)
-                       (apply-line-styles! this)
-                       (if (prefers-reduced-motion?)
-                         (render-static! this)
-                         (start-animation! this)))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (stop-animation! this)
-                     ;; Clean up bloom elements
-                     (when (gobj/get this k-bloom-active)
-                       (let [{:keys [blooms-g]} (gobj/get this k-refs)
-                             ^js blooms-g blooms-g
-                             ^js bloom-els (gobj/get this k-bloom-els)]
-                         (when bloom-els
-                           (dotimes [i (.-length bloom-els)]
-                             (let [^js c (aget bloom-els i)]
-                               (when (.-parentNode c)
-                                 (.removeChild blooms-g c))))))
-                       (gobj/set this k-bloom-els nil)
-                       (gobj/set this k-bloom-active false))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [attr-name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (when (gobj/get this k-refs)
-                         (update-from-attrs! this attr-name)
-                         (when (not (contains? structural-attrs attr-name))
-                           (apply-line-styles! this))))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+  (when (gobj/get el k-refs)
+  (update-from-attrs! el attr-name)
+  (when (not (contains? structural-attrs attr-name))
+  (apply-line-styles! el))))
+  nil)
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

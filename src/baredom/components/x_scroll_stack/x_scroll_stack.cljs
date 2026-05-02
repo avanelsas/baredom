@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll-stack.x-scroll-stack
   (:require
-[baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-scroll-stack.model :as model]))
 
@@ -447,53 +448,40 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     (setup-observer! this)
-                     (update-from-attrs! this)
-                     (update-height! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (clean-child-styles! this)
-                     (remove-listeners! this)
-                     (teardown-observer! this)
-                     (gobj/set this k-visible false)
-                     (gobj/set this k-stacked-count 0)
-                     (gobj/set this k-last-prog nil)
-                     (gobj/set this k-natural-offsets nil)
-                     (gobj/set this k-child-heights nil)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-from-attrs! this)
-                       (update-height! this)
-                       (when (gobj/get this k-visible)
-                         (schedule-cache-and-update! this)))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (setup-observer! el)
+  (update-from-attrs! el)
+  (update-height! el)
   nil)
 
+(defn- disconnected! [^js el]
+  (clean-child-styles! el)
+  (remove-listeners! el)
+  (teardown-observer! el)
+  (gobj/set el k-visible false)
+  (gobj/set el k-stacked-count 0)
+  (gobj/set el k-last-prog nil)
+  (gobj/set el k-natural-offsets nil)
+  (gobj/set el k-child-heights nil)
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-from-attrs! el)
+  (update-height! el)
+  (when (gobj/get el k-visible)
+  (schedule-cache-and-update! el)))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

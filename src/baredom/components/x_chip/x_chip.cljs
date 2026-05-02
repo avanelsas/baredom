@@ -1,6 +1,7 @@
 (ns baredom.components.x-chip.x-chip
   (:require
-[baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-chip.model :as model]))
 
@@ -285,22 +286,12 @@
   (def-bool-prop!   proto model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-    (install-property-accessors! proto)
-    cls))
-
 ;; ── Public API ────────────────────────────────────────────────────────────
+
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))
