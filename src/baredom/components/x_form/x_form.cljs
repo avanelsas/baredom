@@ -1,5 +1,6 @@
 (ns baredom.components.x-form.x-form
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-form.model :as model]))
 
@@ -186,60 +187,41 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Properties
-    (du/define-bool-prop!   proto "loading"      model/attr-loading)
-    (du/define-bool-prop!   proto "novalidate"   model/attr-novalidate)
-    (du/define-string-prop! proto "autocomplete" model/attr-autocomplete)
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    ;; Public methods
-    (aset proto "submit"
-          (fn []
-            (this-as ^js this
-                     (when-let [refs (gobj/get this k-refs)]
-                       (let [^js form-el (gobj/get refs "form")]
-                         (.requestSubmit form-el))))))
-
-    (aset proto "reset"
-          (fn []
-            (this-as ^js this
-                     (when-let [refs (gobj/get this k-refs)]
-                       (let [^js form-el (gobj/get refs "form")]
-                         (.reset form-el))))))
-
-    (aset proto "setFieldError"
-          (fn [field-name msg]
-            (this-as ^js this
-                     (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
-                       (if (or (nil? msg) (= msg "") (= msg js/undefined))
-                         (du/remove-attr! field "error")
-                         (du/set-attr! field "error" msg))))))
-
-    (aset proto "clearErrors"
-          (fn []
-            (this-as ^js this
-                     (let [fields (.querySelectorAll this "[error]")]
-                       (dotimes [i (.-length fields)]
-                         (du/remove-attr! (aget fields i) "error"))))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop!   proto "loading"      model/attr-loading)
+  (du/define-bool-prop!   proto "novalidate"   model/attr-novalidate)
+  (du/define-string-prop! proto "autocomplete" model/attr-autocomplete)
+  (aset proto "submit"
+        (fn []
+          (this-as ^js this
+                   (when-let [refs (gobj/get this k-refs)]
+                     (let [^js form-el (gobj/get refs "form")]
+                       (.requestSubmit form-el))))))
+  (aset proto "reset"
+        (fn []
+          (this-as ^js this
+                   (when-let [refs (gobj/get this k-refs)]
+                     (let [^js form-el (gobj/get refs "form")]
+                       (.reset form-el))))))
+  (aset proto "setFieldError"
+        (fn [field-name msg]
+          (this-as ^js this
+                   (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
+                     (if (or (nil? msg) (= msg "") (= msg js/undefined))
+                       (du/remove-attr! field "error")
+                       (du/set-attr! field "error" msg))))))
+  (aset proto "clearErrors"
+        (fn []
+          (this-as ^js this
+                   (let [fields (.querySelectorAll this "[error]")]
+                     (dotimes [i (.-length fields)]
+                       (du/remove-attr! (aget fields i) "error")))))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

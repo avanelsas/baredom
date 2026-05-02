@@ -1,5 +1,6 @@
 (ns baredom.components.x-chart.x-chart
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [baredom.components.x-chart.model :as model]
             [goog.object :as gobj]))
 
@@ -813,33 +814,23 @@
 
 ;; ---- Element class + registration ----
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-      (fn [] (this-as ^js this (connected! this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-      (fn [] (this-as ^js this (disconnected! this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-      (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (let [proto (.-prototype klass)]
-      (define-str-prop!  proto "type"     model/attr-type)
-      (define-str-prop!  proto "cursor"   model/attr-cursor)
-      (define-str-prop!  proto "selected" model/attr-selected)
-      (define-num-prop!  proto "height"   model/attr-height  model/default-height)
-      (define-num-prop!  proto "padding"  model/attr-padding model/default-padding)
-      (du/define-bool-prop! proto "grid"     model/attr-grid)
-      (du/define-bool-prop! proto "axes"     model/attr-axes)
-      (du/define-bool-prop! proto "tooltip"  model/attr-tooltip)
-      (du/define-bool-prop! proto "disabled" model/attr-disabled)
-      (du/define-bool-prop! proto "loading"  model/attr-loading)
-      (define-data-prop! proto))
-
-    klass))
+(defn- install-property-accessors! [^js proto]
+  (define-str-prop!  proto "type"     model/attr-type)
+  (define-str-prop!  proto "cursor"   model/attr-cursor)
+  (define-str-prop!  proto "selected" model/attr-selected)
+  (define-num-prop!  proto "height"   model/attr-height  model/default-height)
+  (define-num-prop!  proto "padding"  model/attr-padding model/default-padding)
+  (du/define-bool-prop! proto "grid"     model/attr-grid)
+  (du/define-bool-prop! proto "axes"     model/attr-axes)
+  (du/define-bool-prop! proto "tooltip"  model/attr-tooltip)
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "loading"  model/attr-loading)
+  (define-data-prop! proto))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,5 +1,6 @@
 (ns baredom.components.x-checkbox.x-checkbox
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-checkbox.model :as model]))
@@ -332,46 +333,23 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    ;; Form-associated
-    (set! (.-formAssociated cls) true)
-
-    ;; observedAttributes
-    (set! (.-observedAttributes cls) model/observed-attributes)
-
-    ;; Boolean properties
-    (du/define-bool-prop!   proto "checked"       model/attr-checked)
-    (du/define-bool-prop!   proto "indeterminate"  model/attr-indeterminate)
-    (du/define-bool-prop!   proto "disabled"       model/attr-disabled)
-    (du/define-bool-prop!   proto "readOnly"       model/attr-readonly)
-    (du/define-bool-prop!   proto "required"       model/attr-required)
-
-    ;; String properties
-    (du/define-string-prop! proto "name"  model/attr-name)
-    (du/define-string-prop! proto "value" model/attr-value)
-
-    ;; Lifecycle
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    ;; Form-associated callbacks
-    (aset proto "formDisabledCallback"
-          (fn [d] (this-as ^js this (form-disabled! this d))))
-
-    (aset proto "formResetCallback"
-          (fn [] (this-as ^js this (form-reset! this))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop!   proto "checked"       model/attr-checked)
+  (du/define-bool-prop!   proto "indeterminate"  model/attr-indeterminate)
+  (du/define-bool-prop!   proto "disabled"       model/attr-disabled)
+  (du/define-bool-prop!   proto "readOnly"       model/attr-readonly)
+  (du/define-bool-prop!   proto "required"       model/attr-required)
+  (du/define-string-prop! proto "name"  model/attr-name)
+  (du/define-string-prop! proto "value" model/attr-value))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))

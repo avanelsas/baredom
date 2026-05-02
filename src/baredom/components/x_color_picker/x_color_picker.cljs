@@ -1,5 +1,6 @@
 (ns baredom.components.x-color-picker.x-color-picker
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-color-picker.model :as model]))
 
@@ -1019,49 +1020,25 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    ;; Form-associated
-    (set! (.-formAssociated cls) true)
-
-    ;; observedAttributes
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Boolean properties
-    (du/define-bool-prop! proto "disabled" model/attr-disabled)
-    (du/define-bool-prop! proto "readOnly" model/attr-readonly)
-    (du/define-bool-prop! proto "alpha"    model/attr-alpha)
-    (du/define-bool-prop! proto "open"     model/attr-open)
-
-    ;; String properties
-    (du/define-string-prop! proto "value"    model/attr-value)
-    (du/define-string-prop! proto "swatches" model/attr-swatches)
-    (du/define-string-prop! proto "name"     model/attr-name)
-    (du/define-string-prop! proto "mode"     model/attr-mode)
-    (du/define-string-prop! proto "label"    model/attr-label)
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    ;; Form-associated callbacks
-    (aset proto "formDisabledCallback"
-          (fn [d] (this-as ^js this (form-disabled! this d))))
-
-    (aset proto "formResetCallback"
-          (fn [] (this-as ^js this (form-reset! this))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "readOnly" model/attr-readonly)
+  (du/define-bool-prop! proto "alpha"    model/attr-alpha)
+  (du/define-bool-prop! proto "open"     model/attr-open)
+  (du/define-string-prop! proto "value"    model/attr-value)
+  (du/define-string-prop! proto "swatches" model/attr-swatches)
+  (du/define-string-prop! proto "name"     model/attr-name)
+  (du/define-string-prop! proto "mode"     model/attr-mode)
+  (du/define-string-prop! proto "label"    model/attr-label))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,5 +1,6 @@
 (ns baredom.components.x-combobox.x-combobox
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.components.x-combobox.model :as model]
             [baredom.utils.dom :as du]))
 
@@ -734,41 +735,24 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Reflected properties
-    (du/define-string-prop! proto "value"       model/attr-value)
-    (du/define-string-prop! proto "placeholder" model/attr-placeholder)
-    (du/define-string-prop! proto "name"        model/attr-name)
-    (du/define-string-prop! proto "placement"   model/attr-placement)
-    (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
-    (du/define-bool-prop!   proto "required"    model/attr-required)
-    (du/define-bool-prop!   proto "open"        model/attr-open)
-
-    ;; Public methods
-    (aset proto "show"
-          (fn [] (this-as ^js this (open-panel! this "programmatic"))))
-
-    (aset proto "hide"
-          (fn [] (this-as ^js this (close-panel! this "programmatic"))))
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "value"       model/attr-value)
+  (du/define-string-prop! proto "placeholder" model/attr-placeholder)
+  (du/define-string-prop! proto "name"        model/attr-name)
+  (du/define-string-prop! proto "placement"   model/attr-placement)
+  (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
+  (du/define-bool-prop!   proto "required"    model/attr-required)
+  (du/define-bool-prop!   proto "open"        model/attr-open)
+  (aset proto "show"
+        (fn [] (this-as ^js this (open-panel! this "programmatic"))))
+  (aset proto "hide"
+        (fn [] (this-as ^js this (close-panel! this "programmatic")))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,5 +1,6 @@
 (ns baredom.components.x-context-menu.x-context-menu
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [baredom.components.x-context-menu.model :as model]
             [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
@@ -186,9 +187,10 @@
         on-doc-click
         (fn [^js ev]
           (when-let [^js lyr (gobj/get el k-layer)]
-            (let [^js panel (overlay/get-panel lyr)]
-              (when (and panel
-                         (not (.contains panel (.-target ev))))
+            (let [^js panel (overlay/get-panel lyr)
+                  path      (.composedPath ev)
+                  inside?   (some #(identical? % panel) (array-seq path))]
+              (when (and panel (not inside?))
                 (close! el "backdrop")))))]
 
     ;; Delay by one tick so the opening click/contextmenu does not immediately close
@@ -387,27 +389,18 @@
 
 ;; ---- Element class + registration ----
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (connected! this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (disconnected! this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    (du/define-bool-prop! (.-prototype klass) "open"      model/attr-open)
-    (du/define-bool-prop! (.-prototype klass) "disabled"  model/attr-disabled)
-    (define-str-prop!  (.-prototype klass) "placement" model/attr-placement)
-    (define-str-prop!  (.-prototype klass) "offset"    model/attr-offset)
-    (define-str-prop!  (.-prototype klass) "zIndex"    model/attr-z-index)
-    (define-methods!   (.-prototype klass))
-
-    klass))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop! proto "open"      model/attr-open)
+  (du/define-bool-prop! proto "disabled"  model/attr-disabled)
+  (define-str-prop!  proto "placement" model/attr-placement)
+  (define-str-prop!  proto "offset"    model/attr-offset)
+  (define-str-prop!  proto "zIndex"    model/attr-z-index)
+  (define-methods!   proto))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

@@ -1,5 +1,6 @@
 (ns baredom.components.x-skeleton-group.x-skeleton-group
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [clojure.string :as str]
             [baredom.components.x-skeleton-group.model :as model]
             [baredom.components.x-skeleton.model :as skeleton-model]
@@ -237,32 +238,17 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Properties
-    (du/define-string-prop! proto "preset"    model/attr-preset "")
-    (du/define-string-prop! proto "animation" model/attr-animation "")
-    (du/define-number-prop! proto "count" model/attr-count model/default-count)
-
-    ;; Lifecycle
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "preset"    model/attr-preset "")
+  (du/define-string-prop! proto "animation" model/attr-animation "")
+  (du/define-number-prop! proto "count" model/attr-count model/default-count))
 
 (defn init! []
-  ;; Ensure x-skeleton is registered (needed for preset-generated children)
   (x-skeleton/init!)
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

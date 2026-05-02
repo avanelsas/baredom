@@ -1,5 +1,6 @@
 (ns baredom.components.x-currency-field.x-currency-field
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-currency-field.model :as model]))
 
@@ -495,67 +496,39 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")
-        proto (.-prototype klass)]
 
-    ;; Form-associated
-    (set! (.-formAssociated klass) true)
-
-    ;; observedAttributes
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    ;; Value property (special)
-    (define-value-prop! proto)
-
-    ;; String properties
-    (du/define-string-prop! proto "name"        model/attr-name "")
-    (du/define-string-prop! proto "currency"    model/attr-currency "")
-    (du/define-string-prop! proto "locale"      model/attr-locale "")
-    (du/define-string-prop! proto "min"         model/attr-min "")
-    (du/define-string-prop! proto "max"         model/attr-max "")
-    (du/define-string-prop! proto "placeholder" model/attr-placeholder "")
-    (du/define-string-prop! proto "label"       model/attr-label "")
-    (du/define-string-prop! proto "hint"        model/attr-hint "")
-    (du/define-string-prop! proto "error"       model/attr-error "")
-
-    ;; Boolean properties
-    (du/define-bool-prop! proto "disabled" model/attr-disabled)
-    (du/define-bool-prop! proto "readOnly" model/attr-readonly)
-    (du/define-bool-prop! proto "required" model/attr-required)
-
-    ;; Lifecycle
-    (set! (.-connectedCallback proto)
-          (fn [] (this-as ^js this (connected! this))))
-
-    (set! (.-disconnectedCallback proto)
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (set! (.-attributeChangedCallback proto)
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    ;; Form-associated callbacks
-    (set! (.-formDisabledCallback proto)
-          (fn [d] (this-as ^js this (form-disabled! this d))))
-
-    (set! (.-formResetCallback proto)
-          (fn [] (this-as ^js this (form-reset! this))))
-
-    ;; Form-validity delegation (not auto-delegated in all environments)
-    (set! (.-checkValidity proto)
-          (fn [] (this-as ^js this
-                          (if-let [^js internals (gobj/get this k-internals)]
-                            (.checkValidity internals)
-                            true))))
-
-    (set! (.-reportValidity proto)
-          (fn [] (this-as ^js this
-                          (if-let [^js internals (gobj/get this k-internals)]
-                            (.reportValidity internals)
-                            true))))
-
-    klass))
+(defn- install-property-accessors! [^js proto]
+  (define-value-prop! proto)
+  (du/define-string-prop! proto "name"        model/attr-name "")
+  (du/define-string-prop! proto "currency"    model/attr-currency "")
+  (du/define-string-prop! proto "locale"      model/attr-locale "")
+  (du/define-string-prop! proto "min"         model/attr-min "")
+  (du/define-string-prop! proto "max"         model/attr-max "")
+  (du/define-string-prop! proto "placeholder" model/attr-placeholder "")
+  (du/define-string-prop! proto "label"       model/attr-label "")
+  (du/define-string-prop! proto "hint"        model/attr-hint "")
+  (du/define-string-prop! proto "error"       model/attr-error "")
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "readOnly" model/attr-readonly)
+  (du/define-bool-prop! proto "required" model/attr-required)
+  (set! (.-checkValidity proto)
+    (fn [] (this-as ^js this
+    (if-let [^js internals (gobj/get this k-internals)]
+    (.checkValidity internals)
+    true))))
+  (set! (.-reportValidity proto)
+    (fn [] (this-as ^js this
+    (if-let [^js internals (gobj/get this k-internals)]
+    (.reportValidity internals)
+    true)))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))

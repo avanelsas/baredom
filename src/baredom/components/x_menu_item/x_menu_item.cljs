@@ -1,6 +1,7 @@
 (ns baredom.components.x-menu-item.x-menu-item
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.utils.dom :as du]
    [baredom.components.x-menu-item.model :as model]))
 
@@ -197,43 +198,32 @@
   (when (du/initialized? el key-init)
     (render! el)))
 
-(defn install-property-accessors! [^js klass]
+(defn install-property-accessors! [^js proto]
   (.defineProperty
-   js/Object (.-prototype klass) "value"
+   js/Object proto "value"
    #js {:get (fn [] (this-as this (.getAttribute this model/attr-value)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-value v) (.removeAttribute this model/attr-value))))
         :configurable true :enumerable true})
   (.defineProperty
-   js/Object (.-prototype klass) "disabled"
+   js/Object proto "disabled"
    #js {:get (fn [] (this-as this (.hasAttribute this model/attr-disabled)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-disabled "") (.removeAttribute this model/attr-disabled))))
         :configurable true :enumerable true})
   (.defineProperty
-   js/Object (.-prototype klass) "variant"
+   js/Object proto "variant"
    #js {:get (fn [] (this-as this (.getAttribute this model/attr-variant)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-variant v) (.removeAttribute this model/attr-variant))))
         :configurable true :enumerable true})
   (.defineProperty
-   js/Object (.-prototype klass) "type"
+   js/Object proto "type"
    #js {:get (fn [] (this-as this (.getAttribute this model/attr-type)))
         :set (fn [v] (this-as this (if v (.setAttribute this model/attr-type v) (.removeAttribute this model/attr-type))))
         :configurable true :enumerable true}))
 
-(defn element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass) model/observed-attributes)
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as this (connected-callback this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as this (disconnected-callback this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as this (attribute-changed-callback this n o v))))
-    (install-property-accessors! klass)
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :disconnected-fn        disconnected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     :setup-prototype-fn     install-property-accessors!}))

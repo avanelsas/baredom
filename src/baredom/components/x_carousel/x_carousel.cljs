@@ -1,5 +1,6 @@
 (ns baredom.components.x-carousel.x-carousel
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-carousel.model :as model]))
 
@@ -827,32 +828,12 @@
   nil)
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")
-        proto (.-prototype klass)]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback proto)
-          (fn []
-            (this-as ^js this (connected! this))))
-
-    (set! (.-disconnectedCallback proto)
-          (fn []
-            (this-as ^js this (disconnected! this))))
-
-    (set! (.-attributeChangedCallback proto)
-          (fn [n o v]
-            (this-as ^js this (attribute-changed! this n o v))))
-
-    (install-property-accessors! proto)
-    klass))
-
 ;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
 
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

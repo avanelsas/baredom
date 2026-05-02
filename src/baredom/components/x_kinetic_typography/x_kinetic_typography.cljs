@@ -1,5 +1,6 @@
 (ns baredom.components.x-kinetic-typography.x-kinetic-typography
-  (:require [clojure.string :as str]
+  (:require [baredom.utils.component :as component]
+            [clojure.string :as str]
             [goog.object :as gobj]
             [baredom.components.x-kinetic-typography.model :as model]))
 
@@ -550,36 +551,12 @@
   (install-string-accessor! proto model/attr-echo-scale   "echoScale"   (str model/default-echo-scale)))
 
 ;; ── Element class ────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (connected! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (disconnected! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v]
-            (this-as ^js this
-                     (attribute-changed! this n o v)
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
 ;; ── Public API ───────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
-  nil)
 
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

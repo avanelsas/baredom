@@ -1,6 +1,7 @@
 (ns baredom.components.x-grid.x-grid
   (:require
-   [baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+               [baredom.utils.dom :as du]
    [baredom.components.x-grid.model :as model]))
 
 (def key-root "__x_grid_root")
@@ -95,28 +96,9 @@
     (render! el)
     (init-element! el)))
 
-(defn element-class []
-
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass)
-      model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-      (fn []
-        (this-as this
-                 (connected-callback this))))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-      (fn [name old-value new-value]
-        (this-as this
-                 (attribute-changed-callback this name old-value new-value))))
-
-    klass))
-
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     }))

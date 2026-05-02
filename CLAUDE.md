@@ -65,6 +65,35 @@ DOM = f(attributes, properties)
 
 Instance fields may only store shadow root references and cached DOM node handles. Never store authoritative UI state.
 
+### Data drives implementation
+
+Model metadata (`property-api`, `observed-attributes`) must **drive** runtime behavior, not merely describe it for external tooling. When `property-api` declares a boolean property with `:reflects-attribute`, `du/install-properties!` should install the accessor — do not hand-code what the data already declares.
+
+### The render! pipeline
+
+Every `render!` function should follow a three-phase pipeline and include a **model-change guard**:
+
+```clojure
+(defn- render! [^js el]
+  (let [new-m (read-model el)             ;; 1. READ  — extract raw attrs into data
+        old-m (du/getv el k-model)]        ;; 2. CHECK — compare with cached model
+    (when (not= new-m old-m)               ;;    Skip if unchanged
+      (du/setv! el k-model new-m)          ;;    Cache new model
+      (apply-model! el new-m))))           ;; 3. APPLY — patch DOM from model
+```
+
+**Rules:**
+- `read-model` calls `model/normalize` — this is a **pure calculation** (no side effects).
+- `apply-model!` is the only function that writes to the DOM.
+- The model-change guard (`when (not= ...)`) prevents infinite loops when `apply-model!` sets observed attributes on the host element (which would re-trigger `attributeChangedCallback` → `render!`).
+- **Never set observed attributes on the host element inside `apply-model!`** without the change guard — this is the #1 cause of infinite recursion in web components.
+
+### Naming conventions
+
+- Functions ending with `!` have side effects (DOM mutation, event dispatch, state changes).
+- Lifecycle callbacks: `connected!`, `disconnected!`, `attribute-changed!` — always named `defn-` functions.
+- Private instance-field keys: `"__xComponentNameField"` format (e.g. `"__xButtonState"`).
+
 ## Closure Advanced Compilation Safety
 
 All code must survive Google Closure Advanced Compilation (minification + renaming).
@@ -80,35 +109,51 @@ All code must survive Google Closure Advanced Compilation (minification + renami
 - React, Reagent, Lit, Vue, Svelte, Alpine, JSX, TypeScript, virtual DOM, template DSLs, framework runtimes
 - `deftype`, `defrecord` for element classes
 
-## Element Class Definition
+## Element Registration
 
-Custom elements are defined using `js*` to produce a native ES class that extends `HTMLElement`. **This is the only permitted pattern** — do not use `Reflect.construct`, manual prototype composition, or `atom`-based constructor wiring.
+Components are registered via `baredom.utils.component/register!`, which creates the native ES class, wires lifecycle callbacks, and installs property accessors from a declarative options map. **Do not create `element-class` functions manually** — the factory handles all boilerplate.
 
 ```clojure
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
+(ns baredom.components.x-foo.x-foo
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [baredom.components.x-foo.model :as model]))
 
-    (set! (.-observedAttributes klass) model/observed-attributes)
+;; Named lifecycle functions — always separate defn-, never inline
+(defn- connected! [^js el] ...)
+(defn- disconnected! [^js el] ...)
+(defn- attribute-changed! [^js el _name _old _new] ...)
 
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (connected! this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (disconnected! this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
+;; Property/method setup (when install-properties! alone is not enough)
+(defn- install-property-accessors! [^js proto]
+  (du/install-properties! proto model/property-api)
+  ;; Custom properties or methods here
+  )
 
-    ;; install property accessors and methods on the prototype here
-
-    klass))
+(defn init! []
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     ;; Optional:
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))
 ```
 
-The `this-as` macro must always be used to capture the element instance — never reference `this` directly in callbacks or nested functions.
-
-Registration is idempotent: always guard with `(when-not (.get js/customElements tag-name) ...)`.
+**Rules:**
+- Lifecycle callbacks must be **named `defn-` functions** (`connected!`, `disconnected!`, `attribute-changed!`) — never inline anonymous functions.
+- Use `du/install-properties!` to install property accessors driven by `model/property-api`. Only add manual `.defineProperty` calls for properties that need custom getter/setter logic (e.g. `open` property that triggers `do-show!`/`do-hide!`).
+- The `this-as` macro must always be used to capture the element instance inside `setup-prototype-fn` method bodies — never reference `this` directly.
+- Registration is idempotent (the factory guards with `when-not .get js/customElements`).
 
 **Forbidden registration patterns:**
+- Manual `element-class` functions with `js*` — use `component/register!` instead
 - `js/Reflect.construct` with `atom`-based constructor wiring
 - Manual `js/Object.create` / `js/Object.setPrototypeOf` prototype composition
+- Inline lifecycle callbacks inside element-class (extract to named functions)
 
 ## Architecture
 
@@ -125,7 +170,7 @@ Every component under `src/baredom/components/<name>/` follows:
    - `event-schema` — map of event constant symbol to `{:cancelable bool :detail {:key 'type ...}}` (use `{}` for empty detail)
    - `method-api` — map of method name to `{:args [...] :returns 'void}`. **Always include this def**, even as `(def method-api nil)` when the component has no public methods. Args entries: `{:name "param" :type 'number}`. This metadata drives automatic TypeScript `.d.ts` generation — omitting it breaks type output.
 
-2. **`<name>.cljs`** — DOM and lifecycle layer. Implements shadow DOM creation, imperative `render!`, event wiring, and lifecycle callbacks (`connected!`, `disconnected!`, `attribute-changed!`, `define-element!`, `init!`). All browser interop must be Closure Advanced safe.
+2. **`<name>.cljs`** — DOM and lifecycle layer. Implements shadow DOM creation, imperative `render!`, event wiring, named lifecycle callbacks (`connected!`, `disconnected!`, `attribute-changed!`), and `init!` via `component/register!`. All browser interop must be Closure Advanced safe.
 
 3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init` (called by the `:lib` shadow-cljs build) and `register!`. Also exposes `public-api` metadata derived from the model. The `public-api` map must include all model metadata keys: `:tag-name`, `:properties`, `:events`, `:methods`, `:observed-attributes`.
 
@@ -181,13 +226,20 @@ All components must work on viewports from 320px up. Apply these rules in every 
 
 ### Shared utilities
 
-Components must use the shared utility modules instead of reimplementing common operations:
+Components **must** use the shared utility modules — never reimplement locally. Defining a local `dispatch!`, `define-bool-prop!`, `set-attr!`, or similar function that duplicates a shared utility is forbidden.
 
-- **`baredom.utils.dom`** (alias `du`) — DOM and instance-field helpers:
+- **`baredom.utils.component`** (alias `component`) — element registration:
+  - `component/register!` — create and register a custom element from a declarative options map (see "Element Registration" above)
+
+- **`baredom.utils.dom`** (alias `du`) — DOM, events, and property helpers:
   - `du/getv` / `du/setv!` — read/write instance fields (wraps `gobj/get` / `gobj/set`)
-  - `du/has-attr?` / `du/get-attr` — attribute access
+  - `du/has-attr?` / `du/get-attr` / `du/set-attr!` / `du/remove-attr!` — attribute access and mutation
   - `du/set-bool-attr!` — set or remove a boolean attribute
   - `du/initialized?` / `du/mark-initialized!` — guard one-time init logic
+  - `du/dispatch!` — dispatch a non-cancelable CustomEvent (bubbles + composed)
+  - `du/dispatch-cancelable!` — dispatch a cancelable CustomEvent, returns `true` when NOT cancelled
+  - `du/define-bool-prop!` / `du/define-string-prop!` / `du/define-number-prop!` — install a JS property that reflects to/from an HTML attribute
+  - `du/install-properties!` — install all property accessors from a `property-api` map (data-driven)
 
 - **`baredom.utils.model`** (alias `mu`) — pure parsing and validation helpers:
   - `mu/parse-bool-attr` — parse a boolean attribute string (`nil` → `false`, `"false"` → `false`, anything else → `true`)
@@ -198,8 +250,10 @@ Components must use the shared utility modules instead of reimplementing common 
 **Usage rules:**
 - Use `du/getv` / `du/setv!` for all instance-field access (e.g. `k-refs`, `k-handlers`, `k-model`). Only fall back to raw `gobj/get` / `gobj/set` when accessing nested objects within a ref map.
 - Use `du/has-attr?` / `du/get-attr` in `read-model` / `read-state!` functions instead of direct `(.hasAttribute el ...)` / `(.getAttribute el ...)`.
+- Use `du/dispatch!` / `du/dispatch-cancelable!` for all event dispatch — never create `CustomEvent` objects directly in component code.
+- Use `du/install-properties!` with `model/property-api` for standard property accessors. Only use manual `.defineProperty` for properties with custom getter/setter logic.
 - Use `mu/parse-bool-attr` in model `normalize` / `derive-state` functions for boolean attributes like `disabled`, `readonly`, `alpha`.
-- Before adding a new utility function, check whether it already exists in `utils/dom.cljs` or `utils/model.cljs`. Add new shared helpers there when they would benefit multiple components.
+- Before adding a new utility function, check whether it already exists in `utils/dom.cljs`, `utils/model.cljs`, or `utils/component.cljs`. Add new shared helpers there when they would benefit multiple components.
 
 ### State storage on element instances
 
@@ -229,7 +283,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 1. **Architecture** — define tag name, shadow DOM structure, rendering strategy, attributes, properties, events, theming, accessibility, open questions
 2. **API Contract** — full tables for observed attributes, properties, events, public methods, slots, CSS custom properties, theme/motion/a11y behavior, rendering invariants
-3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. Import and use `baredom.utils.dom` and `baredom.utils.model` (see "Shared utilities" section above) — do not reimplement helpers that already exist there. **Registration checklist** — after creating a new component, register it in all four places:
+3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. Import and use `baredom.utils.component`, `baredom.utils.dom`, and `baredom.utils.model` (see "Shared utilities" section above) — never reimplement helpers that already exist there. Use `component/register!` for element registration and `du/install-properties!` for property accessors. **Registration checklist** — after creating a new component, register it in all four places:
    - `shadow-cljs.edn` — add `:x-<name>` module under `:lib :modules`
    - `package.json` — add `"./x-<name>"` entry under `"exports"`
    - `src/baredom/core.cljs` — require the export namespace and call `register!` in `start!`
@@ -239,7 +293,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 
 ## Performance & Context Management
 To minimize token usage and latency:
-1. **Reference Implementation:** Use `src/baredom/components/x-alert/` as the "Golden Sample" for all patterns.
+1. **Reference Implementation:** Use `src/baredom/components/x-button/` as the "Golden Sample" for registration via `component/register!` and `du/install-properties!`. Use `src/baredom/components/x-alert/` for the model layer pattern and render! pipeline.
 2. **No-Scan Folders:** Ignore `dist/`, `target/`, and `.shadow-cljs/`.
 
 **If information is missing that affects the public API shape (attributes, properties, events, methods, slots), do not assume — list it as an open question. Never invent API surface.**

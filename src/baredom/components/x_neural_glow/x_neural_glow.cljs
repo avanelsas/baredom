@@ -1,6 +1,7 @@
 (ns baredom.components.x-neural-glow.x-neural-glow
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-neural-glow.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -575,57 +576,44 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (let [m (read-model this)]
-                       (gobj/set this k-model m)
-                       (gobj/set this k-color-cache #js {})
-                       (gobj/set this k-drift-time 0.0)
-                       (gobj/set this k-last-ptr nil)
-                       (gobj/set this k-last-scroll nil)
-                       (ensure-refs! this)
-                       (init-orbs! this (:orb-count m))
-                       (set-a11y! this)
-                       (remove-listeners! this)
-                       (add-listeners! this)
-                       (start-animation! this))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (stop-animation! this)
-                     (remove-listeners! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (let [m (read-model this)]
-                         (gobj/set this k-model m)
-                         (gobj/set this k-color-cache #js {})
-                         (when (gobj/get this k-refs)
-                           (reconcile-orbs! this (:orb-count m))
-                           ;; Re-evaluate listeners if interactive changed
-                           (remove-listeners! this)
-                           (when (.-isConnected this)
-                             (add-listeners! this))))))))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (let [m (read-model el)]
+  (gobj/set el k-model m)
+  (gobj/set el k-color-cache #js {})
+  (gobj/set el k-drift-time 0.0)
+  (gobj/set el k-last-ptr nil)
+  (gobj/set el k-last-scroll nil)
+  (ensure-refs! el)
+  (init-orbs! el (:orb-count m))
+  (set-a11y! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (start-animation! el))
   nil)
 
+(defn- disconnected! [^js el]
+  (stop-animation! el)
+  (remove-listeners! el)
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (let [m (read-model el)]
+  (gobj/set el k-model m)
+  (gobj/set el k-color-cache #js {})
+  (when (gobj/get el k-refs)
+  (reconcile-orbs! el (:orb-count m))
+  ;; Re-evaluate listeners if interactive changed
+  (remove-listeners! el)
+  (when (.-isConnected el)
+  (add-listeners! el))))))
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

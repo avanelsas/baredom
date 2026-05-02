@@ -1,6 +1,7 @@
 (ns baredom.components.x-scroll.x-scroll
   (:require
-[baredom.utils.dom :as du]
+[baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-scroll.model :as model]))
 
@@ -75,7 +76,8 @@
    ":host([data-mode=horizontal]) [part=track]{flex-direction:row;}"
    ":host([data-mode=vertical]) [part=track]{flex-direction:column;}"
 
-   "::slotted(*){flex:0 0 var(--x-scroll-slide-size);min-width:0;min-height:0;box-sizing:border-box;}"
+   "::slotted(*){flex:0 0 var(--x-scroll-slide-size);min-width:0;box-sizing:border-box;}"
+   ":host([data-mode=horizontal]) ::slotted(*){min-height:0;}"
 
    "[part=prev],[part=next]{"
    "position:absolute;top:50%;z-index:2;"
@@ -927,70 +929,53 @@
                                         (if (and v (not= v ""))
                                           (.setAttribute this model/attr-label (str v))
                                           (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true}))
+                        :enumerable true :configurable true})
+  (set! (.-goTo proto)
+        (fn [idx]
+          (this-as ^js this (go-to! this idx))))
+  (set! (.-next proto)
+        (fn []
+          (this-as ^js this (next! this))))
+  (set! (.-prev proto)
+        (fn []
+          (this-as ^js this (prev! this)))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     (setup-resize-observer! this)
-                     (update-from-attrs! this)
-                     (start-autoplay! this)
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (remove-listeners! this)
-                     (teardown-resize-observer! this)
-                     ;; Clean up order styles on slotted children
-                     (let [children (get-children this)]
-                       (dotimes [i (.-length children)]
-                         (set! (.. ^js (aget children i) -style -order) "")))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-from-attrs! this)
-                       ;; Restart autoplay on relevant attribute changes
-                       (when (and (.-isConnected this)
-                                  (or (= _name model/attr-auto-play)
-                                      (= _name model/attr-interval)
-                                      (= _name model/attr-disabled)))
-                         (restart-autoplay! this)))
-                     nil)))
-
-    (let [^js proto (.-prototype klass)]
-      (install-property-accessors! proto)
-
-      ;; Methods on prototype
-      (set! (.-goTo proto)
-            (fn [idx]
-              (this-as ^js this (go-to! this idx))))
-      (set! (.-next proto)
-            (fn []
-              (this-as ^js this (next! this))))
-      (set! (.-prev proto)
-            (fn []
-              (this-as ^js this (prev! this)))))
-
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (setup-resize-observer! el)
+  (update-from-attrs! el)
+  (start-autoplay! el)
   nil)
 
+(defn- disconnected! [^js el]
+  (remove-listeners! el)
+  (teardown-resize-observer! el)
+  ;; Clean up order styles on slotted children
+  (let [children (get-children el)]
+  (dotimes [i (.-length children)]
+  (set! (.. ^js (aget children i) -style -order) "")))
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-from-attrs! el)
+  ;; Restart autoplay on relevant attribute changes
+  (when (and (.-isConnected el)
+  (or (= _name model/attr-auto-play)
+  (= _name model/attr-interval)
+  (= _name model/attr-disabled)))
+  (restart-autoplay! el)))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

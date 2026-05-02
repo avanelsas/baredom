@@ -1,5 +1,6 @@
 (ns baredom.components.x-sidebar.x-sidebar
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-sidebar.model :as model])
   (:require-macros [cljs.core :refer [this-as]]))
@@ -435,33 +436,10 @@
         :enumerable true
         :configurable true}))
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (connected-callback this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (disconnected-callback this))))
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [name old-value new-value]
-            (this-as ^js this
-                     (attribute-changed-callback this name old-value new-value))))
-
-    (install-property-accessors! (.-prototype klass))
-
-    klass))
-
-(defn define-custom-element!
-  []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
-
-(defn init!
-  []
-  (define-custom-element!))
+(defn init! []
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected-callback
+     :disconnected-fn        disconnected-callback
+     :attribute-changed-fn   attribute-changed-callback
+     :setup-prototype-fn     install-property-accessors!}))

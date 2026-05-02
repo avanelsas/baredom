@@ -1,5 +1,6 @@
 (ns baredom.components.x-search-field.x-search-field
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-search-field.model :as model]))
 
@@ -381,62 +382,33 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    ;; Form-associated
-    (set! (.-formAssociated cls) true)
-
-    ;; observedAttributes
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Value property (special: also syncs input.value)
-    (define-value-prop! proto)
-
-    ;; String properties
-    (du/define-string-prop! proto "name"         model/attr-name "")
-    (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
-    (du/define-string-prop! proto "label"        model/attr-label "")
-    (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
-
-    ;; Boolean properties
-    (du/define-bool-prop! proto "disabled" model/attr-disabled)
-    (du/define-bool-prop! proto "required" model/attr-required)
-
-    ;; Form constraint validation API (delegates to internals)
-    (aset proto "checkValidity"
-          (fn [] (this-as ^js this
-                          (if-let [^js internals (gobj/get this k-internals)]
-                            (.checkValidity internals)
-                            true))))
-
-    (aset proto "reportValidity"
-          (fn [] (this-as ^js this
-                          (if-let [^js internals (gobj/get this k-internals)]
-                            (.reportValidity internals)
-                            true))))
-
-    ;; Lifecycle
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    ;; Form-associated callbacks
-    (aset proto "formDisabledCallback"
-          (fn [d] (this-as ^js this (form-disabled! this d))))
-
-    (aset proto "formResetCallback"
-          (fn [] (this-as ^js this (form-reset! this))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (define-value-prop! proto)
+  (du/define-string-prop! proto "name"         model/attr-name "")
+  (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
+  (du/define-string-prop! proto "label"        model/attr-label "")
+  (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "required" model/attr-required)
+  (aset proto "checkValidity"
+        (fn [] (this-as ^js this
+                        (if-let [^js internals (gobj/get this k-internals)]
+                          (.checkValidity internals)
+                          true))))
+  (aset proto "reportValidity"
+        (fn [] (this-as ^js this
+                        (if-let [^js internals (gobj/get this k-internals)]
+                          (.reportValidity internals)
+                          true)))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))

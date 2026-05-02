@@ -1,5 +1,6 @@
 (ns baredom.components.x-dropdown.x-dropdown
-  (:require [baredom.utils.dom :as du]
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-dropdown.model :as model]))
 
@@ -309,13 +310,21 @@
         (fn [^js evt]
           (when (and (= (.-key evt) "Escape")
                      (du/has-attr? el model/attr-open))
-            (toggle! el "escape")))]
+            (toggle! el "escape")))
+
+        panel-click-h
+        (fn [^js evt]
+          (when (du/has-attr? el model/attr-open)
+            (let [^js target (.-target evt)]
+              (when (.closest target "button, a, [role=menuitem]")
+                (toggle! el "item-select")))))]
 
     #js {:triggerClick   trigger-click-h
          :triggerKeydown trigger-keydown-h
          :hostFocusout   host-focusout-h
          :docClick       doc-click-h
-         :docKeydown     doc-keydown-h}))
+         :docKeydown     doc-keydown-h
+         :panelClick     panel-click-h}))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -323,18 +332,24 @@
 (defn- add-static-listeners! [^js el]
   (when-let [refs     (gobj/get el k-refs)]
     (when-let [handlers (gobj/get el k-handlers)]
-      (let [^js trigger-el (gobj/get refs "trigger")]
+      (let [^js trigger-el (gobj/get refs "trigger")
+            ^js panel-el   (gobj/get refs "panel")]
         (.addEventListener trigger-el "click"    (gobj/get handlers "triggerClick"))
         (.addEventListener trigger-el "keydown"  (gobj/get handlers "triggerKeydown"))
-        (.addEventListener el         "focusout" (gobj/get handlers "hostFocusout"))))))
+        (.addEventListener el         "focusout" (gobj/get handlers "hostFocusout"))
+        (when panel-el
+          (.addEventListener panel-el "click"    (gobj/get handlers "panelClick")))))))
 
 (defn- remove-static-listeners! [^js el]
   (when-let [refs     (gobj/get el k-refs)]
     (when-let [handlers (gobj/get el k-handlers)]
-      (let [^js trigger-el (gobj/get refs "trigger")]
+      (let [^js trigger-el (gobj/get refs "trigger")
+            ^js panel-el   (gobj/get refs "panel")]
         (.removeEventListener trigger-el "click"    (gobj/get handlers "triggerClick"))
         (.removeEventListener trigger-el "keydown"  (gobj/get handlers "triggerKeydown"))
-        (.removeEventListener el         "focusout" (gobj/get handlers "hostFocusout"))))))
+        (.removeEventListener el         "focusout" (gobj/get handlers "hostFocusout"))
+        (when panel-el
+          (.removeEventListener panel-el "click"    (gobj/get handlers "panelClick")))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
@@ -368,46 +383,27 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Reflected attribute properties
-    (du/define-bool-prop!   proto "open"      model/attr-open)
-    (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-    (du/define-string-prop! proto "label"     model/attr-label)
-    (du/define-string-prop! proto "placement" model/attr-placement)
-
-    ;; Public methods
-    ;; Note: open/close are named show/hide to avoid conflict with the open property
-    (aset proto "show"
-          (fn [] (this-as ^js this
-                          (when-not (du/has-attr? this model/attr-open)
-                            (toggle! this "programmatic")))))
-
-    (aset proto "hide"
-          (fn [] (this-as ^js this
-                          (when (du/has-attr? this model/attr-open)
-                            (toggle! this "programmatic")))))
-
-    (aset proto "toggle"
-          (fn [] (this-as ^js this (toggle! this "programmatic"))))
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop!   proto "open"      model/attr-open)
+  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+  (du/define-string-prop! proto "label"     model/attr-label)
+  (du/define-string-prop! proto "placement" model/attr-placement)
+  (aset proto "show"
+        (fn [] (this-as ^js this
+                        (when-not (du/has-attr? this model/attr-open)
+                          (toggle! this "programmatic")))))
+  (aset proto "hide"
+        (fn [] (this-as ^js this
+                        (when (du/has-attr? this model/attr-open)
+                          (toggle! this "programmatic")))))
+  (aset proto "toggle"
+        (fn [] (this-as ^js this (toggle! this "programmatic")))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

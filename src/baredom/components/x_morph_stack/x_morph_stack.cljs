@@ -1,6 +1,7 @@
 (ns baredom.components.x-morph-stack.x-morph-stack
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-morph-stack.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
@@ -940,46 +941,33 @@
                    (state-names this)))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     (update-from-attrs! this)
-                     ;; Initial slot may have already populated before connect — ensure visibility.
-                     (when (nil? (gobj/get this k-current-state))
-                       (on-slot-change this))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (cancel-current! this)
-                     (destroy-light-layer! this)
-                     (remove-listeners! this)
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-from-attrs! this))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public registration ─────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  (update-from-attrs! el)
+  ;; Initial slot may have already populated before connect — ensure visibility.
+  (when (nil? (gobj/get el k-current-state))
+  (on-slot-change el))
   nil)
 
+(defn- disconnected! [^js el]
+  (cancel-current! el)
+  (destroy-light-layer! el)
+  (remove-listeners! el)
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-from-attrs! el))
+  nil)
+
+;; ── Public registration ─────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

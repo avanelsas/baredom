@@ -4,7 +4,7 @@
             [baredom.components.x-welcome-tour-step.model :as model]))
 
 ;; ── Setup ───────────────────────────────────────────────────────────────────
-(step/register!)
+(step/init!)
 
 (defn cleanup-dom! []
   (doseq [^js node (.querySelectorAll js/document model/tag-name)]

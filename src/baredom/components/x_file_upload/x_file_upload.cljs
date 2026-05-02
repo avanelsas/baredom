@@ -1,5 +1,6 @@
 (ns baredom.components.x-file-upload.x-file-upload
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.components.x-file-upload.model :as model]
             [baredom.utils.dom :as du]))
 
@@ -577,62 +578,38 @@
 ;; ---------------------------------------------------------------------------
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
-(defn- element-class []
-  (let [cls   (js* "(class extends HTMLElement {})")
-        proto (.-prototype cls)]
 
-    (set! (.-formAssociated cls) true)
-
-    (.defineProperty js/Object cls "observedAttributes"
-                     #js {:get (fn [] model/observed-attributes)})
-
-    ;; Properties
-    (du/define-string-prop! proto "accept"   model/attr-accept)
-    (du/define-string-prop! proto "name"     model/attr-name)
-    (du/define-bool-prop!   proto "multiple" model/attr-multiple)
-    (du/define-bool-prop!   proto "disabled" model/attr-disabled)
-    (du/define-bool-prop!   proto "required" model/attr-required)
-    (du/define-number-prop! proto "maxSize" model/attr-max-size 0)
-    (du/define-number-prop! proto "maxFiles" model/attr-max-files 0)
-
-    ;; Read-only files property
-    (.defineProperty
-     js/Object proto "files"
-     #js {:configurable true
-          :enumerable   true
-          :get (fn [] (this-as ^js this
-                               (.slice (or (du/getv this k-files) #js []))))})
-
-    ;; Form delegates
-    (aset proto "checkValidity"
-          (fn [] (this-as ^js this
-                          (when-let [^js i (du/getv this k-internals)]
-                            (.checkValidity i)))))
-
-    (aset proto "reportValidity"
-          (fn [] (this-as ^js this
-                          (when-let [^js i (du/getv this k-internals)]
-                            (.reportValidity i)))))
-
-    ;; Form-associated callbacks
-    (aset proto "formDisabledCallback"
-          (fn [d] (this-as ^js this (form-disabled! this d))))
-
-    (aset proto "formResetCallback"
-          (fn [] (this-as ^js this (form-reset! this))))
-
-    ;; Lifecycle callbacks
-    (aset proto "connectedCallback"
-          (fn [] (this-as ^js this (connected! this))))
-
-    (aset proto "disconnectedCallback"
-          (fn [] (this-as ^js this (disconnected! this))))
-
-    (aset proto "attributeChangedCallback"
-          (fn [n o v] (this-as ^js this (attribute-changed! this n o v))))
-
-    cls))
+(defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "accept"   model/attr-accept)
+  (du/define-string-prop! proto "name"     model/attr-name)
+  (du/define-bool-prop!   proto "multiple" model/attr-multiple)
+  (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+  (du/define-bool-prop!   proto "required" model/attr-required)
+  (du/define-number-prop! proto "maxSize" model/attr-max-size 0)
+  (du/define-number-prop! proto "maxFiles" model/attr-max-files 0)
+  ;; Read-only files property
+  (.defineProperty
+   js/Object proto "files"
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this
+                             (.slice (or (du/getv this k-files) #js []))))})
+  (aset proto "checkValidity"
+        (fn [] (this-as ^js this
+                        (when-let [^js i (du/getv this k-internals)]
+                          (.checkValidity i)))))
+  (aset proto "reportValidity"
+        (fn [] (this-as ^js this
+                        (when-let [^js i (du/getv this k-internals)]
+                          (.reportValidity i))))))
 
 (defn init! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
+     :setup-prototype-fn     install-property-accessors!}))

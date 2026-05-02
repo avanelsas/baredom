@@ -240,9 +240,9 @@
 
     document.getElementById('btn-next').addEventListener('click', () => {
       const cur = parseInt(pg.getAttribute('current') || '0', 10);
-      const steps = pg.querySelectorAll ? null : null; // count from shadow
-      // Count steps from data-attribute or shadow DOM
-      const stepCount = 4; // matches JSON above
+      const raw = pg.getAttribute('steps') || '[]';
+      const stepCount = /^\d+$/.test(raw.trim()) ? parseInt(raw, 10)
+                       : (JSON.parse(raw) || []).length;
       if (cur < stepCount - 1) pg.setAttribute('current', String(cur + 1));
     });
 

@@ -1,5 +1,6 @@
 (ns baredom.components.x-command-palette.x-command-palette
-  (:require [goog.object :as gobj]
+  (:require [baredom.utils.component :as component]
+            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-command-palette.model :as model]))
 
@@ -565,23 +566,16 @@
 ;; Registration
 ;; ---------------------------------------------------------------------------
 
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-observedAttributes klass) model/observed-attributes)
-    (let [proto (.-prototype klass)]
-      (du/define-bool-prop!  proto "open"     model/attr-open)
-      (du/define-bool-prop!  proto "disabled" model/attr-disabled)
-      (define-items-prop! proto)
-      (define-methods!    proto)
-      (set! (.-connectedCallback proto)
-            (fn [] (this-as ^js this (connected! this))))
-      (set! (.-disconnectedCallback proto)
-            (fn [] (this-as ^js this (disconnected! this))))
-      (set! (.-attributeChangedCallback proto)
-            (fn [n o v] (this-as ^js this (attribute-changed! this n o v)))))
-    klass))
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop!  proto "open"     model/attr-open)
+  (du/define-bool-prop!  proto "disabled" model/attr-disabled)
+  (define-items-prop! proto)
+  (define-methods!    proto))
 
-(defn init!
-  []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class))))
+(defn init! []
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

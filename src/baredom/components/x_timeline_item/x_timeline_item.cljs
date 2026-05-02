@@ -1,6 +1,7 @@
 (ns baredom.components.x-timeline-item.x-timeline-item
   (:require
-   [goog.object :as gobj]
+[baredom.utils.component :as component]
+               [goog.object :as gobj]
    [baredom.components.x-timeline-item.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ─────────────────────────────────
@@ -528,57 +529,44 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (remove-listeners! this)
-                     (add-listeners! this)
-                     ;; Initialise k-parent-pos from any data-position already
-                     ;; present on the element (e.g., set in HTML before connect)
-                     (let [dp (.getAttribute this model/data-attr-position)]
-                       (when dp (gobj/set this k-parent-pos dp)))
-                     (update-from-attrs! this)
-                     (start-enter! this)
-                     (let [m (or (gobj/get this k-model) (read-model this))]
-                       (dispatch-connected! this m))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (let [m (or (gobj/get this k-model) (read-model this))]
-                       (remove-listeners! this)
-                       (gobj/set this k-entered nil)
-                       (dispatch-disconnected! this m))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [attr-name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (if (and (= attr-name model/data-attr-position)
-                                (gobj/get this k-self-pos))
-                         nil ;; self-write: ignore to break the feedback loop
-                         (do
-                           (when (= attr-name model/data-attr-position)
-                             (gobj/set this k-parent-pos new-val))
-                           (update-from-attrs! this))))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ────────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (remove-listeners! el)
+  (add-listeners! el)
+  ;; Initialise k-parent-pos from any data-position already
+  ;; present on the element (e.g., set in HTML before connect)
+  (let [dp (.getAttribute el model/data-attr-position)]
+  (when dp (gobj/set el k-parent-pos dp)))
+  (update-from-attrs! el)
+  (start-enter! el)
+  (let [m (or (gobj/get el k-model) (read-model el))]
+  (dispatch-connected! el m))
   nil)
 
+(defn- disconnected! [^js el]
+  (let [m (or (gobj/get el k-model) (read-model el))]
+  (remove-listeners! el)
+  (gobj/set el k-entered nil)
+  (dispatch-disconnected! el m))
+  nil)
+
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+  (if (and (= attr-name model/data-attr-position)
+  (gobj/get el k-self-pos))
+  nil ;; self-write: ignore to break the feedback loop
+  (do
+  (when (= attr-name model/data-attr-position)
+  (gobj/set el k-parent-pos new-val))
+  (update-from-attrs! el))))
+  nil)
+
+;; ── Public API ────────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))

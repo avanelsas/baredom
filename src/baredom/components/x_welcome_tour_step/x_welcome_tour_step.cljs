@@ -4,7 +4,8 @@
    for rich content. The parent orchestrator reads these attributes
    and renders the tour UI — this element never renders visibly itself."
   (:require
-   [baredom.components.x-welcome-tour-step.model :as model]
+[baredom.utils.component :as component]
+               [baredom.components.x-welcome-tour-step.model :as model]
    [baredom.utils.dom :as du]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
@@ -136,50 +137,37 @@
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-
-    (set! (.-observedAttributes klass) model/observed-attributes)
-
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js this
-                     (ensure-refs! this)
-                     (update-model! this)
-                     (.dispatchEvent this
-                                    (js/CustomEvent.
-                                     model/event-connected
-                                     #js {:bubbles    true
-                                          :composed   true
-                                          :cancelable false}))
-                     nil)))
-
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn []
-            (this-as ^js _this
-                     (.dispatchEvent js/document
-                                    (js/CustomEvent.
-                                     model/event-disconnected
-                                     #js {:bubbles    false
-                                          :composed   false
-                                          :cancelable false}))
-                     nil)))
-
-    (set! (.-attributeChangedCallback (.-prototype klass))
-          (fn [_name old-val new-val]
-            (this-as ^js this
-                     (when (not= old-val new-val)
-                       (update-model! this))
-                     nil)))
-
-    (install-property-accessors! (.-prototype klass))
-    klass))
-
-;; ── Public API ──────────────────────────────────────────────────────────────
-(defn register! []
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+(defn- connected! [^js el]
+  (ensure-refs! el)
+  (update-model! el)
+  (.dispatchEvent el
+  (js/CustomEvent.
+  model/event-connected
+  #js {:bubbles    true
+  :composed   true
+  :cancelable false}))
   nil)
 
+(defn- disconnected! [^js _el]
+  (.dispatchEvent js/document
+                  (js/CustomEvent.
+                   model/event-disconnected
+                   #js {:bubbles    false
+                        :composed   false
+                        :cancelable false}))
+  nil)
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+  (update-model! el))
+  nil)
+
+;; ── Public API ──────────────────────────────────────────────────────────────
+
 (defn init! []
-  (register!))
+  (component/register! model/tag-name
+    {:observed-attributes    model/observed-attributes
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
+     :setup-prototype-fn     install-property-accessors!}))
