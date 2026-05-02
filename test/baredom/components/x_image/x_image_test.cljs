@@ -17,7 +17,22 @@
   (doseq [node (.querySelectorAll js/document model/tag-name)]
     (.remove node)))
 
-(use-fixtures :each {:before cleanup-dom! :after cleanup-dom!})
+;; Suppress the x-image missing-alt console.warn during tests.
+(def ^:private orig-warn js/console.warn)
+
+(defn- silence-alt-warn! []
+  (set! js/console.warn
+        (fn [& args]
+          (when-not (and (string? (first args))
+                         (.includes ^js (first args) "[x-image] Missing alt"))
+            (.apply orig-warn js/console (to-array args))))))
+
+(defn- restore-warn! []
+  (set! js/console.warn orig-warn))
+
+(use-fixtures :each
+  {:before (fn [] (silence-alt-warn!) (cleanup-dom!))
+   :after  (fn [] (cleanup-dom!) (restore-warn!))})
 
 (defn ^js make-el []
   (.createElement js/document model/tag-name))
