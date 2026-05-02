@@ -13,11 +13,13 @@
   el)
 
 (defn- cleanup-dom []
-  (let [body (.-body js/document)]
-    (loop []
-      (when-let [c (.-firstChild body)]
-        (.removeChild body c)
-        (recur)))))
+  (let [body  (.-body js/document)
+        kids  (.from js/Array (.-childNodes body))]
+    (doseq [^js c kids]
+      ;; Preserve the test-runner display root created by cljs-test-display.
+      (when-not (and (= 1 (.-nodeType c))
+                     (= "test-root" (.-id c)))
+        (.removeChild body c)))))
 
 (defn cleanup-fixture [f] (f) (cleanup-dom))
 (use-fixtures :each cleanup-fixture)
