@@ -471,6 +471,11 @@
      {init baredom.exports.x-liquid-fill/init}
      :depends-on #{:base}}
 
+    :x-kinetic-canvas
+    {:exports
+     {init baredom.exports.x-kinetic-canvas/init}
+     :depends-on #{:base}}
+
     :x-morph-stack
     {:exports
      {init baredom.exports.x-morph-stack/init}

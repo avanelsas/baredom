@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x-kinetic-canvas demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: var(--page-bg);
+      color: var(--page-text);
+    }
+    h1 { margin-bottom: 0.5rem; }
+    h2 { margin-top: 2.5rem; }
+    p.desc { opacity: 0.7; margin-bottom: 2rem; }
+
+    .demo-box {
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+    .demo-box x-kinetic-canvas {
+      height: 300px;
+      border-radius: 12px;
+    }
+    .demo-box .overlay-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: var(--surface-bg);
+      border-radius: 8px;
+    }
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .controls select,
+    .controls input[type="checkbox"] {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .custom-colors x-kinetic-canvas {
+      --x-kinetic-canvas-bg: #1a0a2e;
+      --x-kinetic-canvas-color-1: #ff6ec7;
+      --x-kinetic-canvas-color-2: #7b68ee;
+      --x-kinetic-canvas-color-3: #00ced1;
+    }
+
+    .event-log {
+      font-family: monospace;
+      font-size: 0.8rem;
+      padding: 0.5rem;
+      background: var(--surface-bg);
+      border-radius: 4px;
+      max-height: 100px;
+      overflow-y: auto;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>x-kinetic-canvas</h1>
+  <p class="desc">Animated canvas backgrounds with slotted content. Supports starfield, bubbles, and matrix rain effects.</p>
+
+  <!-- ── Starfield (motion) ─────────────────────────────────────── -->
+  <h2>Starfield — motion variant</h2>
+  <div class="demo-box">
+    <x-kinetic-canvas type="starfield" variant="motion" style="height:300px;border-radius:12px;">
+      <div class="overlay-text">Stars in motion</div>
+    </x-kinetic-canvas>
+  </div>
+
+  <!-- ── Starfield (twinkle) ────────────────────────────────────── -->
+  <h2>Starfield — twinkle variant</h2>
+  <div class="demo-box">
+    <x-kinetic-canvas type="starfield" variant="twinkle" style="height:300px;border-radius:12px;">
+      <div class="overlay-text">Twinkling stars</div>
+    </x-kinetic-canvas>
+  </div>
+
+  <!-- ── Bubbles ────────────────────────────────────────────────── -->
+  <h2>Bubbles</h2>
+  <div class="demo-box">
+    <x-kinetic-canvas type="bubbles" style="height:300px;border-radius:12px;">
+      <div class="overlay-text">Floating bubbles</div>
+    </x-kinetic-canvas>
+  </div>
+
+  <!-- ── Matrix ─────────────────────────────────────────────────── -->
+  <h2>Matrix rain</h2>
+  <div class="demo-box">
+    <x-kinetic-canvas type="matrix" style="height:300px;border-radius:12px;">
+      <div class="overlay-text">The Matrix has you</div>
+    </x-kinetic-canvas>
+  </div>
+
+  <!-- ── Custom colours ─────────────────────────────────────────── -->
+  <h2>Custom colours (CSS custom properties)</h2>
+  <div class="demo-box custom-colors">
+    <x-kinetic-canvas type="starfield" variant="twinkle" style="height:250px;border-radius:12px;">
+      <div class="overlay-text">Neon palette</div>
+    </x-kinetic-canvas>
+  </div>
+  <pre style="font-size:0.8rem;opacity:0.7;">--x-kinetic-canvas-bg: #1a0a2e;
+--x-kinetic-canvas-color-1: #ff6ec7;
+--x-kinetic-canvas-color-2: #7b68ee;
+--x-kinetic-canvas-color-3: #00ced1;</pre>
+
+  <!-- ── Interactive control panel ──────────────────────────────── -->
+  <h2>Interactive controls</h2>
+  <div class="controls">
+    <label>
+      Type
+      <select id="ctrl-type">
+        <option value="starfield">starfield</option>
+        <option value="bubbles">bubbles</option>
+        <option value="matrix">matrix</option>
+      </select>
+    </label>
+    <label>
+      Variant
+      <select id="ctrl-variant">
+        <option value="motion">motion</option>
+        <option value="twinkle">twinkle</option>
+      </select>
+    </label>
+    <label>
+      Speed
+      <select id="ctrl-speed">
+        <option value="slow">slow</option>
+        <option value="medium" selected>medium</option>
+        <option value="fast">fast</option>
+      </select>
+    </label>
+    <label>
+      Density
+      <select id="ctrl-density">
+        <option value="low">low</option>
+        <option value="medium" selected>medium</option>
+        <option value="high">high</option>
+      </select>
+    </label>
+    <label>
+      Paused
+      <input type="checkbox" id="ctrl-paused">
+    </label>
+    <label>
+      Fullscreen
+      <input type="checkbox" id="ctrl-fullscreen">
+    </label>
+  </div>
+  <div class="demo-box">
+    <x-kinetic-canvas id="demo-target" type="starfield" style="height:350px;border-radius:12px;">
+      <div class="overlay-text">Try the controls above</div>
+    </x-kinetic-canvas>
+  </div>
+
+  <!-- ── Reduced motion note ────────────────────────────────────── -->
+  <h2>Accessibility</h2>
+  <p>When <code>prefers-reduced-motion: reduce</code> is active, the component renders a single static frame with no animation loop.</p>
+
+  <script>
+    const target = document.getElementById('demo-target');
+    document.getElementById('ctrl-type').addEventListener('change', e => {
+      target.setAttribute('type', e.target.value);
+    });
+    document.getElementById('ctrl-variant').addEventListener('change', e => {
+      target.setAttribute('variant', e.target.value);
+    });
+    document.getElementById('ctrl-speed').addEventListener('change', e => {
+      target.setAttribute('speed', e.target.value);
+    });
+    document.getElementById('ctrl-density').addEventListener('change', e => {
+      target.setAttribute('density', e.target.value);
+    });
+    document.getElementById('ctrl-paused').addEventListener('change', e => {
+      if (e.target.checked) target.setAttribute('paused', '');
+      else target.removeAttribute('paused');
+    });
+    document.getElementById('ctrl-fullscreen').addEventListener('change', e => {
+      if (e.target.checked) target.setAttribute('fullscreen', '');
+      else target.removeAttribute('fullscreen');
+    });
+  </script>
+</body>
+</html>

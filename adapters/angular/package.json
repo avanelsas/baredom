@@ -180,6 +180,10 @@
       "import" : "./dist/directives/x-image.directive.js",
       "types" : "./dist/directives/x-image.directive.d.ts"
     },
+    "./x-kinetic-canvas" : {
+      "import" : "./dist/directives/x-kinetic-canvas.directive.js",
+      "types" : "./dist/directives/x-kinetic-canvas.directive.d.ts"
+    },
     "./x-kinetic-font" : {
       "import" : "./dist/directives/x-kinetic-font.directive.js",
       "types" : "./dist/directives/x-kinetic-font.directive.d.ts"

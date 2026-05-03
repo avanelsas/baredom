@@ -85,6 +85,7 @@
    [baredom.exports.x-liquid-glass   :as x-liquid-glass]
    [baredom.exports.x-liquid-dock    :as x-liquid-dock]
    [baredom.exports.x-liquid-fill    :as x-liquid-fill]
+   [baredom.exports.x-kinetic-canvas :as x-kinetic-canvas]
    [baredom.exports.x-morph-stack    :as x-morph-stack]
    [baredom.exports.x-particle-button :as x-particle-button]
    [baredom.exports.x-image          :as x-image]
@@ -180,6 +181,7 @@
   (x-liquid-glass/register!)
   (x-liquid-dock/register!)
   (x-liquid-fill/register!)
+  (x-kinetic-canvas/register!)
   (x-morph-stack/register!)
   (x-particle-button/register!)
   (x-image/register!)

@@ -35,6 +35,7 @@ export { XGaussianBlur, type XGaussianBlurProps } from "./x-gaussian-blur";
 export { XGrid, type XGridProps } from "./x-grid";
 export { XIcon, type XIconProps } from "./x-icon";
 export { XImage, type XImageProps } from "./x-image";
+export { XKineticCanvas, type XKineticCanvasProps } from "./x-kinetic-canvas";
 export { XKineticFont, type XKineticFontProps } from "./x-kinetic-font";
 export { XKineticTypography, type XKineticTypographyProps } from "./x-kinetic-typography";
 export { XLiquidDock, type XLiquidDockProps } from "./x-liquid-dock";
