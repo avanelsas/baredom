@@ -291,6 +291,11 @@
       "import": "./dist/x-liquid-fill.js",
       "default": "./dist/x-liquid-fill.js"
     },
+    "./x-kinetic-canvas": {
+      "types": "./dist/x-kinetic-canvas.d.ts",
+      "import": "./dist/x-kinetic-canvas.js",
+      "default": "./dist/x-kinetic-canvas.js"
+    },
     "./x-divider": {
       "types": "./dist/x-divider.d.ts",
       "import": "./dist/x-divider.js",

@@ -171,6 +171,10 @@
       "import" : "./dist/x-image.js",
       "types" : "./dist/x-image.d.ts"
     },
+    "./x-kinetic-canvas" : {
+      "import" : "./dist/x-kinetic-canvas.js",
+      "types" : "./dist/x-kinetic-canvas.d.ts"
+    },
     "./x-kinetic-font" : {
       "import" : "./dist/x-kinetic-font.js",
       "types" : "./dist/x-kinetic-font.d.ts"
