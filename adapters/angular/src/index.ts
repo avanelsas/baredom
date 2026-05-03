@@ -36,6 +36,7 @@ export { BaredomGaussianBlur } from './directives/x-gaussian-blur.directive';
 export { BaredomGrid } from './directives/x-grid.directive';
 export { BaredomIcon } from './directives/x-icon.directive';
 export { BaredomImage } from './directives/x-image.directive';
+export { BaredomKineticCanvas } from './directives/x-kinetic-canvas.directive';
 export { BaredomKineticFont } from './directives/x-kinetic-font.directive';
 export { BaredomKineticTypography } from './directives/x-kinetic-typography.directive';
 export { BaredomLiquidDock } from './directives/x-liquid-dock.directive';
