@@ -1,0 +1,24 @@
+{
+  "greeting": {
+    "hello": "Hallo {name}!",
+    "goodbye": "Tot ziens {name}!",
+    "welcome": "Welkom bij onze applicatie"
+  },
+  "nav": {
+    "home": "Startpagina",
+    "about": "Over ons",
+    "contact": "Contact",
+    "settings": "Instellingen"
+  },
+  "actions": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "confirm": "Weet je het zeker?"
+  },
+  "status": {
+    "loading": "Laden...",
+    "error": "Er is een fout opgetreden",
+    "success": "Bewerking geslaagd"
+  }
+}

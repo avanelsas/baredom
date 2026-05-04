@@ -71,6 +71,16 @@
       "import": "./dist/x-popover.js",
       "default": "./dist/x-popover.js"
     },
+    "./x-i18n-provider": {
+      "types": "./dist/x-i18n-provider.d.ts",
+      "import": "./dist/x-i18n-provider.js",
+      "default": "./dist/x-i18n-provider.js"
+    },
+    "./x-i18n": {
+      "types": "./dist/x-i18n.d.ts",
+      "import": "./dist/x-i18n.js",
+      "default": "./dist/x-i18n.js"
+    },
     "./x-icon": {
       "types": "./dist/x-icon.d.ts",
       "import": "./dist/x-icon.js",

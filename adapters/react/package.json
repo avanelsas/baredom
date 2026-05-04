@@ -163,6 +163,14 @@
       "import" : "./dist/x-grid.js",
       "types" : "./dist/x-grid.d.ts"
     },
+    "./x-i18n" : {
+      "import" : "./dist/x-i18n.js",
+      "types" : "./dist/x-i18n.d.ts"
+    },
+    "./x-i18n-provider" : {
+      "import" : "./dist/x-i18n-provider.js",
+      "types" : "./dist/x-i18n-provider.d.ts"
+    },
     "./x-icon" : {
       "import" : "./dist/x-icon.js",
       "types" : "./dist/x-icon.d.ts"
