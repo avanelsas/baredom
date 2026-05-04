@@ -34,6 +34,8 @@ export { BaredomForm } from './directives/x-form.directive';
 export { BaredomFormField } from './directives/x-form-field.directive';
 export { BaredomGaussianBlur } from './directives/x-gaussian-blur.directive';
 export { BaredomGrid } from './directives/x-grid.directive';
+export { BaredomI18n } from './directives/x-i18n.directive';
+export { BaredomI18nProvider } from './directives/x-i18n-provider.directive';
 export { BaredomIcon } from './directives/x-icon.directive';
 export { BaredomImage } from './directives/x-image.directive';
 export { BaredomKineticCanvas } from './directives/x-kinetic-canvas.directive';
