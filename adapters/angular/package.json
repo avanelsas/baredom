@@ -442,7 +442,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "2.1.0",
+  "version" : "2.7.0",
   "main" : "./dist/index.js",
   "sideEffects" : true
 }
