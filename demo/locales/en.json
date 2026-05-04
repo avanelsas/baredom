@@ -1,0 +1,24 @@
+{
+  "greeting": {
+    "hello": "Hello {name}!",
+    "goodbye": "Goodbye {name}!",
+    "welcome": "Welcome to our application"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Are you sure?"
+  },
+  "status": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful"
+  }
+}

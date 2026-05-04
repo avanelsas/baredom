@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-i18n demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+        background: var(--page-bg);
+        color: var(--page-fg);
+      }
+
+      .subtitle {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin: 0 0 32px;
+      }
+
+      section {
+        margin-bottom: 40px;
+      }
+
+      section h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 12px;
+      }
+
+      .demo-card {
+        border: 1px solid var(--surface-border);
+        border-radius: 12px;
+        padding: 20px;
+        background: var(--surface-bg);
+        margin-bottom: 16px;
+      }
+
+      .demo-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+
+      .demo-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        min-width: 160px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .controls label {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .controls select, .controls input {
+        font-size: 0.875rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg);
+        color: var(--page-fg);
+      }
+
+      .event-log {
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--surface-bg);
+      }
+
+      .event-log div {
+        padding: 2px 0;
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .event-log div:last-child {
+        border-bottom: none;
+      }
+
+      .nested-section {
+        border: 2px dashed var(--surface-border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 12px;
+      }
+
+      .nested-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .component-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+        gap: 16px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>x-i18n + x-i18n-provider</h1>
+    <p class="subtitle">
+      Internationalization components. The provider loads translations from
+      JSON files. Use <code>&lt;x-i18n&gt;</code> for inline text or
+      <code>data-i18n-{attr}</code> to auto-translate any component's attributes.
+    </p>
+
+    <!-- Controls -->
+    <div class="controls">
+      <label for="locale-select">Locale:</label>
+      <select id="locale-select">
+        <option value="en" selected>English (en)</option>
+        <option value="nl">Nederlands (nl)</option>
+        <option value="de">Deutsch (de)</option>
+      </select>
+
+      <label for="name-input">Name param:</label>
+      <input id="name-input" type="text" value="World" />
+    </div>
+
+    <x-i18n-provider id="main-provider"
+                     src="/demo/locales/{locale}.json"
+                     locale="en"
+                     fallback-locale="en">
+
+      <!-- Inline x-i18n elements -->
+      <section>
+        <h2>Inline &lt;x-i18n&gt; elements</h2>
+        <div class="demo-card">
+          <div class="demo-row">
+            <span class="demo-label">greeting.hello:</span>
+            <x-i18n key="greeting.hello" params='{"name":"World"}'></x-i18n>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">greeting.goodbye:</span>
+            <x-i18n key="greeting.goodbye" params='{"name":"World"}'></x-i18n>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">greeting.welcome:</span>
+            <x-i18n key="greeting.welcome"></x-i18n>
+          </div>
+        </div>
+      </section>
+
+      <!-- Component attribute scanning -->
+      <section>
+        <h2>Component attribute scanning (data-i18n-*)</h2>
+        <p class="subtitle" style="margin-bottom:16px">
+          These BareDOM components have their text attributes set automatically
+          via <code>data-i18n-{attr}="translation.key"</code>.
+        </p>
+
+        <div class="component-grid">
+          <!-- x-button (uses slotted content for visible text) -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-button (slot)</h3>
+            <div class="demo-row">
+              <x-button><x-i18n key="actions.save"></x-i18n></x-button>
+            </div>
+            <div class="demo-row">
+              <x-button variant="secondary"><x-i18n key="actions.cancel"></x-i18n></x-button>
+            </div>
+            <div class="demo-row">
+              <x-button variant="danger"><x-i18n key="actions.delete"></x-i18n></x-button>
+            </div>
+          </div>
+
+          <!-- x-alert -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-alert</h3>
+            <x-alert data-i18n-text="status.success" type="success"></x-alert>
+            <x-alert data-i18n-text="status.error" type="error" style="margin-top:8px"></x-alert>
+            <x-alert data-i18n-text="status.loading" type="info" style="margin-top:8px"></x-alert>
+          </div>
+
+          <!-- x-badge -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-badge</h3>
+            <div class="demo-row">
+              <x-badge data-i18n-text="nav.home" variant="primary"></x-badge>
+              <x-badge data-i18n-text="nav.about" variant="secondary"></x-badge>
+              <x-badge data-i18n-text="nav.contact"></x-badge>
+            </div>
+          </div>
+
+          <!-- x-chip -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-chip</h3>
+            <div class="demo-row">
+              <x-chip data-i18n-label="nav.settings"></x-chip>
+              <x-chip data-i18n-label="nav.home"></x-chip>
+            </div>
+          </div>
+
+          <!-- x-tooltip -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-tooltip</h3>
+            <x-tooltip data-i18n-text="actions.confirm">
+              <x-button variant="danger"><x-i18n key="actions.delete"></x-i18n></x-button>
+            </x-tooltip>
+          </div>
+
+          <!-- x-collapse -->
+          <div class="demo-card">
+            <h3 style="margin:0 0 12px;font-size:0.875rem">x-collapse</h3>
+            <x-collapse data-i18n-header="nav.settings">
+              <p><x-i18n key="greeting.welcome"></x-i18n></p>
+            </x-collapse>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interpolation -->
+      <section>
+        <h2>Interpolation with {placeholder}</h2>
+        <p class="subtitle" style="margin-bottom:16px">
+          Dynamic params use inline <code>&lt;x-i18n&gt;</code> (reacts to attribute changes).
+          Static params use <code>data-i18n-params</code> (resolved on locale change).
+        </p>
+        <div class="demo-card">
+          <div class="demo-row">
+            <span class="demo-label">Dynamic (x-i18n):</span>
+            <x-button><x-i18n key="greeting.hello" params='{"name":"World"}'></x-i18n></x-button>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">Static (data-i18n-*):</span>
+            <x-chip data-i18n-label="greeting.hello"
+                    data-i18n-params='{"name":"World"}'></x-chip>
+          </div>
+        </div>
+      </section>
+
+      <!-- Missing key fallback -->
+      <section>
+        <h2>Missing key fallback</h2>
+        <div class="demo-card">
+          <div class="demo-row">
+            <span class="demo-label">Inline:</span>
+            <x-i18n key="missing.key"></x-i18n>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">Attribute:</span>
+            <x-chip data-i18n-label="missing.chip.label"></x-chip>
+          </div>
+        </div>
+      </section>
+
+      <!-- Nested provider -->
+      <section>
+        <h2>Nested provider (override)</h2>
+        <div class="demo-card">
+          <div class="demo-row">
+            <span class="demo-label">Outer (selected locale):</span>
+            <x-chip data-i18n-label="actions.save"></x-chip>
+          </div>
+
+          <div class="nested-section">
+            <div class="nested-label">Inner provider (always German)</div>
+            <x-i18n-provider id="nested-provider"
+                             src="/demo/locales/{locale}.json"
+                             locale="de">
+              <div class="demo-row">
+                <span class="demo-label">Inner (de):</span>
+                <x-chip data-i18n-label="actions.save"></x-chip>
+              </div>
+            </x-i18n-provider>
+          </div>
+        </div>
+      </section>
+
+    </x-i18n-provider>
+
+    <!-- Event log -->
+    <section>
+      <h2>Event log</h2>
+      <div id="event-log" class="event-log">
+        <div><em>Events will appear here...</em></div>
+      </div>
+    </section>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var provider = document.getElementById('main-provider');
+        var localeSelect = document.getElementById('locale-select');
+        var nameInput = document.getElementById('name-input');
+        var eventLog = document.getElementById('event-log');
+
+        // Locale switching
+        localeSelect.addEventListener('change', function () {
+          provider.setAttribute('locale', localeSelect.value);
+        });
+
+        // Name param update — updates inline x-i18n elements (they react to
+        // attribute changes). data-i18n-params on other elements only resolves
+        // on locale change, so we don't update those dynamically.
+        nameInput.addEventListener('input', function () {
+          var params = JSON.stringify({ name: nameInput.value });
+          var i18nEls = provider.querySelectorAll('x-i18n[key^="greeting"]');
+          for (var i = 0; i < i18nEls.length; i++) {
+            i18nEls[i].setAttribute('params', params);
+          }
+        });
+
+        // Event logging
+        function logEvent(e) {
+          var entry = document.createElement('div');
+          var time = new Date().toLocaleTimeString();
+          entry.textContent = time + ' [' + e.type + '] ' + JSON.stringify(e.detail);
+          if (eventLog.firstChild && eventLog.firstChild.querySelector('em')) {
+            eventLog.innerHTML = '';
+          }
+          eventLog.prepend(entry);
+        }
+
+        provider.addEventListener('x-i18n-loading', logEvent);
+        provider.addEventListener('x-i18n-change', logEvent);
+        provider.addEventListener('x-i18n-error', logEvent);
+      });
+    </script>
+  </body>
+</html>
