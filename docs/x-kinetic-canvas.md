@@ -51,9 +51,9 @@ None.
 | Property | Default (light) | Default (dark) | Description |
 |----------|----------------|---------------|-------------|
 | `--x-kinetic-canvas-bg` | `var(--x-color-bg, #f0f0f5)` | `var(--x-color-bg, #0a0a1a)` | Canvas background fill |
-| `--x-kinetic-canvas-color-1` | `var(--x-color-text-muted, #888)` | `var(--x-color-text, #fff)` | Primary entity colour |
-| `--x-kinetic-canvas-color-2` | `var(--x-color-primary, #3b82f6)` | `var(--x-color-primary, #60a5fa)` | Secondary entity colour |
-| `--x-kinetic-canvas-color-3` | `var(--x-color-secondary, #a855f7)` | `var(--x-color-secondary, #c084fc)` | Tertiary entity colour |
+| `--x-kinetic-canvas-color-1` | `var(--x-color-text, #1a1a2e)` | `var(--x-color-text, #ffffff)` | Primary entity colour |
+| `--x-kinetic-canvas-color-2` | `var(--x-color-primary, #2563eb)` | `var(--x-color-primary, #60a5fa)` | Secondary entity colour |
+| `--x-kinetic-canvas-color-3` | `var(--x-color-secondary, #7c3aed)` | `var(--x-color-secondary, #c084fc)` | Tertiary entity colour |
 | `--x-kinetic-canvas-matrix-font-size` | `14` | `14` | Font size (px) for matrix rain characters |
 | `--x-kinetic-canvas-z` | `-1` | `-1` | `z-index` for fullscreen mode (behind content by default) |
 
