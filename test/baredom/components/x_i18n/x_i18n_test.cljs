@@ -30,8 +30,7 @@
 (defn set-translations!
   "Directly set translations on a provider for test purposes."
   [^js prov current fallback]
-  (du/setv! prov xp/k-translations
-            #js {:current current :fallback fallback}))
+  (xp/set-translations! prov #js {:current current :fallback fallback}))
 
 ;; ── Registration ────────────────────────────────────────────────────────────
 (deftest registration-test

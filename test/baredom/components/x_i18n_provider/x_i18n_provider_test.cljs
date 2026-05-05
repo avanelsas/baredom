@@ -1,8 +1,7 @@
 (ns baredom.components.x-i18n-provider.x-i18n-provider-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures]]
             [baredom.components.x-i18n-provider.x-i18n-provider :as x]
-            [baredom.components.x-i18n-provider.model :as model]
-            [baredom.utils.dom :as du]))
+            [baredom.components.x-i18n-provider.model :as model]))
 
 (x/init!)
 
@@ -22,8 +21,7 @@
 (defn set-translations!
   "Directly set translations on a provider for test purposes."
   [^js prov current fallback]
-  (du/setv! prov x/k-translations
-            #js {:current current :fallback fallback}))
+  (x/set-translations! prov #js {:current current :fallback fallback}))
 
 ;; ── Registration ────────────────────────────────────────────────────────────
 (deftest registration-test
