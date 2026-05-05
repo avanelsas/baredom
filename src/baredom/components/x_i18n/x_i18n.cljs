@@ -38,7 +38,7 @@
 (defn- apply-model! [^js el m]
   (let [^js refs     (du/getv el k-refs)
         ^js prov     (du/getv el k-provider)
-        ^js t        (when prov (du/getv prov provider/k-translations))
+        ^js t        (when prov (provider/get-translations prov))
         ^js current  (when t (gobj/get t "current"))
         ^js fallback (when t (gobj/get t "fallback"))
         text         (model/resolve-translation current fallback

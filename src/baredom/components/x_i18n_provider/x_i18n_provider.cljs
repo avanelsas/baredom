@@ -8,12 +8,25 @@
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs         "__xI18nProviderRefs")
 (def ^:private k-model        "__xI18nProviderModel")
-(def k-translations           "__xI18nProviderTranslations")
+(def ^:private k-translations "__xI18nProviderTranslations")
 (def ^:private k-abort        "__xI18nProviderAbort")
+
+;; ── Public field key (accessed by x-i18n for translation lookup) ────────────
+(defn get-translations
+  "Returns the translations object stored on the provider element.
+   Used by x-i18n children to resolve translation keys."
+  [^js el]
+  (du/getv el k-translations))
+
+(defn set-translations!
+  "Set translations on the provider element.
+   Used by tests and for programmatic locale injection."
+  [^js el ^js translations]
+  (du/setv! el k-translations translations))
 
 ;; ── data-i18n-* constants ───────────────────────────────────────────────────
 (def ^:private data-i18n-prefix     "data-i18n-")
-(def ^:private data-i18n-prefix-len 10)
+(def ^:private data-i18n-prefix-len (count data-i18n-prefix))
 (def ^:private data-i18n-params     "data-i18n-params")
 
 ;; ── CSS ─────────────────────────────────────────────────────────────────────
