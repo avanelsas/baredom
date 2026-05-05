@@ -135,7 +135,8 @@
         (when attr
           (case type
             boolean (define-bool-prop! proto js-name attr)
-            string  (define-string-prop! proto js-name attr)
+            string  (define-string-prop! proto js-name attr
+                                         (:default spec))
             number  (define-number-prop! proto js-name attr
                                          (or (:default spec) 0))
             nil))))))

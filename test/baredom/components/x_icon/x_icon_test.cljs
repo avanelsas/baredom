@@ -133,7 +133,7 @@
     (set! (.-size el) "lg")
     (is (= "lg" (.getAttribute el model/attr-size)))
     (is (= "lg" (.-size el)))
-    (set! (.-size el) "")
+    (set! (.-size el) nil)
     (is (not (.hasAttribute el model/attr-size)))))
 
 (deftest color-property-test
