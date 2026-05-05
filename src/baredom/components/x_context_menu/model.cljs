@@ -104,4 +104,11 @@
       primary
       flipped)))
 
+(def event-schema
+  {event-open-request  {:cancelable true  :detail {:reason 'string}}
+   event-open          {:cancelable false :detail {:reason 'string}}
+   event-close-request {:cancelable true  :detail {:reason 'string}}
+   event-close         {:cancelable false :detail {:reason 'string}}
+   event-select        {:cancelable false :detail {:item 'object}}})
+
 (def method-api nil)

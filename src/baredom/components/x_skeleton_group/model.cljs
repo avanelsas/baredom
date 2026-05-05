@@ -100,4 +100,6 @@
               :items  [{:variant "text" :width "120px"}
                        {:variant "text" :width "80px"}]}]}})
 
+(def event-schema {})
+
 (def method-api nil)

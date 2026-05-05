@@ -32,4 +32,6 @@
      :aria-label       aria-label-raw
      :aria-describedby aria-describedby-raw}))
 
+(def event-schema {})
+
 (def method-api nil)

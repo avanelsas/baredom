@@ -60,4 +60,6 @@
    :axis {:type 'string}
    :grow {:type 'boolean}})
 
+(def event-schema {})
+
 (def method-api nil)

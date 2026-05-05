@@ -72,4 +72,6 @@
    :inset       {:type 'string}
    :length      {:type 'string}})
 
+(def event-schema {})
+
 (def method-api nil)

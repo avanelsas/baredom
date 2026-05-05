@@ -41,4 +41,6 @@
    :width     (normalize-css-value width)
    :height    (normalize-css-value height)})
 
+(def event-schema {})
+
 (def method-api nil)
