@@ -104,4 +104,6 @@
    :status   {:type 'string}
    :disabled {:type 'boolean}})
 
+(def event-schema {})
+
 (def method-api nil)

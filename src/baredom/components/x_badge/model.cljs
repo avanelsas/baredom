@@ -96,4 +96,6 @@
    :max     {:type 'number}
    :text    {:type 'string}})
 
+(def event-schema {})
+
 (def method-api nil)

@@ -315,4 +315,9 @@
           (format-date (:start-d canon) config)
           :else "")))))
 
+(def event-schema
+  {event-input          {:cancelable false :detail {:value 'string :mode 'string}}
+   event-change-request {:cancelable true  :detail {:value 'string :mode 'string :reason 'string}}
+   event-change         {:cancelable false :detail {:value 'string :mode 'string :reason 'string}}})
+
 (def method-api nil)

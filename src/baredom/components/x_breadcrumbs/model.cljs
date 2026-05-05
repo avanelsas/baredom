@@ -109,4 +109,6 @@
    :items-after  {:type 'number}
    :disabled     {:type 'boolean}})
 
+(def event-schema {})
+
 (def method-api nil)

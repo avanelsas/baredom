@@ -62,4 +62,6 @@
    :variant (normalize-variant variant)
    :label   (normalize-label label)})
 
+(def event-schema {})
+
 (def method-api nil)

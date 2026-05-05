@@ -74,4 +74,6 @@
    :disabled  {:type 'boolean}
    :label     {:type 'string}})
 
+(def event-schema {})
+
 (def method-api nil)

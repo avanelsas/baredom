@@ -258,4 +258,10 @@
          pts))
       by-id))))
 
+(def event-schema
+  {event-select {:cancelable false
+                 :detail     {:seriesId 'string :index 'number :x 'number :y 'number :value 'number}}
+   event-hover  {:cancelable false
+                 :detail     {:seriesId 'string :index 'number :x 'number :y 'number :value 'number}}})
+
 (def method-api nil)
