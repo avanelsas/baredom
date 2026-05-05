@@ -33,6 +33,8 @@ export { XForm, type XFormProps } from "./x-form";
 export { XFormField, type XFormFieldProps } from "./x-form-field";
 export { XGaussianBlur, type XGaussianBlurProps } from "./x-gaussian-blur";
 export { XGrid, type XGridProps } from "./x-grid";
+export { XI18n, type XI18nProps } from "./x-i18n";
+export { XI18nProvider, type XI18nProviderProps } from "./x-i18n-provider";
 export { XIcon, type XIconProps } from "./x-icon";
 export { XImage, type XImageProps } from "./x-image";
 export { XKineticCanvas, type XKineticCanvasProps } from "./x-kinetic-canvas";

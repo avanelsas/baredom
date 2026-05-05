@@ -172,6 +172,14 @@
       "import" : "./dist/directives/x-grid.directive.js",
       "types" : "./dist/directives/x-grid.directive.d.ts"
     },
+    "./x-i18n" : {
+      "import" : "./dist/directives/x-i18n.directive.js",
+      "types" : "./dist/directives/x-i18n.directive.d.ts"
+    },
+    "./x-i18n-provider" : {
+      "import" : "./dist/directives/x-i18n-provider.directive.js",
+      "types" : "./dist/directives/x-i18n-provider.directive.d.ts"
+    },
     "./x-icon" : {
       "import" : "./dist/directives/x-icon.directive.js",
       "types" : "./dist/directives/x-icon.directive.d.ts"

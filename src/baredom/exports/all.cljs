@@ -89,6 +89,8 @@
    [baredom.exports.x-morph-stack     :as x-morph-stack]
    [baredom.exports.x-particle-button :as x-particle-button]
    [baredom.exports.x-image           :as x-image]
+   [baredom.exports.x-i18n-provider   :as x-i18n-provider]
+   [baredom.exports.x-i18n            :as x-i18n]
    [baredom.exports.x-icon            :as x-icon]
    [baredom.exports.x-theme           :as x-theme]))
 
@@ -183,6 +185,8 @@
   (x-morph-stack/register!)
   (x-particle-button/register!)
   (x-image/register!)
+  (x-i18n-provider/register!)
+  (x-i18n/register!)
   (x-icon/register!)
   (x-theme/register!))
 

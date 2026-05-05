@@ -491,6 +491,16 @@
      {init baredom.exports.x-image/init}
      :depends-on #{:base}}
 
+    :x-i18n-provider
+    {:exports
+     {init baredom.exports.x-i18n-provider/init}
+     :depends-on #{:base}}
+
+    :x-i18n
+    {:exports
+     {init baredom.exports.x-i18n/init}
+     :depends-on #{:base}}
+
     :x-icon
     {:exports
      {init baredom.exports.x-icon/init}
