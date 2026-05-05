@@ -43,9 +43,9 @@
    "muted"     "--x-color-text-muted"})
 
 (def property-api
-  {:size  {:type 'string}
-   :color {:type 'string}
-   :label {:type 'string}})
+  {:size  {:type 'string :reflects-attribute attr-size}
+   :color {:type 'string :reflects-attribute attr-color}
+   :label {:type 'string :reflects-attribute attr-label}})
 
 (def event-schema {})
 

@@ -96,23 +96,8 @@
   nil)
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
-(defn- define-string-attr-prop! [^js proto prop-name attr-name]
-  (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr-name) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (or (nil? v) (= v ""))
-                                          (.removeAttribute this attr-name)
-                                          (.setAttribute this attr-name (str v)))))
-                        :enumerable  true
-                        :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
-  (define-string-attr-prop! proto "size"  model/attr-size)
-  (define-string-attr-prop! proto "color" model/attr-color)
-  (define-string-attr-prop! proto "label" model/attr-label))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
