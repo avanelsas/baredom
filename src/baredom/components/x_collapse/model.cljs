@@ -24,7 +24,7 @@
   {:open       {:type 'boolean :reflects-attribute attr-open}
    :disabled   {:type 'boolean :reflects-attribute attr-disabled}
    :header     {:type 'string  :reflects-attribute attr-header}
-   :durationMs {:type 'number  :reflects-attribute attr-duration-ms}})
+   :durationMs {:type 'number  :reflects-attribute attr-duration-ms :default default-duration-ms}})
 
 (def event-schema
   {event-toggle {:cancelable true

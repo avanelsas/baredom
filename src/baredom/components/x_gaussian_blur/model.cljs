@@ -16,19 +16,6 @@
   #js [attr-colors attr-blur attr-speed attr-count attr-size
        attr-opacity attr-animation attr-blend attr-paused])
 
-(def property-api
-  {:colors    {:type 'string  :reflects-attribute attr-colors}
-   :blur      {:type 'string  :reflects-attribute attr-blur}
-   :speed     {:type 'string  :reflects-attribute attr-speed}
-   :count     {:type 'string  :reflects-attribute attr-count}
-   :size      {:type 'string  :reflects-attribute attr-size}
-   :opacity   {:type 'string  :reflects-attribute attr-opacity}
-   :animation {:type 'string  :reflects-attribute attr-animation}
-   :blend     {:type 'string  :reflects-attribute attr-blend}
-   :paused    {:type 'boolean :reflects-attribute attr-paused}})
-
-(def event-schema {})
-
 ;; ── Defaults ─────────────────────────────────────────────────────────────
 (def default-colors    "#6366f1, #ec4899, #14b8a6, #f59e0b")
 (def default-blur      60)
@@ -38,6 +25,19 @@
 (def default-opacity   0.7)
 (def default-animation "float")
 (def default-blend     "normal")
+
+(def property-api
+  {:colors    {:type 'string  :reflects-attribute attr-colors    :default default-colors}
+   :blur      {:type 'string  :reflects-attribute attr-blur      :default "60"}
+   :speed     {:type 'string  :reflects-attribute attr-speed     :default "medium"}
+   :count     {:type 'string  :reflects-attribute attr-count     :default "5"}
+   :size      {:type 'string  :reflects-attribute attr-size      :default "medium"}
+   :opacity   {:type 'string  :reflects-attribute attr-opacity   :default "0.7"}
+   :animation {:type 'string  :reflects-attribute attr-animation :default default-animation}
+   :blend     {:type 'string  :reflects-attribute attr-blend     :default default-blend}
+   :paused    {:type 'boolean :reflects-attribute attr-paused}})
+
+(def event-schema {})
 
 (def allowed-animations #{"float" "pulse" "none"})
 (def allowed-blends     #{"normal" "multiply" "screen" "overlay" "soft-light"})

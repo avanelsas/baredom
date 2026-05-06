@@ -43,11 +43,11 @@
 (def property-api
   {:sticky      {:type 'boolean :reflects-attribute attr-sticky}
    :elevated    {:type 'boolean :reflects-attribute attr-elevated}
-   :label       {:type 'string  :reflects-attribute attr-label}
-   :variant     {:type 'string  :reflects-attribute attr-variant}
-   :orientation {:type 'string  :reflects-attribute attr-orientation}
-   :alignment   {:type 'string  :reflects-attribute attr-alignment}
-   :breakpoint  {:type 'string  :reflects-attribute attr-breakpoint}})
+   :label       {:type 'string  :reflects-attribute attr-label       :default ""}
+   :variant     {:type 'string  :reflects-attribute attr-variant     :default ""}
+   :orientation {:type 'string  :reflects-attribute attr-orientation :default ""}
+   :alignment   {:type 'string  :reflects-attribute attr-alignment   :default ""}
+   :breakpoint  {:type 'string  :reflects-attribute attr-breakpoint  :default ""}})
 
 (def event-schema
   {event-focus-visible {:detail {}}

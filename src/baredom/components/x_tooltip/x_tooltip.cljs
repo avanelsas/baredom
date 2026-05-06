@@ -426,11 +426,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "text"      model/attr-text)
-  (du/define-string-prop! proto "placement" model/attr-placement)
-  (du/define-number-prop! proto "delay" model/attr-delay model/default-delay)
-  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-  (du/define-bool-prop!   proto "open"      model/attr-open)
+  (du/install-properties! proto model/property-api)
   (aset proto "show"
         (fn [] (this-as ^js this (do-show! this true))))
   (aset proto "hide"

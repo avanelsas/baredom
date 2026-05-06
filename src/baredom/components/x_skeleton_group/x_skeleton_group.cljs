@@ -240,9 +240,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "preset"    model/attr-preset "")
-  (du/define-string-prop! proto "animation" model/attr-animation "")
-  (du/define-number-prop! proto "count" model/attr-count model/default-count))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (x-skeleton/init!)
