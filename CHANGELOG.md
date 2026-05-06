@@ -2,6 +2,28 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.8.0] - 2026-05-06
+
+### Added
+
+- **x-i18n / x-i18n-provider** — Translation components. `x-i18n-provider` holds the dictionary and active locale; `x-i18n` renders a translated string for a given key with parameter interpolation.
+- **x-kinetic-canvas** — Animated background component (canvas-based, motion-respecting).
+- **x-multi-combobox** — Combobox variant with multi-select chips, keyboard navigation, and a cancelable `change-request` event.
+
+### Changed
+
+- **Internal architecture audit** — 18 PRs across the component library: `event-schema` defs added to every model, lifecycle callbacks normalized to `!`-suffix `defn-` form, `^js` hints filled in for Closure Advanced safety, event dispatch routed through `du/dispatch!` / `du/dispatch-cancelable!`, and property accessors migrated to `du/define-*-prop!` helpers. 36 components now register properties via the one-line data-driven `du/install-properties!` (Tier 0). Net several thousand lines removed. **No public API changes.**
+- **Tier 0/1/2 property-accessor taxonomy** — Documented in `CLAUDE.md` and `docs/REGISTRATION.md` so contributors pick the simplest registration tier per component.
+- **Pre-commit hook** — Now auto-regenerates the Angular adapter when `src/` changes.
+
+### Fixed
+
+- **x-combobox / x-multi-combobox** — Render pipeline now applies the model-change guard, preventing infinite `attributeChangedCallback` recursion.
+- **x-kinetic-typography** — SVG path `d` attribute is now sanitized via `mu/sanitize-svg-path-d`.
+- **x-i18n-provider** — Internal state encapsulated behind the public API.
+- **x-kinetic-canvas docs** — CSS custom property defaults synced with implementation.
+- **x-icon** — Property test now forwards `:default` in `install-properties!` for string props.
+
 ## [2.7.0] - 2026-05-02
 
 ### Changed
