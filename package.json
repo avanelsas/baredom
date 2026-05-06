@@ -401,6 +401,11 @@
       "import": "./dist/x-combobox.js",
       "default": "./dist/x-combobox.js"
     },
+    "./x-multi-combobox": {
+      "types": "./dist/x-multi-combobox.d.ts",
+      "import": "./dist/x-multi-combobox.js",
+      "default": "./dist/x-multi-combobox.js"
+    },
     "./x-menu-item": {
       "types": "./dist/x-menu-item.d.ts",
       "import": "./dist/x-menu-item.js",

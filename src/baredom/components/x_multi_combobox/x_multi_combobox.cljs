@@ -1,20 +1,22 @@
-(ns baredom.components.x-combobox.x-combobox
+(ns baredom.components.x-multi-combobox.x-multi-combobox
   (:require [baredom.utils.component :as component]
             [goog.object :as gobj]
-            [baredom.components.x-combobox.model :as model]
-            [baredom.utils.dom :as du]))
+            [baredom.components.x-multi-combobox.model :as model]
+            [baredom.components.x-chip.x-chip :as x-chip]
+            [baredom.utils.dom :as du]
+            [clojure.string :as str]))
 
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
-(def ^:private k-refs       "__xComboboxRefs")
-(def ^:private k-handlers   "__xComboboxHandlers")
-(def ^:private k-options    "__xComboboxOptions")
-(def ^:private k-active-idx "__xComboboxActiveIdx")
-(def ^:private k-query      "__xComboboxQuery")
-(def ^:private k-listbox-id "__xComboboxListboxId")
-(def ^:private k-model      "__xComboboxModel")
-(def ^:private opt-id-prefix "x-cb-opt-")
+(def ^:private k-refs       "__xMultiComboboxRefs")
+(def ^:private k-handlers   "__xMultiComboboxHandlers")
+(def ^:private k-options    "__xMultiComboboxOptions")
+(def ^:private k-active-idx "__xMultiComboboxActiveIdx")
+(def ^:private k-query      "__xMultiComboboxQuery")
+(def ^:private k-listbox-id "__xMultiComboboxListboxId")
+(def ^:private k-model      "__xMultiComboboxModel")
+(def ^:private opt-id-prefix "x-mcb-opt-")
 
 ;; ---------------------------------------------------------------------------
 ;; UID counter
@@ -24,7 +26,7 @@
 (defn- next-id! []
   (let [n (inc (gobj/get id-state "n"))]
     (gobj/set id-state "n" n)
-    (str "x-cb-lb-" n)))
+    (str "x-mcb-lb-" n)))
 
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
@@ -40,122 +42,106 @@
    "display:inline-block;"
    "position:relative;"
    "color-scheme:light dark;"
-   "--x-combobox-bg:var(--x-color-surface,#ffffff);"
-   "--x-combobox-fg:var(--x-color-text,#0f172a);"
-   "--x-combobox-placeholder:var(--x-color-text-muted,#94a3b8);"
-   "--x-combobox-border:1px solid var(--x-color-border,#e2e8f0);"
-   "--x-combobox-border-hover:1px solid var(--x-color-border,#cbd5e1);"
-   "--x-combobox-border-focus:1px solid var(--x-color-focus-ring,#60a5fa);"
-   "--x-combobox-radius:var(--x-radius-md,6px);"
-   "--x-combobox-height:2.25rem;"
-   "--x-combobox-font-size:var(--x-font-size-sm,0.9375rem);"
-   "--x-combobox-padding:0 0.625rem;"
-   "--x-combobox-focus-ring:var(--x-color-focus-ring,#60a5fa);"
-   "--x-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.05));"
-   "--x-combobox-disabled-opacity:var(--x-opacity-disabled,0.55);"
-   "--x-combobox-chevron-color:var(--x-color-text-muted,#64748b);"
-   "--x-combobox-panel-bg:var(--x-color-bg,#ffffff);"
-   "--x-combobox-panel-border:1px solid var(--x-color-border,#e2e8f0);"
-   "--x-combobox-panel-radius:var(--x-radius-md,8px);"
-   "--x-combobox-panel-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
-   "--x-combobox-panel-max-height:16rem;"
-   "--x-combobox-panel-offset:4px;"
-   "--x-combobox-option-padding:0.5rem 0.625rem;"
-   "--x-combobox-option-hover-bg:var(--x-color-surface-hover,#f1f5f9);"
-   "--x-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
-   "--x-combobox-option-active-fg:#ffffff;"
-   "--x-combobox-transition-duration:var(--x-transition-duration,150ms);"
-   "--x-combobox-transition-easing:var(--x-transition-easing,ease);"
+   "--x-multi-combobox-bg:var(--x-color-surface,#ffffff);"
+   "--x-multi-combobox-fg:var(--x-color-text,#0f172a);"
+   "--x-multi-combobox-placeholder:var(--x-color-text-muted,#94a3b8);"
+   "--x-multi-combobox-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-multi-combobox-border-hover:1px solid var(--x-color-border,#cbd5e1);"
+   "--x-multi-combobox-border-focus:1px solid var(--x-color-focus-ring,#60a5fa);"
+   "--x-multi-combobox-radius:var(--x-radius-md,6px);"
+   "--x-multi-combobox-min-height:2.25rem;"
+   "--x-multi-combobox-font-size:var(--x-font-size-sm,0.9375rem);"
+   "--x-multi-combobox-padding:0.25rem 0.5rem;"
+   "--x-multi-combobox-focus-ring:var(--x-color-focus-ring,#60a5fa);"
+   "--x-multi-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.05));"
+   "--x-multi-combobox-disabled-opacity:var(--x-opacity-disabled,0.55);"
+   "--x-multi-combobox-chevron-color:var(--x-color-text-muted,#64748b);"
+   "--x-multi-combobox-panel-bg:var(--x-color-bg,#ffffff);"
+   "--x-multi-combobox-panel-border:1px solid var(--x-color-border,#e2e8f0);"
+   "--x-multi-combobox-panel-radius:var(--x-radius-md,8px);"
+   "--x-multi-combobox-panel-shadow:var(--x-shadow-md,0 4px 16px rgba(0,0,0,0.12));"
+   "--x-multi-combobox-panel-max-height:16rem;"
+   "--x-multi-combobox-panel-offset:4px;"
+   "--x-multi-combobox-option-padding:0.5rem 0.625rem;"
+   "--x-multi-combobox-option-hover-bg:var(--x-color-surface-hover,#f1f5f9);"
+   "--x-multi-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
+   "--x-multi-combobox-option-active-fg:#ffffff;"
+   "--x-multi-combobox-transition-duration:var(--x-transition-duration,150ms);"
+   "--x-multi-combobox-transition-easing:var(--x-transition-easing,ease);"
+   "--x-multi-combobox-chip-gap:0.25rem;"
    "}"
+   ;; Dark mode
    "@media (prefers-color-scheme:dark){"
    ":host{"
-   "--x-combobox-bg:var(--x-color-surface,#1e293b);"
-   "--x-combobox-fg:var(--x-color-text,#e2e8f0);"
-   "--x-combobox-placeholder:var(--x-color-text-muted,#64748b);"
-   "--x-combobox-border:1px solid var(--x-color-border,#334155);"
-   "--x-combobox-border-hover:1px solid var(--x-color-border,#475569);"
-   "--x-combobox-border-focus:1px solid var(--x-color-focus-ring,#93c5fd);"
-   "--x-combobox-focus-ring:var(--x-color-focus-ring,#93c5fd);"
-   "--x-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.2));"
-   "--x-combobox-chevron-color:var(--x-color-text-muted,#94a3b8);"
-   "--x-combobox-panel-bg:var(--x-color-bg,#1e293b);"
-   "--x-combobox-panel-border:1px solid var(--x-color-border,#334155);"
-   "--x-combobox-panel-shadow:var(--x-shadow-md,0 4px 24px rgba(0,0,0,0.4));"
-   "--x-combobox-option-hover-bg:var(--x-color-surface-hover,#334155);"
-   "--x-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
+   "--x-multi-combobox-bg:var(--x-color-surface,#1e293b);"
+   "--x-multi-combobox-fg:var(--x-color-text,#e2e8f0);"
+   "--x-multi-combobox-placeholder:var(--x-color-text-muted,#64748b);"
+   "--x-multi-combobox-border:1px solid var(--x-color-border,#334155);"
+   "--x-multi-combobox-border-hover:1px solid var(--x-color-border,#475569);"
+   "--x-multi-combobox-border-focus:1px solid var(--x-color-focus-ring,#93c5fd);"
+   "--x-multi-combobox-focus-ring:var(--x-color-focus-ring,#93c5fd);"
+   "--x-multi-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.2));"
+   "--x-multi-combobox-chevron-color:var(--x-color-text-muted,#94a3b8);"
+   "--x-multi-combobox-panel-bg:var(--x-color-bg,#1e293b);"
+   "--x-multi-combobox-panel-border:1px solid var(--x-color-border,#334155);"
+   "--x-multi-combobox-panel-shadow:var(--x-shadow-md,0 4px 24px rgba(0,0,0,0.4));"
+   "--x-multi-combobox-option-hover-bg:var(--x-color-surface-hover,#334155);"
+   "--x-multi-combobox-option-active-bg:var(--x-color-primary,#3b82f6);"
    "}"
    "}"
    ;; Wrapper
    "[part=wrapper]{"
    "display:flex;"
    "align-items:center;"
-   "height:var(--x-combobox-height);"
-   "background:var(--x-combobox-bg);"
-   "border:var(--x-combobox-border);"
-   "border-radius:var(--x-combobox-radius);"
-   "box-shadow:var(--x-combobox-shadow);"
-   "padding:var(--x-combobox-padding);"
+   "min-height:var(--x-multi-combobox-min-height);"
+   "background:var(--x-multi-combobox-bg);"
+   "border:var(--x-multi-combobox-border);"
+   "border-radius:var(--x-multi-combobox-radius);"
+   "box-shadow:var(--x-multi-combobox-shadow);"
+   "padding:var(--x-multi-combobox-padding);"
    "cursor:text;"
-   "transition:border var(--x-combobox-transition-duration) var(--x-combobox-transition-easing),"
-   "box-shadow var(--x-combobox-transition-duration) var(--x-combobox-transition-easing);"
+   "transition:border var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing),"
+   "box-shadow var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing);"
    "}"
    "[part=wrapper]:hover{"
-   "border:var(--x-combobox-border-hover);"
+   "border:var(--x-multi-combobox-border-hover);"
    "}"
    ":host(:focus-within) [part=wrapper]{"
-   "border:var(--x-combobox-border-focus);"
-   "box-shadow:0 0 0 2px var(--x-combobox-focus-ring);"
+   "border:var(--x-multi-combobox-border-focus);"
+   "box-shadow:0 0 0 2px var(--x-multi-combobox-focus-ring);"
    "}"
    ":host([disabled]) [part=wrapper]{"
-   "opacity:var(--x-combobox-disabled-opacity);"
+   "opacity:var(--x-multi-combobox-disabled-opacity);"
    "cursor:default;"
    "pointer-events:none;"
+   "}"
+   ;; Chip area
+   "[part=chip-area]{"
+   "display:flex;"
+   "flex-wrap:wrap;"
+   "align-items:center;"
+   "gap:var(--x-multi-combobox-chip-gap);"
+   "flex:1;"
+   "min-width:0;"
    "}"
    ;; Input
    "[part=input]{"
    "all:unset;"
    "flex:1;"
-   "min-width:0;"
-   "height:100%;"
-   "font-size:var(--x-combobox-font-size);"
+   "min-width:4rem;"
+   "height:1.5rem;"
+   "font-size:var(--x-multi-combobox-font-size);"
    "font-family:inherit;"
-   "color:var(--x-combobox-fg);"
+   "color:var(--x-multi-combobox-fg);"
    "}"
    "[part=input]::placeholder{"
-   "color:var(--x-combobox-placeholder);"
-   "}"
-   ;; Clear button
-   "[part=clear]{"
-   "all:unset;"
-   "display:none;"
-   "align-items:center;"
-   "justify-content:center;"
-   "width:1.25rem;"
-   "height:1.25rem;"
-   "font-size:0.875rem;"
-   "color:var(--x-combobox-chevron-color);"
-   "cursor:pointer;"
-   "flex-shrink:0;"
-   "border-radius:2px;"
-   "}"
-   "[part=clear]:hover{"
-   "color:var(--x-combobox-fg);"
-   "}"
-   "[part=clear]:focus-visible{"
-   "outline:none;"
-   "box-shadow:0 0 0 2px var(--x-combobox-focus-ring);"
-   "}"
-   ":host([data-has-value]) [part=clear]{"
-   "display:inline-flex;"
-   "}"
-   ":host([disabled]) [part=clear]{"
-   "display:none;"
+   "color:var(--x-multi-combobox-placeholder);"
    "}"
    ;; Chevron
    "[part=chevron]{"
    "display:inline-flex;"
    "align-items:center;"
-   "color:var(--x-combobox-chevron-color);"
+   "color:var(--x-multi-combobox-chevron-color);"
    "flex-shrink:0;"
    "margin-left:0.25rem;"
    "transition:transform 200ms ease;"
@@ -170,22 +156,22 @@
    "z-index:var(--x-z-dropdown,1000);"
    "box-sizing:border-box;"
    "width:100%;"
-   "background:var(--x-combobox-panel-bg);"
-   "border:var(--x-combobox-panel-border);"
-   "border-radius:var(--x-combobox-panel-radius);"
-   "box-shadow:var(--x-combobox-panel-shadow);"
+   "background:var(--x-multi-combobox-panel-bg);"
+   "border:var(--x-multi-combobox-panel-border);"
+   "border-radius:var(--x-multi-combobox-panel-radius);"
+   "box-shadow:var(--x-multi-combobox-panel-shadow);"
    "padding:0.25rem 0;"
-   "max-height:var(--x-combobox-panel-max-height);"
-   "max-width:calc(100% - 0rem);"
+   "max-height:var(--x-multi-combobox-panel-max-height);"
+   "max-width:calc(100vw - 1rem);"
    "overflow-y:auto;"
    "visibility:hidden;"
    "pointer-events:none;"
    "opacity:0;"
    "transform:scaleY(0.95);"
    "transition:"
-   "opacity var(--x-combobox-transition-duration) var(--x-combobox-transition-easing),"
-   "transform var(--x-combobox-transition-duration) var(--x-combobox-transition-easing),"
-   "visibility 0s var(--x-combobox-transition-duration);"
+   "opacity var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing),"
+   "transform var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing),"
+   "visibility 0s var(--x-multi-combobox-transition-duration);"
    "}"
    ":host([open]) [part=panel]{"
    "visibility:visible;"
@@ -193,58 +179,62 @@
    "opacity:1;"
    "transform:scaleY(1);"
    "transition:"
-   "opacity var(--x-combobox-transition-duration) var(--x-combobox-transition-easing),"
-   "transform var(--x-combobox-transition-duration) var(--x-combobox-transition-easing),"
+   "opacity var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing),"
+   "transform var(--x-multi-combobox-transition-duration) var(--x-multi-combobox-transition-easing),"
    "visibility 0s 0s;"
    "}"
    ;; Placement
    "[part=panel][data-placement=bottom-start]{"
-   "top:calc(100% + var(--x-combobox-panel-offset));"
+   "top:calc(100% + var(--x-multi-combobox-panel-offset));"
    "left:0;"
    "transform-origin:top left;"
    "}"
    "[part=panel][data-placement=bottom-end]{"
-   "top:calc(100% + var(--x-combobox-panel-offset));"
+   "top:calc(100% + var(--x-multi-combobox-panel-offset));"
    "right:0;"
    "transform-origin:top right;"
    "}"
    "[part=panel][data-placement=top-start]{"
-   "bottom:calc(100% + var(--x-combobox-panel-offset));"
+   "bottom:calc(100% + var(--x-multi-combobox-panel-offset));"
    "left:0;"
    "transform-origin:bottom left;"
    "}"
    "[part=panel][data-placement=top-end]{"
-   "bottom:calc(100% + var(--x-combobox-panel-offset));"
+   "bottom:calc(100% + var(--x-multi-combobox-panel-offset));"
    "right:0;"
    "transform-origin:bottom right;"
    "}"
    ;; Options
    "[part=option]{"
-   "padding:var(--x-combobox-option-padding);"
-   "font-size:var(--x-combobox-font-size);"
+   "padding:var(--x-multi-combobox-option-padding);"
+   "font-size:var(--x-multi-combobox-font-size);"
    "font-family:inherit;"
-   "color:var(--x-combobox-fg);"
+   "color:var(--x-multi-combobox-fg);"
    "cursor:default;"
    "border-radius:4px;"
    "margin:0 0.25rem;"
    "}"
    "[part=option]:hover{"
-   "background:var(--x-combobox-option-hover-bg);"
+   "background:var(--x-multi-combobox-option-hover-bg);"
    "}"
    "[part=option][data-active]{"
-   "background:var(--x-combobox-option-active-bg);"
-   "color:var(--x-combobox-option-active-fg);"
+   "background:var(--x-multi-combobox-option-active-bg);"
+   "color:var(--x-multi-combobox-option-active-fg);"
    "}"
    "[part=option][data-active] b{"
    "color:inherit;"
+   "}"
+   "[part=option][data-disabled]{"
+   "opacity:0.4;"
+   "pointer-events:none;"
    "}"
    "[part=option] b{"
    "font-weight:700;"
    "}"
    "[part=empty-msg]{"
-   "padding:var(--x-combobox-option-padding);"
-   "font-size:var(--x-combobox-font-size);"
-   "color:var(--x-combobox-placeholder);"
+   "padding:var(--x-multi-combobox-option-padding);"
+   "font-size:var(--x-multi-combobox-font-size);"
+   "color:var(--x-multi-combobox-placeholder);"
    "font-style:italic;"
    "margin:0 0.25rem;"
    "}"
@@ -258,28 +248,32 @@
    "}"
    ;; Coarse pointer: bigger touch targets
    "@media (pointer:coarse){"
-   ":host{--x-combobox-height:2.75rem;}"
-   "[part=clear]{width:2.75rem;height:2.75rem;}"
+   ":host{--x-multi-combobox-min-height:2.75rem;}"
    "[part=option]{min-height:2.75rem;display:flex;align-items:center;}"
+   "[part=chevron]{width:2.75rem;height:2.75rem;justify-content:center;}"
    "}"))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
-  (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
-        wrapper-el (make-el "div")
-        input-el   (make-el "input")
-        clear-el   (make-el "button")
-        chevron-el (make-el "span")
-        panel-el   (make-el "div")
-        slot-el    (make-el "slot")
-        lb-id      (next-id!)]
+  (let [root        (.attachShadow el #js {:mode "open"})
+        style-el    (make-el "style")
+        wrapper-el  (make-el "div")
+        chip-area   (make-el "div")
+        input-el    (make-el "input")
+        chevron-el  (make-el "span")
+        panel-el    (make-el "div")
+        slot-el     (make-el "slot")
+        lb-id       (next-id!)]
 
     (set! (.-textContent style-el) style-text)
 
     (du/set-attr! wrapper-el "part" "wrapper")
+
+    (du/set-attr! chip-area "part"       "chip-area")
+    (du/set-attr! chip-area "role"       "group")
+    (du/set-attr! chip-area "aria-label" "Selected values")
 
     (du/set-attr! input-el "part"              "input")
     (du/set-attr! input-el "type"              "text")
@@ -289,12 +283,6 @@
     (du/set-attr! input-el "aria-controls"     lb-id)
     (du/set-attr! input-el "autocomplete"      "off")
 
-    (du/set-attr! clear-el "part"       "clear")
-    (du/set-attr! clear-el "type"       "button")
-    (du/set-attr! clear-el "aria-label" "Clear")
-    (du/set-attr! clear-el "tabindex"   "-1")
-    (set! (.-textContent clear-el) "\u00d7")
-
     (du/set-attr! chevron-el "part"        "chevron")
     (du/set-attr! chevron-el "aria-hidden" "true")
     (set! (.-innerHTML chevron-el)
@@ -303,13 +291,14 @@
                "<path d=\"M2.5 4.5L6 8L9.5 4.5\" stroke=\"currentColor\""
                " stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"))
 
-    (du/set-attr! panel-el "part" "panel")
-    (du/set-attr! panel-el "role" "listbox")
-    (du/set-attr! panel-el "id"   lb-id)
-    (du/set-attr! panel-el "data-placement" model/default-placement)
+    (du/set-attr! panel-el "part"               "panel")
+    (du/set-attr! panel-el "role"               "listbox")
+    (du/set-attr! panel-el "id"                 lb-id)
+    (du/set-attr! panel-el "aria-multiselectable" "true")
+    (du/set-attr! panel-el "data-placement"     model/default-placement)
 
-    (.appendChild wrapper-el input-el)
-    (.appendChild wrapper-el clear-el)
+    (.appendChild chip-area input-el)
+    (.appendChild wrapper-el chip-area)
     (.appendChild wrapper-el chevron-el)
 
     (.appendChild root style-el)
@@ -322,12 +311,12 @@
     (du/setv! el k-query "")
     (du/setv! el k-active-idx 0)
 
-    (let [refs #js {:wrapper wrapper-el
-                    :input   input-el
-                    :clear   clear-el
-                    :chevron chevron-el
-                    :panel   panel-el
-                    :slot    slot-el}]
+    (let [refs #js {:wrapper  wrapper-el
+                    :chipArea chip-area
+                    :input    input-el
+                    :chevron  chevron-el
+                    :panel    panel-el
+                    :slot     slot-el}]
       (du/setv! el k-refs refs)
       refs)))
 
@@ -359,7 +348,36 @@
     :disabled-present? (du/has-attr? el model/attr-disabled)
     :required-present? (du/has-attr? el model/attr-required)
     :open-present?     (du/has-attr? el model/attr-open)
-    :placement-raw     (du/get-attr el model/attr-placement)}))
+    :placement-raw     (du/get-attr el model/attr-placement)
+    :max-raw           (du/get-attr el model/attr-max)}))
+
+;; ---------------------------------------------------------------------------
+;; Chip rendering
+;; ---------------------------------------------------------------------------
+(defn- render-chips! [^js el value-set disabled?]
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js chip-area (gobj/get refs "chipArea")
+          ^js input-el  (gobj/get refs "input")
+          options       (du/getv el k-options)]
+
+      ;; Remove existing chips (keep input)
+      (loop []
+        (let [^js first-child (.-firstChild chip-area)]
+          (when (and first-child (not (identical? first-child input-el)))
+            (.removeChild chip-area first-child)
+            (recur))))
+
+      ;; Create x-chip for each selected value
+      (doseq [v (sort value-set)]
+        (let [opt   (model/find-option-by-value options v)
+              label (if opt (:label opt) v)
+              ^js chip (make-el "x-chip")]
+          (du/set-attr! chip "label" label)
+          (du/set-attr! chip "value" v)
+          (du/set-attr! chip "removable" "")
+          (when disabled?
+            (du/set-attr! chip "disabled" ""))
+          (.insertBefore chip-area chip input-el))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Panel rendering
@@ -370,10 +388,13 @@
           ^js input-el (gobj/get refs "input")
           options      (du/getv el k-options)
           query        (or (du/getv el k-query) "")
-          visible      (model/filter-options options query)
+          m            (read-model el)
+          value-set    (:value m)
+          max-val      (:max m)
+          at-max?      (model/max-reached? value-set max-val)
+          visible      (model/filter-options options query value-set)
           raw-idx      (or (du/getv el k-active-idx) 0)
-          active-idx   (if (empty? visible) -1 (min raw-idx (dec (count visible))))
-          value        (or (du/get-attr el model/attr-value) "")]
+          active-idx   (if (empty? visible) -1 (min raw-idx (dec (count visible))))]
 
       (set! (.-textContent panel-el) "")
 
@@ -392,8 +413,9 @@
               (du/set-attr! div "role"       "option")
               (du/set-attr! div "id"         opt-id)
               (du/set-attr! div "data-value" (:value opt))
-              (when (= (:value opt) value)
-                (du/set-attr! div "aria-selected" "true"))
+              (when at-max?
+                (du/set-attr! div "data-disabled" "")
+                (du/set-attr! div "aria-disabled" "true"))
               (when (= idx active-idx)
                 (du/set-attr! div "data-active" ""))
               (if highlight
@@ -416,26 +438,23 @@
 (defn- apply-model! [^js el {:keys [value placeholder disabled? open? placement] :as m}]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
-          ^js panel-el (gobj/get refs "panel")
-          options      (du/getv el k-options)
-          selected-opt (model/find-option-by-value options value)]
+          ^js panel-el (gobj/get refs "panel")]
 
-      (set! (.-placeholder input-el) placeholder)
+      ;; Show placeholder only when no chips
+      (set! (.-placeholder input-el)
+            (if (empty? value) placeholder ""))
       (set! (.-disabled input-el) disabled?)
       (du/set-attr! input-el "aria-expanded" (str open?))
 
       (du/set-attr! panel-el "data-placement" placement)
 
-      ;; Show selected label when panel is closed
+      ;; Clear input text when panel closes
       (when-not open?
-        (set! (.-value input-el) (if selected-opt (:label selected-opt) "")))
+        (set! (.-value input-el) ""))
 
-      ;; data-has-value drives clear button visibility via CSS
-      (if (not= value "")
-        (du/set-attr! el "data-has-value" "")
-        (.removeAttribute el "data-has-value"))
+      (render-chips! el value disabled?)
 
-      ;; Re-render panel when open so option highlights reflect new value
+      ;; Re-render panel when open so option list reflects new value/max
       (when open?
         (render-panel! el))
 
@@ -447,9 +466,6 @@
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
-;; ---------------------------------------------------------------------------
-;; Dispatch helpers
-;; ---------------------------------------------------------------------------
 ;; ---------------------------------------------------------------------------
 ;; Open / Close (forward declarations)
 ;; ---------------------------------------------------------------------------
@@ -466,11 +482,7 @@
         ;; attribute-changed! → apply-model! → render-panel! sees cleared state.
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (.setAttribute el model/attr-open "")
-        ;; Select input text so user can type immediately
-        (when-let [refs (du/getv el k-refs)]
-          (let [^js input-el (gobj/get refs "input")]
-            (.select input-el)))))))
+        (.setAttribute el model/attr-open "")))))
 
 (defn- close-panel! [^js el source]
   (when (du/has-attr? el model/attr-open)
@@ -482,19 +494,42 @@
         (.removeAttribute el model/attr-open)))))
 
 ;; ---------------------------------------------------------------------------
-;; Selection
+;; Add / Remove items
 ;; ---------------------------------------------------------------------------
-(defn- select-option! [^js el value label]
-  (let [prev-value (or (du/get-attr el model/attr-value) "")
-        allowed?   (du/dispatch-cancelable!
-                    el model/event-change-request
-                    #js {:value value :label label :previousValue prev-value})]
-    (when allowed?
-      (.setAttribute el model/attr-value value)
-      (when-let [refs (du/getv el k-refs)]
-        (set! (.-value (gobj/get refs "input")) label))
-      (close-panel! el "select")
-      (du/dispatch! el model/event-change #js {:value value :label label}))))
+(defn- add-item! [^js el item-value]
+  (let [m         (read-model el)
+        value-set (:value m)
+        max-val   (:max m)]
+    (when-not (or (contains? value-set item-value)
+                  (model/max-reached? value-set max-val))
+      (let [new-set  (conj value-set item-value)
+            new-arr  (to-array (sort new-set))
+            allowed? (du/dispatch-cancelable!
+                      el model/event-change-request
+                      #js {:value new-arr :action "add" :item item-value})]
+        (when allowed?
+          ;; Reset internal state before setAttribute so the synchronous
+          ;; attribute-changed! → apply-model! sees the cleared query.
+          (du/setv! el k-query "")
+          (du/setv! el k-active-idx 0)
+          (when-let [refs (du/getv el k-refs)]
+            (set! (.-value (gobj/get refs "input")) ""))
+          (.setAttribute el model/attr-value (model/serialize-value new-set))
+          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
+
+(defn- remove-item! [^js el item-value]
+  (let [value-set (:value (read-model el))]
+    (when (contains? value-set item-value)
+      (let [new-set  (disj value-set item-value)
+            new-arr  (to-array (sort new-set))
+            allowed? (du/dispatch-cancelable!
+                      el model/event-change-request
+                      #js {:value new-arr :action "remove" :item item-value})]
+        (when allowed?
+          (if (empty? new-set)
+            (.removeAttribute el model/attr-value)
+            (.setAttribute el model/attr-value (model/serialize-value new-set)))
+          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -502,7 +537,8 @@
 (defn- navigate! [^js el direction]
   (let [options    (du/getv el k-options)
         query      (or (du/getv el k-query) "")
-        visible    (model/filter-options options query)
+        value-set  (:value (read-model el))
+        visible    (model/filter-options options query value-set)
         n          (count visible)
         cur-idx    (or (du/getv el k-active-idx) 0)
         new-idx    (if (= direction :next)
@@ -510,7 +546,6 @@
                      (model/prev-active-idx n cur-idx))]
     (du/setv! el k-active-idx new-idx)
     (render-panel! el)
-    ;; Scroll active option into view
     (when-let [refs (du/getv el k-refs)]
       (let [^js panel-el (gobj/get refs "panel")
             ^js item-el  (.querySelector panel-el "[data-active]")]
@@ -520,10 +555,12 @@
 (defn- select-active! [^js el]
   (let [options   (du/getv el k-options)
         query     (or (du/getv el k-query) "")
-        visible   (model/filter-options options query)
+        value-set (:value (read-model el))
+        visible   (model/filter-options options query value-set)
         idx       (or (du/getv el k-active-idx) 0)]
     (when-let [opt (nth visible idx nil)]
-      (select-option! el (:value opt) (:label opt)))))
+      (when-not (du/has-attr? el model/attr-disabled)
+        (add-item! el (:value opt))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Handler construction
@@ -572,6 +609,15 @@
                 (when-let [refs (du/getv el k-refs)]
                   (.focus (gobj/get refs "input"))))
 
+              (= key "Backspace")
+              (when-let [refs (du/getv el k-refs)]
+                (let [^js input-el (gobj/get refs "input")]
+                  (when (= "" (.-value input-el))
+                    (let [value-set (:value (read-model el))]
+                      (when (seq value-set)
+                        (let [last-val (last (sort value-set))]
+                          (remove-item! el last-val)))))))
+
               (= key "Home")
               (when (du/has-attr? el model/attr-open)
                 (.preventDefault evt)
@@ -581,26 +627,12 @@
               (= key "End")
               (when (du/has-attr? el model/attr-open)
                 (.preventDefault evt)
-                (let [options (du/getv el k-options)
-                      query   (or (du/getv el k-query) "")
-                      n       (count (model/filter-options options query))]
+                (let [options   (du/getv el k-options)
+                      query     (or (du/getv el k-query) "")
+                      value-set (:value (read-model el))
+                      n         (count (model/filter-options options query value-set))]
                   (du/setv! el k-active-idx (max 0 (dec n)))
                   (render-panel! el))))))
-
-        on-clear-click
-        (fn [^js _evt]
-          (let [prev-value (or (du/get-attr el model/attr-value) "")
-                allowed?   (du/dispatch-cancelable!
-                            el model/event-change-request
-                            #js {:value "" :label "" :previousValue prev-value})]
-            (when allowed?
-              (.removeAttribute el model/attr-value)
-              (.removeAttribute el "data-has-value")
-              (when-let [refs (du/getv el k-refs)]
-                (let [^js input-el (gobj/get refs "input")]
-                  (set! (.-value input-el) "")
-                  (.focus input-el)))
-              (du/dispatch! el model/event-change #js {:value "" :label ""}))))
 
         on-chevron-pointerdown
         (fn [^js evt]
@@ -614,7 +646,6 @@
 
         on-panel-pointerdown
         (fn [^js evt]
-          ;; Prevent blur on input when clicking option
           (.preventDefault evt))
 
         on-panel-click
@@ -623,10 +654,16 @@
                 ^js opt-el (if (.hasAttribute target "data-value")
                              target
                              (.closest target "[data-value]"))]
-            (when opt-el
-              (let [value (.getAttribute opt-el "data-value")
-                    label (.-textContent opt-el)]
-                (select-option! el value label)))))
+            (when (and opt-el (not (.hasAttribute opt-el "data-disabled")))
+              (let [value (.getAttribute opt-el "data-value")]
+                (add-item! el value)))))
+
+        on-chip-remove
+        (fn [^js evt]
+          (let [^js detail (.-detail evt)
+                chip-value (gobj/get detail "value")]
+            (when chip-value
+              (remove-item! el chip-value))))
 
         on-focusout
         (fn [^js evt]
@@ -638,8 +675,8 @@
 
         on-slotchange
         (fn [^js _evt]
-          ;; Slot contents changed — selected label may need to be re-resolved.
-          ;; Invalidate the cached model so the next apply re-renders.
+          ;; Slot contents changed — option labels may differ. Invalidate the
+          ;; cached model so the next apply re-renders chips and panel.
           (sync-options! el)
           (du/setv! el k-model nil)
           (update-from-attrs! el))
@@ -652,16 +689,16 @@
               (when-not inside?
                 (close-panel! el "outside-click")))))]
 
-    #js {:inputFocus       on-input-focus
-         :inputInput       on-input-input
-         :inputKeydown     on-input-keydown
-         :clearClick       on-clear-click
+    #js {:inputFocus         on-input-focus
+         :inputInput         on-input-input
+         :inputKeydown       on-input-keydown
          :chevronPointerdown on-chevron-pointerdown
-         :panelPointerdown on-panel-pointerdown
-         :panelClick       on-panel-click
-         :focusout         on-focusout
-         :slotchange       on-slotchange
-         :docClick         on-doc-click}))
+         :panelPointerdown   on-panel-pointerdown
+         :panelClick         on-panel-click
+         :chipRemove         on-chip-remove
+         :focusout           on-focusout
+         :slotchange         on-slotchange
+         :docClick           on-doc-click}))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -670,14 +707,14 @@
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
       (let [^js input-el   (gobj/get refs "input")
-            ^js clear-el   (gobj/get refs "clear")
+            ^js chip-area  (gobj/get refs "chipArea")
             ^js chevron-el (gobj/get refs "chevron")
             ^js panel-el   (gobj/get refs "panel")
             ^js slot-el    (gobj/get refs "slot")]
         (.addEventListener input-el   "focus"       (gobj/get handlers "inputFocus"))
         (.addEventListener input-el   "input"       (gobj/get handlers "inputInput"))
         (.addEventListener input-el   "keydown"     (gobj/get handlers "inputKeydown"))
-        (.addEventListener clear-el   "click"       (gobj/get handlers "clearClick"))
+        (.addEventListener chip-area  "x-chip-remove" (gobj/get handlers "chipRemove"))
         (.addEventListener chevron-el "pointerdown" (gobj/get handlers "chevronPointerdown"))
         (.addEventListener panel-el   "pointerdown" (gobj/get handlers "panelPointerdown"))
         (.addEventListener panel-el   "click"       (gobj/get handlers "panelClick"))
@@ -688,14 +725,14 @@
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
       (let [^js input-el   (gobj/get refs "input")
-            ^js clear-el   (gobj/get refs "clear")
+            ^js chip-area  (gobj/get refs "chipArea")
             ^js chevron-el (gobj/get refs "chevron")
             ^js panel-el   (gobj/get refs "panel")
             ^js slot-el    (gobj/get refs "slot")]
         (.removeEventListener input-el   "focus"       (gobj/get handlers "inputFocus"))
         (.removeEventListener input-el   "input"       (gobj/get handlers "inputInput"))
         (.removeEventListener input-el   "keydown"     (gobj/get handlers "inputKeydown"))
-        (.removeEventListener clear-el   "click"       (gobj/get handlers "clearClick"))
+        (.removeEventListener chip-area  "x-chip-remove" (gobj/get handlers "chipRemove"))
         (.removeEventListener chevron-el "pointerdown" (gobj/get handlers "chevronPointerdown"))
         (.removeEventListener panel-el   "pointerdown" (gobj/get handlers "panelPointerdown"))
         (.removeEventListener panel-el   "click"       (gobj/get handlers "panelClick"))
@@ -743,26 +780,45 @@
         (remove-doc-listeners! el)))))
 
 ;; ---------------------------------------------------------------------------
-;; Property helpers
+;; Property accessors
 ;; ---------------------------------------------------------------------------
-;; ---------------------------------------------------------------------------
-;; Element class and registration
-;; ---------------------------------------------------------------------------
-
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "value"       model/attr-value)
+  ;; Custom value accessor: getter returns JS array, setter accepts array or string
+  (.defineProperty js/Object proto "value"
+    #js {:configurable true
+         :enumerable true
+         :get (fn []
+                (this-as ^js this
+                  (to-array (sort (model/parse-value (du/get-attr this model/attr-value))))))
+         :set (fn [v]
+                (this-as ^js this
+                  (let [s (cond
+                            (string? v) v
+                            (array? v)  (str/join "," (js->clj v))
+                            :else       "")]
+                    (if (= s "")
+                      (.removeAttribute this model/attr-value)
+                      (.setAttribute this model/attr-value s)))))})
+  ;; Standard reflectors
   (du/define-string-prop! proto "placeholder" model/attr-placeholder)
   (du/define-string-prop! proto "name"        model/attr-name)
   (du/define-string-prop! proto "placement"   model/attr-placement)
   (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
   (du/define-bool-prop!   proto "required"    model/attr-required)
   (du/define-bool-prop!   proto "open"        model/attr-open)
+  (du/define-number-prop! proto "max"         model/attr-max nil)
+  ;; Methods
   (aset proto "show"
         (fn [] (this-as ^js this (open-panel! this "programmatic"))))
   (aset proto "hide"
         (fn [] (this-as ^js this (close-panel! this "programmatic")))))
 
+;; ---------------------------------------------------------------------------
+;; Registration
+;; ---------------------------------------------------------------------------
 (defn init! []
+  ;; Ensure x-chip is registered (needed for chip composition)
+  (x-chip/init!)
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!

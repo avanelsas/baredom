@@ -49,6 +49,7 @@ export { BaredomMenuItem } from './directives/x-menu-item.directive';
 export { BaredomMetaballCursor } from './directives/x-metaball-cursor.directive';
 export { BaredomModal } from './directives/x-modal.directive';
 export { BaredomMorphStack } from './directives/x-morph-stack.directive';
+export { BaredomMultiCombobox } from './directives/x-multi-combobox.directive';
 export { BaredomNavbar } from './directives/x-navbar.directive';
 export { BaredomNeuralGlow } from './directives/x-neural-glow.directive';
 export { BaredomNotificationCenter } from './directives/x-notification-center.directive';

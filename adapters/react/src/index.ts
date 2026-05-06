@@ -48,6 +48,7 @@ export { XMenuItem, type XMenuItemProps } from "./x-menu-item";
 export { XMetaballCursor, type XMetaballCursorProps } from "./x-metaball-cursor";
 export { XModal, type XModalProps } from "./x-modal";
 export { XMorphStack, type XMorphStackProps } from "./x-morph-stack";
+export { XMultiCombobox, type XMultiComboboxProps } from "./x-multi-combobox";
 export { XNavbar, type XNavbarProps } from "./x-navbar";
 export { XNeuralGlow, type XNeuralGlowProps } from "./x-neural-glow";
 export { XNotificationCenter, type XNotificationCenterProps } from "./x-notification-center";

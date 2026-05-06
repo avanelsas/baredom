@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>x-multi-combobox demo</title>
+  <script src="../js/main.js"></script>
+  <script src="demo-theme.js" defer></script>
+  <link rel="stylesheet" href="demo-responsive.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; margin-top: 32px; }
+    p  { margin-bottom: 16px; color: var(--muted); }
+
+    section { margin-bottom: 48px; }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    x-multi-combobox { min-width: 280px; width: 100%; max-width: 480px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+    }
+
+    .controls input, .controls select {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: var(--input-fg);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-bg);
+      color: var(--page-fg);
+      cursor: pointer;
+    }
+
+    #event-log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      white-space: pre-wrap;
+      color: var(--page-fg);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>x-multi-combobox</h1>
+  <p>Multi-select combobox with type-ahead filtering. Selected items display as removable chips.</p>
+
+  <!-- ── Basic ───────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Basic</h2>
+    <div class="row">
+      <x-multi-combobox placeholder="Select countries">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+        <option value="es">Spain</option>
+        <option value="it">Italy</option>
+        <option value="pt">Portugal</option>
+        <option value="se">Sweden</option>
+        <option value="no">Norway</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
+  <!-- ── Pre-selected ────────────────────────────────────────────────── -->
+  <section>
+    <h2>Pre-selected values</h2>
+    <div class="row">
+      <x-multi-combobox value="nl,de,fr" placeholder="Select countries">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
+  <!-- ── With max ────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Max 3 selections</h2>
+    <p>Remaining options become disabled when the limit is reached.</p>
+    <div class="row">
+      <x-multi-combobox max="3" placeholder="Pick up to 3 fruits">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+        <option value="cherry">Cherry</option>
+        <option value="date">Date</option>
+        <option value="elderberry">Elderberry</option>
+        <option value="fig">Fig</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
+  <!-- ── Disabled ────────────────────────────────────────────────────── -->
+  <section>
+    <h2>Disabled</h2>
+    <div class="row">
+      <x-multi-combobox disabled value="us,uk" placeholder="Not available">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
+  <!-- ── Large dataset ───────────────────────────────────────────────── -->
+  <section>
+    <h2>Large dataset (100+ options)</h2>
+    <p>Type to filter. Selected items are hidden from the dropdown.</p>
+    <div class="row">
+      <x-multi-combobox id="large-cb" placeholder="Search and select">
+      </x-multi-combobox>
+    </div>
+  </section>
+
+  <!-- ── Interactive controls ────────────────────────────────────────── -->
+  <section>
+    <h2>Interactive controls</h2>
+    <div class="controls">
+      <label>
+        Value (CSV)
+        <input type="text" id="ctrl-value" placeholder="e.g. apple,banana" />
+      </label>
+      <label>
+        Max
+        <input type="number" id="ctrl-max" placeholder="e.g. 3" min="1" />
+      </label>
+      <label>
+        Placement
+        <select id="ctrl-placement">
+          <option value="bottom-start" selected>bottom-start</option>
+          <option value="bottom-end">bottom-end</option>
+          <option value="top-start">top-start</option>
+          <option value="top-end">top-end</option>
+        </select>
+      </label>
+      <label>
+        Disabled
+        <input type="checkbox" id="ctrl-disabled" />
+      </label>
+    </div>
+
+    <div class="row">
+      <x-multi-combobox id="demo-cb" placeholder="Controlled multi-combobox">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+        <option value="cherry">Cherry</option>
+        <option value="date">Date</option>
+        <option value="elderberry">Elderberry</option>
+        <option value="fig">Fig</option>
+        <option value="grape">Grape</option>
+      </x-multi-combobox>
+    </div>
+    <div class="row">
+      <button onclick="document.getElementById('demo-cb').show()">Show</button>
+      <button onclick="document.getElementById('demo-cb').hide()">Hide</button>
+      <button onclick="document.getElementById('demo-cb').value = []">Clear all</button>
+    </div>
+  </section>
+
+  <!-- ── Event log ───────────────────────────────────────────────────── -->
+  <section>
+    <h2>Event log</h2>
+    <pre id="event-log">(events appear here)</pre>
+    <button onclick="document.getElementById('event-log').textContent = '(events appear here)'">Clear log</button>
+  </section>
+
+  <script>
+    // Populate large dataset
+    const largeCb = document.getElementById('large-cb');
+    const items = [
+      'Acai', 'Apple', 'Apricot', 'Avocado', 'Banana', 'Blackberry',
+      'Blueberry', 'Boysenberry', 'Breadfruit', 'Cantaloupe', 'Carambola',
+      'Cherry', 'Clementine', 'Coconut', 'Cranberry', 'Currant', 'Date',
+      'Dragonfruit', 'Durian', 'Elderberry', 'Feijoa', 'Fig',
+      'Gooseberry', 'Grape', 'Grapefruit', 'Guava', 'Honeydew',
+      'Jackfruit', 'Jambul', 'Jujube', 'Kiwi', 'Kumquat', 'Lemon',
+      'Lime', 'Longan', 'Loquat', 'Lychee', 'Mandarin', 'Mango',
+      'Mangosteen', 'Melon', 'Mulberry', 'Nectarine', 'Olive', 'Orange',
+      'Papaya', 'Passionfruit', 'Peach', 'Pear', 'Persimmon',
+      'Pineapple', 'Plantain', 'Plum', 'Pomegranate', 'Pomelo',
+      'Quince', 'Rambutan', 'Raspberry', 'Redcurrant', 'Salak',
+      'Sapodilla', 'Sapote', 'Satsuma', 'Soursop', 'Starfruit',
+      'Strawberry', 'Tamarind', 'Tangerine', 'Ugli fruit', 'Watermelon',
+      'Yuzu', 'Zucchini', 'Almond', 'Cashew', 'Chestnut', 'Hazelnut',
+      'Macadamia', 'Peanut', 'Pecan', 'Pine nut', 'Pistachio', 'Walnut',
+      'Basil', 'Cardamom', 'Cinnamon', 'Clove', 'Coriander', 'Cumin',
+      'Dill', 'Fennel', 'Ginger', 'Mint', 'Nutmeg', 'Oregano',
+      'Paprika', 'Parsley', 'Pepper', 'Rosemary', 'Saffron', 'Sage',
+      'Thyme', 'Turmeric', 'Vanilla'
+    ];
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.toLowerCase().replace(/\s+/g, '-');
+      opt.textContent = item;
+      largeCb.appendChild(opt);
+    });
+
+    // Interactive controls
+    const cb = document.getElementById('demo-cb');
+
+    document.getElementById('ctrl-value').addEventListener('input', e => {
+      cb.value = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+    });
+    document.getElementById('ctrl-max').addEventListener('input', e => {
+      const v = parseInt(e.target.value, 10);
+      if (v > 0) cb.max = v;
+      else cb.removeAttribute('max');
+    });
+    document.getElementById('ctrl-placement').addEventListener('change', e => {
+      cb.placement = e.target.value;
+    });
+    document.getElementById('ctrl-disabled').addEventListener('change', e => {
+      cb.disabled = e.target.checked;
+    });
+
+    // Event logging
+    const log = document.getElementById('event-log');
+    function logEvent(name, detail) {
+      const parts = Object.entries(detail || {}).map(([k,v]) => {
+        const val = Array.isArray(v) ? `[${v.join(',')}]` : `"${v}"`;
+        return `${k}=${val}`;
+      }).join('  ');
+      log.textContent = `${name}  ${parts}\n` + log.textContent;
+    }
+
+    document.addEventListener('x-multi-combobox-change-request', e =>
+      logEvent('change-request', e.detail));
+    document.addEventListener('x-multi-combobox-change', e =>
+      logEvent('change', e.detail));
+    document.addEventListener('x-multi-combobox-input', e =>
+      logEvent('input', e.detail));
+    document.addEventListener('x-multi-combobox-toggle', e =>
+      logEvent('toggle', e.detail));
+  </script>
+</body>
+</html>
