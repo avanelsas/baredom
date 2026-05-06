@@ -1,5 +1,6 @@
 (ns baredom.components.x-kinetic-typography.model
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [baredom.utils.model :as utils]))
 
 (def tag-name "x-kinetic-typography")
 
@@ -172,12 +173,14 @@
 
 (defn resolve-path
   "Returns {:d \"...\" :view-box \"...\"} from custom path or preset.
-  Returns nil for crawl preset (no SVG path needed)."
+  Returns nil for crawl preset (no SVG path needed).
+  Custom paths are sanitized to the SVG d-attribute character whitelist."
   [custom-path preset]
   (if (= preset "crawl")
     nil
-    (if (some? custom-path)
-      {:d custom-path :view-box "0 0 800 200"}
+    (if-let [safe-d (and (some? custom-path)
+                         (utils/sanitize-svg-path-d custom-path))]
+      {:d safe-d :view-box "0 0 800 200"}
       (get path-presets preset))))
 
 (defn compute-duration-s
