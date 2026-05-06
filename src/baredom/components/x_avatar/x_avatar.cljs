@@ -317,15 +317,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-src      model/attr-src)
-  (du/define-string-prop! proto model/attr-alt      model/attr-alt)
-  (du/define-string-prop! proto model/attr-name     model/attr-name)
-  (du/define-string-prop! proto model/attr-initials model/attr-initials)
-  (du/define-string-prop! proto model/attr-size     model/attr-size    model/default-size)
-  (du/define-string-prop! proto model/attr-shape    model/attr-shape   model/default-shape)
-  (du/define-string-prop! proto model/attr-variant  model/attr-variant model/default-variant)
-  (du/define-string-prop! proto model/attr-status   model/attr-status)
-  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

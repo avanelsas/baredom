@@ -28,9 +28,9 @@
 (def event-tab-select "tab-select")
 
 (def property-api
-  {:selected {:type 'boolean}
-   :disabled {:type 'boolean}
-   :value {:type 'string}})
+  {:selected {:type 'boolean :reflects-attribute attr-selected}
+   :disabled {:type 'boolean :reflects-attribute attr-disabled}
+   :value    {:type 'string  :reflects-attribute attr-value}})
 
 (def event-schema
   {event-tab-select {:detail {:value 'string}}})

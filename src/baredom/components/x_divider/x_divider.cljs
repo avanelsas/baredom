@@ -272,14 +272,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-orientation model/attr-orientation model/default-orientation)
-  (du/define-string-prop! proto model/attr-variant     model/attr-variant     model/default-variant)
-  (du/define-string-prop! proto model/attr-align       model/attr-align       model/default-align)
-  (du/define-string-prop! proto model/attr-label       model/attr-label)
-  (du/define-string-prop! proto model/attr-thickness   model/attr-thickness)
-  (du/define-string-prop! proto model/attr-color       model/attr-color)
-  (du/define-string-prop! proto model/attr-inset       model/attr-inset)
-  (du/define-string-prop! proto model/attr-length      model/attr-length))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

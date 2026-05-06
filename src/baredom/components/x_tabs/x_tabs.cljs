@@ -269,7 +269,7 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "value" model/attr-value))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

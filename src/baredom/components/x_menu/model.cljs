@@ -18,9 +18,9 @@
 (def event-item-select "x-menu-item-select")
 
 (def property-api
-  {:open {:type 'boolean}
-   :placement {:type 'string}
-   :label {:type 'string}})
+  {:open      {:type 'boolean :reflects-attribute attr-open}
+   :placement {:type 'string  :reflects-attribute attr-placement}
+   :label     {:type 'string  :reflects-attribute attr-label}})
 
 (def event-schema
   {event-open {:detail {}}

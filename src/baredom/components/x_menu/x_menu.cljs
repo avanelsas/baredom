@@ -242,9 +242,7 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"      model/attr-open)
-  (du/define-string-prop! proto "placement" model/attr-placement)
-  (du/define-string-prop! proto "label"     model/attr-label))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

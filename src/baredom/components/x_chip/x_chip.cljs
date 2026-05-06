@@ -251,10 +251,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-label     model/attr-label)
-  (du/define-string-prop! proto model/attr-value     model/attr-value)
-  (du/define-bool-prop!   proto model/attr-removable model/attr-removable)
-  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────
