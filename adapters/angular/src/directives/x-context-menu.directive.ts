@@ -20,8 +20,8 @@ export class BaredomContextMenu implements OnInit, OnDestroy {
   @Input() set open(v: boolean) { this.el.open = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set placement(v: string) { this.el.placement = v as any; }
-  @Input() set offset(v: number) { this.el.offset = v as any; }
-  @Input() set zIndex(v: number) { this.el.zIndex = v as any; }
+  @Input() set offset(v: string) { this.el.offset = v as any; }
+  @Input() set zIndex(v: string) { this.el.zIndex = v as any; }
 
   @Output() openRequest = new EventEmitter<CustomEvent<{ reason: string }>>();
   @Output() openEvent = new EventEmitter<CustomEvent<{ reason: string }>>();

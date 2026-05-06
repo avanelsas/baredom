@@ -204,15 +204,7 @@
     (init-element! el)))
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-variant  model/attr-variant  "")
-  (du/define-string-prop! proto model/attr-align    model/attr-align    "")
-  (du/define-string-prop! proto model/attr-size     model/attr-size     "")
-  (du/define-string-prop! proto model/attr-emphasis model/attr-emphasis "")
-  (du/define-string-prop! proto model/attr-trend    model/attr-trend    "")
-  (du/define-string-prop! proto model/attr-label    model/attr-label    "")
-  (du/define-string-prop! proto model/attr-value    model/attr-value    "")
-  (du/define-string-prop! proto model/attr-hint     model/attr-hint     "")
-  (du/define-bool-prop!   proto model/attr-loading  model/attr-loading))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name
