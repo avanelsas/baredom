@@ -121,6 +121,63 @@ Use `component/register!` with a declarative options map. **Do not create `eleme
 
 See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full template and rules.
 
+### Property accessor tiers
+
+Components install JS property accessors at one of three tiers. Pick the simplest tier the component qualifies for; document and justify any drop to a lower tier.
+
+**Tier 0 — Data-driven** (preferred when applicable). One line:
+
+```clojure
+(defn- install-property-accessors! [^js proto]
+  (du/install-properties! proto model/property-api))
+```
+
+Requires `model/property-api` to follow the canonical schema:
+
+```clojure
+(def property-api
+  {:size  {:type 'string  :reflects-attribute attr-size  :default "md"}
+   :open  {:type 'boolean :reflects-attribute attr-open}
+   :delay {:type 'number  :reflects-attribute attr-delay :default 400}})
+```
+
+Use Tier 0 when **every** property is a simple bool/string/number reflector with no custom logic. Methods (e.g. `el.show()`) and computed read-only properties don't fit `property-api` — if a component has those, use Tier 1.
+
+Reference: `x_icon` (primary Golden Sample), `x_button`, `x_i18n`.
+
+**Tier 1 — Mixed helpers + custom**. Use when most properties are simple but at least one needs a method or a custom parser:
+
+```clojure
+(defn- install-property-accessors! [^js proto]
+  (du/install-properties! proto model/property-api)   ;; data-reflective props
+  (aset proto "show" (fn [] (this-as ^js this (do-show! this))))
+  (aset proto "hide" (fn [] (this-as ^js this (do-hide! this)))))
+```
+
+Or keep it explicit when only a couple of helpers are needed:
+
+```clojure
+(defn- install-property-accessors! [^js proto]
+  (du/define-bool-prop!   proto "open"     model/attr-open)
+  (du/define-string-prop! proto "label"    model/attr-label)
+  (du/define-number-prop! proto "duration" model/attr-duration model/default-duration)
+  (custom-method! proto))
+```
+
+Reference: `x_dropdown`, `x_combobox`.
+
+**Tier 2 — Hand-written `.defineProperty`** (last resort). Use only when helpers can't express the semantics:
+
+- Strict empty-string removal — `el.src = ""` should remove the attribute (e.g., `x_image`).
+- Side-effecting setters — `el.open = true` triggers an animation (e.g., `x_drawer`, `x_modal`).
+- CLJS-truthy semantics that differ from helpers' `(some? v)` — e.g., `x_toaster`'s `position` keeps `""` because `(if v ...)` is truthy on empty string.
+- Computed/read-only properties that read instance state, not attributes (e.g., `naturalWidth` on `x_image`).
+- Methods that need extra `:writable` or `:configurable` flags.
+
+Document the reason inline so future readers understand why the tier dropped. Reference: `x_image`, `x_currency_field`, `x_text_area`.
+
+**Mixing tiers within a component is fine.** A component can install some props via `du/install-properties!` and add Tier-2 method shortcuts via `aset` in the same `install-property-accessors!`. Just don't reach for Tier 2 when a helper would do.
+
 ## Architecture
 
 ClojureScript library compiling to standalone native Web Components (Custom Elements v1) via shadow-cljs `:esm` target. Each component is a separate ESM module with zero framework runtime dependency.
@@ -169,7 +226,8 @@ Components **must** use shared utility modules — never reimplement locally:
 - **`gobj/get`** / **`gobj/set`** — instance-field storage (refs, model cache, handlers)
 - **`du/has-attr?`** / **`du/get-attr`** — attribute reads in `read-model`
 - **`du/dispatch!`** / **`du/dispatch-cancelable!`** — event dispatch
-- **`du/install-properties!`** — install property accessors from `model/property-api`
+- **`du/install-properties!`** — install property accessors from `model/property-api` (Tier 0; see _Property accessor tiers_ above)
+- **`du/define-bool-prop!`** / **`du/define-string-prop!`** / **`du/define-number-prop!`** — install single accessor (Tier 1)
 - **`mu/`** — boolean parsing, string predicates, security sanitizers
 
 See [`docs/UTILITIES.md`](docs/UTILITIES.md) for the complete function reference.
