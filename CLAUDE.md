@@ -121,6 +121,16 @@ Use `component/register!` with a declarative options map. **Do not create `eleme
 
 See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full template and rules.
 
+### Property accessor tiers
+
+Components install JS property accessors at one of three tiers. **Pick the simplest tier the component qualifies for.**
+
+- **Tier 0** — `(du/install-properties! proto model/property-api)` (one-liner, data-driven). All props are simple bool/string/number reflectors. Reference: `x_icon`.
+- **Tier 1** — Individual `du/define-{bool,string,number}-prop!` calls, usually mixed with `aset` for methods. Reference: `x_dropdown`.
+- **Tier 2** — Hand-written `.defineProperty` for non-standard semantics (strict empty-string removal, side-effecting setters, CLJS-truthy edge cases, computed read-only props). Document the reason inline. Reference: `x_image`.
+
+See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full taxonomy with examples and reference components per tier.
+
 ## Architecture
 
 ClojureScript library compiling to standalone native Web Components (Custom Elements v1) via shadow-cljs `:esm` target. Each component is a separate ESM module with zero framework runtime dependency.
@@ -169,7 +179,8 @@ Components **must** use shared utility modules — never reimplement locally:
 - **`gobj/get`** / **`gobj/set`** — instance-field storage (refs, model cache, handlers)
 - **`du/has-attr?`** / **`du/get-attr`** — attribute reads in `read-model`
 - **`du/dispatch!`** / **`du/dispatch-cancelable!`** — event dispatch
-- **`du/install-properties!`** — install property accessors from `model/property-api`
+- **`du/install-properties!`** — install property accessors from `model/property-api` (Tier 0; see _Property accessor tiers_ above)
+- **`du/define-bool-prop!`** / **`du/define-string-prop!`** / **`du/define-number-prop!`** — install single accessor (Tier 1)
 - **`mu/`** — boolean parsing, string predicates, security sanitizers
 
 See [`docs/UTILITIES.md`](docs/UTILITIES.md) for the complete function reference.
