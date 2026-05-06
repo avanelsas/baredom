@@ -840,17 +840,9 @@
   nil)
 
 ;; ── Property accessors & methods ────────────────────────────────────────────
-(defn- bool-attr-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; number-attr-prop! returns nil for absent attribute and parses any string with
+;; parseFloat (no default fallback); kept distinct from du/define-number-prop!
+;; which expects a numeric default.
 (defn- number-attr-prop! [^js proto js-name attr]
   (.defineProperty js/Object proto js-name
                    #js {:get (fn []
@@ -866,16 +858,7 @@
 
 (defn- install-property-accessors! [^js proto]
   ;; Camel-case JS properties mapping to kebab-case attrs.
-  (.defineProperty js/Object proto "activeState"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-active-state)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-active-state)
-                                          (.setAttribute this model/attr-active-state (str v)))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto "activeState" model/attr-active-state)
 
   (.defineProperty js/Object proto "activeIndex"
                    #js {:get (fn []
@@ -908,7 +891,7 @@
                                           (.setAttribute this model/attr-variant (str v)))))
                         :enumerable true :configurable true})
 
-  (bool-attr-prop! proto model/attr-disabled)
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
   ;; Methods
   (set! (.-goTo proto)

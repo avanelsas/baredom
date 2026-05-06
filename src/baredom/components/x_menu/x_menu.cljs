@@ -242,21 +242,9 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (.defineProperty
-   js/Object proto "open"
-   #js {:get (fn [] (this-as this (.hasAttribute this model/attr-open)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-open "") (.removeAttribute this model/attr-open))))
-        :configurable true :enumerable true})
-  (.defineProperty
-   js/Object proto "placement"
-   #js {:get (fn [] (this-as this (.getAttribute this model/attr-placement)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-placement v) (.removeAttribute this model/attr-placement))))
-        :configurable true :enumerable true})
-  (.defineProperty
-   js/Object proto "label"
-   #js {:get (fn [] (this-as this (.getAttribute this model/attr-label)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-label v) (.removeAttribute this model/attr-label))))
-        :configurable true :enumerable true}))
+  (du/define-bool-prop!   proto "open"      model/attr-open)
+  (du/define-string-prop! proto "placement" model/attr-placement)
+  (du/define-string-prop! proto "label"     model/attr-label))
 
 (defn init! []
   (component/register! model/tag-name

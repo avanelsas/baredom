@@ -244,15 +244,7 @@
                                           (.setAttribute this model/attr-frequency (str v)))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]

@@ -1,5 +1,6 @@
 (ns baredom.components.x-organic-divider.x-organic-divider
   (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-organic-divider.model :as model]))
 
@@ -264,29 +265,9 @@
                                           (.removeAttribute this model/attr-height))))
                         :enumerable true :configurable true})
 
-  ;; flip — boolean, reflects to attr
-  (.defineProperty js/Object proto model/attr-flip
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-flip)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-flip "")
-                                          (.removeAttribute this model/attr-flip))))
-                        :enumerable true :configurable true})
-
-  ;; mirror — boolean, reflects to attr
-  (.defineProperty js/Object proto model/attr-mirror
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-mirror)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-mirror "")
-                                          (.removeAttribute this model/attr-mirror))))
-                        :enumerable true :configurable true})
+  ;; flip / mirror — booleans
+  (du/define-bool-prop! proto model/attr-flip   model/attr-flip)
+  (du/define-bool-prop! proto model/attr-mirror model/attr-mirror)
 
   ;; animation — string, reflects to attr
   (.defineProperty js/Object proto model/attr-animation

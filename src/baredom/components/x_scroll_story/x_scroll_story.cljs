@@ -630,15 +630,7 @@
                         :enumerable true :configurable true})
 
   ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
   ;; label (string)
   (.defineProperty js/Object proto model/attr-label
@@ -668,15 +660,7 @@
                         :enumerable true :configurable true})
 
   ;; autoplay (boolean)
-  (.defineProperty js/Object proto model/attr-autoplay
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay "")
-                                          (.removeAttribute this model/attr-autoplay))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop! proto model/attr-autoplay model/attr-autoplay)
 
   ;; autoplaySpeed (number)
   (.defineProperty js/Object proto "autoplaySpeed"
@@ -691,27 +675,9 @@
                                           (.removeAttribute this model/attr-autoplay-speed))))
                         :enumerable true :configurable true})
 
-  ;; autoplayLoop (boolean)
-  (.defineProperty js/Object proto "autoplayLoop"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay-loop)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay-loop "")
-                                          (.removeAttribute this model/attr-autoplay-loop))))
-                        :enumerable true :configurable true})
-
-  ;; autoplayIndicator (boolean)
-  (.defineProperty js/Object proto "autoplayIndicator"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-autoplay-indicator)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-autoplay-indicator "")
-                                          (.removeAttribute this model/attr-autoplay-indicator))))
-                        :enumerable true :configurable true})
+  ;; autoplayLoop / autoplayIndicator (booleans)
+  (du/define-bool-prop! proto "autoplayLoop"      model/attr-autoplay-loop)
+  (du/define-bool-prop! proto "autoplayIndicator" model/attr-autoplay-indicator)
 
   ;; autoplayPaused (read-only boolean)
   (.defineProperty js/Object proto "autoplayPaused"

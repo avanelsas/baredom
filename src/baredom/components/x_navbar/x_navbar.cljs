@@ -396,47 +396,15 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 
-(defn- install-bool-prop!
-  [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object
-   proto
-   prop-name
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as ^js this
-                        (du/has-attr? this attr-name)))
-        :set (fn [value]
-               (this-as ^js this
-                        (du/set-bool-attr! this attr-name (boolean value))))}))
-
-(defn- install-string-prop!
-  [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object
-   proto
-   prop-name
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as ^js this
-                        (or (du/get-attr this attr-name) "")))
-        :set (fn [v]
-               (this-as ^js this
-                        (if v
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
 (defn- install-property-accessors!
   [^js proto]
-  (install-bool-prop! proto "sticky" model/attr-sticky)
-  (install-bool-prop! proto "elevated" model/attr-elevated)
-  (install-string-prop! proto "label" model/attr-label)
-  (install-string-prop! proto "variant" model/attr-variant)
-  (install-string-prop! proto "orientation" model/attr-orientation)
-  (install-string-prop! proto "alignment" model/attr-alignment)
-  (install-string-prop! proto "breakpoint" model/attr-breakpoint))
+  (du/define-bool-prop!   proto "sticky"      model/attr-sticky)
+  (du/define-bool-prop!   proto "elevated"    model/attr-elevated)
+  (du/define-string-prop! proto "label"       model/attr-label       "")
+  (du/define-string-prop! proto "variant"     model/attr-variant     "")
+  (du/define-string-prop! proto "orientation" model/attr-orientation "")
+  (du/define-string-prop! proto "alignment"   model/attr-alignment   "")
+  (du/define-string-prop! proto "breakpoint"  model/attr-breakpoint  ""))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

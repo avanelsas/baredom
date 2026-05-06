@@ -193,26 +193,10 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (.defineProperty
-   js/Object proto "value"
-   #js {:get (fn [] (this-as this (.getAttribute this model/attr-value)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-value v) (.removeAttribute this model/attr-value))))
-        :configurable true :enumerable true})
-  (.defineProperty
-   js/Object proto "disabled"
-   #js {:get (fn [] (this-as this (.hasAttribute this model/attr-disabled)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-disabled "") (.removeAttribute this model/attr-disabled))))
-        :configurable true :enumerable true})
-  (.defineProperty
-   js/Object proto "variant"
-   #js {:get (fn [] (this-as this (.getAttribute this model/attr-variant)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-variant v) (.removeAttribute this model/attr-variant))))
-        :configurable true :enumerable true})
-  (.defineProperty
-   js/Object proto "type"
-   #js {:get (fn [] (this-as this (.getAttribute this model/attr-type)))
-        :set (fn [v] (this-as this (if v (.setAttribute this model/attr-type v) (.removeAttribute this model/attr-type))))
-        :configurable true :enumerable true}))
+  (du/define-string-prop! proto "value"    model/attr-value)
+  (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+  (du/define-string-prop! proto "variant"  model/attr-variant)
+  (du/define-string-prop! proto "type"     model/attr-type))
 
 (defn init! []
   (component/register! model/tag-name
