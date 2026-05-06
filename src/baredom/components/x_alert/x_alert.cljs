@@ -202,13 +202,13 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:type-raw          (.getAttribute el model/attr-type)
-    :text              (.getAttribute el model/attr-text)
-    :icon-present?     (.hasAttribute el model/attr-icon)
-    :icon-raw          (.getAttribute el model/attr-icon)
-    :dismissible-attr  (.getAttribute el model/attr-dismissible)
-    :disabled-present? (.hasAttribute el model/attr-disabled)
-    :timeout-ms-raw    (.getAttribute el model/attr-timeout-ms)}))
+   {:type-raw          (du/get-attr el model/attr-type)
+    :text              (du/get-attr el model/attr-text)
+    :icon-present?     (du/has-attr? el model/attr-icon)
+    :icon-raw          (du/get-attr el model/attr-icon)
+    :dismissible-attr  (du/get-attr el model/attr-dismissible)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :timeout-ms-raw    (du/get-attr el model/attr-timeout-ms)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -222,11 +222,11 @@
   (let [interactive? (and dismissible? (not disabled?))]
     (set! (.-tabIndex el) (if interactive? 0 -1))
     (if disabled?
-      (.setAttribute el "aria-disabled" "true")
-      (.removeAttribute el "aria-disabled"))
+      (du/set-attr! el "aria-disabled" "true")
+      (du/remove-attr! el "aria-disabled"))
     (if interactive?
-      (.setAttribute el "aria-keyshortcuts" "Escape")
-      (.removeAttribute el "aria-keyshortcuts"))))
+      (du/set-attr! el "aria-keyshortcuts" "Escape")
+      (du/remove-attr! el "aria-keyshortcuts"))))
 
 (defn- apply-model! [^js el {:keys [type text icon-mode icon dismissible? disabled?] :as m}]
   (let [{:keys [container icon-wrap icon-slot default-icon text-el dismiss-btn]}
@@ -241,7 +241,7 @@
         fallback     (if (= icon-mode :custom) icon (model/default-icon-for-type type))
         hide-icon?   (and (not has-slot?) (= icon-mode :hidden))]
 
-    (.setAttribute el "data-type" (model/type->attr type))
+    (du/set-attr! el "data-type" (model/type->attr type))
     (.setAttribute container "role" (model/role-for-type type))
 
     (set! (.-textContent text-el) text)
@@ -324,13 +324,13 @@
 (defn- start-enter! [^js el]
   (when-not (gobj/get el k-entered)
     (gobj/set el k-entered true)
-    (.setAttribute el "data-entering" "")
+    (du/set-attr! el "data-entering" "")
     (let [{:keys [container]} (ensure-refs! el)
           ^js container container]
       (letfn [(on-end [^js e]
                 (when (= (.-target e) container)
                   (.removeEventListener container "animationend" on-end)
-                  (.removeAttribute el "data-entering")))]
+                  (du/remove-attr! el "data-entering")))]
         (.addEventListener container "animationend" on-end))))
   nil)
 
@@ -338,7 +338,7 @@
   (when-not (gobj/get el k-exiting)
     (gobj/set el k-exiting true)
     (clear-timeout! el)
-    (.removeAttribute el "data-entering")
+    (du/remove-attr! el "data-entering")
     (let [dur (exit-duration-ms el)]
       (if (or (zero? dur) (prefers-reduced-motion?))
         (.remove el)
@@ -351,7 +351,7 @@
                         (js/clearTimeout tid)
                         (gobj/set el k-exit-timer nil))
                       (when (.-isConnected el) (.remove el))))]
-            (.setAttribute el "data-exiting" "")
+            (du/set-attr! el "data-exiting" "")
             (.addEventListener container "animationend" on-end)
             (gobj/set el k-exit-timer
                       (js/setTimeout

@@ -17,12 +17,12 @@
   (du/getv el key-base))
 
 (defn read-inputs [^js el]
-  {:variant (.getAttribute el model/attr-variant)
-   :padding (.getAttribute el model/attr-padding)
-   :radius (.getAttribute el model/attr-radius)
-   :interactive (.hasAttribute el model/attr-interactive)
-   :disabled (.hasAttribute el model/attr-disabled)
-   :label (.getAttribute el model/attr-label)})
+  {:variant (du/get-attr el model/attr-variant)
+   :padding (du/get-attr el model/attr-padding)
+   :radius (du/get-attr el model/attr-radius)
+   :interactive (du/has-attr? el model/attr-interactive)
+   :disabled (du/has-attr? el model/attr-disabled)
+   :label (du/get-attr el model/attr-label)})
 
 (defn interactive-active? [state]
   (and (:interactive state) (not (:disabled state))))
@@ -32,8 +32,8 @@
 
 (defn set-or-remove-attr! [^js el name value]
   (if (some? value)
-    (.setAttribute el name value)
-    (.removeAttribute el name)))
+    (du/set-attr! el name value)
+    (du/remove-attr! el name)))
 
 (defn reflect-host-a11y! [^js el state]
   (set-or-remove-attr! el "role" (:role state))

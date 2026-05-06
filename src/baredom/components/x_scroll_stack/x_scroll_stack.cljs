@@ -74,11 +74,11 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:peek-raw             (.getAttribute el model/attr-peek)
-    :rotation-raw         (.getAttribute el model/attr-rotation)
-    :scroll-distance-raw  (.getAttribute el model/attr-scroll-distance)
-    :align-raw            (.getAttribute el model/attr-align)
-    :disabled-attr        (when (.hasAttribute el model/attr-disabled) "")}))
+   {:peek-raw             (du/get-attr el model/attr-peek)
+    :rotation-raw         (du/get-attr el model/attr-rotation)
+    :scroll-distance-raw  (du/get-attr el model/attr-scroll-distance)
+    :align-raw            (du/get-attr el model/attr-align)
+    :disabled-attr        (when (du/has-attr? el model/attr-disabled) "")}))
 
 ;; ── Helpers ─────────────────────────────────────────────────────────────────
 (defn- get-slotted-children [^js el]
@@ -152,7 +152,7 @@
             ;; Stack anchors at first card's natural position
             stack-top  (aget offsets 0)
             ;; Compute align shift only when align attribute is explicitly set
-            align-shift (if (.hasAttribute el model/attr-align)
+            align-shift (if (du/has-attr? el model/attr-align)
                           (let [last-h     (aget heights (dec n))
                                 total-stack-h (+ (* (dec n) peek-val) last-h)
                                 {:keys [container]} (gobj/get el k-refs)

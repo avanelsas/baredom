@@ -9,11 +9,11 @@
 (def key-initialized "__xBentoGridInit")
 
 (defn read-inputs [^js el]
-  {:columns    (.getAttribute el model/attr-columns)
-   :gap        (.getAttribute el model/attr-gap)
-   :row-gap    (.getAttribute el model/attr-row-gap)
-   :column-gap (.getAttribute el model/attr-column-gap)
-   :row-height (.getAttribute el model/attr-row-height)})
+  {:columns    (du/get-attr el model/attr-columns)
+   :gap        (du/get-attr el model/attr-gap)
+   :row-gap    (du/get-attr el model/attr-row-gap)
+   :column-gap (du/get-attr el model/attr-column-gap)
+   :row-height (du/get-attr el model/attr-row-height)})
 
 (defn style-text []
   "

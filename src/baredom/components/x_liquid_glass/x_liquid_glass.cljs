@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-glass.x-liquid-glass
   (:require
 [baredom.utils.component :as component]
+               [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-liquid-glass.model :as model]))
 
@@ -300,8 +301,8 @@
     (.appendChild root content)
 
     ;; Start enter animation
-    (.setAttribute el "data-entering" "")
-    (js/setTimeout #(.removeAttribute el "data-entering") 700)
+    (du/set-attr! el "data-entering" "")
+    (js/setTimeout #(du/remove-attr! el "data-entering") 700)
 
     (gobj/set el k-refs
               {:root      root
@@ -687,20 +688,20 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:blobs-raw              (.getAttribute el model/attr-blobs)
-    :speed-raw              (.getAttribute el model/attr-speed)
-    :amplitude-raw          (.getAttribute el model/attr-amplitude)
-    :blur-raw               (.getAttribute el model/attr-blur)
-    :goo-raw                (.getAttribute el model/attr-goo)
-    :tint-raw               (.getAttribute el model/attr-tint)
-    :specular-attr          (.getAttribute el model/attr-specular)
-    :specular-size-raw      (.getAttribute el model/attr-specular-size)
-    :specular-intensity-raw (.getAttribute el model/attr-specular-intensity)
-    :disabled-attr          (.getAttribute el model/attr-disabled)
-    :mode-raw               (.getAttribute el model/attr-mode)
-    :frost-raw              (.getAttribute el model/attr-frost)
-    :color-1-raw            (.getAttribute el model/attr-color-1)
-    :color-2-raw            (.getAttribute el model/attr-color-2)}))
+   {:blobs-raw              (du/get-attr el model/attr-blobs)
+    :speed-raw              (du/get-attr el model/attr-speed)
+    :amplitude-raw          (du/get-attr el model/attr-amplitude)
+    :blur-raw               (du/get-attr el model/attr-blur)
+    :goo-raw                (du/get-attr el model/attr-goo)
+    :tint-raw               (du/get-attr el model/attr-tint)
+    :specular-attr          (du/get-attr el model/attr-specular)
+    :specular-size-raw      (du/get-attr el model/attr-specular-size)
+    :specular-intensity-raw (du/get-attr el model/attr-specular-intensity)
+    :disabled-attr          (du/get-attr el model/attr-disabled)
+    :mode-raw               (du/get-attr el model/attr-mode)
+    :frost-raw              (du/get-attr el model/attr-frost)
+    :color-1-raw            (du/get-attr el model/attr-color-1)
+    :color-2-raw            (du/get-attr el model/attr-color-2)}))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 (defn- update-from-attrs! [^js el]

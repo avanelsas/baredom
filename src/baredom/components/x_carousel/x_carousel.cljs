@@ -372,16 +372,16 @@
           vertical?  (= direction "vertical")]
 
       ;; Host data attributes for CSS
-      (.setAttribute el "data-direction" direction)
-      (.setAttribute el "data-transition" transition)
+      (du/set-attr! el "data-direction" direction)
+      (du/set-attr! el "data-transition" transition)
 
       ;; ARIA on host
-      (.setAttribute el "role" "region")
-      (.setAttribute el "aria-roledescription" "carousel")
+      (du/set-attr! el "role" "region")
+      (du/set-attr! el "aria-roledescription" "carousel")
       (if-let [label (:aria-label m)]
-        (.setAttribute el "aria-label" label)
+        (du/set-attr! el "aria-label" label)
         (when-not (du/has-attr? el "aria-label")
-          (.setAttribute el "aria-label" "Carousel")))
+          (du/set-attr! el "aria-label" "Carousel")))
 
       ;; ARIA orientation on dots
       (.setAttribute dots "aria-orientation" direction)
@@ -447,7 +447,7 @@
               #js {:index         target
                    :previousIndex current
                    :reason        reason})
-        (.setAttribute el model/attr-current (str target)))))
+        (du/set-attr! el model/attr-current (str target)))))
   nil)
 
 ;; ── Pointer drag ────────────────────────────────────────────────────────────
@@ -595,7 +595,7 @@
     (let [m       (read-model el)
           clamped (model/clamp-index (:current m) cnt)]
       (when (not= clamped (:current m))
-        (.setAttribute el model/attr-current (str clamped))))
+        (du/set-attr! el model/attr-current (str clamped))))
     (render! el)
     (start-autoplay! el))
   nil)

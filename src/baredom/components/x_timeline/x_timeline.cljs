@@ -64,9 +64,9 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:label-raw    (.getAttribute el model/attr-label)
-    :position-raw (.getAttribute el model/attr-position)
-    :striped?     (.hasAttribute el model/attr-striped)}))
+   {:label-raw    (du/get-attr el model/attr-label)
+    :position-raw (du/get-attr el model/attr-position)
+    :striped?     (du/has-attr? el model/attr-striped)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [label] :as m}]
@@ -74,10 +74,10 @@
         ^js label-div label-div]
 
     ;; ARIA
-    (.setAttribute el "role" "list")
+    (du/set-attr! el "role" "list")
     (if (not= label "")
-      (.setAttribute el "aria-label" label)
-      (.removeAttribute el "aria-label"))
+      (du/set-attr! el "aria-label" label)
+      (du/remove-attr! el "aria-label"))
 
     ;; Label caption
     (if (not= label "")

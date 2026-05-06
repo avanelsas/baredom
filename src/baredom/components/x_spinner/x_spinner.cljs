@@ -68,24 +68,24 @@
     (.appendChild root style)
     (.appendChild root ring)
     ;; Static a11y attributes on the host — set once
-    (.setAttribute el "role"      "status")
-    (.setAttribute el "aria-live" "polite")
+    (du/set-attr! el "role"      "status")
+    (du/set-attr! el "aria-live" "polite")
     (gobj/set el k-ring ring)
     (gobj/set el k-initialized true))
   nil)
 
 ;; ── Attribute readers ─────────────────────────────────────────────────────
 (defn- read-attrs [^js el]
-  {:size    (.getAttribute el model/attr-size)
-   :variant (.getAttribute el model/attr-variant)
-   :label   (.getAttribute el model/attr-label)})
+  {:size    (du/get-attr el model/attr-size)
+   :variant (du/get-attr el model/attr-variant)
+   :label   (du/get-attr el model/attr-label)})
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
   (let [{:keys [size variant label]} (model/derive-state (read-attrs el))]
-    (.setAttribute el "data-size"    size)
-    (.setAttribute el "data-variant" variant)
-    (.setAttribute el "aria-label"   label))
+    (du/set-attr! el "data-size"    size)
+    (du/set-attr! el "data-variant" variant)
+    (du/set-attr! el "aria-label"   label))
   nil)
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────

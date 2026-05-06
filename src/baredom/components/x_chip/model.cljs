@@ -33,7 +33,7 @@
 ;; ── Normalize ─────────────────────────────────────────────────────────────
 (defn normalize
   "Converts raw attribute strings to a clean view model.
-   disabled-present? should be boolean: (.hasAttribute el attr-disabled)"
+   disabled-present? should be boolean: (du/has-attr? el attr-disabled)"
   [{:keys [label-raw value-raw removable-raw disabled-present?]}]
   (let [label      (or label-raw "")
         removable? (parse-bool-default-true removable-raw)

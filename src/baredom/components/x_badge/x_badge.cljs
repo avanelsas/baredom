@@ -150,15 +150,15 @@
 (defn- read-model [^js el]
   (let [{:keys [slot-el]} (ensure-refs! el)]
     (model/normalize
-     {:variant-raw          (.getAttribute el model/attr-variant)
-      :size-raw             (.getAttribute el model/attr-size)
-      :pill-raw             (.getAttribute el model/attr-pill)
-      :dot-raw              (.getAttribute el model/attr-dot)
-      :count-raw            (.getAttribute el model/attr-count)
-      :max-raw              (.getAttribute el model/attr-max)
-      :text-raw             (.getAttribute el model/attr-text)
-      :aria-label-raw       (.getAttribute el model/attr-aria-label)
-      :aria-describedby-raw (.getAttribute el model/attr-aria-describedby)
+     {:variant-raw          (du/get-attr el model/attr-variant)
+      :size-raw             (du/get-attr el model/attr-size)
+      :pill-raw             (du/get-attr el model/attr-pill)
+      :dot-raw              (du/get-attr el model/attr-dot)
+      :count-raw            (du/get-attr el model/attr-count)
+      :max-raw              (du/get-attr el model/attr-max)
+      :text-raw             (du/get-attr el model/attr-text)
+      :aria-label-raw       (du/get-attr el model/attr-aria-label)
+      :aria-describedby-raw (du/get-attr el model/attr-aria-describedby)
       :has-slot?            (slot-has-content? slot-el)})))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
@@ -169,11 +169,11 @@
         mode (model/compute-mode m)
         txt  (model/display-text m)]
     ;; Data attributes drive CSS selectors
-    (.setAttribute el "data-variant" variant)
-    (.setAttribute el "data-size"    size)
-    (.setAttribute el "data-mode"    (name mode))
-    (if pill (.setAttribute el "data-pill" "") (.removeAttribute el "data-pill"))
-    (if dot  (.setAttribute el "data-dot"  "") (.removeAttribute el "data-dot"))
+    (du/set-attr! el "data-variant" variant)
+    (du/set-attr! el "data-size"    size)
+    (du/set-attr! el "data-mode"    (name mode))
+    (if pill (du/set-attr! el "data-pill" "") (du/remove-attr! el "data-pill"))
+    (if dot  (du/set-attr! el "data-dot"  "") (du/remove-attr! el "data-dot"))
     ;; Label text
     (set! (.-textContent label-el) (or txt ""))
     ;; ARIA on base

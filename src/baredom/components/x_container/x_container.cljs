@@ -16,7 +16,7 @@
 
 (defn get-default-true-bool
   [^js el attr-name]
-  (not= "false" (.getAttribute el attr-name)))
+  (not= "false" (du/get-attr el attr-name)))
 
 (defn read-public-state [^js el]
   (model/public-state

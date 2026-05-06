@@ -1,5 +1,6 @@
 (ns baredom.components.x-organic-shape.x-organic-shape
   (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-organic-shape.model :as model]))
 
@@ -117,12 +118,12 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:shape   (.getAttribute el model/attr-shape)
-   :path    (.getAttribute el model/attr-path)
-   :animation (.getAttribute el model/attr-animation)
-   :ratio   (.getAttribute el model/attr-ratio)
-   :width   (.getAttribute el model/attr-width)
-   :height  (.getAttribute el model/attr-height)})
+  {:shape   (du/get-attr el model/attr-shape)
+   :path    (du/get-attr el model/attr-path)
+   :animation (du/get-attr el model/attr-animation)
+   :ratio   (du/get-attr el model/attr-ratio)
+   :width   (du/get-attr el model/attr-width)
+   :height  (du/get-attr el model/attr-height)})
 
 ;; ── Accessibility ─────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -131,10 +132,10 @@
 
 (defn- update-a11y! [^js el ^js slot-el]
   (if (slot-has-content? slot-el)
-    (do (.removeAttribute el "role")
-        (.removeAttribute el "aria-hidden"))
-    (do (.setAttribute el "role" "presentation")
-        (.setAttribute el "aria-hidden" "true"))))
+    (do (du/remove-attr! el "role")
+        (du/remove-attr! el "aria-hidden"))
+    (do (du/set-attr! el "role" "presentation")
+        (du/set-attr! el "aria-hidden" "true"))))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -165,8 +166,8 @@
 
     ;; Animation
     (if (not= animation "none")
-      (.setAttribute el "data-animation" animation)
-      (.removeAttribute el "data-animation"))
+      (du/set-attr! el "data-animation" animation)
+      (du/remove-attr! el "data-animation"))
 
     ;; Accessibility
     (update-a11y! el slot-el))

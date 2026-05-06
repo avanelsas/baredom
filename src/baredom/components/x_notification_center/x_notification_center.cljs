@@ -101,9 +101,9 @@
 
 ;; ── Position ──────────────────────────────────────────────────────────────────
 (defn- apply-position! [^js el]
-  (let [raw (.getAttribute el model/attr-position)
+  (let [raw (du/get-attr el model/attr-position)
         pos (model/parse-position raw)]
-    (.setAttribute el model/data-position pos))
+    (du/set-attr! el model/data-position pos))
   nil)
 
 ;; ── Event dispatch helpers ────────────────────────────────────────────────────
@@ -232,7 +232,7 @@
 (defn- attribute-changed! [^js el n _old-val _new-val]
   (cond
   (= n model/attr-position) (apply-position! el)
-  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (.getAttribute el model/attr-max))))
+  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max))))
   nil)
 
 (defn- install-methods! [^js proto]

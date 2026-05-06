@@ -291,14 +291,14 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:target-raw           (.getAttribute el model/attr-target)
-    :orientation-raw      (.getAttribute el model/attr-orientation)
-    :mode-raw             (.getAttribute el model/attr-mode)
-    :theme-raw            (.getAttribute el model/attr-theme)
-    :wave-intensity-raw   (.getAttribute el model/attr-wave-intensity)
-    :splash-intensity-raw (.getAttribute el model/attr-splash-intensity)
-    :layers-raw           (.getAttribute el model/attr-layers)
-    :disabled-attr        (.getAttribute el model/attr-disabled)}))
+   {:target-raw           (du/get-attr el model/attr-target)
+    :orientation-raw      (du/get-attr el model/attr-orientation)
+    :mode-raw             (du/get-attr el model/attr-mode)
+    :theme-raw            (du/get-attr el model/attr-theme)
+    :wave-intensity-raw   (du/get-attr el model/attr-wave-intensity)
+    :splash-intensity-raw (du/get-attr el model/attr-splash-intensity)
+    :layers-raw           (du/get-attr el model/attr-layers)
+    :disabled-attr        (du/get-attr el model/attr-disabled)}))
 
 ;; ── Wave state initialisation ───────────────────────────────────────────────
 (defn- init-wave-state! [^js el n]

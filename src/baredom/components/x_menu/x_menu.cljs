@@ -69,8 +69,8 @@
       (aget assigned 0))))
 
 (defn open-menu! [^js el focus-target]
-  (when-not (.hasAttribute el model/attr-open)
-    (.setAttribute el model/attr-open "")
+  (when-not (du/has-attr? el model/attr-open)
+    (du/set-attr! el model/attr-open "")
     (du/dispatch! el model/event-open #js {}))
   (when focus-target
     (let [items (get-focusable-items el)
@@ -81,8 +81,8 @@
           (= focus-target :last)  (focus-item! (aget items (dec n))))))))
 
 (defn close-menu! [^js el return-focus?]
-  (when (.hasAttribute el model/attr-open)
-    (.removeAttribute el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
+    (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-close #js {}))
   (when return-focus?
     (when-let [trigger (get-trigger el)]
@@ -97,19 +97,19 @@
   (let [refs (du/getv el key-refs)
         trigger-slot (when refs (gobj/get refs "trigger-slot"))]
     (when (and trigger-slot (trigger-clicked? trigger-slot evt))
-      (if (.hasAttribute el model/attr-open)
+      (if (du/has-attr? el model/attr-open)
         (close-menu! el true)
         (open-menu! el nil)))))
 
 (defn handle-doc-click! [^js el ^js evt]
-  (when (.hasAttribute el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     (let [path (.composedPath evt)]
       (when (= -1 (.indexOf path el))
         (close-menu! el false)))))
 
 (defn handle-keydown! [^js el ^js evt]
   (let [k (.-key evt)
-        is-open? (.hasAttribute el model/attr-open)]
+        is-open? (du/has-attr? el model/attr-open)]
     (cond
       (= k "Escape")
       (when is-open?

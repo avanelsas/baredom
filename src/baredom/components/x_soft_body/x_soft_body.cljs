@@ -132,12 +132,12 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/derive-state
-   {:stiffness-raw   (.getAttribute el model/attr-stiffness)
-    :damping-raw     (.getAttribute el model/attr-damping)
-    :radius-raw      (.getAttribute el model/attr-radius)
-    :intensity-raw   (.getAttribute el model/attr-intensity)
-    :grab-radius-raw (.getAttribute el model/attr-grab-radius)
-    :disabled-attr   (.getAttribute el model/attr-disabled)}))
+   {:stiffness-raw   (du/get-attr el model/attr-stiffness)
+    :damping-raw     (du/get-attr el model/attr-damping)
+    :radius-raw      (du/get-attr el model/attr-radius)
+    :intensity-raw   (du/get-attr el model/attr-intensity)
+    :grab-radius-raw (du/get-attr el model/attr-grab-radius)
+    :disabled-attr   (du/get-attr el model/attr-disabled)}))
 
 ;; ── Physics initialisation ──────────────────────────────────────────────────
 (defn- init-physics! [^js el w h]

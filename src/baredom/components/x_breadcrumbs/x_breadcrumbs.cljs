@@ -133,17 +133,17 @@
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:separator-raw                (.getAttribute el model/attr-separator)
-    :size-raw                     (.getAttribute el model/attr-size)
-    :variant-raw                  (.getAttribute el model/attr-variant)
-    :wrap-raw                     (.getAttribute el model/attr-wrap)
-    :max-items-raw                (.getAttribute el model/attr-max-items)
-    :items-before-raw             (.getAttribute el model/attr-items-before)
-    :items-after-raw              (.getAttribute el model/attr-items-after)
-    :disabled-present?            (.hasAttribute el model/attr-disabled)
-    :preserve-aria-current-present? (.hasAttribute el model/attr-preserve-aria-current)
-    :aria-label-raw               (.getAttribute el model/attr-aria-label)
-    :aria-describedby-raw         (.getAttribute el model/attr-aria-describedby)}))
+   {:separator-raw                (du/get-attr el model/attr-separator)
+    :size-raw                     (du/get-attr el model/attr-size)
+    :variant-raw                  (du/get-attr el model/attr-variant)
+    :wrap-raw                     (du/get-attr el model/attr-wrap)
+    :max-items-raw                (du/get-attr el model/attr-max-items)
+    :items-before-raw             (du/get-attr el model/attr-items-before)
+    :items-after-raw              (du/get-attr el model/attr-items-after)
+    :disabled-present?            (du/has-attr? el model/attr-disabled)
+    :preserve-aria-current-present? (du/has-attr? el model/attr-preserve-aria-current)
+    :aria-label-raw               (du/get-attr el model/attr-aria-label)
+    :aria-describedby-raw         (du/get-attr el model/attr-aria-describedby)}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- make-separator-el [^js _el sep-text]
@@ -222,9 +222,9 @@
   (let [{:keys [nav]} (ensure-refs! el)
         ^js nav nav]
     ;; Data attributes drive CSS selectors
-    (.setAttribute el "data-size"    size)
-    (.setAttribute el "data-variant" variant)
-    (.setAttribute el "data-wrap"    (str (boolean wrap)))
+    (du/set-attr! el "data-size"    size)
+    (du/set-attr! el "data-variant" variant)
+    (du/set-attr! el "data-wrap"    (str (boolean wrap)))
 
     ;; ARIA on nav
     (if aria-label

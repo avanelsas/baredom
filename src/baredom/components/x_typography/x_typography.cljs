@@ -148,10 +148,10 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:variant-raw    (.getAttribute el model/attr-variant)
-    :align-raw      (.getAttribute el model/attr-align)
-    :truncate-raw   (.getAttribute el model/attr-truncate)
-    :line-clamp-raw (.getAttribute el model/attr-line-clamp)}))
+   {:variant-raw    (du/get-attr el model/attr-variant)
+    :align-raw      (du/get-attr el model/attr-align)
+    :truncate-raw   (du/get-attr el model/attr-truncate)
+    :line-clamp-raw (du/get-attr el model/attr-line-clamp)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [variant align truncate? line-clamp] :as m}]
@@ -159,8 +159,8 @@
         ^js container container]
 
     ;; Set data-variant and data-align on host for CSS selectors
-    (.setAttribute el "data-variant" variant)
-    (.setAttribute el "data-align" align)
+    (du/set-attr! el "data-variant" variant)
+    (du/set-attr! el "data-align" align)
 
     ;; Truncation: data-truncate on container
     (if truncate?

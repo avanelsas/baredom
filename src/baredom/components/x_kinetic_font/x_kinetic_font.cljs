@@ -92,16 +92,16 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/derive-state
-   {:text-raw        (.getAttribute el model/attr-text)
-    :trigger-raw     (.getAttribute el model/attr-trigger)
-    :mode-raw        (.getAttribute el model/attr-mode)
-    :per-char-attr   (.getAttribute el model/attr-per-char)
-    :mass-raw        (.getAttribute el model/attr-mass)
-    :tension-raw     (.getAttribute el model/attr-tension)
-    :friction-raw    (.getAttribute el model/attr-friction)
-    :intensity-raw   (.getAttribute el model/attr-intensity)
-    :radius-raw      (.getAttribute el model/attr-radius)
-    :font-family-raw (.getAttribute el model/attr-font-family)}))
+   {:text-raw        (du/get-attr el model/attr-text)
+    :trigger-raw     (du/get-attr el model/attr-trigger)
+    :mode-raw        (du/get-attr el model/attr-mode)
+    :per-char-attr   (du/get-attr el model/attr-per-char)
+    :mass-raw        (du/get-attr el model/attr-mass)
+    :tension-raw     (du/get-attr el model/attr-tension)
+    :friction-raw    (du/get-attr el model/attr-friction)
+    :intensity-raw   (du/get-attr el model/attr-intensity)
+    :radius-raw      (du/get-attr el model/attr-radius)
+    :font-family-raw (du/get-attr el model/attr-font-family)}))
 
 ;; ── CSS custom property reading ─────────────────────────────────────────────
 (defn- parse-css-float [s default-val]
@@ -362,11 +362,11 @@
         ^js sr-only sr-only]
     (set! (.-textContent sr-only) text)
     (if (= text "")
-      (do (.setAttribute el "aria-hidden" "true")
-          (.removeAttribute el "role"))
-      (do (.removeAttribute el "aria-hidden")
-          (.setAttribute el "role" "text")
-          (.setAttribute el "aria-label" text))))
+      (do (du/set-attr! el "aria-hidden" "true")
+          (du/remove-attr! el "role"))
+      (do (du/remove-attr! el "aria-hidden")
+          (du/set-attr! el "role" "text")
+          (du/set-attr! el "aria-label" text))))
   nil)
 
 ;; ── Update from attributes ──────────────────────────────────────────────────

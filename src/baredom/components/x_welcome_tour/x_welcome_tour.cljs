@@ -690,7 +690,7 @@
 (defn- do-complete! [^js el]
   (let [total (.-length (get-step-els el))
         m     (or (du/getv el k-model) (read-model el))]
-    (.removeAttribute el model/attr-open)
+    (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-complete
                  (clj->js (model/complete-detail (inc (model/clamp-step (:step m) total))))))
 
@@ -699,15 +699,15 @@
 (defn- do-skip! [^js el]
   (let [m     (or (du/getv el k-model) (read-model el))
         total (.-length (get-step-els el))]
-    (.removeAttribute el model/attr-open)
+    (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-skip
                  (clj->js (model/skip-detail (model/clamp-step (:step m) total)))))
 
   nil)
 
 (defn- do-start! [^js el]
-  (.setAttribute el model/attr-step "0")
-  (.setAttribute el model/attr-open "")
+  (du/set-attr! el model/attr-step "0")
+  (du/set-attr! el model/attr-open "")
   (du/dispatch! el model/event-start (clj->js {}))
   nil)
 
@@ -720,7 +720,7 @@
       (let [new-step (inc step)]
         (when (du/dispatch-cancelable! el model/event-step-change
                                   (clj->js (model/step-change-detail new-step step)))
-          (.setAttribute el model/attr-step (str new-step))
+          (du/set-attr! el model/attr-step (str new-step))
           ;; Scroll new target
           (let [step-els (get-step-els el)
                 step-m   (read-step-model (aget step-els new-step))]
@@ -736,7 +736,7 @@
       (let [new-step (dec step)]
         (when (du/dispatch-cancelable! el model/event-step-change
                                   (clj->js (model/step-change-detail new-step step)))
-          (.setAttribute el model/attr-step (str new-step))
+          (du/set-attr! el model/attr-step (str new-step))
           (let [step-els (get-step-els el)
                 step-m   (read-step-model (aget step-els new-step))]
             (when (:scroll-to? step-m)
@@ -751,7 +751,7 @@
     (when (and (not= old new-s)
                (du/dispatch-cancelable! el model/event-step-change
                                         (clj->js (model/step-change-detail new-s old))))
-      (.setAttribute el model/attr-step (str new-s))))
+      (du/set-attr! el model/attr-step (str new-s))))
   nil)
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────

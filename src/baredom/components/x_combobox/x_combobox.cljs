@@ -433,7 +433,7 @@
       ;; data-has-value drives clear button visibility via CSS
       (if (not= value "")
         (du/set-attr! el "data-has-value" "")
-        (.removeAttribute el "data-has-value"))
+        (du/remove-attr! el "data-has-value"))
 
       ;; Re-render panel when open so option highlights reflect new value
       (when open?
@@ -466,7 +466,7 @@
         ;; attribute-changed! → apply-model! → render-panel! sees cleared state.
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (.setAttribute el model/attr-open "")
+        (du/set-attr! el model/attr-open "")
         ;; Select input text so user can type immediately
         (when-let [refs (du/getv el k-refs)]
           (let [^js input-el (gobj/get refs "input")]
@@ -479,7 +479,7 @@
       (when allowed?
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (.removeAttribute el model/attr-open)))))
+        (du/remove-attr! el model/attr-open)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Selection
@@ -490,7 +490,7 @@
                     el model/event-change-request
                     #js {:value value :label label :previousValue prev-value})]
     (when allowed?
-      (.setAttribute el model/attr-value value)
+      (du/set-attr! el model/attr-value value)
       (when-let [refs (du/getv el k-refs)]
         (set! (.-value (gobj/get refs "input")) label))
       (close-panel! el "select")
@@ -594,8 +594,8 @@
                             el model/event-change-request
                             #js {:value "" :label "" :previousValue prev-value})]
             (when allowed?
-              (.removeAttribute el model/attr-value)
-              (.removeAttribute el "data-has-value")
+              (du/remove-attr! el model/attr-value)
+              (du/remove-attr! el "data-has-value")
               (when-let [refs (du/getv el k-refs)]
                 (let [^js input-el (gobj/get refs "input")]
                   (set! (.-value input-el) "")

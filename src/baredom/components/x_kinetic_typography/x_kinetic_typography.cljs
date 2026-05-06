@@ -1,5 +1,6 @@
 (ns baredom.components.x-kinetic-typography.x-kinetic-typography
   (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [clojure.string :as str]
             [goog.object :as gobj]
             [baredom.components.x-kinetic-typography.model :as model]))
@@ -267,21 +268,21 @@
 
 ;; ── Read inputs ──────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:text         (.getAttribute el model/attr-text)
-   :path         (.getAttribute el model/attr-path)
-   :preset       (.getAttribute el model/attr-preset)
-   :animation    (.getAttribute el model/attr-animation)
-   :speed        (.getAttribute el model/attr-speed)
-   :direction    (.getAttribute el model/attr-direction)
-   :effect       (.getAttribute el model/attr-effect)
-   :font-size    (.getAttribute el model/attr-font-size)
-   :start-size   (.getAttribute el model/attr-start-size)
-   :end-size     (.getAttribute el model/attr-end-size)
-   :repeat       (.getAttribute el model/attr-repeat)
-   :echo-count   (.getAttribute el model/attr-echo-count)
-   :echo-delay   (.getAttribute el model/attr-echo-delay)
-   :echo-opacity (.getAttribute el model/attr-echo-opacity)
-   :echo-scale   (.getAttribute el model/attr-echo-scale)})
+  {:text         (du/get-attr el model/attr-text)
+   :path         (du/get-attr el model/attr-path)
+   :preset       (du/get-attr el model/attr-preset)
+   :animation    (du/get-attr el model/attr-animation)
+   :speed        (du/get-attr el model/attr-speed)
+   :direction    (du/get-attr el model/attr-direction)
+   :effect       (du/get-attr el model/attr-effect)
+   :font-size    (du/get-attr el model/attr-font-size)
+   :start-size   (du/get-attr el model/attr-start-size)
+   :end-size     (du/get-attr el model/attr-end-size)
+   :repeat       (du/get-attr el model/attr-repeat)
+   :echo-count   (du/get-attr el model/attr-echo-count)
+   :echo-delay   (du/get-attr el model/attr-echo-delay)
+   :echo-opacity (du/get-attr el model/attr-echo-opacity)
+   :echo-scale   (du/get-attr el model/attr-echo-scale)})
 
 ;; ── Build repeated text ──────────────────────────────────────────────────
 (defn- build-text-content [text repeat-count]
@@ -423,28 +424,28 @@
     (if crawl?
       ;; ── Crawl mode ──────────────────────────────────────────────────
       (do
-        (.setAttribute el "data-preset" "crawl")
+        (du/set-attr! el "data-preset" "crawl")
         (set! (.-textContent crawl-text-el) text)
         ;; Remove SVG animation and echoes
         (remove-animate! el)
         (clear-echoes! el svg)
         ;; Animation data attribute for CSS selectors
         (if (not= animation "none")
-          (.setAttribute el "data-animation" animation)
-          (.removeAttribute el "data-animation"))
+          (du/set-attr! el "data-animation" animation)
+          (du/remove-attr! el "data-animation"))
         ;; Direction data attribute for crawl CSS
         (if (= direction "reverse")
-          (.setAttribute el "data-direction" "reverse")
-          (.removeAttribute el "data-direction"))
+          (du/set-attr! el "data-direction" "reverse")
+          (du/remove-attr! el "data-direction"))
         ;; Only color-shift effect applies in crawl mode
         (if (contains? effects "color-shift")
-          (.setAttribute el "data-effect" "color-shift")
-          (.removeAttribute el "data-effect")))
+          (du/set-attr! el "data-effect" "color-shift")
+          (du/remove-attr! el "data-effect")))
 
       ;; ── Path mode (SVG) ─────────────────────────────────────────────
       (do
-        (.removeAttribute el "data-preset")
-        (.removeAttribute el "data-direction")
+        (du/remove-attr! el "data-preset")
+        (du/remove-attr! el "data-direction")
 
         ;; Update SVG viewBox and path
         (when view-box (.setAttribute svg "viewBox" view-box))
@@ -481,13 +482,13 @@
         ;; on data-effect so it can be detected; CSS won't target it though)
         (let [css-effects (disj effects "size-gradient" "color-wave")]
           (if (seq css-effects)
-            (.setAttribute el "data-effect" (str/join " " (sort css-effects)))
-            (.removeAttribute el "data-effect")))
+            (du/set-attr! el "data-effect" (str/join " " (sort css-effects)))
+            (du/remove-attr! el "data-effect")))
 
         ;; Animation data attribute
         (if (not= animation "none")
-          (.setAttribute el "data-animation" animation)
-          (.removeAttribute el "data-animation"))))
+          (du/set-attr! el "data-animation" animation)
+          (du/remove-attr! el "data-animation"))))
 
     ;; ── Common (both modes) ───────────────────────────────────────────
     ;; Screen reader text
@@ -495,10 +496,10 @@
 
     ;; Accessibility
     (if (= text "")
-      (do (.setAttribute el "role" "presentation")
-          (.setAttribute el "aria-hidden" "true"))
-      (do (.setAttribute el "role" "img")
-          (.setAttribute el "aria-label" text))))
+      (do (du/set-attr! el "role" "presentation")
+          (du/set-attr! el "aria-hidden" "true"))
+      (do (du/set-attr! el "role" "img")
+          (du/set-attr! el "aria-label" text))))
   nil)
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────

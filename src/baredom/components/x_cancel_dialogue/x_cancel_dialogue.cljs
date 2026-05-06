@@ -250,19 +250,19 @@
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:open-present?     (.hasAttribute el model/attr-open)
-    :disabled-present? (.hasAttribute el model/attr-disabled)
-    :headline-raw      (.getAttribute el model/attr-headline)
-    :message-raw       (.getAttribute el model/attr-message)
-    :confirm-text-raw  (.getAttribute el model/attr-confirm-text)
-    :cancel-text-raw   (.getAttribute el model/attr-cancel-text)
-    :danger-present?   (.hasAttribute el model/attr-danger)}))
+   {:open-present?     (du/has-attr? el model/attr-open)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :headline-raw      (du/get-attr el model/attr-headline)
+    :message-raw       (du/get-attr el model/attr-message)
+    :confirm-text-raw  (du/get-attr el model/attr-confirm-text)
+    :cancel-text-raw   (du/get-attr el model/attr-cancel-text)
+    :danger-present?   (du/has-attr? el model/attr-danger)}))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 ;; ── Open / close ──────────────────────────────────────────────────────────────
 (defn- do-open! [^js el]
-  (when-not (.hasAttribute el model/attr-open)
-    (.setAttribute el model/attr-open ""))
+  (when-not (du/has-attr? el model/attr-open)
+    (du/set-attr! el model/attr-open ""))
   ;; Focus confirm button after next paint
   (let [refs       (ensure-refs! el)
         ^js confirm (gobj/get refs "confirmBtn")]
@@ -270,12 +270,12 @@
   nil)
 
 (defn- do-close! [^js el]
-  (.removeAttribute el model/attr-open)
+  (du/remove-attr! el model/attr-open)
   nil)
 
 ;; ── Cancel flow ───────────────────────────────────────────────────────────────
 (defn- do-cancel! [^js el reason]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (when (du/dispatch-cancelable! el model/event-cancel-request
                                    (model/cancel-request-detail reason))
       (do-close! el)
@@ -284,7 +284,7 @@
 
 ;; ── Confirm flow ──────────────────────────────────────────────────────────────
 (defn- do-confirm! [^js el]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (when (du/dispatch-cancelable! el model/event-confirm-request
                                    (model/confirm-request-detail))
       (do-close! el)

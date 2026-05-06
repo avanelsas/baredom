@@ -21,11 +21,11 @@
    ":host([orientation='vertical']) ::slotted(x-tab){margin-inline-end:0;margin-block-end:var(--x-tabs-gap,8px);}"))
 
 (defn read-inputs [^js el]
-  {:value (.getAttribute el model/attr-value)
-   :orientation (.getAttribute el model/attr-orientation)
-   :activation (.getAttribute el model/attr-activation)
-   :label (.getAttribute el model/attr-label)
-   :loop (.hasAttribute el model/attr-loop)})
+  {:value (du/get-attr el model/attr-value)
+   :orientation (du/get-attr el model/attr-orientation)
+   :activation (du/get-attr el model/attr-activation)
+   :label (du/get-attr el model/attr-label)
+   :loop (du/has-attr? el model/attr-loop)})
 
 (defn direct-children [^js el]
   (array-seq (.-children el)))
@@ -52,13 +52,13 @@
     (tab-value tab)))
 
 (defn set-host-value-if-needed! [^js el value]
-  (let [current (.getAttribute el model/attr-value)]
+  (let [current (du/get-attr el model/attr-value)]
     (cond
       (and value (not= current value))
-      (.setAttribute el model/attr-value value)
+      (du/set-attr! el model/attr-value value)
 
       (and (or (nil? value) (= value "")) current)
-      (.removeAttribute el model/attr-value)
+      (du/remove-attr! el model/attr-value)
 
       :else nil)))
 
@@ -109,7 +109,7 @@
 
 (defn coordinate-tabs! [^js el]
   (let [tabs (get-tabs el)
-        host-value (.getAttribute el model/attr-value)
+        host-value (du/get-attr el model/attr-value)
         selected-value (effective-selected-value tabs host-value)]
     (when selected-value
       (select-tab! tabs selected-value)
@@ -118,7 +118,7 @@
     selected-value))
 
 (defn activate-tab-by-value! [^js el value]
-  (let [current (.getAttribute el model/attr-value)]
+  (let [current (du/get-attr el model/attr-value)]
     (when (and value (not= current value))
       (let [allowed? (du/dispatch-cancelable!
                       el model/event-change-request

@@ -197,17 +197,17 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:type-raw           (.getAttribute el model/attr-type)
-    :scope-raw          (.getAttribute el model/attr-scope)
-    :align-raw          (.getAttribute el model/attr-align)
-    :valign-raw         (.getAttribute el model/attr-valign)
-    :col-span-raw       (.getAttribute el model/attr-col-span)
-    :row-span-raw       (.getAttribute el model/attr-row-span)
-    :truncate?          (.hasAttribute el model/attr-truncate)
-    :sticky-raw         (.getAttribute el model/attr-sticky)
-    :sortable?          (.hasAttribute el model/attr-sortable)
-    :sort-direction-raw (.getAttribute el model/attr-sort-direction)
-    :disabled?          (.hasAttribute el model/attr-disabled)}))
+   {:type-raw           (du/get-attr el model/attr-type)
+    :scope-raw          (du/get-attr el model/attr-scope)
+    :align-raw          (du/get-attr el model/attr-align)
+    :valign-raw         (du/get-attr el model/attr-valign)
+    :col-span-raw       (du/get-attr el model/attr-col-span)
+    :row-span-raw       (du/get-attr el model/attr-row-span)
+    :truncate?          (du/has-attr? el model/attr-truncate)
+    :sticky-raw         (du/get-attr el model/attr-sticky)
+    :sortable?          (du/has-attr? el model/attr-sortable)
+    :sort-direction-raw (du/get-attr el model/attr-sort-direction)
+    :disabled?          (du/has-attr? el model/attr-disabled)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-span! [^js el col-span row-span]
@@ -217,28 +217,28 @@
 
 (defn- apply-host-attrs! [^js el {:keys [type align valign sticky truncate?
                                           disabled?] :as m}]
-  (.setAttribute el "role" (model/role-for-cell m))
+  (du/set-attr! el "role" (model/role-for-cell m))
 
   (let [aria-sort (model/aria-sort-value m)]
     (if aria-sort
-      (.setAttribute el "aria-sort" aria-sort)
-      (.removeAttribute el "aria-sort")))
+      (du/set-attr! el "aria-sort" aria-sort)
+      (du/remove-attr! el "aria-sort")))
 
   (if disabled?
-    (.setAttribute el "aria-disabled" "true")
-    (.removeAttribute el "aria-disabled"))
+    (du/set-attr! el "aria-disabled" "true")
+    (du/remove-attr! el "aria-disabled"))
 
-  (.setAttribute el "data-type" type)
-  (.setAttribute el "data-align" align)
-  (.setAttribute el "data-valign" valign)
+  (du/set-attr! el "data-type" type)
+  (du/set-attr! el "data-align" align)
+  (du/set-attr! el "data-valign" valign)
 
   (if (= sticky "none")
-    (.removeAttribute el "data-sticky")
-    (.setAttribute el "data-sticky" sticky))
+    (du/remove-attr! el "data-sticky")
+    (du/set-attr! el "data-sticky" sticky))
 
   (if truncate?
-    (.setAttribute el "data-truncate" "")
-    (.removeAttribute el "data-truncate"))
+    (du/set-attr! el "data-truncate" "")
+    (du/remove-attr! el "data-truncate"))
   nil)
 
 (defn- sort-icon-svg [{:keys [sort-direction]}]
@@ -276,7 +276,7 @@
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-sort! [^js el]
-  (let [current  (model/parse-sort-direction (.getAttribute el model/attr-sort-direction))
+  (let [current  (model/parse-sort-direction (du/get-attr el model/attr-sort-direction))
         next-dir (model/next-sort-direction current)]
     (du/dispatch-cancelable! el model/event-sort
       #js {:direction next-dir :previousDirection current}))

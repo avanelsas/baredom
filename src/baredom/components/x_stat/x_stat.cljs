@@ -12,24 +12,24 @@
 (def key-initialized "__xStatInitialized")
 
 (defn read-inputs [^js el]
-  {:variant (.getAttribute el model/attr-variant)
-   :align (.getAttribute el model/attr-align)
-   :size (.getAttribute el model/attr-size)
-   :emphasis (.getAttribute el model/attr-emphasis)
-   :trend (.getAttribute el model/attr-trend)
-   :loading (.hasAttribute el model/attr-loading)
-   :label (.getAttribute el model/attr-label)
-   :value (.getAttribute el model/attr-value)
-   :hint (.getAttribute el model/attr-hint)})
+  {:variant (du/get-attr el model/attr-variant)
+   :align (du/get-attr el model/attr-align)
+   :size (du/get-attr el model/attr-size)
+   :emphasis (du/get-attr el model/attr-emphasis)
+   :trend (du/get-attr el model/attr-trend)
+   :loading (du/has-attr? el model/attr-loading)
+   :label (du/get-attr el model/attr-label)
+   :value (du/get-attr el model/attr-value)
+   :hint (du/get-attr el model/attr-hint)})
 
 (defn set-or-remove!
   [^js el attr value]
   (if value
-    (.setAttribute el attr value)
-    (.removeAttribute el attr)))
+    (du/set-attr! el attr value)
+    (du/remove-attr! el attr)))
 
 (defn apply-host-a11y! [^js el state]
-  (.setAttribute el "role" "figure")
+  (du/set-attr! el "role" "figure")
   (set-or-remove! el "aria-busy" (:aria-busy state))
   (set-or-remove! el "aria-label" (:label state)))
 

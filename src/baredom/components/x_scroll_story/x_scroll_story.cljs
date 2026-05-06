@@ -148,15 +148,15 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:layout-raw             (.getAttribute el model/attr-layout)
-    :threshold-raw          (.getAttribute el model/attr-threshold)
-    :split-raw              (.getAttribute el model/attr-split)
-    :disabled-attr          (when (.hasAttribute el model/attr-disabled) "")
-    :label-raw              (.getAttribute el model/attr-label)
-    :autoplay-attr          (when (.hasAttribute el model/attr-autoplay) "")
-    :autoplay-speed-raw     (.getAttribute el model/attr-autoplay-speed)
-    :autoplay-loop-attr     (when (.hasAttribute el model/attr-autoplay-loop) "")
-    :autoplay-indicator-attr (when (.hasAttribute el model/attr-autoplay-indicator) "")}))
+   {:layout-raw             (du/get-attr el model/attr-layout)
+    :threshold-raw          (du/get-attr el model/attr-threshold)
+    :split-raw              (du/get-attr el model/attr-split)
+    :disabled-attr          (when (du/has-attr? el model/attr-disabled) "")
+    :label-raw              (du/get-attr el model/attr-label)
+    :autoplay-attr          (when (du/has-attr? el model/attr-autoplay) "")
+    :autoplay-speed-raw     (du/get-attr el model/attr-autoplay-speed)
+    :autoplay-loop-attr     (when (du/has-attr? el model/attr-autoplay-loop) "")
+    :autoplay-indicator-attr (when (du/has-attr? el model/attr-autoplay-indicator) "")}))
 
 ;; ── Helpers ─────────────────────────────────────────────────────────────────
 (defn- get-step-children [^js el]
@@ -195,8 +195,8 @@
           (.setAttribute new-child model/data-active "")))
       ;; Update host data attribute
       (if (>= new-index 0)
-        (.setAttribute el "data-active-index" (str new-index))
-        (.removeAttribute el "data-active-index"))
+        (du/set-attr! el "data-active-index" (str new-index))
+        (du/remove-attr! el "data-active-index"))
       ;; Cache active index
       (gobj/set el k-active-index new-index)
       ;; Dispatch step-change event
@@ -333,7 +333,7 @@
       (js/cancelAnimationFrame raf)
       (gobj/set el k-autoplay-raf nil))
     ;; Set data attribute for CSS indicator
-    (.setAttribute el "data-autoplay-paused" "")
+    (du/set-attr! el "data-autoplay-paused" "")
     ;; Dispatch pause event
     (let [prog     (or (gobj/get el k-last-prog) 0)
           idx      (or (gobj/get el k-active-index) -1)
@@ -346,7 +346,7 @@
 (defn- resume-autoplay! [^js el]
   (when (gobj/get el k-autoplay-paused)
     (gobj/set el k-autoplay-paused false)
-    (.removeAttribute el "data-autoplay-paused")
+    (du/remove-attr! el "data-autoplay-paused")
     ;; Reset timestamp to avoid delta spike
     (gobj/set el k-autoplay-last nil)
     ;; Restart rAF loop
@@ -376,8 +376,8 @@
     (.removeEventListener el "keyup"      (gobj/get hs "keyup"))
     (gobj/set el k-autoplay-handlers nil))
   ;; Clean up state
-  (.removeAttribute el "data-autoplay-paused")
-  (.removeAttribute el "tabindex")
+  (du/remove-attr! el "data-autoplay-paused")
+  (du/remove-attr! el "tabindex")
   (gobj/set el k-autoplay-paused false)
   (gobj/set el k-autoplay-last nil)
   nil)
@@ -389,7 +389,7 @@
                  (gobj/get el k-visible)
                  (not (prefers-reduced-motion?)))
         ;; Make focusable for Space key
-        (.setAttribute el "tabindex" "0")
+        (du/set-attr! el "tabindex" "0")
         ;; Init state
         (gobj/set el k-autoplay-paused false)
         (gobj/set el k-autoplay-last nil)
@@ -550,7 +550,7 @@
         ^js container container
         ^js media     media]
     ;; Data attributes for CSS selectors
-    (.setAttribute el "data-layout" layout)
+    (du/set-attr! el "data-layout" layout)
 
     ;; Media width via inline style (can be overridden by CSS custom property)
     (if (= layout "top")

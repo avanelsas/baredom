@@ -192,15 +192,15 @@
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:src-raw           (.getAttribute el model/attr-src)
-    :alt-raw           (.getAttribute el model/attr-alt)
-    :name-raw          (.getAttribute el model/attr-name)
-    :initials-raw      (.getAttribute el model/attr-initials)
-    :size-raw          (.getAttribute el model/attr-size)
-    :shape-raw         (.getAttribute el model/attr-shape)
-    :variant-raw       (.getAttribute el model/attr-variant)
-    :status-raw        (.getAttribute el model/attr-status)
-    :disabled-present? (.hasAttribute el model/attr-disabled)}))
+   {:src-raw           (du/get-attr el model/attr-src)
+    :alt-raw           (du/get-attr el model/attr-alt)
+    :name-raw          (du/get-attr el model/attr-name)
+    :initials-raw      (du/get-attr el model/attr-initials)
+    :size-raw          (du/get-attr el model/attr-size)
+    :shape-raw         (du/get-attr el model/attr-shape)
+    :variant-raw       (du/get-attr el model/attr-variant)
+    :status-raw        (du/get-attr el model/attr-status)
+    :disabled-present? (du/has-attr? el model/attr-disabled)}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -231,22 +231,22 @@
         has-badge?    (slot-has-content? badge-slot)]
 
     ;; Data attributes drive CSS selectors
-    (.setAttribute el "data-size"    size)
-    (.setAttribute el "data-shape"   shape)
-    (.setAttribute el "data-variant" variant)
+    (du/set-attr! el "data-size"    size)
+    (du/set-attr! el "data-shape"   shape)
+    (du/set-attr! el "data-variant" variant)
 
     ;; ARIA on host
     (if lbl
-      (do (.setAttribute el "role" "img")
-          (.setAttribute el "aria-label" lbl)
-          (.removeAttribute el "aria-hidden"))
-      (do (.removeAttribute el "role")
-          (.removeAttribute el "aria-label")
-          (.setAttribute el "aria-hidden" "true")))
+      (do (du/set-attr! el "role" "img")
+          (du/set-attr! el "aria-label" lbl)
+          (du/remove-attr! el "aria-hidden"))
+      (do (du/remove-attr! el "role")
+          (du/remove-attr! el "aria-label")
+          (du/set-attr! el "aria-hidden" "true")))
 
     (if disabled
-      (.setAttribute el "aria-disabled" "true")
-      (.removeAttribute el "aria-disabled"))
+      (du/set-attr! el "aria-disabled" "true")
+      (du/remove-attr! el "aria-disabled"))
 
     ;; Image src — compare against last-assigned to avoid re-triggering load
     (let [next (or src "")

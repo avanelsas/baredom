@@ -102,7 +102,7 @@
 
 (defn set-data-attr!
   [el name value]
-  (.setAttribute el name value))
+  (du/set-attr! el name value))
 
 (defn prefers-reduced-motion?
   []

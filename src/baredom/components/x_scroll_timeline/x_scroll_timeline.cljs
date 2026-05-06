@@ -331,17 +331,17 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:layout-raw              (.getAttribute el model/attr-layout)
-    :track-raw               (.getAttribute el model/attr-track)
-    :threshold-raw           (.getAttribute el model/attr-threshold)
-    :no-progress-attr        (when (.hasAttribute el model/attr-no-progress) "")
-    :disabled-attr           (when (.hasAttribute el model/attr-disabled) "")
-    :label-raw               (.getAttribute el model/attr-label)
-    :marker-raw              (.getAttribute el model/attr-marker)
-    :autoplay-attr           (when (.hasAttribute el model/attr-autoplay) "")
-    :autoplay-speed-raw      (.getAttribute el model/attr-autoplay-speed)
-    :autoplay-loop-attr      (when (.hasAttribute el model/attr-autoplay-loop) "")
-    :autoplay-indicator-attr (when (.hasAttribute el model/attr-autoplay-indicator) "")}))
+   {:layout-raw              (du/get-attr el model/attr-layout)
+    :track-raw               (du/get-attr el model/attr-track)
+    :threshold-raw           (du/get-attr el model/attr-threshold)
+    :no-progress-attr        (when (du/has-attr? el model/attr-no-progress) "")
+    :disabled-attr           (when (du/has-attr? el model/attr-disabled) "")
+    :label-raw               (du/get-attr el model/attr-label)
+    :marker-raw              (du/get-attr el model/attr-marker)
+    :autoplay-attr           (when (du/has-attr? el model/attr-autoplay) "")
+    :autoplay-speed-raw      (du/get-attr el model/attr-autoplay-speed)
+    :autoplay-loop-attr      (when (du/has-attr? el model/attr-autoplay-loop) "")
+    :autoplay-indicator-attr (when (du/has-attr? el model/attr-autoplay-indicator) "")}))
 
 ;; ── Helpers ─────────────────────────────────────────────────────────────────
 (defn- get-entry-children [^js el]
@@ -551,8 +551,8 @@
               (.setAttribute d "data-active" "")))))
       ;; Update host data attribute
       (if (>= new-index 0)
-        (.setAttribute el "data-active-index" (str new-index))
-        (.removeAttribute el "data-active-index"))
+        (du/set-attr! el "data-active-index" (str new-index))
+        (du/remove-attr! el "data-active-index"))
       ;; Cache active index
       (gobj/set el k-active-index new-index)
       ;; Dispatch entry-change event
@@ -717,7 +717,7 @@
       (js/cancelAnimationFrame raf)
       (gobj/set el k-autoplay-raf nil))
     ;; Set data attribute for CSS indicator
-    (.setAttribute el "data-autoplay-paused" "")
+    (du/set-attr! el "data-autoplay-paused" "")
     ;; Dispatch pause event
     (let [prog     (or (gobj/get el k-last-prog) 0)
           idx      (or (gobj/get el k-active-index) -1)
@@ -730,7 +730,7 @@
 (defn- resume-autoplay! [^js el]
   (when (gobj/get el k-autoplay-paused)
     (gobj/set el k-autoplay-paused false)
-    (.removeAttribute el "data-autoplay-paused")
+    (du/remove-attr! el "data-autoplay-paused")
     ;; Reset timestamp to avoid delta spike
     (gobj/set el k-autoplay-last nil)
     ;; Restart rAF loop
@@ -760,8 +760,8 @@
     (.removeEventListener el "keyup"        (gobj/get hs "keyup"))
     (gobj/set el k-autoplay-handlers nil))
   ;; Clean up state
-  (.removeAttribute el "data-autoplay-paused")
-  (.removeAttribute el "tabindex")
+  (du/remove-attr! el "data-autoplay-paused")
+  (du/remove-attr! el "tabindex")
   (gobj/set el k-autoplay-paused false)
   (gobj/set el k-autoplay-last nil)
   nil)
@@ -773,7 +773,7 @@
                  (gobj/get el k-visible)
                  (not (prefers-reduced-motion?)))
         ;; Make focusable for Space key
-        (.setAttribute el "tabindex" "0")
+        (du/set-attr! el "tabindex" "0")
         ;; Init state
         (gobj/set el k-autoplay-paused false)
         (gobj/set el k-autoplay-last nil)
@@ -946,9 +946,9 @@
         ^js container container
         old-m (gobj/get el k-model)]
     ;; Data attributes for CSS selectors
-    (.setAttribute el "data-layout" layout)
-    (.setAttribute el "data-track" track)
-    (.setAttribute el "data-marker" marker)
+    (du/set-attr! el "data-layout" layout)
+    (du/set-attr! el "data-track" track)
+    (du/set-attr! el "data-marker" marker)
 
     ;; Aria
     (if (seq label)

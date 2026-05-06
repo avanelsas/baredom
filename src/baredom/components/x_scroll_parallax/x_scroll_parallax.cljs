@@ -88,11 +88,11 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:direction-raw (.getAttribute el model/attr-direction)
-    :source-raw    (.getAttribute el model/attr-source)
-    :easing-raw    (.getAttribute el model/attr-easing)
-    :disabled-attr (when (.hasAttribute el model/attr-disabled) "")
-    :label-raw     (.getAttribute el model/attr-label)}))
+   {:direction-raw (du/get-attr el model/attr-direction)
+    :source-raw    (du/get-attr el model/attr-source)
+    :easing-raw    (du/get-attr el model/attr-easing)
+    :disabled-attr (when (du/has-attr? el model/attr-disabled) "")
+    :label-raw     (du/get-attr el model/attr-label)}))
 
 ;; ── Helpers ─────────────────────────────────────────────────────────────────
 (defn- get-children [^js el]
@@ -311,7 +311,7 @@
   (let [{:keys [viewport]} (ensure-refs! el)
         ^js viewport viewport]
     ;; Data attributes for CSS selectors
-    (.setAttribute el "data-direction" direction)
+    (du/set-attr! el "data-direction" direction)
 
     ;; Aria
     (if (seq label)

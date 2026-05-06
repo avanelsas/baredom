@@ -160,16 +160,16 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:blob-count-raw      (.getAttribute el model/attr-blob-count)
-    :blob-size-raw       (.getAttribute el model/attr-blob-size)
-    :color-raw           (.getAttribute el model/attr-color)
-    :noise-attr          (.getAttribute el model/attr-noise)
-    :noise-scale-raw     (.getAttribute el model/attr-noise-scale)
-    :noise-speed-raw     (.getAttribute el model/attr-noise-speed)
-    :noise-intensity-raw (.getAttribute el model/attr-noise-intensity)
-    :blur-raw            (.getAttribute el model/attr-blur)
-    :threshold-raw       (.getAttribute el model/attr-threshold)
-    :palette-raw         (.getAttribute el model/attr-palette)}))
+   {:blob-count-raw      (du/get-attr el model/attr-blob-count)
+    :blob-size-raw       (du/get-attr el model/attr-blob-size)
+    :color-raw           (du/get-attr el model/attr-color)
+    :noise-attr          (du/get-attr el model/attr-noise)
+    :noise-scale-raw     (du/get-attr el model/attr-noise-scale)
+    :noise-speed-raw     (du/get-attr el model/attr-noise-speed)
+    :noise-intensity-raw (du/get-attr el model/attr-noise-intensity)
+    :blur-raw            (du/get-attr el model/attr-blur)
+    :threshold-raw       (du/get-attr el model/attr-threshold)
+    :palette-raw         (du/get-attr el model/attr-palette)}))
 
 ;; ── Blob management ─────────────────────────────────────────────────────────
 (defn- create-blobs!
@@ -342,8 +342,8 @@
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
-  (.setAttribute el "aria-hidden" "true")
-  (.setAttribute el "role" "presentation")
+  (du/set-attr! el "aria-hidden" "true")
+  (du/set-attr! el "role" "presentation")
   nil)
 
 ;; ── Property accessors ──────────────────────────────────────────────────────

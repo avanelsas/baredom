@@ -121,15 +121,15 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:colors    (.getAttribute el model/attr-colors)
-   :blur      (.getAttribute el model/attr-blur)
-   :speed     (.getAttribute el model/attr-speed)
-   :count     (.getAttribute el model/attr-count)
-   :size      (.getAttribute el model/attr-size)
-   :opacity   (.getAttribute el model/attr-opacity)
-   :animation (.getAttribute el model/attr-animation)
-   :blend     (.getAttribute el model/attr-blend)
-   :paused    (.getAttribute el model/attr-paused)})
+  {:colors    (du/get-attr el model/attr-colors)
+   :blur      (du/get-attr el model/attr-blur)
+   :speed     (du/get-attr el model/attr-speed)
+   :count     (du/get-attr el model/attr-count)
+   :size      (du/get-attr el model/attr-size)
+   :opacity   (du/get-attr el model/attr-opacity)
+   :animation (du/get-attr el model/attr-animation)
+   :blend     (du/get-attr el model/attr-blend)
+   :paused    (du/get-attr el model/attr-paused)})
 
 ;; ── Accessibility ─────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -138,10 +138,10 @@
 
 (defn- update-a11y! [^js el ^js slot-el]
   (if (slot-has-content? slot-el)
-    (do (.removeAttribute el "role")
-        (.removeAttribute el "aria-hidden"))
-    (do (.setAttribute el "role" "presentation")
-        (.setAttribute el "aria-hidden" "true"))))
+    (do (du/remove-attr! el "role")
+        (du/remove-attr! el "aria-hidden"))
+    (do (du/set-attr! el "role" "presentation")
+        (du/set-attr! el "aria-hidden" "true"))))
 
 ;; ── Blob reconciliation ──────────────────────────────────────────────────
 
@@ -208,10 +208,10 @@
 
     ;; Data attributes for CSS selectors
     (if paused
-      (.setAttribute el "data-paused" "")
-      (.removeAttribute el "data-paused"))
+      (du/set-attr! el "data-paused" "")
+      (du/remove-attr! el "data-paused"))
 
-    (.setAttribute el "data-animation" animation)
+    (du/set-attr! el "data-animation" animation)
 
     ;; Reconcile blob divs
     (reconcile-blobs! el state)

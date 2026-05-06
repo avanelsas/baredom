@@ -145,30 +145,30 @@
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:text-raw            (.getAttribute el model/attr-text)
-    :from-raw            (.getAttribute el model/attr-from)
-    :from-attr-raw       (.getAttribute el model/attr-from-attr)
-    :mode-raw            (.getAttribute el model/attr-mode)
-    :disabled-present?   (.hasAttribute el model/attr-disabled)
-    :show-tooltip-raw    (.getAttribute el model/attr-show-tooltip)
-    :tooltip-ms-raw      (.getAttribute el model/attr-tooltip-ms)
-    :success-message-raw (.getAttribute el model/attr-success-message)
-    :error-message-raw   (.getAttribute el model/attr-error-message)
-    :hotkey-raw          (.getAttribute el model/attr-hotkey)}))
+   {:text-raw            (du/get-attr el model/attr-text)
+    :from-raw            (du/get-attr el model/attr-from)
+    :from-attr-raw       (du/get-attr el model/attr-from-attr)
+    :mode-raw            (du/get-attr el model/attr-mode)
+    :disabled-present?   (du/has-attr? el model/attr-disabled)
+    :show-tooltip-raw    (du/get-attr el model/attr-show-tooltip)
+    :tooltip-ms-raw      (du/get-attr el model/attr-tooltip-ms)
+    :success-message-raw (du/get-attr el model/attr-success-message)
+    :error-message-raw   (du/get-attr el model/attr-error-message)
+    :hotkey-raw          (du/get-attr el model/attr-hotkey)}))
 
 ;; ── Text resolution ───────────────────────────────────────────────────────────
 (defn- resolve-text [^js el]
   (let [tv (gobj/get el k-text-val)]
     (if (string? tv)
       tv
-      (let [text-attr (.getAttribute el model/attr-text)]
+      (let [text-attr (du/get-attr el model/attr-text)]
         (if (and (string? text-attr) (not= text-attr ""))
           text-attr
-          (let [from-sel (.getAttribute el model/attr-from)]
+          (let [from-sel (du/get-attr el model/attr-from)]
             (if (and (string? from-sel) (not= from-sel ""))
               (let [^js target (.querySelector js/document from-sel)]
                 (if target
-                  (let [from-attr (.getAttribute el model/attr-from-attr)]
+                  (let [from-attr (du/get-attr el model/attr-from-attr)]
                     (if (and (string? from-attr) (not= from-attr ""))
                       (or (.getAttribute target from-attr) "")
                       (or (.-textContent target) "")))
@@ -178,7 +178,7 @@
 ;; ── Clipboard logic ───────────────────────────────────────────────────────────
 (defn- do-copy! [^js el]
   (let [text (resolve-text el)
-        mode (or (.getAttribute el model/attr-mode) "text")]
+        mode (or (du/get-attr el model/attr-mode) "text")]
     (js/Promise.
      (fn [resolve reject]
        (cond
@@ -224,8 +224,8 @@
 
 ;; ── Tooltip ───────────────────────────────────────────────────────────────────
 (defn- hide-tooltip! [^js el]
-  (.removeAttribute el "data-tooltip-open")
-  (.removeAttribute el "data-tooltip-kind")
+  (du/remove-attr! el "data-tooltip-open")
+  (du/remove-attr! el "data-tooltip-kind")
   (let [refs (gobj/get el k-refs)]
     (when refs
       (set! (.-textContent (gobj/get refs "tooltipText")) "")))
@@ -237,8 +237,8 @@
       (when-let [tid (gobj/get el k-tid)]
         (js/clearTimeout tid)
         (gobj/set el k-tid nil))
-      (.setAttribute el "data-tooltip-open" "")
-      (.setAttribute el "data-tooltip-kind" kind)
+      (du/set-attr! el "data-tooltip-open" "")
+      (du/set-attr! el "data-tooltip-kind" kind)
       (set! (.-textContent (gobj/get refs "tooltipText")) message)
       (gobj/set el k-tid
                 (js/setTimeout
@@ -250,7 +250,7 @@
 
 ;; ── Copy handler ──────────────────────────────────────────────────────────────
 (defn- copy! [^js el]
-  (if (.hasAttribute el model/attr-disabled)
+  (if (du/has-attr? el model/attr-disabled)
     (js/Promise.resolve nil)
     (let [m          (read-model el)
           req-detail (model/request-detail m)
@@ -294,7 +294,7 @@
         ^js trigger (gobj/get refs "trigger")
         click-h   (fn [_] (copy! el))
         key-h     (fn [^js e]
-                    (let [hotkey (.getAttribute el model/attr-hotkey)]
+                    (let [hotkey (du/get-attr el model/attr-hotkey)]
                       (when (matches-hotkey? e hotkey)
                         (.preventDefault e)
                         (copy! el))))]
@@ -322,11 +322,11 @@
 (defn- render! [^js el]
   (let [refs    (ensure-refs! el)
         ^js trigger (gobj/get refs "trigger")
-        disabled? (.hasAttribute el model/attr-disabled)]
+        disabled? (du/has-attr? el model/attr-disabled)]
     (set! (.-disabled trigger) (boolean disabled?))
     (if disabled?
-      (.setAttribute el "aria-disabled" "true")
-      (.removeAttribute el "aria-disabled")))
+      (du/set-attr! el "aria-disabled" "true")
+      (du/remove-attr! el "aria-disabled")))
   nil)
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────

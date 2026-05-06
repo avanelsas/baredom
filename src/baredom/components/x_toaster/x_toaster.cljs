@@ -92,16 +92,16 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:position-raw   (.getAttribute el model/attr-position)
-    :max-toasts-raw (.getAttribute el model/attr-max-toasts)
-    :label-raw      (.getAttribute el model/attr-label)}))
+   {:position-raw   (du/get-attr el model/attr-position)
+    :max-toasts-raw (du/get-attr el model/attr-max-toasts)
+    :label-raw      (du/get-attr el model/attr-label)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [position label] :as m}]
   (ensure-refs! el)
-  (.setAttribute el "role"       "region")
-  (.setAttribute el "aria-label" label)
-  (.setAttribute el "data-position" position)
+  (du/set-attr! el "role"       "region")
+  (du/set-attr! el "aria-label" label)
+  (du/set-attr! el "data-position" position)
   (gobj/set el k-model m)
   nil)
 
