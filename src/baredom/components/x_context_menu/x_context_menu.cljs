@@ -348,20 +348,6 @@
           (remove-layer! layer)
           (gobj/set el k-layer nil))))))
 
-;; ---- Property descriptors ----
-
-(defn- define-str-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (.getAttribute this attr-name)))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (some? v)
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
 ;; ---- Public methods ----
 
 (defn- define-methods! [^js proto]
@@ -390,12 +376,12 @@
 ;; ---- Element class + registration ----
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop! proto "open"      model/attr-open)
-  (du/define-bool-prop! proto "disabled"  model/attr-disabled)
-  (define-str-prop!  proto "placement" model/attr-placement)
-  (define-str-prop!  proto "offset"    model/attr-offset)
-  (define-str-prop!  proto "zIndex"    model/attr-z-index)
-  (define-methods!   proto))
+  (du/define-bool-prop!   proto "open"      model/attr-open)
+  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
+  (du/define-string-prop! proto "placement" model/attr-placement)
+  (du/define-string-prop! proto "offset"    model/attr-offset)
+  (du/define-string-prop! proto "zIndex"    model/attr-z-index)
+  (define-methods!        proto))
 
 (defn init! []
   (component/register! model/tag-name

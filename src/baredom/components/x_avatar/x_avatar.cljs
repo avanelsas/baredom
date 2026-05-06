@@ -1,6 +1,7 @@
 (ns baredom.components.x-avatar.x-avatar
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-avatar.model :as model]))
 
@@ -315,47 +316,16 @@
   nil)
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-string-prop-default! [^js proto attr default]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop! proto model/attr-src)
-  (def-string-prop! proto model/attr-alt)
-  (def-string-prop! proto model/attr-name)
-  (def-string-prop! proto model/attr-initials)
-  (def-string-prop-default! proto model/attr-size    model/default-size)
-  (def-string-prop-default! proto model/attr-shape   model/default-shape)
-  (def-string-prop-default! proto model/attr-variant model/default-variant)
-  (def-string-prop! proto model/attr-status)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-src      model/attr-src)
+  (du/define-string-prop! proto model/attr-alt      model/attr-alt)
+  (du/define-string-prop! proto model/attr-name     model/attr-name)
+  (du/define-string-prop! proto model/attr-initials model/attr-initials)
+  (du/define-string-prop! proto model/attr-size     model/attr-size    model/default-size)
+  (du/define-string-prop! proto model/attr-shape    model/attr-shape   model/default-shape)
+  (du/define-string-prop! proto model/attr-variant  model/attr-variant model/default-variant)
+  (du/define-string-prop! proto model/attr-status   model/attr-status)
+  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

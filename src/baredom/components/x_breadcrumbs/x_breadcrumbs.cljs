@@ -1,6 +1,7 @@
 (ns baredom.components.x-breadcrumbs.x-breadcrumbs
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-breadcrumbs.model :as model]))
 
@@ -264,40 +265,7 @@
   nil)
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-string-prop-default! [^js proto attr default]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-bool-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; max-items / items-before / items-after use model/parse-pos-int — keep as inline custom accessor
 (defn- def-int-prop! [^js proto attr default]
   (.defineProperty js/Object proto attr
                    #js {:get (fn []
@@ -312,17 +280,17 @@
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop-default! proto model/attr-separator    model/default-separator)
-  (def-string-prop-default! proto model/attr-size         model/default-size)
-  (def-string-prop-default! proto model/attr-variant      model/default-variant)
-  (def-bool-prop!   proto model/attr-wrap)
-  (def-bool-prop!   proto model/attr-disabled)
-  (def-bool-prop!   proto model/attr-preserve-aria-current)
-  (def-int-prop!    proto model/attr-max-items    nil)
-  (def-int-prop!    proto model/attr-items-before model/default-items-before)
-  (def-int-prop!    proto model/attr-items-after  model/default-items-after)
-  (def-string-prop! proto model/attr-aria-label)
-  (def-string-prop! proto model/attr-aria-describedby))
+  (du/define-string-prop! proto model/attr-separator              model/attr-separator              model/default-separator)
+  (du/define-string-prop! proto model/attr-size                   model/attr-size                   model/default-size)
+  (du/define-string-prop! proto model/attr-variant                model/attr-variant                model/default-variant)
+  (du/define-bool-prop!   proto model/attr-wrap                   model/attr-wrap)
+  (du/define-bool-prop!   proto model/attr-disabled               model/attr-disabled)
+  (du/define-bool-prop!   proto model/attr-preserve-aria-current  model/attr-preserve-aria-current)
+  (def-int-prop!          proto model/attr-max-items    nil)
+  (def-int-prop!          proto model/attr-items-before model/default-items-before)
+  (def-int-prop!          proto model/attr-items-after  model/default-items-after)
+  (du/define-string-prop! proto model/attr-aria-label             model/attr-aria-label)
+  (du/define-string-prop! proto model/attr-aria-describedby       model/attr-aria-describedby))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

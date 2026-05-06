@@ -1,6 +1,7 @@
 (ns baredom.components.x-badge.x-badge
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-badge.model :as model]))
 
@@ -212,40 +213,7 @@
   nil)
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-string-prop-default! [^js proto attr default]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-bool-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; count and max use model/parse-int-attr — keep as inline custom accessor
 (defn- def-int-prop! [^js proto attr default]
   (.defineProperty js/Object proto attr
                    #js {:get (fn []
@@ -260,15 +228,15 @@
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop-default! proto model/attr-variant model/default-variant)
-  (def-string-prop-default! proto model/attr-size    model/default-size)
-  (def-bool-prop!   proto model/attr-pill)
-  (def-bool-prop!   proto model/attr-dot)
-  (def-string-prop! proto model/attr-text)
-  (def-string-prop! proto model/attr-aria-label)
-  (def-string-prop! proto model/attr-aria-describedby)
-  (def-int-prop!    proto model/attr-count nil)
-  (def-int-prop!    proto model/attr-max   model/default-max)
+  (du/define-string-prop! proto model/attr-variant            model/attr-variant            model/default-variant)
+  (du/define-string-prop! proto model/attr-size               model/attr-size               model/default-size)
+  (du/define-bool-prop!   proto model/attr-pill               model/attr-pill)
+  (du/define-bool-prop!   proto model/attr-dot                model/attr-dot)
+  (du/define-string-prop! proto model/attr-text               model/attr-text)
+  (du/define-string-prop! proto model/attr-aria-label         model/attr-aria-label)
+  (du/define-string-prop! proto model/attr-aria-describedby   model/attr-aria-describedby)
+  (def-int-prop!          proto model/attr-count nil)
+  (def-int-prop!          proto model/attr-max   model/default-max)
   ;; displayText — computed read-only property
   (.defineProperty js/Object proto "displayText"
                    #js {:get (fn []

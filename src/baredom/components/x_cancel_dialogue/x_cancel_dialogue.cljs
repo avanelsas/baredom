@@ -428,36 +428,14 @@
                         :enumerable true :configurable true})
 
   ;; Boolean properties: disabled, danger
-  (doseq [[js-prop attr-name]
-          [["disabled" model/attr-disabled]
-           ["danger"   model/attr-danger]]]
-    (.defineProperty js/Object proto js-prop
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                          (.hasAttribute this attr-name)))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                          (if v
-                                            (.setAttribute this attr-name "")
-                                            (.removeAttribute this attr-name))))
-                          :enumerable true :configurable true}))
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "danger"   model/attr-danger)
 
   ;; String properties
-  (doseq [[js-prop attr-name]
-          [["headline"    model/attr-headline]
-           ["message"     model/attr-message]
-           ["confirmText" model/attr-confirm-text]
-           ["cancelText"  model/attr-cancel-text]]]
-    (.defineProperty js/Object proto js-prop
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                          (.getAttribute this attr-name)))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                          (if (nil? v)
-                                            (.removeAttribute this attr-name)
-                                            (.setAttribute this attr-name (str v)))))
-                          :enumerable true :configurable true}))
+  (du/define-string-prop! proto "headline"    model/attr-headline)
+  (du/define-string-prop! proto "message"     model/attr-message)
+  (du/define-string-prop! proto "confirmText" model/attr-confirm-text)
+  (du/define-string-prop! proto "cancelText"  model/attr-cancel-text)
 
   ;; Public methods
   (.defineProperty js/Object proto "close"

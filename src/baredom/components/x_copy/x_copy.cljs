@@ -349,36 +349,16 @@
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]
   ;; String-reflecting properties
-  (doseq [[js-prop attr-name]
-          [["text"           model/attr-text]
-           ["from"           model/attr-from]
-           ["fromAttr"       model/attr-from-attr]
-           ["mode"           model/attr-mode]
-           ["successMessage" model/attr-success-message]
-           ["errorMessage"   model/attr-error-message]
-           ["hotkey"         model/attr-hotkey]]]
-    (.defineProperty js/Object proto js-prop
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                          (.getAttribute this attr-name)))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                          (if (nil? v)
-                                            (.removeAttribute this attr-name)
-                                            (.setAttribute this attr-name (str v)))))
-                          :enumerable true :configurable true}))
+  (du/define-string-prop! proto "text"           model/attr-text)
+  (du/define-string-prop! proto "from"           model/attr-from)
+  (du/define-string-prop! proto "fromAttr"       model/attr-from-attr)
+  (du/define-string-prop! proto "mode"           model/attr-mode)
+  (du/define-string-prop! proto "successMessage" model/attr-success-message)
+  (du/define-string-prop! proto "errorMessage"   model/attr-error-message)
+  (du/define-string-prop! proto "hotkey"         model/attr-hotkey)
 
-  ;; Boolean-reflecting properties
-  (.defineProperty js/Object proto "disabled"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
+  ;; Boolean-reflecting property
+  (du/define-bool-prop!   proto "disabled"       model/attr-disabled)
 
   (.defineProperty js/Object proto "showTooltip"
                    #js {:get (fn []

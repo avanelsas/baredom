@@ -250,33 +250,11 @@
       (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-bool-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop! proto model/attr-label)
-  (def-string-prop! proto model/attr-value)
-  (def-bool-prop!   proto model/attr-removable)
-  (def-bool-prop!   proto model/attr-disabled))
+  (du/define-string-prop! proto model/attr-label     model/attr-label)
+  (du/define-string-prop! proto model/attr-value     model/attr-value)
+  (du/define-bool-prop!   proto model/attr-removable model/attr-removable)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

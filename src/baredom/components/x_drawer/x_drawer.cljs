@@ -371,31 +371,9 @@
                                           (do-hide! this))))
                         :enumerable true :configurable true})
 
-  ;; String property: placement
-  (.defineProperty js/Object proto "placement"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-placement)
-                                            model/default-placement)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-placement)
-                                          (.setAttribute this model/attr-placement (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; String property: label
-  (.defineProperty js/Object proto "label"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label)
-                                            model/default-label)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-label)
-                                          (.setAttribute this model/attr-label (str v)))))
-                        :enumerable true :configurable true})
+  ;; String properties with defaults
+  (du/define-string-prop! proto "placement" model/attr-placement model/default-placement)
+  (du/define-string-prop! proto "label"     model/attr-label     model/default-label)
 
   ;; Public methods
   (.defineProperty js/Object proto "show"
