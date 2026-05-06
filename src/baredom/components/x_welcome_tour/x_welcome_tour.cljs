@@ -904,17 +904,9 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto "open"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (du/has-attr? this model/attr-open)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-open "")
-                                          (.removeAttribute this model/attr-open))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop!   proto "open"      model/attr-open)
 
+  ;; step uses model/parse-step getter and never-removes setter — kept inline
   (.defineProperty js/Object proto "step"
                    #js {:get (fn []
                                (this-as ^js this
@@ -924,66 +916,19 @@
                                         (.setAttribute this model/attr-step (str (or v 0)))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto "connector"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-connector) "arrow")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-connector (str v))
-                                          (.removeAttribute this model/attr-connector))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto "connector" model/attr-connector "arrow")
 
+  ;; totalSteps reads slot children — read-only, kept inline
   (.defineProperty js/Object proto "totalSteps"
                    #js {:get (fn []
                                (this-as ^js this
                                         (.-length (get-step-els this))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto "prevLabel"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-prev-label) "Back")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-prev-label (str v))
-                                          (.removeAttribute this model/attr-prev-label))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto "nextLabel"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-next-label) "Next")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-next-label (str v))
-                                          (.removeAttribute this model/attr-next-label))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto "doneLabel"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-done-label) "Done")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-done-label (str v))
-                                          (.removeAttribute this model/attr-done-label))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto "skipLabel"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-skip-label) "Skip")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-skip-label (str v))
-                                          (.removeAttribute this model/attr-skip-label))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto "prevLabel" model/attr-prev-label "Back")
+  (du/define-string-prop! proto "nextLabel" model/attr-next-label "Next")
+  (du/define-string-prop! proto "doneLabel" model/attr-done-label "Done")
+  (du/define-string-prop! proto "skipLabel" model/attr-skip-label "Skip"))
 
 ;; ── Install public methods ──────────────────────────────────────────────────
 (defn- install-methods! [^js proto]

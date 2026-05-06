@@ -203,37 +203,16 @@
     (render! el)
     (init-element! el)))
 
-(defn- string-property [^js proto attr-name]
-  (.defineProperty js/Object proto attr-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr-name) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr-name (str v))
-                                          (.removeAttribute this attr-name))))
-                        :enumerable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
-  (string-property proto model/attr-variant)
-  (string-property proto model/attr-align)
-  (string-property proto model/attr-size)
-  (string-property proto model/attr-emphasis)
-  (string-property proto model/attr-trend)
-  (string-property proto model/attr-label)
-  (string-property proto model/attr-value)
-  (string-property proto model/attr-hint)
-
-  (.defineProperty js/Object proto model/attr-loading
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-loading)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-loading "")
-                                          (.removeAttribute this model/attr-loading))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-variant  model/attr-variant  "")
+  (du/define-string-prop! proto model/attr-align    model/attr-align    "")
+  (du/define-string-prop! proto model/attr-size     model/attr-size     "")
+  (du/define-string-prop! proto model/attr-emphasis model/attr-emphasis "")
+  (du/define-string-prop! proto model/attr-trend    model/attr-trend    "")
+  (du/define-string-prop! proto model/attr-label    model/attr-label    "")
+  (du/define-string-prop! proto model/attr-value    model/attr-value    "")
+  (du/define-string-prop! proto model/attr-hint     model/attr-hint     "")
+  (du/define-bool-prop!   proto model/attr-loading  model/attr-loading))
 
 (defn init! []
   (component/register! model/tag-name

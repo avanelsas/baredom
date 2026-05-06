@@ -2,8 +2,7 @@
   (:require [baredom.utils.component :as component]
             [goog.object :as gobj]
             [baredom.utils.dom :as du]
-            [baredom.components.x-sidebar.model :as model])
-  (:require-macros [cljs.core :refer [this-as]]))
+            [baredom.components.x-sidebar.model :as model]))
 
 (def css-text
   (str
@@ -405,26 +404,8 @@
 
 (defn- install-property-accessors!
   [^js proto]
-  (js/Object.defineProperty
-   proto model/attr-open
-   #js {:get (fn []
-               (this-as ^js this
-                        (.hasAttribute this model/attr-open)))
-        :set (fn [value]
-               (this-as ^js this
-                        (du/set-bool-attr! this model/attr-open (boolean value))))
-        :enumerable true
-        :configurable true})
-  (js/Object.defineProperty
-   proto model/attr-collapsed
-   #js {:get (fn []
-               (this-as ^js this
-                        (.hasAttribute this model/attr-collapsed)))
-        :set (fn [value]
-               (this-as ^js this
-                        (du/set-bool-attr! this model/attr-collapsed (boolean value))))
-        :enumerable true
-        :configurable true}))
+  (du/define-bool-prop! proto model/attr-open      model/attr-open)
+  (du/define-bool-prop! proto model/attr-collapsed model/attr-collapsed))
 
 (defn init! []
   (component/register! model/tag-name

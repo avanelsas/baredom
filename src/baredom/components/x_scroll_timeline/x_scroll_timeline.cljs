@@ -997,18 +997,7 @@
 
 ;; ── Property accessor helpers ───────────────────────────────────────────────
 
-(defn- def-string-prop-default! [^js proto prop-name attr default]
-  (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; def-string-prop-empty! has stricter "" → remove semantics — kept inline
 (defn- def-string-prop-empty! [^js proto prop-name attr]
   (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
@@ -1021,17 +1010,7 @@
                                           (.removeAttribute this attr))))
                         :enumerable true :configurable true}))
 
-(defn- def-bool-prop! [^js proto prop-name attr]
-  (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; def-number-prop! takes a custom parse-fn — kept inline
 (defn- def-number-prop! [^js proto prop-name attr parse-fn]
   (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
@@ -1054,17 +1033,17 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop-default! proto model/attr-layout  model/attr-layout  "alternating")
-  (def-string-prop-default! proto model/attr-track   model/attr-track   "straight")
-  (def-string-prop-default! proto model/attr-marker  model/attr-marker  "dot")
-  (def-string-prop-empty!   proto model/attr-label   model/attr-label)
-  (def-number-prop!         proto model/attr-threshold model/attr-threshold model/parse-threshold)
-  (def-bool-prop!           proto model/prop-no-progress        model/attr-no-progress)
-  (def-bool-prop!           proto model/attr-disabled           model/attr-disabled)
-  (def-bool-prop!           proto model/attr-autoplay           model/attr-autoplay)
-  (def-number-prop!         proto model/prop-autoplay-speed     model/attr-autoplay-speed model/parse-autoplay-speed)
-  (def-bool-prop!           proto model/prop-autoplay-loop      model/attr-autoplay-loop)
-  (def-bool-prop!           proto model/prop-autoplay-indicator model/attr-autoplay-indicator)
+  (du/define-string-prop! proto model/attr-layout    model/attr-layout    "alternating")
+  (du/define-string-prop! proto model/attr-track     model/attr-track     "straight")
+  (du/define-string-prop! proto model/attr-marker    model/attr-marker    "dot")
+  (def-string-prop-empty! proto model/attr-label     model/attr-label)
+  (def-number-prop!       proto model/attr-threshold model/attr-threshold model/parse-threshold)
+  (du/define-bool-prop!   proto model/prop-no-progress        model/attr-no-progress)
+  (du/define-bool-prop!   proto model/attr-disabled           model/attr-disabled)
+  (du/define-bool-prop!   proto model/attr-autoplay           model/attr-autoplay)
+  (def-number-prop!       proto model/prop-autoplay-speed     model/attr-autoplay-speed model/parse-autoplay-speed)
+  (du/define-bool-prop!   proto model/prop-autoplay-loop      model/attr-autoplay-loop)
+  (du/define-bool-prop!   proto model/prop-autoplay-indicator model/attr-autoplay-indicator)
   (def-readonly-prop!       proto model/prop-active-index       k-active-index -1)
   (def-readonly-prop!       proto model/prop-progress           k-last-prog 0)
   (def-readonly-prop!       proto model/prop-autoplay-paused    k-autoplay-paused false))

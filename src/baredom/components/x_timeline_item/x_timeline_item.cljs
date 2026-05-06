@@ -467,58 +467,11 @@
                                           (.removeAttribute this model/attr-title))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-status
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-status) "pending")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-status (str v))
-                                          (.removeAttribute this model/attr-status))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-icon
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this model/attr-icon)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-icon (str v))
-                                          (.removeAttribute this model/attr-icon))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-connector
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-connector) "solid")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-connector (str v))
-                                          (.removeAttribute this model/attr-connector))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-position
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-position) "start")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-position (str v))
-                                          (.removeAttribute this model/attr-position))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-status    model/attr-status    "pending")
+  (du/define-string-prop! proto model/attr-icon      model/attr-icon)
+  (du/define-string-prop! proto model/attr-connector model/attr-connector "solid")
+  (du/define-string-prop! proto model/attr-position  model/attr-position  "start")
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

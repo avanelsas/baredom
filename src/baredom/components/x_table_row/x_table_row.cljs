@@ -194,38 +194,9 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-selected
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-selected)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-selected "")
-                                          (.removeAttribute this model/attr-selected))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-interactive
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-interactive)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-interactive "")
-                                          (.removeAttribute this model/attr-interactive))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop! proto model/attr-selected    model/attr-selected)
+  (du/define-bool-prop! proto model/attr-disabled    model/attr-disabled)
+  (du/define-bool-prop! proto model/attr-interactive model/attr-interactive)
 
   ;; camelCase JS property for row-index attribute
   (.defineProperty js/Object proto "rowIndex"

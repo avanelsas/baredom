@@ -537,48 +537,10 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-type
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-type) "info")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-type (str v))
-                                          (.removeAttribute this model/attr-type))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-heading
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-heading) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-heading (str v))
-                                          (.removeAttribute this model/attr-heading))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-message
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-message) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-message (str v))
-                                          (.removeAttribute this model/attr-message))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-icon
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this model/attr-icon)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-icon (str v))
-                                          (.removeAttribute this model/attr-icon))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-type    model/attr-type    "info")
+  (du/define-string-prop! proto model/attr-heading model/attr-heading "")
+  (du/define-string-prop! proto model/attr-message model/attr-message "")
+  (du/define-string-prop! proto model/attr-icon    model/attr-icon)
 
   (.defineProperty js/Object proto model/attr-dismissible
                    #js {:get (fn []
@@ -592,15 +554,7 @@
                                           (.setAttribute this model/attr-dismissible "false"))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
   (.defineProperty js/Object proto "timeoutMs"
                    #js {:get (fn []

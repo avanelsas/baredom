@@ -290,83 +290,13 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-columns
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-columns) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-columns (str v))
-                                          (.removeAttribute this model/attr-columns))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-caption
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-caption) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-caption (str v))
-                                          (.removeAttribute this model/attr-caption))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-selectable
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-selectable) "none")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-selectable (str v))
-                                          (.removeAttribute this model/attr-selectable))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-striped
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-striped)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-striped "")
-                                          (.removeAttribute this model/attr-striped))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-bordered
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-bordered)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-bordered "")
-                                          (.removeAttribute this model/attr-bordered))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-compact
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-compact)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-compact "")
-                                          (.removeAttribute this model/attr-compact))))
-                        :enumerable true :configurable true})
-
-  ;; camelCase JS property for full-width
-  (.defineProperty js/Object proto "fullWidth"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-full-width)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-full-width "")
-                                          (.removeAttribute this model/attr-full-width))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-columns    model/attr-columns    "")
+  (du/define-string-prop! proto model/attr-caption    model/attr-caption    "")
+  (du/define-string-prop! proto model/attr-selectable model/attr-selectable "none")
+  (du/define-bool-prop!   proto model/attr-striped    model/attr-striped)
+  (du/define-bool-prop!   proto model/attr-bordered   model/attr-bordered)
+  (du/define-bool-prop!   proto model/attr-compact    model/attr-compact)
+  (du/define-bool-prop!   proto "fullWidth"           model/attr-full-width)
 
   ;; camelCase JS property for row-count
   (.defineProperty js/Object proto "rowCount"

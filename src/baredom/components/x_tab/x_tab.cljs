@@ -162,51 +162,9 @@
     (init-element! el)))
 
 (defn install-property-accessors! [^js proto]
-
-  (.defineProperty
-   js/Object
-   proto
-   "selected"
-   #js {:get (fn []
-               (this-as this
-                        (.hasAttribute this model/attr-selected)))
-        :set (fn [v]
-               (this-as this
-                        (if v
-                          (.setAttribute this model/attr-selected "")
-                          (.removeAttribute this model/attr-selected))))
-        :configurable true
-        :enumerable true})
-
-  (.defineProperty
-   js/Object
-   proto
-   "disabled"
-   #js {:get (fn []
-               (this-as this
-                        (.hasAttribute this model/attr-disabled)))
-        :set (fn [v]
-               (this-as this
-                        (if v
-                          (.setAttribute this model/attr-disabled "")
-                          (.removeAttribute this model/attr-disabled))))
-        :configurable true
-        :enumerable true})
-
-  (.defineProperty
-   js/Object
-   proto
-   "value"
-   #js {:get (fn []
-               (this-as this
-                        (.getAttribute this model/attr-value)))
-        :set (fn [v]
-               (this-as this
-                        (if v
-                          (.setAttribute this model/attr-value v)
-                          (.removeAttribute this model/attr-value))))
-        :configurable true
-        :enumerable true}))
+  (du/define-bool-prop!   proto "selected" model/attr-selected)
+  (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+  (du/define-string-prop! proto "value"    model/attr-value))
 
 (defn init! []
   (component/register! model/tag-name

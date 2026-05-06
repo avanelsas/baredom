@@ -1,6 +1,7 @@
 (ns baredom.components.x-spacer.x-spacer
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-spacer.model :as model]))
 
@@ -68,18 +69,7 @@
     (render! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop-default! [^js proto attr default-val]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default-val)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; grow uses model/parse-grow getter — kept inline
 (defn- def-bool-presence-prop! [^js proto attr]
   (.defineProperty js/Object proto attr
                    #js {:get (fn []
@@ -93,9 +83,9 @@
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop-default! proto model/attr-size model/default-size)
-  (def-string-prop-default! proto model/attr-axis model/default-axis)
-  (def-bool-presence-prop!  proto model/attr-grow))
+  (du/define-string-prop! proto model/attr-size model/attr-size model/default-size)
+  (du/define-string-prop! proto model/attr-axis model/attr-axis model/default-axis)
+  (def-bool-presence-prop! proto model/attr-grow))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────
