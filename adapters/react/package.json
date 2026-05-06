@@ -339,6 +339,10 @@
       "import" : "./dist/x-splash.js",
       "types" : "./dist/x-splash.d.ts"
     },
+    "./x-spotlight-card" : {
+      "import" : "./dist/x-spotlight-card.js",
+      "types" : "./dist/x-spotlight-card.d.ts"
+    },
     "./x-stat" : {
       "import" : "./dist/x-stat.js",
       "types" : "./dist/x-stat.d.ts"

@@ -361,6 +361,11 @@
       "import": "./dist/x-splash.js",
       "default": "./dist/x-splash.js"
     },
+    "./x-spotlight-card": {
+      "types": "./dist/x-spotlight-card.d.ts",
+      "import": "./dist/x-spotlight-card.js",
+      "default": "./dist/x-spotlight-card.js"
+    },
     "./x-timeline": {
       "types": "./dist/x-timeline.d.ts",
       "import": "./dist/x-timeline.js",

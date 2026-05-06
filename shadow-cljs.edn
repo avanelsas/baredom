@@ -431,6 +431,11 @@
      {init baredom.exports.x-splash/init}
      :depends-on #{:base}}
 
+    :x-spotlight-card
+    {:exports
+     {init baredom.exports.x-spotlight-card/init}
+     :depends-on #{:base}}
+
     :x-metaball-cursor
     {:exports
      {init baredom.exports.x-metaball-cursor/init}

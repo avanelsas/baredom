@@ -78,6 +78,7 @@ export { BaredomSoftBody } from './directives/x-soft-body.directive';
 export { BaredomSpacer } from './directives/x-spacer.directive';
 export { BaredomSpinner } from './directives/x-spinner.directive';
 export { BaredomSplash } from './directives/x-splash.directive';
+export { BaredomSpotlightCard } from './directives/x-spotlight-card.directive';
 export { BaredomStat } from './directives/x-stat.directive';
 export { BaredomStepper } from './directives/x-stepper.directive';
 export { BaredomSwitch } from './directives/x-switch.directive';
