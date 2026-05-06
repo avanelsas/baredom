@@ -70,6 +70,63 @@
     (.setAttribute el model/attr-max-toasts "3")
     (is (= 3 (.-maxToasts el)))))
 
+;; ── Property setters ─────────────────────────────────────────────────────────
+;; These cover the writer side of position / label / maxToasts. The toaster
+;; properties have intentional setter semantics that differ from each other:
+;;   position  — only nil/false remove (CLJS-truthy: "" is truthy)
+;;   label     — strict empty-string removal
+;;   maxToasts — only nil removes; numeric coerced to floor
+(deftest position-property-setter-test
+  (let [^js el (append! (make-toaster))]
+    (testing "valid value reflects to attribute and to data-position"
+      (set! (.-position el) "bottom-start")
+      (is (= "bottom-start" (.getAttribute el model/attr-position)))
+      (is (= "bottom-start" (.getAttribute el "data-position"))))
+
+    (testing "nil removes the attribute"
+      (set! (.-position el) nil)
+      (is (not (.hasAttribute el model/attr-position))))
+
+    (testing "empty string KEEPS the attribute (CLJS-truthy semantics)"
+      (.setAttribute el model/attr-position "top-start")
+      (set! (.-position el) "")
+      (is (.hasAttribute el model/attr-position))
+      (is (= "" (.getAttribute el model/attr-position))))))
+
+(deftest label-property-setter-test
+  (let [^js el (append! (make-toaster))]
+    (testing "non-empty string sets attribute and aria-label"
+      (set! (.-label el) "Custom Alerts")
+      (is (= "Custom Alerts" (.getAttribute el model/attr-label)))
+      (is (= "Custom Alerts" (.getAttribute el "aria-label"))))
+
+    (testing "nil removes attribute and aria-label reverts to default"
+      (set! (.-label el) nil)
+      (is (not (.hasAttribute el model/attr-label)))
+      (is (= "Notifications" (.getAttribute el "aria-label"))))
+
+    (testing "empty string also removes (strict empty-string semantics)"
+      (.setAttribute el model/attr-label "Temporary")
+      (set! (.-label el) "")
+      (is (not (.hasAttribute el model/attr-label))))))
+
+(deftest max-toasts-property-setter-test
+  (let [^js el (append! (make-toaster))]
+    (testing "numeric value reflects via floor"
+      (set! (.-maxToasts el) 7)
+      (is (= "7" (.getAttribute el model/attr-max-toasts)))
+      (is (= 7 (.-maxToasts el))))
+
+    (testing "fractional value floored"
+      (set! (.-maxToasts el) 3.9)
+      (is (= "3" (.getAttribute el model/attr-max-toasts)))
+      (is (= 3 (.-maxToasts el))))
+
+    (testing "nil removes attribute and getter returns default 5"
+      (set! (.-maxToasts el) nil)
+      (is (not (.hasAttribute el model/attr-max-toasts)))
+      (is (= 5 (.-maxToasts el))))))
+
 ;; ── toast() API ──────────────────────────────────────────────────────────────
 (deftest toast-method-creates-element-test
   (let [^js el (append! (make-toaster))
