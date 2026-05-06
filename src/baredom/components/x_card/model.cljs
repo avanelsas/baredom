@@ -26,17 +26,8 @@
 (def default-radius "lg")
 
 (def property-api
-  {:interactive
-   {:attribute attr-interactive
-    :type 'boolean
-    :default false
-    :reflects-to-attribute true}
-
-   :disabled
-   {:attribute attr-disabled
-    :type 'boolean
-    :default false
-    :reflects-to-attribute true}})
+  {:interactive {:type 'boolean :reflects-attribute attr-interactive}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-press "press")
 

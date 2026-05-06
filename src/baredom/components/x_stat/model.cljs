@@ -35,52 +35,21 @@
 (def default-emphasis "normal")
 (def default-trend "neutral")
 
+;; Note: property defaults are intentionally `""` (not the
+;; `default-variant`/`default-align`/etc. constants) — the runtime
+;; getters return `""` when the attribute is absent, and tests assert
+;; that. Component code applies the kebab-case defaults internally
+;; only when rendering, not when exposing the JS property.
 (def property-api
-  {:variant
-   {:attribute attr-variant
-    :type 'string
-    :default default-variant
-    :reflects-to-attribute true}
-   :align
-   {:attribute attr-align
-    :type 'string
-    :default default-align
-    :reflects-to-attribute true}
-   :size
-   {:attribute attr-size
-    :type 'string
-    :default default-size
-    :reflects-to-attribute true}
-   :emphasis
-   {:attribute attr-emphasis
-    :type 'string
-    :default default-emphasis
-    :reflects-to-attribute true}
-   :trend
-   {:attribute attr-trend
-    :type 'string
-    :default default-trend
-    :reflects-to-attribute true}
-   :loading
-   {:attribute attr-loading
-    :type 'boolean
-    :default false
-    :reflects-to-attribute true}
-   :label
-   {:attribute attr-label
-    :type 'string
-    :default ""
-    :reflects-to-attribute true}
-   :value
-   {:attribute attr-value
-    :type 'string
-    :default ""
-    :reflects-to-attribute true}
-   :hint
-   {:attribute attr-hint
-    :type 'string
-    :default ""
-    :reflects-to-attribute true}})
+  {:variant  {:type 'string  :reflects-attribute attr-variant  :default ""}
+   :align    {:type 'string  :reflects-attribute attr-align    :default ""}
+   :size     {:type 'string  :reflects-attribute attr-size     :default ""}
+   :emphasis {:type 'string  :reflects-attribute attr-emphasis :default ""}
+   :trend    {:type 'string  :reflects-attribute attr-trend    :default ""}
+   :loading  {:type 'boolean :reflects-attribute attr-loading}
+   :label    {:type 'string  :reflects-attribute attr-label    :default ""}
+   :value    {:type 'string  :reflects-attribute attr-value    :default ""}
+   :hint     {:type 'string  :reflects-attribute attr-hint     :default ""}})
 
 (def event-schema {})
 

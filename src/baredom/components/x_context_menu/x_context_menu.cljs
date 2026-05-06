@@ -376,11 +376,7 @@
 ;; ---- Element class + registration ----
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"      model/attr-open)
-  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-  (du/define-string-prop! proto "placement" model/attr-placement)
-  (du/define-string-prop! proto "offset"    model/attr-offset)
-  (du/define-string-prop! proto "zIndex"    model/attr-z-index)
+  (du/install-properties! proto model/property-api)
   (define-methods!        proto))
 
 (defn init! []

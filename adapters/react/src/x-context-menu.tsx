@@ -11,8 +11,8 @@ export interface XContextMenuProps {
   open?: boolean;
   disabled?: boolean;
   placement?: string;
-  offset?: number;
-  zIndex?: number;
+  offset?: string;
+  zIndex?: string;
   onOpenRequest?: (e: CustomEvent<{ reason: string }>) => void;
   onOpen?: (e: CustomEvent<{ reason: string }>) => void;
   onCloseRequest?: (e: CustomEvent<{ reason: string }>) => void;

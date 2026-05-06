@@ -25,12 +25,15 @@
 (def event-close         "x-context-menu-close")
 (def event-select        "x-context-menu-select")
 
+;; Property keys are the JS property names. `zIndex` (camelCase) maps to the
+;; kebab-case `z-index` attribute. `offset` is intentionally a string in the
+;; JS API — consumers pass values like "12" or "1rem".
 (def property-api
   {:open      {:type 'boolean :reflects-attribute attr-open}
    :disabled  {:type 'boolean :reflects-attribute attr-disabled}
    :placement {:type 'string  :reflects-attribute attr-placement}
-   :offset    {:type 'number  :reflects-attribute attr-offset}
-   :z-index   {:type 'number  :reflects-attribute attr-z-index}})
+   :offset    {:type 'string  :reflects-attribute attr-offset}
+   :zIndex    {:type 'string  :reflects-attribute attr-z-index}})
 
 ;; ---- Pure parsing ----
 
