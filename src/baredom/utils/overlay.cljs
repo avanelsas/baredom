@@ -5,6 +5,12 @@
 
 (def ^:private overlay-root-id "__xOverlayRoot")
 
+(def key-on-key            "__xOverlayOnKey")
+(def key-on-click-backdrop "__xOverlayOnClickBackdrop")
+(def key-on-item-click     "__xOverlayOnItemClick")
+(def key-on-close-btn      "__xOverlayOnCloseBtn")
+(def key-close-btn-el      "__xOverlayCloseBtnEl")
+
 (defn find-theme-host
   "Walk up from el to find the nearest x-theme ancestor, or fall back to body."
   [^js el]
@@ -59,11 +65,11 @@
   "Remove a layer from the DOM and clean up stored event listeners."
   [^js layer]
   (when layer
-    (let [on-key            (gobj/get layer "__onKey")
-          on-click-backdrop (gobj/get layer "__onClickBackdrop")
-          on-item-click     (gobj/get layer "__onItemClick")
-          on-close-btn      (gobj/get layer "__onCloseBtn")
-          ^js close-btn-el  (gobj/get layer "__closeBtnEl")]
+    (let [on-key            (gobj/get layer key-on-key)
+          on-click-backdrop (gobj/get layer key-on-click-backdrop)
+          on-item-click     (gobj/get layer key-on-item-click)
+          on-close-btn      (gobj/get layer key-on-close-btn)
+          ^js close-btn-el  (gobj/get layer key-close-btn-el)]
       (when on-key            (.removeEventListener layer "keydown" on-key true))
       (when on-click-backdrop (.removeEventListener layer "click" on-click-backdrop))
       (when on-item-click

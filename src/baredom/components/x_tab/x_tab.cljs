@@ -4,9 +4,9 @@
                [baredom.utils.dom :as du]
    [baredom.components.x-tab.model :as model]))
 
-(def key-root "__x_tab_root")
-(def key-base "__x_tab_base")
-(def key-initialized "__x_tab_initialized")
+(def key-root "__xTabRoot")
+(def key-base "__xTabBase")
+(def key-initialized "__xTabInitialized")
 
 (defn read-inputs [^js el]
   {:value (.getAttribute el model/attr-value)
