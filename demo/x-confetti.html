@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-confetti demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --surface-bg: rgba(255, 255, 255, 0.92);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(139, 92, 246, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --muted: #64748b;
+        --page-fg: #0f172a;
+        --inline-stage-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), transparent 34%),
+            radial-gradient(circle at top right, rgba(139, 92, 246, 0.18), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --muted: #94a3b8;
+          --page-fg: #f1f5f9;
+          --inline-stage-bg: linear-gradient(135deg, #020617 0%, #0c1428 100%);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--hero-bg);
+        color: var(--page-fg);
+      }
+
+      .page {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 { margin: 8px 0 6px; }
+
+      .subtitle {
+        max-width: 720px;
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack { display: grid; gap: 20px; }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 20px;
+        box-shadow: var(--surface-shadow);
+        padding: 22px;
+      }
+
+      .section-card h2 { margin-top: 0; }
+      .section-card > p { color: var(--muted); }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: 14px 0 6px;
+      }
+
+      .controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .sandbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px 22px;
+        margin: 16px 0;
+      }
+
+      .field {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 4px 10px;
+      }
+
+      .field > label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--page-fg);
+        grid-column: 1 / -1;
+      }
+
+      .field .value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+        color: var(--accent);
+        min-width: 3.5ch;
+        text-align: right;
+      }
+
+      .field input[type="range"] {
+        width: 100%;
+      }
+
+      .field input[type="text"],
+      .field select {
+        font: inherit;
+        padding: 6px 8px;
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        background: var(--surface-bg);
+        color: var(--page-fg);
+        grid-column: 1 / -1;
+      }
+
+      .shapes-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        grid-column: 1 / -1;
+      }
+
+      .shapes-row label {
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--page-fg);
+      }
+
+      button.fire-btn {
+        appearance: none;
+        font: inherit;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: var(--accent);
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+        transition: transform 100ms ease, box-shadow 100ms ease;
+      }
+      button.fire-btn:active { transform: translateY(1px); }
+      button.fire-btn.secondary {
+        background: transparent;
+        color: var(--accent);
+        border-color: var(--accent);
+        box-shadow: none;
+      }
+
+      .stage {
+        position: relative;
+        height: 280px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--inline-stage-bg);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: crosshair;
+        user-select: none;
+      }
+
+      .log {
+        margin-top: 16px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.04);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.82rem;
+        max-height: 140px;
+        overflow: auto;
+        color: var(--muted);
+      }
+      @media (prefers-color-scheme: dark) {
+        .log { background: rgba(15, 23, 42, 0.4); }
+      }
+
+      .log-entry { white-space: pre; }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section>
+        <div class="eyebrow">Web Component · Effect</div>
+        <h1>x-confetti</h1>
+        <p class="subtitle">
+          A celebration effect: imperative <code>fire()</code> bursts of paper-confetti.
+          Stateless config, event-shaped trigger, and full <code>prefers-reduced-motion</code> support.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Overlay (full-page)</h2>
+          <p>One <code>x-confetti</code> with <code>mode="overlay"</code> sits at fixed/inset:0 across the viewport. Click to fire from the top.</p>
+          <div class="controls">
+            <button class="fire-btn" id="fire-overlay">Fire confetti 🎉</button>
+            <button class="fire-btn secondary" id="fire-overlay-center">From center</button>
+            <button class="fire-btn secondary" id="fire-overlay-many">Mega burst (count=250)</button>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Inline (within a stage)</h2>
+          <p>
+            <code>mode="inline"</code> confines particles to the host's bounding box.
+            Click anywhere inside the stage to fire from that point.
+          </p>
+          <div class="stage" id="stage">
+            <span>Click anywhere in this box ✨</span>
+            <x-confetti id="inline" mode="inline" origin="point" velocity="18" gravity="0.4"></x-confetti>
+          </div>
+          <div class="log" id="log"></div>
+        </section>
+
+        <section class="section-card">
+          <h2>Color &amp; shape overrides</h2>
+          <p>Pass per-burst overrides into <code>fire(opts)</code>.</p>
+          <div class="controls">
+            <button class="fire-btn secondary" id="fire-rainbow">Rainbow</button>
+            <button class="fire-btn secondary" id="fire-stars">Stars only</button>
+            <button class="fire-btn secondary" id="fire-bottom">Cannon (bottom)</button>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Sandbox</h2>
+          <p>
+            Tweak the live attributes on the overlay element, then fire.
+            Each control sets the matching HTML attribute (or property) on
+            <code>&lt;x-confetti id="overlay"&gt;</code>.
+          </p>
+
+          <div class="sandbox-grid">
+            <div class="field">
+              <label for="cfg-origin">origin</label>
+              <select id="cfg-origin">
+                <option value="top">top</option>
+                <option value="center">center</option>
+                <option value="bottom">bottom</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="cfg-count">count <span class="value" id="cfg-count-v">80</span></label>
+              <input id="cfg-count" type="range" min="1" max="300" step="1" value="80" />
+            </div>
+
+            <div class="field">
+              <label for="cfg-spread">spread (deg) <span class="value" id="cfg-spread-v">60</span></label>
+              <input id="cfg-spread" type="range" min="0" max="180" step="1" value="60" />
+            </div>
+
+            <div class="field">
+              <label for="cfg-velocity">velocity <span class="value" id="cfg-velocity-v">14</span></label>
+              <input id="cfg-velocity" type="range" min="1" max="60" step="1" value="14" />
+            </div>
+
+            <div class="field">
+              <label for="cfg-gravity">gravity <span class="value" id="cfg-gravity-v">0.25</span></label>
+              <input id="cfg-gravity" type="range" min="-2" max="2" step="0.05" value="0.25" />
+            </div>
+
+            <div class="field">
+              <label for="cfg-duration">duration (ms) <span class="value" id="cfg-duration-v">4000</span></label>
+              <input id="cfg-duration" type="range" min="200" max="20000" step="100" value="4000" />
+            </div>
+
+            <div class="field">
+              <label>shapes</label>
+              <div class="shapes-row">
+                <label><input type="checkbox" class="cfg-shape" value="square" checked /> square</label>
+                <label><input type="checkbox" class="cfg-shape" value="ribbon" checked /> ribbon</label>
+                <label><input type="checkbox" class="cfg-shape" value="circle" /> circle</label>
+                <label><input type="checkbox" class="cfg-shape" value="star" /> star</label>
+              </div>
+            </div>
+
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="cfg-colors">colors (comma-separated, blank = theme palette)</label>
+              <input id="cfg-colors" type="text" placeholder="#ff0066, gold, var(--x-color-primary,#2563eb)" />
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="fire-btn" id="fire-sandbox">Fire with these settings 🎉</button>
+            <button class="fire-btn secondary" id="reset-sandbox">Reset</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <x-confetti id="overlay"></x-confetti>
+
+    <script>
+      const overlay = document.getElementById("overlay");
+      const inline  = document.getElementById("inline");
+      const stage   = document.getElementById("stage");
+      const log     = document.getElementById("log");
+
+      function logEvent(prefix, ev) {
+        const d = ev.detail ?? {};
+        const ts = new Date().toLocaleTimeString();
+        const line = document.createElement("div");
+        line.className = "log-entry";
+        line.textContent = `[${ts}] ${prefix} ${JSON.stringify(d)}`;
+        log.prepend(line);
+      }
+
+      [overlay, inline].forEach(el => {
+        el.addEventListener("x-confetti-fire", e => logEvent(`fire (${el.id})`, e));
+        el.addEventListener("x-confetti-end",  e => logEvent(`end  (${el.id})`, e));
+      });
+
+      document.getElementById("fire-overlay").addEventListener("click",
+        () => overlay.fire());
+
+      document.getElementById("fire-overlay-center").addEventListener("click",
+        () => overlay.fire({ origin: "center", count: 140, spread: 90 }));
+
+      document.getElementById("fire-overlay-many").addEventListener("click",
+        () => overlay.fire({ count: 250, duration: 6000 }));
+
+      document.getElementById("fire-rainbow").addEventListener("click",
+        () => overlay.fire({
+          colors: ["#ff0066", "#ff9900", "#ffe600", "#33cc33", "#00aaff", "#9933ff"],
+          shapes: ["square", "circle", "ribbon", "star"],
+          count: 200,
+          spread: 100,
+          velocity: 26
+        }));
+
+      document.getElementById("fire-stars").addEventListener("click",
+        () => overlay.fire({
+          shapes: ["star"],
+          origin: "center",
+          count: 100,
+          velocity: 26
+        }));
+
+      document.getElementById("fire-bottom").addEventListener("click",
+        () => overlay.fire({ origin: "bottom", velocity: 28, spread: 35, count: 180 }));
+
+      stage.addEventListener("click", e => {
+        const rect = stage.getBoundingClientRect();
+        inline.fire({
+          origin: "point",
+          originX: e.clientX - rect.left,
+          originY: e.clientY - rect.top,
+          count: 50
+        });
+      });
+
+      // ── Sandbox ─────────────────────────────────────────────────────────
+      const sandboxFields = [
+        { id: "cfg-origin",   attr: "origin"   },
+        { id: "cfg-count",    attr: "count",    valueId: "cfg-count-v" },
+        { id: "cfg-spread",   attr: "spread",   valueId: "cfg-spread-v" },
+        { id: "cfg-velocity", attr: "velocity", valueId: "cfg-velocity-v" },
+        { id: "cfg-gravity",  attr: "gravity",  valueId: "cfg-gravity-v" },
+        { id: "cfg-duration", attr: "duration", valueId: "cfg-duration-v" },
+      ];
+
+      function syncSandboxField(field) {
+        const el = document.getElementById(field.id);
+        const value = el.value;
+        if (value === "" || value == null) {
+          overlay.removeAttribute(field.attr);
+        } else {
+          overlay.setAttribute(field.attr, value);
+        }
+        if (field.valueId) {
+          document.getElementById(field.valueId).textContent = value;
+        }
+      }
+
+      sandboxFields.forEach(field => {
+        const el = document.getElementById(field.id);
+        el.addEventListener("input",  () => syncSandboxField(field));
+        el.addEventListener("change", () => syncSandboxField(field));
+      });
+
+      function syncShapes() {
+        const checked = Array.from(document.querySelectorAll(".cfg-shape:checked"))
+          .map(cb => cb.value);
+        if (checked.length === 0) {
+          overlay.removeAttribute("shapes");
+        } else {
+          overlay.setAttribute("shapes", checked.join(","));
+        }
+      }
+
+      document.querySelectorAll(".cfg-shape").forEach(cb => {
+        cb.addEventListener("change", syncShapes);
+      });
+
+      const colorsInput = document.getElementById("cfg-colors");
+      colorsInput.addEventListener("input", () => {
+        const v = colorsInput.value.trim();
+        if (v === "") overlay.removeAttribute("colors");
+        else          overlay.setAttribute("colors", v);
+      });
+
+      document.getElementById("fire-sandbox").addEventListener("click",
+        () => overlay.fire());
+
+      document.getElementById("reset-sandbox").addEventListener("click", () => {
+        // Restore defaults on the element …
+        ["origin","count","spread","velocity","gravity","duration","shapes","colors"]
+          .forEach(a => overlay.removeAttribute(a));
+        // … and on the form controls.
+        document.getElementById("cfg-origin").value   = "top";
+        document.getElementById("cfg-count").value    = "80";
+        document.getElementById("cfg-spread").value   = "60";
+        document.getElementById("cfg-velocity").value = "14";
+        document.getElementById("cfg-gravity").value  = "0.25";
+        document.getElementById("cfg-duration").value = "4000";
+        document.getElementById("cfg-count-v").textContent    = "80";
+        document.getElementById("cfg-spread-v").textContent   = "60";
+        document.getElementById("cfg-velocity-v").textContent = "14";
+        document.getElementById("cfg-gravity-v").textContent  = "0.25";
+        document.getElementById("cfg-duration-v").textContent = "4000";
+        document.querySelectorAll(".cfg-shape").forEach(cb => {
+          cb.checked = (cb.value === "square" || cb.value === "ribbon");
+        });
+        colorsInput.value = "";
+      });
+    </script>
+  </body>
+</html>
