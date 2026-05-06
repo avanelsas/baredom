@@ -67,13 +67,7 @@
 
 (defn dispatch-item-select! [^js el]
   (let [value (.getAttribute el model/attr-value)]
-    (.dispatchEvent
-     el
-     (js/CustomEvent.
-      model/event-item-select
-      #js {:detail #js {:value (or value "")}
-           :bubbles true
-           :composed true}))))
+    (du/dispatch! el model/event-item-select #js {:value (or value "")})))
 
 (defn handle-click! [^js el ^js evt]
   (let [state (model/derive-state (read-inputs el))]

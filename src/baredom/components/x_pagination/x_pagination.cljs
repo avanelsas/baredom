@@ -247,14 +247,7 @@
                   el model/event-change-request
                   #js {:page page :previousPage cur-page})]
     (when allowed?
-      (.dispatchEvent
-       el
-       (js/CustomEvent.
-        model/event-page-change
-        #js {:detail    #js {:page page}
-             :bubbles   true
-             :composed  true
-             :cancelable false})))))
+      (du/dispatch! el model/event-page-change #js {:page page}))))
 
 ;; ── Click handler (event delegation) ─────────────────────────────────────
 (defn- find-button-in-path [^js ev]

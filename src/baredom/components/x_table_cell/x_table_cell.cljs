@@ -1,6 +1,7 @@
 (ns baredom.components.x-table-cell.x-table-cell
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-table-cell.model :as model]))
 
@@ -276,34 +277,17 @@
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-sort! [^js el]
   (let [current  (model/parse-sort-direction (.getAttribute el model/attr-sort-direction))
-        next-dir (model/next-sort-direction current)
-        ^js ev   (js/CustomEvent.
-                  model/event-sort
-                  #js {:detail     #js {:direction next-dir :previousDirection current}
-                       :bubbles    true
-                       :composed   true
-                       :cancelable true})]
-    (.dispatchEvent el ev))
+        next-dir (model/next-sort-direction current)]
+    (du/dispatch-cancelable! el model/event-sort
+      #js {:direction next-dir :previousDirection current}))
   nil)
 
 (defn- dispatch-connected! [^js el m]
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   model/event-connected
-                   #js {:detail     (clj->js (model/connected-detail m))
-                        :bubbles    true
-                        :composed   true
-                        :cancelable false}))
+  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m)))
   nil)
 
 (defn- dispatch-disconnected! [^js el]
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   model/event-disconnected
-                   #js {:detail     #js {}
-                        :bubbles    true
-                        :composed   true
-                        :cancelable false}))
+  (du/dispatch! el model/event-disconnected #js {})
   nil)
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────

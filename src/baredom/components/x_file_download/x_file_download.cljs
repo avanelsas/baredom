@@ -189,16 +189,9 @@
     (let [disabled? (du/has-attr? el model/attr-disabled)]
       (if disabled?
         (.preventDefault evt)
-        (let [m          (read-model el)
-              detail     #js {:href (:href m) :filename (:filename m)}
-              ^js custom (js/CustomEvent.
-                          model/event-click
-                          #js {:detail     detail
-                               :bubbles    true
-                               :composed   true
-                               :cancelable true})]
-          (.dispatchEvent el custom)
-          (when (.-defaultPrevented custom)
+        (let [m      (read-model el)
+              detail #js {:href (:href m) :filename (:filename m)}]
+          (when-not (du/dispatch-cancelable! el model/event-click detail)
             (.preventDefault evt)))))))
 
 ;; ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 (ns baredom.components.x-timeline.x-timeline
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-timeline.model :as model]))
 
@@ -117,14 +118,7 @@
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-select! [^js el index status label]
-  (let [detail (clj->js (model/select-detail index status label))]
-    (.dispatchEvent el
-                    (js/CustomEvent.
-                     model/event-select
-                     #js {:detail     detail
-                          :bubbles    true
-                          :composed   true
-                          :cancelable false})))
+  (du/dispatch! el model/event-select (clj->js (model/select-detail index status label)))
   nil)
 
 ;; ── Event handlers ────────────────────────────────────────────────────────────

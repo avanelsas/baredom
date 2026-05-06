@@ -125,24 +125,14 @@
    :viewport-width (viewport-width)
    :prefers-reduced-motion (prefers-reduced-motion?)})
 
-(defn dispatch-custom-event!
-  [instance event-name detail]
-  (.dispatchEvent
-   instance
-   (js/CustomEvent.
-    event-name
-    (clj->js {:detail detail
-              :bubbles true
-              :composed true}))))
-
 (defn emit-toggle!
-  [instance open]
-  (dispatch-custom-event! instance model/event-toggle (model/toggle-event-detail open)))
+  [^js instance open]
+  (du/dispatch! instance model/event-toggle (clj->js (model/toggle-event-detail open))))
 
 (defn emit-dismiss!
-  [instance reason]
+  [^js instance reason]
   (when (model/dismiss-reason? reason)
-    (dispatch-custom-event! instance model/event-dismiss (model/dismiss-event-detail reason))))
+    (du/dispatch! instance model/event-dismiss (clj->js (model/dismiss-event-detail reason)))))
 
 (defn visible-element?
   [el]

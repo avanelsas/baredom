@@ -95,13 +95,7 @@
 
   (let [value (.getAttribute el model/attr-value)]
 
-    (.dispatchEvent
-     el
-     (js/CustomEvent.
-      model/event-tab-select
-      #js {:detail #js {:value (or value "")}
-           :bubbles true
-           :composed true}))))
+    (du/dispatch! el model/event-tab-select #js {:value (or value "")})))
 
 (defn activate! [^js el]
 

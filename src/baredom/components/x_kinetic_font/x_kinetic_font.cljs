@@ -1,6 +1,7 @@
 (ns baredom.components.x-kinetic-font.x-kinetic-font
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-kinetic-font.model :as model]))
 
@@ -287,10 +288,7 @@
               (gobj/set el k-scroll-delta 0.0)
               (when (gobj/get el k-active)
                 (gobj/set el k-active false)
-                (.dispatchEvent el
-                               (js/CustomEvent.
-                                model/event-spring-settle
-                                #js {:bubbles true :composed true :detail #js {}}))))
+                (du/dispatch! el model/event-spring-settle #js {})))
             (gobj/set el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el)))))))))
   nil)
@@ -299,10 +297,7 @@
   (when-not (gobj/get el k-raf)
     (when-not (gobj/get el k-active)
       (gobj/set el k-active true)
-      (.dispatchEvent el
-                      (js/CustomEvent.
-                       model/event-spring-activate
-                       #js {:bubbles true :composed true :detail #js {}})))
+      (du/dispatch! el model/event-spring-activate #js {}))
     (gobj/set el k-last-frame (js/performance.now))
     (gobj/set el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el)))))

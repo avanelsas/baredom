@@ -187,25 +187,11 @@
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-load! [^js el src natural-w natural-h]
-  (let [detail (clj->js (model/load-detail src natural-w natural-h))
-        ^js ev (js/CustomEvent.
-                model/event-load
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev))
+  (du/dispatch! el model/event-load (clj->js (model/load-detail src natural-w natural-h)))
   nil)
 
 (defn- dispatch-error! [^js el src]
-  (let [detail (clj->js (model/error-detail src))
-        ^js ev (js/CustomEvent.
-                model/event-error
-                #js {:detail     detail
-                     :bubbles    true
-                     :composed   true
-                     :cancelable false})]
-    (.dispatchEvent el ev))
+  (du/dispatch! el model/event-error (clj->js (model/error-detail src)))
   nil)
 
 ;; ── Image load / error handling ──────────────────────────────────────────────

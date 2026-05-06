@@ -1,6 +1,7 @@
 (ns baredom.components.x-organic-progress.x-organic-progress
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-organic-progress.model :as model]))
 
@@ -390,11 +391,7 @@
     (gobj/set el k-bloom-els nil)
     (gobj/set el k-bloom-active false)
     ;; Dispatch bloom-end event
-    (.dispatchEvent el
-                    (js/CustomEvent.
-                     model/event-bloom-end
-                     #js {:bubbles true :composed true
-                          :detail #js {:progress 100}})))
+    (du/dispatch! el model/event-bloom-end #js {:progress 100}))
   nil)
 
 (defn- update-bloom! [^js el dt]
@@ -450,11 +447,7 @@
       ;; Check for completion
       (when (and (:complete? m) (not (gobj/get el k-completed)))
         (gobj/set el k-completed true)
-        (.dispatchEvent el
-                        (js/CustomEvent.
-                         model/event-complete
-                         #js {:bubbles true :composed true
-                              :detail #js {:progress 100}}))
+        (du/dispatch! el model/event-complete #js {:progress 100})
         ;; Start bloom if enabled
         (when (:bloom? m)
           (start-bloom! el)))
@@ -518,11 +511,7 @@
     ;; Fire completion for static mode
     (when (and (:complete? m) (not (gobj/get el k-completed)))
       (gobj/set el k-completed true)
-      (.dispatchEvent el
-                      (js/CustomEvent.
-                       model/event-complete
-                       #js {:bubbles true :composed true
-                            :detail #js {:progress 100}}))))
+      (du/dispatch! el model/event-complete #js {:progress 100})))
   nil)
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────

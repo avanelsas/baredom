@@ -1,6 +1,7 @@
 (ns baredom.components.x-toaster.x-toaster
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-toaster.model :as model]))
 
@@ -117,14 +118,8 @@
         reason  (gobj/get child-detail "reason")
         heading (gobj/get child-detail "heading")
         message (gobj/get child-detail "message")
-        detail  (clj->js (model/dismiss-detail type reason heading message))
-        event   (js/CustomEvent.
-                 model/event-dismiss
-                 #js {:detail     detail
-                      :bubbles    true
-                      :composed   true
-                      :cancelable true})]
-    (.dispatchEvent el event)))
+        detail  (clj->js (model/dismiss-detail type reason heading message))]
+    (du/dispatch-cancelable! el model/event-dismiss detail)))
 
 ;; ── Dismiss coordination ──────────────────────────────────────────────────────
 (defn- on-toast-dismiss [^js el ^js e]

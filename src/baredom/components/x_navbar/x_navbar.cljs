@@ -438,8 +438,6 @@
   (install-string-prop! proto "alignment" model/attr-alignment)
   (install-string-prop! proto "breakpoint" model/attr-breakpoint))
 
-;; ── Element class (js* pattern — the only permitted approach) ────────────────
-
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []

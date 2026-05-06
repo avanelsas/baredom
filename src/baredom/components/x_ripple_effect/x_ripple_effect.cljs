@@ -1,6 +1,7 @@
 (ns baredom.components.x-ripple-effect.x-ripple-effect
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-ripple-effect.model :as model]))
 
@@ -132,12 +133,7 @@
         (set! (.. container -style -filter) (str "url(#" filter-id ")"))
 
         ;; Dispatch start event
-        (.dispatchEvent el
-                        (js/CustomEvent.
-                         model/event-start
-                         #js {:detail   #js {:x click-x :y click-y}
-                              :bubbles  true
-                              :composed true}))
+        (du/dispatch! el model/event-start #js {:x click-x :y click-y})
 
         (if reduced?
           ;; Reduced motion: brief flash at half intensity, then remove
@@ -148,12 +144,7 @@
                             (.setAttribute disp "scale" "0")
                             (.removeChild svg filter-el)
                             (set! (.. container -style -filter) "")
-                            (.dispatchEvent el
-                                            (js/CustomEvent.
-                                             model/event-end
-                                             #js {:detail   #js {:x click-x :y click-y}
-                                                  :bubbles  true
-                                                  :composed true}))))]
+                            (du/dispatch! el model/event-end #js {:x click-x :y click-y})))]
               (.push frames raf-id)))
 
           ;; Normal animation loop
@@ -174,12 +165,7 @@
                           ;; Clear filter style only if no other ripples active
                           (when (zero? (.-length (.-childNodes svg)))
                             (set! (.. container -style -filter) ""))
-                          (.dispatchEvent el
-                                          (js/CustomEvent.
-                                           model/event-end
-                                           #js {:detail   #js {:x click-x :y click-y}
-                                                :bubbles  true
-                                                :composed true})))
+                          (du/dispatch! el model/event-end #js {:x click-x :y click-y}))
                         ;; Continue animation
                         (let [raf-id (js/requestAnimationFrame animate)]
                           (.push frames raf-id)))))]

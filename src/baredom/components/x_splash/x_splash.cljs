@@ -1,6 +1,7 @@
 (ns baredom.components.x-splash.x-splash
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-splash.model :as model]))
 
@@ -205,13 +206,7 @@
   nil)
 
 (defn- fire-hidden-event! [^js el]
-  (let [^js ev (js/CustomEvent.
-                model/event-hidden
-                #js {:detail   #js {}
-                     :bubbles  true
-                     :composed true
-                     :cancelable false})]
-    (.dispatchEvent el ev))
+  (du/dispatch! el model/event-hidden #js {})
   nil)
 
 (defn- finish-fade-out! [^js el]

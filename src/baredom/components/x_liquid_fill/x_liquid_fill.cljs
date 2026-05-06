@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-fill.x-liquid-fill
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-liquid-fill.model :as model]))
 
@@ -382,13 +383,7 @@
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch-progress! [^js el progress velocity]
-  (let [^js ev (js/CustomEvent.
-                model/event-progress
-                #js {:detail   (clj->js (model/progress-detail progress velocity))
-                     :bubbles  true
-                     :composed true
-                     :cancelable false})]
-    (.dispatchEvent el ev))
+  (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress velocity)))
   nil)
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
