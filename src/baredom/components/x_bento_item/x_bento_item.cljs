@@ -65,10 +65,10 @@
   (render! el)
   el)
 
-(defn connected-callback [^js el]
+(defn- connected! [^js el]
   (init-element! el))
 
-(defn attribute-changed-callback [^js el _ _ _]
+(defn- attribute-changed! [^js el _ _ _]
   (if (du/initialized? el key-initialized)
     (render! el)
     (init-element! el)))
@@ -76,6 +76,6 @@
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
-     :connected-fn           connected-callback
-     :attribute-changed-fn   attribute-changed-callback
+     :connected-fn           connected!
+     :attribute-changed-fn   attribute-changed!
      }))

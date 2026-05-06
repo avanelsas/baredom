@@ -606,7 +606,7 @@
     (.addEventListener (aget state "icon-end-slot") "slotchange" rerender)
     (.addEventListener (aget state "spinner-slot") "slotchange" rerender)))
 
-(defn connected!
+(defn- connected!
   [^js el]
   (when-not (get-el-state el)
     (let [state (create-shadow! el)
@@ -623,14 +623,14 @@
   (sync-noninteractive-state! el)
   (render! el (get-el-state el)))
 
-(defn disconnected!
+(defn- disconnected!
   [^js el]
   (set-hover! el false)
   (set-focus-visible! el false)
   (set-active-source! el nil)
   (set-last-activation-source! el nil))
 
-(defn attribute-changed!
+(defn- attribute-changed!
   [^js el _name _old-value _new-value]
   (when-let [state (get-el-state el)]
     (sync-noninteractive-state! el)

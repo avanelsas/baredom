@@ -171,13 +171,13 @@
         (.setAttribute base "aria-label" label)
         (.removeAttribute base "aria-label")))))
 
-(defn connected! [^js el]
+(defn- connected! [^js el]
   (when-not (get-el-state el)
     (let [state (create-shadow! el)]
       (set-el-state! el state)))
   (render! el (get-el-state el)))
 
-(defn attribute-changed! [^js el _ _ _]
+(defn- attribute-changed! [^js el _ _ _]
   (when-let [state (get-el-state el)]
     (render! el state)))
 
