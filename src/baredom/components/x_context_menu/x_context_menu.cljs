@@ -172,8 +172,8 @@
       (.addEventListener panel "click" on-item-click))
 
     ;; store for cleanup
-    (gobj/set layer "__onKey"             on-key)
-    (gobj/set layer "__onItemClick"       on-item-click)))
+    (gobj/set layer overlay/key-on-key        on-key)
+    (gobj/set layer overlay/key-on-item-click on-item-click)))
 
 ;; ---- Document-level listeners (Escape + click-outside) ----
 

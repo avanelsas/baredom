@@ -23,6 +23,8 @@
 (def ^:private k-node-els      "__xOrganicProgressNodes")
 (def ^:private k-node-data     "__xOrganicProgressND")
 (def ^:private k-node-count    "__xOrganicProgressNN")
+(def ^:private k-bloom-dx      "__xOrganicProgressBDx")
+(def ^:private k-bloom-dy      "__xOrganicProgressBDy")
 
 ;; ── SVG namespace ───────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
@@ -366,8 +368,8 @@
             (.setAttribute circle "opacity" "0")
             (.setAttribute circle "class" "bloom-petal")
             ;; Store scatter direction
-            (gobj/set circle "__dx" dx)
-            (gobj/set circle "__dy" dy)
+            (gobj/set circle k-bloom-dx dx)
+            (gobj/set circle k-bloom-dy dy)
             (.appendChild blooms-g circle)
             (.push bloom-els circle)))))
     (gobj/set el k-bloom-els bloom-els)
@@ -409,8 +411,8 @@
             opacity       (js/Math.max 0.0 (- 1.0 (* t t)))]
         (dotimes [i (.-length bloom-els)]
           (let [^js c  (aget bloom-els i)
-                dx     (* (gobj/get c "__dx") scale 8.0)
-                dy     (* (gobj/get c "__dy") scale 8.0)]
+                dx     (* (gobj/get c k-bloom-dx) scale 8.0)
+                dy     (* (gobj/get c k-bloom-dy) scale 8.0)]
             (.setAttribute c "r" (str (* scale 2.5)))
             (.setAttribute c "opacity" (str opacity))
             (.setAttribute c "transform"

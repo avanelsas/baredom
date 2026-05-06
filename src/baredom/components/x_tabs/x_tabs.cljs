@@ -4,13 +4,13 @@
                [baredom.utils.dom :as du]
    [baredom.components.x-tabs.model :as model]))
 
-(def key-root "__x_tabs_root")
-(def key-base "__x_tabs_base")
-(def key-slot "__x_tabs_slot")
-(def key-init "__x_tabs_initialized")
-(def key-on-tab-select "__x_tabs_on_tab_select")
-(def key-on-keydown "__x_tabs_on_keydown")
-(def key-observer "__x_tabs_observer")
+(def key-root "__xTabsRoot")
+(def key-base "__xTabsBase")
+(def key-slot "__xTabsSlot")
+(def key-init "__xTabsInitialized")
+(def key-on-tab-select "__xTabsOnTabSelect")
+(def key-on-keydown "__xTabsOnKeydown")
+(def key-observer "__xTabsObserver")
 
 (def style-text
   (str

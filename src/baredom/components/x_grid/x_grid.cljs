@@ -4,9 +4,9 @@
                [baredom.utils.dom :as du]
    [baredom.components.x-grid.model :as model]))
 
-(def key-root "__x_grid_root")
-(def key-base "__x_grid_base")
-(def key-initialized "__x_grid_initialized")
+(def key-root "__xGridRoot")
+(def key-base "__xGridBase")
+(def key-initialized "__xGridInitialized")
 
 (defn read-inputs [el]
   {:columns (.getAttribute el model/attr-columns)

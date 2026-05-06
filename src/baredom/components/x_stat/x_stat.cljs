@@ -4,12 +4,12 @@
                [baredom.utils.dom :as du]
    [baredom.components.x-stat.model :as model]))
 
-(def key-root "__x_stat_root")
-(def key-base "__x_stat_base")
-(def key-label "__x_stat_label")
-(def key-value "__x_stat_value")
-(def key-hint "__x_stat_hint")
-(def key-initialized "__x_stat_initialized")
+(def key-root "__xStatRoot")
+(def key-base "__xStatBase")
+(def key-label "__xStatLabel")
+(def key-value "__xStatValue")
+(def key-hint "__xStatHint")
+(def key-initialized "__xStatInitialized")
 
 (defn read-inputs [el]
   {:variant (.getAttribute el model/attr-variant)

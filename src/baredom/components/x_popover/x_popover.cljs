@@ -638,10 +638,10 @@
         (.addEventListener p-close-btn "click"   on-close-btn)
         (.addEventListener layer       "keydown" on-escape true)
         (.addEventListener layer       "click"   on-backdrop)
-        (gobj/set layer "__onKey"           on-escape)
-        (gobj/set layer "__onClickBackdrop" on-backdrop)
-        (gobj/set layer "__onCloseBtn"      on-close-btn)
-        (gobj/set layer "__closeBtnEl"      p-close-btn))
+        (gobj/set layer overlay/key-on-key            on-escape)
+        (gobj/set layer overlay/key-on-click-backdrop on-backdrop)
+        (gobj/set layer overlay/key-on-close-btn      on-close-btn)
+        (gobj/set layer overlay/key-close-btn-el      p-close-btn))
 
       (gobj/set el k-layer layer)
 

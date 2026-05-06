@@ -4,11 +4,11 @@
                [baredom.utils.dom :as du]
    [baredom.components.x-card.model :as model]))
 
-(def key-root "__x_card_root")
-(def key-style "__x_card_style")
-(def key-base "__x_card_base")
-(def key-slot "__x_card_slot")
-(def key-initialized "__x_card_initialized")
+(def key-root "__xCardRoot")
+(def key-style "__xCardStyle")
+(def key-base "__xCardBase")
+(def key-slot "__xCardSlot")
+(def key-initialized "__xCardInitialized")
 
 (defn shadow-root-of [^js el]
   (du/getv el key-root))
