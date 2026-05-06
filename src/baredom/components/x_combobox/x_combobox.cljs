@@ -13,6 +13,7 @@
 (def ^:private k-active-idx "__xComboboxActiveIdx")
 (def ^:private k-query      "__xComboboxQuery")
 (def ^:private k-listbox-id "__xComboboxListboxId")
+(def ^:private k-model      "__xComboboxModel")
 (def ^:private opt-id-prefix "x-cb-opt-")
 
 ;; ---------------------------------------------------------------------------
@@ -410,16 +411,14 @@
             (.removeAttribute input-el "aria-activedescendant")))))))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-model! [^js el {:keys [value placeholder disabled? open? placement] :as m}]
   (when-let [refs (du/getv el k-refs)]
-    (let [{:keys [value placeholder disabled? open? placement]}
-          (read-model el)
-          ^js input-el   (gobj/get refs "input")
-          ^js panel-el   (gobj/get refs "panel")
-          options        (du/getv el k-options)
-          selected-opt   (model/find-option-by-value options value)]
+    (let [^js input-el (gobj/get refs "input")
+          ^js panel-el (gobj/get refs "panel")
+          options      (du/getv el k-options)
+          selected-opt (model/find-option-by-value options value)]
 
       (set! (.-placeholder input-el) placeholder)
       (set! (.-disabled input-el) disabled?)
@@ -434,7 +433,19 @@
       ;; data-has-value drives clear button visibility via CSS
       (if (not= value "")
         (du/set-attr! el "data-has-value" "")
-        (.removeAttribute el "data-has-value")))))
+        (.removeAttribute el "data-has-value"))
+
+      ;; Re-render panel when open so option highlights reflect new value
+      (when open?
+        (render-panel! el))
+
+      (du/setv! el k-model m))))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
@@ -451,27 +462,24 @@
     (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open true :source source})]
       (when allowed?
-        (.setAttribute el model/attr-open "")
-        ;; Reset query and active index
+        ;; Reset internal state before setAttribute so the synchronous
+        ;; attribute-changed! → apply-model! → render-panel! sees cleared state.
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
+        (.setAttribute el model/attr-open "")
         ;; Select input text so user can type immediately
         (when-let [refs (du/getv el k-refs)]
           (let [^js input-el (gobj/get refs "input")]
-            (.select input-el)))
-        (render-panel! el)
-        (add-doc-listeners! el)))))
+            (.select input-el)))))))
 
 (defn- close-panel! [^js el source]
   (when (du/has-attr? el model/attr-open)
     (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open false :source source})]
       (when allowed?
-        (.removeAttribute el model/attr-open)
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (remove-doc-listeners! el)
-        (render! el)))))
+        (.removeAttribute el model/attr-open)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Selection
@@ -630,9 +638,11 @@
 
         on-slotchange
         (fn [^js _evt]
+          ;; Slot contents changed — selected label may need to be re-resolved.
+          ;; Invalidate the cached model so the next apply re-renders.
           (sync-options! el)
-          (when (du/has-attr? el model/attr-open)
-            (render-panel! el)))
+          (du/setv! el k-model nil)
+          (update-from-attrs! el))
 
         on-doc-click
         (fn [^js evt]
@@ -715,15 +725,18 @@
   (du/setv! el k-handlers (make-handlers el))
   (add-static-listeners! el)
   (sync-options! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-static-listeners! el)
-  (remove-doc-listeners! el))
+  (remove-doc-listeners! el)
+  ;; Clear cached model so a future reconnect always re-applies — slot
+  ;; contents (option labels) may have changed while disconnected.
+  (du/setv! el k-model nil))
 
 (defn- attribute-changed! [^js el attr-name _old _new]
   (when (du/getv el k-refs)
-    (render! el)
+    (update-from-attrs! el)
     (when (= attr-name model/attr-open)
       (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)

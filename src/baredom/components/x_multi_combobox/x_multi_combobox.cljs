@@ -15,6 +15,7 @@
 (def ^:private k-active-idx "__xMultiComboboxActiveIdx")
 (def ^:private k-query      "__xMultiComboboxQuery")
 (def ^:private k-listbox-id "__xMultiComboboxListboxId")
+(def ^:private k-model      "__xMultiComboboxModel")
 (def ^:private opt-id-prefix "x-mcb-opt-")
 
 ;; ---------------------------------------------------------------------------
@@ -353,13 +354,11 @@
 ;; ---------------------------------------------------------------------------
 ;; Chip rendering
 ;; ---------------------------------------------------------------------------
-(defn- render-chips! [^js el]
+(defn- render-chips! [^js el value-set disabled?]
   (when-let [refs (du/getv el k-refs)]
     (let [^js chip-area (gobj/get refs "chipArea")
           ^js input-el  (gobj/get refs "input")
-          value-set     (:value (read-model el))
-          options       (du/getv el k-options)
-          disabled?     (du/has-attr? el model/attr-disabled)]
+          options       (du/getv el k-options)]
 
       ;; Remove existing chips (keep input)
       (loop []
@@ -389,8 +388,9 @@
           ^js input-el (gobj/get refs "input")
           options      (du/getv el k-options)
           query        (or (du/getv el k-query) "")
-          value-set    (:value (read-model el))
-          max-val      (:max (read-model el))
+          m            (read-model el)
+          value-set    (:value m)
+          max-val      (:max m)
           at-max?      (model/max-reached? value-set max-val)
           visible      (model/filter-options options query value-set)
           raw-idx      (or (du/getv el k-active-idx) 0)
@@ -433,13 +433,11 @@
             (.removeAttribute input-el "aria-activedescendant")))))))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-model! [^js el {:keys [value placeholder disabled? open? placement] :as m}]
   (when-let [refs (du/getv el k-refs)]
-    (let [{:keys [value placeholder disabled? open? placement]}
-          (read-model el)
-          ^js input-el (gobj/get refs "input")
+    (let [^js input-el (gobj/get refs "input")
           ^js panel-el (gobj/get refs "panel")]
 
       ;; Show placeholder only when no chips
@@ -454,7 +452,19 @@
       (when-not open?
         (set! (.-value input-el) ""))
 
-      (render-chips! el))))
+      (render-chips! el value disabled?)
+
+      ;; Re-render panel when open so option list reflects new value/max
+      (when open?
+        (render-panel! el))
+
+      (du/setv! el k-model m))))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Open / Close (forward declarations)
@@ -468,29 +478,28 @@
     (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open true :source source})]
       (when allowed?
-        (.setAttribute el model/attr-open "")
+        ;; Reset internal state before setAttribute so the synchronous
+        ;; attribute-changed! → apply-model! → render-panel! sees cleared state.
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (render-panel! el)
-        (add-doc-listeners! el)))))
+        (.setAttribute el model/attr-open "")))))
 
 (defn- close-panel! [^js el source]
   (when (du/has-attr? el model/attr-open)
     (let [allowed? (du/dispatch-cancelable! el model/event-toggle
                                          #js {:open false :source source})]
       (when allowed?
-        (.removeAttribute el model/attr-open)
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (remove-doc-listeners! el)
-        (render! el)))))
+        (.removeAttribute el model/attr-open)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Add / Remove items
 ;; ---------------------------------------------------------------------------
 (defn- add-item! [^js el item-value]
-  (let [value-set  (:value (read-model el))
-        max-val    (:max (read-model el))]
+  (let [m         (read-model el)
+        value-set (:value m)
+        max-val   (:max m)]
     (when-not (or (contains? value-set item-value)
                   (model/max-reached? value-set max-val))
       (let [new-set  (conj value-set item-value)
@@ -499,16 +508,14 @@
                       el model/event-change-request
                       #js {:value new-arr :action "add" :item item-value})]
         (when allowed?
-          (let [serialized (model/serialize-value new-set)]
-            (.setAttribute el model/attr-value serialized)
-            (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))
-          ;; Clear query and re-render panel (item now hidden)
+          ;; Reset internal state before setAttribute so the synchronous
+          ;; attribute-changed! → apply-model! sees the cleared query.
           (du/setv! el k-query "")
           (du/setv! el k-active-idx 0)
           (when-let [refs (du/getv el k-refs)]
             (set! (.-value (gobj/get refs "input")) ""))
-          (render-panel! el)
-          (render-chips! el))))))
+          (.setAttribute el model/attr-value (model/serialize-value new-set))
+          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
 
 (defn- remove-item! [^js el item-value]
   (let [value-set (:value (read-model el))]
@@ -522,10 +529,7 @@
           (if (empty? new-set)
             (.removeAttribute el model/attr-value)
             (.setAttribute el model/attr-value (model/serialize-value new-set)))
-          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))})
-          (render-chips! el)
-          (when (du/has-attr? el model/attr-open)
-            (render-panel! el)))))))
+          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -671,10 +675,11 @@
 
         on-slotchange
         (fn [^js _evt]
+          ;; Slot contents changed — option labels may differ. Invalidate the
+          ;; cached model so the next apply re-renders chips and panel.
           (sync-options! el)
-          (render-chips! el)
-          (when (du/has-attr? el model/attr-open)
-            (render-panel! el)))
+          (du/setv! el k-model nil)
+          (update-from-attrs! el))
 
         on-doc-click
         (fn [^js evt]
@@ -757,15 +762,18 @@
   (du/setv! el k-handlers (make-handlers el))
   (add-static-listeners! el)
   (sync-options! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-static-listeners! el)
-  (remove-doc-listeners! el))
+  (remove-doc-listeners! el)
+  ;; Clear cached model so a future reconnect always re-applies — slot
+  ;; contents (option labels) may have changed while disconnected.
+  (du/setv! el k-model nil))
 
 (defn- attribute-changed! [^js el attr-name _old _new]
   (when (du/getv el k-refs)
-    (render! el)
+    (update-from-attrs! el)
     (when (= attr-name model/attr-open)
       (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)
