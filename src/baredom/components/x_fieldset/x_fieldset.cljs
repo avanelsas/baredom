@@ -213,8 +213,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "legend" model/attr-legend)
-  (du/define-bool-prop! proto "disabled" model/attr-disabled))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

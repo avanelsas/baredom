@@ -358,9 +358,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "disabled" model/attr-disabled)
-  (du/define-bool-prop!   proto "required" model/attr-required)
-  (du/define-string-prop! proto "value"    model/attr-value))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

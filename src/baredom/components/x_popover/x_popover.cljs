@@ -826,13 +826,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"       model/attr-open)
-  (du/define-bool-prop!   proto "disabled"   model/attr-disabled)
-  (du/define-bool-prop!   proto "noClose"    model/attr-no-close)
-  (du/define-bool-prop!   proto "portal"     model/attr-portal)
-  (du/define-string-prop! proto "placement"  model/attr-placement)
-  (du/define-string-prop! proto "heading"    model/attr-heading)
-  (du/define-string-prop! proto "closeLabel" model/attr-close-label)
+  (du/install-properties! proto model/property-api)
+  ;; Methods
   (aset proto "show"
         (fn [] (this-as ^js this (do-open! this "programmatic"))))
   (aset proto "hide"

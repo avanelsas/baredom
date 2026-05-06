@@ -1022,15 +1022,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop! proto "disabled" model/attr-disabled)
-  (du/define-bool-prop! proto "readOnly" model/attr-readonly)
-  (du/define-bool-prop! proto "alpha"    model/attr-alpha)
-  (du/define-bool-prop! proto "open"     model/attr-open)
-  (du/define-string-prop! proto "value"    model/attr-value)
-  (du/define-string-prop! proto "swatches" model/attr-swatches)
-  (du/define-string-prop! proto "name"     model/attr-name)
-  (du/define-string-prop! proto "mode"     model/attr-mode)
-  (du/define-string-prop! proto "label"    model/attr-label))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

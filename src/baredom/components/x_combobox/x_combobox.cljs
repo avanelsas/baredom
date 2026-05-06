@@ -750,13 +750,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "value"       model/attr-value)
-  (du/define-string-prop! proto "placeholder" model/attr-placeholder)
-  (du/define-string-prop! proto "name"        model/attr-name)
-  (du/define-string-prop! proto "placement"   model/attr-placement)
-  (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
-  (du/define-bool-prop!   proto "required"    model/attr-required)
-  (du/define-bool-prop!   proto "open"        model/attr-open)
+  (du/install-properties! proto model/property-api)
+  ;; Methods (not data — installed alongside)
   (aset proto "show"
         (fn [] (this-as ^js this (open-panel! this "programmatic"))))
   (aset proto "hide"

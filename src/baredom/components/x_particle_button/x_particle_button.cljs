@@ -1235,9 +1235,7 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop! proto "disabled" model/attr-disabled)
-  (du/define-bool-prop! proto "loading"  model/attr-loading)
-  (du/define-bool-prop! proto "pressed"  model/attr-pressed))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

@@ -385,10 +385,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"      model/attr-open)
-  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-  (du/define-string-prop! proto "label"     model/attr-label)
-  (du/define-string-prop! proto "placement" model/attr-placement)
+  (du/install-properties! proto model/property-api)
+  ;; Methods
   (aset proto "show"
         (fn [] (this-as ^js this
                         (when-not (du/has-attr? this model/attr-open)

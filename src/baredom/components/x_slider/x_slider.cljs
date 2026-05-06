@@ -421,16 +421,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-  (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
-  (du/define-bool-prop!   proto "showValue" model/attr-show-value)
-  (du/define-string-prop! proto "value" model/attr-value)
-  (du/define-string-prop! proto "min"   model/attr-min)
-  (du/define-string-prop! proto "max"   model/attr-max)
-  (du/define-string-prop! proto "step"  model/attr-step)
-  (du/define-string-prop! proto "name"  model/attr-name)
-  (du/define-string-prop! proto "label" model/attr-label)
-  (du/define-string-prop! proto "size"  model/attr-size))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

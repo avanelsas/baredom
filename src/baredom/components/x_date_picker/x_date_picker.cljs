@@ -893,14 +893,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "mode"      model/attr-mode)
-  (du/define-string-prop! proto "value"     model/attr-value)
-  (du/define-string-prop! proto "start"     model/attr-start)
-  (du/define-string-prop! proto "end"       model/attr-end)
-  (du/define-bool-prop!   proto "open"      "open")
-  (du/define-bool-prop!   proto "disabled"  model/attr-disabled)
-  (du/define-bool-prop!   proto "readOnly"  model/attr-readonly)
-  (du/define-bool-prop!   proto "required"  model/attr-required)
+  (du/install-properties! proto model/property-api)
   (define-methods! proto))
 
 (defn init! []
