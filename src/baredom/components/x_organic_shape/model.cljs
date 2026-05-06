@@ -69,6 +69,10 @@
     default-ratio))
 
 (defn normalize-path [s]
+  ;; `path` here holds a CSS clip-path value (e.g. `circle(50%)`,
+  ;; `polygon(...)`), NOT an SVG `d` path. CSS clip-path syntax uses
+  ;; characters (parens, %) that mu/sanitize-svg-path-d would strip,
+  ;; so we just trim. The browser performs its own CSS-value parsing.
   (when (and (string? s) (not= "" (.trim s)))
     (.trim s)))
 
