@@ -395,19 +395,19 @@
         (.removeEventListener js/window "resize" (gobj/get handlers "onResize")))
       (gobj/set instance "_listening" false))))
 
-(defn connected-callback
+(defn- connected!
   [instance]
   (ensure-shadow! instance)
   (bind-handlers! instance)
   (add-listeners! instance)
   (render! instance))
 
-(defn disconnected-callback
+(defn- disconnected!
   [instance]
   (remove-listeners! instance)
   (deactivate-focus-trap! instance))
 
-(defn attribute-changed-callback
+(defn- attribute-changed!
   [instance _name old-value new-value]
   (when (not= old-value new-value)
     (render! instance)))
@@ -439,7 +439,7 @@
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
-     :connected-fn           connected-callback
-     :disconnected-fn        disconnected-callback
-     :attribute-changed-fn   attribute-changed-callback
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))

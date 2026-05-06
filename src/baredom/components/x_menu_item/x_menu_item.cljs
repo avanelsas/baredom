@@ -186,15 +186,15 @@
   (render! el)
   el)
 
-(defn connected-callback [^js el]
+(defn- connected! [^js el]
   (if (du/initialized? el key-init)
     (do (install-listeners! el) (render! el))
     (init-element! el)))
 
-(defn disconnected-callback [^js el]
+(defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn attribute-changed-callback [^js el _name _old _new]
+(defn- attribute-changed! [^js el _name _old _new]
   (when (du/initialized? el key-init)
     (render! el)))
 
@@ -223,7 +223,7 @@
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
-     :connected-fn           connected-callback
-     :disconnected-fn        disconnected-callback
-     :attribute-changed-fn   attribute-changed-callback
+     :connected-fn           connected!
+     :disconnected-fn        disconnected!
+     :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))
