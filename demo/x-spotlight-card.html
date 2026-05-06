@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-spotlight-card demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --surface-bg: rgba(255, 255, 255, 0.88);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --hero-bg:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 32%),
+          radial-gradient(circle at top right, rgba(139, 92, 246, 0.10), transparent 28%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        --accent: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.12);
+        --muted: #64748b;
+        --page-fg: #0f172a;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface-bg: rgba(15, 23, 42, 0.82);
+          --surface-border: rgba(51, 65, 85, 0.88);
+          --surface-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+          --hero-bg:
+            radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), transparent 34%),
+            radial-gradient(circle at top right, rgba(139, 92, 246, 0.18), transparent 26%),
+            linear-gradient(180deg, #020617 0%, #0f172a 100%);
+          --accent: #93c5fd;
+          --accent-soft: rgba(96, 165, 250, 0.14);
+          --muted: #94a3b8;
+          --page-fg: #f1f5f9;
+        }
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { min-height: 100%; margin: 0; }
+
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--hero-bg);
+        color: var(--page-fg);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+
+      .hero { margin-bottom: 28px; }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .stack { display: grid; gap: 20px; }
+
+      .section-card {
+        background: var(--surface-bg);
+        border: 1px solid var(--surface-border);
+        border-radius: 24px;
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 22px;
+      }
+
+      .section-card h2,
+      .section-card h3 { margin-top: 0; }
+
+      .section-card > p { color: var(--muted); }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .card-content { display: grid; gap: 8px; min-height: 140px; }
+
+      .card-title { margin: 0; font-size: 1rem; line-height: 1.2; }
+
+      .card-body {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        margin: 18px 0 6px;
+      }
+
+      .controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .controls select,
+      .controls input[type="checkbox"] {
+        font: inherit;
+      }
+
+      .note {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Web Component · Visual Effect</div>
+        <h1 style="margin: 8px 0 6px;">x-spotlight-card</h1>
+        <p class="subtitle">
+          A card surface with a soft radial spotlight that follows the cursor.
+          Decorative — does not change keyboard or click semantics. Respects
+          <code>prefers-reduced-motion</code> by falling back to a centred,
+          static spotlight.
+        </p>
+      </section>
+
+      <section class="stack">
+        <section class="section-card">
+          <h2>Variants</h2>
+          <p>Two surface treatments: an elevated drop-shadow card and a flat bordered card.</p>
+
+          <div class="card-grid">
+            <x-spotlight-card variant="elevated" color="primary">
+              <div class="card-content">
+                <h3 class="card-title">Elevated · primary</h3>
+                <p class="card-body">Shadowed surface with a blue spotlight. Hover to follow.</p>
+              </div>
+            </x-spotlight-card>
+
+            <x-spotlight-card variant="bordered" color="primary">
+              <div class="card-content">
+                <h3 class="card-title">Bordered · primary</h3>
+                <p class="card-body">Flat surface with a 1px border.</p>
+              </div>
+            </x-spotlight-card>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Colours</h2>
+          <p>Eight theme tokens map to <code>--x-spotlight-card-color</code>.</p>
+
+          <div class="card-grid">
+            <x-spotlight-card color="primary">
+              <div class="card-content"><h3 class="card-title">primary</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="secondary">
+              <div class="card-content"><h3 class="card-title">secondary</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="success">
+              <div class="card-content"><h3 class="card-title">success</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="warning">
+              <div class="card-content"><h3 class="card-title">warning</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="danger">
+              <div class="card-content"><h3 class="card-title">danger</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="info">
+              <div class="card-content"><h3 class="card-title">info</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="accent">
+              <div class="card-content"><h3 class="card-title">accent</h3></div>
+            </x-spotlight-card>
+            <x-spotlight-card color="neutral">
+              <div class="card-content"><h3 class="card-title">neutral</h3></div>
+            </x-spotlight-card>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <h2>Live controls</h2>
+          <p>Adjust intensity, size, and the static-spotlight flag and watch the card update.</p>
+
+          <div class="controls">
+            <label>
+              Color
+              <select id="ctrl-color">
+                <option>primary</option>
+                <option>secondary</option>
+                <option>success</option>
+                <option>warning</option>
+                <option>danger</option>
+                <option>info</option>
+                <option selected>accent</option>
+                <option>neutral</option>
+              </select>
+            </label>
+            <label>
+              Intensity
+              <select id="ctrl-intensity">
+                <option>soft</option>
+                <option selected>medium</option>
+                <option>strong</option>
+              </select>
+            </label>
+            <label>
+              Size
+              <select id="ctrl-size">
+                <option>sm</option>
+                <option selected>md</option>
+                <option>lg</option>
+                <option>xl</option>
+              </select>
+            </label>
+            <label>
+              <input type="checkbox" id="ctrl-static" />
+              Static
+            </label>
+          </div>
+
+          <div class="card-grid">
+            <x-spotlight-card id="live-card" variant="elevated" color="accent" intensity="medium" size="md">
+              <div class="card-content">
+                <h3 class="card-title">Live preview</h3>
+                <p class="card-body">
+                  Move your cursor across this card to see the spotlight follow.
+                  Toggle <code>static</code> to keep it centred.
+                </p>
+              </div>
+            </x-spotlight-card>
+          </div>
+
+          <p class="note">
+            Tip: enable “Reduce motion” in your OS settings — the spotlight will
+            stay centred without pointer tracking, matching the <code>static</code> flag.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var card = document.getElementById("live-card");
+        var color = document.getElementById("ctrl-color");
+        var intensity = document.getElementById("ctrl-intensity");
+        var size = document.getElementById("ctrl-size");
+        var staticToggle = document.getElementById("ctrl-static");
+
+        color.addEventListener("change", function () {
+          card.color = color.value;
+        });
+        intensity.addEventListener("change", function () {
+          card.intensity = intensity.value;
+        });
+        size.addEventListener("change", function () {
+          card.size = size.value;
+        });
+        staticToggle.addEventListener("change", function () {
+          card.static = staticToggle.checked;
+        });
+      })();
+    </script>
+  </body>
+</html>

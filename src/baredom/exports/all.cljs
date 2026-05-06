@@ -77,6 +77,7 @@
    [baredom.exports.x-scroll-timeline :as x-scroll-timeline]
    [baredom.exports.x-scroll-stack   :as x-scroll-stack]
    [baredom.exports.x-splash         :as x-splash]
+   [baredom.exports.x-spotlight-card :as x-spotlight-card]
    [baredom.exports.x-metaball-cursor :as x-metaball-cursor]
    [baredom.exports.x-neural-glow    :as x-neural-glow]
    [baredom.exports.x-organic-progress :as x-organic-progress]
@@ -174,6 +175,7 @@
   (x-scroll-timeline/register!)
   (x-scroll-stack/register!)
   (x-splash/register!)
+  (x-spotlight-card/register!)
   (x-metaball-cursor/register!)
   (x-neural-glow/register!)
   (x-organic-progress/register!)
