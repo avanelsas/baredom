@@ -324,6 +324,8 @@
   nil)
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
+;; Strings here use stricter empty-string semantics: setting to "" removes the
+;; attribute (du/define-string-prop! would keep "" as the attribute value).
 (defn- define-string-attr-prop! [^js proto prop-name attr-name]
   (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
@@ -344,18 +346,7 @@
   (define-string-attr-prop! proto "fit"      model/attr-fit)
   (define-string-attr-prop! proto "position" model/attr-position)
   (define-string-attr-prop! proto "loading"  model/attr-loading)
-
-  (.defineProperty js/Object proto "decorative"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-decorative)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-decorative "")
-                                          (.removeAttribute this model/attr-decorative))))
-                        :enumerable  true
-                        :configurable true})
+  (du/define-bool-prop!     proto "decorative" model/attr-decorative)
 
   (.defineProperty js/Object proto "naturalWidth"
                    #js {:get (fn []

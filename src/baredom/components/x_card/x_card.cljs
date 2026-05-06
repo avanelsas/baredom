@@ -259,35 +259,8 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (.defineProperty
-   js/Object
-   proto
-   "interactive"
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as this
-                        (.hasAttribute this model/attr-interactive)))
-        :set (fn [value]
-               (this-as this
-                        (if value
-                          (.setAttribute this model/attr-interactive "")
-                          (.removeAttribute this model/attr-interactive))))})
-
-  (.defineProperty
-   js/Object
-   proto
-   "disabled"
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as this
-                        (.hasAttribute this model/attr-disabled)))
-        :set (fn [value]
-               (this-as this
-                        (if value
-                          (.setAttribute this model/attr-disabled "")
-                          (.removeAttribute this model/attr-disabled))))}))
+  (du/define-bool-prop! proto "interactive" model/attr-interactive)
+  (du/define-bool-prop! proto "disabled"    model/attr-disabled))
 
 (defn init! []
   (component/register! model/tag-name

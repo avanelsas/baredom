@@ -681,16 +681,7 @@
 (defn- install-property-accessors! [^js proto]
   ;; Boolean properties (presence = true)
   (doseq [attr [model/attr-autoplay model/attr-loop model/attr-disabled]]
-    (.defineProperty js/Object proto attr
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                          (.hasAttribute this attr)))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                          (if v
-                                            (.setAttribute this attr "")
-                                            (.removeAttribute this attr))))
-                          :enumerable true :configurable true}))
+    (du/define-bool-prop! proto attr attr))
 
   ;; Default-true boolean properties (arrows, dots)
   (doseq [attr [model/attr-arrows model/attr-dots]]

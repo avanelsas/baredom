@@ -768,18 +768,7 @@
 
 ;; ---- Property descriptors ----
 
-(defn- define-str-prop! [^js proto prop-name attr-name]
-  (.defineProperty
-   js/Object proto prop-name
-   #js {:configurable true
-        :enumerable   true
-        :get (fn [] (this-as ^js this (.getAttribute this attr-name)))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (some? v)
-                          (.setAttribute this attr-name (str v))
-                          (.removeAttribute this attr-name))))}))
-
+;; Numeric properties use model/parse-int-pos — keep as inline custom accessor
 (defn- define-num-prop! [^js proto prop-name attr-name default-val]
   (.defineProperty
    js/Object proto prop-name
@@ -815,16 +804,16 @@
 ;; ---- Element class + registration ----
 
 (defn- install-property-accessors! [^js proto]
-  (define-str-prop!  proto "type"     model/attr-type)
-  (define-str-prop!  proto "cursor"   model/attr-cursor)
-  (define-str-prop!  proto "selected" model/attr-selected)
-  (define-num-prop!  proto "height"   model/attr-height  model/default-height)
-  (define-num-prop!  proto "padding"  model/attr-padding model/default-padding)
-  (du/define-bool-prop! proto "grid"     model/attr-grid)
-  (du/define-bool-prop! proto "axes"     model/attr-axes)
-  (du/define-bool-prop! proto "tooltip"  model/attr-tooltip)
-  (du/define-bool-prop! proto "disabled" model/attr-disabled)
-  (du/define-bool-prop! proto "loading"  model/attr-loading)
+  (du/define-string-prop! proto "type"     model/attr-type)
+  (du/define-string-prop! proto "cursor"   model/attr-cursor)
+  (du/define-string-prop! proto "selected" model/attr-selected)
+  (define-num-prop!       proto "height"   model/attr-height  model/default-height)
+  (define-num-prop!       proto "padding"  model/attr-padding model/default-padding)
+  (du/define-bool-prop!   proto "grid"     model/attr-grid)
+  (du/define-bool-prop!   proto "axes"     model/attr-axes)
+  (du/define-bool-prop!   proto "tooltip"  model/attr-tooltip)
+  (du/define-bool-prop!   proto "disabled" model/attr-disabled)
+  (du/define-bool-prop!   proto "loading"  model/attr-loading)
   (define-data-prop! proto))
 
 (defn init! []

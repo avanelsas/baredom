@@ -423,19 +423,11 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; text (string)
-  (.defineProperty js/Object proto model/attr-text
-    #js {:get (fn []
-                (this-as ^js this
-                  (or (.getAttribute this model/attr-text) "")))
-         :set (fn [v]
-                (this-as ^js this
-                  (if (nil? v)
-                    (.removeAttribute this model/attr-text)
-                    (.setAttribute this model/attr-text (str v)))))
-         :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-text model/attr-text "")
+  (du/define-string-prop! proto model/attr-mode model/attr-mode "bulge")
+  (du/define-bool-prop!   proto "perChar"       model/attr-per-char)
 
-  ;; trigger (string)
+  ;; trigger (string with model/parse-trigger getter)
   (.defineProperty js/Object proto model/attr-trigger
     #js {:get (fn []
                 (this-as ^js this
@@ -445,29 +437,6 @@
                   (if (nil? v)
                     (.removeAttribute this model/attr-trigger)
                     (.setAttribute this model/attr-trigger (str v)))))
-         :enumerable true :configurable true})
-
-  ;; mode (string)
-  (.defineProperty js/Object proto model/attr-mode
-    #js {:get (fn []
-                (this-as ^js this
-                  (or (.getAttribute this model/attr-mode) "bulge")))
-         :set (fn [v]
-                (this-as ^js this
-                  (if (nil? v)
-                    (.removeAttribute this model/attr-mode)
-                    (.setAttribute this model/attr-mode (str v)))))
-         :enumerable true :configurable true})
-
-  ;; perChar (boolean, maps to per-char attribute)
-  (.defineProperty js/Object proto "perChar"
-    #js {:get (fn []
-                (this-as ^js this (.hasAttribute this model/attr-per-char)))
-         :set (fn [v]
-                (this-as ^js this
-                  (if v
-                    (.setAttribute this model/attr-per-char "")
-                    (.removeAttribute this model/attr-per-char))))
          :enumerable true :configurable true})
 
   ;; mass (number)

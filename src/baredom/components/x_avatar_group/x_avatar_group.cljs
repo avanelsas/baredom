@@ -1,6 +1,7 @@
 (ns baredom.components.x-avatar-group.x-avatar-group
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-avatar-group.model :as model]))
 
@@ -184,40 +185,7 @@
   nil)
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-string-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.getAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-string-prop-default! [^js proto attr default]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
-(defn- def-bool-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; max uses model/parse-max for getter — keep as inline custom accessor
 (defn- def-int-prop! [^js proto attr]
   (.defineProperty js/Object proto attr
                    #js {:get (fn []
@@ -231,12 +199,12 @@
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
-  (def-string-prop-default! proto model/attr-size      model/default-size)
-  (def-string-prop-default! proto model/attr-overlap   model/default-overlap)
-  (def-string-prop-default! proto model/attr-direction model/default-direction)
-  (def-string-prop! proto model/attr-label)
-  (def-bool-prop!   proto model/attr-disabled)
-  (def-int-prop!    proto model/attr-max))
+  (du/define-string-prop! proto model/attr-size      model/attr-size      model/default-size)
+  (du/define-string-prop! proto model/attr-overlap   model/attr-overlap   model/default-overlap)
+  (du/define-string-prop! proto model/attr-direction model/attr-direction model/default-direction)
+  (du/define-string-prop! proto model/attr-label     model/attr-label)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled)
+  (def-int-prop!          proto model/attr-max))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

@@ -1,5 +1,6 @@
 (ns baredom.components.x-gaussian-blur.x-gaussian-blur
   (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-gaussian-blur.model :as model]))
 
@@ -245,39 +246,15 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; String attributes: colors, blur, speed, count, size, opacity, animation, blend
-  (doseq [[prop-name attr-name default-val]
-          [["colors"    model/attr-colors    model/default-colors]
-           ["blur"      model/attr-blur      "60"]
-           ["speed"     model/attr-speed     "medium"]
-           ["count"     model/attr-count     "5"]
-           ["size"      model/attr-size      "medium"]
-           ["opacity"   model/attr-opacity   "0.7"]
-           ["animation" model/attr-animation model/default-animation]
-           ["blend"     model/attr-blend     model/default-blend]]]
-    (.defineProperty js/Object proto prop-name
-                     #js {:get (fn []
-                                (this-as ^js this
-                                         (or (.getAttribute this attr-name)
-                                             default-val)))
-                          :set (fn [v]
-                                (this-as ^js this
-                                         (if (and (string? v) (not= "" v))
-                                           (.setAttribute this attr-name v)
-                                           (.removeAttribute this attr-name))))
-                          :enumerable true :configurable true}))
-
-  ;; Boolean attribute: paused
-  (.defineProperty js/Object proto "paused"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-paused)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-paused "")
-                                          (.removeAttribute this model/attr-paused))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto "colors"    model/attr-colors    model/default-colors)
+  (du/define-string-prop! proto "blur"      model/attr-blur      "60")
+  (du/define-string-prop! proto "speed"     model/attr-speed     "medium")
+  (du/define-string-prop! proto "count"     model/attr-count     "5")
+  (du/define-string-prop! proto "size"      model/attr-size      "medium")
+  (du/define-string-prop! proto "opacity"   model/attr-opacity   "0.7")
+  (du/define-string-prop! proto "animation" model/attr-animation model/default-animation)
+  (du/define-string-prop! proto "blend"     model/attr-blend     model/default-blend)
+  (du/define-bool-prop!   proto "paused"    model/attr-paused))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────
