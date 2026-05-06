@@ -11,7 +11,7 @@
 (def key-hint "__xStatHint")
 (def key-initialized "__xStatInitialized")
 
-(defn read-inputs [el]
+(defn read-inputs [^js el]
   {:variant (.getAttribute el model/attr-variant)
    :align (.getAttribute el model/attr-align)
    :size (.getAttribute el model/attr-size)
@@ -23,17 +23,17 @@
    :hint (.getAttribute el model/attr-hint)})
 
 (defn set-or-remove!
-  [el attr value]
+  [^js el attr value]
   (if value
     (.setAttribute el attr value)
     (.removeAttribute el attr)))
 
-(defn apply-host-a11y! [el state]
+(defn apply-host-a11y! [^js el state]
   (.setAttribute el "role" "figure")
   (set-or-remove! el "aria-busy" (:aria-busy state))
   (set-or-remove! el "aria-label" (:label state)))
 
-(defn apply-state! [base state]
+(defn apply-state! [^js base state]
 
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-align" (:align state))
@@ -45,12 +45,12 @@
     (.setAttribute base "data-loading" "true")
     (.removeAttribute base "data-loading")))
 
-(defn render! [el]
+(defn render! [^js el]
   (let [state (model/derive-state (read-inputs el))
-        base (du/getv el key-base)
-        label-node (du/getv el key-label)
-        value-node (du/getv el key-value)
-        hint-node (du/getv el key-hint)]
+        ^js base (du/getv el key-base)
+        ^js label-node (du/getv el key-label)
+        ^js value-node (du/getv el key-value)
+        ^js hint-node (du/getv el key-hint)]
     (when base
       (apply-host-a11y! el state)
       (apply-state! base state)
@@ -129,7 +129,7 @@
    "@media (prefers-reduced-motion:reduce){"
    "[part=base]{transition:none;}}"))
 
-(defn init-dom! [el]
+(defn init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style-el (.createElement js/document "style")
         base (.createElement js/document "div")
@@ -186,7 +186,7 @@
     (du/setv! el key-value value-span)
     (du/setv! el key-hint hint-span)))
 
-(defn init-element! [el]
+(defn init-element! [^js el]
 
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)
@@ -195,10 +195,10 @@
   (render! el)
   el)
 
-(defn connected-callback [el]
+(defn connected-callback [^js el]
   (init-element! el))
 
-(defn attribute-changed-callback [el _ _ _]
+(defn attribute-changed-callback [^js el _ _ _]
   (if (du/initialized? el key-initialized)
     (render! el)
     (init-element! el)))

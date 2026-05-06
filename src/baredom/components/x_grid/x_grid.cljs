@@ -8,7 +8,7 @@
 (def key-base "__xGridBase")
 (def key-initialized "__xGridInitialized")
 
-(defn read-inputs [el]
+(defn read-inputs [^js el]
   {:columns (.getAttribute el model/attr-columns)
    :min-column-size (.getAttribute el model/attr-min-column-size)
    :gap (.getAttribute el model/attr-gap)
@@ -41,7 +41,7 @@
   }
   ")
 
-(defn apply-state! [base state]
+(defn apply-state! [^js base state]
   (let [^js style (.-style base)]
     (.setAttribute base "data-gap" (:gap state))
 
@@ -52,7 +52,7 @@
     (.setProperty style "--x-grid-justify-items" (:justify-items state))
     (.setProperty style "--x-grid-auto-flow" (:auto-flow state))))
 
-(defn render! [el]
+(defn render! [^js el]
 
   (let [state (model/derive-state (read-inputs el))
         base (du/getv el key-base)]
@@ -60,7 +60,7 @@
     (when base
       (apply-state! base state))))
 
-(defn init-dom! [el]
+(defn init-dom! [^js el]
 
   (let [root (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
@@ -79,7 +79,7 @@
     (du/setv! el key-root root)
     (du/setv! el key-base base)))
 
-(defn init-element! [el]
+(defn init-element! [^js el]
 
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)
@@ -88,10 +88,10 @@
   (render! el)
   el)
 
-(defn connected-callback [el]
+(defn connected-callback [^js el]
   (init-element! el))
 
-(defn attribute-changed-callback [el _ _ _]
+(defn attribute-changed-callback [^js el _ _ _]
   (if (du/initialized? el key-initialized)
     (render! el)
     (init-element! el)))
