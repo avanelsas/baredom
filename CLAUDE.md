@@ -123,60 +123,13 @@ See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full template and rul
 
 ### Property accessor tiers
 
-Components install JS property accessors at one of three tiers. Pick the simplest tier the component qualifies for; document and justify any drop to a lower tier.
+Components install JS property accessors at one of three tiers. **Pick the simplest tier the component qualifies for.**
 
-**Tier 0 — Data-driven** (preferred when applicable). One line:
+- **Tier 0** — `(du/install-properties! proto model/property-api)` (one-liner, data-driven). All props are simple bool/string/number reflectors. Reference: `x_icon`.
+- **Tier 1** — Individual `du/define-{bool,string,number}-prop!` calls, usually mixed with `aset` for methods. Reference: `x_dropdown`.
+- **Tier 2** — Hand-written `.defineProperty` for non-standard semantics (strict empty-string removal, side-effecting setters, CLJS-truthy edge cases, computed read-only props). Document the reason inline. Reference: `x_image`.
 
-```clojure
-(defn- install-property-accessors! [^js proto]
-  (du/install-properties! proto model/property-api))
-```
-
-Requires `model/property-api` to follow the canonical schema:
-
-```clojure
-(def property-api
-  {:size  {:type 'string  :reflects-attribute attr-size  :default "md"}
-   :open  {:type 'boolean :reflects-attribute attr-open}
-   :delay {:type 'number  :reflects-attribute attr-delay :default 400}})
-```
-
-Use Tier 0 when **every** property is a simple bool/string/number reflector with no custom logic. Methods (e.g. `el.show()`) and computed read-only properties don't fit `property-api` — if a component has those, use Tier 1.
-
-Reference: `x_icon` (primary Golden Sample), `x_button`, `x_i18n`.
-
-**Tier 1 — Mixed helpers + custom**. Use when most properties are simple but at least one needs a method or a custom parser:
-
-```clojure
-(defn- install-property-accessors! [^js proto]
-  (du/install-properties! proto model/property-api)   ;; data-reflective props
-  (aset proto "show" (fn [] (this-as ^js this (do-show! this))))
-  (aset proto "hide" (fn [] (this-as ^js this (do-hide! this)))))
-```
-
-Or keep it explicit when only a couple of helpers are needed:
-
-```clojure
-(defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"     model/attr-open)
-  (du/define-string-prop! proto "label"    model/attr-label)
-  (du/define-number-prop! proto "duration" model/attr-duration model/default-duration)
-  (custom-method! proto))
-```
-
-Reference: `x_dropdown`, `x_combobox`.
-
-**Tier 2 — Hand-written `.defineProperty`** (last resort). Use only when helpers can't express the semantics:
-
-- Strict empty-string removal — `el.src = ""` should remove the attribute (e.g., `x_image`).
-- Side-effecting setters — `el.open = true` triggers an animation (e.g., `x_drawer`, `x_modal`).
-- CLJS-truthy semantics that differ from helpers' `(some? v)` — e.g., `x_toaster`'s `position` keeps `""` because `(if v ...)` is truthy on empty string.
-- Computed/read-only properties that read instance state, not attributes (e.g., `naturalWidth` on `x_image`).
-- Methods that need extra `:writable` or `:configurable` flags.
-
-Document the reason inline so future readers understand why the tier dropped. Reference: `x_image`, `x_currency_field`, `x_text_area`.
-
-**Mixing tiers within a component is fine.** A component can install some props via `du/install-properties!` and add Tier-2 method shortcuts via `aset` in the same `install-property-accessors!`. Just don't reach for Tier 2 when a helper would do.
+See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for the full taxonomy with examples and reference components per tier.
 
 ## Architecture
 
