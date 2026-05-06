@@ -178,6 +178,14 @@
     (let [^js inp (shadow-part el "[part=input]")]
       (is (.-disabled inp) "input disabled when element is disabled"))))
 
+(deftest disabled-while-open-force-closes-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "open" "")
+    (is (.hasAttribute el "open") "open before disabling")
+    (set! (.-disabled el) true)
+    (is (not (.hasAttribute el "open"))
+        "setting disabled while open removes the open attribute")))
+
 (deftest clear-method-test
   (let [el (append! (make-el))]
     (.setAttribute el model/attr-value "2024-06-15")

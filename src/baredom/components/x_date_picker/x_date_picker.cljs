@@ -226,9 +226,6 @@
             (.setAttribute btn "disabled" "")
             (.removeAttribute btn "disabled")))
 
-        (when (and disabled? open?)
-          (.removeAttribute el "open"))
-
         (when inp
           (.setAttribute inp "aria-expanded" (if open? "true" "false"))
           (if disabled?
@@ -857,6 +854,11 @@
 
 (defn- attribute-changed!
   [^js el _n _o _v]
+  ;; Force the popover closed when disabled is set while open. Done here, not
+  ;; inside render!, so the render path doesn't write observed attrs.
+  (when (and (.hasAttribute el model/attr-disabled)
+             (.hasAttribute el "open"))
+    (.removeAttribute el "open"))
   (read-state! el)
   (render! el))
 
