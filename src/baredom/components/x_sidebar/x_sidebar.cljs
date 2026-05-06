@@ -404,8 +404,7 @@
 
 (defn- install-property-accessors!
   [^js proto]
-  (du/define-bool-prop! proto model/attr-open      model/attr-open)
-  (du/define-bool-prop! proto model/attr-collapsed model/attr-collapsed))
+  (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name

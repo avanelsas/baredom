@@ -189,9 +189,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "loading"      model/attr-loading)
-  (du/define-bool-prop!   proto "novalidate"   model/attr-novalidate)
-  (du/define-string-prop! proto "autocomplete" model/attr-autocomplete)
+  (du/install-properties! proto model/property-api)
+  ;; Methods
   (aset proto "submit"
         (fn []
           (this-as ^js this
