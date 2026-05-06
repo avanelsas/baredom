@@ -94,15 +94,15 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:src      {:type 'string}
-   :alt      {:type 'string}
-   :name     {:type 'string}
-   :initials {:type 'string}
-   :size     {:type 'string}
-   :shape    {:type 'string}
-   :variant  {:type 'string}
-   :status   {:type 'string}
-   :disabled {:type 'boolean}})
+  {:src      {:type 'string  :reflects-attribute attr-src}
+   :alt      {:type 'string  :reflects-attribute attr-alt}
+   :name     {:type 'string  :reflects-attribute attr-name}
+   :initials {:type 'string  :reflects-attribute attr-initials}
+   :size     {:type 'string  :reflects-attribute attr-size    :default default-size}
+   :shape    {:type 'string  :reflects-attribute attr-shape   :default default-shape}
+   :variant  {:type 'string  :reflects-attribute attr-variant :default default-variant}
+   :status   {:type 'string  :reflects-attribute attr-status}
+   :disabled {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema {})
 

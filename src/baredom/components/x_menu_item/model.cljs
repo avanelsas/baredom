@@ -16,10 +16,10 @@
 (def event-item-select "x-menu-item-select")
 
 (def property-api
-  {:value {:type 'string}
-   :disabled {:type 'boolean}
-   :variant {:type 'string}
-   :type {:type 'string}})
+  {:value    {:type 'string  :reflects-attribute attr-value}
+   :disabled {:type 'boolean :reflects-attribute attr-disabled}
+   :variant  {:type 'string  :reflects-attribute attr-variant}
+   :type     {:type 'string  :reflects-attribute attr-type}})
 
 (def event-schema
   {event-item-select {:detail {:value 'string}}})

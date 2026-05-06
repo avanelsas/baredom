@@ -22,7 +22,7 @@
 (def event-value-change   "value-change")
 
 (def property-api
-  {:value {:type 'string}})
+  {:value {:type 'string :reflects-attribute attr-value}})
 
 (def event-schema
   {event-change-request {:cancelable true  :detail {:value 'string :previousValue 'string}}

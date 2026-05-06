@@ -56,10 +56,10 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:label     {:type 'string}
-   :value     {:type 'string}
-   :removable {:type 'boolean}
-   :disabled  {:type 'boolean}})
+  {:label     {:type 'string  :reflects-attribute attr-label}
+   :value     {:type 'string  :reflects-attribute attr-value}
+   :removable {:type 'boolean :reflects-attribute attr-removable}
+   :disabled  {:type 'boolean :reflects-attribute attr-disabled}})
 
 ;; ── Event schema ──────────────────────────────────────────────────────────
 (def event-schema

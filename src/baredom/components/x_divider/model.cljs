@@ -63,14 +63,14 @@
 
 ;; ── Property API metadata ─────────────────────────────────────────────────
 (def property-api
-  {:orientation {:type 'string}
-   :variant     {:type 'string}
-   :align       {:type 'string}
-   :label       {:type 'string}
-   :thickness   {:type 'string}
-   :color       {:type 'string}
-   :inset       {:type 'string}
-   :length      {:type 'string}})
+  {:orientation {:type 'string :reflects-attribute attr-orientation :default default-orientation}
+   :variant     {:type 'string :reflects-attribute attr-variant     :default default-variant}
+   :align       {:type 'string :reflects-attribute attr-align       :default default-align}
+   :label       {:type 'string :reflects-attribute attr-label}
+   :thickness   {:type 'string :reflects-attribute attr-thickness}
+   :color       {:type 'string :reflects-attribute attr-color}
+   :inset       {:type 'string :reflects-attribute attr-inset}
+   :length      {:type 'string :reflects-attribute attr-length}})
 
 (def event-schema {})
 
