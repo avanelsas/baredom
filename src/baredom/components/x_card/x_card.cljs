@@ -198,7 +198,7 @@
 (defn create-slot-node []
   (.createElement js/document "slot"))
 
-(defn init-shadow-dom! [el]
+(defn init-shadow-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style-node (create-style-node)
         base-node (create-base-node)
@@ -212,7 +212,7 @@
     (du/setv! el key-slot slot-node)
     root))
 
-(defn render! [el]
+(defn render! [^js el]
   (let [state (model/derive-state (read-inputs el))
         base (base-node-of el)]
     (reflect-host-a11y! el state)
