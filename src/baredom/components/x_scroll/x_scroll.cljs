@@ -823,27 +823,9 @@
                                           (.removeAttribute this model/attr-snap))))
                         :enumerable true :configurable true})
 
-  ;; loop (boolean)
-  (.defineProperty js/Object proto model/attr-loop
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-loop)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-loop "")
-                                          (.removeAttribute this model/attr-loop))))
-                        :enumerable true :configurable true})
-
-  ;; autoPlay (boolean, camelCase)
-  (.defineProperty js/Object proto "autoPlay"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-auto-play)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-auto-play "")
-                                          (.removeAttribute this model/attr-auto-play))))
-                        :enumerable true :configurable true})
+  ;; loop / autoPlay — booleans
+  (du/define-bool-prop! proto model/attr-loop model/attr-loop)
+  (du/define-bool-prop! proto "autoPlay"      model/attr-auto-play)
 
   ;; interval (number)
   (.defineProperty js/Object proto model/attr-interval
@@ -871,16 +853,8 @@
                                           (.setAttribute this model/attr-show-controls "false"))))
                         :enumerable true :configurable true})
 
-  ;; showIndicators (boolean, camelCase)
-  (.defineProperty js/Object proto "showIndicators"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-show-indicators)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-show-indicators "")
-                                          (.removeAttribute this model/attr-show-indicators))))
-                        :enumerable true :configurable true})
+  ;; showIndicators — boolean
+  (du/define-bool-prop! proto "showIndicators" model/attr-show-indicators)
 
   ;; activeIndex (number, camelCase)
   (.defineProperty js/Object proto "activeIndex"
@@ -908,16 +882,8 @@
                                           (.setAttribute this model/attr-gap (str (int v))))))
                         :enumerable true :configurable true})
 
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
+  ;; disabled — boolean
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
   ;; label (string)
   (.defineProperty js/Object proto model/attr-label

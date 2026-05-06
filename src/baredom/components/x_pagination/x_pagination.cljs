@@ -307,17 +307,7 @@
   nil)
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-(defn- def-bool-prop! [^js proto attr]
-  (.defineProperty js/Object proto attr
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
+;; Integer props use model/parse-pos-int — kept as inline custom accessor
 (defn- def-int-prop! [^js proto prop-name attr default]
   (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
@@ -331,26 +321,14 @@
                                           (.removeAttribute this attr))))
                         :enumerable true :configurable true}))
 
-(defn- def-string-prop! [^js proto prop-name attr default]
-  (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
-  (def-int-prop! proto model/attr-page          model/attr-page          model/default-page)
-  (def-int-prop! proto model/attr-total-pages   model/attr-total-pages   model/default-total-pages)
+  (def-int-prop! proto model/attr-page           model/attr-page           model/default-page)
+  (def-int-prop! proto model/attr-total-pages    model/attr-total-pages    model/default-total-pages)
   (def-int-prop! proto model/attr-sibling-count  model/attr-sibling-count  model/default-sibling-count)
   (def-int-prop! proto model/attr-boundary-count model/attr-boundary-count model/default-boundary-count)
-  (def-string-prop! proto model/attr-size        model/attr-size          model/default-size)
-  (def-bool-prop! proto model/attr-disabled)
-  (def-string-prop! proto model/attr-label       model/attr-label         model/default-label))
+  (du/define-string-prop! proto model/attr-size  model/attr-size           model/default-size)
+  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
+  (du/define-string-prop! proto model/attr-label model/attr-label          model/default-label))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

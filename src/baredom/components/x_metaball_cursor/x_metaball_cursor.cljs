@@ -1,6 +1,7 @@
 (ns baredom.components.x-metaball-cursor.x-metaball-cursor
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-metaball-cursor.model :as model]))
 
@@ -387,15 +388,7 @@
                         :enumerable true :configurable true})
 
   ;; noise (boolean)
-  (.defineProperty js/Object proto "noise"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-noise)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-noise "")
-                                          (.removeAttribute this model/attr-noise))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop! proto "noise" model/attr-noise)
 
   ;; noiseScale → noise-scale
   (.defineProperty js/Object proto "noiseScale"

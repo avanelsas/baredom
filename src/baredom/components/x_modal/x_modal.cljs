@@ -395,31 +395,9 @@
                                           (do-hide! this))))
                         :enumerable true :configurable true})
 
-  ;; String property: size
-  (.defineProperty js/Object proto "size"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-size)
-                                            model/default-size)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-size)
-                                          (.setAttribute this model/attr-size (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; String property: label
-  (.defineProperty js/Object proto "label"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label)
-                                            model/default-label)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-label)
-                                          (.setAttribute this model/attr-label (str v)))))
-                        :enumerable true :configurable true})
+  ;; String properties with defaults
+  (du/define-string-prop! proto "size"  model/attr-size  model/default-size)
+  (du/define-string-prop! proto "label" model/attr-label model/default-label)
 
   ;; Public methods
   (.defineProperty js/Object proto "show"

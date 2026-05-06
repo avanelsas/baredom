@@ -237,28 +237,9 @@
                                (this-as ^js this
                                         (.setAttribute this model/attr-max (str v))))
                         :enumerable true :configurable true})
-  ;; indeterminate — boolean, reflects to attr
-  (.defineProperty js/Object proto "indeterminate"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-indeterminate)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-indeterminate "")
-                                          (.removeAttribute this model/attr-indeterminate))))
-                        :enumerable true :configurable true})
-  ;; showValue — boolean, reflects to show-value attr
-  (.defineProperty js/Object proto "showValue"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-show-value)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-show-value "")
-                                          (.removeAttribute this model/attr-show-value))))
-                        :enumerable true :configurable true})
+  ;; indeterminate / showValue — booleans
+  (du/define-bool-prop! proto "indeterminate" model/attr-indeterminate)
+  (du/define-bool-prop! proto "showValue"     model/attr-show-value)
   ;; variant — string, reflects to attr
   (.defineProperty js/Object proto model/attr-variant
                    #js {:get (fn []
