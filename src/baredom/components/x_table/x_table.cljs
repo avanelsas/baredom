@@ -1,6 +1,7 @@
 (ns baredom.components.x-table.x-table
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-table.model :as model]))
 
@@ -194,25 +195,13 @@
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-sort! [^js el col-index direction previous-direction]
-  (let [detail (clj->js (model/sort-detail col-index direction previous-direction))]
-    (.dispatchEvent el
-                    (js/CustomEvent.
-                     model/event-sort
-                     #js {:detail     detail
-                          :bubbles    true
-                          :composed   true
-                          :cancelable true})))
+  (du/dispatch-cancelable! el model/event-sort
+    (clj->js (model/sort-detail col-index direction previous-direction)))
   nil)
 
 (defn- dispatch-row-select! [^js el row-index selected? selectable]
-  (let [detail (clj->js (model/row-select-detail row-index selected? selectable))]
-    (.dispatchEvent el
-                    (js/CustomEvent.
-                     model/event-row-select
-                     #js {:detail     detail
-                          :bubbles    true
-                          :composed   true
-                          :cancelable true})))
+  (du/dispatch-cancelable! el model/event-row-select
+    (clj->js (model/row-select-detail row-index selected? selectable)))
   nil)
 
 ;; ── Selection management ─────────────────────────────────────────────────────

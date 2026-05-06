@@ -140,15 +140,13 @@
 (defn- connected! [^js el]
   (ensure-refs! el)
   (update-model! el)
-  (.dispatchEvent el
-  (js/CustomEvent.
-  model/event-connected
-  #js {:bubbles    true
-  :composed   true
-  :cancelable false}))
+  (du/dispatch! el model/event-connected #js {})
   nil)
 
 (defn- disconnected! [^js _el]
+  ;; Intentionally non-bubbling, non-composed: an internal document-level
+  ;; signal to the tour controller that this step is gone. Do NOT migrate
+  ;; to du/dispatch! — the helper always sets bubbles/composed true.
   (.dispatchEvent js/document
                   (js/CustomEvent.
                    model/event-disconnected

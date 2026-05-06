@@ -68,19 +68,10 @@
     (when (and assigned (> (alength assigned) 0))
       (aget assigned 0))))
 
-(defn dispatch-event! [^js el event-name ^js detail]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    event-name
-    #js {:detail detail
-         :bubbles true
-         :composed true})))
-
 (defn open-menu! [^js el focus-target]
   (when-not (.hasAttribute el model/attr-open)
     (.setAttribute el model/attr-open "")
-    (dispatch-event! el model/event-open #js {}))
+    (du/dispatch! el model/event-open #js {}))
   (when focus-target
     (let [items (get-focusable-items el)
           n (alength items)]
@@ -92,7 +83,7 @@
 (defn close-menu! [^js el return-focus?]
   (when (.hasAttribute el model/attr-open)
     (.removeAttribute el model/attr-open)
-    (dispatch-event! el model/event-close #js {}))
+    (du/dispatch! el model/event-close #js {}))
   (when return-focus?
     (when-let [trigger (get-trigger el)]
       (.focus trigger))))
@@ -163,7 +154,7 @@
   (.stopPropagation evt)
   (let [value (.. evt -detail -value)]
     (close-menu! el false)
-    (dispatch-event! el model/event-select #js {:value (or value "")})))
+    (du/dispatch! el model/event-select #js {:value (or value "")})))
 
 (defn render! [^js el]
   (let [refs (du/getv el key-refs)

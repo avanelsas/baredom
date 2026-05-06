@@ -105,13 +105,7 @@
       :else (derive-initial-selection tabs))))
 
 (defn dispatch-value-change! [^js el value]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    model/event-value-change
-    #js {:detail #js {:value (or value "")}
-         :bubbles true
-         :composed true})))
+  (du/dispatch! el model/event-value-change #js {:value (or value "")}))
 
 (defn coordinate-tabs! [^js el]
   (let [tabs (get-tabs el)

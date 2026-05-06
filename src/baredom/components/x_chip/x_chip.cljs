@@ -133,14 +133,7 @@
 (defn- dispatch-remove!
   "Dispatches x-chip-remove. Returns true if NOT prevented (proceed), false if cancelled."
   [^js el m]
-  (let [detail (model/remove-detail m)
-        ev     (js/CustomEvent. model/event-remove
-                                #js {:detail    detail
-                                     :bubbles   true
-                                     :composed  true
-                                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
+  (du/dispatch-cancelable! el model/event-remove (model/remove-detail m)))
 
 (defn- do-exit!
   "Starts exit animation. Removes element after animationend or 400ms fallback."

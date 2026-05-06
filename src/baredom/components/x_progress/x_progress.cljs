@@ -1,6 +1,7 @@
 (ns baredom.components.x-progress.x-progress
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-progress.model :as model]))
 
@@ -199,11 +200,7 @@
 
     ;; x-progress-complete event
     (when (and now-complete (not was-completed))
-      (.dispatchEvent el
-                      (js/CustomEvent. model/event-complete
-                                       #js {:bubbles true
-                                            :composed true
-                                            :detail #js {:value value :max max}})))
+      (du/dispatch! el model/event-complete #js {:value value :max max}))
     (gobj/set el k-completed (boolean now-complete)))
   nil)
 

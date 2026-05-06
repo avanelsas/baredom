@@ -28,13 +28,7 @@
   (and (:interactive state) (not (:disabled state))))
 
 (defn dispatch-press! [^js el]
-  (.dispatchEvent
-   el
-   (js/CustomEvent.
-    model/event-press
-    #js {:detail #js {}
-         :bubbles true
-         :composed true})))
+  (du/dispatch! el model/event-press #js {}))
 
 (defn set-or-remove-attr! [^js el name value]
   (if (some? value)

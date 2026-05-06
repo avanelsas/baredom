@@ -1,6 +1,7 @@
 (ns baredom.components.x-morph-stack.x-morph-stack
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-morph-stack.model :as model]))
 
@@ -646,11 +647,8 @@
       (when settle?
         (let [from (gobj/get el k-from)
               to   (gobj/get el k-to)
-              detail (clj->js (model/changed-detail from to))
-              ^js ev (js/CustomEvent.
-                      model/event-changed
-                      #js {:detail detail :bubbles true :composed true :cancelable false})]
-          (.dispatchEvent el ev)
+              detail (clj->js (model/changed-detail from to))]
+          (du/dispatch! el model/event-changed detail)
           (gobj/set el k-from nil)
           (gobj/set el k-to nil)))))
   nil)
@@ -692,10 +690,7 @@
       (let [from-root (when from-name (root-for-name el from-name))
             to-root   (root-for-name el to-name)
             detail    (clj->js (model/change-detail from-name to-name reason))
-            ^js change-ev (js/CustomEvent.
-                           model/event-change
-                           #js {:detail detail :bubbles true :composed true :cancelable true})
-            ok? (.dispatchEvent el change-ev)]
+            ok?       (du/dispatch-cancelable! el model/event-change detail)]
         (if-not ok?
           false
           (do
@@ -709,11 +704,8 @@
                   ;; Fire `changed` next microtask.
                   (js/queueMicrotask
                    (fn []
-                     (let [d (clj->js (model/changed-detail from-name to-name))
-                           ^js ev (js/CustomEvent.
-                                   model/event-changed
-                                   #js {:detail d :bubbles true :composed true})]
-                       (.dispatchEvent el ev))))
+                     (du/dispatch! el model/event-changed
+                       (clj->js (model/changed-detail from-name to-name)))))
                   true)
 
                 :else

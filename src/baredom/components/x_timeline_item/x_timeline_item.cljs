@@ -1,6 +1,7 @@
 (ns baredom.components.x-timeline-item.x-timeline-item
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-timeline-item.model :as model]))
 
@@ -385,26 +386,17 @@
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-click! [^js el]
   (let [m (or (gobj/get el k-model) (read-model el))]
-    (.dispatchEvent el
-                    (js/CustomEvent.
-                     model/event-click
-                     #js {:detail     (clj->js (model/click-detail m))
-                          :bubbles    true
-                          :composed   true
-                          :cancelable true})))
+    (du/dispatch-cancelable! el model/event-click (clj->js (model/click-detail m))))
   nil)
 
 (defn- dispatch-connected! [^js el m]
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   model/event-connected
-                   #js {:detail     (clj->js (model/connected-detail m))
-                        :bubbles    true
-                        :composed   true
-                        :cancelable false}))
+  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m)))
   nil)
 
 (defn- dispatch-disconnected! [^js _el m]
+  ;; Intentionally non-bubbling, non-composed: an internal document-level
+  ;; signal to the parent x-timeline that this item is gone. Do NOT migrate
+  ;; to du/dispatch! — the helper always sets bubbles/composed true.
   (.dispatchEvent js/document
                   (js/CustomEvent.
                    model/event-disconnected

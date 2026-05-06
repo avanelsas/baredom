@@ -1,6 +1,7 @@
 (ns baredom.components.x-liquid-dock.x-liquid-dock
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-liquid-dock.model :as model]))
 
@@ -575,12 +576,8 @@
 (defn- dispatch-select! [^js el index ^js item source]
   ;; Trigger ripple burst
   (gobj/set el k-ripple-burst (.now js/Date))
-  (let [detail (model/select-detail index item source)
-        event  (js/CustomEvent.
-                model/event-select
-                #js {:bubbles true :composed true :cancelable true
-                     :detail (clj->js detail)})]
-    (.dispatchEvent el event)))
+  (du/dispatch-cancelable! el model/event-select
+    (clj->js (model/select-detail index item source))))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]

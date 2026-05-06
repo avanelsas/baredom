@@ -443,16 +443,11 @@
         target  (model/clamp-index index sc)
         current (:current m)]
     (when (and (not= target current) (> sc 0))
-      (let [^js evt (js/CustomEvent.
-                     model/event-change
-                     #js {:detail    #js {:index         target
-                                          :previousIndex current
-                                          :reason        reason}
-                          :bubbles   true
-                          :composed  true
-                          :cancelable true})]
-        (when (.dispatchEvent el evt)
-          (.setAttribute el model/attr-current (str target))))))
+      (when (du/dispatch-cancelable! el model/event-change
+              #js {:index         target
+                   :previousIndex current
+                   :reason        reason})
+        (.setAttribute el model/attr-current (str target)))))
   nil)
 
 ;; ── Pointer drag ────────────────────────────────────────────────────────────

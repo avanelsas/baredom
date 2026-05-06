@@ -1,6 +1,7 @@
 (ns baredom.components.x-stepper.x-stepper
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-stepper.model :as model]))
 
@@ -356,17 +357,10 @@
                 idx      (js/parseInt (.getAttribute step "data-index") 10)
                 cur      (:current m)]
             (when (and (number? idx) (not (js/isNaN idx)) (not= idx cur))
-              (let [detail (clj->js (model/change-detail cur idx))
-                    ^js ev (js/CustomEvent.
-                            model/event-change
-                            #js {:detail    detail
-                                 :bubbles   true
-                                 :composed  true
-                                 :cancelable true})
-                    ok?    (.dispatchEvent el ev)]
-                (when ok?
-                  (.setAttribute el model/attr-current (str idx)))))))))
-  nil))
+              (let [detail (clj->js (model/change-detail cur idx))]
+                (when (du/dispatch-cancelable! el model/event-change detail)
+                  (.setAttribute el model/attr-current (str idx))))))))))
+  nil)
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]

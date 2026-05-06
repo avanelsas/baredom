@@ -1,6 +1,7 @@
 (ns baredom.components.x-soft-body.x-soft-body
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-soft-body.model :as model]))
 
@@ -308,18 +309,12 @@
   (gobj/set el k-grabbed true)
   ;; Update pointer position from the down event
   (on-pointermove el e)
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   model/event-grab
-                   #js {:bubbles true :composed true :detail #js {}}))
+  (du/dispatch! el model/event-grab #js {})
   nil)
 
 (defn- on-pointerup [^js el]
   (gobj/set el k-grabbed false)
-  (.dispatchEvent el
-                  (js/CustomEvent.
-                   model/event-release
-                   #js {:bubbles true :composed true :detail #js {}}))
+  (du/dispatch! el model/event-release #js {})
   nil)
 
 ;; ── Listener management ─────────────────────────────────────────────────────

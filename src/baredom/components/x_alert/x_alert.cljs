@@ -1,6 +1,7 @@
 (ns baredom.components.x-alert.x-alert
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-alert.model :as model]))
 
@@ -314,13 +315,7 @@
                      (let [m2 (or (gobj/get el k-model) (read-model el))]
                        (when (model/dismiss-eligible? m2)
                          (let [detail (clj->js (model/dismiss-detail m2 "timeout"))
-                               ^js ev (js/CustomEvent.
-                                       model/event-dismiss
-                                       #js {:detail    detail
-                                            :bubbles   true
-                                            :composed  true
-                                            :cancelable true})
-                               ok? (.dispatchEvent el ev)]
+                               ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
                            (when ok? (start-exit-and-remove! el)))))))
                  (:timeout-ms m)))))
   nil)
@@ -372,15 +367,9 @@
 (defn- dispatch-dismiss! [^js el reason]
   (let [m      (or (gobj/get el k-model) (read-model el))
         detail (clj->js (model/dismiss-detail m reason))
-        ^js ev (js/CustomEvent.
-                model/event-dismiss
-                #js {:detail    detail
-                     :bubbles   true
-                     :composed  true
-                     :cancelable true})
-        ok?    (.dispatchEvent el ev)]
+        ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
     (when ok? (start-exit-and-remove! el))
-    (boolean ok?)))
+    ok?))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-dismiss-click [^js el ^js e]
