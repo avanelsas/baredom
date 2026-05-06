@@ -9,11 +9,6 @@
 (def observed-attributes
   #js [attr-size attr-variant attr-label])
 
-(def property-api
-  {:size    {:type 'string :reflects-attribute attr-size}
-   :variant {:type 'string :reflects-attribute attr-variant}
-   :label   {:type 'string :reflects-attribute attr-label}})
-
 ;; ── Allowed values ────────────────────────────────────────────────────────
 (def allowed-sizes    #{"xs" "sm" "md" "lg" "xl"})
 (def allowed-variants #{"default" "primary" "success" "warning" "danger"})
@@ -21,6 +16,11 @@
 (def default-size    "md")
 (def default-variant "default")
 (def default-label   "Loading")
+
+(def property-api
+  {:size    {:type 'string :reflects-attribute attr-size    :default default-size}
+   :variant {:type 'string :reflects-attribute attr-variant :default default-variant}
+   :label   {:type 'string :reflects-attribute attr-label   :default default-label}})
 
 ;; ── Normalisation ─────────────────────────────────────────────────────────
 (defn normalize-size

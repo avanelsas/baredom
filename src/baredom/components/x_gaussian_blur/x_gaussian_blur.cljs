@@ -246,15 +246,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto "colors"    model/attr-colors    model/default-colors)
-  (du/define-string-prop! proto "blur"      model/attr-blur      "60")
-  (du/define-string-prop! proto "speed"     model/attr-speed     "medium")
-  (du/define-string-prop! proto "count"     model/attr-count     "5")
-  (du/define-string-prop! proto "size"      model/attr-size      "medium")
-  (du/define-string-prop! proto "opacity"   model/attr-opacity   "0.7")
-  (du/define-string-prop! proto "animation" model/attr-animation model/default-animation)
-  (du/define-string-prop! proto "blend"     model/attr-blend     model/default-blend)
-  (du/define-bool-prop!   proto "paused"    model/attr-paused))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

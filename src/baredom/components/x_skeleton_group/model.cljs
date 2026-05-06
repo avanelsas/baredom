@@ -18,9 +18,9 @@
   #js [attr-preset attr-animation attr-count])
 
 (def property-api
-  {:preset    {:type 'string  :reflects-attribute attr-preset}
-   :animation {:type 'string  :reflects-attribute attr-animation}
-   :count     {:type 'number  :reflects-attribute attr-count}})
+  {:preset    {:type 'string  :reflects-attribute attr-preset    :default ""}
+   :animation {:type 'string  :reflects-attribute attr-animation :default ""}
+   :count     {:type 'number  :reflects-attribute attr-count     :default default-count}})
 
 ;; ---------------------------------------------------------------------------
 ;; Normalization

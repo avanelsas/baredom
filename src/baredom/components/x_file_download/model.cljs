@@ -19,8 +19,8 @@
        attr-aria-label])
 
 (def property-api
-  {:href     {:type 'string  :reflects-attribute attr-href}
-   :filename {:type 'string  :reflects-attribute attr-filename}
+  {:href     {:type 'string  :reflects-attribute attr-href     :default ""}
+   :filename {:type 'string  :reflects-attribute attr-filename :default ""}
    :disabled {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema

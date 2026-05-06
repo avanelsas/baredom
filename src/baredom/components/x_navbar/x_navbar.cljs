@@ -398,13 +398,7 @@
 
 (defn- install-property-accessors!
   [^js proto]
-  (du/define-bool-prop!   proto "sticky"      model/attr-sticky)
-  (du/define-bool-prop!   proto "elevated"    model/attr-elevated)
-  (du/define-string-prop! proto "label"       model/attr-label       "")
-  (du/define-string-prop! proto "variant"     model/attr-variant     "")
-  (du/define-string-prop! proto "orientation" model/attr-orientation "")
-  (du/define-string-prop! proto "alignment"   model/attr-alignment   "")
-  (du/define-string-prop! proto "breakpoint"  model/attr-breakpoint  ""))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

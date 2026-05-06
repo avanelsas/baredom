@@ -102,9 +102,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-size    model/attr-size    model/default-size)
-  (du/define-string-prop! proto model/attr-variant model/attr-variant model/default-variant)
-  (du/define-string-prop! proto model/attr-label   model/attr-label   model/default-label))
+  (du/install-properties! proto model/property-api))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

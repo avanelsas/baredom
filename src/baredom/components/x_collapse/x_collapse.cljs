@@ -344,10 +344,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!   proto "open"       model/attr-open)
-  (du/define-bool-prop!   proto "disabled"   model/attr-disabled)
-  (du/define-string-prop! proto "header"     model/attr-header)
-  (du/define-number-prop! proto "durationMs" model/attr-duration-ms model/default-duration-ms)
+  (du/install-properties! proto model/property-api)
   (aset proto "toggle"
         (fn [] (this-as ^js this (toggle! this "programmatic")))))
 
