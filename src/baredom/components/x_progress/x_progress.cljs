@@ -132,13 +132,13 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:value         (.getAttribute el model/attr-value)
-   :max           (.getAttribute el model/attr-max)
-   :variant       (.getAttribute el model/attr-variant)
-   :size          (.getAttribute el model/attr-size)
-   :label         (.getAttribute el model/attr-label)
-   :show-value    (.hasAttribute el model/attr-show-value)
-   :indeterminate (.hasAttribute el model/attr-indeterminate)})
+  {:value         (du/get-attr el model/attr-value)
+   :max           (du/get-attr el model/attr-max)
+   :variant       (du/get-attr el model/attr-variant)
+   :size          (du/get-attr el model/attr-size)
+   :label         (du/get-attr el model/attr-label)
+   :show-value    (du/has-attr? el model/attr-show-value)
+   :indeterminate (du/has-attr? el model/attr-indeterminate)})
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -181,22 +181,22 @@
           (if show-value "" "none"))
 
     ;; ARIA on host
-    (.setAttribute el "role"          "progressbar")
-    (.setAttribute el "aria-valuemin" "0")
+    (du/set-attr! el "role"          "progressbar")
+    (du/set-attr! el "aria-valuemin" "0")
     (if indeterminate
       (do
-        (.removeAttribute el "aria-valuenow")
+        (du/remove-attr! el "aria-valuenow")
         (.setAttribute    el "aria-busy"      "true")
         (.setAttribute    el "aria-valuetext" aria-valuetext))
       (do
-        (.setAttribute el "aria-valuenow"  (str value))
-        (.setAttribute el "aria-valuemax"  (str max))
-        (.setAttribute el "aria-valuetext" aria-valuetext)
-        (.removeAttribute el "aria-busy")))
+        (du/set-attr! el "aria-valuenow"  (str value))
+        (du/set-attr! el "aria-valuemax"  (str max))
+        (du/set-attr! el "aria-valuetext" aria-valuetext)
+        (du/remove-attr! el "aria-busy")))
 
     (if (some? label)
-      (.setAttribute el "aria-label" label)
-      (.removeAttribute el "aria-label"))
+      (du/set-attr! el "aria-label" label)
+      (du/remove-attr! el "aria-label"))
 
     ;; x-progress-complete event
     (when (and now-complete (not was-completed))

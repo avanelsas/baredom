@@ -162,14 +162,14 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:active-state-raw  (.getAttribute el model/attr-active-state)
-    :active-index-raw  (.getAttribute el model/attr-active-index)
-    :stiffness-raw     (.getAttribute el model/attr-stiffness)
-    :damping-raw       (.getAttribute el model/attr-damping)
-    :mass-raw          (.getAttribute el model/attr-mass)
-    :variant-raw       (.getAttribute el model/attr-variant)
-    :duration-raw      (.getAttribute el model/attr-duration)
-    :disabled-present? (.hasAttribute el model/attr-disabled)}))
+   {:active-state-raw  (du/get-attr el model/attr-active-state)
+    :active-index-raw  (du/get-attr el model/attr-active-index)
+    :stiffness-raw     (du/get-attr el model/attr-stiffness)
+    :damping-raw       (du/get-attr el model/attr-damping)
+    :mass-raw          (du/get-attr el model/attr-mass)
+    :variant-raw       (du/get-attr el model/attr-variant)
+    :duration-raw      (du/get-attr el model/attr-duration)
+    :disabled-present? (du/has-attr? el model/attr-disabled)}))
 
 (defn- read-css-number
   "Read a CSS custom property from the host's computed style and parse it as a
@@ -226,8 +226,8 @@
           (set! (.. r -style -display) "")
           (set! (.. r -style -display) "none")))))
   (if active-name
-    (.setAttribute el model/attr-data-active-state active-name)
-    (.removeAttribute el model/attr-data-active-state))
+    (du/set-attr! el model/attr-data-active-state active-name)
+    (du/remove-attr! el model/attr-data-active-state))
   (gobj/set el k-current-state active-name)
   nil)
 
@@ -777,7 +777,7 @@
     (gobj/set el k-model new-m)
     ;; Mirror the (normalised) variant to a data attribute so :host([data-variant=…])
     ;; CSS rules apply, even when the author wrote an unknown / mis-cased value.
-    (.setAttribute el model/attr-data-variant (:variant new-m))
+    (du/set-attr! el model/attr-data-variant (:variant new-m))
     (let [names (state-names el)
           target (model/resolve-active (vec (array-seq names)) new-m)
           current (gobj/get el k-current-state)]

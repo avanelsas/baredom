@@ -13,7 +13,7 @@
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         slot  (.createElement js/document "slot")]
-    (set! (.-textContent style) (model/preset->css (.getAttribute el model/attr-preset)))
+    (set! (.-textContent style) (model/preset->css (du/get-attr el model/attr-preset)))
     (.appendChild root style)
     (.appendChild root slot)
     (gobj/set el k-refs #js {:style style})))
@@ -24,7 +24,7 @@
     (when refs
       (let [^js style-el (.-style refs)]
         (set! (.-textContent style-el)
-              (model/preset->css (.getAttribute el model/attr-preset)))))))
+              (model/preset->css (du/get-attr el model/attr-preset)))))))
 
 ;; ── Lifecycle ───────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

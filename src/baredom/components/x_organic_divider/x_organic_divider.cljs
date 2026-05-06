@@ -111,8 +111,8 @@
     (.appendChild root style-el)
     (.appendChild root base)
     ;; Set permanent a11y attributes on host (always decorative)
-    (.setAttribute el "role" "presentation")
-    (.setAttribute el "aria-hidden" "true")
+    (du/set-attr! el "role" "presentation")
+    (du/set-attr! el "aria-hidden" "true")
     (gobj/set el k-base        base)
     (gobj/set el k-svg         svg)
     (gobj/set el k-paths       #js [])
@@ -121,13 +121,13 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:shape     (.getAttribute el model/attr-shape)
-   :layers    (.getAttribute el model/attr-layers)
-   :height    (.getAttribute el model/attr-height)
-   :flip      (.getAttribute el model/attr-flip)
-   :mirror    (.getAttribute el model/attr-mirror)
-   :animation (.getAttribute el model/attr-animation)
-   :path      (.getAttribute el model/attr-path)})
+  {:shape     (du/get-attr el model/attr-shape)
+   :layers    (du/get-attr el model/attr-layers)
+   :height    (du/get-attr el model/attr-height)
+   :flip      (du/get-attr el model/attr-flip)
+   :mirror    (du/get-attr el model/attr-mirror)
+   :animation (du/get-attr el model/attr-animation)
+   :path      (du/get-attr el model/attr-path)})
 
 ;; ── Ensure paths ──────────────────────────────────────────────────────────
 (defn- ensure-paths!
@@ -199,16 +199,16 @@
 
     ;; Flip / Mirror data attributes
     (if flip
-      (.setAttribute el "data-flip" "")
-      (.removeAttribute el "data-flip"))
+      (du/set-attr! el "data-flip" "")
+      (du/remove-attr! el "data-flip"))
     (if mirror
-      (.setAttribute el "data-mirror" "")
-      (.removeAttribute el "data-mirror"))
+      (du/set-attr! el "data-mirror" "")
+      (du/remove-attr! el "data-mirror"))
 
     ;; Animation data attribute
     (if (not= animation "none")
-      (.setAttribute el "data-animation" animation)
-      (.removeAttribute el "data-animation")))
+      (du/set-attr! el "data-animation" animation)
+      (du/remove-attr! el "data-animation")))
   nil)
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────

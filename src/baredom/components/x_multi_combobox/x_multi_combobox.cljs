@@ -482,7 +482,7 @@
         ;; attribute-changed! → apply-model! → render-panel! sees cleared state.
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (.setAttribute el model/attr-open "")))))
+        (du/set-attr! el model/attr-open "")))))
 
 (defn- close-panel! [^js el source]
   (when (du/has-attr? el model/attr-open)
@@ -491,7 +491,7 @@
       (when allowed?
         (du/setv! el k-query "")
         (du/setv! el k-active-idx 0)
-        (.removeAttribute el model/attr-open)))))
+        (du/remove-attr! el model/attr-open)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Add / Remove items
@@ -514,7 +514,7 @@
           (du/setv! el k-active-idx 0)
           (when-let [refs (du/getv el k-refs)]
             (set! (.-value (gobj/get refs "input")) ""))
-          (.setAttribute el model/attr-value (model/serialize-value new-set))
+          (du/set-attr! el model/attr-value (model/serialize-value new-set))
           (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
 
 (defn- remove-item! [^js el item-value]
@@ -527,8 +527,8 @@
                       #js {:value new-arr :action "remove" :item item-value})]
         (when allowed?
           (if (empty? new-set)
-            (.removeAttribute el model/attr-value)
-            (.setAttribute el model/attr-value (model/serialize-value new-set)))
+            (du/remove-attr! el model/attr-value)
+            (du/set-attr! el model/attr-value (model/serialize-value new-set)))
           (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
 
 ;; ---------------------------------------------------------------------------

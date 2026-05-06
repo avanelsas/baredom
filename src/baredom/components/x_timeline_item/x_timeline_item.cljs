@@ -290,18 +290,18 @@
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:label-raw         (.getAttribute el model/attr-label)
-    :title-raw         (.getAttribute el model/attr-title)
-    :status-raw        (.getAttribute el model/attr-status)
-    :icon-present?     (.hasAttribute el model/attr-icon)
-    :icon-raw          (.getAttribute el model/attr-icon)
-    :connector-raw     (.getAttribute el model/attr-connector)
-    :position-raw      (.getAttribute el model/attr-position)
-    :disabled?         (.hasAttribute el model/attr-disabled)
-    :data-last?        (.hasAttribute el model/data-attr-last)
-    :data-index-raw    (.getAttribute el model/data-attr-index)
+   {:label-raw         (du/get-attr el model/attr-label)
+    :title-raw         (du/get-attr el model/attr-title)
+    :status-raw        (du/get-attr el model/attr-status)
+    :icon-present?     (du/has-attr? el model/attr-icon)
+    :icon-raw          (du/get-attr el model/attr-icon)
+    :connector-raw     (du/get-attr el model/attr-connector)
+    :position-raw      (du/get-attr el model/attr-position)
+    :disabled?         (du/has-attr? el model/attr-disabled)
+    :data-last?        (du/has-attr? el model/data-attr-last)
+    :data-index-raw    (du/get-attr el model/data-attr-index)
     :data-position-raw (gobj/get el k-parent-pos)
-    :data-striped?     (.hasAttribute el model/data-attr-striped)}))
+    :data-striped?     (du/has-attr? el model/data-attr-striped)}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el
@@ -315,23 +315,23 @@
         ^js default-icon default-icon]
 
     ;; Host data attributes for CSS targeting
-    (.setAttribute el "data-status" (model/status->attr status))
+    (du/set-attr! el "data-status" (model/status->attr status))
     (gobj/set el k-self-pos true)
-    (.setAttribute el "data-position" (name effective-position))
+    (du/set-attr! el "data-position" (name effective-position))
     (gobj/set el k-self-pos nil)
     (if (= (:connector m) :dashed)
-      (.setAttribute el "data-connector" "dashed")
+      (du/set-attr! el "data-connector" "dashed")
       (if (= (:connector m) :none)
-        (.setAttribute el "data-connector" "none")
-        (.removeAttribute el "data-connector")))
+        (du/set-attr! el "data-connector" "none")
+        (du/remove-attr! el "data-connector")))
 
     ;; ARIA and interactivity
-    (.setAttribute el "role" "listitem")
+    (du/set-attr! el "role" "listitem")
 
     (if disabled?
-      (do (.setAttribute el "aria-disabled" "true")
+      (do (du/set-attr! el "aria-disabled" "true")
           (set! (.-tabIndex el) -1))
-      (do (.removeAttribute el "aria-disabled")
+      (do (du/remove-attr! el "aria-disabled")
           (set! (.-tabIndex el) 0)))
 
     ;; Host aria-label: prefer title, then label
@@ -340,8 +340,8 @@
                        (not= label "") label
                        :else           nil)]
       (if host-label
-        (.setAttribute el "aria-label" host-label)
-        (.removeAttribute el "aria-label")))
+        (du/set-attr! el "aria-label" host-label)
+        (du/remove-attr! el "aria-label")))
 
     ;; Marker aria-label
     (.setAttribute marker "aria-label" marker-aria)
@@ -375,11 +375,11 @@
 (defn- start-enter! [^js el]
   (when-not (gobj/get el k-entered)
     (gobj/set el k-entered true)
-    (.setAttribute el "data-entering" "")
+    (du/set-attr! el "data-entering" "")
     (letfn [(on-end [^js e]
               (when (= (.-target e) el)
                 (.removeEventListener el "animationend" on-end)
-                (.removeAttribute el "data-entering")))]
+                (du/remove-attr! el "data-entering")))]
       (.addEventListener el "animationend" on-end)))
   nil)
 
@@ -480,7 +480,7 @@
   (add-listeners! el)
   ;; Initialise k-parent-pos from any data-position already
   ;; present on the element (e.g., set in HTML before connect)
-  (let [dp (.getAttribute el model/data-attr-position)]
+  (let [dp (du/get-attr el model/data-attr-position)]
   (when dp (gobj/set el k-parent-pos dp)))
   (update-from-attrs! el)
   (start-enter! el)

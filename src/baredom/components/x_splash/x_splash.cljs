@@ -171,11 +171,11 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/derive-state
-   {:active-present? (.hasAttribute el model/attr-active)
-    :variant-raw     (.getAttribute el model/attr-variant)
-    :progress-raw    (.getAttribute el model/attr-progress)
-    :spinner-attr    (.getAttribute el model/attr-spinner)
-    :overlay-raw     (.getAttribute el model/attr-overlay)}))
+   {:active-present? (du/has-attr? el model/attr-active)
+    :variant-raw     (du/get-attr el model/attr-variant)
+    :progress-raw    (du/get-attr el model/attr-progress)
+    :spinner-attr    (du/get-attr el model/attr-spinner)
+    :overlay-raw     (du/get-attr el model/attr-overlay)}))
 
 ;; ── Motion helpers ───────────────────────────────────────────────────────────
 (defn- prefers-reduced-motion? []
@@ -212,11 +212,11 @@
 (defn- finish-fade-out! [^js el]
   (clear-fade-timer! el)
   (gobj/set el k-fading-out false)
-  (.removeAttribute el "data-fading-out")
+  (du/remove-attr! el "data-fading-out")
   (let [{:keys [overlay-el]} (ensure-refs! el)
         ^js overlay-el overlay-el]
     (set! (.. overlay-el -style -display) "none"))
-  (.removeAttribute el "aria-busy")
+  (du/remove-attr! el "aria-busy")
   (fire-hidden-event! el)
   nil)
 
@@ -237,7 +237,7 @@
         ;; transition to opacity 0 on the next frame.
         (set! (.. overlay-el -style -display) "flex")
         (set! (.. overlay-el -style -opacity) "1")
-        (.setAttribute el "data-fading-out" "")
+        (du/set-attr! el "data-fading-out" "")
         (.addEventListener overlay-el "transitionend" on-end)
         ;; Trigger transition on next frame so the browser sees the change
         (js/requestAnimationFrame
@@ -260,7 +260,7 @@
   (when (gobj/get el k-fading-out)
     (clear-fade-timer! el)
     (gobj/set el k-fading-out false)
-    (.removeAttribute el "data-fading-out")
+    (du/remove-attr! el "data-fading-out")
     (let [{:keys [overlay-el]} (ensure-refs! el)
           ^js overlay-el overlay-el]
       (set! (.. overlay-el -style -display) "")
@@ -279,8 +279,8 @@
         was-active?     (:active? old-m)]
 
     ;; Data attributes for CSS
-    (.setAttribute el "data-variant" variant)
-    (.setAttribute el "data-overlay" overlay)
+    (du/set-attr! el "data-variant" variant)
+    (du/set-attr! el "data-overlay" overlay)
 
     ;; Spinner visibility
     (set! (.. spinner-el -style -display)
@@ -299,9 +299,9 @@
       ;; Becoming active
       (and active? (not was-active?))
       (do (cancel-fade-out! el)
-          (.setAttribute el "aria-busy" "true")
-          (.setAttribute el "aria-live" "polite")
-          (.setAttribute el "role" "status")
+          (du/set-attr! el "aria-busy" "true")
+          (du/set-attr! el "aria-live" "polite")
+          (du/set-attr! el "role" "status")
           ;; Clear inline overrides so CSS rules take effect
           (set! (.. overlay-el -style -display) "")
           (set! (.. overlay-el -style -opacity) ""))
@@ -313,11 +313,11 @@
       ;; First render, not active — ensure hidden
       (and (not active?) (nil? old-m))
       (do (set! (.. overlay-el -style -display) "none")
-          (.removeAttribute el "aria-busy")))
+          (du/remove-attr! el "aria-busy")))
 
     ;; Set aria-label default if none provided
-    (when-not (.hasAttribute el "aria-label")
-      (.setAttribute el "aria-label" "Loading"))
+    (when-not (du/has-attr? el "aria-label")
+      (du/set-attr! el "aria-label" "Loading"))
 
     (gobj/set el k-model m))
   nil)

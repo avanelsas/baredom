@@ -33,22 +33,22 @@
 (defn- read-state!
   "Read all observed attrs, canonicalize, cache result on element."
   [^js el]
-  (let [mode-raw  (.getAttribute el model/attr-mode)
+  (let [mode-raw  (du/get-attr el model/attr-mode)
         canon     (model/canonicalize
                    {:mode       mode-raw
-                    :value      (.getAttribute el model/attr-value)
-                    :start      (.getAttribute el model/attr-start)
-                    :end        (.getAttribute el model/attr-end)
-                    :min        (.getAttribute el model/attr-min)
-                    :max        (.getAttribute el model/attr-max)
-                    :format     (.getAttribute el model/attr-format)
-                    :locale     (.getAttribute el model/attr-locale)
-                    :separator  (.getAttribute el model/attr-separator)
+                    :value      (du/get-attr el model/attr-value)
+                    :start      (du/get-attr el model/attr-start)
+                    :end        (du/get-attr el model/attr-end)
+                    :min        (du/get-attr el model/attr-min)
+                    :max        (du/get-attr el model/attr-max)
+                    :format     (du/get-attr el model/attr-format)
+                    :locale     (du/get-attr el model/attr-locale)
+                    :separator  (du/get-attr el model/attr-separator)
                     :auto-swap? (mu/parse-bool-attr
-                                 (.getAttribute el model/attr-auto-swap))
+                                 (du/get-attr el model/attr-auto-swap))
                     :range-allow-same-day?
                     (mu/parse-bool-attr
-                     (.getAttribute el model/attr-range-allow-same))})
+                     (du/get-attr el model/attr-range-allow-same))})
         cfg       {:format (:format canon) :locale (:locale canon)}
         disp      (model/display-value canon cfg)
         ;; stored month: default to value-d / start-d / today
@@ -214,12 +214,12 @@
       (let [^js inp     (gobj/get refs "input")
             ^js btn     (gobj/get refs "btn")
             ^js _sr     (gobj/get refs "sr")
-            disabled?   (.hasAttribute el model/attr-disabled)
-            readonly?   (.hasAttribute el model/attr-readonly)
-            placeholder (.getAttribute el model/attr-placeholder)
-            aria-label  (.getAttribute el model/attr-aria-label)
-            aria-desc   (.getAttribute el model/attr-aria-describedby)
-            open?       (.hasAttribute el "open")]
+            disabled?   (du/has-attr? el model/attr-disabled)
+            readonly?   (du/has-attr? el model/attr-readonly)
+            placeholder (du/get-attr el model/attr-placeholder)
+            aria-label  (du/get-attr el model/attr-aria-label)
+            aria-desc   (du/get-attr el model/attr-aria-describedby)
+            open?       (du/has-attr? el "open")]
 
         (when btn
           (if disabled?
@@ -249,13 +249,13 @@
 (defn- set-single-value!
   [^js el ^js d]
   (if d
-    (.setAttribute el model/attr-value (model/date->iso d))
-    (.removeAttribute el model/attr-value)))
+    (du/set-attr! el model/attr-value (model/date->iso d))
+    (du/remove-attr! el model/attr-value)))
 
 (defn- do-select-date!
   "Apply date selection. For single: set value. For range: smart first/second click."
   [^js el ^js d reason]
-  (when-not (.hasAttribute el model/attr-readonly)
+  (when-not (du/has-attr? el model/attr-readonly)
     (let [state  (gobj/get el k-state)
           canon  (when state (gobj/get state "canon"))
           mode   (when canon (:mode canon))
@@ -273,8 +273,8 @@
             (du/dispatch! el model/event-change
                        #js {:value iso :mode mode-s :reason reason})
             ;; Auto-close if close-on-select
-            (when (.hasAttribute el model/attr-close-on-select)
-              (.removeAttribute el "open")
+            (when (du/has-attr? el model/attr-close-on-select)
+              (du/remove-attr! el "open")
               (render! el)))
           ;; Range mode
           (let [step (or (gobj/get el k-range-step) 0)
@@ -283,8 +283,8 @@
               ;; Step 0: no selection yet — set start
               (= step 0)
               (do
-                (.setAttribute el model/attr-start (model/date->iso d))
-                (.removeAttribute el model/attr-end)
+                (du/set-attr! el model/attr-start (model/date->iso d))
+                (du/remove-attr! el model/attr-end)
                 (gobj/set el k-range-step 1))
 
               ;; Step 1: start selected, pick end
@@ -300,23 +300,23 @@
                         final-end   (if (:auto-swap? canon)
                                      (model/max-date cur-start d)
                                      d)]
-                    (.setAttribute el model/attr-start (model/date->iso final-start))
-                    (.setAttribute el model/attr-end (model/date->iso final-end))
+                    (du/set-attr! el model/attr-start (model/date->iso final-start))
+                    (du/set-attr! el model/attr-end (model/date->iso final-end))
                     (gobj/set el k-range-step 0)
-                    (when (and (.hasAttribute el model/attr-close-on-select)
+                    (when (and (du/has-attr? el model/attr-close-on-select)
                                (some? final-start) (some? final-end))
-                      (.removeAttribute el "open")))
+                      (du/remove-attr! el "open")))
                   ;; Restart: treat as new start
                   (do
-                    (.setAttribute el model/attr-start (model/date->iso d))
-                    (.removeAttribute el model/attr-end)
+                    (du/set-attr! el model/attr-start (model/date->iso d))
+                    (du/remove-attr! el model/attr-end)
                     (gobj/set el k-range-step 1))))
 
               ;; Step 2+: reset and start fresh
               :else
               (do
-                (.setAttribute el model/attr-start (model/date->iso d))
-                (.removeAttribute el model/attr-end)
+                (du/set-attr! el model/attr-start (model/date->iso d))
+                (du/remove-attr! el model/attr-end)
                 (gobj/set el k-range-step 1)))
             (read-state! el)
             (render! el)
@@ -363,8 +363,8 @@
                                   #js {:start s-iso :end e-iso
                                        :mode mode-s :reason reason})]
             (when-not (.-defaultPrevented ev)
-              (.setAttribute el model/attr-start s-iso)
-              (.setAttribute el model/attr-end   e-iso)
+              (du/set-attr! el model/attr-start s-iso)
+              (du/set-attr! el model/attr-end   e-iso)
               (gobj/set el k-range-step 0)
               (read-state! el)
               (render! el)
@@ -395,8 +395,8 @@
 
 (defn- open-popover!
   [^js el]
-  (when-not (.hasAttribute el "open")
-    (.setAttribute el "open" "")
+  (when-not (du/has-attr? el "open")
+    (du/set-attr! el "open" "")
     ;; attributeChangedCallback already triggers render; set grid focus
     (let [state  (gobj/get el k-state)
           canon  (when state (gobj/get state "canon"))
@@ -406,8 +406,8 @@
 
 (defn- close-popover!
   [^js el]
-  (when (.hasAttribute el "open")
-    (.removeAttribute el "open")))
+  (when (du/has-attr? el "open")
+    (du/remove-attr! el "open")))
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -654,7 +654,7 @@
 
 (defn- on-input-keydown!
   [^js el ^js e]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (let [key (.-key e)]
       (cond
         (= key "Enter")
@@ -671,21 +671,21 @@
 (defn- on-input-blur!
   [^js el ^js _e]
   (gobj/set el k-focused false)
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (commit-display! el "blur"))
   (sync-input-display! el))
 
 (defn- on-btn-click!
   [^js el ^js _e]
-  (when-not (or (.hasAttribute el model/attr-disabled)
-                (.hasAttribute el model/attr-readonly))
-    (if (.hasAttribute el "open")
+  (when-not (or (du/has-attr? el model/attr-disabled)
+                (du/has-attr? el model/attr-readonly))
+    (if (du/has-attr? el "open")
       (close-popover! el)
       (open-popover! el))))
 
 (defn- on-nav-click!
   [^js el ^js e]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (let [^js target (.-currentTarget e)
           dir        (.getAttribute target "data-nav")]
       (if (= dir "prev")
@@ -694,8 +694,8 @@
 
 (defn- on-grid-click!
   [^js el ^js e]
-  (when-not (or (.hasAttribute el model/attr-disabled)
-                (.hasAttribute el model/attr-readonly))
+  (when-not (or (du/has-attr? el model/attr-disabled)
+                (du/has-attr? el model/attr-readonly))
     (let [^js target (.-target e)
           ^js btn    (.closest target "button[data-iso]")]
       (when (and btn (not= "true" (.getAttribute btn "data-disabled")))
@@ -705,7 +705,7 @@
 
 (defn- on-grid-keydown!
   [^js el ^js e]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (let [key     (.-key e)
           cur-iso (gobj/get el k-grid-focus)
           ^js cur (when cur-iso (model/iso->date cur-iso))
@@ -740,7 +740,7 @@
         ;; Enter / Space selects the focused date
         (and (or (= key "Enter") (= key " "))
              cur
-             (not (.hasAttribute el model/attr-readonly)))
+             (not (du/has-attr? el model/attr-readonly)))
         (do
           (.preventDefault e)
           (when-not (day-out-of-range? cur canon)
@@ -782,7 +782,7 @@
         h-grid-kd  (fn [^js e] (on-grid-keydown! el e))
         h-pop-md   (fn [^js e] (on-popover-mousedown! el e))
         h-doc-click (fn [^js e]
-                      (when (.hasAttribute el "open")
+                      (when (du/has-attr? el "open")
                         (when-not (.some (.composedPath e)
                                          (fn [^js n] (identical? n el)))
                           (close-popover! el))))]
@@ -856,9 +856,9 @@
   [^js el _n _o _v]
   ;; Force the popover closed when disabled is set while open. Done here, not
   ;; inside render!, so the render path doesn't write observed attrs.
-  (when (and (.hasAttribute el model/attr-disabled)
-             (.hasAttribute el "open"))
-    (.removeAttribute el "open"))
+  (when (and (du/has-attr? el model/attr-disabled)
+             (du/has-attr? el "open"))
+    (du/remove-attr! el "open"))
   (read-state! el)
   (render! el))
 

@@ -92,14 +92,14 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:columns-raw    (.getAttribute el model/attr-columns)
-    :caption-raw    (.getAttribute el model/attr-caption)
-    :selectable-raw (.getAttribute el model/attr-selectable)
-    :striped?       (.hasAttribute el model/attr-striped)
-    :bordered?      (.hasAttribute el model/attr-bordered)
-    :full-width?    (.hasAttribute el model/attr-full-width)
-    :compact?       (.hasAttribute el model/attr-compact)
-    :row-count-raw  (.getAttribute el model/attr-row-count)}))
+   {:columns-raw    (du/get-attr el model/attr-columns)
+    :caption-raw    (du/get-attr el model/attr-caption)
+    :selectable-raw (du/get-attr el model/attr-selectable)
+    :striped?       (du/has-attr? el model/attr-striped)
+    :bordered?      (du/has-attr? el model/attr-bordered)
+    :full-width?    (du/has-attr? el model/attr-full-width)
+    :compact?       (du/has-attr? el model/attr-compact)
+    :row-count-raw  (du/get-attr el model/attr-row-count)}))
 
 ;; ── Stripe helper ────────────────────────────────────────────────────────────
 (defn- update-stripe-attrs! [^js el]
@@ -130,23 +130,23 @@
       (set! (.. el -style -gridTemplateColumns) ""))
 
     ;; ARIA role
-    (.setAttribute el "role" (model/role-for-selectable selectable))
+    (du/set-attr! el "role" (model/role-for-selectable selectable))
 
     ;; aria-multiselectable
     (let [ms (model/aria-multiselectable selectable)]
       (if ms
-        (.setAttribute el "aria-multiselectable" ms)
-        (.removeAttribute el "aria-multiselectable")))
+        (du/set-attr! el "aria-multiselectable" ms)
+        (du/remove-attr! el "aria-multiselectable")))
 
     ;; aria-rowcount (explicit)
     (if (some? row-count)
-      (.setAttribute el "aria-rowcount" (str row-count))
-      (.removeAttribute el "aria-rowcount"))
+      (du/set-attr! el "aria-rowcount" (str row-count))
+      (du/remove-attr! el "aria-rowcount"))
 
     ;; aria-label from caption
     (if (not= caption "")
-      (.setAttribute el "aria-label" caption)
-      (.removeAttribute el "aria-label"))
+      (du/set-attr! el "aria-label" caption)
+      (du/remove-attr! el "aria-label"))
 
     ;; Caption element visibility and text
     (if (not= caption "")
@@ -157,20 +157,20 @@
 
     ;; Data attributes for CSS targeting
     (if striped?
-      (.setAttribute el "data-striped" "")
-      (.removeAttribute el "data-striped"))
+      (du/set-attr! el "data-striped" "")
+      (du/remove-attr! el "data-striped"))
 
     (if bordered?
-      (.setAttribute el "data-bordered" "")
-      (.removeAttribute el "data-bordered"))
+      (du/set-attr! el "data-bordered" "")
+      (du/remove-attr! el "data-bordered"))
 
     (if full-width?
-      (.setAttribute el "data-full-width" "")
-      (.removeAttribute el "data-full-width"))
+      (du/set-attr! el "data-full-width" "")
+      (du/remove-attr! el "data-full-width"))
 
     (if compact?
-      (.setAttribute el "data-compact" "")
-      (.removeAttribute el "data-compact"))
+      (du/set-attr! el "data-compact" "")
+      (du/remove-attr! el "data-compact"))
 
     ;; Update stripe attributes on child rows when striped flag changes
     (when striped?

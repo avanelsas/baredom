@@ -60,13 +60,13 @@
    "@media (prefers-reduced-motion:reduce){.base{transition:none;}}"))
 
 (defn read-inputs [^js el]
-  {:value (.getAttribute el model/attr-value)
-   :disabled (.hasAttribute el model/attr-disabled)
-   :variant (.getAttribute el model/attr-variant)
-   :type (.getAttribute el model/attr-type)})
+  {:value (du/get-attr el model/attr-value)
+   :disabled (du/has-attr? el model/attr-disabled)
+   :variant (du/get-attr el model/attr-variant)
+   :type (du/get-attr el model/attr-type)})
 
 (defn dispatch-item-select! [^js el]
-  (let [value (.getAttribute el model/attr-value)]
+  (let [value (du/get-attr el model/attr-value)]
     (du/dispatch! el model/event-item-select #js {:value (or value "")})))
 
 (defn handle-click! [^js el ^js evt]
@@ -88,8 +88,8 @@
 (defn handle-icon-slotchange! [^js el ^js slot]
   (let [nodes (.assignedNodes slot)]
     (if (> (alength nodes) 0)
-      (.setAttribute el "has-icon" "")
-      (.removeAttribute el "has-icon"))))
+      (du/set-attr! el "has-icon" "")
+      (du/remove-attr! el "has-icon"))))
 
 (defn render! [^js el]
   (let [refs (du/getv el key-refs)
@@ -98,21 +98,21 @@
     (when base
       (if (= (:type state) "divider")
         (do
-          (.setAttribute el "role" "separator")
-          (.removeAttribute el "tabindex")
-          (.removeAttribute el "aria-disabled")
+          (du/set-attr! el "role" "separator")
+          (du/remove-attr! el "tabindex")
+          (du/remove-attr! el "aria-disabled")
           (.setAttribute base "data-type" "divider")
           (.setAttribute base "data-variant" "")
           (.setAttribute base "data-disabled" "false"))
         (do
-          (.setAttribute el "role" "menuitem")
-          (.setAttribute el "tabindex" "-1")
+          (du/set-attr! el "role" "menuitem")
+          (du/set-attr! el "tabindex" "-1")
           (.setAttribute base "data-type" "")
           (.setAttribute base "data-variant" (:variant state))
           (.setAttribute base "data-disabled" (if (:disabled state) "true" "false"))
           (if (:disabled state)
-            (.setAttribute el "aria-disabled" "true")
-            (.removeAttribute el "aria-disabled")))))))
+            (du/set-attr! el "aria-disabled" "true")
+            (du/remove-attr! el "aria-disabled")))))))
 
 (defn init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})

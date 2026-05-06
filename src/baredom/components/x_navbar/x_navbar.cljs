@@ -349,7 +349,7 @@
        (when (and target (.matches ^js target ":focus-visible"))
          (when-not (gobj/get el k-focus-visible)
            (gobj/set el k-focus-visible true)
-           (.setAttribute el "data-focus-visible-within" "true")
+           (du/set-attr! el "data-focus-visible-within" "true")
            (du/dispatch! el model/event-focus-visible #js {}))))))
 
   (.addEventListener
@@ -359,7 +359,7 @@
      (let [related (.-relatedTarget event)]
        (when-not (and related (.contains el ^js related))
          (gobj/set el k-focus-visible false)
-         (.removeAttribute el "data-focus-visible-within"))))))
+         (du/remove-attr! el "data-focus-visible-within"))))))
 
 ;; ── Slot change wiring ───────────────────────────────────────────────────────
 

@@ -284,25 +284,25 @@
     (clear-show-timer! el)
     (if (or immediate? (du/has-attr? el model/attr-open))
       (when-not (du/has-attr? el model/attr-open)
-        (.setAttribute el model/attr-open "")
+        (du/set-attr! el model/attr-open "")
         (du/dispatch! el model/event-show #js {}))
       (let [{:keys [delay]} (read-model el)]
         (if (zero? delay)
-          (do (.setAttribute el model/attr-open "")
+          (do (du/set-attr! el model/attr-open "")
               (du/dispatch! el model/event-show #js {}))
           (du/setv! el k-show-timer
                     (js/setTimeout
                      (fn []
                        (du/setv! el k-show-timer nil)
                        (when (.-isConnected el)
-                         (.setAttribute el model/attr-open "")
+                         (du/set-attr! el model/attr-open "")
                          (du/dispatch! el model/event-show #js {})))
                      delay)))))))
 
 (defn- do-hide! [^js el]
   (clear-show-timer! el)
   (when (du/has-attr? el model/attr-open)
-    (.removeAttribute el model/attr-open)
+    (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-hide #js {})))
 
 ;; ---------------------------------------------------------------------------

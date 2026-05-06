@@ -88,35 +88,35 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:selected?    (.hasAttribute el model/attr-selected)
-    :disabled?    (.hasAttribute el model/attr-disabled)
-    :interactive? (.hasAttribute el model/attr-interactive)
-    :row-index-raw (.getAttribute el model/attr-row-index)}))
+   {:selected?    (du/has-attr? el model/attr-selected)
+    :disabled?    (du/has-attr? el model/attr-disabled)
+    :interactive? (du/has-attr? el model/attr-interactive)
+    :row-index-raw (du/get-attr el model/attr-row-index)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-host-attrs! [^js el {:keys [selected? disabled? interactive? row-index] :as m}]
-  (.setAttribute el "role" "row")
+  (du/set-attr! el "role" "row")
 
   (let [aria-sel (model/aria-selected-value m)]
     (if aria-sel
-      (.setAttribute el "aria-selected" aria-sel)
-      (.removeAttribute el "aria-selected")))
+      (du/set-attr! el "aria-selected" aria-sel)
+      (du/remove-attr! el "aria-selected")))
 
   (if disabled?
-    (.setAttribute el "aria-disabled" "true")
-    (.removeAttribute el "aria-disabled"))
+    (du/set-attr! el "aria-disabled" "true")
+    (du/remove-attr! el "aria-disabled"))
 
   (if (some? row-index)
-    (.setAttribute el "aria-rowindex" (str row-index))
-    (.removeAttribute el "aria-rowindex"))
+    (du/set-attr! el "aria-rowindex" (str row-index))
+    (du/remove-attr! el "aria-rowindex"))
 
   (if selected?
-    (.setAttribute el "data-selected" "")
-    (.removeAttribute el "data-selected"))
+    (du/set-attr! el "data-selected" "")
+    (du/remove-attr! el "data-selected"))
 
   (if interactive?
-    (.setAttribute el "data-interactive" "")
-    (.removeAttribute el "data-interactive"))
+    (du/set-attr! el "data-interactive" "")
+    (du/remove-attr! el "data-interactive"))
 
   (set! (.-tabIndex el) (if (model/interactive-eligible? m) 0 -1))
   nil)

@@ -820,7 +820,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- open-popover! [^js el]
   (when-not (du/has-attr? el model/attr-open)
-    (.setAttribute el model/attr-open "")
+    (du/set-attr! el model/attr-open "")
     ;; Focus the area after opening
     (when-let [refs (du/getv el k-refs)]
       (let [^js area-el (gobj/get refs "area")]
@@ -828,7 +828,7 @@
 
 (defn- close-popover! [^js el]
   (when (du/has-attr? el model/attr-open)
-    (.removeAttribute el model/attr-open)
+    (du/remove-attr! el model/attr-open)
     ;; Return focus to trigger
     (when-let [refs (du/getv el k-refs)]
       (let [^js trigger (gobj/get refs "trigger")]

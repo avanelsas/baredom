@@ -324,7 +324,7 @@
 (defn- do-open!
   "Actually open: set attr, focus input, dispatch open event."
   [^js el]
-  (.setAttribute el model/attr-open "")
+  (du/set-attr! el model/attr-open "")
   (let [refs  (gobj/get el k-refs)
         ^js input (when refs (gobj/get refs "input"))]
     (when input (.focus input)))
@@ -334,7 +334,7 @@
 (defn- do-close!
   "Actually close: remove attr, dispatch close event."
   [^js el]
-  (.removeAttribute el model/attr-open)
+  (du/remove-attr! el model/attr-open)
   (let [refs (gobj/get el k-refs)
         ^js input (when refs (gobj/get refs "input"))]
     (when input (.removeAttribute input "aria-activedescendant")))
@@ -343,13 +343,13 @@
 
 (defn- request-open!
   [^js el]
-  (when-not (.hasAttribute el model/attr-open)
+  (when-not (du/has-attr? el model/attr-open)
     (when (du/dispatch-cancelable! el model/event-open-request #js {})
       (do-open! el))))
 
 (defn- request-close!
   [^js el]
-  (when (.hasAttribute el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     (when (du/dispatch-cancelable! el model/event-close-request #js {})
       (do-close! el))))
 

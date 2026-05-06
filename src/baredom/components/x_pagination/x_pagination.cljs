@@ -196,13 +196,13 @@
 ;; ── Read model from attributes ────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:page-raw            (.getAttribute el model/attr-page)
-    :total-pages-raw     (.getAttribute el model/attr-total-pages)
-    :sibling-count-raw   (.getAttribute el model/attr-sibling-count)
-    :boundary-count-raw  (.getAttribute el model/attr-boundary-count)
-    :size-raw            (.getAttribute el model/attr-size)
-    :disabled-present?   (.hasAttribute el model/attr-disabled)
-    :label-raw           (.getAttribute el model/attr-label)}))
+   {:page-raw            (du/get-attr el model/attr-page)
+    :total-pages-raw     (du/get-attr el model/attr-total-pages)
+    :sibling-count-raw   (du/get-attr el model/attr-sibling-count)
+    :boundary-count-raw  (du/get-attr el model/attr-boundary-count)
+    :size-raw            (du/get-attr el model/attr-size)
+    :disabled-present?   (du/has-attr? el model/attr-disabled)
+    :label-raw           (du/get-attr el model/attr-label)}))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -219,7 +219,7 @@
 
     ;; Update nav aria-label and host data-size
     (.setAttribute nav "aria-label" label)
-    (.setAttribute el  "data-size"  size)
+    (du/set-attr! el  "data-size"  size)
 
     ;; Update prev/next disabled state
     (if (model/prev-disabled? m)

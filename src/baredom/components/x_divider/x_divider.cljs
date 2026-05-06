@@ -189,25 +189,25 @@
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
   (let [m (model/normalize
-           {:orientation-raw (.getAttribute el model/attr-orientation)
-            :variant-raw     (.getAttribute el model/attr-variant)
-            :thickness-raw   (.getAttribute el model/attr-thickness)
-            :color-raw       (.getAttribute el model/attr-color)
-            :inset-raw       (.getAttribute el model/attr-inset)
-            :length-raw      (.getAttribute el model/attr-length)
-            :label-raw       (.getAttribute el model/attr-label)
-            :align-raw       (.getAttribute el model/attr-align)
-            :role-raw        (.getAttribute el model/attr-role)
-            :aria-label-raw  (.getAttribute el model/attr-aria-label)})
+           {:orientation-raw (du/get-attr el model/attr-orientation)
+            :variant-raw     (du/get-attr el model/attr-variant)
+            :thickness-raw   (du/get-attr el model/attr-thickness)
+            :color-raw       (du/get-attr el model/attr-color)
+            :inset-raw       (du/get-attr el model/attr-inset)
+            :length-raw      (du/get-attr el model/attr-length)
+            :label-raw       (du/get-attr el model/attr-label)
+            :align-raw       (du/get-attr el model/attr-align)
+            :role-raw        (du/get-attr el model/attr-role)
+            :aria-label-raw  (du/get-attr el model/attr-aria-label)})
         {:keys [orientation variant align label aria-label
                 thickness color inset length]} m
         has-lbl (model/has-label? label)
         ^js style (.-style el)]
 
     ;; Data attributes for CSS
-    (.setAttribute el "data-orientation" orientation)
-    (.setAttribute el "data-variant"     variant)
-    (.setAttribute el "data-align"       align)
+    (du/set-attr! el "data-orientation" orientation)
+    (du/set-attr! el "data-variant"     variant)
+    (du/set-attr! el "data-align"       align)
 
     ;; CSS custom properties — always set thickness/inset/length with defaults
     ;; so the values are always present on the host's inline style (avoids
@@ -223,18 +223,18 @@
 
     ;; ARIA role on host
     (if (model/separator-role? (:role m))
-      (.setAttribute el "role" "separator")
-      (.setAttribute el "role" "presentation"))
+      (du/set-attr! el "role" "separator")
+      (du/set-attr! el "role" "presentation"))
 
     ;; aria-orientation on host (only meaningful for separator role)
     (if (= orientation "vertical")
-      (.setAttribute el "aria-orientation" "vertical")
-      (.removeAttribute el "aria-orientation"))
+      (du/set-attr! el "aria-orientation" "vertical")
+      (du/remove-attr! el "aria-orientation"))
 
     ;; aria-label on host
     (if (and aria-label (pos? (.-length aria-label)))
-      (.setAttribute el "aria-label" aria-label)
-      (.removeAttribute el "aria-label"))
+      (du/set-attr! el "aria-label" aria-label)
+      (du/remove-attr! el "aria-label"))
 
     ;; Switch DOM structure based on label presence
     (if has-lbl

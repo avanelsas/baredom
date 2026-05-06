@@ -145,16 +145,16 @@
     :height-raw       (du/get-attr el model/attr-height)
     :padding-raw      (du/get-attr el model/attr-padding)
     :grid-present?    (when (du/has-attr? el model/attr-grid)
-                        (.getAttribute el model/attr-grid))
+                        (du/get-attr el model/attr-grid))
     :axes-raw         (when (du/has-attr? el model/attr-axes)
-                        (.getAttribute el model/attr-axes))
+                        (du/get-attr el model/attr-axes))
     :tooltip-present? (when (du/has-attr? el model/attr-tooltip)
-                        (.getAttribute el model/attr-tooltip))
+                        (du/get-attr el model/attr-tooltip))
     :cursor-raw       (du/get-attr el model/attr-cursor)
     :disabled-present? (when (du/has-attr? el model/attr-disabled)
-                         (.getAttribute el model/attr-disabled))
+                         (du/get-attr el model/attr-disabled))
     :loading-present?  (when (du/has-attr? el model/attr-loading)
-                         (.getAttribute el model/attr-loading))
+                         (du/get-attr el model/attr-loading))
     :selected-raw      (du/get-attr el model/attr-selected)
     :x-format-raw      (du/get-attr el model/attr-x-format)
     :y-format-raw      (du/get-attr el model/attr-y-format)}))
@@ -498,7 +498,7 @@
              ;; No selection yet: any arrow key initializes at s[0]:0
              (when (#{"ArrowRight" "ArrowLeft" "ArrowDown" "ArrowUp"} key)
                (.preventDefault ev)
-               (.setAttribute el model/attr-selected
+               (du/set-attr! el model/attr-selected
                               (str (:id (first series-v)) ":0")))
              ;; Selection exists: navigate from current position
              (let [n-series (count series-v)
@@ -513,23 +513,23 @@
                  "ArrowRight"
                  (do (.preventDefault ev)
                    (let [new-i (min (dec n-pts) (inc pt-i))]
-                     (.setAttribute el model/attr-selected (str (:id s) ":" new-i))))
+                     (du/set-attr! el model/attr-selected (str (:id s) ":" new-i))))
                  "ArrowLeft"
                  (do (.preventDefault ev)
                    (let [new-i (max 0 (dec pt-i))]
-                     (.setAttribute el model/attr-selected (str (:id s) ":" new-i))))
+                     (du/set-attr! el model/attr-selected (str (:id s) ":" new-i))))
                  "ArrowDown"
                  (do (.preventDefault ev)
                    (let [new-si (mod (inc si) n-series)
                          new-s  (nth series-v new-si)
                          new-i  (min pt-i (dec (max 1 (count (:data new-s)))))]
-                     (.setAttribute el model/attr-selected (str (:id new-s) ":" new-i))))
+                     (du/set-attr! el model/attr-selected (str (:id new-s) ":" new-i))))
                  "ArrowUp"
                  (do (.preventDefault ev)
                    (let [new-si (mod (+ si (dec n-series)) n-series)
                          new-s  (nth series-v new-si)
                          new-i  (min pt-i (dec (max 1 (count (:data new-s)))))]
-                     (.setAttribute el model/attr-selected (str (:id new-s) ":" new-i))))
+                     (du/set-attr! el model/attr-selected (str (:id new-s) ":" new-i))))
                  ("Enter" " ")
                  (do (.preventDefault ev)
                    (let [pt (nth (:data s) pt-i nil)]

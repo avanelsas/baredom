@@ -196,7 +196,7 @@
     ;; Delay by one tick so the opening click/contextmenu does not immediately close
     (js/setTimeout
      (fn []
-       (when (.hasAttribute el model/attr-open)
+       (when (du/has-attr? el model/attr-open)
          (.addEventListener js/document "keydown" on-doc-keydown)
          (.addEventListener js/document "click"   on-doc-click)
          (gobj/set el k-doc-handlers
@@ -215,11 +215,11 @@
 ;; ---- close! ----
 
 (defn- close! [^js el reason]
-  (when (.hasAttribute el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     (let [proceed? (du/dispatch-cancelable! el model/event-close-request #js {:reason reason})]
       (when proceed?
         (remove-doc-listeners! el)
-        (.removeAttribute el model/attr-open)
+        (du/remove-attr! el model/attr-open)
         (let [^js layer (gobj/get el k-layer)]
           (remove-layer! layer)
           (gobj/set el k-layer nil))
@@ -228,7 +228,7 @@
 ;; ---- open! ----
 
 (defn- open-at-coords! [^js el x y reason]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (let [proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
       (when proceed?
         (let [m           (read-model el)
@@ -248,7 +248,7 @@
           (add-layer-listeners! el layer)
           (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
 
-          (.setAttribute el model/attr-open "")
+          (du/set-attr! el model/attr-open "")
           (gobj/set el k-layer layer)
           (add-doc-listeners! el)
 
@@ -269,7 +269,7 @@
           (du/dispatch! el model/event-open #js {:reason reason}))))))
 
 (defn- open-for-element! [^js el ^js anchor-el reason]
-  (when-not (.hasAttribute el model/attr-disabled)
+  (when-not (du/has-attr? el model/attr-disabled)
     (let [^js rect (.getBoundingClientRect anchor-el)
           m        (read-model el)
           {:keys [placement offset z-index]} m
@@ -288,7 +288,7 @@
           (add-layer-listeners! el layer)
           (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
 
-          (.setAttribute el model/attr-open "")
+          (du/set-attr! el model/attr-open "")
           (gobj/set el k-layer layer)
           (add-doc-listeners! el)
 
@@ -329,9 +329,9 @@
   (when-not (gobj/get el k-refs)
     (make-shadow! el))
   ;; If open attr was already set (e.g. SSR), sync visual state
-  (when (.hasAttribute el model/attr-open)
+  (when (du/has-attr? el model/attr-open)
     ;; Re-opening: the layer was not created yet (first connect), clear attr
-    (.removeAttribute el model/attr-open)))
+    (du/remove-attr! el model/attr-open)))
 
 (defn- disconnected! [^js el]
   (let [^js layer (gobj/get el k-layer)]
@@ -342,7 +342,7 @@
 (defn- attribute-changed! [^js el name _old _new]
   ;; If open attr removed externally, close the layer
   (when (= name model/attr-open)
-    (when-not (.hasAttribute el model/attr-open)
+    (when-not (du/has-attr? el model/attr-open)
       (let [^js layer (gobj/get el k-layer)]
         (when layer
           (remove-layer! layer)

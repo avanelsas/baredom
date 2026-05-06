@@ -89,12 +89,12 @@
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:size-raw          (.getAttribute el model/attr-size)
-    :overlap-raw       (.getAttribute el model/attr-overlap)
-    :max-raw           (.getAttribute el model/attr-max)
-    :direction-raw     (.getAttribute el model/attr-direction)
-    :disabled-present? (.hasAttribute el model/attr-disabled)
-    :label-raw         (.getAttribute el model/attr-label)}))
+   {:size-raw          (du/get-attr el model/attr-size)
+    :overlap-raw       (du/get-attr el model/attr-overlap)
+    :max-raw           (du/get-attr el model/attr-max)
+    :direction-raw     (du/get-attr el model/attr-direction)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :label-raw         (du/get-attr el model/attr-label)}))
 
 ;; ── Layout application ────────────────────────────────────────────────────
 (defn- apply-layout! [^js el {:keys [size overlap max direction disabled label] :as m}]
@@ -107,18 +107,18 @@
         margin       (get model/overlap-margin overlap "0px")]
 
     ;; Data attributes drive CSS selectors
-    (.setAttribute el "data-size"      size)
-    (.setAttribute el "data-overlap"   overlap)
-    (.setAttribute el "data-direction" direction)
+    (du/set-attr! el "data-size"      size)
+    (du/set-attr! el "data-overlap"   overlap)
+    (du/set-attr! el "data-direction" direction)
 
     ;; ARIA on host
-    (.setAttribute el "role" "group")
+    (du/set-attr! el "role" "group")
     (if label
-      (.setAttribute el "aria-label" label)
-      (.removeAttribute el "aria-label"))
+      (du/set-attr! el "aria-label" label)
+      (du/remove-attr! el "aria-label"))
     (if disabled
-      (.setAttribute el "aria-disabled" "true")
-      (.removeAttribute el "aria-disabled"))
+      (du/set-attr! el "aria-disabled" "true")
+      (du/remove-attr! el "aria-disabled"))
 
     ;; Apply size, disabled, overlap margin to each child avatar
     (doseq [[^js child idx] (map vector children (range))]

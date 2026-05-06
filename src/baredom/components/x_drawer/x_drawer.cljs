@@ -176,9 +176,9 @@
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:open-present? (.hasAttribute el model/attr-open)
-    :placement-raw (.getAttribute el model/attr-placement)
-    :label-raw     (.getAttribute el model/attr-label)}))
+   {:open-present? (du/has-attr? el model/attr-open)
+    :placement-raw (du/get-attr el model/attr-placement)
+    :label-raw     (du/get-attr el model/attr-label)}))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 ;; ── Focus trap ────────────────────────────────────────────────────────────────
@@ -252,21 +252,21 @@
 ;; ── Dismiss (user-initiated close) ───────────────────────────────────────────
 (defn- do-dismiss! [^js el reason]
   (du/dispatch! el model/event-dismiss (model/dismiss-event-detail reason))
-  (.removeAttribute el model/attr-open)
+  (du/remove-attr! el model/attr-open)
   nil)
 
 ;; ── Show / hide / toggle ─────────────────────────────────────────────────────
 (defn- do-show! [^js el]
-  (when-not (.hasAttribute el model/attr-open)
-    (.setAttribute el model/attr-open ""))
+  (when-not (du/has-attr? el model/attr-open)
+    (du/set-attr! el model/attr-open ""))
   nil)
 
 (defn- do-hide! [^js el]
-  (.removeAttribute el model/attr-open)
+  (du/remove-attr! el model/attr-open)
   nil)
 
 (defn- do-toggle! [^js el]
-  (if (.hasAttribute el model/attr-open)
+  (if (du/has-attr? el model/attr-open)
     (do-hide! el)
     (do-show! el))
   nil)
@@ -280,8 +280,8 @@
         prev-open (gobj/get el k-prev-open)]
 
     ;; Apply data attributes to host for CSS selectors
-    (.setAttribute el "data-open" (if open? "true" "false"))
-    (.setAttribute el "data-placement" (:placement m))
+    (du/set-attr! el "data-open" (if open? "true" "false"))
+    (du/set-attr! el "data-placement" (:placement m))
 
     ;; aria-label on panel
     (.setAttribute panel "aria-label" (:label m))

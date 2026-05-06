@@ -9,15 +9,15 @@
 (def key-initialized "__xGridInitialized")
 
 (defn read-inputs [^js el]
-  {:columns (.getAttribute el model/attr-columns)
-   :min-column-size (.getAttribute el model/attr-min-column-size)
-   :gap (.getAttribute el model/attr-gap)
-   :row-gap (.getAttribute el model/attr-row-gap)
-   :column-gap (.getAttribute el model/attr-column-gap)
-   :align-items (.getAttribute el model/attr-align-items)
-   :justify-items (.getAttribute el model/attr-justify-items)
-   :auto-flow (.getAttribute el model/attr-auto-flow)
-   :inline (.hasAttribute el model/attr-inline)})
+  {:columns (du/get-attr el model/attr-columns)
+   :min-column-size (du/get-attr el model/attr-min-column-size)
+   :gap (du/get-attr el model/attr-gap)
+   :row-gap (du/get-attr el model/attr-row-gap)
+   :column-gap (du/get-attr el model/attr-column-gap)
+   :align-items (du/get-attr el model/attr-align-items)
+   :justify-items (du/get-attr el model/attr-justify-items)
+   :auto-flow (du/get-attr el model/attr-auto-flow)
+   :inline (du/has-attr? el model/attr-inline)})
 
 (defn style-text []
   "

@@ -9,14 +9,14 @@
 (def key-initialized "__xTabInitialized")
 
 (defn read-inputs [^js el]
-  {:value (.getAttribute el model/attr-value)
-   :selected (.hasAttribute el model/attr-selected)
-   :disabled (.hasAttribute el model/attr-disabled)
-   :orientation (.getAttribute el model/attr-orientation)
-   :size (.getAttribute el model/attr-size)
-   :variant (.getAttribute el model/attr-variant)
-   :label (.getAttribute el model/attr-label)
-   :controls (.getAttribute el model/attr-controls)})
+  {:value (du/get-attr el model/attr-value)
+   :selected (du/has-attr? el model/attr-selected)
+   :disabled (du/has-attr? el model/attr-disabled)
+   :orientation (du/get-attr el model/attr-orientation)
+   :size (du/get-attr el model/attr-size)
+   :variant (du/get-attr el model/attr-variant)
+   :label (du/get-attr el model/attr-label)
+   :controls (du/get-attr el model/attr-controls)})
 
 (def style-text
   (str
@@ -56,24 +56,24 @@
    "@media (prefers-reduced-motion: reduce){.base{transition:none;}}"))
 
 (defn apply-host-a11y! [^js el state]
-  (.setAttribute el "role" "tab")
-  (.setAttribute el "aria-selected" (if (:selected state) "true" "false"))
+  (du/set-attr! el "role" "tab")
+  (du/set-attr! el "aria-selected" (if (:selected state) "true" "false"))
 
   (if (:disabled state)
-    (.setAttribute el "aria-disabled" "true")
-    (.removeAttribute el "aria-disabled"))
+    (du/set-attr! el "aria-disabled" "true")
+    (du/remove-attr! el "aria-disabled"))
 
-  (.setAttribute el "tabindex" (:tabindex state))
+  (du/set-attr! el "tabindex" (:tabindex state))
 
   (let [controls (:controls state)
         label (:label state)]
     (if (and controls (not= controls ""))
-      (.setAttribute el "aria-controls" controls)
-      (.removeAttribute el "aria-controls"))
+      (du/set-attr! el "aria-controls" controls)
+      (du/remove-attr! el "aria-controls"))
 
     (if (and label (not= label ""))
-      (.setAttribute el "aria-label" label)
-      (.removeAttribute el "aria-label"))))
+      (du/set-attr! el "aria-label" label)
+      (du/remove-attr! el "aria-label"))))
 
 (defn apply-state! [^js base state]
   (.setAttribute base "data-selected" (if (:selected state) "true" "false"))
@@ -93,7 +93,7 @@
 
 (defn dispatch-select! [^js el]
 
-  (let [value (.getAttribute el model/attr-value)]
+  (let [value (du/get-attr el model/attr-value)]
 
     (du/dispatch! el model/event-tab-select #js {:value (or value "")})))
 

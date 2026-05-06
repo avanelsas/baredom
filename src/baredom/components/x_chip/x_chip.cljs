@@ -146,16 +146,16 @@
                      (.removeEventListener el "animationend" on-end)
                      (.remove el))]
     (.addEventListener el "animationend" on-end)
-    (.setAttribute el "data-exiting" "")))
+    (du/set-attr! el "data-exiting" "")))
 
 (defn- try-remove!
   "Checks eligibility, fires event, starts exit if not cancelled."
   [^js el]
   (let [m (model/normalize
-           {:label-raw       (.getAttribute el model/attr-label)
-            :value-raw       (.getAttribute el model/attr-value)
-            :removable-raw   (.getAttribute el model/attr-removable)
-            :disabled-present? (.hasAttribute el model/attr-disabled)})]
+           {:label-raw       (du/get-attr el model/attr-label)
+            :value-raw       (du/get-attr el model/attr-value)
+            :removable-raw   (du/get-attr el model/attr-removable)
+            :disabled-present? (du/has-attr? el model/attr-disabled)})]
     (when (model/removal-eligible? m)
       (when (dispatch-remove! el m)
         (do-exit! el)))))
@@ -163,10 +163,10 @@
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
   (let [m (model/normalize
-           {:label-raw         (.getAttribute el model/attr-label)
-            :value-raw         (.getAttribute el model/attr-value)
-            :removable-raw     (.getAttribute el model/attr-removable)
-            :disabled-present? (.hasAttribute el model/attr-disabled)})
+           {:label-raw         (du/get-attr el model/attr-label)
+            :value-raw         (du/get-attr el model/attr-value)
+            :removable-raw     (du/get-attr el model/attr-removable)
+            :disabled-present? (du/has-attr? el model/attr-disabled)})
         {:keys [label removable? disabled?]} m
         refs       (gobj/get el k-refs)
         ^js label-el   (:label-el refs)
@@ -179,21 +179,21 @@
 
     ;; data-removable drives CSS visibility of remove button
     (if removable?
-      (.setAttribute el "data-removable" "")
-      (.removeAttribute el "data-removable"))
+      (du/set-attr! el "data-removable" "")
+      (du/remove-attr! el "data-removable"))
 
     ;; tabIndex — focusable only when removable and not disabled
     (set! (.-tabIndex el) (if eligible 0 -1))
 
     ;; aria-disabled
     (if disabled?
-      (.setAttribute el "aria-disabled" "true")
-      (.removeAttribute el "aria-disabled"))
+      (du/set-attr! el "aria-disabled" "true")
+      (du/remove-attr! el "aria-disabled"))
 
     ;; aria-keyshortcuts
     (if eligible
-      (.setAttribute el "aria-keyshortcuts" "Backspace Delete")
-      (.removeAttribute el "aria-keyshortcuts"))
+      (du/set-attr! el "aria-keyshortcuts" "Backspace Delete")
+      (du/remove-attr! el "aria-keyshortcuts"))
 
     ;; Disable remove button when disabled
     (when remove-btn

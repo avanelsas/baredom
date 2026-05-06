@@ -248,11 +248,11 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:steps-raw       (.getAttribute el model/attr-steps)
-    :current-raw     (.getAttribute el model/attr-current)
-    :orientation-raw (.getAttribute el model/attr-orientation)
-    :size-raw        (.getAttribute el model/attr-size)
-    :disabled?       (.hasAttribute el model/attr-disabled)}))
+   {:steps-raw       (du/get-attr el model/attr-steps)
+    :current-raw     (du/get-attr el model/attr-current)
+    :orientation-raw (du/get-attr el model/attr-orientation)
+    :size-raw        (du/get-attr el model/attr-size)
+    :disabled?       (du/has-attr? el model/attr-disabled)}))
 
 ;; ── Step node construction ───────────────────────────────────────────────────
 (defn- step-aria-label [idx label state]
@@ -327,8 +327,8 @@
         ^js container container]
 
     ;; data-* attributes drive CSS — not in observed-attributes, safe to set here
-    (.setAttribute el "data-orientation" (model/orientation->attr orientation))
-    (.setAttribute el "data-size" (model/size->attr size))
+    (du/set-attr! el "data-orientation" (model/orientation->attr orientation))
+    (du/set-attr! el "data-size" (model/size->attr size))
 
     ;; Rebuild step nodes (clear + append)
     (set! (.-innerHTML container) "")
@@ -359,7 +359,7 @@
             (when (and (number? idx) (not (js/isNaN idx)) (not= idx cur))
               (let [detail (clj->js (model/change-detail cur idx))]
                 (when (du/dispatch-cancelable! el model/event-change detail)
-                  (.setAttribute el model/attr-current (str idx))))))))))
+                  (du/set-attr! el model/attr-current (str idx))))))))))
   nil)
 
 ;; ── Listener management ──────────────────────────────────────────────────────

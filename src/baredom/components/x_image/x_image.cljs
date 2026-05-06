@@ -170,7 +170,7 @@
 ;; ── Host state helpers ───────────────────────────────────────────────────────
 (defn- set-host-state! [^js el state-str]
   (du/setv! el k-state state-str)
-  (.setAttribute el data-state-attr state-str)
+  (du/set-attr! el data-state-attr state-str)
   nil)
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
@@ -271,12 +271,12 @@
     (if (:decorative? m)
       (do
         (set! (.-alt img) "")
-        (.setAttribute el "aria-hidden" "true")
-        (.removeAttribute el "role"))
+        (du/set-attr! el "aria-hidden" "true")
+        (du/remove-attr! el "role"))
       (do
         (set! (.-alt img) (:alt m))
-        (.removeAttribute el "aria-hidden")
-        (.setAttribute el "role" "img")
+        (du/remove-attr! el "aria-hidden")
+        (du/set-attr! el "role" "img")
         (when (:warn-alt? m)
           (warn-once! el k-warned-alt
                       "[x-image] Missing alt attribute. Set alt=\"…\" or add the `decorative` attribute."))))

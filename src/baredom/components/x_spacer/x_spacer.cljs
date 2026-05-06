@@ -43,15 +43,15 @@
 (defn- render! [^js el]
   (let [{:keys [size axis grow?]}
         (model/normalize
-         {:size-raw (.getAttribute el model/attr-size)
-          :axis-raw (.getAttribute el model/attr-axis)
-          :grow-raw (.getAttribute el model/attr-grow)})
+         {:size-raw (du/get-attr el model/attr-size)
+          :axis-raw (du/get-attr el model/attr-axis)
+          :grow-raw (du/get-attr el model/attr-grow)})
         ^js style (.-style el)]
-    (.setAttribute el "data-axis" axis)
-    (.setAttribute el "data-grow" (if grow? "true" "false"))
+    (du/set-attr! el "data-axis" axis)
+    (du/set-attr! el "data-grow" (if grow? "true" "false"))
     (.setProperty style "--x-spacer-size" size)
-    (.setAttribute el "role" "none")
-    (.setAttribute el "aria-hidden" "true"))
+    (du/set-attr! el "role" "none")
+    (du/set-attr! el "aria-hidden" "true"))
   nil)
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────

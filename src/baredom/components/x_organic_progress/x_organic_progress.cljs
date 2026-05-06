@@ -152,13 +152,13 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/derive-state
-   {:progress-raw (.getAttribute el model/attr-progress)
-    :variant-raw  (.getAttribute el model/attr-variant)
-    :color-raw    (.getAttribute el model/attr-color)
-    :bloom-attr   (.getAttribute el model/attr-bloom)
-    :density-raw  (.getAttribute el model/attr-density)
-    :seed-raw     (.getAttribute el model/attr-seed)
-    :label-raw    (.getAttribute el model/attr-label)}))
+   {:progress-raw (du/get-attr el model/attr-progress)
+    :variant-raw  (du/get-attr el model/attr-variant)
+    :color-raw    (du/get-attr el model/attr-color)
+    :bloom-attr   (du/get-attr el model/attr-bloom)
+    :density-raw  (du/get-attr el model/attr-density)
+    :seed-raw     (du/get-attr el model/attr-seed)
+    :label-raw    (du/get-attr el model/attr-label)}))
 
 ;; ── CSS helpers ─────────────────────────────────────────────────────────────
 (defn- resolve-css-float [^js el css-prop fallback]
@@ -517,19 +517,19 @@
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 
 (defn- set-a11y! [^js el m]
-  (.setAttribute el "role" "progressbar")
-  (.setAttribute el "aria-valuemin" "0")
-  (.setAttribute el "aria-valuemax" "100")
+  (du/set-attr! el "role" "progressbar")
+  (du/set-attr! el "aria-valuemin" "0")
+  (du/set-attr! el "aria-valuemax" "100")
   (if (:indeterminate? m)
-    (do (.removeAttribute el "aria-valuenow")
-        (.setAttribute el "aria-busy" "true")
-        (.setAttribute el "aria-valuetext" "Loading..."))
-    (do (.setAttribute el "aria-valuenow" (str (js/Math.round (:percent m))))
-        (.removeAttribute el "aria-busy")
-        (.setAttribute el "aria-valuetext" (:aria-valuetext m))))
+    (do (du/remove-attr! el "aria-valuenow")
+        (du/set-attr! el "aria-busy" "true")
+        (du/set-attr! el "aria-valuetext" "Loading..."))
+    (do (du/set-attr! el "aria-valuenow" (str (js/Math.round (:percent m))))
+        (du/remove-attr! el "aria-busy")
+        (du/set-attr! el "aria-valuetext" (:aria-valuetext m))))
   (if-let [label (:label m)]
-    (.setAttribute el "aria-label" label)
-    (.removeAttribute el "aria-label"))
+    (du/set-attr! el "aria-label" label)
+    (du/remove-attr! el "aria-label"))
   nil)
 
 ;; ── Update from attributes ──────────────────────────────────────────────────

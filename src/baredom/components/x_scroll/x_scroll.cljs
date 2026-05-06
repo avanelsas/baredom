@@ -205,17 +205,17 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:mode-raw             (.getAttribute el model/attr-mode)
-    :snap-raw             (.getAttribute el model/attr-snap)
-    :loop-attr            (when (.hasAttribute el model/attr-loop) "")
-    :auto-play-attr       (when (.hasAttribute el model/attr-auto-play) "")
-    :interval-raw         (.getAttribute el model/attr-interval)
-    :show-controls-attr   (.getAttribute el model/attr-show-controls)
-    :show-indicators-attr (when (.hasAttribute el model/attr-show-indicators) "")
-    :active-index-raw     (.getAttribute el model/attr-active-index)
-    :gap-raw              (.getAttribute el model/attr-gap)
-    :disabled-attr        (when (.hasAttribute el model/attr-disabled) "")
-    :label-raw            (.getAttribute el model/attr-label)}))
+   {:mode-raw             (du/get-attr el model/attr-mode)
+    :snap-raw             (du/get-attr el model/attr-snap)
+    :loop-attr            (when (du/has-attr? el model/attr-loop) "")
+    :auto-play-attr       (when (du/has-attr? el model/attr-auto-play) "")
+    :interval-raw         (du/get-attr el model/attr-interval)
+    :show-controls-attr   (du/get-attr el model/attr-show-controls)
+    :show-indicators-attr (when (du/has-attr? el model/attr-show-indicators) "")
+    :active-index-raw     (du/get-attr el model/attr-active-index)
+    :gap-raw              (du/get-attr el model/attr-gap)
+    :disabled-attr        (when (du/has-attr? el model/attr-disabled) "")
+    :label-raw            (du/get-attr el model/attr-label)}))
 
 ;; ── Helpers ─────────────────────────────────────────────────────────────────
 (defn- get-children [^js el]
@@ -449,7 +449,7 @@
               ;; Update model and position
               (let [new-m (assoc m :active-index target)]
                 (gobj/set el k-model new-m)
-                (.setAttribute el model/attr-active-index (str target))
+                (du/set-attr! el model/attr-active-index (str target))
                 (if loop?
                   (animate-loop-step! el new-m raw-delta)
                   (position-slides! el new-m))
@@ -641,7 +641,7 @@
     ;; Clamp active index if needed
     (when (and (pos? cnt) (>= (:active-index m) cnt))
       (let [clamped (dec cnt)]
-        (.setAttribute el model/attr-active-index (str clamped))
+        (du/set-attr! el model/attr-active-index (str clamped))
         (gobj/set el k-model (assoc m :active-index clamped))))
     ;; Rebuild indicators and update button states
     (let [m2  (or (gobj/get el k-model) (read-model el))
@@ -755,10 +755,10 @@
         ^js live     live
         cnt (or (gobj/get el k-child-count) (child-count el))]
     ;; Data attributes for CSS
-    (.setAttribute el "data-mode" mode)
+    (du/set-attr! el "data-mode" mode)
     (if show-controls?
-      (.removeAttribute el "data-hide-controls")
-      (.setAttribute el "data-hide-controls" ""))
+      (du/remove-attr! el "data-hide-controls")
+      (du/set-attr! el "data-hide-controls" ""))
 
     ;; Aria
     (if (seq label)

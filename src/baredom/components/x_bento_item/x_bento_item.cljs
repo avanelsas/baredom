@@ -9,9 +9,9 @@
 (def key-initialized "__xBentoItemInit")
 
 (defn read-inputs [^js el]
-  {:col-span (.getAttribute el model/attr-col-span)
-   :row-span (.getAttribute el model/attr-row-span)
-   :order    (.getAttribute el model/attr-order)})
+  {:col-span (du/get-attr el model/attr-col-span)
+   :row-span (du/get-attr el model/attr-row-span)
+   :order    (du/get-attr el model/attr-order)})
 
 (defn style-text []
   "

@@ -73,10 +73,10 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:intensity-raw    (.getAttribute el model/attr-intensity)
-    :duration-raw     (.getAttribute el model/attr-duration)
-    :frequency-raw    (.getAttribute el model/attr-frequency)
-    :disabled-present? (.hasAttribute el model/attr-disabled)}))
+   {:intensity-raw    (du/get-attr el model/attr-intensity)
+    :duration-raw     (du/get-attr el model/attr-duration)
+    :frequency-raw    (du/get-attr el model/attr-frequency)
+    :disabled-present? (du/has-attr? el model/attr-disabled)}))
 
 ;; ── SVG filter creation ─────────────────────────────────────────────────────
 (defn- create-filter! [^js svg filter-id frequency]

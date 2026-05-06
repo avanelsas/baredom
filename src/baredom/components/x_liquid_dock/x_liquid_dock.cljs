@@ -292,17 +292,17 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:position-raw        (.getAttribute el model/attr-position)
-    :gap-raw             (.getAttribute el model/attr-gap)
-    :blur-raw            (.getAttribute el model/attr-blur)
-    :threshold-raw       (.getAttribute el model/attr-threshold)
-    :ripple-scale-raw    (.getAttribute el model/attr-ripple-scale)
-    :ripple-speed-raw    (.getAttribute el model/attr-ripple-speed)
-    :color-raw           (.getAttribute el model/attr-color)
-    :magnet-radius-raw   (.getAttribute el model/attr-magnet-radius)
-    :magnet-strength-raw (.getAttribute el model/attr-magnet-strength)
-    :bob-intensity-raw   (.getAttribute el model/attr-bob-intensity)
-    :disabled-attr       (.getAttribute el model/attr-disabled)}))
+   {:position-raw        (du/get-attr el model/attr-position)
+    :gap-raw             (du/get-attr el model/attr-gap)
+    :blur-raw            (du/get-attr el model/attr-blur)
+    :threshold-raw       (du/get-attr el model/attr-threshold)
+    :ripple-scale-raw    (du/get-attr el model/attr-ripple-scale)
+    :ripple-speed-raw    (du/get-attr el model/attr-ripple-speed)
+    :color-raw           (du/get-attr el model/attr-color)
+    :magnet-radius-raw   (du/get-attr el model/attr-magnet-radius)
+    :magnet-strength-raw (du/get-attr el model/attr-magnet-strength)
+    :bob-intensity-raw   (du/get-attr el model/attr-bob-intensity)
+    :disabled-attr       (du/get-attr el model/attr-disabled)}))
 
 ;; ── Blob management ─────────────────────────────────────────────────────────
 ;; Each slotted item gets TWO blobs:
@@ -696,8 +696,8 @@
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
-  (when-not (.hasAttribute el "role")
-    (.setAttribute el "role" "navigation"))
+  (when-not (du/has-attr? el "role")
+    (du/set-attr! el "role" "navigation"))
   nil)
 
 ;; ── Property accessors ──────────────────────────────────────────────────────

@@ -60,7 +60,7 @@
 
 (defn find-owner-form
   [^js el]
-  (or (when-let [form-id (.getAttribute el "form")]
+  (or (when-let [form-id (du/get-attr el "form")]
         (.getElementById js/document form-id))
       (.closest el "form")))
 
@@ -465,8 +465,8 @@
     (.setAttribute button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
     (.setAttribute button-el "data-has-spinner" (if has-spinner? "true" "false"))
 
-    (.setAttribute el "data-variant" (:variant public-state))
-    (.setAttribute el "data-size" (:size public-state))))
+    (du/set-attr! el "data-variant" (:variant public-state))
+    (du/set-attr! el "data-size" (:size public-state))))
 
 (defn end-active-press!
   [^js el]

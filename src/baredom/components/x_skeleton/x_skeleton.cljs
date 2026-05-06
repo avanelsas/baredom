@@ -1,5 +1,6 @@
 (ns baredom.components.x-skeleton.x-skeleton
   (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-skeleton.model :as model]))
 
@@ -101,10 +102,10 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
-  {:variant   (.getAttribute el model/attr-variant)
-   :animation (.getAttribute el model/attr-animation)
-   :width     (.getAttribute el model/attr-width)
-   :height    (.getAttribute el model/attr-height)})
+  {:variant   (du/get-attr el model/attr-variant)
+   :animation (du/get-attr el model/attr-animation)
+   :width     (du/get-attr el model/attr-width)
+   :height    (du/get-attr el model/attr-height)})
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -122,7 +123,7 @@
       (.setProperty  (.-style base) "height" height)
       (.removeProperty (.-style base) "height"))
     ;; Hide from assistive technology — skeletons carry no semantic content
-    (.setAttribute el "aria-hidden" "true"))
+    (du/set-attr! el "aria-hidden" "true"))
   nil)
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────

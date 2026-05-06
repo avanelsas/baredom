@@ -467,13 +467,13 @@
             (du/setv! el k-drag-ctr ctr)
             (when (<= ctr 0)
               (du/setv! el k-drag-ctr 0)
-              (.removeAttribute el "data-drag-over"))))
+              (du/remove-attr! el "data-drag-over"))))
 
         on-drop
         (fn [^js e]
           (.preventDefault e)
           (du/setv! el k-drag-ctr 0)
-          (.removeAttribute el "data-drag-over")
+          (du/remove-attr! el "data-drag-over")
           (when-not (du/has-attr? el model/attr-disabled)
             (let [^js files (.. e -dataTransfer -files)]
               (when (pos? (.-length files))

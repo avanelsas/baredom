@@ -73,7 +73,7 @@
   (boolean (.-matches (.matchMedia js/window "(prefers-reduced-motion:reduce)"))))
 
 (defn- find-owner-form [^js el]
-  (or (when-let [form-id (.getAttribute el "form")]
+  (or (when-let [form-id (du/get-attr el "form")]
         (.getElementById js/document form-id))
       (.closest el "form")))
 
@@ -582,9 +582,9 @@
     (.setAttribute button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
     (.setAttribute button-el "data-has-spinner" (if has-spinner? "true" "false"))
 
-    (.setAttribute el "data-variant" (:variant ps))
-    (.setAttribute el "data-size" (:size ps))
-    (.setAttribute el "data-mode" (:mode ps))))
+    (du/set-attr! el "data-variant" (:variant ps))
+    (du/set-attr! el "data-size" (:size ps))
+    (du/set-attr! el "data-mode" (:mode ps))))
 
 ;; ── Particle pool ───────────────────────────────────────────────────────────
 (defn- init-particle-pool! [^js el]

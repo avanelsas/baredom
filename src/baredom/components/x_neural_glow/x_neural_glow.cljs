@@ -1,6 +1,7 @@
 (ns baredom.components.x-neural-glow.x-neural-glow
   (:require
 [baredom.utils.component :as component]
+               [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-neural-glow.model :as model]))
 
@@ -181,16 +182,16 @@
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:orb-count-raw           (.getAttribute el model/attr-orb-count)
-    :color-primary-raw       (.getAttribute el model/attr-color-primary)
-    :color-secondary-raw     (.getAttribute el model/attr-color-secondary)
-    :color-background-raw    (.getAttribute el model/attr-color-background)
-    :pulse-speed-raw         (.getAttribute el model/attr-pulse-speed)
-    :rest-rate-raw           (.getAttribute el model/attr-rest-rate)
-    :connection-distance-raw (.getAttribute el model/attr-connection-distance)
-    :orb-size-raw            (.getAttribute el model/attr-orb-size)
-    :opacity-raw             (.getAttribute el model/attr-opacity)
-    :interactive-raw         (.getAttribute el model/attr-interactive)}))
+   {:orb-count-raw           (du/get-attr el model/attr-orb-count)
+    :color-primary-raw       (du/get-attr el model/attr-color-primary)
+    :color-secondary-raw     (du/get-attr el model/attr-color-secondary)
+    :color-background-raw    (du/get-attr el model/attr-color-background)
+    :pulse-speed-raw         (du/get-attr el model/attr-pulse-speed)
+    :rest-rate-raw           (du/get-attr el model/attr-rest-rate)
+    :connection-distance-raw (du/get-attr el model/attr-connection-distance)
+    :orb-size-raw            (du/get-attr el model/attr-orb-size)
+    :opacity-raw             (du/get-attr el model/attr-opacity)
+    :interactive-raw         (du/get-attr el model/attr-interactive)}))
 
 ;; ── Orb management ──────────────────────────────────────────────────────────
 (defn- init-orbs! [^js el n]
@@ -439,8 +440,8 @@
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
-  (.setAttribute el "aria-hidden" "true")
-  (.setAttribute el "role" "presentation")
+  (du/set-attr! el "aria-hidden" "true")
+  (du/set-attr! el "role" "presentation")
   nil)
 
 ;; ── Property accessors ──────────────────────────────────────────────────────

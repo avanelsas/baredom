@@ -77,13 +77,13 @@
 
   (if labelled?
     (do
-      (.setAttribute el "role" "img")
-      (.setAttribute el "aria-label" label)
-      (.removeAttribute el "aria-hidden"))
+      (du/set-attr! el "role" "img")
+      (du/set-attr! el "aria-label" label)
+      (du/remove-attr! el "aria-hidden"))
     (do
-      (.setAttribute el "aria-hidden" "true")
-      (.removeAttribute el "role")
-      (.removeAttribute el "aria-label")))
+      (du/set-attr! el "aria-hidden" "true")
+      (du/remove-attr! el "role")
+      (du/remove-attr! el "aria-label")))
 
   (du/setv! el k-model m)
   nil)
