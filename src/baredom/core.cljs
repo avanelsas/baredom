@@ -25,6 +25,7 @@
    [baredom.exports.x-multi-combobox  :as x-multi-combobox]
    [baredom.exports.x-command-palette  :as x-command-palette]
    [baredom.exports.x-context-menu     :as x-context-menu]
+   [baredom.exports.x-confetti         :as x-confetti]
    [baredom.exports.x-copy             :as x-copy]
    [baredom.exports.x-date-picker      :as x-date-picker]
    [baredom.exports.x-divider          :as x-divider]
@@ -125,6 +126,7 @@
   (x-multi-combobox/register!)
   (x-command-palette/register!)
   (x-context-menu/register!)
+  (x-confetti/register!)
   (x-copy/register!)
   (x-date-picker/register!)
   (x-divider/register!)

@@ -108,6 +108,10 @@
       "import" : "./dist/directives/x-command-palette.directive.js",
       "types" : "./dist/directives/x-command-palette.directive.d.ts"
     },
+    "./x-confetti" : {
+      "import" : "./dist/directives/x-confetti.directive.js",
+      "types" : "./dist/directives/x-confetti.directive.d.ts"
+    },
     "./x-container" : {
       "import" : "./dist/directives/x-container.directive.js",
       "types" : "./dist/directives/x-container.directive.d.ts"

@@ -103,6 +103,10 @@
       "import" : "./dist/x-command-palette.js",
       "types" : "./dist/x-command-palette.d.ts"
     },
+    "./x-confetti" : {
+      "import" : "./dist/x-confetti.js",
+      "types" : "./dist/x-confetti.d.ts"
+    },
     "./x-container" : {
       "import" : "./dist/x-container.js",
       "types" : "./dist/x-container.d.ts"

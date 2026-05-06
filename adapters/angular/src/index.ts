@@ -19,6 +19,7 @@ export { BaredomCollapse } from './directives/x-collapse.directive';
 export { BaredomColorPicker } from './directives/x-color-picker.directive';
 export { BaredomCombobox } from './directives/x-combobox.directive';
 export { BaredomCommandPalette } from './directives/x-command-palette.directive';
+export { BaredomConfetti } from './directives/x-confetti.directive';
 export { BaredomContainer } from './directives/x-container.directive';
 export { BaredomContextMenu } from './directives/x-context-menu.directive';
 export { BaredomCopy } from './directives/x-copy.directive';

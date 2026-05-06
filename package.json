@@ -161,6 +161,11 @@
       "import": "./dist/x-context-menu.js",
       "default": "./dist/x-context-menu.js"
     },
+    "./x-confetti": {
+      "types": "./dist/x-confetti.d.ts",
+      "import": "./dist/x-confetti.js",
+      "default": "./dist/x-confetti.js"
+    },
     "./x-cancel-dialogue": {
       "types": "./dist/x-cancel-dialogue.d.ts",
       "import": "./dist/x-cancel-dialogue.js",

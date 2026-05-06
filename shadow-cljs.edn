@@ -131,6 +131,11 @@
      {init baredom.exports.x-context-menu/init}
      :depends-on #{:base}}
 
+    :x-confetti
+    {:exports
+     {init baredom.exports.x-confetti/init}
+     :depends-on #{:base}}
+
     :x-cancel-dialogue
     {:exports
      {init baredom.exports.x-cancel-dialogue/init}
