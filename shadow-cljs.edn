@@ -161,6 +161,11 @@
      {init baredom.exports.x-combobox/init}
      :depends-on #{:base}}
 
+    :x-multi-combobox
+    {:exports
+     {init baredom.exports.x-multi-combobox/init}
+     :depends-on #{:base}}
+
     :x-command-palette
     {:exports
      {init baredom.exports.x-command-palette/init}

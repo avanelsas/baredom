@@ -223,6 +223,10 @@
       "import" : "./dist/x-morph-stack.js",
       "types" : "./dist/x-morph-stack.d.ts"
     },
+    "./x-multi-combobox" : {
+      "import" : "./dist/x-multi-combobox.js",
+      "types" : "./dist/x-multi-combobox.d.ts"
+    },
     "./x-navbar" : {
       "import" : "./dist/x-navbar.js",
       "types" : "./dist/x-navbar.d.ts"
