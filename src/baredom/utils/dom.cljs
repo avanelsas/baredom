@@ -5,14 +5,14 @@
 ;; Instance-field access (Closure Advanced safe)
 ;; ---------------------------------------------------------------------------
 
-(defn getv [el k] (gobj/get el k))
+(defn getv [^js el k] (gobj/get el k))
 
-(defn setv! [el k v] (gobj/set el k v))
+(defn setv! [^js el k v] (gobj/set el k v))
 
-(defn initialized? [el key]
+(defn initialized? [^js el key]
   (true? (getv el key)))
 
-(defn mark-initialized! [el key]
+(defn mark-initialized! [^js el key]
   (setv! el key true))
 
 ;; ---------------------------------------------------------------------------
