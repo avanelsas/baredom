@@ -269,20 +269,7 @@
     (render! el)))
 
 (defn install-property-accessors! [^js proto]
-  (.defineProperty
-   js/Object
-   proto
-   "value"
-   #js {:get (fn []
-               (this-as this
-                 (.getAttribute this model/attr-value)))
-        :set (fn [v]
-               (this-as this
-                 (if v
-                   (.setAttribute this model/attr-value v)
-                   (.removeAttribute this model/attr-value))))
-        :configurable true
-        :enumerable true}))
+  (du/define-string-prop! proto "value" model/attr-value))
 
 (defn init! []
   (component/register! model/tag-name

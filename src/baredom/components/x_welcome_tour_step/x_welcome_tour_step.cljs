@@ -76,27 +76,8 @@
                                           (.removeAttribute this model/attr-title))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto "placement"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/get-attr this model/attr-placement) "bottom")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-placement (str v))
-                                          (.removeAttribute this model/attr-placement))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto "connector"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (du/get-attr this model/attr-connector)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-connector (str v))
-                                          (.removeAttribute this model/attr-connector))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto "placement" model/attr-placement "bottom")
+  (du/define-string-prop! proto "connector" model/attr-connector)
 
   (.defineProperty js/Object proto "cutoutPadding"
                    #js {:get (fn []

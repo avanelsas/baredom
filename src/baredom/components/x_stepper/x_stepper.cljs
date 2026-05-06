@@ -384,16 +384,7 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-steps
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-steps) "[]")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-steps (str v))
-                                          (.removeAttribute this model/attr-steps))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-steps model/attr-steps "[]")
 
   (.defineProperty js/Object proto model/attr-current
                    #js {:get (fn []
@@ -434,16 +425,7 @@
                                           (.removeAttribute this model/attr-size))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

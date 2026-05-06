@@ -340,27 +340,8 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-active
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-active)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-active "")
-                                          (.removeAttribute this model/attr-active))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-variant
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-variant) "default")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-variant (str v))
-                                          (.removeAttribute this model/attr-variant))))
-                        :enumerable true :configurable true})
+  (du/define-bool-prop!   proto model/attr-active model/attr-active)
+  (du/define-string-prop! proto model/attr-variant model/attr-variant "default")
 
   (.defineProperty js/Object proto model/attr-progress
                    #js {:get (fn []
@@ -386,16 +367,7 @@
                                           (.setAttribute this model/attr-spinner "false"))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-overlay
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-overlay) "solid")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-overlay (str v))
-                                          (.removeAttribute this model/attr-overlay))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-overlay model/attr-overlay "solid"))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

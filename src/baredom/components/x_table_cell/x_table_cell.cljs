@@ -319,93 +319,14 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-type
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-type) "data")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-type (str v))
-                                          (.removeAttribute this model/attr-type))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-scope
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-scope) "col")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-scope (str v))
-                                          (.removeAttribute this model/attr-scope))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-align
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-align) "start")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-align (str v))
-                                          (.removeAttribute this model/attr-align))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-valign
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-valign) "middle")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-valign (str v))
-                                          (.removeAttribute this model/attr-valign))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-truncate
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-truncate)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-truncate "")
-                                          (.removeAttribute this model/attr-truncate))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-sticky
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-sticky) "none")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-sticky (str v))
-                                          (.removeAttribute this model/attr-sticky))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-sortable
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-sortable)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-sortable "")
-                                          (.removeAttribute this model/attr-sortable))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-type     model/attr-type     "data")
+  (du/define-string-prop! proto model/attr-scope    model/attr-scope    "col")
+  (du/define-string-prop! proto model/attr-align    model/attr-align    "start")
+  (du/define-string-prop! proto model/attr-valign   model/attr-valign   "middle")
+  (du/define-bool-prop!   proto model/attr-truncate model/attr-truncate)
+  (du/define-string-prop! proto model/attr-sticky   model/attr-sticky   "none")
+  (du/define-bool-prop!   proto model/attr-sortable model/attr-sortable)
+  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
 
   ;; camelCase JS properties for kebab-case attributes
   (.defineProperty js/Object proto "colSpan"
@@ -434,16 +355,7 @@
                                             (.removeAttribute this model/attr-row-span)))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto "sortDirection"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-sort-direction) "none")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-sort-direction (str v))
-                                          (.removeAttribute this model/attr-sort-direction))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto "sortDirection" model/attr-sort-direction "none"))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

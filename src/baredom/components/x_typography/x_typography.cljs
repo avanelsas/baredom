@@ -1,6 +1,7 @@
 (ns baredom.components.x-typography.x-typography
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-typography.model :as model]))
 
@@ -192,38 +193,9 @@
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-variant
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-variant) "body1")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-variant (str v))
-                                          (.removeAttribute this model/attr-variant))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-align
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-align) "left")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-align (str v))
-                                          (.removeAttribute this model/attr-align))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-truncate
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-truncate)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-truncate "")
-                                          (.removeAttribute this model/attr-truncate))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-variant  model/attr-variant  "body1")
+  (du/define-string-prop! proto model/attr-align    model/attr-align    "left")
+  (du/define-bool-prop!   proto model/attr-truncate model/attr-truncate)
 
   ;; camelCase JS property mapping to kebab-case attribute
   (.defineProperty js/Object proto "lineClamp"

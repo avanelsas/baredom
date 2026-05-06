@@ -1,6 +1,7 @@
 (ns baredom.components.x-spinner.x-spinner
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-spinner.model :as model]))
 
@@ -101,41 +102,9 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-size
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-size)
-                                            model/default-size)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-size (str v))
-                                          (.removeAttribute this model/attr-size))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-variant
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-variant)
-                                            model/default-variant)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-variant (str v))
-                                          (.removeAttribute this model/attr-variant))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label)
-                                            model/default-label)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-size    model/attr-size    model/default-size)
+  (du/define-string-prop! proto model/attr-variant model/attr-variant model/default-variant)
+  (du/define-string-prop! proto model/attr-label   model/attr-label   model/default-label))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

@@ -195,16 +195,7 @@
                                           (.removeAttribute this model/attr-position))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-striped
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-striped)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-striped "")
-                                          (.removeAttribute this model/attr-striped))))
-                        :enumerable true :configurable true}))
+  (du/define-bool-prop! proto model/attr-striped model/attr-striped))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

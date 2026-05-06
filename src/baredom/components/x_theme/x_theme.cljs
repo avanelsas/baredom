@@ -1,6 +1,7 @@
 (ns baredom.components.x-theme.x-theme
   (:require
 [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
                [goog.object :as gobj]
    [baredom.components.x-theme.model :as model]))
 
@@ -37,18 +38,7 @@
 
 ;; ── Property accessor ───────────────────────────────────────────────────────
 (defn- install-preset-property! [^js proto]
-  (js/Object.defineProperty
-   proto "preset"
-   #js {:get (fn []
-               (this-as ^js this
-                 (.getAttribute this model/attr-preset)))
-        :set (fn [v]
-               (this-as ^js this
-                 (if (some? v)
-                   (.setAttribute this model/attr-preset (str v))
-                   (.removeAttribute this model/attr-preset))))
-        :enumerable true
-        :configurable true}))
+  (du/define-string-prop! proto "preset" model/attr-preset))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 ;; ── Registration ────────────────────────────────────────────────────────────
