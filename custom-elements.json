@@ -1296,6 +1296,154 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-otp-input.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XOtpInput",
+      "tagName" : "x-otp-input",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "mask",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readonly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autofocus",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "length",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "focus",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "clear",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-otp-input-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-otp-input-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-otp-input-complete",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-otp-input",
+      "declaration" : {
+        "name" : "XOtpInput"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-cancel-dialogue.js",
     "declarations" : [ {
       "kind" : "class",
@@ -2307,6 +2455,76 @@
       "name" : "x-scroll-story",
       "declaration" : {
         "name" : "XScrollStory"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-proximity-list.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XProximityList",
+      "tagName" : "x-proximity-list",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "radius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxScale",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "lift",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gap",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-proximity-list-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-proximity-list",
+      "declaration" : {
+        "name" : "XProximityList"
       }
     } ]
   }, {

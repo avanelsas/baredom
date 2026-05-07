@@ -296,6 +296,10 @@
       "import" : "./dist/directives/x-progress-circle.directive.js",
       "types" : "./dist/directives/x-progress-circle.directive.d.ts"
     },
+    "./x-proximity-list" : {
+      "import" : "./dist/directives/x-proximity-list.directive.js",
+      "types" : "./dist/directives/x-proximity-list.directive.d.ts"
+    },
     "./x-radio" : {
       "import" : "./dist/directives/x-radio.directive.js",
       "types" : "./dist/directives/x-radio.directive.d.ts"

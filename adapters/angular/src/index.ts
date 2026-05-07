@@ -64,6 +64,7 @@ export { BaredomParticleButton } from './directives/x-particle-button.directive'
 export { BaredomPopover } from './directives/x-popover.directive';
 export { BaredomProgress } from './directives/x-progress.directive';
 export { BaredomProgressCircle } from './directives/x-progress-circle.directive';
+export { BaredomProximityList } from './directives/x-proximity-list.directive';
 export { BaredomRadio } from './directives/x-radio.directive';
 export { BaredomRippleEffect } from './directives/x-ripple-effect.directive';
 export { BaredomScroll } from './directives/x-scroll.directive';

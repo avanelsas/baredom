@@ -506,6 +506,11 @@
      {init baredom.exports.x-particle-button/init}
      :depends-on #{:base}}
 
+    :x-proximity-list
+    {:exports
+     {init baredom.exports.x-proximity-list/init}
+     :depends-on #{:base}}
+
     :x-image
     {:exports
      {init baredom.exports.x-image/init}

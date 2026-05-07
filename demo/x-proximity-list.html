@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-proximity-list demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--page-fg);
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px 24px 60px;
+      }
+
+      .subtitle { color: var(--muted); margin: 0 0 32px; }
+
+      section {
+        margin-bottom: 40px;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-bg);
+      }
+
+      .controls label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+      }
+
+      .controls .value {
+        font-weight: 600;
+        color: var(--page-fg);
+      }
+
+      .stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-bg);
+        min-height: 200px;
+      }
+
+      .stage--vertical {
+        align-items: stretch;
+        justify-content: center;
+      }
+
+      .item {
+        font-size: 1.4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        color: var(--page-fg);
+        padding: 0;
+        background: var(--surface-bg);
+        transition: background .15s, border-color .15s;
+      }
+
+      .item:hover {
+        background: var(--surface-bg-hover, var(--surface-bg));
+        border-color: var(--accent, #6366f1);
+      }
+
+      .event-log {
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-bg);
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 200px;
+        overflow-y: auto;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <x-typography variant="h1">&lt;x-proximity-list&gt;</x-typography>
+      <p class="subtitle">A list whose items scale up as the pointer approaches — the dock effect, applied to any list.</p>
+
+      <section>
+        <x-typography variant="overline">Description</x-typography>
+        <p>Items are slotted as light-DOM children. The component listens for pointer movement over the flex track and writes <code>transform</code> plus three CSS custom properties (<code>--x-proximity-influence</code>, <code>--x-proximity-scale</code>, <code>--x-proximity-lift</code>) to each child. Items return to their base size via a CSS transition when the pointer leaves. Touch devices, reduced-motion, and disabled state all suppress the effect — click and keyboard activation still work.</p>
+      </section>
+
+      <!-- ── Interactive controls ─────────────────────────── -->
+      <section>
+        <x-typography variant="overline">Interactive controls</x-typography>
+        <div class="controls">
+          <label>
+            Direction
+            <x-select id="c-direction" value="horizontal">
+              <option value="horizontal" selected>horizontal</option>
+              <option value="vertical">vertical</option>
+            </x-select>
+          </label>
+          <label>
+            Radius: <span class="value" id="v-radius">120</span>
+            <input type="range" id="c-radius" min="20" max="600" value="120" />
+          </label>
+          <label>
+            Max scale: <span class="value" id="v-max-scale">1.5</span>
+            <input type="range" id="c-max-scale" min="1" max="3" step="0.1" value="1.5" />
+          </label>
+          <label>
+            Lift: <span class="value" id="v-lift">12</span>
+            <input type="range" id="c-lift" min="0" max="60" value="12" />
+          </label>
+          <label>
+            Gap: <span class="value" id="v-gap">8</span>
+            <input type="range" id="c-gap" min="0" max="64" value="8" />
+          </label>
+          <label>
+            <x-switch id="c-disabled"></x-switch> Disabled
+          </label>
+        </div>
+      </section>
+
+      <!-- ── The list ─────────────────────────────────────── -->
+      <section>
+        <x-typography variant="overline">Live</x-typography>
+        <div class="stage" id="stage">
+          <x-proximity-list id="list" lift="12">
+            <button class="item" aria-label="Home">&#x1F3E0;</button>
+            <button class="item" aria-label="Search">&#x1F50D;</button>
+            <button class="item" aria-label="Messages">&#x1F4AC;</button>
+            <button class="item" aria-label="Notifications">&#x1F514;</button>
+            <button class="item" aria-label="Profile">&#x1F464;</button>
+            <button class="item" aria-label="Settings">&#x2699;&#xFE0F;</button>
+          </x-proximity-list>
+        </div>
+      </section>
+
+      <!-- ── Event log ────────────────────────────────────── -->
+      <section>
+        <x-typography variant="overline">Event log</x-typography>
+        <div class="event-log" id="event-log">Waiting for events...</div>
+      </section>
+    </main>
+
+    <script>
+      const list  = document.getElementById('list');
+      const stage = document.getElementById('stage');
+      const log   = document.getElementById('event-log');
+
+      list.addEventListener('x-proximity-list-select', (e) => {
+        const entry = document.createElement('div');
+        entry.textContent =
+          `[select] index=${e.detail.index} source=${e.detail.source}`;
+        log.prepend(entry);
+      });
+
+      function bind(controlId, valueId, attr, transform) {
+        const ctrl    = document.getElementById(controlId);
+        const display = valueId ? document.getElementById(valueId) : null;
+        ctrl.addEventListener('input', () => {
+          const val = transform ? transform(ctrl.value) : ctrl.value;
+          list.setAttribute(attr, val);
+          if (display) display.textContent = val;
+        });
+      }
+
+      document.getElementById('c-direction').addEventListener('change', (e) => {
+        const v = e.target.value;
+        list.setAttribute('direction', v);
+        stage.classList.toggle('stage--vertical', v === 'vertical');
+      });
+
+      bind('c-radius',    'v-radius',    'radius');
+      bind('c-max-scale', 'v-max-scale', 'max-scale');
+      bind('c-lift',      'v-lift',      'lift');
+      bind('c-gap',       'v-gap',       'gap');
+
+      document.getElementById('c-disabled').addEventListener('change', (e) => {
+        if (e.target.checked) {
+          list.setAttribute('disabled', '');
+        } else {
+          list.removeAttribute('disabled');
+        }
+      });
+    </script>
+  </body>
+</html>

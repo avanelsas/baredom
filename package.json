@@ -211,6 +211,11 @@
       "import": "./dist/x-particle-button.js",
       "default": "./dist/x-particle-button.js"
     },
+    "./x-proximity-list": {
+      "types": "./dist/x-proximity-list.d.ts",
+      "import": "./dist/x-proximity-list.js",
+      "default": "./dist/x-proximity-list.js"
+    },
     "./x-toast": {
       "types": "./dist/x-toast.d.ts",
       "import": "./dist/x-toast.js",
