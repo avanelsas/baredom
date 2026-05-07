@@ -6,7 +6,7 @@
 (x/init!)
 
 (defn cleanup-dom! []
-  (doseq [node (.querySelectorAll js/document model/tag-name)]
+  (doseq [^js node (.querySelectorAll js/document model/tag-name)]
     (.remove node)))
 
 (use-fixtures
@@ -14,14 +14,14 @@
   {:before cleanup-dom!
    :after  cleanup-dom!})
 
-(defn make-el []
+(defn ^js make-el []
   (.createElement js/document model/tag-name))
 
-(defn append! [el]
+(defn ^js append! [^js el]
   (.appendChild (.-body js/document) el)
   el)
 
-(defn shadow-part [el selector]
+(defn ^js shadow-part [^js el selector]
   (.querySelector (.-shadowRoot el) selector))
 
 (defn set-js-prop! [obj prop value]

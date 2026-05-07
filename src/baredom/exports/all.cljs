@@ -37,6 +37,7 @@
    [baredom.exports.x-form-field       :as x-form-field]
    [baredom.exports.x-form             :as x-form]
    [baredom.exports.x-search-field     :as x-search-field]
+   [baredom.exports.x-otp-input        :as x-otp-input]
    [baredom.exports.x-currency-field   :as x-currency-field]
    [baredom.exports.x-menu             :as x-menu]
    [baredom.exports.x-menu-item        :as x-menu-item]
@@ -137,6 +138,7 @@
   (x-form-field/register!)
   (x-form/register!)
   (x-search-field/register!)
+  (x-otp-input/register!)
   (x-currency-field/register!)
   (x-menu/register!)
   (x-menu-item/register!)
