@@ -259,6 +259,10 @@
       "import" : "./dist/x-organic-shape.js",
       "types" : "./dist/x-organic-shape.d.ts"
     },
+    "./x-otp-input" : {
+      "import" : "./dist/x-otp-input.js",
+      "types" : "./dist/x-otp-input.d.ts"
+    },
     "./x-pagination" : {
       "import" : "./dist/x-pagination.js",
       "types" : "./dist/x-pagination.d.ts"

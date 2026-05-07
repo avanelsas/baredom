@@ -341,6 +341,11 @@
       "import": "./dist/x-search-field.js",
       "default": "./dist/x-search-field.js"
     },
+    "./x-otp-input": {
+      "types": "./dist/x-otp-input.d.ts",
+      "import": "./dist/x-otp-input.js",
+      "default": "./dist/x-otp-input.js"
+    },
     "./x-form": {
       "types": "./dist/x-form.d.ts",
       "import": "./dist/x-form.js",

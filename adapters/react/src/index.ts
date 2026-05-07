@@ -57,6 +57,7 @@ export { XNotificationCenter, type XNotificationCenterProps } from "./x-notifica
 export { XOrganicDivider, type XOrganicDividerProps } from "./x-organic-divider";
 export { XOrganicProgress, type XOrganicProgressProps } from "./x-organic-progress";
 export { XOrganicShape, type XOrganicShapeProps } from "./x-organic-shape";
+export { XOtpInput, type XOtpInputProps } from "./x-otp-input";
 export { XPagination, type XPaginationProps } from "./x-pagination";
 export { XParticleButton, type XParticleButtonProps } from "./x-particle-button";
 export { XPopover, type XPopoverProps } from "./x-popover";

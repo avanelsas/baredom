@@ -231,6 +231,11 @@
      {init baredom.exports.x-search-field/init}
      :depends-on #{:base}}
 
+    :x-otp-input
+    {:exports
+     {init baredom.exports.x-otp-input/init}
+     :depends-on #{:base}}
+
     :x-currency-field
     {:exports
      {init baredom.exports.x-currency-field/init}

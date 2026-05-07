@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-otp-input demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      :root {
+        --btn-primary-bg: #2563eb;
+        --btn-secondary-bg: #6b7280;
+      }
+      * { box-sizing: border-box; }
+
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 720px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; display: flex; align-items: center; gap: 4px; }
+      .controls input[type=text],
+      .controls input[type=number] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+        width: 90px;
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 96px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .btn {
+        padding: 8px 20px; border-radius: 6px; border: none;
+        font-size: 14px; cursor: pointer; color: #fff;
+      }
+      .btn-primary   { background: var(--btn-primary-bg); }
+      .btn-secondary { background: var(--btn-secondary-bg); }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-otp-input demo</x-typography>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Default — 6-digit numeric, autofocus</x-typography>
+    <div class="stack">
+      <x-otp-input id="standalone" name="code" label="Verification code" autofocus></x-otp-input>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">4-digit PIN</x-typography>
+    <div class="stack">
+      <x-otp-input id="pin" name="pin" length="4" label="PIN"></x-otp-input>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Alphanumeric, masked, 8 slots</x-typography>
+    <div class="stack">
+      <x-otp-input id="recovery"
+                   name="recovery"
+                   type="alphanumeric"
+                   length="8"
+                   mask
+                   placeholder="·"
+                   label="Recovery code"></x-otp-input>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Required, with error injection</x-typography>
+    <x-form id="verify-form">
+      <x-otp-input name="code"
+                   length="6"
+                   required
+                   label="Enter the code we texted you"></x-otp-input>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <x-button onclick="document.getElementById('verify-form').submit()">Verify</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('verify-form').reset()">Reset</x-button>
+        <x-button variant="secondary" onclick="injectError()">Inject server error</x-button>
+        <x-button variant="secondary" onclick="document.getElementById('verify-form').clearErrors()">Clear errors</x-button>
+      </div>
+    </x-form>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Live controls</x-typography>
+    <div class="controls">
+      <label>length
+        <input type="number" id="ctrl-length" value="6" min="1" max="12" />
+      </label>
+      <label>type
+        <x-select id="ctrl-type" value="numeric">
+          <option value="numeric">numeric</option>
+          <option value="alphanumeric">alphanumeric</option>
+          <option value="alpha">alpha</option>
+        </x-select>
+      </label>
+      <label>placeholder
+        <input type="text" id="ctrl-placeholder" maxlength="1" value="" />
+      </label>
+      <label>mask <x-switch id="ctrl-mask"></x-switch></label>
+      <label>required <x-switch id="ctrl-required"></x-switch></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>readonly <x-switch id="ctrl-readonly"></x-switch></label>
+    </div>
+    <x-otp-input id="live" name="live" label="Live OTP" length="6"></x-otp-input>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Custom theming via parts</x-typography>
+    <div class="stack">
+      <x-otp-input id="themed" name="themed" length="6"></x-otp-input>
+      <style>
+        #themed {
+          --x-otp-input-slot-size: 3.25rem;
+          --x-otp-input-gap: 0.75rem;
+          --x-otp-input-font-size: 1.5rem;
+          --x-otp-input-border-radius: 12px;
+        }
+      </style>
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <x-typography variant="overline">Event log</x-typography>
+    <div class="log" id="log">Events will appear here.</div>
+
+    <script>
+      const log = document.getElementById('log');
+      function logEvent(name, detail) {
+        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      // --- Standalone ---
+      const standalone = document.getElementById('standalone');
+      standalone.addEventListener('x-otp-input-input',    e => logEvent('input',    e.detail));
+      standalone.addEventListener('x-otp-input-change',   e => logEvent('change',   e.detail));
+      standalone.addEventListener('x-otp-input-complete', e => logEvent('COMPLETE', e.detail));
+
+      // --- Form integration ---
+      const form = document.getElementById('verify-form');
+      form.addEventListener('x-form-submit', e => {
+        logEvent('x-form-submit', e.detail.values);
+      });
+      form.addEventListener('x-form-reset', () => {
+        logEvent('x-form-reset', {});
+      });
+
+      function injectError() {
+        form.setFieldError('code', 'That code is incorrect. Please try again.');
+        logEvent('setFieldError', { name: 'code' });
+      }
+
+      // --- Live controls ---
+      const live = document.getElementById('live');
+      live.addEventListener('x-otp-input-input',    e => logEvent('live input',    e.detail));
+      live.addEventListener('x-otp-input-complete', e => logEvent('live COMPLETE', e.detail));
+
+      function updateLive() {
+        const length      = document.getElementById('ctrl-length').value;
+        const type        = document.getElementById('ctrl-type').value;
+        const placeholder = document.getElementById('ctrl-placeholder').value;
+        const mask        = document.getElementById('ctrl-mask').checked;
+        const required    = document.getElementById('ctrl-required').checked;
+        const disabled    = document.getElementById('ctrl-disabled').checked;
+        const readonly    = document.getElementById('ctrl-readonly').checked;
+
+        live.setAttribute('length', length);
+        live.setAttribute('type',   type);
+        if (placeholder) live.setAttribute('placeholder', placeholder); else live.removeAttribute('placeholder');
+        if (mask)     live.setAttribute('mask', '');     else live.removeAttribute('mask');
+        if (required) live.setAttribute('required', ''); else live.removeAttribute('required');
+        if (disabled) live.setAttribute('disabled', ''); else live.removeAttribute('disabled');
+        if (readonly) live.setAttribute('readonly', ''); else live.removeAttribute('readonly');
+      }
+
+      document.querySelectorAll('.controls input, .controls x-switch, .controls x-select').forEach(el => {
+        el.addEventListener('change', updateLive);
+        el.addEventListener('input',  updateLive);
+      });
+      updateLive();
+    </script>
+  </body>
+</html>

@@ -268,6 +268,10 @@
       "import" : "./dist/directives/x-organic-shape.directive.js",
       "types" : "./dist/directives/x-organic-shape.directive.d.ts"
     },
+    "./x-otp-input" : {
+      "import" : "./dist/directives/x-otp-input.directive.js",
+      "types" : "./dist/directives/x-otp-input.directive.d.ts"
+    },
     "./x-pagination" : {
       "import" : "./dist/directives/x-pagination.directive.js",
       "types" : "./dist/directives/x-pagination.directive.d.ts"

@@ -58,6 +58,7 @@ export { BaredomNotificationCenter } from './directives/x-notification-center.di
 export { BaredomOrganicDivider } from './directives/x-organic-divider.directive';
 export { BaredomOrganicProgress } from './directives/x-organic-progress.directive';
 export { BaredomOrganicShape } from './directives/x-organic-shape.directive';
+export { BaredomOtpInput } from './directives/x-otp-input.directive';
 export { BaredomPagination } from './directives/x-pagination.directive';
 export { BaredomParticleButton } from './directives/x-particle-button.directive';
 export { BaredomPopover } from './directives/x-popover.directive';
