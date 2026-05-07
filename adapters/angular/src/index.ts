@@ -39,6 +39,7 @@ export { BaredomI18n } from './directives/x-i18n.directive';
 export { BaredomI18nProvider } from './directives/x-i18n-provider.directive';
 export { BaredomIcon } from './directives/x-icon.directive';
 export { BaredomImage } from './directives/x-image.directive';
+export { BaredomKbd } from './directives/x-kbd.directive';
 export { BaredomKineticCanvas } from './directives/x-kinetic-canvas.directive';
 export { BaredomKineticFont } from './directives/x-kinetic-font.directive';
 export { BaredomKineticTypography } from './directives/x-kinetic-typography.directive';

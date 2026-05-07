@@ -38,6 +38,7 @@ export { XI18n, type XI18nProps } from "./x-i18n";
 export { XI18nProvider, type XI18nProviderProps } from "./x-i18n-provider";
 export { XIcon, type XIconProps } from "./x-icon";
 export { XImage, type XImageProps } from "./x-image";
+export { XKbd, type XKbdProps } from "./x-kbd";
 export { XKineticCanvas, type XKineticCanvasProps } from "./x-kinetic-canvas";
 export { XKineticFont, type XKineticFontProps } from "./x-kinetic-font";
 export { XKineticTypography, type XKineticTypographyProps } from "./x-kinetic-typography";

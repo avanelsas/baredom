@@ -183,6 +183,10 @@
       "import" : "./dist/x-image.js",
       "types" : "./dist/x-image.d.ts"
     },
+    "./x-kbd" : {
+      "import" : "./dist/x-kbd.js",
+      "types" : "./dist/x-kbd.d.ts"
+    },
     "./x-kinetic-canvas" : {
       "import" : "./dist/x-kinetic-canvas.js",
       "types" : "./dist/x-kinetic-canvas.d.ts"

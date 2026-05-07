@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-kbd demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.5;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: 8rem 1fr 1fr;
+        gap: 12px 24px;
+        align-items: center;
+        margin: 12px 0 28px;
+        padding: 16px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.1));
+        border-radius: 8px;
+        max-width: 720px;
+      }
+
+      .gallery .head {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--page-fg, #555);
+      }
+
+      .target-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.1));
+        margin: 8px 0;
+      }
+
+      .a11y-note {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--page-fg, #444);
+      }
+
+      #a11y-readout {
+        display: inline-block;
+        margin-left: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+
+      input[type="text"], select {
+        font: inherit;
+        padding: 4px 8px;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-kbd demo</x-typography>
+
+    <x-typography variant="body1">
+      A stateless inline element for keyboard keys and shortcuts. Use
+      <code>keys="Mod+K"</code> for cross-platform combos —
+      <code>Mod</code> renders as <x-kbd keys="Mod" platform="mac"></x-kbd> on macOS and
+      <x-kbd keys="Mod" platform="win"></x-kbd> elsewhere.
+    </x-typography>
+
+    <x-typography variant="overline">In prose</x-typography>
+    <p style="font-size:15px;">
+      Press <x-kbd keys="Mod+K"></x-kbd> to open the command palette,
+      then type a query and hit <x-kbd>Enter</x-kbd>.
+      <x-kbd>Esc</x-kbd> closes it.
+    </p>
+
+    <x-typography variant="overline">Platform comparison</x-typography>
+    <div class="gallery">
+      <div class="head">Combo</div>
+      <div class="head">macOS</div>
+      <div class="head">Windows / Linux</div>
+
+      <code>Mod+K</code>
+      <x-kbd keys="Mod+K" platform="mac"></x-kbd>
+      <x-kbd keys="Mod+K" platform="win"></x-kbd>
+
+      <code>Mod+Shift+P</code>
+      <x-kbd keys="Mod+Shift+P" platform="mac"></x-kbd>
+      <x-kbd keys="Mod+Shift+P" platform="win"></x-kbd>
+
+      <code>Cmd+S</code>
+      <x-kbd keys="Cmd+S" platform="mac"></x-kbd>
+      <x-kbd keys="Cmd+S" platform="win"></x-kbd>
+
+      <code>Alt+Tab</code>
+      <x-kbd keys="Alt+Tab" platform="mac"></x-kbd>
+      <x-kbd keys="Alt+Tab" platform="win"></x-kbd>
+
+      <code>Ctrl+Enter</code>
+      <x-kbd keys="Ctrl+Enter" platform="mac"></x-kbd>
+      <x-kbd keys="Ctrl+Enter" platform="win"></x-kbd>
+    </div>
+
+    <x-typography variant="overline">Sizes</x-typography>
+    <div class="row">
+      <x-kbd keys="Mod+K" size="sm"></x-kbd>
+      <span style="font-size:12px;">sm</span>
+      <x-kbd keys="Mod+K" size="md"></x-kbd>
+      <span style="font-size:12px;">md (default)</span>
+      <x-kbd keys="Mod+K" size="lg"></x-kbd>
+      <span style="font-size:12px;">lg</span>
+    </div>
+
+    <x-typography variant="overline">Single keys</x-typography>
+    <div class="row">
+      <x-kbd>Esc</x-kbd>
+      <x-kbd>Tab</x-kbd>
+      <x-kbd>↑</x-kbd>
+      <x-kbd>↓</x-kbd>
+      <x-kbd>←</x-kbd>
+      <x-kbd>→</x-kbd>
+      <x-kbd>F1</x-kbd>
+      <x-kbd>Space</x-kbd>
+    </div>
+
+    <x-typography variant="overline">Live editor</x-typography>
+    <div class="row">
+      <label>keys
+        <input id="ctrl-keys" type="text" value="Mod+Shift+P" size="20" />
+      </label>
+      <label>separator
+        <input id="ctrl-separator" type="text" value="+" size="2" maxlength="1" />
+      </label>
+      <label>size
+        <select id="ctrl-size">
+          <option value="sm">sm</option>
+          <option value="md" selected>md</option>
+          <option value="lg">lg</option>
+        </select>
+      </label>
+      <label>platform
+        <select id="ctrl-platform">
+          <option value="auto" selected>auto</option>
+          <option value="mac">mac</option>
+          <option value="win">win</option>
+          <option value="linux">linux</option>
+        </select>
+      </label>
+      <label>label
+        <input id="ctrl-label" type="text" placeholder="(empty = derive from keys)" size="24" />
+      </label>
+    </div>
+
+    <div class="target-row">
+      <x-kbd id="live-kbd" keys="Mod+Shift+P"></x-kbd>
+      <span>Live x-kbd</span>
+    </div>
+
+    <p class="a11y-note">
+      <strong>Accessibility state</strong> <span id="a11y-readout"></span>
+    </p>
+
+    <script>
+      const live      = document.getElementById("live-kbd");
+      const readout   = document.getElementById("a11y-readout");
+      const keysInput = document.getElementById("ctrl-keys");
+      const sepInput  = document.getElementById("ctrl-separator");
+
+      // Track the previous separator so we can rewrite the keys field when it
+      // changes. Without this, typing "-" in the separator field would leave
+      // the keys field as "Mod+Shift+P", and the component would split on "-"
+      // (finding nothing) and render the whole string as a single cap.
+      let prevSep = sepInput.value || "+";
+
+      function refreshA11y() {
+        readout.textContent =
+          "aria-label=" + JSON.stringify(live.getAttribute("aria-label") ?? "") + "  " +
+          "data-size="  + (live.getAttribute("data-size") ?? "(none)")           + "  " +
+          "platform="   + (live.getAttribute("platform")  ?? "(none)");
+      }
+
+      function applyLive() {
+        const sep = sepInput.value || "+";
+        if (sep !== prevSep) {
+          keysInput.value = keysInput.value.split(prevSep).join(sep);
+          prevSep = sep;
+        }
+        const keys = keysInput.value;
+        const sz   = document.getElementById("ctrl-size").value;
+        const pf   = document.getElementById("ctrl-platform").value;
+        const lbl  = document.getElementById("ctrl-label").value;
+
+        if (keys) live.setAttribute("keys", keys); else live.removeAttribute("keys");
+        live.setAttribute("separator", sep);
+        live.setAttribute("size",      sz);
+        live.setAttribute("platform",  pf);
+        if (lbl) live.setAttribute("label", lbl); else live.removeAttribute("label");
+
+        refreshA11y();
+      }
+
+      ["ctrl-keys", "ctrl-separator", "ctrl-size", "ctrl-platform", "ctrl-label"]
+        .forEach((id) => {
+          const el = document.getElementById(id);
+          el.addEventListener("input",  applyLive);
+          el.addEventListener("change", applyLive);
+        });
+
+      applyLive();
+    </script>
+  </body>
+</html>
