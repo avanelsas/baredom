@@ -192,6 +192,10 @@
       "import" : "./dist/directives/x-image.directive.js",
       "types" : "./dist/directives/x-image.directive.d.ts"
     },
+    "./x-kbd" : {
+      "import" : "./dist/directives/x-kbd.directive.js",
+      "types" : "./dist/directives/x-kbd.directive.d.ts"
+    },
     "./x-kinetic-canvas" : {
       "import" : "./dist/directives/x-kinetic-canvas.directive.js",
       "types" : "./dist/directives/x-kinetic-canvas.directive.d.ts"

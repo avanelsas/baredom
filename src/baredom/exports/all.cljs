@@ -95,6 +95,7 @@
    [baredom.exports.x-i18n-provider   :as x-i18n-provider]
    [baredom.exports.x-i18n            :as x-i18n]
    [baredom.exports.x-icon            :as x-icon]
+   [baredom.exports.x-kbd             :as x-kbd]
    [baredom.exports.x-theme           :as x-theme]))
 
 (defn register!
@@ -194,6 +195,7 @@
   (x-i18n-provider/register!)
   (x-i18n/register!)
   (x-icon/register!)
+  (x-kbd/register!)
   (x-theme/register!))
 
 (defn ^:export init

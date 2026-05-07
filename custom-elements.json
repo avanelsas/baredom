@@ -356,7 +356,22 @@
           "text" : "boolean"
         }
       } ],
-      "events" : [ ],
+      "events" : [ {
+        "name" : "x-date-picker-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-date-picker-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-date-picker-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
       "slots" : [ {
         "name" : ""
       } ]
@@ -676,6 +691,125 @@
       "name" : "x-switch",
       "declaration" : {
         "name" : "XSwitch"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-confetti.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XConfetti",
+      "tagName" : "x-confetti",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "spread",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "colors",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "duration",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoFire",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "gravity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "count",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "origin",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "velocity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "shapes",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "fire",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "options",
+          "type" : {
+            "text" : "Record<string, any>"
+          }
+        } ]
+      } ],
+      "events" : [ {
+        "name" : "x-confetti-fire",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-confetti-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-confetti",
+      "declaration" : {
+        "name" : "XConfetti"
       }
     } ]
   }, {
@@ -1117,6 +1251,47 @@
       "name" : "x-liquid-fill",
       "declaration" : {
         "name" : "XLiquidFill"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-i18n.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XI18n",
+      "tagName" : "x-i18n",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "key",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "params",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-i18n",
+      "declaration" : {
+        "name" : "XI18n"
       }
     } ]
   }, {
@@ -1775,6 +1950,71 @@
       "name" : "x-combobox",
       "declaration" : {
         "name" : "XCombobox"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-kinetic-canvas.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XKineticCanvas",
+      "tagName" : "x-kinetic-canvas",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "density",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fullscreen",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "paused",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-kinetic-canvas",
+      "declaration" : {
+        "name" : "XKineticCanvas"
       }
     } ]
   }, {
@@ -3297,16 +3537,41 @@
         "kind" : "field",
         "name" : "offset",
         "type" : {
-          "text" : "number"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
         "name" : "zIndex",
         "type" : {
-          "text" : "number"
+          "text" : "string"
         }
       } ],
-      "events" : [ ],
+      "events" : [ {
+        "name" : "x-context-menu-open-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-context-menu-open",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-context-menu-close-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-context-menu-close",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-context-menu-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
       "slots" : [ {
         "name" : ""
       } ]
@@ -4360,7 +4625,17 @@
           "text" : "any"
         }
       } ],
-      "events" : [ ],
+      "events" : [ {
+        "name" : "x-chart-select",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-chart-hover",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
       "slots" : [ {
         "name" : ""
       } ]
@@ -4376,6 +4651,119 @@
       "name" : "x-chart",
       "declaration" : {
         "name" : "XChart"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-multi-combobox.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XMultiCombobox",
+      "tagName" : "x-multi-combobox",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-multi-combobox-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-multi-combobox-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-multi-combobox-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-multi-combobox-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-multi-combobox",
+      "declaration" : {
+        "name" : "XMultiCombobox"
       }
     } ]
   }, {
@@ -4606,6 +4994,76 @@
       "name" : "x-metaball-cursor",
       "declaration" : {
         "name" : "XMetaballCursor"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-i18n-provider.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XI18nProvider",
+      "tagName" : "x-i18n-provider",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "fallbackLocale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "translateSubtree",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-i18n-loading",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-i18n-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-i18n-error",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-i18n-provider",
+      "declaration" : {
+        "name" : "XI18nProvider"
       }
     } ]
   }, {
@@ -4888,6 +5346,65 @@
       "name" : "x-table-row",
       "declaration" : {
         "name" : "XTableRow"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-kbd.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XKbd",
+      "tagName" : "x-kbd",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "keys",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "separator",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "platform",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-kbd",
+      "declaration" : {
+        "name" : "XKbd"
       }
     } ]
   }, {
@@ -7088,6 +7605,77 @@
       "name" : "x-skeleton",
       "declaration" : {
         "name" : "XSkeleton"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-spotlight-card.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSpotlightCard",
+      "tagName" : "x-spotlight-card",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "radius",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "padding",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "intensity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "static",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-spotlight-card",
+      "declaration" : {
+        "name" : "XSpotlightCard"
       }
     } ]
   }, {

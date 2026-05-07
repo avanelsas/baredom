@@ -86,6 +86,11 @@
       "import": "./dist/x-icon.js",
       "default": "./dist/x-icon.js"
     },
+    "./x-kbd": {
+      "types": "./dist/x-kbd.d.ts",
+      "import": "./dist/x-kbd.js",
+      "default": "./dist/x-kbd.js"
+    },
     "./x-command-palette": {
       "types": "./dist/x-command-palette.d.ts",
       "import": "./dist/x-command-palette.js",
