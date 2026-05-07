@@ -283,6 +283,10 @@
       "import" : "./dist/x-progress-circle.js",
       "types" : "./dist/x-progress-circle.d.ts"
     },
+    "./x-proximity-list" : {
+      "import" : "./dist/x-proximity-list.js",
+      "types" : "./dist/x-proximity-list.d.ts"
+    },
     "./x-radio" : {
       "import" : "./dist/x-radio.js",
       "types" : "./dist/x-radio.d.ts"

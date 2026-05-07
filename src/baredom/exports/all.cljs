@@ -92,6 +92,7 @@
    [baredom.exports.x-kinetic-canvas  :as x-kinetic-canvas]
    [baredom.exports.x-morph-stack     :as x-morph-stack]
    [baredom.exports.x-particle-button :as x-particle-button]
+   [baredom.exports.x-proximity-list  :as x-proximity-list]
    [baredom.exports.x-image           :as x-image]
    [baredom.exports.x-i18n-provider   :as x-i18n-provider]
    [baredom.exports.x-i18n            :as x-i18n]
@@ -193,6 +194,7 @@
   (x-kinetic-canvas/register!)
   (x-morph-stack/register!)
   (x-particle-button/register!)
+  (x-proximity-list/register!)
   (x-image/register!)
   (x-i18n-provider/register!)
   (x-i18n/register!)
