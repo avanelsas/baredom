@@ -88,6 +88,8 @@ The model is cached inside `apply-model!` at the end (via `du/setv! el k-model m
 
 Functions should do one thing. If a function exceeds ~15 lines, decompose it into named subfunctions. Long functions tend to mix calculation and effects — violating de-complect — and make Closure Advanced errors harder to trace.
 
+**Orchestrators are exempt.** A function whose body is a phase list of named-helper calls (each line one call) reads cleaner at 20–30 lines than at 15. The rule targets functions that mix calculation and effect; collections of tiny named delegations are fine. After decomposition, `render!` should be a phase list, not the work itself — see the `render-orchestrator` named pattern.
+
 ### Named patterns
 
 Reference by name when discussing architecture:
@@ -95,6 +97,9 @@ Reference by name when discussing architecture:
 - **`render-pipeline`** — `update-from-attrs!`: `read-model` → change-guard → `apply-model!` (caches model at end). Golden sample: `x-icon`.
 - **`model-layer`** — pure `model.cljs` with required metadata defs + `normalize`. Golden sample: `x-icon/model.cljs`. See [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md) for field specs.
 - **`registration-idiom`** — named lifecycle `defn-` functions + `component/register!` + `du/install-properties!`. Golden sample: `x-icon`. See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for template.
+- **`render-orchestrator`** — `render!` reads as a phase list of named effect helpers (`apply-host-css-vars!`, `apply-area!`, …). Each phase is one named call; the orchestrator stays around 15–25 lines. References: `x-chart` (`render!`), `x-color-picker` (`render!`).
+- **`shadow-builders`** — break long `make-shadow!` / `init-dom!` into per-section builders that each create + decorate + assemble + return a refs map. The top-level builder composes them. References: `x-color-picker` (`make-trigger!`, `make-area-section!`, `make-strips-section!`, `make-controls-section!`), `x-scroll-timeline` (`make-track-section!`, `make-svg-track!`, `make-entries-section!`).
+- **`listener-spec`** — for components with 5+ static listeners, encode them as a single vector of `[refs-key event handler-key capture?]` tuples. Both `add-listeners!` and `remove-listeners!` iterate it, so they cannot drift. References: `x-color-picker` (`listener-spec` + `build-all-handlers`), `baredom.utils.overlay/attach-listener!`.
 
 ## Closure Advanced Compilation Safety
 
@@ -201,6 +206,10 @@ Tests in `test/baredom/components/<name>/`:
 
 Tests run in a real browser environment (headless Chrome via shadow-cljs). Do not assume jsdom.
 
+**Async tests need map-style fixtures.** `cljs.test/async` rejects function-style `use-fixtures` with "Async tests require fixtures to be specified as maps." If any test in a namespace is async, switch the file to `(use-fixtures :each {:after (fn [] ...)})` (or `:before`) — even the synchronous tests in that namespace must use the map form.
+
+**Custom-element tests with ResizeObserver dependencies need explicit dimensions.** An empty custom element has zero size in the headless test page; `ResizeObserver` callbacks gate on `width > 0 && height > 0` and won't fire. Set `width` / `height` inline on the host before appending if the test exercises code triggered by resize observers (palette extraction, canvas sizing, etc.).
+
 ## Development Pipeline for New Components
 
 Each new component must be developed on a dedicated feature branch named `feature/x-<name>`. Create the branch from `main` before starting work and merge back into `main` once the component passes verification.
@@ -226,6 +235,8 @@ Follow these stages in order. **Do not skip or merge stages.**
 - **Tests fail after a model change**: update `model_test.cljs` first (fix the pure logic), then fix the component integration test.
 - **Infinite recursion in `attributeChangedCallback`**: you are setting an observed attribute on the host inside `apply-model!` without the model-change guard. Add the `when (not= new-m old-m)` check.
 - **Property accessor not working**: ensure `property-api` includes the property and `du/install-properties!` is called in `setup-prototype-fn`.
+- **`getComputedStyle().backgroundColor` (or any CSS-transitioned property) returns the wrong value**: it returns the *in-flight transitioning value*, not the target. If the element has `transition: background ...` (or similar on the property you're sampling), reading within the transition window gives the *previous* value. Read the resolved CSS custom property directly via `getPropertyValue('--x-component-...-bg')` instead — custom-property values update synchronously with the cascade, no transition involved.
+- **Refactor exposes a pre-existing bug**: when a unit test added during a refactor PR fails on logic you didn't touch, suspect a pre-existing bug. Don't change the refactor's tests to lock in the buggy behaviour — scope the test to the function's natural input range, ship the refactor, then ship a separate behaviour-changing PR with a one-line fix and a visual demo check.
 
 ## Performance & Context Management
 
