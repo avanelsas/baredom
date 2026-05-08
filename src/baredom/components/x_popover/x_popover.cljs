@@ -635,13 +635,9 @@
             on-backdrop  (fn [^js e]
                           (when-not (.contains p-panel (.-target e))
                             (do-close! el "outside-click")))]
-        (.addEventListener p-close-btn "click"   on-close-btn)
-        (.addEventListener layer       "keydown" on-escape true)
-        (.addEventListener layer       "click"   on-backdrop)
-        (gobj/set layer overlay/key-on-key            on-escape)
-        (gobj/set layer overlay/key-on-click-backdrop on-backdrop)
-        (gobj/set layer overlay/key-on-close-btn      on-close-btn)
-        (gobj/set layer overlay/key-close-btn-el      p-close-btn))
+        (overlay/attach-listener! layer p-close-btn "click"   on-close-btn false)
+        (overlay/attach-listener! layer layer       "keydown" on-escape    true)
+        (overlay/attach-listener! layer layer       "click"   on-backdrop  false))
 
       (gobj/set el k-layer layer)
 

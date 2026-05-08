@@ -167,13 +167,9 @@
               (du/dispatch! el model/event-select #js {:item item})
               (close! el "select"))))]
 
-    (.addEventListener layer "keydown" on-key true)
+    (overlay/attach-listener! layer layer "keydown" on-key true)
     (when panel
-      (.addEventListener panel "click" on-item-click))
-
-    ;; store for cleanup
-    (gobj/set layer overlay/key-on-key        on-key)
-    (gobj/set layer overlay/key-on-item-click on-item-click)))
+      (overlay/attach-listener! layer panel "click" on-item-click false))))
 
 ;; ---- Document-level listeners (Escape + click-outside) ----
 
