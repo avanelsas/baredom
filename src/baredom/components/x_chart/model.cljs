@@ -296,8 +296,7 @@
   (map-indexed
    (fn [i pt]
      (let [px (if (= kind "category")
-                (let [n (max 1 (count (:data s)))]
-                  (scale-x-category i (dec n) x0 x1))
+                (scale-x-category i (max 1 (count (:data s))) x0 x1)
                 (scale-x-numeric (:x pt) x-dom x0 x1))
            py (scale-y (:y pt) y-domain y0 y1)]
        (assoc pt :px px :py py :si series-idx :i i)))

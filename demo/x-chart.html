@@ -43,6 +43,9 @@
     <x-typography variant="overline">Multi-series area (tooltip cursor="nearest")</x-typography>
     <x-chart id="chart-multi-nearest" type="area" tooltip cursor="nearest"></x-chart>
 
+    <x-typography variant="overline">Category x-axis (string x values, bar)</x-typography>
+    <x-chart id="chart-category" type="bar"></x-chart>
+
     <x-typography variant="overline">Loading state</x-typography>
     <x-chart loading></x-chart>
 
@@ -118,11 +121,20 @@
          data:[{x:1,y:8},{x:2,y:15},{x:3,y:22},{x:4,y:18},{x:5,y:28}]}
       ]);
 
+      const categoryUsers = JSON.stringify([{
+        id: "s1", label: "Users",
+        data: [
+          {x:"Mon", y:120}, {x:"Tue", y:200}, {x:"Wed", y:150},
+          {x:"Thu", y:320}, {x:"Fri", y:280}, {x:"Sat", y:90}, {x:"Sun", y:60}
+        ]
+      }]);
+
       document.getElementById("chart-line").setAttribute("data", revenue);
       document.getElementById("chart-bar").setAttribute("data", users);
       document.getElementById("chart-area").setAttribute("data", area);
       document.getElementById("chart-multi").setAttribute("data", multi);
       document.getElementById("chart-multi-nearest").setAttribute("data", multi);
+      document.getElementById("chart-category").setAttribute("data", categoryUsers);
       document.getElementById("chart-disabled").setAttribute("data", users);
 
       const live = document.getElementById("chart-live");

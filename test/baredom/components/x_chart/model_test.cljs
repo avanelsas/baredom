@@ -256,3 +256,24 @@
     (testing "original :x and :y are preserved alongside the annotations"
       (is (= 0   (:x (first pts))))
       (is (= 100 (:y (last  pts)))))))
+
+(deftest compute-series-pts-category-test
+  (let [s {:id "s1" :data [{:x "a" :y 10} {:x "b" :y 20} {:x "c" :y 30}]}
+        bounds {:x0 0 :y0 0 :x1 100 :y1 100}
+        pts (model/compute-series-pts s 0 "category" [0 2] bounds [0 30])]
+    (testing "category x spans [x0, x1] inclusive of both endpoints"
+      (is (approx= (:px (nth pts 0))   0 0.01))
+      (is (approx= (:px (nth pts 1))  50 0.01))
+      (is (approx= (:px (nth pts 2)) 100 0.01)))
+    (testing "single-point series collapses to the rect midpoint"
+      (let [single (model/compute-series-pts
+                    {:id "s2" :data [{:x "only" :y 5}]}
+                    0 "category" [0 0] bounds [0 30])]
+        (is (= 1 (count single)))
+        (is (approx= (:px (first single)) 50 0.01))))
+    (testing "two-point series places points at the two endpoints"
+      (let [two (model/compute-series-pts
+                 {:id "s3" :data [{:x "lo" :y 0} {:x "hi" :y 10}]}
+                 0 "category" [0 1] bounds [0 10])]
+        (is (approx= (:px (first two))   0 0.01))
+        (is (approx= (:px (second two)) 100 0.01))))))
