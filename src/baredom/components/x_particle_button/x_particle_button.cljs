@@ -779,188 +779,208 @@
                         (aset p "ty0" (aget p "y"))
                         (when (< tlen 3) (aset p "tlen" (inc tlen)))))))))))))))
 
+(defn- draw-dust-particle!
+  "Dust = filled circle. Glow modes paint a soft outer halo first;
+   spark mode paints a bright additive core after; non-glow particles
+   with a blur attribute get a low-opacity halo."
+  [^js ctx ^js p x y sz opacity color glow? additive?]
+  (when glow?
+    (set! (.-globalAlpha ctx) (* opacity 0.10))
+    (.beginPath ctx)
+    (.arc ctx x y (* sz 2.5) 0 (* 2 js/Math.PI))
+    (.fill ctx)
+    (set! (.-globalAlpha ctx) (* opacity 0.20))
+    (.beginPath ctx)
+    (.arc ctx x y (* sz 1.6) 0 (* 2 js/Math.PI))
+    (.fill ctx))
+  (set! (.-globalAlpha ctx) opacity)
+  (.beginPath ctx)
+  (.arc ctx x y sz 0 (* 2 js/Math.PI))
+  (.fill ctx)
+  (when additive?
+    (set! (.-globalAlpha ctx) (js/Math.min 1.0 (* opacity 1.5)))
+    (set! (.-fillStyle ctx) "#ffffff")
+    (.beginPath ctx)
+    (.arc ctx x y (* sz 0.3) 0 (* 2 js/Math.PI))
+    (.fill ctx)
+    (set! (.-fillStyle ctx) color))
+  (when (and (not glow?) (> (aget p "blur") 0))
+    (set! (.-globalAlpha ctx) (* opacity 0.15))
+    (.beginPath ctx)
+    (.arc ctx x y (* sz 1.5) 0 (* 2 js/Math.PI))
+    (.fill ctx)))
+
+(defn- draw-fragment-particle!
+  "Fragment = rounded rect, with an optional glow halo for ember mode."
+  [^js ctx x y sz opacity glow?]
+  (let [half-sz sz
+        r (* sz 0.3)]
+    (when glow?
+      (set! (.-globalAlpha ctx) (* opacity 0.08))
+      (.beginPath ctx)
+      (.arc ctx x y (* half-sz 2) 0 (* 2 js/Math.PI))
+      (.fill ctx))
+    (set! (.-globalAlpha ctx) opacity)
+    (.beginPath ctx)
+    (.roundRect ctx (- x half-sz) (- y half-sz) (* half-sz 2) (* half-sz 2) r)
+    (.fill ctx)))
+
+(defn- draw-streak-particle!
+  "Streak = elongated rect plus a 2-segment fading trail. Spark mode
+   adds an additive bright core."
+  [^js ctx ^js p x y sz opacity color dpr pad additive?]
+  (let [sy   (* (aget p "sizeY") dpr)
+        tlen (aget p "tlen")
+        tx1  (+ (* (aget p "tx1") dpr) pad)
+        ty1  (+ (* (aget p "ty1") dpr) pad)
+        tx2  (+ (* (aget p "tx2") dpr) pad)
+        ty2  (+ (* (aget p "ty2") dpr) pad)]
+    (when (> tlen 0)
+      (set! (.-globalAlpha ctx) (* opacity 0.15))
+      (.fillRect ctx (- tx2 (* sz 0.5)) (- ty2 (* sy 0.5)) sz sy)
+      (when (> tlen 1)
+        (set! (.-globalAlpha ctx) (* opacity 0.35))
+        (.fillRect ctx (- tx1 (* sz 0.5)) (- ty1 (* sy 0.5)) sz sy)))
+    (set! (.-globalAlpha ctx) opacity)
+    (.fillRect ctx (- x (* sz 0.5)) (- y (* sy 0.5)) sz sy)
+    (when additive?
+      (set! (.-globalAlpha ctx) (js/Math.min 1.0 (* opacity 1.3)))
+      (set! (.-fillStyle ctx) "#ffffff")
+      (.fillRect ctx (- x (* sz 0.3)) (- y (* sy 0.3)) (* sz 0.6) (* sy 0.6))
+      (set! (.-fillStyle ctx) color))))
+
+(defn- draw-particle!
+  "Dispatch one alive particle to its type-specific drawer.
+   Reads particle-space coords + size, transforms to canvas space
+   (devicePixelRatio + padding offset), then delegates."
+  [^js ctx ^js p ^js palette dpr pad glow? additive?]
+  (when (aget p "alive")
+    (let [x       (+ (* (aget p "x") dpr) pad)
+          y       (+ (* (aget p "y") dpr) pad)
+          sz      (* (aget p "size") dpr)
+          opacity (aget p "opacity")
+          color   (aget palette (aget p "colorIdx"))
+          ptype   (aget p "type")]
+      (set! (.-fillStyle ctx) color)
+      (case ptype
+        "d" (draw-dust-particle!     ctx p x y sz opacity color glow? additive?)
+        "f" (draw-fragment-particle! ctx   x y sz opacity       glow?)
+        "s" (draw-streak-particle!   ctx p x y sz opacity color dpr pad additive?)
+        nil))))
+
 (defn- draw-particles! [^js el]
-  (let [^js ctx (gp el k-ctx)
+  (let [^js ctx    (gp el k-ctx)
         ^js canvas (gp el k-canvas)
-        cw (.-width canvas)
-        ch (.-height canvas)
-        dpr (js/Math.min 2.0 js/devicePixelRatio)
-        pad (* (or (gp el k-pad) canvas-pad) dpr)
-        particles (gp el k-particles)
-        palette (gp el k-color-palette)
-        ps (read-public-state el)
-        mode-cfg (model/mode-physics (:mode ps))
-        glow? (:glow-render mode-cfg)
-        additive? (:additive-core mode-cfg)]
+        cw         (.-width canvas)
+        ch         (.-height canvas)
+        dpr        (js/Math.min 2.0 js/devicePixelRatio)
+        pad        (* (or (gp el k-pad) canvas-pad) dpr)
+        particles  (gp el k-particles)
+        palette    (gp el k-color-palette)
+        ps         (read-public-state el)
+        mode-cfg   (model/mode-physics (:mode ps))
+        glow?      (:glow-render mode-cfg)
+        additive?  (:additive-core mode-cfg)]
     (.clearRect ctx 0 0 cw ch)
     (when (and particles palette)
       (dotimes [i (alength particles)]
-        (let [p (aget particles i)]
-          (when (aget p "alive")
-            (let [;; Offset by padding so (0,0) in particle space maps to pad in canvas space
-                  x (+ (* (aget p "x") dpr) pad)
-                  y (+ (* (aget p "y") dpr) pad)
-                  sz (* (aget p "size") dpr)
-                  opacity (aget p "opacity")
-                  color (aget palette (aget p "colorIdx"))
-                  ptype (aget p "type")]
-              (set! (.-fillStyle ctx) color)
-              (case ptype
-                ;; Dust: circle with optional glow halo (ember) or bright core (spark)
-                "d"
-                (do
-                  ;; Glow halo for ember mode — soft outer ring
-                  (when glow?
-                    (set! (.-globalAlpha ctx) (* opacity 0.10))
-                    (.beginPath ctx)
-                    (.arc ctx x y (* sz 2.5) 0 (* 2 js/Math.PI))
-                    (.fill ctx)
-                    (set! (.-globalAlpha ctx) (* opacity 0.20))
-                    (.beginPath ctx)
-                    (.arc ctx x y (* sz 1.6) 0 (* 2 js/Math.PI))
-                    (.fill ctx))
-                  ;; Main dot
-                  (set! (.-globalAlpha ctx) opacity)
-                  (.beginPath ctx)
-                  (.arc ctx x y sz 0 (* 2 js/Math.PI))
-                  (.fill ctx)
-                  ;; Bright core for spark mode
-                  (when additive?
-                    (set! (.-globalAlpha ctx) (js/Math.min 1.0 (* opacity 1.5)))
-                    (set! (.-fillStyle ctx) "#ffffff")
-                    (.beginPath ctx)
-                    (.arc ctx x y (* sz 0.3) 0 (* 2 js/Math.PI))
-                    (.fill ctx)
-                    (set! (.-fillStyle ctx) color))
-                  ;; Soft blur halo for blurry dust particles
-                  (when (and (not glow?) (> (aget p "blur") 0))
-                    (set! (.-globalAlpha ctx) (* opacity 0.15))
-                    (.beginPath ctx)
-                    (.arc ctx x y (* sz 1.5) 0 (* 2 js/Math.PI))
-                    (.fill ctx)))
-
-                ;; Fragment: rounded rect
-                "f"
-                (let [half-sz sz
-                      r (* sz 0.3)]
-                  ;; Glow for ember fragments
-                  (when glow?
-                    (set! (.-globalAlpha ctx) (* opacity 0.08))
-                    (.beginPath ctx)
-                    (.arc ctx x y (* half-sz 2) 0 (* 2 js/Math.PI))
-                    (.fill ctx))
-                  (set! (.-globalAlpha ctx) opacity)
-                  (.beginPath ctx)
-                  (.roundRect ctx (- x half-sz) (- y half-sz) (* half-sz 2) (* half-sz 2) r)
-                  (.fill ctx))
-
-                ;; Streak: elongated rect with trail
-                "s"
-                (let [sy (* (aget p "sizeY") dpr)
-                      tlen (aget p "tlen")
-                      ;; Offset trail positions by pad too
-                      tx1 (+ (* (aget p "tx1") dpr) pad)
-                      ty1 (+ (* (aget p "ty1") dpr) pad)
-                      tx2 (+ (* (aget p "tx2") dpr) pad)
-                      ty2 (+ (* (aget p "ty2") dpr) pad)]
-                  ;; Trail with decreasing opacity
-                  (when (> tlen 0)
-                    (set! (.-globalAlpha ctx) (* opacity 0.15))
-                    (.fillRect ctx (- tx2 (* sz 0.5)) (- ty2 (* sy 0.5)) sz sy)
-                    (when (> tlen 1)
-                      (set! (.-globalAlpha ctx) (* opacity 0.35))
-                      (.fillRect ctx (- tx1 (* sz 0.5)) (- ty1 (* sy 0.5)) sz sy)))
-                  ;; Current position
-                  (set! (.-globalAlpha ctx) opacity)
-                  (.fillRect ctx (- x (* sz 0.5)) (- y (* sy 0.5)) sz sy)
-                  ;; Bright core for spark streaks
-                  (when additive?
-                    (set! (.-globalAlpha ctx) (js/Math.min 1.0 (* opacity 1.3)))
-                    (set! (.-fillStyle ctx) "#ffffff")
-                    (.fillRect ctx (- x (* sz 0.3)) (- y (* sy 0.3)) (* sz 0.6) (* sy 0.6))
-                    (set! (.-fillStyle ctx) color)))
-
-                ;; fallback
-                nil))))))
+        (draw-particle! ctx (aget particles i) palette dpr pad glow? additive?)))
     (set! (.-globalAlpha ctx) 1.0)))
+
+(defn- apply-hover-filter!
+  "Ramp blur 0 → 1.5px and brightness 1.0 → 1.04 over ~2s of hover via
+   an ease-out curve. Blends compositionally via the inner button's
+   CSS filter so it doesn't disturb the host's box model."
+  [^js el now]
+  (when-let [state (get-el-state el)]
+    (let [hover-start (or (gp el k-hover-start) now)
+          elapsed-s   (/ (- now hover-start) 1000.0)
+          blur        (js/Math.min 1.5 (* 1.5 (- 1.0 (js/Math.exp (* -1.5 elapsed-s)))))
+          brightness  (+ 1.0 (* 0.04 (/ blur 1.5)))
+          ^js btn     (aget state "button")]
+      (.setProperty (.-style btn) "filter"
+                    (str "blur(" (.toFixed blur 2) "px) brightness("
+                         (.toFixed brightness 3) ")")))))
+
+(defn- emit-for-phase!
+  "Run any particle emission tied to the current phase, then return.
+   Hover continuously emits + ramps the filter; press-burst emits a
+   single batch on its first frame and then advance-phase! takes over."
+  [^js el phase now dt-ms]
+  (case phase
+    :hover-emit
+    (when-not (prefers-reduced-motion?)
+      (emit-hover-particles! el dt-ms)
+      (apply-hover-filter! el now))
+
+    :press-burst
+    (when (= 0 (or (gp el k-burst-frame) 0))
+      (sp! el k-burst-frame 1)
+      (emit-press-burst! el))
+
+    nil))
+
+(defn- advance-burst-phase!
+  "press-burst → press-reform (for disperse mode) or :settling otherwise,
+   once at least 50ms have elapsed since the burst started."
+  [^js el now]
+  (when (> (or (gp el k-burst-frame) 0) 0)
+    (let [ps      (read-public-state el)
+          elapsed (- now (or (gp el k-burst-start) now))]
+      (when (> elapsed 50)
+        (if (= "disperse" (:mode ps))
+          (set-phase! el :press-reform)
+          (set-phase! el :settling))))))
+
+(defn- advance-reform-phase!
+  "press-reform → settling once the reassemble window has passed.
+   Dispatches event-reform with the actual elapsed duration."
+  [^js el now]
+  (let [elapsed (- now (or (gp el k-burst-start) now))
+        ps      (read-public-state el)]
+    (when (> elapsed (:reassemble-speed ps))
+      (set-phase! el :settling)
+      (du/dispatch! el model/event-reform
+                    #js {:mode     (:mode ps)
+                         :duration (js/Math.round elapsed)}))))
+
+(defn- schedule-next-frame!
+  "Reschedule the rAF loop while the animation is still active."
+  [^js el phase alive]
+  (let [emitting? (#{:hover-emit :press-burst} phase)]
+    (when (and (not= :idle phase)
+               (or emitting? (> alive 0)))
+      (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))
+    (when (and (= :settling phase) (> alive 0) (not (gp el k-raf)))
+      (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))))
+
+(defn- advance-phase!
+  "Run all post-update phase transitions, then reschedule rAF if the
+   animation has more work to do."
+  [^js el phase now alive]
+  (case phase
+    :press-burst  (advance-burst-phase!  el now)
+    :press-reform (advance-reform-phase! el now)
+    :settling     (when (= 0 alive)
+                    (set-phase! el :idle)
+                    (stop-animation! el))
+    nil)
+  (schedule-next-frame! el phase alive))
 
 (defn- animate! [^js el]
   (sp! el k-raf nil)
   (when (.-isConnected el)
-    (let [phase (get-phase el)
-          now (js/performance.now)
+    (let [phase     (get-phase el)
+          now       (js/performance.now)
           last-time (or (gp el k-last-time) now)
-          dt-ms (js/Math.min 100.0 (- now last-time))
+          dt-ms     (js/Math.min 100.0 (- now last-time))
           particles (gp el k-particles)]
       (sp! el k-last-time now)
-
-      ;; Emit new particles based on phase
-      (case phase
-        :hover-emit
-        (when-not (prefers-reduced-motion?)
-          (emit-hover-particles! el dt-ms)
-          ;; Ramp blur over hover duration: 0 → 1.5px over ~2s
-          (when-let [state (get-el-state el)]
-            (let [hover-start (or (gp el k-hover-start) now)
-                  elapsed-s (/ (- now hover-start) 1000.0)
-                  ;; Ease-out curve: fast initial ramp, slows toward max
-                  blur (js/Math.min 1.5 (* 1.5 (- 1.0 (js/Math.exp (* -1.5 elapsed-s)))))
-                  brightness (+ 1.0 (* 0.04 (/ blur 1.5)))
-                  ^js btn (aget state "button")]
-              (.setProperty (.-style btn) "filter"
-                            (str "blur(" (.toFixed blur 2) "px) brightness(" (.toFixed brightness 3) ")")))))
-
-        :press-burst
-        ;; Burst emits once (on first frame), then transitions
-        (when (= 0 (or (gp el k-burst-frame) 0))
-          (sp! el k-burst-frame 1)
-          (emit-press-burst! el))
-
-        nil)
-
-      ;; Update all alive particles
+      (emit-for-phase! el phase now dt-ms)
       (update-particles! el dt-ms)
-
-      ;; Draw
-      (draw-particles! el)
-
-      ;; Phase transitions based on alive count
-      (let [alive (if particles (count-alive particles) 0)
-            emitting? (#{:hover-emit :press-burst} phase)]
-
-        ;; press-burst → settling (or press-reform for disperse)
-        (when (and (= :press-burst phase)
-                   (> (or (gp el k-burst-frame) 0) 0))
-          (let [ps (read-public-state el)
-                elapsed (- now (or (gp el k-burst-start) now))]
-            (when (> elapsed 50)
-              (if (= "disperse" (:mode ps))
-                (set-phase! el :press-reform)
-                (set-phase! el :settling)))))
-
-        ;; press-reform → settling (when all particles nearly home or dead)
-        (when (= :press-reform phase)
-          (let [elapsed (- now (or (gp el k-burst-start) now))
-                ps (read-public-state el)]
-            (when (> elapsed (:reassemble-speed ps))
-              (set-phase! el :settling)
-              (du/dispatch! el model/event-reform
-                         #js {:mode (:mode ps)
-                              :duration (js/Math.round elapsed)}))))
-
-        ;; settling → idle (when all particles dead)
-        (when (and (= :settling phase) (= 0 alive))
-          (set-phase! el :idle)
-          (stop-animation! el))
-
-        ;; Continue animation if still active
-        (when (and (not= :idle phase)
-                   (or emitting? (> alive 0)))
-          (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))
-
-        ;; Also continue if settling with alive particles
-        (when (and (= :settling phase) (> alive 0) (not (gp el k-raf)))
-          (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el))))))
+      (draw-particles!   el)
+      (let [alive (if particles (count-alive particles) 0)]
+        (advance-phase! el phase now alive))
       nil)))
 
 
@@ -1072,98 +1092,118 @@
      (when (= "pointer" (get-active-source el))
        (end-active-press! el)))))
 
+(defn- activation-key?
+  "Enter and Space activate buttons per ARIA convention."
+  [^js event]
+  (let [k (.-key event)]
+    (or (= k "Enter") (= k " "))))
+
+(defn- can-start-press?
+  "A press from `source` may begin only when:
+   - pointer: nothing else is currently active (keyboard always wins),
+   - keyboard: a keyboard press isn't already in flight (filters key
+     auto-repeat). Mirrors the asymmetric behaviour in plain x-button."
+  [^js el source]
+  (case source
+    "pointer"  (not (get-active-source el))
+    "keyboard" (not= "keyboard" (get-active-source el))))
+
+(defn- capture-pointer-press-point!
+  "Store the press point in the canvas's coord space so the burst
+   originates where the user clicked."
+  [^js el ^js button-el ^js event]
+  (let [^js rect (.getBoundingClientRect button-el)]
+    (sp! el k-press-x (- (.-clientX event) (.-left rect)))
+    (sp! el k-press-y (- (.-clientY event) (.-top rect)))))
+
+(defn- capture-center-press-point!
+  "Keyboard activations don't have a pointer location; use the canvas
+   centre so the burst is symmetric."
+  [^js el]
+  (sp! el k-press-x (/ (or (gp el k-canvas-w) 100) 2))
+  (sp! el k-press-y (/ (or (gp el k-canvas-h) 40) 2)))
+
+(defn- start-press!
+  "Begin a press from `source` (\"pointer\" | \"keyboard\") if the
+   button is interactive and the source-specific guard passes."
+  [^js el source]
+  (when (and (interactive-el? el) (can-start-press? el source))
+    (set-last-activation-source! el source)
+    (set-active-source! el source)
+    (render! el (get-el-state el))
+    (du/dispatch! el model/event-press-start #js {:source source})))
+
+(defn- end-press-if-source!
+  "End the active press only when the active source matches `source`."
+  [^js el source]
+  (when (= source (get-active-source el))
+    (end-active-press! el)))
+
+(defn- trigger-burst!
+  "Glow pulse + particle burst for the click moment.
+   Skips the burst when reduced-motion is requested or a burst is
+   already in flight."
+  [^js el ps]
+  (trigger-glow-pulse! el)
+  (when-not (prefers-reduced-motion?)
+    (when-not (#{:press-burst :press-reform} (get-phase el))
+      (set-phase! el :press-burst)
+      (sp! el k-burst-frame 0)
+      (sp! el k-burst-start (js/performance.now))
+      (du/dispatch! el model/event-burst
+                    #js {:mode    (:mode ps)
+                         :press-x (or (gp el k-press-x) 0)
+                         :press-y (or (gp el k-press-y) 0)})
+      (start-animation! el))))
+
+(defn- maybe-submit-or-reset!
+  "Dispatch the form's submit/reset behaviour for type=submit/reset
+   buttons that live inside a form."
+  [^js el btn-type]
+  (when-let [form (find-owner-form el)]
+    (cond
+      (= btn-type "submit") (.requestSubmit form)
+      (= btn-type "reset")  (.reset form))))
+
+(defn- on-click!
+  "Click handler: dispatch press, run particle/glow effects, clear the
+   activation source, then run any form effects."
+  [^js el]
+  (when (interactive-el? el)
+    (let [source (or (get-last-activation-source el) "programmatic")
+          ps     (read-public-state el)]
+      (du/dispatch! el model/event-press #js {:source source})
+      (trigger-burst! el ps)
+      (set-last-activation-source! el nil)
+      (maybe-submit-or-reset! el (:type ps)))))
+
+(defn- on-pointerdown! [^js el ^js button-el ^js event]
+  (when (interactive-el? el)
+    (capture-pointer-press-point! el button-el event)
+    (start-press! el "pointer")))
+
+(defn- on-key-press-start! [^js el ^js event]
+  (when (and (interactive-el? el) (activation-key? event))
+    (capture-center-press-point! el)
+    (start-press! el "keyboard")))
+
 (defn- setup-press! [^js el ^js button-el]
-  (.addEventListener
-   button-el
-   "pointerdown"
-   (fn [^js event]
-     (when (interactive-el? el)
-       ;; Capture press point
-       (let [^js rect (.getBoundingClientRect button-el)
-             px (- (.-clientX event) (.-left rect))
-             py (- (.-clientY event) (.-top rect))]
-         (sp! el k-press-x px)
-         (sp! el k-press-y py))
-       (when-not (get-active-source el)
-         (set-last-activation-source! el "pointer")
-         (set-active-source! el "pointer")
-         (render! el (get-el-state el))
-         (du/dispatch! el model/event-press-start #js {:source "pointer"})))))
-
-  (.addEventListener
-   button-el
-   "pointerup"
-   (fn [_]
-     (when (= "pointer" (get-active-source el))
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "pointercancel"
-   (fn [_]
-     (when (= "pointer" (get-active-source el))
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "keydown"
-   (fn [^js event]
-     (let [key (.-key event)]
-       (when (and (interactive-el? el)
-                  (or (= key "Enter") (= key " ")))
-         (when-not (= "keyboard" (get-active-source el))
-           ;; Use center as press point for keyboard
-           (sp! el k-press-x (/ (or (gp el k-canvas-w) 100) 2))
-           (sp! el k-press-y (/ (or (gp el k-canvas-h) 40) 2))
-           (set-last-activation-source! el "keyboard")
-           (set-active-source! el "keyboard")
-           (render! el (get-el-state el))
-           (du/dispatch! el model/event-press-start #js {:source "keyboard"}))))))
-
-  (.addEventListener
-   button-el
-   "keyup"
-   (fn [^js event]
-     (let [key (.-key event)]
-       (when (and (= "keyboard" (get-active-source el))
-                  (or (= key "Enter") (= key " ")))
-         (end-active-press! el)))))
-
-  (.addEventListener
-   button-el
-   "blur"
-   (fn [_]
-     (when (get-active-source el)
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "click"
-   (fn [_]
-     (when (interactive-el? el)
-       (let [source (or (get-last-activation-source el) "programmatic")
-             ps (read-public-state el)]
-         (du/dispatch! el model/event-press #js {:source source})
-         ;; Glow pulse
-         (trigger-glow-pulse! el)
-         ;; Particle burst
-         (when-not (prefers-reduced-motion?)
-           (when (not (#{:press-burst :press-reform} (get-phase el)))
-             (set-phase! el :press-burst)
-             (sp! el k-burst-frame 0)
-             (sp! el k-burst-start (js/performance.now))
-             (du/dispatch! el model/event-burst
-                        #js {:mode (:mode ps)
-                             :press-x (or (gp el k-press-x) 0)
-                             :press-y (or (gp el k-press-y) 0)})
-             (start-animation! el)))
-         (set-last-activation-source! el nil)
-         (let [btn-type (:type ps)
-               form (find-owner-form el)]
-           (when form
-             (cond
-               (= btn-type "submit") (.requestSubmit form)
-               (= btn-type "reset")  (.reset form)))))))))
+  (.addEventListener button-el "pointerdown"
+                     (fn [event] (on-pointerdown! el button-el event)))
+  (.addEventListener button-el "pointerup"
+                     (fn [_] (end-press-if-source! el "pointer")))
+  (.addEventListener button-el "pointercancel"
+                     (fn [_] (end-press-if-source! el "pointer")))
+  (.addEventListener button-el "keydown"
+                     (fn [event] (on-key-press-start! el event)))
+  (.addEventListener button-el "keyup"
+                     (fn [event] (when (activation-key? event)
+                                   (end-press-if-source! el "keyboard"))))
+  (.addEventListener button-el "blur"
+                     (fn [_] (when (get-active-source el)
+                               (end-active-press! el))))
+  (.addEventListener button-el "click"
+                     (fn [_] (on-click! el))))
 
 (defn- setup-focus! [^js el ^js button-el]
   (.addEventListener
