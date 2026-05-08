@@ -2,14 +2,23 @@
   (:require [clojure.string :as str]))
 
 (defn parse-bool-attr
+  "HTML boolean-attribute semantics: an attribute is true when it is
+   present with any value other than the literal string `\"false\"`.
+   The empty string and `\"0\"` both count as true. Pass the value of
+   `getAttribute` (a string or `nil`); never the result of
+   `hasAttribute`. For strict presence semantics use `parse-bool-present`."
   [s]
   (and (some? s) (not= s "false")))
 
 (defn parse-bool-present
+  "Strict-presence variant of `parse-bool-attr`: true when the attribute
+   exists at all, regardless of value. Pass the value of `getAttribute`
+   (a string or `nil`)."
   [s]
   (some? s))
 
 (defn non-empty-string?
+  "True when value is a string with at least one character."
   [value]
   (and (string? value) (not= "" value)))
 
@@ -53,6 +62,10 @@
         :else (contains? allowed-protocols (.substring lower 0 colon))))))
 
 (defn sanitize-url
-  "Returns url when safe, empty string otherwise."
+  "Returns the url unchanged when `safe-url?` accepts it; otherwise the
+   empty string. Note: nil and the empty string both round-trip to `\"\"`,
+   so callers cannot use the return value to distinguish \"missing url\"
+   from \"unsafe url\" — guard with `safe-url?` directly when that
+   distinction matters."
   [url]
   (if (safe-url? url) (or url "") ""))

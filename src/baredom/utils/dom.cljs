@@ -83,6 +83,14 @@
         :get (fn [] (this-as ^js this (has-attr? this attr-name)))
         :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
 
+(defn- normalize-prop-val
+  "Coerce a JS property setter input to the string form an HTML attribute
+   needs, or nil when the value should clear the attribute. Treats both
+   `nil` and `js/undefined` as clear-the-attribute."
+  [v]
+  (when (and (some? v) (not= v js/undefined))
+    (str v)))
+
 (defn define-string-prop!
   "Install a string JS property that reflects to/from an HTML attribute.
    `default-val` is returned when the attribute is absent (defaults to nil)."
@@ -95,8 +103,8 @@
          :enumerable   true
          :get (fn [] (this-as ^js this (or (get-attr this attr-name) default-val)))
          :set (fn [v] (this-as ^js this
-                               (if (and (some? v) (not= v js/undefined))
-                                 (set-attr! this attr-name (str v))
+                               (if-let [s (normalize-prop-val v)]
+                                 (set-attr! this attr-name s)
                                  (remove-attr! this attr-name))))})))
 
 (defn define-number-prop!
@@ -125,7 +133,9 @@
    Each entry is {prop-key {:type 'boolean|'string|'number
                             :reflects-attribute attr-name
                             :default default-val}}.
-   Skips entries marked :readonly true."
+   Skips entries marked :readonly true. For `'number` entries, an
+   omitted `:default` falls back to `0`; declare `:default` explicitly
+   when the natural empty value differs."
   [^js proto property-api]
   (doseq [[prop-key {:keys [type reflects-attribute readonly]
                      :as   spec}] property-api]
