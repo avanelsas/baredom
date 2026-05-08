@@ -251,7 +251,7 @@
          (fn [i pt]
            (when (zero? (mod i step))
              (let [px (if (= x-kind "category")
-                        (model/scale-x-category i (- (second xdom) (first xdom)) x0 x1)
+                        (model/scale-x-category i (inc (- (second xdom) (first xdom))) x0 x1)
                         (model/scale-x-numeric (:x pt) xdom x0 x1))
                    label (if (= x-kind "category")
                            (str (:x pt))
