@@ -175,23 +175,6 @@
         y1 (- H padding lh)]
     {:x0 x0 :y0 y0 :x1 x1 :y1 y1}))
 
-(defn- scale-y [y [mn mx] y0 y1]
-  (let [span (- mx mn)]
-    (if (zero? span)
-      (/ (+ y0 y1) 2)
-      (+ y0 (* (- y1 y0) (/ (- mx y) span))))))
-
-(defn- scale-x-numeric [x [mn mx] x0 x1]
-  (let [span (- mx mn)]
-    (if (zero? span)
-      (/ (+ x0 x1) 2)
-      (+ x0 (* (/ (- x mn) span) (- x1 x0))))))
-
-(defn- scale-x-category [i n x0 x1]
-  (if (<= n 1)
-    (/ (+ x0 x1) 2)
-    (+ x0 (* (/ i (dec n)) (- x1 x0)))))
-
 ;; ---- SVG element helpers ----
 
 (defn- svg-line! [x1 y1 x2 y2 stroke opacity]
@@ -246,14 +229,14 @@
 
 (defn- draw-grid! [^js svg {:keys [y-ticks y-domain]} {:keys [x0 y0 x1 y1]}]
   (doseq [tick y-ticks]
-    (let [py (scale-y tick y-domain y0 y1)
+    (let [py (model/scale-y tick y-domain y0 y1)
           ^js line (svg-line! x0 py x1 py "var(--x-chart-grid)" 1)]
       (.appendChild svg line))))
 
 (defn- draw-axes! [^js svg {:keys [y-ticks y-domain series x-kind y-fmt x-fmt]} {:keys [x0 y0 x1 y1]} padding]
   ;; Y-axis labels
   (doseq [tick y-ticks]
-    (let [py  (scale-y tick y-domain y0 y1)
+    (let [py  (model/scale-y tick y-domain y0 y1)
           lbl (model/format-value tick y-fmt)
           ^js txt (svg-text! (- x0 4) (+ py 4) lbl "end" 10 "var(--x-chart-axis-label)")]
       (.appendChild svg txt)))
@@ -268,25 +251,14 @@
          (fn [i pt]
            (when (zero? (mod i step))
              (let [px (if (= x-kind "category")
-                        (scale-x-category i (- (second xdom) (first xdom)) x0 x1)
-                        (scale-x-numeric (:x pt) xdom x0 x1))
+                        (model/scale-x-category i (- (second xdom) (first xdom)) x0 x1)
+                        (model/scale-x-numeric (:x pt) xdom x0 x1))
                    label (if (= x-kind "category")
                            (str (:x pt))
                            (model/format-value (:x pt) x-fmt))
                    ^js txt (svg-text! px (+ y1 padding 4) label "middle" 10 "var(--x-chart-axis-label)")]
                (.appendChild svg txt))))
          pts)))))
-
-(defn- compute-series-pts [s series-idx kind x-dom {:keys [x0 y0 x1 y1]} y-domain]
-  (map-indexed
-   (fn [i pt]
-     (let [px (if (= kind "category")
-                (let [n (max 1 (count (:data s)))]
-                  (scale-x-category i (dec n) x0 x1))
-                (scale-x-numeric (:x pt) x-dom x0 x1))
-           py (scale-y (:y pt) y-domain y0 y1)]
-       (assoc pt :px px :py py :si series-idx :i i)))
-   (:data s)))
 
 (defn- draw-line-series! [^js svg _series-idx pts color]
   (when-let [d (build-line-d pts)]
@@ -562,7 +534,7 @@
             bounds     (plot-bounds W H padding)
             {:keys [x0 y0 x1 y1]} bounds
             x-dom      (model/domain-x series)
-            baseline-y (scale-y 0 y-domain y0 y1)]
+            baseline-y (model/scale-y 0 y-domain y0 y1)]
 
         ;; Update viewBox
         (du/set-attr! svg "viewBox" (str "0 0 " W " " H))
@@ -582,7 +554,7 @@
           (let [all-pts (vec
                          (mapcat
                           (fn [s i]
-                            (let [pts (compute-series-pts s i x-kind x-dom bounds y-domain)]
+                            (let [pts (model/compute-series-pts s i x-kind x-dom bounds y-domain)]
                               (map (fn [pt] (assoc pt :id (:id s) :label (:label s) :y0-baseline baseline-y)) pts)))
                           series
                           (range)))]

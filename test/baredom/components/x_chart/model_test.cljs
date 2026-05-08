@@ -202,3 +202,57 @@
     (is (true?    (:disabled? m)))
     (is (true?    (:loading? m)))
     (is (= {:series-id "s1" :index 2} (:selected m)))))
+
+;; ── SVG coordinate math ─────────────────────────────────────────────────────
+(defn- approx=
+  [a b tol]
+  (< (js/Math.abs (- a b)) tol))
+
+(deftest scale-y-test
+  (testing "y-axis is inverted: max-y maps to top edge, min-y to bottom edge"
+    (is (approx= (model/scale-y 100 [0 100] 10 110)  10 0.001))
+    (is (approx= (model/scale-y   0 [0 100] 10 110) 110 0.001))
+    (is (approx= (model/scale-y  50 [0 100] 10 110)  60 0.001)))
+  (testing "zero-span domain returns the rect midpoint"
+    (is (approx= (model/scale-y 5 [5 5] 10 110) 60 0.001))))
+
+(deftest scale-x-numeric-test
+  (testing "linear interpolation between domain min and max"
+    (is (approx= (model/scale-x-numeric  0 [0 10] 0 100)   0 0.001))
+    (is (approx= (model/scale-x-numeric 10 [0 10] 0 100) 100 0.001))
+    (is (approx= (model/scale-x-numeric  5 [0 10] 0 100)  50 0.001)))
+  (testing "non-zero rect origin is honoured"
+    (is (approx= (model/scale-x-numeric 5 [0 10] 100 200) 150 0.001)))
+  (testing "zero-span domain returns the rect midpoint"
+    (is (approx= (model/scale-x-numeric 7 [7 7] 0 100) 50 0.001))))
+
+(deftest scale-x-category-test
+  (testing "i in [0, n-1] spans x0 → x1 evenly: divisor is (dec n)"
+    (is (approx= (model/scale-x-category 0 4 0 100)   0    0.01))
+    (is (approx= (model/scale-x-category 1 4 0 100)  33.33 0.01))
+    (is (approx= (model/scale-x-category 2 4 0 100)  66.67 0.01))
+    (is (approx= (model/scale-x-category 3 4 0 100) 100    0.01)))
+  (testing "n <= 1 collapses to the rect midpoint"
+    (is (approx= (model/scale-x-category 0 1 0 100) 50 0.001))
+    (is (approx= (model/scale-x-category 0 0 0 100) 50 0.001))))
+
+(deftest compute-series-pts-numeric-test
+  (let [s {:id "s1" :data [{:x 0 :y 0} {:x 5 :y 50} {:x 10 :y 100}]}
+        bounds {:x0 0 :y0 0 :x1 100 :y1 100}
+        pts (model/compute-series-pts s 2 "numeric" [0 10] bounds [0 100])]
+    (testing "returns one annotated point per data point"
+      (is (= 3 (count pts))))
+    (testing "annotations carry series and point indices"
+      (is (= [2 2 2] (map :si pts)))
+      (is (= [0 1 2] (map :i  pts))))
+    (testing "px/py are linearly scaled across the rect"
+      (let [[p0 p1 p2] pts]
+        (is (approx= (:px p0)   0 0.001))
+        (is (approx= (:py p0) 100 0.001))     ;; y=0 maps to bottom
+        (is (approx= (:px p1)  50 0.001))
+        (is (approx= (:py p1)  50 0.001))
+        (is (approx= (:px p2) 100 0.001))
+        (is (approx= (:py p2)   0 0.001))))   ;; y=100 maps to top
+    (testing "original :x and :y are preserved alongside the annotations"
+      (is (= 0   (:x (first pts))))
+      (is (= 100 (:y (last  pts)))))))
