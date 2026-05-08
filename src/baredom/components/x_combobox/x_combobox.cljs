@@ -528,140 +528,124 @@
 ;; ---------------------------------------------------------------------------
 ;; Handler construction
 ;; ---------------------------------------------------------------------------
-(defn- make-handlers [^js el]
-  (let [on-input-focus
-        (fn [^js _evt]
-          (open-panel! el "focus"))
+(defn- on-input-focus! [^js el]
+  (open-panel! el "focus"))
 
-        on-input-input
-        (fn [^js evt]
-          (let [^js input (.-target evt)
-                q         (.-value input)]
-            (du/setv! el k-query q)
-            (du/setv! el k-active-idx 0)
-            (when-not (du/has-attr? el model/attr-open)
-              (open-panel! el "input"))
-            (render-panel! el)
-            (du/dispatch! el model/event-input #js {:query q})))
+(defn- on-input-input! [^js el ^js evt]
+  (let [^js input (.-target evt)
+        q         (.-value input)]
+    (du/setv! el k-query q)
+    (du/setv! el k-active-idx 0)
+    (when-not (du/has-attr? el model/attr-open)
+      (open-panel! el "input"))
+    (render-panel! el)
+    (du/dispatch! el model/event-input #js {:query q})))
 
-        on-input-keydown
-        (fn [^js evt]
-          (let [key (.-key evt)]
-            (cond
-              (= key "ArrowDown")
-              (do (.preventDefault evt)
-                  (if (du/has-attr? el model/attr-open)
-                    (navigate! el :next)
-                    (open-panel! el "keyboard")))
+(defn- on-input-keydown! [^js el ^js evt]
+  (case (.-key evt)
+    "ArrowDown" (do (.preventDefault evt)
+                    (if (du/has-attr? el model/attr-open)
+                      (navigate! el :next)
+                      (open-panel! el "keyboard")))
+    "ArrowUp"   (do (.preventDefault evt)
+                    (if (du/has-attr? el model/attr-open)
+                      (navigate! el :prev)
+                      (open-panel! el "keyboard")))
+    "Enter"     (do (.preventDefault evt)
+                    (when (du/has-attr? el model/attr-open)
+                      (select-active! el)))
+    "Escape"    (when (du/has-attr? el model/attr-open)
+                  (.preventDefault evt)
+                  (close-panel! el "escape")
+                  (when-let [refs (du/getv el k-refs)]
+                    (.focus (gobj/get refs "input"))))
+    "Home"      (when (du/has-attr? el model/attr-open)
+                  (.preventDefault evt)
+                  (du/setv! el k-active-idx 0)
+                  (render-panel! el))
+    "End"       (when (du/has-attr? el model/attr-open)
+                  (.preventDefault evt)
+                  (let [options (du/getv el k-options)
+                        query   (or (du/getv el k-query) "")
+                        n       (count (model/filter-options options query))]
+                    (du/setv! el k-active-idx (max 0 (dec n)))
+                    (render-panel! el)))
+    nil))
 
-              (= key "ArrowUp")
-              (do (.preventDefault evt)
-                  (if (du/has-attr? el model/attr-open)
-                    (navigate! el :prev)
-                    (open-panel! el "keyboard")))
+(defn- on-clear-click! [^js el]
+  (let [prev-value (or (du/get-attr el model/attr-value) "")
+        allowed?   (du/dispatch-cancelable!
+                    el model/event-change-request
+                    #js {:value "" :label "" :previousValue prev-value})]
+    (when allowed?
+      (du/remove-attr! el model/attr-value)
+      (du/remove-attr! el "data-has-value")
+      (when-let [refs (du/getv el k-refs)]
+        (let [^js input-el (gobj/get refs "input")]
+          (set! (.-value input-el) "")
+          (.focus input-el)))
+      (du/dispatch! el model/event-change #js {:value "" :label ""}))))
 
-              (= key "Enter")
-              (do (.preventDefault evt)
-                  (when (du/has-attr? el model/attr-open)
-                    (select-active! el)))
+(defn- on-chevron-pointerdown! [^js el ^js evt]
+  (.preventDefault evt)
+  (if (du/has-attr? el model/attr-open)
+    (close-panel! el "pointer")
+    (do (open-panel! el "pointer")
+        (when-let [refs (du/getv el k-refs)]
+          (.focus (gobj/get refs "input"))))))
 
-              (= key "Escape")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (close-panel! el "escape")
-                (when-let [refs (du/getv el k-refs)]
-                  (.focus (gobj/get refs "input"))))
+(defn- on-panel-pointerdown! [^js evt]
+  ;; Prevent blur on input when clicking an option in the panel.
+  (.preventDefault evt))
 
-              (= key "Home")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (du/setv! el k-active-idx 0)
-                (render-panel! el))
+(defn- on-panel-click! [^js el ^js evt]
+  (let [^js target (.-target evt)
+        ^js opt-el (if (.hasAttribute target "data-value")
+                     target
+                     (.closest target "[data-value]"))]
+    (when opt-el
+      (let [value (.getAttribute opt-el "data-value")
+            label (.-textContent opt-el)]
+        (select-option! el value label)))))
 
-              (= key "End")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (let [options (du/getv el k-options)
-                      query   (or (du/getv el k-query) "")
-                      n       (count (model/filter-options options query))]
-                  (du/setv! el k-active-idx (max 0 (dec n)))
-                  (render-panel! el))))))
+(defn- on-focusout! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (let [related (.-relatedTarget evt)]
+      (when (or (nil? related)
+                (not (.contains el related)))
+        (close-panel! el "focusout")))))
 
-        on-clear-click
-        (fn [^js _evt]
-          (let [prev-value (or (du/get-attr el model/attr-value) "")
-                allowed?   (du/dispatch-cancelable!
-                            el model/event-change-request
-                            #js {:value "" :label "" :previousValue prev-value})]
-            (when allowed?
-              (du/remove-attr! el model/attr-value)
-              (du/remove-attr! el "data-has-value")
-              (when-let [refs (du/getv el k-refs)]
-                (let [^js input-el (gobj/get refs "input")]
-                  (set! (.-value input-el) "")
-                  (.focus input-el)))
-              (du/dispatch! el model/event-change #js {:value "" :label ""}))))
+(defn- on-slotchange! [^js el]
+  ;; Slot contents changed — the selected label may need to be re-resolved.
+  ;; Invalidate the cached model so the next apply re-renders.
+  (sync-options! el)
+  (du/setv! el k-model nil)
+  (update-from-attrs! el))
 
-        on-chevron-pointerdown
-        (fn [^js evt]
-          (.preventDefault evt)
-          (if (du/has-attr? el model/attr-open)
-            (close-panel! el "pointer")
-            (do
-              (open-panel! el "pointer")
-              (when-let [refs (du/getv el k-refs)]
-                (.focus (gobj/get refs "input"))))))
+(defn- on-doc-click! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (let [path    (array-seq (.composedPath evt))
+          inside? (some #(identical? % el) path)]
+      (when-not inside?
+        (close-panel! el "outside-click")))))
 
-        on-panel-pointerdown
-        (fn [^js evt]
-          ;; Prevent blur on input when clicking option
-          (.preventDefault evt))
-
-        on-panel-click
-        (fn [^js evt]
-          (let [^js target (.-target evt)
-                ^js opt-el (if (.hasAttribute target "data-value")
-                             target
-                             (.closest target "[data-value]"))]
-            (when opt-el
-              (let [value (.getAttribute opt-el "data-value")
-                    label (.-textContent opt-el)]
-                (select-option! el value label)))))
-
-        on-focusout
-        (fn [^js evt]
-          (when (du/has-attr? el model/attr-open)
-            (let [related (.-relatedTarget evt)]
-              (when (or (nil? related)
-                        (not (.contains el related)))
-                (close-panel! el "focusout")))))
-
-        on-slotchange
-        (fn [^js _evt]
-          ;; Slot contents changed — selected label may need to be re-resolved.
-          ;; Invalidate the cached model so the next apply re-renders.
-          (sync-options! el)
-          (du/setv! el k-model nil)
-          (update-from-attrs! el))
-
-        on-doc-click
-        (fn [^js evt]
-          (when (du/has-attr? el model/attr-open)
-            (let [path    (array-seq (.composedPath evt))
-                  inside? (some #(identical? % el) path)]
-              (when-not inside?
-                (close-panel! el "outside-click")))))]
-
-    #js {:inputFocus       on-input-focus
-         :inputInput       on-input-input
-         :inputKeydown     on-input-keydown
-         :clearClick       on-clear-click
-         :chevronPointerdown on-chevron-pointerdown
-         :panelPointerdown on-panel-pointerdown
-         :panelClick       on-panel-click
-         :focusout         on-focusout
-         :slotchange       on-slotchange
-         :docClick         on-doc-click}))
+(defn- make-handlers
+  "Build the per-instance handler map. Each handler is a one-shot
+   closure delegating to a top-level named handler so the same
+   reference is used by add-static-listeners! and remove-static-
+   listeners! (addEventListener / removeEventListener pair-up
+   requires identity equality)."
+  [^js el]
+  #js {:inputFocus         (fn [_]   (on-input-focus!         el))
+       :inputInput         (fn [evt] (on-input-input!         el evt))
+       :inputKeydown       (fn [evt] (on-input-keydown!       el evt))
+       :clearClick         (fn [_]   (on-clear-click!         el))
+       :chevronPointerdown (fn [evt] (on-chevron-pointerdown! el evt))
+       :panelPointerdown   (fn [evt] (on-panel-pointerdown!   evt))
+       :panelClick         (fn [evt] (on-panel-click!         el evt))
+       :focusout           (fn [evt] (on-focusout!            el evt))
+       :slotchange         (fn [_]   (on-slotchange!          el))
+       :docClick           (fn [evt] (on-doc-click!           el evt))})
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
