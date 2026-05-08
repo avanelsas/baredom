@@ -258,6 +258,51 @@
          pts))
       by-id))))
 
+;; ---- SVG coordinate math ----
+
+(defn scale-y
+  "Map a y-value to a pixel y inside the plot rect [y0, y1].
+   y0 is the top edge (low pixel), y1 the bottom edge (high pixel).
+   Inverts the axis so larger values render higher on the screen.
+   When the domain has zero span, returns the rect midpoint."
+  [y [mn mx] y0 y1]
+  (let [span (- mx mn)]
+    (if (zero? span)
+      (/ (+ y0 y1) 2)
+      (+ y0 (* (- y1 y0) (/ (- mx y) span))))))
+
+(defn scale-x-numeric
+  "Map a numeric x-value to a pixel x inside the plot rect [x0, x1]."
+  [x [mn mx] x0 x1]
+  (let [span (- mx mn)]
+    (if (zero? span)
+      (/ (+ x0 x1) 2)
+      (+ x0 (* (/ (- x mn) span) (- x1 x0))))))
+
+(defn scale-x-category
+  "Map a category index `i` of `n` evenly-spaced bins to a pixel x.
+   When n <= 1 returns the rect midpoint."
+  [i n x0 x1]
+  (if (<= n 1)
+    (/ (+ x0 x1) 2)
+    (+ x0 (* (/ i (dec n)) (- x1 x0)))))
+
+(defn compute-series-pts
+  "Annotate every point in series `s` with its rendered pixel coords
+   (`:px`, `:py`), the series index (`:si`), and its position in the
+   series (`:i`). `kind` is \"category\" or \"numeric\"; `bounds` is
+   the plot rect map (`:x0 :y0 :x1 :y1`)."
+  [s series-idx kind x-dom {:keys [x0 y0 x1 y1]} y-domain]
+  (map-indexed
+   (fn [i pt]
+     (let [px (if (= kind "category")
+                (let [n (max 1 (count (:data s)))]
+                  (scale-x-category i (dec n) x0 x1))
+                (scale-x-numeric (:x pt) x-dom x0 x1))
+           py (scale-y (:y pt) y-domain y0 y1)]
+       (assoc pt :px px :py py :si series-idx :i i)))
+   (:data s)))
+
 (def event-schema
   {event-select {:cancelable false
                  :detail     {:seriesId 'string :index 'number :x 'number :y 'number :value 'number}}
