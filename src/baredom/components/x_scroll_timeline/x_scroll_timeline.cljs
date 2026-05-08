@@ -252,73 +252,91 @@
    "[part=track-fill-path]{transition:none !important;}}"))
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root       (.attachShadow el #js {:mode "open"})
-        style      (.createElement js/document "style")
-        container  (.createElement js/document "div")
-        track      (.createElement js/document "div")
+(defn- make-track-section!
+  "Build the straight-track group: an outer rail + a fill div on top.
+   Used in line/dotted/dashed track modes."
+  []
+  (let [track      (.createElement js/document "div")
         track-line (.createElement js/document "div")
-        track-fill (.createElement js/document "div")
-        track-svg  (.createElementNS js/document svg-ns "svg")
-        track-path (.createElementNS js/document svg-ns "path")
-        fill-path  (.createElementNS js/document svg-ns "path")
-        entries    (.createElement js/document "div")
-        slot       (.createElement js/document "slot")
-        indicator  (.createElement js/document "div")
-        live       (.createElement js/document "div")]
-
-    (set! (.-textContent style) style-text)
-
-    (.setAttribute container  "part" "container")
-    (.setAttribute container  "role" "feed")
-
+        track-fill (.createElement js/document "div")]
     (.setAttribute track      "part" "track")
     (.setAttribute track-line "part" "track-line")
     (.setAttribute track-fill "part" "track-fill")
+    (.appendChild track track-line)
+    (.appendChild track track-fill)
+    {:track track :track-line track-line :track-fill track-fill}))
 
+(defn- make-svg-track!
+  "Build the SVG serpentine track: an `<svg>` host plus the base path
+   and the fill path. Used in curved track mode."
+  []
+  (let [track-svg  (.createElementNS js/document svg-ns "svg")
+        track-path (.createElementNS js/document svg-ns "path")
+        fill-path  (.createElementNS js/document svg-ns "path")]
     (.setAttribute track-svg  "part" "track-svg")
     (.setAttribute track-svg  "aria-hidden" "true")
     (.setAttribute track-svg  "focusable" "false")
     (.setAttribute track-path "part" "track-path")
     (.setAttribute fill-path  "part" "track-fill-path")
     (.setAttribute fill-path  "pathLength" "1")
-
     (.appendChild track-svg track-path)
     (.appendChild track-svg fill-path)
+    {:track-svg track-svg :track-path track-path :fill-path fill-path}))
 
-    (.appendChild track track-line)
-    (.appendChild track track-fill)
-
+(defn- make-entries-section!
+  "Build the slotted entries column."
+  []
+  (let [entries (.createElement js/document "div")
+        slot    (.createElement js/document "slot")]
     (.setAttribute entries "part" "entries")
     (.appendChild entries slot)
+    {:entries entries :slot slot}))
 
-    (.setAttribute indicator "part" "indicator")
+(defn- make-indicator! []
+  (let [el (.createElement js/document "div")]
+    (.setAttribute el "part" "indicator")
+    el))
 
-    (.appendChild container track)
-    (.appendChild container entries)
-    ;; SVG sits directly in the container (not inside narrow track div)
-    (.appendChild container track-svg)
-    (.appendChild container indicator)
-
+(defn- make-live-region!
+  "Polite ARIA live region used to announce entry changes."
+  []
+  (let [live (.createElement js/document "div")]
     (.setAttribute live "part" "live")
     (.setAttribute live "aria-live" "polite")
     (.setAttribute live "aria-atomic" "true")
+    live))
 
+(defn- init-dom! [^js el]
+  (let [root      (.attachShadow el #js {:mode "open"})
+        style     (.createElement js/document "style")
+        container (.createElement js/document "div")
+        trk       (make-track-section!)
+        svg-trk   (make-svg-track!)
+        ent       (make-entries-section!)
+        indicator (make-indicator!)
+        live      (make-live-region!)]
+    (set! (.-textContent style) style-text)
+    (.setAttribute container "part" "container")
+    (.setAttribute container "role" "feed")
+    (.appendChild container (:track trk))
+    (.appendChild container (:entries ent))
+    ;; SVG sits directly in the container (not inside the narrow track div)
+    (.appendChild container (:track-svg svg-trk))
+    (.appendChild container indicator)
     (.appendChild root style)
     (.appendChild root container)
     (.appendChild root live)
-
     (gobj/set el k-refs
               {:root       root
                :container  container
-               :track      track
-               :track-line track-line
-               :track-fill track-fill
-               :track-svg  track-svg
-               :track-path track-path
-               :fill-path  fill-path
-               :entries    entries
-               :slot       slot
+               :track      (:track trk)
+               :track-line (:track-line trk)
+               :track-fill (:track-fill trk)
+               :track-svg  (:track-svg svg-trk)
+               :track-path (:track-path svg-trk)
+               :fill-path  (:fill-path svg-trk)
+               :entries    (:entries ent)
+               :slot       (:slot ent)
                :indicator  indicator
                :live       live}))
   nil)
@@ -521,50 +539,44 @@
       (.setAttribute fill-path "stroke-dashoffset" (str (- 1.0 progress))))))
 
 ;; ── Entry activation ────────────────────────────────────────────────────────
+(defn- swap-active-attr!
+  "Move an attribute from old-idx to new-idx within a JS array of
+   elements. `nil` array is a no-op; out-of-range indices are skipped.
+   Used to keep `data-active` in sync across entry / marker / date
+   element arrays without re-hand-rolling the bounds check each time."
+  [^js arr old-idx new-idx attr-name]
+  (when arr
+    (when (and (>= old-idx 0) (< old-idx (.-length arr)))
+      (when-let [^js old-el (aget arr old-idx)]
+        (.removeAttribute old-el attr-name)))
+    (when (and (>= new-idx 0) (< new-idx (.-length arr)))
+      (when-let [^js new-el (aget arr new-idx)]
+        (.setAttribute new-el attr-name "")))))
+
+(defn- entry-id-at
+  "Read the entry id at idx, or nil if out of bounds."
+  [^js children idx]
+  (when (and (>= idx 0) (< idx (.-length children)))
+    (entry-id (aget children idx))))
+
 (defn- update-active-entry!
   "Mark an entry child as active (set data-active), remove from previous."
   [^js el children new-index]
   (let [old-index (or (gobj/get el k-active-index) -1)]
     (when (not= old-index new-index)
-      ;; Remove data-active from old entry
-      (when (and (>= old-index 0) (< old-index (.-length children)))
-        (let [^js old-child (aget children old-index)]
-          (.removeAttribute old-child model/data-active)))
-      ;; Set data-active on new entry
-      (when (and (>= new-index 0) (< new-index (.-length children)))
-        (let [^js new-child (aget children new-index)]
-          (.setAttribute new-child model/data-active "")))
-      ;; Update marker active states
-      (let [markers (gobj/get el k-marker-els)
-            dates   (gobj/get el k-date-els)]
-        (when markers
-          (when (and (>= old-index 0) (< old-index (.-length markers)))
-            (.removeAttribute ^js (aget markers old-index) "data-active"))
-          (when (and (>= new-index 0) (< new-index (.-length markers)))
-            (.setAttribute ^js (aget markers new-index) "data-active" "")))
-        (when dates
-          (when (and (>= old-index 0) (< old-index (.-length dates)))
-            (when-let [^js d (aget dates old-index)]
-              (.removeAttribute d "data-active")))
-          (when (and (>= new-index 0) (< new-index (.-length dates)))
-            (when-let [^js d (aget dates new-index)]
-              (.setAttribute d "data-active" "")))))
-      ;; Update host data attribute
+      (swap-active-attr! children                      old-index new-index model/data-active)
+      (swap-active-attr! (gobj/get el k-marker-els)    old-index new-index "data-active")
+      (swap-active-attr! (gobj/get el k-date-els)      old-index new-index "data-active")
       (if (>= new-index 0)
         (du/set-attr! el "data-active-index" (str new-index))
         (du/remove-attr! el "data-active-index"))
-      ;; Cache active index
       (gobj/set el k-active-index new-index)
-      ;; Dispatch entry-change event
-      (let [old-id (when (and (>= old-index 0) (< old-index (.-length children)))
-                     (entry-id (aget children old-index)))
-            new-id (when (and (>= new-index 0) (< new-index (.-length children)))
-                     (entry-id (aget children new-index)))]
-        (du/dispatch! el model/event-entry-change
-                   #js {:index new-index :id new-id
-                        :previousIndex old-index :previousId old-id})
-        ;; Announce to live region
-        (announce! el (str "Entry " (inc new-index) " active"))))))
+      (du/dispatch! el model/event-entry-change
+                    #js {:index         new-index
+                         :id            (entry-id-at children new-index)
+                         :previousIndex old-index
+                         :previousId    (entry-id-at children old-index)})
+      (announce! el (str "Entry " (inc new-index) " active")))))
 
 ;; ── Entry enter/leave tracking ──────────────────────────────────────────────
 (defn- ensure-entry-states!
@@ -606,6 +618,40 @@
                            #js {:index i :id id :progress progress}))))))))
 
 ;; ── Scroll update ───────────────────────────────────────────────────────────
+(defn- read-entry-rects
+  "Read each child's `getBoundingClientRect` into a vector of
+   `{:top :bottom}` numbers — the input shape pure model fns expect."
+  [^js children]
+  (let [n (.-length children)]
+    (loop [i 0 acc []]
+      (if (>= i n)
+        acc
+        (let [^js child (aget children i)
+              rect      (.getBoundingClientRect child)]
+          (recur (inc i)
+                 (conj acc {:top    (.-top rect)
+                            :bottom (+ (.-top rect) (.-height rect))})))))))
+
+(defn- update-track-fill!
+  "Dispatch to the straight or curved track renderer."
+  [^js el track-prog {:keys [track no-progress?]}]
+  (if (= track "curved")
+    (update-curved-track! el track-prog no-progress?)
+    (update-straight-track! el track-prog no-progress?)))
+
+(defn- dispatch-progress-if-changed!
+  "Fire `event-progress` only when progress has moved more than 0.001
+   from the last dispatched value (cached on el via k-last-prog)."
+  [^js el progress active-idx active-id]
+  (let [last-prog (gobj/get el k-last-prog)]
+    (when (or (nil? last-prog)
+              (> (js/Math.abs (- progress last-prog)) 0.001))
+      (gobj/set el k-last-prog progress)
+      (du/dispatch! el model/event-progress
+                    #js {:progress    progress
+                         :activeIndex active-idx
+                         :activeId    active-id}))))
+
 (defn- update-scroll!
   "Compute entry activation and dispatch events. Called from rAF callback."
   [^js el]
@@ -615,68 +661,20 @@
             n           (.-length children)
             vp-height   (.-innerHeight js/window)
             trigger-y   (* vp-height (:threshold m))
-            ;; Build entry rects
-            entry-rects (loop [i 0 acc []]
-                          (if (>= i n)
-                            acc
-                            (let [^js child (aget children i)
-                                  rect (.getBoundingClientRect child)]
-                              (recur (inc i)
-                                     (conj acc {:top    (.-top rect)
-                                                :bottom (+ (.-top rect) (.-height rect))})))))
-            ;; Find active entry
+            entry-rects (read-entry-rects children)
             active-idx  (model/find-active-entry entry-rects trigger-y)
-            ;; Compute overall progress
             {:keys [container]} (gobj/get el k-refs)
             ^js container container
             cont-rect   (.getBoundingClientRect container)
             progress    (model/compute-overall-progress
-                         (.-top cont-rect) (.-height cont-rect) vp-height)
-            last-prog   (gobj/get el k-last-prog)
-            ;; Track fill progress based on entry positions (not container scroll)
-            ;; Fills from first entry center to last entry center
-            track-prog  (if (or (< n 2) (< active-idx 0))
-                          0.0
-                          (let [first-center (let [r (nth entry-rects 0)]
-                                               (/ (+ (:top r) (:bottom r)) 2.0))
-                                last-center  (let [r (nth entry-rects (dec n))]
-                                               (/ (+ (:top r) (:bottom r)) 2.0))
-                                rng          (- last-center first-center)
-                                active-rect  (nth entry-rects active-idx)
-                                active-center (/ (+ (:top active-rect) (:bottom active-rect)) 2.0)
-                                entry-prog   (model/compute-entry-progress
-                                              (:top active-rect)
-                                              (- (:bottom active-rect) (:top active-rect))
-                                              trigger-y)
-                                next-center  (if (< active-idx (dec n))
-                                               (let [r (nth entry-rects (inc active-idx))]
-                                                 (/ (+ (:top r) (:bottom r)) 2.0))
-                                               active-center)
-                                pos          (+ active-center (* entry-prog (- next-center active-center)))]
-                            (if (<= rng 0)
-                              1.0
-                              (max 0.0 (min 1.0 (/ (- pos first-center) rng))))))]
-
-        ;; Update active entry (handles data-active + events)
+                          (.-top cont-rect) (.-height cont-rect) vp-height)
+            track-prog  (model/compute-track-progress entry-rects active-idx trigger-y)
+            active-id   (when (and (>= active-idx 0) (< active-idx n))
+                          (entry-id (aget children active-idx)))]
         (update-active-entry! el children active-idx)
-
-        ;; Track entry enter/leave
         (update-entry-states! el children entry-rects trigger-y)
-
-        ;; Update track fill using entry-based progress
-        (if (= (:track m) "curved")
-          (update-curved-track! el track-prog (:no-progress? m))
-          (update-straight-track! el track-prog (:no-progress? m)))
-
-        ;; Dispatch progress event if changed
-        (when (or (nil? last-prog)
-                  (> (js/Math.abs (- progress last-prog)) 0.001))
-          (gobj/set el k-last-prog progress)
-          (let [active-id (when (and (>= active-idx 0) (< active-idx n))
-                            (entry-id (aget children active-idx)))]
-            (du/dispatch! el model/event-progress
-                       #js {:progress progress :activeIndex active-idx :activeId active-id}))))))
-  ;; Clear rAF handle
+        (update-track-fill! el track-prog m)
+        (dispatch-progress-if-changed! el progress active-idx active-id))))
   (gobj/set el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
@@ -941,51 +939,70 @@
   nil)
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el {:keys [layout track disabled? label marker] :as m}]
+(defn- apply-host-attrs!
+  "Mirror layout/track/marker onto the host as data-* attrs (CSS hooks)."
+  [^js el {:keys [layout track marker]}]
+  (du/set-attr! el "data-layout" layout)
+  (du/set-attr! el "data-track" track)
+  (du/set-attr! el "data-marker" marker))
+
+(defn- apply-container-aria!
+  "Set or remove aria-label on the inner container based on the model."
+  [^js container {:keys [label]}]
+  (if (seq label)
+    (.setAttribute container "aria-label" label)
+    (.removeAttribute container "aria-label")))
+
+(defn- enter-disabled-state!
+  "Tear down everything that should not be running while disabled."
+  [^js el]
+  (clean-entry-attrs! el)
+  (gobj/set el k-active-index -1)
+  (gobj/set el k-entry-states nil)
+  (detach-scroll-listener! el)
+  (stop-autoplay! el))
+
+(defn- structural-change?
+  "Layout, track, marker, or disabled flip → full rebuild required."
+  [old-m new-m]
+  (or (not= (:layout old-m)    (:layout new-m))
+      (not= (:track old-m)     (:track new-m))
+      (not= (:marker old-m)    (:marker new-m))
+      (not= (:disabled? old-m) (:disabled? new-m))))
+
+(defn- scroll-input-change?
+  "Threshold or no-progress flip → re-run scroll update."
+  [old-m new-m]
+  (or (not= (:threshold old-m)     (:threshold new-m))
+      (not= (:no-progress? old-m)  (:no-progress? new-m))))
+
+(defn- handle-model-changes!
+  "Dispatch on what changed between the old and new model."
+  [^js el old-m new-m]
+  (cond
+    (structural-change? old-m new-m) (rebuild-layout! el)
+    (scroll-input-change? old-m new-m) (when (gobj/get el k-visible)
+                                         (update-scroll! el))))
+
+(defn- sync-autoplay!
+  "Start or stop autoplay based on the current model + visibility."
+  [^js el {:keys [autoplay? disabled?]}]
+  (when-not disabled?
+    (if (and autoplay? (gobj/get el k-visible))
+      (start-autoplay! el)
+      (stop-autoplay! el))))
+
+(defn- apply-model! [^js el {:keys [disabled?] :as m}]
   (let [{:keys [container]} (ensure-refs! el)
         ^js container container
         old-m (gobj/get el k-model)]
-    ;; Data attributes for CSS selectors
-    (du/set-attr! el "data-layout" layout)
-    (du/set-attr! el "data-track" track)
-    (du/set-attr! el "data-marker" marker)
-
-    ;; Aria
-    (if (seq label)
-      (.setAttribute container "aria-label" label)
-      (.removeAttribute container "aria-label"))
-
-    ;; Cache model
+    (apply-host-attrs!     el m)
+    (apply-container-aria! container m)
     (gobj/set el k-model m)
-
-    (if disabled?
-      ;; When disabling: clean active entry, detach scroll listener, stop autoplay
-      (do
-        (clean-entry-attrs! el)
-        (gobj/set el k-active-index -1)
-        (gobj/set el k-entry-states nil)
-        (detach-scroll-listener! el)
-        (stop-autoplay! el))
-      (when old-m
-        (cond
-          ;; Layout/track/marker changed: full rebuild
-          (or (not= (:layout old-m) layout)
-              (not= (:track old-m) track)
-              (not= (:marker old-m) marker)
-              (not= (:disabled? old-m) disabled?))
-          (rebuild-layout! el)
-
-          ;; Threshold or no-progress changed: re-run scroll update
-          (or (not= (:threshold old-m) (:threshold m))
-              (not= (:no-progress? old-m) (:no-progress? m)))
-          (when (gobj/get el k-visible)
-            (update-scroll! el)))))
-
-    ;; Autoplay toggle
-    (when-not disabled?
-      (if (and (:autoplay? m) (gobj/get el k-visible))
-        (start-autoplay! el)
-        (stop-autoplay! el))))
+    (cond
+      disabled?  (enter-disabled-state! el)
+      old-m      (handle-model-changes! el old-m m))
+    (sync-autoplay! el m))
   nil)
 
 (defn- update-from-attrs! [^js el]

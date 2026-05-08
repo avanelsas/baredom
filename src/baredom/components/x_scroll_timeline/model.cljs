@@ -232,6 +232,35 @@
     (let [progress (/ (- trigger-y entry-top) entry-height)]
       (max 0.0 (min 1.0 progress)))))
 
+(defn compute-track-progress
+  "How far the track fill should be drawn, in [0, 1].
+   The fill grows from the centre of the first entry toward the centre
+   of the last; the active entry's per-entry progress interpolates
+   between its own centre and the next entry's centre.
+   Returns 0.0 when fewer than 2 entries or no entry is active.
+   Pure: callers pass `entry-rects` derived from getBoundingClientRect."
+  [entry-rects active-idx trigger-y]
+  (let [n (count entry-rects)]
+    (if (or (< n 2) (< active-idx 0))
+      0.0
+      (let [center-of     (fn [r] (/ (+ (:top r) (:bottom r)) 2.0))
+            first-center  (center-of (nth entry-rects 0))
+            last-center   (center-of (nth entry-rects (dec n)))
+            rng           (- last-center first-center)
+            active-rect   (nth entry-rects active-idx)
+            active-center (center-of active-rect)
+            entry-prog    (compute-entry-progress
+                            (:top active-rect)
+                            (- (:bottom active-rect) (:top active-rect))
+                            trigger-y)
+            next-center   (if (< active-idx (dec n))
+                            (center-of (nth entry-rects (inc active-idx)))
+                            active-center)
+            pos           (+ active-center (* entry-prog (- next-center active-center)))]
+        (if (<= rng 0)
+          1.0
+          (max 0.0 (min 1.0 (/ (- pos first-center) rng))))))))
+
 ;; ── SVG serpentine path generation ──────────────────────────────────────────
 
 (defn build-serpentine-path
