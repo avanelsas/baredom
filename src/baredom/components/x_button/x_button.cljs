@@ -420,53 +420,75 @@
                        icon-end-slot-el
                        spinner-slot-el)))
 
+(defn- bool-attr
+  "Render a boolean as the literal string \"true\" or \"false\" for a
+   data-* attribute (CSS selector convention used by the host styles)."
+  [v]
+  (if v "true" "false"))
+
+(defn- toggle-attr!
+  "Set or remove an attribute depending on whether `v` is truthy.
+   When truthy and a non-string, `v` is coerced via `str`."
+  [^js node attr v]
+  (if v
+    (.setAttribute node attr (if (string? v) v (str v)))
+    (.removeAttribute node attr)))
+
+(defn- apply-button-aria!
+  "Set the standard ARIA attributes on the inner button element."
+  [^js button-el public-state aria-label-value]
+  (toggle-attr! button-el "aria-busy"    (model/aria-busy public-state))
+  (toggle-attr! button-el "aria-pressed" (when (:pressed public-state) "true"))
+  (toggle-attr! button-el "aria-label"   aria-label-value))
+
+(defn- apply-button-data-state!
+  "Project the merged public-state + UI flags onto the inner button's
+   data-* attributes; the host stylesheet keys off these."
+  [^js button-el {:keys [variant size loading disabled]}
+   {:keys [hover? active? focus-visible?
+           has-icon-start? has-icon-end? has-spinner?]}]
+  (.setAttribute button-el "data-variant"        variant)
+  (.setAttribute button-el "data-size"           size)
+  (.setAttribute button-el "data-loading"        (bool-attr loading))
+  (.setAttribute button-el "data-disabled"       (bool-attr disabled))
+  (.setAttribute button-el "data-hover"          (bool-attr hover?))
+  (.setAttribute button-el "data-active"         (bool-attr active?))
+  (.setAttribute button-el "data-focus-visible"  (bool-attr focus-visible?))
+  (.setAttribute button-el "data-has-icon-start" (bool-attr has-icon-start?))
+  (.setAttribute button-el "data-has-icon-end"   (bool-attr has-icon-end?))
+  (.setAttribute button-el "data-has-spinner"    (bool-attr has-spinner?)))
+
+(defn- apply-host-data!
+  "Mirror variant/size onto the host element so external selectors can
+   target the unstyled custom element."
+  [^js el {:keys [variant size]}]
+  (du/set-attr! el "data-variant" variant)
+  (du/set-attr! el "data-size"    size))
+
 (defn render!
   [^js el state]
-  (let [button-el (aget state "button")
-        label-slot-el (aget state "label-slot")
+  (let [button-el          (aget state "button")
+        label-slot-el      (aget state "label-slot")
         icon-start-slot-el (aget state "icon-start-slot")
-        icon-end-slot-el (aget state "icon-end-slot")
-        spinner-slot-el (aget state "spinner-slot")
-        public-state (read-public-state el)
-        has-default-text? (slot-has-meaningful-text? label-slot-el)
-        has-icon-start? (slot-has-content? icon-start-slot-el)
-        has-icon-end? (slot-has-content? icon-end-slot-el)
-        has-spinner? (slot-has-content? spinner-slot-el)
-        hover? (get-hover el)
-        active? (some? (get-active-source el))
-        focus-visible? (get-focus-visible el)
+        icon-end-slot-el   (aget state "icon-end-slot")
+        spinner-slot-el    (aget state "spinner-slot")
+        public-state       (read-public-state el)
+        ui {:hover?          (get-hover el)
+            :active?         (some? (get-active-source el))
+            :focus-visible?  (get-focus-visible el)
+            :has-icon-start? (slot-has-content? icon-start-slot-el)
+            :has-icon-end?   (slot-has-content? icon-end-slot-el)
+            :has-spinner?    (slot-has-content? spinner-slot-el)}
         aria-label-value (model/aria-label
-                          (assoc public-state :has-default-text? has-default-text?))]
-
+                          (assoc public-state
+                                 :has-default-text?
+                                 (slot-has-meaningful-text? label-slot-el)))]
     (.setAttribute button-el "type" (:type public-state))
     (set! (.-disabled button-el) (or (:disabled public-state)
                                      (:loading public-state)))
-
-    (if-let [v (model/aria-busy public-state)]
-      (.setAttribute button-el "aria-busy" v)
-      (.removeAttribute button-el "aria-busy"))
-
-    (if (:pressed public-state)
-      (.setAttribute button-el "aria-pressed" "true")
-      (.removeAttribute button-el "aria-pressed"))
-
-    (if aria-label-value
-      (.setAttribute button-el "aria-label" aria-label-value)
-      (.removeAttribute button-el "aria-label"))
-
-    (.setAttribute button-el "data-variant" (:variant public-state))
-    (.setAttribute button-el "data-size" (:size public-state))
-    (.setAttribute button-el "data-loading" (if (:loading public-state) "true" "false"))
-    (.setAttribute button-el "data-disabled" (if (:disabled public-state) "true" "false"))
-    (.setAttribute button-el "data-hover" (if hover? "true" "false"))
-    (.setAttribute button-el "data-active" (if active? "true" "false"))
-    (.setAttribute button-el "data-focus-visible" (if focus-visible? "true" "false"))
-    (.setAttribute button-el "data-has-icon-start" (if has-icon-start? "true" "false"))
-    (.setAttribute button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
-    (.setAttribute button-el "data-has-spinner" (if has-spinner? "true" "false"))
-
-    (du/set-attr! el "data-variant" (:variant public-state))
-    (du/set-attr! el "data-size" (:size public-state))))
+    (apply-button-aria!        button-el public-state aria-label-value)
+    (apply-button-data-state!  button-el public-state ui)
+    (apply-host-data!          el        public-state)))
 
 (defn end-active-press!
   [^js el]
@@ -507,76 +529,76 @@
      (when (= "pointer" (get-active-source el))
        (end-active-press! el)))))
 
+(defn- activation-key?
+  "Enter and Space activate buttons per ARIA convention."
+  [^js event]
+  (let [k (.-key event)]
+    (or (= k "Enter") (= k " "))))
+
+(defn- can-start-press?
+  "A press from `source` may begin only when:
+   - pointer: nothing else is currently active (keyboard always wins),
+   - keyboard: a keyboard press isn't already in flight (filters key
+     auto-repeat, but a keyboard press DOES override an in-progress
+     pointer press to match the existing behaviour)."
+  [^js el source]
+  (case source
+    "pointer"  (not (get-active-source el))
+    "keyboard" (not= "keyboard" (get-active-source el))))
+
+(defn- start-press!
+  "Begin a press from `source` (\"pointer\" | \"keyboard\") if the
+   button is interactive and the source-specific guard passes."
+  [^js el source]
+  (when (and (interactive-el? el) (can-start-press? el source))
+    (set-last-activation-source! el source)
+    (set-active-source! el source)
+    (render! el (get-el-state el))
+    (du/dispatch! el model/event-press-start #js {:source source})))
+
+(defn- end-press-if-source!
+  "End the active press only when the active source matches `source`."
+  [^js el source]
+  (when (= source (get-active-source el))
+    (end-active-press! el)))
+
+(defn- maybe-submit-or-reset!
+  "Dispatch the form's submit/reset behaviour for type=submit/reset
+   buttons that live inside a form."
+  [^js el btn-type]
+  (when-let [form (find-owner-form el)]
+    (cond
+      (= btn-type "submit") (.requestSubmit form)
+      (= btn-type "reset")  (.reset form))))
+
+(defn- on-click!
+  "Click handler: dispatch the press event then run any form effects."
+  [^js el]
+  (when (interactive-el? el)
+    (let [source (or (get-last-activation-source el) "programmatic")]
+      (du/dispatch! el model/event-press #js {:source source})
+      (set-last-activation-source! el nil)
+      (maybe-submit-or-reset! el (:type (read-public-state el))))))
+
 (defn setup-press!
   [^js el ^js button-el]
-  (.addEventListener
-   button-el
-   "pointerdown"
-   (fn [_]
-     (when (interactive-el? el)
-       (when-not (get-active-source el)
-         (set-last-activation-source! el "pointer")
-         (set-active-source! el "pointer")
-         (render! el (get-el-state el))
-         (du/dispatch! el model/event-press-start #js {:source "pointer"})))))
-
-  (.addEventListener
-   button-el
-   "pointerup"
-   (fn [_]
-     (when (= "pointer" (get-active-source el))
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "pointercancel"
-   (fn [_]
-     (when (= "pointer" (get-active-source el))
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "keydown"
-   (fn [event]
-     (let [key (.-key event)]
-       (when (and (interactive-el? el)
-                  (or (= key "Enter") (= key " ")))
-         (when-not (= "keyboard" (get-active-source el))
-           (set-last-activation-source! el "keyboard")
-           (set-active-source! el "keyboard")
-           (render! el (get-el-state el))
-           (du/dispatch! el model/event-press-start #js {:source "keyboard"}))))))
-
-  (.addEventListener
-   button-el
-   "keyup"
-   (fn [event]
-     (let [key (.-key event)]
-       (when (and (= "keyboard" (get-active-source el))
-                  (or (= key "Enter") (= key " ")))
-         (end-active-press! el)))))
-
-  (.addEventListener
-   button-el
-   "blur"
-   (fn [_]
-     (when (get-active-source el)
-       (end-active-press! el))))
-
-  (.addEventListener
-   button-el
-   "click"
-   (fn [_]
-     (when (interactive-el? el)
-       (let [source (or (get-last-activation-source el) "programmatic")]
-         (du/dispatch! el model/event-press #js {:source source})
-         (set-last-activation-source! el nil)
-         (let [btn-type (:type (read-public-state el))
-               form (find-owner-form el)]
-           (when form
-             (cond
-               (= btn-type "submit") (.requestSubmit form)
-               (= btn-type "reset")  (.reset form)))))))))
+  (.addEventListener button-el "pointerdown"
+                     (fn [_] (start-press! el "pointer")))
+  (.addEventListener button-el "pointerup"
+                     (fn [_] (end-press-if-source! el "pointer")))
+  (.addEventListener button-el "pointercancel"
+                     (fn [_] (end-press-if-source! el "pointer")))
+  (.addEventListener button-el "keydown"
+                     (fn [event] (when (activation-key? event)
+                                   (start-press! el "keyboard"))))
+  (.addEventListener button-el "keyup"
+                     (fn [event] (when (activation-key? event)
+                                   (end-press-if-source! el "keyboard"))))
+  (.addEventListener button-el "blur"
+                     (fn [_] (when (get-active-source el)
+                               (end-active-press! el))))
+  (.addEventListener button-el "click"
+                     (fn [_] (on-click! el))))
 
 (defn setup-focus!
   [^js el ^js button-el]
