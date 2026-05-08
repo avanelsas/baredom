@@ -212,8 +212,7 @@ Follow these stages in order. **Do not skip or merge stages.**
 3. **Implementation** — all files in a single response: `model.cljs`, `<name>.cljs`, `exports/<name>.cljs`, `model_test.cljs`, `<name>_test.cljs`, `docs/<name>.md`, `demo/<name>.html`. Use shared utilities — never reimplement. **Registration checklist:**
    - `shadow-cljs.edn` — add `:x-<name>` module under `:lib :modules`
    - `package.json` — add `"./x-<name>"` entry under `"exports"`
-   - `src/baredom/core.cljs` — require the export namespace and call `register!` in `start!`
-   - `src/baredom/exports/all.cljs` — require the export namespace and call `register!`
+   - `src/baredom/registry.cljs` — require the export namespace and add `<alias>/register!` to `all-registers` (single source of truth; `baredom.core/start!` and `baredom.exports.all/init` both consume this vector)
    - `public/index.html` — add an entry to the `components` array in the `<script>` block (name, tag, file, category)
 4. **Verification** — run these checks:
    - `clj-kondo --lint src test` — zero warnings/errors
