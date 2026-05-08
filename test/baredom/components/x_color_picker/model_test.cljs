@@ -153,6 +153,49 @@
 (deftest alpha-pct-roundtrip-test
   (is (approx= (model/pct->alpha (model/alpha->pct 0.75)) 0.75 0.01)))
 
+;; ── client-coord transforms ─────────────────────────────────────────────────
+(deftest client-xy-sat-val-centre-test
+  (testing "centre of a 200x100 area at origin maps to mid sat / mid val"
+    (let [{:keys [sat val]} (model/client-xy->sat-val 100 50 0 0 200 100)]
+      (is (approx= sat 50 0.1))
+      (is (approx= val 50 0.1)))))
+
+(deftest client-xy-sat-val-corners-test
+  (testing "top-left → sat 0, val 100 (full brightness, no saturation)"
+    (let [{:keys [sat val]} (model/client-xy->sat-val 0 0 0 0 200 100)]
+      (is (approx= sat 0   0.1))
+      (is (approx= val 100 0.1))))
+  (testing "bottom-right → sat 100, val 0"
+    (let [{:keys [sat val]} (model/client-xy->sat-val 200 100 0 0 200 100)]
+      (is (approx= sat 100 0.1))
+      (is (approx= val 0   0.1)))))
+
+(deftest client-xy-sat-val-clamp-test
+  (testing "pointer outside the rect clamps to the nearest edge"
+    (let [{:keys [sat val]} (model/client-xy->sat-val -50 999 0 0 200 100)]
+      (is (approx= sat 0   0.1))
+      (is (approx= val 0   0.1)))))
+
+(deftest client-xy-sat-val-offset-rect-test
+  (testing "rect offset from origin is honoured"
+    (let [{:keys [sat val]} (model/client-xy->sat-val 150 75 100 50 100 50)]
+      (is (approx= sat 50 0.1))
+      (is (approx= val 50 0.1)))))
+
+(deftest client-x-hue-test
+  (is (approx= (model/client-x->hue   0 0 360)   0 0.5))
+  (is (approx= (model/client-x->hue 180 0 360) 180 0.5))
+  (is (approx= (model/client-x->hue 360 0 360) 360 0.5))
+  (testing "clamps when pointer is past the right edge"
+    (is (approx= (model/client-x->hue 999 0 360) 360 0.5))))
+
+(deftest client-x-alpha-test
+  (is (approx= (model/client-x->alpha   0 0 200) 0.0  0.01))
+  (is (approx= (model/client-x->alpha 100 0 200) 0.5  0.01))
+  (is (approx= (model/client-x->alpha 200 0 200) 1.0  0.01))
+  (testing "clamps when pointer is left of the strip"
+    (is (approx= (model/client-x->alpha -50 0 200) 0.0 0.01))))
+
 ;; ── normalize-value ─────────────────────────────────────────────────────────
 (deftest normalize-value-valid-test
   (is (= "#ff0000" (model/normalize-value "#ff0000")))

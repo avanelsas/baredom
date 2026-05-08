@@ -600,34 +600,23 @@
 ;; Pointer interaction — area
 ;; ---------------------------------------------------------------------------
 (defn- pointer-pos->area-vals
-  "Given a pointer event and the area element, compute HSV saturation and value."
+  "Read the pointer's client coords and the area element's rect, then
+   delegate to the pure model transform."
   [^js area-el ^js evt]
-  (let [^js rect (.getBoundingClientRect area-el)
-        x (- (.-clientX evt) (.-left rect))
-        y (- (.-clientY evt) (.-top rect))
-        w (.-width rect)
-        h (.-height rect)
-        x-pct (* 100 (/ (model/clamp x 0 w) w))
-        y-pct (* 100 (/ (model/clamp y 0 h) h))]
-    (model/xy-pct->sat-val x-pct y-pct)))
+  (let [^js rect (.getBoundingClientRect area-el)]
+    (model/client-xy->sat-val (.-clientX evt) (.-clientY evt)
+                              (.-left rect)   (.-top rect)
+                              (.-width rect)  (.-height rect))))
 
 (defn- pointer-pos->hue
-  "Given a pointer event and the hue strip, compute hue."
   [^js strip-el ^js evt]
-  (let [^js rect (.getBoundingClientRect strip-el)
-        x (- (.-clientX evt) (.-left rect))
-        w (.-width rect)
-        pct (* 100 (/ (model/clamp x 0 w) w))]
-    (model/pct->hue pct)))
+  (let [^js rect (.getBoundingClientRect strip-el)]
+    (model/client-x->hue (.-clientX evt) (.-left rect) (.-width rect))))
 
 (defn- pointer-pos->alpha
-  "Given a pointer event and the alpha strip, compute alpha."
   [^js strip-el ^js evt]
-  (let [^js rect (.getBoundingClientRect strip-el)
-        x (- (.-clientX evt) (.-left rect))
-        w (.-width rect)
-        pct (* 100 (/ (model/clamp x 0 w) w))]
-    (model/pct->alpha pct)))
+  (let [^js rect (.getBoundingClientRect strip-el)]
+    (model/client-x->alpha (.-clientX evt) (.-left rect) (.-width rect))))
 
 ;; ---------------------------------------------------------------------------
 ;; Pointer handlers
