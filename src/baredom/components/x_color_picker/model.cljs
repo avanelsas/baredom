@@ -263,6 +263,33 @@
   [pct]
   (/ (clamp-percent pct) 100.0))
 
+(defn- client->pct
+  "Convert an absolute client coordinate to a percentage (0-100) along
+   a 1-D range that starts at `rect-start` with size `rect-size`.
+   Clamps to [0, 100] so pointer positions outside the range are safe."
+  [client rect-start rect-size]
+  (* 100 (/ (clamp (- client rect-start) 0 rect-size) rect-size)))
+
+(defn client-xy->sat-val
+  "Convert an absolute client (x, y) and the area rect (left, top,
+   width, height) into HSV {:sat 0-100 :val 0-100}. Pure: callers
+   pass the rect as plain numbers from `getBoundingClientRect`."
+  [client-x client-y rect-left rect-top rect-w rect-h]
+  (xy-pct->sat-val (client->pct client-x rect-left rect-w)
+                   (client->pct client-y rect-top  rect-h)))
+
+(defn client-x->hue
+  "Convert an absolute client x and the hue strip rect (left, width)
+   into a hue (0-360)."
+  [client-x rect-left rect-w]
+  (pct->hue (client->pct client-x rect-left rect-w)))
+
+(defn client-x->alpha
+  "Convert an absolute client x and the alpha strip rect (left, width)
+   into an alpha (0-1)."
+  [client-x rect-left rect-w]
+  (pct->alpha (client->pct client-x rect-left rect-w)))
+
 ;; ---------------------------------------------------------------------------
 ;; Normalization helpers
 ;; ---------------------------------------------------------------------------
