@@ -1,17 +1,15 @@
 (ns baredom.components.x-particle-button.x-particle-button-test
-  (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is use-fixtures async]]
+            [goog.object :as gobj]
             [baredom.components.x-particle-button.x-particle-button :as component]
             [baredom.components.x-particle-button.model :as model]))
 
 (component/init!)
 
-(defn cleanup-fixture
-  [f]
-  (f)
-  (doseq [node (.querySelectorAll js/document model/tag-name)]
-    (.remove node)))
-
-(use-fixtures :each cleanup-fixture)
+(use-fixtures :each
+  {:after (fn []
+            (doseq [node (.querySelectorAll js/document model/tag-name)]
+              (.remove node)))})
 
 (defn make-el []
   (.createElement js/document model/tag-name))
@@ -228,3 +226,50 @@
     (.click (shadow-button el))
     (is (aget result "fired"))
     (.remove form)))
+
+;; Regression test for the variant-change palette bug.
+;;
+;; The button's CSS background has a 140ms transition. getComputedStyle()
+;; .backgroundColor returns the *in-flight* transitioning value, so
+;; extract-color-palette! sampled the previous variant's colour for the
+;; entire transition window after a variant change. The fix reads the
+;; resolved CSS custom property for the current variant directly, which
+;; updates synchronously with the cascade.
+(defn- palette-base [^js el]
+  (when-let [^js p (gobj/get el "__xPBColorPalette")]
+    (when (pos? (.-length p))
+      (aget p 0))))
+
+(deftest palette-refreshes-on-variant-change-test
+  (async done
+    (let [el (make-el)]
+      ;; Force the two variants to resolve to visibly different colours
+      ;; without requiring x-theme to be present in the test page, and
+      ;; give the host explicit size so the ResizeObserver fires (it
+      ;; only triggers extract-color-palette! when the host has non-
+      ;; zero dimensions, and an empty button has none in this page).
+      (.setProperty (.-style el) "width"  "100px")
+      (.setProperty (.-style el) "height" "40px")
+      (.setProperty (.-style el) "--x-particle-button-bg"        "rgb(10, 200, 30)")
+      (.setProperty (.-style el) "--x-particle-button-danger-bg" "rgb(220, 20, 60)")
+      (set! (.-textContent el) "Test")
+      (append! el)
+      ;; Wait for the ResizeObserver to fire and seed the initial palette.
+      (js/setTimeout
+        (fn []
+          (let [initial (palette-base el)]
+            (.setAttribute el model/attr-variant "danger")
+            ;; The fix is synchronous — palette is updated before the
+            ;; setAttribute call returns. Drop into a microtask just to
+            ;; be safe under headless Chrome scheduling.
+            (js/queueMicrotask
+              (fn []
+                (let [updated (palette-base el)]
+                  (is (some? initial)
+                      "Initial palette is populated after the first paint")
+                  (is (some? updated)
+                      "Palette is repopulated after the variant change")
+                  (is (not= initial updated)
+                      "Palette base colour differs after the variant change")
+                  (done))))))
+        100))))

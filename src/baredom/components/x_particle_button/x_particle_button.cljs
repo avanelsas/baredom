@@ -183,14 +183,33 @@
             b (js/Math.round (* 255 (hue->rgb p q (- h (/ 1.0 3.0)))))]
         (str "rgb(" r "," g "," b ")")))))
 
+(def ^:private variant->bg-var
+  "Per-variant CSS custom property holding the base background colour.
+   Reading the variable directly avoids the button's CSS background
+   transition: getComputedStyle().backgroundColor returns the in-flight
+   transitioning value (and so reports the *previous* variant for ~140ms
+   after a variant change), but the resolved custom-property value
+   updates synchronously with the cascade."
+  {"primary"   "--x-particle-button-bg"
+   "secondary" "--x-particle-button-secondary-bg"
+   "tertiary"  "--x-particle-button-tertiary-bg"
+   "ghost"     "--x-particle-button-ghost-bg"
+   "danger"    "--x-particle-button-danger-bg"
+   "success"   "--x-particle-button-success-bg"
+   "warning"   "--x-particle-button-warning-bg"})
+
 (defn- extract-color-palette!
   "Sample button's computed bg color and generate a 5-color HSL palette."
   [^js el]
-  (let [state (get-el-state el)
+  (let [state         (get-el-state el)
         ^js button-el (aget state "button")
-        ^js cs (js/getComputedStyle button-el)
-        [r g b] (parse-rgb (.-backgroundColor cs))
-        [h s l] (rgb->hsl r g b)
+        ^js cs        (js/getComputedStyle button-el)
+        variant       (:variant (read-public-state el))
+        var-name      (or (get variant->bg-var variant)
+                          (get variant->bg-var "primary"))
+        bg-str        (.trim (.getPropertyValue cs var-name))
+        [r g b]       (parse-rgb bg-str)
+        [h s l]       (rgb->hsl r g b)
         ;; 0: Base — exact bg color
         base (hsl->rgb-str h s l)
         ;; 1: Highlight — brighter, slightly desaturated
@@ -1268,7 +1287,10 @@
   (when-let [state (get-el-state el)]
     (sync-noninteractive-state! el)
     (render! el state)
-    ;; Re-extract colors on variant change
+    ;; Re-extract colours on variant change. extract-color-palette!
+    ;; reads the resolved CSS custom property for the current variant,
+    ;; which updates synchronously with the cascade — no need to defer
+    ;; past the button's bg-color transition.
     (when (gp el k-canvas-w)
       (extract-color-palette! el))))
 
