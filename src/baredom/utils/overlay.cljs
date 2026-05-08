@@ -4,12 +4,7 @@
   (:require [goog.object :as gobj]))
 
 (def ^:private overlay-root-id "__xOverlayRoot")
-
-(def key-on-key            "__xOverlayOnKey")
-(def key-on-click-backdrop "__xOverlayOnClickBackdrop")
-(def key-on-item-click     "__xOverlayOnItemClick")
-(def key-on-close-btn      "__xOverlayOnCloseBtn")
-(def key-close-btn-el      "__xOverlayCloseBtnEl")
+(def ^:private k-listeners     "__xOverlayListeners")
 
 (defn find-theme-host
   "Walk up from el to find the nearest x-theme ancestor, or fall back to body."
@@ -61,21 +56,32 @@
   (when layer
     (.querySelector (.-shadowRoot layer) "[part=panel]")))
 
+(defn attach-listener!
+  "Attach `handler` to `target` for `event-name` and remember the binding
+   on `layer` so `remove-layer!` will detach it. `target` is usually the
+   layer itself, but may be any node reachable from it (panel, close
+   button, etc.). `capture` is the `addEventListener` capture flag."
+  [^js layer ^js target event-name handler capture]
+  (.addEventListener target event-name handler capture)
+  (let [^js xs (or (gobj/get layer k-listeners) #js [])]
+    (.push xs #js [target event-name handler capture])
+    (gobj/set layer k-listeners xs)))
+
+(defn- detach-listeners! [^js layer]
+  (when-let [^js xs (gobj/get layer k-listeners)]
+    (dotimes [i (.-length xs)]
+      (let [^js entry (aget xs i)]
+        (.removeEventListener (aget entry 0)
+                              (aget entry 1)
+                              (aget entry 2)
+                              (aget entry 3))))
+    (gobj/set layer k-listeners nil)))
+
 (defn remove-layer!
-  "Remove a layer from the DOM and clean up stored event listeners."
+  "Detach every listener attached via `attach-listener!` and remove the
+   layer from the DOM."
   [^js layer]
   (when layer
-    (let [on-key            (gobj/get layer key-on-key)
-          on-click-backdrop (gobj/get layer key-on-click-backdrop)
-          on-item-click     (gobj/get layer key-on-item-click)
-          on-close-btn      (gobj/get layer key-on-close-btn)
-          ^js close-btn-el  (gobj/get layer key-close-btn-el)]
-      (when on-key            (.removeEventListener layer "keydown" on-key true))
-      (when on-click-backdrop (.removeEventListener layer "click" on-click-backdrop))
-      (when on-item-click
-        (when-let [^js panel (get-panel layer)]
-          (.removeEventListener panel "click" on-item-click)))
-      (when (and on-close-btn close-btn-el)
-        (.removeEventListener close-btn-el "click" on-close-btn))
-      (when (.-parentNode layer)
-        (.removeChild (.-parentNode layer) layer)))))
+    (detach-listeners! layer)
+    (when (.-parentNode layer)
+      (.removeChild (.-parentNode layer) layer))))
