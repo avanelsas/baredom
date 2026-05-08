@@ -521,117 +521,132 @@
         w (if container (.-clientWidth container) 0)]
     (if (pos? w) w 400)))
 
+(defn- apply-svg-size! [^js svg W H]
+  (du/set-attr! svg "viewBox" (str "0 0 " W " " H))
+  (du/set-attr! svg "width"   (str W))
+  (du/set-attr! svg "height"  (str H)))
+
+(defn- clear-svg! [^js svg ^js refs]
+  (remove-children! svg)
+  (gobj/set refs "crosshair" nil)
+  (gobj/set refs "dots"      nil))
+
+(defn- compute-all-pts
+  "Run model/compute-series-pts across every series, then enrich each
+   point with its series id/label and the global baseline-y. Pure."
+  [series x-kind x-dom bounds y-domain baseline-y]
+  (vec
+   (mapcat
+    (fn [s i]
+      (let [pts (model/compute-series-pts s i x-kind x-dom bounds y-domain)]
+        (map (fn [pt]
+               (assoc pt :id (:id s) :label (:label s) :y0-baseline baseline-y))
+             pts)))
+    series
+    (range))))
+
+(defn- draw-one-series! [^js svg series-idx pts color type bounds total-series baseline-y]
+  (case type
+    "bar"  (draw-bar-series! svg series-idx pts color bounds total-series)
+    "area" (do (draw-area-series! svg series-idx pts color baseline-y)
+               (draw-line-series! svg series-idx pts color))
+    (draw-line-series! svg series-idx pts color)))
+
+(defn- draw-all-series! [^js svg type series all-pts bounds baseline-y]
+  (let [total (count series)]
+    (doall
+     (map-indexed
+      (fn [i s]
+        (let [color (or (:color s) (series-color-var i))
+              pts   (filter #(= (:id %) (:id s)) all-pts)]
+          (draw-one-series! svg i pts color type bounds total baseline-y)))
+      series))))
+
+(defn- build-crosshair! [^js svg ^js refs {:keys [x0 y0 y1]}]
+  (let [^js xhair (make-svg-el "line")]
+    (du/set-attr! xhair "x1"           (str x0))
+    (du/set-attr! xhair "y1"           (str y0))
+    (du/set-attr! xhair "x2"           (str x0))
+    (du/set-attr! xhair "y2"           (str y1))
+    (du/set-attr! xhair "stroke"       "var(--x-chart-crosshair-color)")
+    (du/set-attr! xhair "stroke-width" "var(--x-chart-crosshair-width)")
+    (du/set-attr! xhair "visibility"   "hidden")
+    (.appendChild svg xhair)
+    (gobj/set refs "crosshair" xhair)))
+
+(defn- build-dot-indicators! [^js svg ^js refs]
+  (let [dot-arr (js/Array. model/max-tooltip-rows)]
+    (dotimes [i model/max-tooltip-rows]
+      (let [^js dot (make-svg-el "circle")]
+        (du/set-attr! dot "r"            (str model/dot-r))
+        (du/set-attr! dot "stroke"       "var(--x-chart-tooltip-bg)")
+        (du/set-attr! dot "stroke-width" "2")
+        (du/set-attr! dot "visibility"   "hidden")
+        (.appendChild svg dot)
+        (aset dot-arr i dot)))
+    (gobj/set refs "dots" dot-arr)))
+
+(defn- build-hit-area!
+  [^js el ^js svg ^js refs {:keys [x0 y0 x1 y1]} m W H all-pts]
+  (let [^js hit (make-svg-el "rect")]
+    (du/set-attr! hit "x"      (str x0))
+    (du/set-attr! hit "y"      (str y0))
+    (du/set-attr! hit "width"  (str (max 0 (- x1 x0))))
+    (du/set-attr! hit "height" (str (max 0 (- y1 y0))))
+    (du/set-attr! hit "fill"   "transparent")
+    (du/set-attr! hit "style"  "cursor:crosshair;")
+    (when-not (:disabled? m)
+      (add-mouse-listeners! el hit all-pts refs W H
+                            (:cursor m) (:tooltip? m)
+                            (:x-fmt m) (:y-fmt m) (:series m)))
+    (.appendChild svg hit)))
+
+(defn- sr-announce-text
+  "Pure: compute the screen-reader announcement for the current chart
+   state. Selected point (when present) reads as 'label value at x';
+   otherwise just the series count."
+  [{:keys [selected series y-fmt x-fmt]}]
+  (let [fallback (str (count series) " series chart")]
+    (if (and selected (seq series))
+      (let [s  (first (filter #(= (:id %) (:series-id selected)) series))
+            pt (when s (nth (:data s) (:index selected) nil))]
+        (if (and s pt)
+          (str (:label s) " "
+               (model/format-value (:y pt) y-fmt)
+               " at "
+               (if (string? (:x pt))
+                 (:x pt)
+                 (model/format-value (:x pt) x-fmt)))
+          fallback))
+      fallback)))
+
+(defn- apply-sr-text! [^js sr-el m]
+  (set! (.-textContent sr-el) (sr-announce-text m)))
+
 (defn- render! [^js el]
-  (let [^js refs    (gobj/get el k-refs)]
-    (when refs
-      (let [^js svg    (gobj/get refs "svg")
-            ^js sr-el  (gobj/get refs "sr")
-            m          (read-model el)
-            {:keys [type height padding series x-kind y-domain
-                    grid? axes? tooltip? cursor loading? disabled? x-fmt y-fmt]} m
-            W          (chart-width el refs)
-            H          height
-            bounds     (plot-bounds W H padding)
-            {:keys [x0 y0 x1 y1]} bounds
-            x-dom      (model/domain-x series)
-            baseline-y (model/scale-y 0 y-domain y0 y1)]
-
-        ;; Update viewBox
-        (du/set-attr! svg "viewBox" (str "0 0 " W " " H))
-        (du/set-attr! svg "width"   (str W))
-        (du/set-attr! svg "height"  (str H))
-
-        ;; Clear SVG (crosshair/dots are re-created each render)
-        (remove-children! svg)
-        (gobj/set refs "crosshair" nil)
-        (gobj/set refs "dots"      nil)
-
-        (when-not loading?
-          ;; Grid
+  (when-let [^js refs (gobj/get el k-refs)]
+    (let [^js svg    (gobj/get refs "svg")
+          ^js sr-el  (gobj/get refs "sr")
+          m          (read-model el)
+          {:keys [type height padding series x-kind y-domain
+                  grid? axes? loading?]} m
+          W          (chart-width el refs)
+          H          height
+          bounds     (plot-bounds W H padding)
+          x-dom      (model/domain-x series)
+          baseline-y (model/scale-y 0 y-domain (:y0 bounds) (:y1 bounds))]
+      (apply-svg-size! svg W H)
+      (clear-svg! svg refs)
+      (when-not loading?
+        (let [all-pts (compute-all-pts series x-kind x-dom bounds y-domain baseline-y)]
           (when grid? (draw-grid! svg m bounds))
-
-          ;; Compute all point coords for all series
-          (let [all-pts (vec
-                         (mapcat
-                          (fn [s i]
-                            (let [pts (model/compute-series-pts s i x-kind x-dom bounds y-domain)]
-                              (map (fn [pt] (assoc pt :id (:id s) :label (:label s) :y0-baseline baseline-y)) pts)))
-                          series
-                          (range)))]
-
-            ;; Draw series
-            (doall
-              (map-indexed
-               (fn [i s]
-                 (let [color (or (:color s) (series-color-var i))
-                       pts   (filter #(= (:id %) (:id s)) all-pts)]
-                   (case type
-                     "bar"  (draw-bar-series! svg i pts color bounds (count series))
-                     "area" (do
-                              (draw-area-series! svg i pts color baseline-y)
-                              (draw-line-series! svg i pts color))
-                     (draw-line-series! svg i pts color))))
-               series))
-
-            ;; Axes
-            (when axes? (draw-axes! svg m bounds padding))
-
-            ;; Crosshair line (hidden initially, shown on hover)
-            (let [^js xhair (make-svg-el "line")]
-              (du/set-attr! xhair "x1"           (str x0))
-              (du/set-attr! xhair "y1"           (str y0))
-              (du/set-attr! xhair "x2"           (str x0))
-              (du/set-attr! xhair "y2"           (str y1))
-              (du/set-attr! xhair "stroke"       "var(--x-chart-crosshair-color)")
-              (du/set-attr! xhair "stroke-width" "var(--x-chart-crosshair-width)")
-              (du/set-attr! xhair "visibility"   "hidden")
-              (.appendChild svg xhair)
-              (gobj/set refs "crosshair" xhair))
-
-            ;; Dot indicators (one per max-tooltip-rows slots, hidden initially)
-            (let [dot-arr (js/Array. model/max-tooltip-rows)]
-              (dotimes [i model/max-tooltip-rows]
-                (let [^js dot (make-svg-el "circle")]
-                  (du/set-attr! dot "r"          (str model/dot-r))
-                  (du/set-attr! dot "stroke"     "var(--x-chart-tooltip-bg)")
-                  (du/set-attr! dot "stroke-width" "2")
-                  (du/set-attr! dot "visibility" "hidden")
-                  (.appendChild svg dot)
-                  (aset dot-arr i dot)))
-              (gobj/set refs "dots" dot-arr))
-
-            ;; Hit area (on top of crosshair/dots)
-            (let [^js hit (make-svg-el "rect")]
-              (du/set-attr! hit "x"      (str x0))
-              (du/set-attr! hit "y"      (str y0))
-              (du/set-attr! hit "width"  (str (max 0 (- x1 x0))))
-              (du/set-attr! hit "height" (str (max 0 (- y1 y0))))
-              (du/set-attr! hit "fill"   "transparent")
-              (du/set-attr! hit "style"  "cursor:crosshair;")
-              (when-not disabled?
-                (add-mouse-listeners! el hit all-pts refs W H cursor
-                                      tooltip? x-fmt y-fmt series))
-              (.appendChild svg hit)))
-
-          ;; SR text — announce selected point when present, else series count
-          (let [sel (:selected m)]
-            (if (and sel (seq series))
-              (let [s  (first (filter #(= (:id %) (:series-id sel)) series))
-                    pt (when s (nth (:data s) (:index sel) nil))]
-                (set! (.-textContent sr-el)
-                  (if (and s pt)
-                    (str (:label s) " "
-                         (model/format-value (:y pt) y-fmt)
-                         " at "
-                         (if (string? (:x pt))
-                           (:x pt)
-                           (model/format-value (:x pt) x-fmt)))
-                    (str (count series) " series chart"))))
-              (set! (.-textContent sr-el)
-                (str (count series) " series chart")))))
-
-        ;; Hide tooltip/indicators on loading
-        (when loading? (hide-tooltip! refs))))))
+          (draw-all-series! svg type series all-pts bounds baseline-y)
+          (when axes? (draw-axes! svg m bounds padding))
+          (build-crosshair! svg refs bounds)
+          (build-dot-indicators! svg refs)
+          (build-hit-area! el svg refs bounds m W H all-pts))
+        (apply-sr-text! sr-el m))
+      (when loading? (hide-tooltip! refs)))))
 
 ;; ---- Shadow DOM creation ----
 
