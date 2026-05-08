@@ -224,46 +224,43 @@
         radius    (:radius m)
         max-scale (:max-scale m)
         lift-max  (:lift m)
-        vertical? (:vertical? m)
-        ;; Mutable accumulator avoiding `volatile!` (forbidden by project
-        ;; conventions). One #js object that persists for this call.
-        ^js flag  #js {:more false}]
-    (dotimes [i n]
-      (let [^js rect (aget rects i)
-            ^js item (aget items i)
-            ^js d    (aget disp i)
-            cx       (gobj/get rect "cx")
-            cy       (gobj/get rect "cy")
-            inf          (if active?
-                           (model/compute-influence cx cy
-                                                    (gobj/get ptr "x")
-                                                    (gobj/get ptr "y")
-                                                    radius)
-                           0.0)
-            target-scale (model/compute-scale inf max-scale)
-            cx-delta     (cond
-                           (not active?) 0.0
-                           vertical?     (- (gobj/get ptr "x") cx)
-                           :else         (- (gobj/get ptr "y") cy))
-            target-lift  (if (and active? (pos? lift-max))
-                           (model/compute-lift inf cx-delta lift-max)
-                           0.0)
-            new-scale    (approach (gobj/get d "scale") target-scale)
-            new-lift     (approach (gobj/get d "lift")  target-lift)]
-        (gobj/set d "scale" new-scale)
-        (gobj/set d "lift"  new-lift)
-        (when (or (not= new-scale target-scale)
-                  (not= new-lift  target-lift))
-          (gobj/set flag "more" true))
-        (if (and (not active?)
-                 (== new-scale 1.0)
-                 (== new-lift  0.0))
-          ;; Fully settled at base while inactive — strip inline styles so
-          ;; the user's CSS can take over cleanly.
-          (clear-item-inline-style! item)
-          (write-item-style! item d inf vertical?))))
-    (when (gobj/get flag "more")
-      (schedule-raf! el)))
+        vertical? (:vertical? m)]
+    (loop [i 0 more? false]
+      (if (>= i n)
+        (when more? (schedule-raf! el))
+        (let [^js rect (aget rects i)
+              ^js item (aget items i)
+              ^js d    (aget disp i)
+              cx       (gobj/get rect "cx")
+              cy       (gobj/get rect "cy")
+              inf          (if active?
+                             (model/compute-influence cx cy
+                                                      (gobj/get ptr "x")
+                                                      (gobj/get ptr "y")
+                                                      radius)
+                             0.0)
+              target-scale (model/compute-scale inf max-scale)
+              cx-delta     (cond
+                             (not active?) 0.0
+                             vertical?     (- (gobj/get ptr "x") cx)
+                             :else         (- (gobj/get ptr "y") cy))
+              target-lift  (if (and active? (pos? lift-max))
+                             (model/compute-lift inf cx-delta lift-max)
+                             0.0)
+              new-scale    (approach (gobj/get d "scale") target-scale)
+              new-lift     (approach (gobj/get d "lift")  target-lift)
+              settling?    (or (not= new-scale target-scale)
+                               (not= new-lift  target-lift))]
+          (gobj/set d "scale" new-scale)
+          (gobj/set d "lift"  new-lift)
+          (if (and (not active?)
+                   (== new-scale 1.0)
+                   (== new-lift  0.0))
+            ;; Fully settled at base while inactive — strip inline styles so
+            ;; the user's CSS can take over cleanly.
+            (clear-item-inline-style! item)
+            (write-item-style! item d inf vertical?))
+          (recur (inc i) (or more? settling?))))))
   nil)
 
 ;; ── RAF coalescing ──────────────────────────────────────────────────────────
