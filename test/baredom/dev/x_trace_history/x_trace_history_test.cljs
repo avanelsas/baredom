@@ -160,6 +160,27 @@
                   (is (clojure.string/includes? (.-textContent detail) "schemaVersion")))
                 (done)))))))))
 
+(deftest splitter-visibility-tracks-detail-test
+  (testing "splitter is hidden until a row is selected, then visible while
+            the detail pane is open, then hidden again on close"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js splitter (query dock "[data-x-th-splitter]")]
+              (is (true? (.hasAttribute splitter "hidden")) "hidden when nothing selected")
+              (.click ^js (query dock ".row"))
+              (after-frames 1
+                (fn []
+                  (is (false? (.hasAttribute splitter "hidden")) "visible after selection")
+                  (.click ^js (query dock ".row"))
+                  (after-frames 1
+                    (fn []
+                      (is (true? (.hasAttribute splitter "hidden")) "hidden after deselection")
+                      (done))))))))))))
+
 (deftest filter-clears-stale-selection-test
   (testing "selecting a row, then filtering it out, hides the detail pane
             (rather than leaving an orphan record visible)"

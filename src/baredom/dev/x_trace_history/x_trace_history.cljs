@@ -67,6 +67,7 @@
        "<label><input type='checkbox' data-x-th-cat='lifecycle' checked> lifecycle</label>"
        "</div>"
        "<div class='list' data-x-th-list></div>"
+       "<div class='splitter' data-x-th-splitter hidden></div>"
        "<div class='detail' data-x-th-detail hidden></div>"
        "<div class='hint' data-x-th-hint></div>"
        "</div>"))
@@ -116,12 +117,15 @@
       (.remove (.-classList btn) "paused"))))
 
 (defn- refresh-detail!
-  [^js detail-el ^js record]
+  [^js detail-el ^js splitter-el ^js record]
   (if record
     (do
       (set! (.-textContent detail-el) (js/JSON.stringify record nil 2))
-      (.removeAttribute detail-el "hidden"))
-    (.setAttribute detail-el "hidden" "")))
+      (.removeAttribute detail-el   "hidden")
+      (.removeAttribute splitter-el "hidden"))
+    (do
+      (.setAttribute detail-el   "hidden" "")
+      (.setAttribute splitter-el "hidden" ""))))
 
 (defn- format-hint-text
   [cnt]
@@ -157,23 +161,24 @@
   "Repaint the list, count, hint, detail pane, and pause-button state from
    current recorder + filter + selection state."
   [^js el]
-  (let [^js list-el   (gobj/get el model/k-list-el)
-        ^js count-el  (gobj/get el model/k-count-el)
-        ^js detail-el (gobj/get el model/k-detail-el)
-        ^js hint-el   (gobj/get el model/k-hint-el)
-        ^js pause-btn (gobj/get el model/k-pause-btn)
-        spec          (gobj/get el model/k-filter)
-        ^js recs      (recorder/records)
-        filtered      (model/filter-records recs spec)
-        cnt           (count filtered)
-        start         (max 0 (- cnt max-rows))
-        visible       (vec (rseq (subvec filtered start cnt)))
-        sel-rec       (effective-selection! el recs spec)
-        sel-id        (when sel-rec (.-id sel-rec))]
+  (let [^js list-el     (gobj/get el model/k-list-el)
+        ^js count-el    (gobj/get el model/k-count-el)
+        ^js detail-el   (gobj/get el model/k-detail-el)
+        ^js splitter-el (gobj/get el model/k-splitter-el)
+        ^js hint-el     (gobj/get el model/k-hint-el)
+        ^js pause-btn   (gobj/get el model/k-pause-btn)
+        spec            (gobj/get el model/k-filter)
+        ^js recs        (recorder/records)
+        filtered        (model/filter-records recs spec)
+        cnt             (count filtered)
+        start           (max 0 (- cnt max-rows))
+        visible         (vec (rseq (subvec filtered start cnt)))
+        sel-rec         (effective-selection! el recs spec)
+        sel-id          (when sel-rec (.-id sel-rec))]
     (set! (.-innerHTML list-el) (rows-html visible sel-id))
     (set! (.-textContent count-el) (str cnt))
     (set! (.-textContent hint-el) (format-hint-text cnt))
-    (refresh-detail! detail-el sel-rec)
+    (refresh-detail! detail-el splitter-el sel-rec)
     (refresh-pause-btn! pause-btn)))
 
 ;; ---------------------------------------------------------------------------
@@ -234,6 +239,35 @@
       (handle-cat-change! el target))))
 
 ;; ---------------------------------------------------------------------------
+;; Splitter — drag the divider above the detail pane to resize it
+;; ---------------------------------------------------------------------------
+
+(def ^:private min-detail-px 60)
+
+(defn- start-resize!
+  "Begin a pointer-driven resize of the detail pane. Drag the splitter UP
+   to grow the detail; DOWN to shrink. Uses pointer capture so the gesture
+   completes correctly even when the cursor leaves the splitter."
+  [^js detail-el ^js splitter-el ^js e]
+  (.preventDefault e)
+  (.setPointerCapture splitter-el (.-pointerId e))
+  (.add (.-classList splitter-el) "dragging")
+  (let [start-y (.-clientY e)
+        start-h (.-offsetHeight detail-el)
+        on-move (fn [^js me]
+                  (let [delta (- start-y (.-clientY me))
+                        new-h (max min-detail-px (+ start-h delta))]
+                    (set! (.. detail-el -style -height) (str new-h "px"))))
+        on-end  (fn end-fn [_]
+                  (.removeEventListener splitter-el "pointermove" on-move)
+                  (.removeEventListener splitter-el "pointerup"   end-fn)
+                  (.removeEventListener splitter-el "pointercancel" end-fn)
+                  (.remove (.-classList splitter-el) "dragging"))]
+    (.addEventListener splitter-el "pointermove"   on-move)
+    (.addEventListener splitter-el "pointerup"     on-end)
+    (.addEventListener splitter-el "pointercancel" on-end)))
+
+;; ---------------------------------------------------------------------------
 ;; Mount / unmount
 ;; ---------------------------------------------------------------------------
 
@@ -253,17 +287,19 @@
 (defn- mount!
   [^js el]
   (when-not (gobj/get el model/k-mounted)
-    (let [^js shadow    (attach-skeleton! el)
-          ^js list-el   (.querySelector shadow "[data-x-th-list]")
-          ^js count-el  (.querySelector shadow "[data-x-th-count]")
-          ^js detail-el (.querySelector shadow "[data-x-th-detail]")
-          ^js hint-el   (.querySelector shadow "[data-x-th-hint]")
-          ^js pause-btn (.querySelector shadow "[data-x-th-action='pause']")
-          ^js dock      (.querySelector shadow ".dock")]
+    (let [^js shadow      (attach-skeleton! el)
+          ^js list-el     (.querySelector shadow "[data-x-th-list]")
+          ^js count-el    (.querySelector shadow "[data-x-th-count]")
+          ^js detail-el   (.querySelector shadow "[data-x-th-detail]")
+          ^js splitter-el (.querySelector shadow "[data-x-th-splitter]")
+          ^js hint-el     (.querySelector shadow "[data-x-th-hint]")
+          ^js pause-btn   (.querySelector shadow "[data-x-th-action='pause']")
+          ^js dock        (.querySelector shadow ".dock")]
       (gobj/set el model/k-shadow shadow)
       (gobj/set el model/k-list-el list-el)
       (gobj/set el model/k-count-el count-el)
       (gobj/set el model/k-detail-el detail-el)
+      (gobj/set el model/k-splitter-el splitter-el)
       (gobj/set el model/k-hint-el hint-el)
       (gobj/set el model/k-pause-btn pause-btn)
       (gobj/set el model/k-filter
@@ -271,6 +307,8 @@
       (gobj/set el model/k-selected-id nil)
       (.addEventListener dock "click"  (fn [^js e] (handle-click!  el e)))
       (.addEventListener dock "change" (fn [^js e] (handle-change! el e)))
+      (.addEventListener splitter-el "pointerdown"
+                         (fn [^js e] (start-resize! detail-el splitter-el e)))
       (let [tok (recorder/subscribe! (fn [] (render! el)))]
         (gobj/set el model/k-sub-token tok))
       (render! el)

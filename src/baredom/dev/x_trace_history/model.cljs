@@ -251,6 +251,7 @@
 (def k-count-el    "__xTraceHistoryCountEl")
 (def k-pause-btn   "__xTraceHistoryPauseBtn")
 (def k-detail-el   "__xTraceHistoryDetailEl")
+(def k-splitter-el "__xTraceHistorySplitterEl")
 (def k-hint-el     "__xTraceHistoryHintEl")
 (def k-filter      "__xTraceHistoryFilter")
 (def k-selected-id "__xTraceHistorySelectedId")
@@ -367,18 +368,28 @@
 .cat-dom       .type { color: #fab387; }
 .cat-lifecycle .type { color: #cba6f7; }
 .cat-other     .type { color: #6c7086; }
+.splitter {
+  flex: 0 0 auto;
+  height: 4px;
+  background: rgba(255,255,255,0.04);
+  cursor: ns-resize;
+  touch-action: none;
+  transition: background 120ms ease;
+}
+.splitter:hover, .splitter.dragging { background: rgba(59,130,246,0.6); }
 .detail {
   background: #181825;
-  border-top: 1px solid rgba(59,130,246,0.4);
+  border-top: 1px solid rgba(59,130,246,0.2);
   padding: 8px 10px;
   font-size: 10px;
   white-space: pre-wrap;
   word-break: break-all;
   color: #a6e3a1;
-  min-height: 140px;
-  max-height: 60%;
+  flex: 0 0 auto;
+  height: 35vh;
+  min-height: 60px;
+  max-height: 80%;
   overflow-y: auto;
-  resize: vertical;
 }
 .empty {
   color: #6c7086;
