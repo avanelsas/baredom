@@ -2,6 +2,34 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [2.9.0] - 2026-05-09
+
+### Added
+
+- **x-spotlight-card** — Card surface with a cursor-following spotlight highlight (motion-respecting, theme-aware).
+- **x-confetti** — Imperative celebration burst component with canvas particles.
+- **x-kbd** — Platform-aware keyboard key / shortcut display.
+- **x-otp-input** — Form-associated OTP / verification-code input.
+- **x-proximity-list** — Dock-effect list with proximity scaling.
+
+### Changed
+
+- **Centralized component registration** — `baredom.registry` is now the single source of truth for the full component set; `baredom.core/start!` and `baredom.exports.all/init` both consume the same vector.
+- **Overlay listener registry** — Replaced overlay magic-string listener keys with `baredom.utils.overlay/attach-listener!`, eliminating drift between add/remove sites.
+- **Pure model layer expanded** — Pointer-coord math moved out of `x-color-picker` into the model layer; coordinate math moved out of `x-chart` into the model layer; series-point computation in `x-chart` is now pure.
+- **Render-pipeline decomposition** — `render!` (and adjacent monolithic functions) decomposed into named phase helpers in: `x-chart`, `x-button`, `x-combobox`, `x-color-picker`, `x-scroll-timeline`, `x-particle-button`. Each `render!` now reads as a phase list (`render-orchestrator` pattern); long shadow builders split per the `shadow-builders` pattern; `x-color-picker` listener wiring moved to a single `listener-spec` table.
+- **`x-proximity-list` settling loop** — Replaced the JS-object settling flag with a `loop`/`recur` driver, removing mutable instance state.
+- **`x-date-picker`** — Force-close moved out of `render!` (audit Phase 5).
+- **Host attribute access** — Migrated to `du/*` wrappers across the remaining call sites (audit Wave 4c).
+- **Utils contracts** — Documented `baredom.utils.*` contracts; `normalize-prop-val` extracted as a reusable helper.
+- **shadow-cljs** — Bumped to 3.4.7.
+- **CLAUDE.md** — Added audit-derived guidance (named patterns, accessor tiers, error-recovery entries, function-size rule with orchestrator exemption).
+
+### Fixed
+
+- **x-chart** — Category x-axis off-by-one on the rightmost label.
+- **x-particle-button** — Palette no longer goes stale after a `variant` change; the cached palette is invalidated when variant attributes flip.
+
 ## [2.8.0] - 2026-05-06
 
 ### Added
