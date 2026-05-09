@@ -51,18 +51,19 @@
   "Construct a JS-shape record from a hook payload, monotonic id, and a
    timestamp (performance.now() value).
 
-   Common payload keys: :type :tag.
+   Common payload keys: :type :tag :component-id.
    Type-specific keys are documented in docs/x-trace-history-schema.md.
 
    Uses string-keyed js-obj so Closure Advanced does not rename the schema
    field names — consumers read these properties from the wire."
-  [{:keys [type tag] :as payload} id t]
+  [{:keys [type tag component-id] :as payload} id t]
   (let [^js r (js-obj
                "schemaVersion" schema-version
                "id"            id
                "t"             t
                "type"          (format-type type)
-               "tag"           tag)]
+               "tag"           tag
+               "componentId"   component-id)]
     (case type
       (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
       (doto r

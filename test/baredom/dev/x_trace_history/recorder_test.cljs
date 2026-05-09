@@ -328,11 +328,101 @@
 ;; ── window API installation ─────────────────────────────────────────────────
 
 (deftest window-api-installed-test
-  (testing "install! exposes window.BareDOM.traceHistory.{records,pause,resume,clear}"
+  (testing "install! exposes window.BareDOM.traceHistory.{records,components,pause,resume,clear}"
     (let [^js base (gobj/get js/window "BareDOM")
           ^js api  (gobj/get base "traceHistory")]
       (is (some? api))
       (is (fn? (gobj/get api "records")))
+      (is (fn? (gobj/get api "components")))
       (is (fn? (gobj/get api "pause")))
       (is (fn? (gobj/get api "resume")))
       (is (fn? (gobj/get api "clear"))))))
+
+;; ── component-id assignment ─────────────────────────────────────────────────
+
+(deftest component-id-assigned-on-first-event-test
+  (testing "first event from a fresh element assigns it a numeric componentId"
+    (let [el (make-el mutation-tag)]
+      (du/setv! el "k" "v")
+      (let [r (record-at 0)]
+        (is (number? (.-componentId r)))))))
+
+(deftest component-id-stable-across-events-test
+  (testing "second event from same element re-uses the same componentId"
+    (let [el (make-el mutation-tag)]
+      (du/setv! el "k" "v")
+      (du/setv! el "k" "v2")
+      (let [r0 (record-at 0)
+            r1 (record-at 1)]
+        (is (= (.-componentId r0) (.-componentId r1)))))))
+
+(deftest component-id-distinct-across-elements-test
+  (testing "different elements receive distinct componentIds"
+    (let [a (make-el mutation-tag)
+          b (make-el mutation-tag)]
+      (du/setv! a "k" "v")
+      (du/setv! b "k" "v")
+      (let [ra (record-at 0)
+            rb (record-at 1)]
+        (is (not= (.-componentId ra) (.-componentId rb)))))))
+
+(deftest component-id-stable-across-record-types-test
+  (testing "same element keeps its componentId across event/mutation/lifecycle"
+    (let [el (make-el test-tag)]
+      (.appendChild (.-body js/document) el)         ; → lifecycle/connected
+      (du/setv! el "k" "v")                            ; → state/instance-field-set
+      (du/dispatch! el "x" #js {})                     ; → event/dispatch
+      (.remove el)                                     ; → lifecycle/disconnected
+      (let [recs (array-seq (recorder/records))
+            cids (set (map #(.-componentId ^js %) recs))]
+        ;; All four records refer to the same element, so all componentIds
+        ;; should be identical (and not nil).
+        (is (= 1 (count cids)))
+        (is (number? (first cids)))))))
+
+(deftest component-id-survives-disconnect-test
+  (testing "the componentId survives a disconnect/reconnect cycle"
+    (let [el (make-el test-tag)
+          body (.-body js/document)]
+      (.appendChild body el)
+      (let [first-cid (.-componentId (record-at 0))]
+        (.remove el)
+        (recorder/clear!)
+        (.appendChild body el)        ; same element re-attached
+        (let [reconnected (record-at 0)]
+          (is (= first-cid (.-componentId reconnected)))
+          (.remove el))))))
+
+(deftest document-target-has-null-component-id-test
+  (testing "dispatch-document records carry componentId = null"
+    (du/dispatch-document! "some-event")
+    (let [r (record-at 0)]
+      (is (= "document" (.-tag r)))
+      (is (nil? (.-componentId r))))))
+
+;; ── components index ────────────────────────────────────────────────────────
+
+(deftest components-index-tracks-known-components-test
+  (testing "components() exposes {componentId -> {tag, firstSeen}} for each seen element"
+    (let [a (make-el mutation-tag)]
+      (du/setv! a "k" "v")
+      (let [a-cid    (.-componentId (record-at 0))
+            ^js idx  (recorder/components)
+            ^js info (gobj/get idx (str a-cid))]
+        (is (some? info))
+        (is (= mutation-tag (gobj/get info "tag")))
+        (is (number? (gobj/get info "firstSeen")))))))
+
+(deftest components-index-persists-across-clear-test
+  (testing "clear! does NOT reset componentIds or the components index"
+    (let [el (make-el mutation-tag)]
+      (du/setv! el "k" "v")
+      (let [first-cid (.-componentId (record-at 0))]
+        (recorder/clear!)
+        (du/setv! el "k" "v2")
+        (let [reused-cid (.-componentId (record-at 0))]
+          ;; cid stored on the element — same after clear!
+          (is (= first-cid reused-cid)))
+        ;; components index also still has the entry
+        (let [^js idx (recorder/components)]
+          (is (some? (gobj/get idx (str first-cid)))))))))
