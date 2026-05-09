@@ -15,6 +15,21 @@
   :disconnected-fn     (fn [_])
   :attribute-changed-fn (fn [_ _ _ _])})
 
+;; Counters that prove user lifecycle fns ran. Used by
+;; lifecycle-hook-exception-isolation-test to verify that a throwing hook
+;; does not block downstream user-fn invocation.
+(def ^:private counted-tag "x-trace-counted-element")
+(def ^:private connect-count    (atom 0))
+(def ^:private disconnect-count (atom 0))
+(def ^:private attr-count       (atom 0))
+
+(comp/register!
+ counted-tag
+ {:observed-attributes  #js ["foo"]
+  :connected-fn         (fn [_] (swap! connect-count inc))
+  :disconnected-fn      (fn [_] (swap! disconnect-count inc))
+  :attribute-changed-fn (fn [_ _ _ _] (swap! attr-count inc))})
+
 ;; Tag used by mutation tests. Deliberately NOT registered as a custom
 ;; element so that .setAttribute / .removeAttribute do not synchronously
 ;; fire attributeChangedCallback (which would interleave lifecycle records
@@ -296,15 +311,19 @@
 ;; ── lifecycle hook is exception-safe ────────────────────────────────────────
 
 (deftest lifecycle-hook-exception-isolation-test
-  (testing "a throwing lifecycle hook does not break component lifecycle callbacks"
+  (testing "a throwing lifecycle hook does not block user lifecycle fns"
+    (reset! connect-count    0)
+    (reset! disconnect-count 0)
+    (reset! attr-count       0)
     (reset! comp/lifecycle-hook (fn [_] (throw (js/Error. "boom"))))
-    (let [el (make-el test-tag)]
-      ;; All three callbacks should fire without throwing despite the bad hook.
+    (let [el (make-el counted-tag)]
       (.appendChild (.-body js/document) el)
       (.setAttribute el "foo" "x")
-      (.remove el)
-      ;; Element survived; nothing crashed.
-      (is true))))
+      (.remove el))
+    ;; All three user lifecycle fns must have run despite the bad hook.
+    (is (= 1 @connect-count)    "connectedCallback must reach user-fn")
+    (is (= 1 @attr-count)        "attributeChangedCallback must reach user-fn")
+    (is (= 1 @disconnect-count) "disconnectedCallback must reach user-fn")))
 
 ;; ── window API installation ─────────────────────────────────────────────────
 
