@@ -2,12 +2,31 @@
   (:require [goog.object :as gobj]))
 
 ;; ---------------------------------------------------------------------------
+;; Trace hook — dev-only extension point
+;; ---------------------------------------------------------------------------
+
+(defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
+                 1-arg function that receives a CLJS payload describing each
+                 mutation or dispatch. Reset via reset!. nil by default —
+                 when nil, every site is a single atom-deref + nil check."}
+  trace-hook (atom nil))
+
+;; ---------------------------------------------------------------------------
 ;; Instance-field access (Closure Advanced safe)
 ;; ---------------------------------------------------------------------------
 
 (defn getv [^js el k] (gobj/get el k))
 
-(defn setv! [^js el k v] (gobj/set el k v))
+(defn setv! [^js el k v]
+  (gobj/set el k v)
+  (when-some [h @trace-hook]
+    (try
+      (h {:type  :state/instance-field-set
+          :el    el
+          :field k
+          :value v})
+      (catch :default _ nil)))
+  nil)
 
 (defn initialized? [^js el key]
   (true? (getv el key)))
@@ -29,27 +48,37 @@
 
 (defn set-attr!
   [^js el attr-name value]
-  (.setAttribute el attr-name value))
+  (.setAttribute el attr-name value)
+  (when-some [h @trace-hook]
+    (try
+      (h {:type      :dom/attribute-set
+          :el        el
+          :attribute attr-name
+          :value     value})
+      (catch :default _ nil)))
+  nil)
 
 (defn remove-attr!
   [^js el attr-name]
-  (.removeAttribute el attr-name))
+  (.removeAttribute el attr-name)
+  (when-some [h @trace-hook]
+    (try
+      (h {:type      :dom/attribute-removed
+          :el        el
+          :attribute attr-name})
+      (catch :default _ nil)))
+  nil)
 
 (defn set-bool-attr!
+  "Delegates to set-attr!/remove-attr! so a single hook site fires per call."
   [^js el attr-name value]
   (if value
-    (.setAttribute el attr-name "")
-    (.removeAttribute el attr-name)))
+    (set-attr! el attr-name "")
+    (remove-attr! el attr-name)))
 
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
-
-(defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
-                 1-arg function that receives a CLJS payload describing each
-                 dispatch. Reset via reset!. nil by default — when nil, every
-                 dispatch is a single atom-deref + nil check (negligible cost)."}
-  trace-hook (atom nil))
 
 (defn dispatch!
   "Dispatch a non-cancelable CustomEvent that bubbles and is composed."

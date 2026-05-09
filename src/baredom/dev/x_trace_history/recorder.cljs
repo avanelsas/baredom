@@ -2,11 +2,11 @@
   "Effects layer for x-trace-history: state atom, hook installation,
    activation gating, JS API at window.BareDOM.traceHistory.*.
 
-   See docs/x-trace-history-roadmap.md for the broader plan. This namespace
-   ships PR 1: dispatch hooks + recorder + console-only API."
+   See docs/x-trace-history-roadmap.md for the broader plan."
   (:require
    [goog.object :as gobj]
    [baredom.utils.dom :as du]
+   [baredom.utils.component :as comp]
    [baredom.dev.x-trace-history.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -108,10 +108,11 @@
 (defn install!
   "Activate recording. Idempotent and re-entrant: safe to call multiple
    times. Re-runs every time so hot-reloads of the recorder ns refresh the
-   hook reference to the newly-loaded `record!` symbol."
+   hook references to the newly-loaded `record!` symbol."
   []
   (swap! state assoc :capacity (read-capacity))
   (reset! du/trace-hook record!)
+  (reset! comp/lifecycle-hook record!)
   (install-window-api!)
   nil)
 
@@ -120,6 +121,7 @@
    Leaves the JS API in place so any console references remain valid."
   []
   (reset! du/trace-hook nil)
+  (reset! comp/lifecycle-hook nil)
   nil)
 
 ;; ---------------------------------------------------------------------------
