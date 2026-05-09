@@ -318,6 +318,58 @@
     (let [norm (-> (- t tmin) (/ span) (max 0) (min 1))]
       (* norm plot-width))))
 
+(defn time-from-x
+  "Inverse of `time-x`: map an x-coordinate within a plot of width
+   `plot-width` back to a time value. Returns 0 for nil bounds and
+   clamps x outside [0, plot-width] into [tmin, tmax]."
+  [x {:keys [tmin span] :as bounds} plot-width]
+  (cond
+    (or (nil? bounds) (nil? tmin) (nil? span))
+    0
+
+    (or (zero? plot-width) (neg? plot-width))
+    tmin
+
+    :else
+    (let [norm (-> (/ x plot-width) (max 0) (min 1))]
+      (+ tmin (* norm span)))))
+
+(defn nearest-record
+  "Return the record from `records` whose t is closest to `target-t`. nil
+   for empty input. Used by the scrubber to translate a cursor x back
+   into a record selection."
+  [records target-t]
+  (when (seq records)
+    (apply min-key
+           (fn [^js r] (js/Math.abs (- (.-t r) target-t)))
+           records)))
+
+(defn step-record
+  "Return the next or previous filtered record relative to `current-id`,
+   ordered by id (= insertion order = time). `dir` is :next or :prev.
+   Returns the first/last record when current-id is nil. Returns nil if
+   no neighbour exists.
+
+   Assumes `filtered-records` is in id-ascending order (filter-records
+   preserves the ring buffer's insertion order). Both directions
+   short-circuit on first match: :next scans forward, :prev scans
+   backward via rseq."
+  [filtered-records current-id dir]
+  (when (seq filtered-records)
+    (cond
+      (nil? current-id)
+      (case dir
+        :next (first filtered-records)
+        :prev (peek filtered-records))
+
+      (= dir :next)
+      (some (fn [^js r] (when (> (.-id r) current-id) r))
+            filtered-records)
+
+      :else
+      (some (fn [^js r] (when (< (.-id r) current-id) r))
+            (rseq filtered-records)))))
+
 (defn tooltip-text
   "Multi-line text shown when hovering a timeline dot."
   [^js r]
@@ -353,6 +405,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def k-shadow        "__xTraceHistoryShadow")
+(def k-keydown-fn    "__xTraceHistoryKeydownFn")
 (def k-timeline-el   "__xTraceHistoryTimelineEl")
 (def k-lanes-el      "__xTraceHistoryLanesEl")
 (def k-svg-pane-el   "__xTraceHistorySvgPaneEl")
@@ -447,6 +500,10 @@
   overflow: auto;
   min-height: 0;
   position: relative;
+  /* Transparent border reserves 2px so the focus indicator below doesn't
+     overlap the leftmost pixels of lane labels or shift content layout. */
+  border: 2px solid transparent;
+  box-sizing: border-box;
 }
 .timeline-body {
   display: flex;
@@ -501,6 +558,17 @@ svg.timeline-svg {
 }
 .dot { cursor: pointer; transition: r 80ms ease; }
 .dot:hover { stroke: #fff; stroke-width: 1; }
+line.scrubber {
+  stroke: #f5c2e7;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 2;
+  pointer-events: none;
+}
+.svg-pane { cursor: crosshair; }
+.timeline:focus {
+  outline: none;
+  border-color: #89b4fa;
+}
 .tooltip {
   position: absolute;
   background: #1e1e2e;

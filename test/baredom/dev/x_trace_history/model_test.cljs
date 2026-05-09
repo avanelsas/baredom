@@ -517,6 +517,106 @@
   (testing "nil bounds yields x=0 instead of throwing"
     (is (zero? (model/time-x 100 {:tmin nil :tmax nil :span nil} 500)))))
 
+;; ── time-from-x (inverse of time-x) ────────────────────────────────────────
+
+(deftest time-from-x-at-zero-is-tmin-test
+  (is (= 100 (model/time-from-x 0 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-from-x-at-full-width-is-tmax-test
+  (is (= 200 (model/time-from-x 500 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-from-x-midpoint-test
+  (is (= 150 (model/time-from-x 250 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-from-x-clamps-out-of-range-test
+  (let [bounds {:tmin 100 :tmax 200 :span 100}]
+    (is (= 100 (model/time-from-x -50  bounds 500)))
+    (is (= 200 (model/time-from-x 999  bounds 500)))))
+
+(deftest time-from-x-zero-width-test
+  (is (= 100 (model/time-from-x 50 {:tmin 100 :tmax 200 :span 100} 0))))
+
+(deftest time-from-x-nil-bounds-test
+  (is (zero? (model/time-from-x 100 nil 500)))
+  (is (zero? (model/time-from-x 100 {:tmin nil :tmax nil :span nil} 500))))
+
+(deftest time-x-and-back-is-identity-test
+  (testing "time-x and time-from-x are inverses for in-range inputs"
+    (let [bounds {:tmin 100 :tmax 1100 :span 1000}
+          w      500]
+      (doseq [t [100 250 500 800 1100]]
+        (let [x  (model/time-x t bounds w)
+              t' (model/time-from-x x bounds w)]
+          (is (< (js/Math.abs (- t t')) 0.001)
+              (str "round-trip for t=" t)))))))
+
+;; ── nearest-record ─────────────────────────────────────────────────────────
+
+(deftest nearest-record-empty-test
+  (is (nil? (model/nearest-record [] 100))))
+
+(deftest nearest-record-single-test
+  (let [r (mk-rec-with {:t 500})]
+    (is (= r (model/nearest-record [r] 999)))
+    (is (= r (model/nearest-record [r] -10)))))
+
+(deftest nearest-record-picks-closest-test
+  (let [a (mk-rec-with {:id 0 :t 100})
+        b (mk-rec-with {:id 1 :t 200})
+        c (mk-rec-with {:id 2 :t 300})]
+    (is (= a (model/nearest-record [a b c] 110)))
+    (is (= b (model/nearest-record [a b c] 195)))
+    (is (= c (model/nearest-record [a b c] 280)))))
+
+(deftest nearest-record-tie-picks-last-test
+  (testing "min-key biases to the LAST equal-distance record. Exact ties
+            are negligible for scrubber UX; documenting the actual bias
+            so future readers don't expect the opposite."
+    (let [a (mk-rec-with {:id 0 :t 100})
+          b (mk-rec-with {:id 1 :t 300})]
+      (is (= b (model/nearest-record [a b] 200))))))
+
+;; ── step-record ────────────────────────────────────────────────────────────
+
+(def ^:private step-records
+  [(mk-rec-with {:id 0 :t 100})
+   (mk-rec-with {:id 1 :t 200})
+   (mk-rec-with {:id 2 :t 300})])
+
+(deftest step-record-empty-test
+  (is (nil? (model/step-record [] 0 :next)))
+  (is (nil? (model/step-record [] 0 :prev))))
+
+(deftest step-record-from-nil-next-test
+  (testing "no current selection: :next picks the first record"
+    (is (= 0 (.-id ^js (model/step-record step-records nil :next))))))
+
+(deftest step-record-from-nil-prev-test
+  (testing "no current selection: :prev picks the last record"
+    (is (= 2 (.-id ^js (model/step-record step-records nil :prev))))))
+
+(deftest step-record-next-test
+  (is (= 1 (.-id ^js (model/step-record step-records 0 :next))))
+  (is (= 2 (.-id ^js (model/step-record step-records 1 :next)))))
+
+(deftest step-record-prev-test
+  (is (= 1 (.-id ^js (model/step-record step-records 2 :prev))))
+  (is (= 0 (.-id ^js (model/step-record step-records 1 :prev)))))
+
+(deftest step-record-at-edge-returns-nil-test
+  (testing "stepping past either edge returns nil rather than wrapping"
+    (is (nil? (model/step-record step-records 2 :next)))
+    (is (nil? (model/step-record step-records 0 :prev)))))
+
+(deftest step-record-skips-missing-ids-test
+  (testing "step-record honours actual ids, not array index — gaps are fine"
+    (let [recs [(mk-rec-with {:id 5  :t 100})
+                (mk-rec-with {:id 12 :t 200})
+                (mk-rec-with {:id 30 :t 300})]]
+      (is (= 12 (.-id ^js (model/step-record recs 5  :next))))
+      (is (= 5  (.-id ^js (model/step-record recs 12 :prev))))
+      (is (= 30 (.-id ^js (model/step-record recs 12 :next)))))))
+
 ;; ── active-lanes ────────────────────────────────────────────────────────────
 
 (deftest active-lanes-empty-test

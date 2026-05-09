@@ -420,6 +420,256 @@
                 (is (= 2 (.-length (recorder/records))))
                 (done)))))))))
 
+;; ---------------------------------------------------------------------------
+;; Scrubber + keyboard step (PR 6)
+;; ---------------------------------------------------------------------------
+
+(deftest scrubber-hidden-when-nothing-selected-test
+  (testing "no <line.scrubber> rendered until a record is selected"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (is (nil? (query dock "line.scrubber")))
+            (done)))))))
+
+(deftest scrubber-appears-when-record-selected-test
+  (testing "selecting a record renders a <line.scrubber> in the SVG"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (.dispatchEvent ^js (query dock "circle.dot")
+                            (js/MouseEvent. "click" #js {:bubbles true}))
+            (after-frames 1
+              (fn []
+                (is (some? (query dock "line.scrubber")))
+                (done)))))))))
+
+(deftest pointerdown-focuses-timeline-test
+  (testing "pointerdown anywhere in the timeline focuses it so keydown
+            fires for subsequent arrow-key presses"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js shadow   (shadow-of dock)
+                  ^js timeline (query dock "[data-x-th-timeline]")
+                  ^js svg-pane (query dock "[data-x-th-svg-pane]")]
+              (.dispatchEvent svg-pane
+                              (js/PointerEvent. "pointerdown"
+                                                #js {:bubbles true
+                                                     :clientX 50
+                                                     :clientY 10
+                                                     :pointerId 1}))
+              ;; Inside an open shadow root, document.activeElement returns
+              ;; the host; the shadow root has its own activeElement.
+              (is (= timeline (.-activeElement shadow))))
+            (done)))))))
+
+(deftest pointerdown-on-svg-pane-selects-nearest-test
+  (testing "pointerdown on empty SVG space selects the nearest filtered record
+            and shows the scrubber"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x" #js {})
+        (du/dispatch! btn "y" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js svg-pane (query dock "[data-x-th-svg-pane]")]
+              (.dispatchEvent svg-pane
+                              (js/PointerEvent. "pointerdown"
+                                                #js {:bubbles true
+                                                     :clientX 100
+                                                     :clientY 50
+                                                     :pointerId 1})))
+            (after-frames 1
+              (fn []
+                ;; A record is selected (detail visible) and the scrubber
+                ;; line is present.
+                (is (some? (query dock "line.scrubber")))
+                (is (false? (.hasAttribute ^js (query dock "[data-x-th-detail]")
+                                           "hidden")))
+                (done)))))))))
+
+(deftest keyboard-arrow-right-steps-next-test
+  (testing "ArrowRight on the focused timeline steps to the next record"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (du/dispatch! btn "b" #js {})
+        (du/dispatch! btn "c" #js {})
+        (after-frames 2
+          (fn []
+            ;; No selection yet → ArrowRight selects the first record.
+            (let [^js timeline (query dock "[data-x-th-timeline]")]
+              (.dispatchEvent timeline
+                              (js/KeyboardEvent. "keydown"
+                                                 #js {:bubbles true
+                                                      :key "ArrowRight"})))
+            (after-frames 1
+              (fn []
+                (is (= 0 (gobj/get dock model/k-selected-id)))
+                ;; Another ArrowRight → id=1.
+                (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
+                                (js/KeyboardEvent. "keydown"
+                                                   #js {:bubbles true
+                                                        :key "ArrowRight"}))
+                (after-frames 1
+                  (fn []
+                    (is (= 1 (gobj/get dock model/k-selected-id)))
+                    (done)))))))))))
+
+(deftest keyboard-arrow-left-steps-prev-test
+  (testing "ArrowLeft steps to the previous record; from no selection,
+            picks the most recent"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (du/dispatch! btn "b" #js {})
+        (du/dispatch! btn "c" #js {})
+        (after-frames 2
+          (fn []
+            (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
+                            (js/KeyboardEvent. "keydown"
+                                               #js {:bubbles true
+                                                    :key "ArrowLeft"}))
+            (after-frames 1
+              (fn []
+                (is (= 2 (gobj/get dock model/k-selected-id)))
+                (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
+                                (js/KeyboardEvent. "keydown"
+                                                   #js {:bubbles true
+                                                        :key "ArrowLeft"}))
+                (after-frames 1
+                  (fn []
+                    (is (= 1 (gobj/get dock model/k-selected-id)))
+                    (done)))))))))))
+
+(deftest keyboard-step-respects-filter-test
+  (testing "ArrowRight only steps through records that pass the active filter"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "click" #js {})    ; id 0, events
+        (du/setv!     btn "__x" "v")          ; id 1, state
+        (du/dispatch! btn "click" #js {})    ; id 2, events
+        (after-frames 2
+          (fn []
+            ;; Uncheck events: only the state record (id 1) remains.
+            (let [^js cb (query dock "[data-x-th-cat='events']")]
+              (set! (.-checked cb) false)
+              (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
+                                (js/KeyboardEvent. "keydown"
+                                                   #js {:bubbles true
+                                                        :key "ArrowRight"}))
+                (after-frames 1
+                  (fn []
+                    (is (= 1 (gobj/get dock model/k-selected-id))
+                        "first filtered record is id 1 (state)")
+                    (done)))))))))))
+
+(deftest keyboard-handler-fires-on-repeated-keydown-test
+  (testing "the keydown handler advances selection on every dispatch, not
+            just the first. Verifies handler reentrancy after render!
+            replaces innerHTML — does NOT reproduce real-browser focus
+            survival, since dispatchEvent bypasses focus."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (du/dispatch! btn "b" #js {})
+        (du/dispatch! btn "c" #js {})
+        (du/dispatch! btn "d" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js timeline (query dock "[data-x-th-timeline]")
+                  press!       (fn []
+                                 (.dispatchEvent timeline
+                                                 (js/KeyboardEvent. "keydown"
+                                                                    #js {:bubbles true
+                                                                         :key "ArrowRight"})))]
+              (press!) (press!) (press!))
+            (after-frames 1
+              (fn []
+                ;; nil → 0 → 1 → 2
+                (is (= 2 (gobj/get dock model/k-selected-id)))
+                (done)))))))))
+
+(deftest keyboard-arrow-on-button-still-steps-test
+  (testing "ArrowRight while a header button has focus DOES step the
+            timeline — buttons have no native arrow semantics, so we
+            don't ignore them like we do for select / input / textarea"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (du/dispatch! btn "b" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js pause (query dock "[data-x-th-action='pause']")]
+              (.dispatchEvent pause
+                              (js/KeyboardEvent. "keydown"
+                                                 #js {:bubbles true
+                                                      :key "ArrowRight"})))
+            (after-frames 1
+              (fn []
+                (is (= 0 (gobj/get dock model/k-selected-id))
+                    "selection advanced to first record despite focus
+                     being on the pause button")
+                (done)))))))))
+
+(deftest keyboard-arrow-in-select-passes-through-test
+  (testing "ArrowRight on the tag-select dropdown does NOT step the
+            timeline — the form control keeps its native behaviour"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (du/dispatch! btn "b" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js sel (query dock "[data-x-th-tag]")]
+              (.dispatchEvent sel
+                              (js/KeyboardEvent. "keydown"
+                                                 #js {:bubbles true
+                                                      :key "ArrowRight"})))
+            (after-frames 1
+              (fn []
+                (is (nil? (gobj/get dock model/k-selected-id))
+                    "selection did not advance because target was a select")
+                (done)))))))))
+
+(deftest keyboard-other-key-is-passthrough-test
+  (testing "non-arrow keys do not change selection or preventDefault"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "a" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js timeline (query dock "[data-x-th-timeline]")
+                  ^js evt      (js/KeyboardEvent. "keydown"
+                                                  #js {:bubbles true
+                                                       :key "Enter"
+                                                       :cancelable true})]
+              (.dispatchEvent timeline evt)
+              (is (false? (.-defaultPrevented evt)))
+              (is (nil? (gobj/get dock model/k-selected-id))))
+            (done)))))))
+
 (deftest coalesced-renders-survive-burst-test
   (testing "a burst of dispatches renders one dot each (single rAF coalesces)"
     (async done
