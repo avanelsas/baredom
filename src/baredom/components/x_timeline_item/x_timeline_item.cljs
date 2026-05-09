@@ -394,16 +394,8 @@
   nil)
 
 (defn- dispatch-disconnected! [^js _el m]
-  ;; Intentionally non-bubbling, non-composed: an internal document-level
-  ;; signal to the parent x-timeline that this item is gone. Do NOT migrate
-  ;; to du/dispatch! — the helper always sets bubbles/composed true.
-  (.dispatchEvent js/document
-                  (js/CustomEvent.
-                   model/event-disconnected
-                   #js {:detail     (clj->js (model/disconnected-detail m))
-                        :bubbles    false
-                        :composed   false
-                        :cancelable false}))
+  (du/dispatch-document! model/event-disconnected
+                         (clj->js (model/disconnected-detail m)))
   nil)
 
 ;; ── Event handlers ────────────────────────────────────────────────────────────

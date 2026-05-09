@@ -69,6 +69,27 @@
     (.dispatchEvent el ev)
     (not (.-defaultPrevented ev))))
 
+(defn dispatch-document!
+  "Dispatch a non-bubbling, non-composed CustomEvent on document.
+   Used for parent notification when the source element is disconnecting
+   and normal bubbling cannot reach the parent.
+   Single-arity omits the detail field entirely (event.detail === null)."
+  ([event-name]
+   (.dispatchEvent js/document
+                   (js/CustomEvent.
+                    event-name
+                    #js {:bubbles    false
+                         :composed   false
+                         :cancelable false})))
+  ([event-name detail]
+   (.dispatchEvent js/document
+                   (js/CustomEvent.
+                    event-name
+                    #js {:detail     detail
+                         :bubbles    false
+                         :composed   false
+                         :cancelable false}))))
+
 ;; ---------------------------------------------------------------------------
 ;; Property accessor installers
 ;; ---------------------------------------------------------------------------
