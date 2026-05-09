@@ -543,7 +543,7 @@
   "bugs": {
     "url": "https://github.com/avanelsas/baredom/issues"
   },
-  "version": "2.8.0",
+  "version": "2.9.0",
   "sideEffects": [
     "./dist/*.js"
   ],
