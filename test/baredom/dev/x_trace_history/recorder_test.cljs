@@ -457,3 +457,41 @@
         ;; components index also still has the entry
         (let [^js idx (recorder/components)]
           (is (some? (gobj/get idx (str first-cid)))))))))
+
+;; ── subscribe! / unsubscribe! (sync API contract) ──────────────────────────
+;;
+;; The async fire-on-rAF semantics are exercised end-to-end by the dock
+;; integration test (x_trace_history_test). These sync tests cover the API
+;; contract: tokens are unique, unsubscribe is idempotent, paused? reflects
+;; recorder state.
+
+(deftest subscribe-returns-unique-tokens-test
+  (testing "each subscribe! returns a token distinct from prior tokens"
+    (let [a (recorder/subscribe! (fn []))
+          b (recorder/subscribe! (fn []))
+          c (recorder/subscribe! (fn []))]
+      (is (not= a b))
+      (is (not= b c))
+      (is (not= a c))
+      (recorder/unsubscribe! a)
+      (recorder/unsubscribe! b)
+      (recorder/unsubscribe! c))))
+
+(deftest unsubscribe-unknown-token-is-noop-test
+  (testing "unsubscribe! with a token that was never registered is silent"
+    (is (nil? (recorder/unsubscribe! 999999)))
+    (is (nil? (recorder/unsubscribe! nil)))))
+
+(deftest unsubscribe-idempotent-test
+  (testing "double-unsubscribe is a no-op"
+    (let [tok (recorder/subscribe! (fn []))]
+      (recorder/unsubscribe! tok)
+      (is (nil? (recorder/unsubscribe! tok))))))
+
+(deftest paused-reflects-state-test
+  (testing "paused? is true after pause! and false after resume!"
+    (is (false? (recorder/paused?)))
+    (recorder/pause!)
+    (is (true?  (recorder/paused?)))
+    (recorder/resume!)
+    (is (false? (recorder/paused?)))))

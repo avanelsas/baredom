@@ -1,6 +1,7 @@
 (ns baredom.dev.x-trace-history.recorder
   "Effects layer for x-trace-history: state atom, hook installation,
-   activation gating, JS API at window.BareDOM.traceHistory.*.
+   activation gating, JS API at window.BareDOM.traceHistory.*, and a small
+   subscriber API consumed by the dock UI.
 
    See docs/x-trace-history-roadmap.md for the broader plan."
   (:require
@@ -15,8 +16,6 @@
 
 (def ^:private window-base-key    "BareDOM")
 (def ^:private window-api-key     "traceHistory")
-(def ^:private url-param          "baredom-trace-history")
-(def ^:private window-flag        "BAREDOM_TRACE_HISTORY")
 (def ^:private capacity-flag      "BAREDOM_TRACE_HISTORY_CAPACITY")
 (def ^:private component-id-key   "__xTraceHistoryId")
 
@@ -31,6 +30,47 @@
          :capacity          model/default-capacity
          :next-component-id 0
          :components        {}}))
+
+(defonce ^:private subscribers (atom {}))
+
+(defonce ^:private next-sub-token (atom 0))
+
+(defonce ^:private notify-pending? (atom false))
+
+;; ---------------------------------------------------------------------------
+;; Subscriber API
+;; ---------------------------------------------------------------------------
+
+(defn- fire-subscribers!
+  "Invoked from rAF. Reset the pending flag and call every subscriber. A
+   throwing subscriber must not block the others or break the recorder."
+  []
+  (reset! notify-pending? false)
+  (doseq [[_ f] @subscribers]
+    (try (f) (catch :default _ nil))))
+
+(defn- schedule-notify!
+  "Coalesce subscriber notifications to one per animation frame. Multiple
+   pushes within a single frame trigger a single rAF callback."
+  []
+  (when (compare-and-set! notify-pending? false true)
+    (js/requestAnimationFrame fire-subscribers!)))
+
+(defn subscribe!
+  "Register f as a no-arg callback fired on the next animation frame after
+   any record is pushed (or after pause! / resume! / clear!). Returns an
+   opaque token to pass to unsubscribe!. Safe to call before install!."
+  [f]
+  (let [tok (swap! next-sub-token inc)]
+    (swap! subscribers assoc tok f)
+    tok))
+
+(defn unsubscribe!
+  "Remove the subscriber identified by `tok`. Idempotent: calling with an
+   unknown token is a no-op."
+  [tok]
+  (swap! subscribers dissoc tok)
+  nil)
 
 ;; ---------------------------------------------------------------------------
 ;; Hook implementation
@@ -79,7 +119,8 @@
                :records           new-recs
                :next-id           (inc id)
                :next-component-id new-next-cid
-               :components        new-comps)))))
+               :components        new-comps)
+        (schedule-notify!)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Public API (exposed via window.BareDOM.traceHistory)
@@ -104,16 +145,23 @@
                         "firstSeen" (:first-seen info))))
     result))
 
+(defn paused?
+  "Returns true iff recording is currently paused."
+  []
+  (:paused? @state))
+
 (defn pause!
   "Stop recording new events. Existing records are preserved."
   []
   (swap! state assoc :paused? true)
+  (schedule-notify!)
   nil)
 
 (defn resume!
   "Resume recording after pause!."
   []
   (swap! state assoc :paused? false)
+  (schedule-notify!)
   nil)
 
 (defn clear!
@@ -127,6 +175,7 @@
   (swap! state assoc
          :records model/empty-records
          :next-id 0)
+  (schedule-notify!)
   nil)
 
 ;; ---------------------------------------------------------------------------
@@ -179,18 +228,11 @@
 ;; Activation
 ;; ---------------------------------------------------------------------------
 
-(defn- enabled?
-  "True iff the URL search contains ?baredom-trace-history OR the
-   window.BAREDOM_TRACE_HISTORY flag is set before page load."
-  []
-  (or (some-> (.. js/window -location -search) (.includes url-param))
-      (true? (gobj/get js/window window-flag))))
-
 (defn register!
   "Called once at app start. If activated, install recording and log a
    console banner. Mirrors x-debug's opt-in pattern."
   []
-  (when (enabled?)
+  (when (model/enabled? js/window)
     (install!)
     (js/console.log
      "%c[BareDOM Trace History]%c Active — see window.BareDOM.traceHistory for the API"
