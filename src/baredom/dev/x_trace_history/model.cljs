@@ -351,7 +351,9 @@
    no neighbour exists.
 
    Assumes `filtered-records` is in id-ascending order (filter-records
-   preserves the ring buffer's insertion order)."
+   preserves the ring buffer's insertion order). Both directions
+   short-circuit on first match: :next scans forward, :prev scans
+   backward via rseq."
   [filtered-records current-id dir]
   (when (seq filtered-records)
     (cond
@@ -361,10 +363,12 @@
         :prev (peek filtered-records))
 
       (= dir :next)
-      (first (filter (fn [^js r] (> (.-id r) current-id)) filtered-records))
+      (some (fn [^js r] (when (> (.-id r) current-id) r))
+            filtered-records)
 
       :else
-      (last (filter (fn [^js r] (< (.-id r) current-id)) filtered-records)))))
+      (some (fn [^js r] (when (< (.-id r) current-id) r))
+            (rseq filtered-records)))))
 
 (defn tooltip-text
   "Multi-line text shown when hovering a timeline dot."
@@ -401,6 +405,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def k-shadow        "__xTraceHistoryShadow")
+(def k-keydown-fn    "__xTraceHistoryKeydownFn")
 (def k-timeline-el   "__xTraceHistoryTimelineEl")
 (def k-lanes-el      "__xTraceHistoryLanesEl")
 (def k-svg-pane-el   "__xTraceHistorySvgPaneEl")
@@ -495,6 +500,10 @@
   overflow: auto;
   min-height: 0;
   position: relative;
+  /* Transparent border reserves 2px so the focus indicator below doesn't
+     overlap the leftmost pixels of lane labels or shift content layout. */
+  border: 2px solid transparent;
+  box-sizing: border-box;
 }
 .timeline-body {
   display: flex;
@@ -556,10 +565,9 @@ line.scrubber {
   pointer-events: none;
 }
 .svg-pane { cursor: crosshair; }
-.timeline:focus { outline: none; }
-.timeline:focus-visible {
-  outline: 2px solid rgba(59,130,246,0.5);
-  outline-offset: -2px;
+.timeline:focus {
+  outline: none;
+  border-color: #89b4fa;
 }
 .tooltip {
   position: absolute;

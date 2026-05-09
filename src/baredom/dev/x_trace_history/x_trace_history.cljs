@@ -376,34 +376,37 @@
 ;; Scrubber — pointer-drag on the SVG to step selection by nearest record
 ;; ---------------------------------------------------------------------------
 
-(defn- select-nearest-at-x!
-  "Find the filtered record nearest to x-pixel `x` (relative to the
-   svg-pane's left edge) and select it, then re-render. No-op when no
-   records pass the filter."
-  [^js el x]
-  (let [^js svg-pane (gobj/get el model/k-svg-pane-el)
-        plot-w       (max svg-min-w (.-clientWidth svg-pane))
-        spec         (gobj/get el model/k-filter)
-        ^js recs     (recorder/records)
-        filtered     (model/filter-records recs spec)
-        bounds       (model/time-bounds filtered)
-        target-t     (model/time-from-x x bounds plot-w)
-        ^js nearest  (model/nearest-record filtered target-t)]
+(defn- select-nearest!
+  "Apply a precomputed scrub context to a raw cursor x. Used by the
+   scrub-start kick-off and by every pointermove that follows so the
+   filter / records / bounds / plot-width snapshot is taken once at
+   gesture start (a drag is a moment in time — capturing newly arriving
+   records mid-drag would be more confusing than helpful)."
+  [^js el filtered bounds plot-w x]
+  (let [target-t    (model/time-from-x x bounds plot-w)
+        ^js nearest (model/nearest-record filtered target-t)]
     (when nearest
       (gobj/set el model/k-selected-id (.-id nearest))
       (render! el))))
 
 (defn- start-scrub!
   "Begin a pointer-driven scrub. The pointer is captured on the svg-pane,
-   so the gesture survives the cursor leaving the SVG bounds. Each move
-   re-selects the nearest filtered record."
+   so the gesture survives the cursor leaving the SVG bounds. Filter
+   snapshot, bounds, and plot width are computed once and reused for
+   every pointermove until pointerup / pointercancel."
   [^js el ^js svg-pane ^js e]
   (.preventDefault e)
   (.setPointerCapture svg-pane (.-pointerId e))
   (let [pane-rect (.getBoundingClientRect svg-pane)
-        x-of     (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
-    (select-nearest-at-x! el (x-of e))
-    (let [on-move (fn [^js me] (select-nearest-at-x! el (x-of me)))
+        plot-w    (max svg-min-w (.-clientWidth svg-pane))
+        spec      (gobj/get el model/k-filter)
+        ^js recs  (recorder/records)
+        filtered  (model/filter-records recs spec)
+        bounds    (model/time-bounds filtered)
+        x-of      (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
+    (select-nearest! el filtered bounds plot-w (x-of e))
+    (let [on-move (fn [^js me]
+                    (select-nearest! el filtered bounds plot-w (x-of me)))
           on-end  (fn end-fn [_]
                     (.removeEventListener svg-pane "pointermove"   on-move)
                     (.removeEventListener svg-pane "pointerup"     end-fn)
@@ -432,12 +435,27 @@
       (gobj/set el model/k-selected-id (.-id next-r))
       (render! el))))
 
+(def ^:private form-control-tags #{"input" "select" "textarea"})
+
+(defn- in-form-control?
+  "Skip arrow handling when focus is somewhere arrow keys have native
+   semantics — text inputs (cursor movement), selects (option stepping),
+   textareas, and contenteditable regions. Buttons are NOT included
+   because arrows do nothing native on a button, and excluding them
+   means the user can click Pause / Clear and immediately use arrows
+   without re-clicking the timeline."
+  [^js target]
+  (or (boolean (some-> target .-isContentEditable))
+      (let [tag (some-> target .-tagName .toLowerCase)]
+        (contains? form-control-tags tag))))
+
 (defn- handle-keydown!
   [^js el ^js e]
-  (case (.-key e)
-    "ArrowRight" (do (.preventDefault e) (step-selection! el :next))
-    "ArrowLeft"  (do (.preventDefault e) (step-selection! el :prev))
-    nil))
+  (when-not (in-form-control? (.-target e))
+    (case (.-key e)
+      "ArrowRight" (do (.preventDefault e) (step-selection! el :next))
+      "ArrowLeft"  (do (.preventDefault e) (step-selection! el :prev))
+      nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Splitter — drag the divider above the detail pane to resize it
@@ -514,8 +532,21 @@
                        (fn [^js e] (handle-pointermove! el e)))
     (.addEventListener timeline-el "pointerleave"
                        (fn [^js e] (handle-pointerleave! el e)))
-    (.addEventListener timeline-el "keydown"
-                       (fn [^js e] (handle-keydown! el e)))
+    ;; Pointerdown anywhere in the timeline focuses it so the keyboard
+    ;; outline (the inset box-shadow on .timeline:focus) shows the user
+    ;; their starting point.
+    (.addEventListener timeline-el "pointerdown"
+                       (fn [_e] (.focus timeline-el)))
+    ;; Bind keydown on the SHADOW ROOT, not the timeline. The shadow
+    ;; receives keydown events from any focused descendant — so arrow
+    ;; keys keep working even when focus shifts to a control after a
+    ;; click. The handler ignores form-control targets so we don't
+    ;; fight native behaviour. The fn reference is cached so unmount!
+    ;; can detach it cleanly (the shadow root outlives many of its
+    ;; descendant listeners' element-bound counterparts).
+    (let [keydown-fn (fn [^js e] (handle-keydown! el e))]
+      (gobj/set el model/k-keydown-fn keydown-fn)
+      (.addEventListener shadow "keydown" keydown-fn))
     (.addEventListener svg-pane-el "pointerdown"
                        (fn [^js e] (handle-svg-pointerdown! el e)))
     (.addEventListener splitter-el "pointerdown"
@@ -539,6 +570,11 @@
   [^js el]
   (when-let [tok (gobj/get el model/k-sub-token)]
     (recorder/unsubscribe! tok))
+  (let [^js shadow     (gobj/get el model/k-shadow)
+        ^js keydown-fn (gobj/get el model/k-keydown-fn)]
+    (when (and shadow keydown-fn)
+      (.removeEventListener shadow "keydown" keydown-fn)))
+  (gobj/set el model/k-keydown-fn nil)
   (gobj/set el model/k-sub-token nil)
   (gobj/set el model/k-mounted nil))
 
