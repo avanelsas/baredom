@@ -67,8 +67,11 @@
 (defn- query-all [^js dock-el sel]
   (.querySelectorAll (shadow-of dock-el) sel))
 
-(defn- row-count [^js dock-el]
-  (.-length (query-all dock-el ".row")))
+(defn- dot-count [^js dock-el]
+  (.-length (query-all dock-el "circle.dot")))
+
+(defn- lane-count [^js dock-el]
+  (.-length (query-all dock-el ".lane-label")))
 
 ;; ---------------------------------------------------------------------------
 ;; Mount + skeleton
@@ -79,50 +82,52 @@
     (let [^js el (mount-dock!)]
       (is (some? (shadow-of el)))
       (is (some? (query el ".dock")))
-      (is (some? (query el "[data-x-th-list]")))
+      (is (some? (query el "[data-x-th-timeline]")))
+      (is (some? (query el "[data-x-th-lanes]")))
+      (is (some? (query el "[data-x-th-svg-pane]")))
+      (is (some? (query el "[data-x-th-tooltip]")))
       (is (some? (query el "[data-x-th-action='pause']")))
       (is (some? (query el "[data-x-th-action='clear']"))))))
 
 (deftest empty-state-shows-placeholder-test
-  (testing "with no records, the list area shows the empty hint"
+  (testing "with no records, the svg pane shows the empty hint and the lanes
+            column is empty"
     (let [^js el (mount-dock!)]
-      (is (some? (query el ".empty"))))))
+      (is (some? (query el ".timeline-empty")))
+      (is (zero? (lane-count el))))))
 
 ;; ---------------------------------------------------------------------------
-;; Records → rows
+;; Records → dots
 ;; ---------------------------------------------------------------------------
 
-(deftest dispatch-renders-row-test
-  (testing "a single dispatch produces one row in the dock"
+(deftest dispatch-renders-dot-test
+  (testing "a single dispatch produces one dot in the timeline SVG"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
         (du/dispatch! btn "x-button:click" #js {:value 7})
         (after-frames 2
           (fn []
-            (is (= 1 (row-count dock)))
-            (let [^js row (query dock ".row")]
-              (is (some? row))
-              (is (clojure.string/includes? (.-textContent row) "x-button:click"))
-              (is (clojure.string/includes? (.-textContent row) "x-button")))
+            (is (= 1 (dot-count dock)))
+            (is (= 1 (lane-count dock)))
+            (let [^js label (query dock ".lane-label")]
+              (is (clojure.string/includes? (.-textContent label) "x-button")))
             (done)))))))
 
-(deftest multiple-dispatches-newest-first-test
-  (testing "rows render newest-first regardless of insertion order"
+(deftest multiple-events-one-lane-per-component-test
+  (testing "events from the same instance share a lane; different instances
+            get distinct lanes"
     (async done
-      (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (du/dispatch! btn "first"  #js {})
-        (du/dispatch! btn "second" #js {})
-        (du/dispatch! btn "third"  #js {})
+      (let [^js dock  (mount-dock!)
+            ^js a     (.createElement js/document "x-button")
+            ^js b     (.createElement js/document "x-button")]
+        (du/dispatch! a "click" #js {})
+        (du/dispatch! a "click" #js {})
+        (du/dispatch! b "click" #js {})
         (after-frames 2
           (fn []
-            (let [rows  (query-all dock ".row")
-                  texts (mapv (fn [^js r] (.-textContent r))
-                              (array-seq rows))]
-              (is (= 3 (count texts)))
-              (is (clojure.string/includes? (first texts) "third"))
-              (is (clojure.string/includes? (last texts)  "first")))
+            (is (= 3 (dot-count dock)))
+            (is (= 2 (lane-count dock)))
             (done)))))))
 
 (deftest count-reflects-record-total-test
@@ -138,20 +143,35 @@
               (is (= "4" (.-textContent c))))
             (done)))))))
 
+(deftest dot-color-reflects-category-test
+  (testing "dot fill colour comes from the record's category palette"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "click" #js {})
+        (du/setv!     btn "__x" "v")
+        (after-frames 2
+          (fn []
+            (let [dots  (array-seq (query-all dock "circle.dot"))
+                  fills (set (map (fn [^js d] (.getAttribute d "fill")) dots))]
+              (is (contains? fills "#94e2d5") "events colour present")
+              (is (contains? fills "#f9e2af") "state colour present"))
+            (done)))))))
+
 ;; ---------------------------------------------------------------------------
 ;; Detail pane
 ;; ---------------------------------------------------------------------------
 
-(deftest click-row-opens-detail-test
-  (testing "clicking a row reveals the JSON detail pane for that record"
+(deftest click-dot-opens-detail-test
+  (testing "clicking a dot reveals the JSON detail pane for that record"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
         (du/dispatch! btn "x-button:click" #js {:n 99})
         (after-frames 2
           (fn []
-            (let [^js row (query dock ".row")]
-              (.click row))
+            (let [^js dot (query dock "circle.dot")]
+              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
             (after-frames 1
               (fn []
                 (let [^js detail (query dock "[data-x-th-detail]")]
@@ -160,8 +180,29 @@
                   (is (clojure.string/includes? (.-textContent detail) "schemaVersion")))
                 (done)))))))))
 
+(deftest click-dot-twice-closes-detail-test
+  (testing "clicking the same dot a second time hides the detail pane"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (.dispatchEvent ^js (query dock "circle.dot")
+                            (js/MouseEvent. "click" #js {:bubbles true}))
+            (after-frames 1
+              (fn []
+                ;; The render replaces the SVG content, so re-query the dot.
+                (.dispatchEvent ^js (query dock "circle.dot")
+                                (js/MouseEvent. "click" #js {:bubbles true}))
+                (after-frames 1
+                  (fn []
+                    (let [^js detail (query dock "[data-x-th-detail]")]
+                      (is (true? (.hasAttribute detail "hidden"))))
+                    (done)))))))))))
+
 (deftest splitter-visibility-tracks-detail-test
-  (testing "splitter is hidden until a row is selected, then visible while
+  (testing "splitter is hidden until a dot is selected, then visible while
             the detail pane is open, then hidden again on close"
     (async done
       (let [^js dock (mount-dock!)
@@ -171,19 +212,20 @@
           (fn []
             (let [^js splitter (query dock "[data-x-th-splitter]")]
               (is (true? (.hasAttribute splitter "hidden")) "hidden when nothing selected")
-              (.click ^js (query dock ".row"))
+              (.dispatchEvent ^js (query dock "circle.dot")
+                              (js/MouseEvent. "click" #js {:bubbles true}))
               (after-frames 1
                 (fn []
                   (is (false? (.hasAttribute splitter "hidden")) "visible after selection")
-                  (.click ^js (query dock ".row"))
+                  (.dispatchEvent ^js (query dock "circle.dot")
+                                  (js/MouseEvent. "click" #js {:bubbles true}))
                   (after-frames 1
                     (fn []
                       (is (true? (.hasAttribute splitter "hidden")) "hidden after deselection")
                       (done))))))))))))
 
 (deftest filter-clears-stale-selection-test
-  (testing "selecting a row, then filtering it out, hides the detail pane
-            (rather than leaving an orphan record visible)"
+  (testing "selecting a dot, then filtering its category out, hides the detail"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
@@ -191,49 +233,58 @@
         (du/setv!     btn "__x" "v")
         (after-frames 2
           (fn []
-            ;; Select the event row.
-            (.click ^js (query dock ".row.cat-events"))
+            ;; Click the events-coloured dot.
+            (let [events-dot (some (fn [^js d]
+                                     (when (= "#94e2d5" (.getAttribute d "fill")) d))
+                                   (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js events-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
             (after-frames 1
               (fn []
-                (let [^js detail (query dock "[data-x-th-detail]")]
-                  (is (false? (.hasAttribute detail "hidden"))))
-                ;; Uncheck the events category — selected record is now invisible.
+                (is (false? (.hasAttribute ^js (query dock "[data-x-th-detail]") "hidden")))
                 (let [^js cb (query dock "[data-x-th-cat='events']")]
                   (set! (.-checked cb) false)
                   (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
                 (after-frames 1
                   (fn []
-                    (let [^js detail (query dock "[data-x-th-detail]")]
-                      (is (true? (.hasAttribute detail "hidden"))))
+                    (is (true? (.hasAttribute ^js (query dock "[data-x-th-detail]") "hidden")))
                     (done)))))))))))
 
-(deftest click-row-twice-closes-detail-test
-  (testing "clicking the same row a second time hides the detail pane"
+;; ---------------------------------------------------------------------------
+;; Tooltip
+;; ---------------------------------------------------------------------------
+
+(deftest hover-dot-shows-tooltip-test
+  (testing "moving the pointer onto a dot shows the tooltip with the record's
+            tag and event name; moving off hides it again"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
-        (du/dispatch! btn "x-button:click" #js {})
+        (du/dispatch! btn "x-button:click" #js {:n 7})
         (after-frames 2
           (fn []
-            ;; First click: open detail. Each click triggers a re-render that
-            ;; replaces the list innerHTML, so the row reference must be
-            ;; re-queried before the second click.
-            (.click ^js (query dock ".row"))
-            (after-frames 1
-              (fn []
-                (.click ^js (query dock ".row"))
-                (after-frames 1
-                  (fn []
-                    (let [^js detail (query dock "[data-x-th-detail]")]
-                      (is (true? (.hasAttribute detail "hidden"))))
-                    (done)))))))))))
+            (let [^js dot     (query dock "circle.dot")
+                  ^js tooltip (query dock "[data-x-th-tooltip]")]
+              (is (true? (.hasAttribute tooltip "hidden")))
+              (.dispatchEvent dot (js/PointerEvent. "pointermove"
+                                                   #js {:bubbles true
+                                                        :clientX 100
+                                                        :clientY 100}))
+              (is (false? (.hasAttribute tooltip "hidden")))
+              (is (clojure.string/includes? (.-textContent tooltip) "x-button:click"))
+              ;; pointerleave on the timeline container hides it.
+              (let [^js timeline (query dock "[data-x-th-timeline]")]
+                (.dispatchEvent timeline (js/PointerEvent. "pointerleave"
+                                                          #js {:bubbles false})))
+              (is (true? (.hasAttribute tooltip "hidden"))))
+            (done)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Filters
 ;; ---------------------------------------------------------------------------
 
-(deftest tag-filter-narrows-rows-test
-  (testing "selecting a tag in the dropdown filters out other tags"
+(deftest tag-filter-narrows-dots-test
+  (testing "selecting a tag in the dropdown filters dots from other tags"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")
@@ -243,19 +294,54 @@
         (du/dispatch! btn "click" #js {})
         (after-frames 2
           (fn []
-            (is (= 3 (row-count dock)))
+            (is (= 3 (dot-count dock)))
+            (is (= 2 (lane-count dock)))
             (let [^js sel (query dock "[data-x-th-tag]")]
               (set! (.-value sel) "x-button")
               (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
             (after-frames 1
               (fn []
-                (is (= 2 (row-count dock)))
-                (let [rows (array-seq (query-all dock ".row"))]
-                  (is (every? #(clojure.string/includes? (.-textContent ^js %) "x-button")
-                              rows)))
+                (is (= 2 (dot-count dock)))
+                (is (= 1 (lane-count dock)))
                 (done)))))))))
 
-(deftest category-filter-narrows-rows-test
+(deftest click-lane-label-toggles-tag-filter-test
+  (testing "clicking a lane label sets the tag filter to that lane's tag,
+            updates the dropdown, and adds the .active class. Clicking
+            the same lane again clears the filter."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js mod  (.createElement js/document "x-modal")]
+        (du/dispatch! btn "click" #js {})
+        (du/dispatch! mod "open"  #js {})
+        (after-frames 2
+          (fn []
+            (is (= 2 (lane-count dock)))
+            (let [labels    (array-seq (query-all dock ".lane-label"))
+                  btn-label (some (fn [^js l]
+                                    (when (= "x-button"
+                                             (.getAttribute l "data-x-th-lane-tag"))
+                                      l))
+                                  labels)]
+              (.click ^js btn-label))
+            (after-frames 1
+              (fn []
+                (is (= 1 (lane-count dock)))
+                (let [^js sel (query dock "[data-x-th-tag]")]
+                  (is (= "x-button" (.-value sel))))
+                (is (some? (query dock ".lane-label.active")))
+                ;; Click the (now sole) active lane again → toggle off.
+                (.click ^js (query dock ".lane-label.active"))
+                (after-frames 1
+                  (fn []
+                    (is (= 2 (lane-count dock)))
+                    (let [^js sel (query dock "[data-x-th-tag]")]
+                      (is (= "all" (.-value sel))))
+                    (is (nil? (query dock ".lane-label.active")))
+                    (done)))))))))))
+
+(deftest category-filter-narrows-dots-test
   (testing "unchecking a category checkbox hides records of that category"
     (async done
       (let [^js dock (mount-dock!)
@@ -264,13 +350,13 @@
         (du/setv!     btn "__x" "v")
         (after-frames 2
           (fn []
-            (is (= 2 (row-count dock)))
+            (is (= 2 (dot-count dock)))
             (let [^js cb (query dock "[data-x-th-cat='events']")]
               (set! (.-checked cb) false)
               (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
             (after-frames 1
               (fn []
-                (is (= 1 (row-count dock)))
+                (is (= 1 (dot-count dock)))
                 (done)))))))))
 
 ;; ---------------------------------------------------------------------------
@@ -294,8 +380,8 @@
                 (is (= "Pause" (.-textContent btn)))
                 (done)))))))))
 
-(deftest clear-button-empties-list-test
-  (testing "clicking the clear button empties the list and the count badge"
+(deftest clear-button-empties-timeline-test
+  (testing "clicking the clear button empties the SVG and the count badge"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
@@ -303,12 +389,12 @@
         (du/dispatch! btn "y" #js {})
         (after-frames 2
           (fn []
-            (is (= 2 (row-count dock)))
+            (is (= 2 (dot-count dock)))
             (let [^js clear-btn (query dock "[data-x-th-action='clear']")]
               (.click clear-btn))
             (after-frames 2
               (fn []
-                (is (zero? (row-count dock)))
+                (is (zero? (dot-count dock)))
                 (let [^js c (query dock "[data-x-th-count]")]
                   (is (= "0" (.-textContent c))))
                 (done)))))))))
@@ -325,20 +411,17 @@
         (du/dispatch! btn "before" #js {})
         (after-frames 2
           (fn []
-            (is (= 1 (row-count dock)))
+            (is (= 1 (dot-count dock)))
             (.remove dock)
-            ;; After disconnect the dock should hold no subscriber token.
             (is (nil? (gobj/get dock model/k-sub-token)))
-            ;; Further dispatches must not blow up despite the dock being gone.
             (du/dispatch! btn "after" #js {})
             (after-frames 2
               (fn []
-                ;; Recorder still recorded the post-disconnect event.
                 (is (= 2 (.-length (recorder/records))))
                 (done)))))))))
 
 (deftest coalesced-renders-survive-burst-test
-  (testing "a burst of dispatches renders correctly (single rAF coalesces all)"
+  (testing "a burst of dispatches renders one dot each (single rAF coalesces)"
     (async done
       (let [^js dock (mount-dock!)
             ^js btn  (.createElement js/document "x-button")]
@@ -346,5 +429,5 @@
           (du/dispatch! btn (str "ev-" i) #js {}))
         (after-frames 2
           (fn []
-            (is (= 10 (row-count dock)))
+            (is (= 10 (dot-count dock)))
             (done)))))))
