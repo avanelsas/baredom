@@ -36,16 +36,14 @@
 (defn- safe-value
   "Coerce a value (event detail, instance-field value, etc.) into something
    JSON-friendly. JS objects pass through clj->js untouched; CLJS data is
-   converted; cyclic / non-coercible values fall back to (str v) so the
-   recorder never throws."
+   converted; cyclic / non-coercible values fall back to (str v) — and if
+   even (str v) throws (e.g. an object with a throwing toString), produce
+   a placeholder string. The recorder must never throw."
   [v]
   (try
-    (cond
-      (nil? v)        nil
-      (undefined? v)  nil
-      :else           (clj->js v))
+    (if (nil? v) nil (clj->js v))
     (catch :default _
-      (str v))))
+      (try (str v) (catch :default _ "(unprintable)")))))
 
 (defn make-record
   "Construct a JS-shape record from a hook payload, monotonic id, and a
@@ -92,8 +90,14 @@
         (gobj/set "oldValue"  (:old-value payload))
         (gobj/set "newValue"  (:new-value payload)))
 
-      ;; :lifecycle/connected, :lifecycle/disconnected, anything else
-      r)))
+      ;; Lifecycle events that have no type-specific fields:
+      (:lifecycle/connected :lifecycle/disconnected) r
+
+      ;; Anything else is a typo or unhandled new type — warn loudly so
+      ;; we don't silently lose the type-specific payload.
+      (do
+        (js/console.warn "[x-trace-history] unknown record type:" (str type))
+        r))))
 
 ;; ---------------------------------------------------------------------------
 ;; Ring buffer

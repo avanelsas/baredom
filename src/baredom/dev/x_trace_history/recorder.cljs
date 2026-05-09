@@ -117,7 +117,12 @@
   nil)
 
 (defn clear!
-  "Empty the ring buffer and reset the id counter to 0."
+  "Empty the ring buffer and reset the record-id counter to 0.
+
+   Intentionally preserves :paused? state, the :components index, and the
+   component-id counter — component identity is monotonic for the page
+   lifetime since live elements still carry their stored cids; resetting
+   would cause new components to collide with already-stored ids."
   []
   (swap! state assoc
          :records model/empty-records
@@ -188,7 +193,7 @@
   (when (enabled?)
     (install!)
     (js/console.log
-     "%c[BareDOM Trace History]%c Active — call window.BareDOM.traceHistory.records() to inspect"
+     "%c[BareDOM Trace History]%c Active — see window.BareDOM.traceHistory for the API"
      "color:#3b82f6;font-weight:bold"
      "color:inherit"))
   nil)

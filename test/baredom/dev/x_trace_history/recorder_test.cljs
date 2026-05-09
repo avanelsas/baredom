@@ -298,6 +298,37 @@
           (is (nil?    (.-oldValue ac)))
           (is (= "bar" (.-newValue ac))))))))
 
+(deftest attribute-changed-fires-before-connected-test
+  (testing "attributeChangedCallback initial-fire ordering: pre-set observed
+            attributes produce lifecycle/attribute-changed records BEFORE the
+            lifecycle/connected record"
+    (let [^js el (make-el test-tag)]
+      ;; Pre-set the observed attribute before appending. The browser fires
+      ;; attributeChangedCallback synchronously here.
+      (.setAttribute el "foo" "initial")
+      (recorder/clear!)
+      ;; Now append — this fires connectedCallback (and no further attr fires
+      ;; since "foo" is already at value "initial").
+      (.appendChild (.-body js/document) el)
+      (let [recs   (array-seq (recorder/records))
+            types  (mapv #(.-type ^js %) recs)]
+        ;; The "foo=initial" attribute change happened during the setAttribute
+        ;; before clear, so it's gone. Only the connect should remain.
+        (is (some #{"lifecycle/connected"} types))
+        ;; Now set another attribute on the connected element. The lifecycle
+        ;; hook fires synchronously DURING setAttribute, so the resulting
+        ;; lifecycle/attribute-changed record lands after "connected" only
+        ;; because "connected" was earlier in time, not because of any
+        ;; ordering quirk.
+        (recorder/clear!)
+        (.setAttribute el "foo" "second")
+        (let [r (record-at 0)]
+          (is (= "lifecycle/attribute-changed" (.-type r)))
+          (is (= "foo"      (.-attribute r)))
+          (is (= "initial"  (.-oldValue r)))
+          (is (= "second"   (.-newValue r))))
+        (.remove el)))))
+
 (deftest records-internal-attr-write-fires-both-hooks-test
   (testing "du/set-attr! produces dom/attribute-set AND lifecycle/attribute-changed"
     (with-test-el
