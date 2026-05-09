@@ -24,11 +24,10 @@
 ;; ---------------------------------------------------------------------------
 
 (defonce ^:private state
-  (atom {:records    model/empty-records
-         :next-id    0
-         :paused?    false
-         :capacity   model/default-capacity
-         :installed? false}))
+  (atom {:records  model/empty-records
+         :next-id  0
+         :paused?  false
+         :capacity model/default-capacity}))
 
 ;; ---------------------------------------------------------------------------
 ;; Hook implementation
@@ -107,15 +106,13 @@
     (gobj/set js/window window-base-key base)))
 
 (defn install!
-  "Activate recording. Idempotent: safe to call multiple times. Reads the
-   capacity flag, sets the trace hook, installs the JS API."
+  "Activate recording. Idempotent and re-entrant: safe to call multiple
+   times. Re-runs every time so hot-reloads of the recorder ns refresh the
+   hook reference to the newly-loaded `record!` symbol."
   []
-  (when-not (:installed? @state)
-    (swap! state assoc
-           :capacity   (read-capacity)
-           :installed? true)
-    (reset! du/trace-hook record!)
-    (install-window-api!))
+  (swap! state assoc :capacity (read-capacity))
+  (reset! du/trace-hook record!)
+  (install-window-api!)
   nil)
 
 (defn uninstall!
@@ -123,7 +120,6 @@
    Leaves the JS API in place so any console references remain valid."
   []
   (reset! du/trace-hook nil)
-  (swap! state assoc :installed? false)
   nil)
 
 ;; ---------------------------------------------------------------------------

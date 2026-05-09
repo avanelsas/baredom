@@ -143,9 +143,30 @@
       (recorder/uninstall!)
       (du/dispatch! el "after-uninstall" #js {})
       ;; only the pre-uninstall record should be in the buffer
+      (is (= 1 (count-records))))))
+
+;; ── hook is exception-safe ──────────────────────────────────────────────────
+
+(deftest hook-exception-isolation-test
+  (testing "a throwing hook does not break dispatch! / dispatch-cancelable! / dispatch-document!"
+    (let [el (make-el "x-button")]
+      (reset! du/trace-hook (fn [_] (throw (js/Error. "boom"))))
+      ;; All three dispatch helpers must complete normally even when the hook throws.
+      (du/dispatch! el "x" #js {})
+      (is (true? (du/dispatch-cancelable! el "y" #js {})))
+      (du/dispatch-document! "z" #js {})
+      ;; No records added (the throwing hook never wrote to state).
+      (is (= 0 (count-records))))))
+
+(deftest hook-reinstall-test
+  (testing "install! is re-entrant — repeated calls refresh the hook reference"
+    ;; Replace with a sentinel hook, then reinstall — the recorder's record! should be back.
+    (reset! du/trace-hook (fn [_] :sentinel))
+    (recorder/install!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "after-reinstall" #js {})
       (is (= 1 (count-records)))
-      ;; reinstall for the after-fixture cleanup contract
-      (recorder/install!))))
+      (is (= "after-reinstall" (.-eventName (record-at 0)))))))
 
 ;; ── window API installation ─────────────────────────────────────────────────
 

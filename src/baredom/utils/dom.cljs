@@ -63,12 +63,14 @@
          :composed   true
          :cancelable false}))
   (when-some [h @trace-hook]
-    (h {:type               :event/dispatch
-        :el                 el
-        :event-name         event-name
-        :detail             detail
-        :cancelable?        false
-        :default-prevented? false}))
+    (try
+      (h {:type               :event/dispatch
+          :el                 el
+          :event-name         event-name
+          :detail             detail
+          :cancelable?        false
+          :default-prevented? false})
+      (catch :default _ nil)))
   nil)
 
 (defn dispatch-cancelable!
@@ -83,12 +85,14 @@
         _              (.dispatchEvent el ev)
         prevented?     (.-defaultPrevented ev)]
     (when-some [h @trace-hook]
-      (h {:type               :event/dispatch-cancelable
-          :el                 el
-          :event-name         event-name
-          :detail             detail
-          :cancelable?        true
-          :default-prevented? prevented?}))
+      (try
+        (h {:type               :event/dispatch-cancelable
+            :el                 el
+            :event-name         event-name
+            :detail             detail
+            :cancelable?        true
+            :default-prevented? prevented?})
+        (catch :default _ nil)))
     (not prevented?)))
 
 (defn dispatch-document!
@@ -104,12 +108,14 @@
                          :composed   false
                          :cancelable false}))
    (when-some [h @trace-hook]
-     (h {:type               :event/dispatch-document
-         :el                 js/document
-         :event-name         event-name
-         :detail             nil
-         :cancelable?        false
-         :default-prevented? false}))
+     (try
+       (h {:type               :event/dispatch-document
+           :el                 js/document
+           :event-name         event-name
+           :detail             nil
+           :cancelable?        false
+           :default-prevented? false})
+       (catch :default _ nil)))
    nil)
   ([event-name detail]
    (.dispatchEvent js/document
@@ -120,12 +126,14 @@
                          :composed   false
                          :cancelable false}))
    (when-some [h @trace-hook]
-     (h {:type               :event/dispatch-document
-         :el                 js/document
-         :event-name         event-name
-         :detail             detail
-         :cancelable?        false
-         :default-prevented? false}))
+     (try
+       (h {:type               :event/dispatch-document
+           :el                 js/document
+           :event-name         event-name
+           :detail             detail
+           :cancelable?        false
+           :default-prevented? false})
+       (catch :default _ nil)))
    nil))
 
 ;; ---------------------------------------------------------------------------
