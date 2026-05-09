@@ -243,11 +243,120 @@
       (str m "m" (.toFixed s 1) "s"))))
 
 ;; ---------------------------------------------------------------------------
+;; Timeline — colours, lanes, time-axis math
+;; ---------------------------------------------------------------------------
+
+(def category-colors
+  "Catppuccin-ish palette mapped from category keyword to hex. Matches the
+   .cat-* classes used in the row body of earlier PRs so the visual
+   language is consistent across UI views."
+  {:events    "#94e2d5"
+   :state     "#f9e2af"
+   :dom       "#fab387"
+   :lifecycle "#cba6f7"
+   :other     "#6c7086"})
+
+(defn dot-color
+  "Fill colour for a record's timeline dot, derived from its category."
+  [^js r]
+  (get category-colors (categorize-type (.-type r)) "#6c7086"))
+
+(def document-lane
+  "Sentinel lane-id for records whose target was js/document (componentId
+   is nil on the wire). Distinct from any numeric componentId."
+  ::document)
+
+(defn lane-id-of
+  "Return the lane-id a record belongs in: its componentId, or
+   `document-lane` for document-target events."
+  [^js r]
+  (if-let [cid (.-componentId r)]
+    cid
+    document-lane))
+
+(defn lane-label
+  "Human-readable lane label: 'tag #cid' or 'document'."
+  [{:keys [lane-id tag]}]
+  (if (= document-lane lane-id)
+    "document"
+    (str tag " #" lane-id)))
+
+(defn active-lanes
+  "Build the ordered lane list from a sequence of (already-filtered)
+   records. Each lane is {:lane-id :tag :min-t}; lanes are ordered by
+   first-appearance time so older lanes stay at the top as new ones
+   emerge below them."
+  [filtered-records]
+  (->> filtered-records
+       (group-by lane-id-of)
+       (map (fn [[lane-id rs]]
+              (let [^js r0 (first rs)]
+                {:lane-id lane-id
+                 :tag     (.-tag r0)
+                 :min-t   (apply min (map (fn [^js r] (.-t r)) rs))})))
+       (sort-by :min-t)
+       vec))
+
+(defn time-bounds
+  "Return {:tmin :tmax :span} from the records' t fields, or nil for an
+   empty input. `:span` is clamped to a 1ms minimum so single-record sets
+   still produce a usable scale."
+  [records]
+  (when (seq records)
+    (let [ts (map (fn [^js r] (.-t r)) records)
+          mn (apply min ts)
+          mx (apply max ts)]
+      {:tmin mn :tmax mx :span (max 1 (- mx mn))})))
+
+(defn time-x
+  "Map a time value to an x-coordinate inside a plot of width `plot-width`,
+   given the bounds map returned by `time-bounds`. Returns 0 for nil
+   bounds (no records) and clamps t outside [tmin, tmax] into the plot."
+  [t {:keys [tmin span]} plot-width]
+  (if (or (nil? tmin) (nil? span))
+    0
+    (let [norm (-> (- t tmin) (/ span) (max 0) (min 1))]
+      (* norm plot-width))))
+
+(defn tooltip-text
+  "Multi-line text shown when hovering a timeline dot."
+  [^js r]
+  (str (.-tag r)
+       (when-let [cid (.-componentId r)] (str " #" cid))
+       "\n" (.-type r)
+       "\n" (payload-preview r)
+       "\n@ " (format-timestamp (.-t r))))
+
+(defn timeline-hint
+  "One-line description of the current plot extent for the dock hint area.
+   `cnt-filtered` is records visible after filter; `cnt-total` is full
+   buffer size."
+  [cnt-filtered cnt-total bounds lane-count]
+  (cond
+    (zero? cnt-total)
+    "No records yet — interact with components to start tracing."
+
+    (zero? cnt-filtered)
+    (str cnt-total " " (if (= 1 cnt-total) "record" "records")
+         " · all hidden by filter")
+
+    :else
+    (str cnt-filtered
+         (when (not= cnt-filtered cnt-total) (str " of " cnt-total))
+         " " (if (= 1 cnt-filtered) "record" "records")
+         " · " lane-count " " (if (= 1 lane-count) "lane" "lanes")
+         (when-let [span (:span bounds)]
+           (str " · spanning " (format-timestamp span))))))
+
+;; ---------------------------------------------------------------------------
 ;; Dock — instance-field keys (Closure-safe string keys for gobj/get|set)
 ;; ---------------------------------------------------------------------------
 
 (def k-shadow      "__xTraceHistoryShadow")
-(def k-list-el     "__xTraceHistoryListEl")
+(def k-timeline-el "__xTraceHistoryTimelineEl")
+(def k-lanes-el    "__xTraceHistoryLanesEl")
+(def k-svg-pane-el "__xTraceHistorySvgPaneEl")
+(def k-tooltip-el  "__xTraceHistoryTooltipEl")
 (def k-count-el    "__xTraceHistoryCountEl")
 (def k-pause-btn   "__xTraceHistoryPauseBtn")
 (def k-detail-el   "__xTraceHistoryDetailEl")
@@ -332,42 +441,78 @@
   cursor: pointer;
 }
 .filters input[type=checkbox] { margin: 0; cursor: pointer; }
-.list {
+.timeline {
   flex: 1 1 auto;
-  overflow-y: auto;
+  overflow: auto;
   min-height: 0;
+  position: relative;
 }
-.row {
-  display: grid;
-  grid-template-columns: 56px 80px 1fr;
-  gap: 6px;
-  align-items: baseline;
-  padding: 3px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  cursor: pointer;
+.timeline-body {
+  display: flex;
+  align-items: stretch;
+  min-height: 100%;
 }
-.row:hover { background: rgba(59,130,246,0.08); }
-.row.selected { background: rgba(59,130,246,0.18); }
-.row .t   { color: #6c7086; text-align: right; }
-.row .tag { color: #89b4fa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row .body {
+.lanes {
+  flex: 0 0 110px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  background: #11111b;
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
-.row .type    { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
-.row .preview {
-  color: #cdd6f4;
+.lane-label {
+  height: 20px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  color: #a6adc8;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cat-events    .type { color: #94e2d5; }
-.cat-state     .type { color: #f9e2af; }
-.cat-dom       .type { color: #fab387; }
-.cat-lifecycle .type { color: #cba6f7; }
-.cat-other     .type { color: #6c7086; }
+.lane-label .cid { color: #6c7086; margin-left: 4px; }
+.svg-pane {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+}
+svg.timeline-svg {
+  display: block;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 19px,
+      rgba(255,255,255,0.03) 19px,
+      rgba(255,255,255,0.03) 20px);
+}
+.dot { cursor: pointer; transition: r 80ms ease; }
+.dot:hover { stroke: #fff; stroke-width: 1; }
+.tooltip {
+  position: absolute;
+  background: #1e1e2e;
+  border: 1px solid rgba(59,130,246,0.6);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  white-space: pre-wrap;
+  pointer-events: none;
+  max-width: 280px;
+  color: #cdd6f4;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.timeline-empty {
+  color: #6c7086;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+}
 .splitter {
   flex: 0 0 auto;
   height: 4px;

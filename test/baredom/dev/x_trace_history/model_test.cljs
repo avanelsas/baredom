@@ -445,3 +445,146 @@
     (is (= "" (model/format-timestamp nil)))
     (is (= "" (model/format-timestamp "12")))
     (is (= "" (model/format-timestamp js/undefined)))))
+
+;; ── timeline: dot-color / lane-id-of / lane-label ───────────────────────────
+
+(defn- mk-rec-with
+  "Build a JS record with the given core fields. componentId may be nil."
+  [{:keys [id type tag t component-id]
+    :or   {id 0 type "event/dispatch" tag "x-button" t 100 component-id 1}}]
+  (js-obj "id" id "type" type "tag" tag "t" t "componentId" component-id))
+
+(deftest dot-color-by-category-test
+  (is (= "#94e2d5" (model/dot-color (mk-rec-with {:type "event/dispatch"}))))
+  (is (= "#f9e2af" (model/dot-color (mk-rec-with {:type "state/instance-field-set"}))))
+  (is (= "#fab387" (model/dot-color (mk-rec-with {:type "dom/attribute-set"}))))
+  (is (= "#cba6f7" (model/dot-color (mk-rec-with {:type "lifecycle/connected"}))))
+  (is (= "#6c7086" (model/dot-color (mk-rec-with {:type "totally/made-up"})))))
+
+(deftest lane-id-of-uses-component-id-test
+  (is (= 7 (model/lane-id-of (mk-rec-with {:component-id 7})))))
+
+(deftest lane-id-of-document-sentinel-test
+  (testing "records without a componentId fall into the document lane"
+    (is (= model/document-lane
+           (model/lane-id-of (mk-rec-with {:component-id nil}))))))
+
+(deftest lane-label-component-test
+  (is (= "x-button #3" (model/lane-label {:lane-id 3 :tag "x-button"}))))
+
+(deftest lane-label-document-test
+  (is (= "document"
+         (model/lane-label {:lane-id model/document-lane :tag "document"}))))
+
+;; ── time-bounds ─────────────────────────────────────────────────────────────
+
+(deftest time-bounds-empty-test
+  (is (nil? (model/time-bounds []))))
+
+(deftest time-bounds-single-record-test
+  (testing "single record produces a span clamped to 1 (avoids divide-by-zero)"
+    (let [b (model/time-bounds [(mk-rec-with {:t 500})])]
+      (is (= 500 (:tmin b)))
+      (is (= 500 (:tmax b)))
+      (is (= 1   (:span b))))))
+
+(deftest time-bounds-many-records-test
+  (let [b (model/time-bounds [(mk-rec-with {:t 100})
+                              (mk-rec-with {:t 250})
+                              (mk-rec-with {:t 175})])]
+    (is (= 100 (:tmin b)))
+    (is (= 250 (:tmax b)))
+    (is (= 150 (:span b)))))
+
+;; ── time-x ──────────────────────────────────────────────────────────────────
+
+(deftest time-x-at-tmin-is-zero-test
+  (is (zero? (model/time-x 100 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-x-at-tmax-is-full-width-test
+  (is (= 500 (model/time-x 200 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-x-midpoint-test
+  (is (= 250 (model/time-x 150 {:tmin 100 :tmax 200 :span 100} 500))))
+
+(deftest time-x-clamps-out-of-range-test
+  (testing "values outside [tmin, tmax] clamp to the plot edges"
+    (let [bounds {:tmin 100 :tmax 200 :span 100}]
+      (is (zero? (model/time-x 50  bounds 500)))   ; before
+      (is (= 500 (model/time-x 999 bounds 500))))))  ; after
+
+(deftest time-x-nil-bounds-test
+  (testing "nil bounds yields x=0 instead of throwing"
+    (is (zero? (model/time-x 100 {:tmin nil :tmax nil :span nil} 500)))))
+
+;; ── active-lanes ────────────────────────────────────────────────────────────
+
+(deftest active-lanes-empty-test
+  (is (= [] (model/active-lanes []))))
+
+(deftest active-lanes-distinct-by-component-id-test
+  (let [r1 (mk-rec-with {:id 0 :tag "x-button" :component-id 1 :t 100})
+        r2 (mk-rec-with {:id 1 :tag "x-modal"  :component-id 2 :t 200})
+        r3 (mk-rec-with {:id 2 :tag "x-button" :component-id 1 :t 300})
+        ls (model/active-lanes [r1 r2 r3])]
+    (is (= 2 (count ls)))
+    (is (= [1 2] (mapv :lane-id ls)))))
+
+(deftest active-lanes-document-lane-test
+  (testing "records with nil componentId form a single document lane"
+    (let [r1 (mk-rec-with {:id 0 :component-id nil :t 50})
+          r2 (mk-rec-with {:id 1 :component-id nil :t 75})
+          ls (model/active-lanes [r1 r2])]
+      (is (= 1 (count ls)))
+      (is (= model/document-lane (-> ls first :lane-id))))))
+
+(deftest active-lanes-ordered-by-first-seen-test
+  (testing "lanes order by oldest record (so older lanes stay at the top
+            as new components register lanes below them)"
+    (let [r1 (mk-rec-with {:id 0 :component-id 2 :t 100})
+          r2 (mk-rec-with {:id 1 :component-id 1 :t 50})
+          r3 (mk-rec-with {:id 2 :component-id 3 :t 200})
+          ls (model/active-lanes [r1 r2 r3])]
+      (is (= [1 2 3] (mapv :lane-id ls))))))
+
+;; ── tooltip-text / timeline-hint ────────────────────────────────────────────
+
+(deftest tooltip-text-includes-tag-and-cid-test
+  (let [t (model/tooltip-text
+           (model/make-record
+            {:type :event/dispatch :tag "x-button" :component-id 4
+             :event-name "x-button:click" :detail nil
+             :cancelable? false :default-prevented? false}
+            0 1234.5))]
+    (is (clojure.string/includes? t "x-button"))
+    (is (clojure.string/includes? t "#4"))
+    (is (clojure.string/includes? t "x-button:click"))
+    (is (clojure.string/includes? t "@ "))))
+
+(deftest tooltip-text-document-no-cid-test
+  (let [t (model/tooltip-text
+           (model/make-record
+            {:type :event/dispatch-document :tag "document" :component-id nil
+             :event-name "x-table-row:disconnected" :detail nil
+             :cancelable? false :default-prevented? false}
+            0 100))]
+    (is (clojure.string/includes? t "document"))
+    (is (not (clojure.string/includes? t "#")))))
+
+(deftest timeline-hint-empty-buffer-test
+  (is (clojure.string/includes? (model/timeline-hint 0 0 nil 0)
+                                "No records yet")))
+
+(deftest timeline-hint-all-filtered-out-test
+  (is (clojure.string/includes? (model/timeline-hint 0 5 nil 0)
+                                "all hidden by filter")))
+
+(deftest timeline-hint-with-records-test
+  (let [s (model/timeline-hint 3 3 {:tmin 0 :tmax 1000 :span 1000} 2)]
+    (is (clojure.string/includes? s "3 records"))
+    (is (clojure.string/includes? s "2 lanes"))
+    (is (clojure.string/includes? s "spanning"))))
+
+(deftest timeline-hint-partial-filter-test
+  (let [s (model/timeline-hint 1 5 {:span 500} 1)]
+    (is (clojure.string/includes? s "1 of 5"))))

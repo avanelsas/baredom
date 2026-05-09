@@ -4,8 +4,9 @@
    When activated (?baredom-trace-history or window.BAREDOM_TRACE_HISTORY),
    register! installs the recorder hooks (via recorder/register!), defines a
    `<x-trace-history>` custom element, and auto-mounts one to <body>. The
-   dock subscribes to recorder updates and renders a flat list of records
-   (newest first) with click-to-expand JSON detail and tag/category filters."
+   dock subscribes to recorder updates and renders an SVG timeline: one
+   lane per component instance (Y), event time on X, dots coloured by
+   category. Hover for tooltip, click to open the JSON detail pane."
   (:require
    [goog.object :as gobj]
    [baredom.dev.x-debug-registry :as registry]
@@ -16,7 +17,10 @@
 ;; Constants
 ;; ---------------------------------------------------------------------------
 
-(def ^:private max-rows 200)
+(def ^:private lane-h     20)   ; px per timeline lane
+(def ^:private dot-r       3)   ; default dot radius
+(def ^:private dot-r-sel  4.8)  ; dot radius when selected
+(def ^:private svg-min-w 200)   ; floor for plot width when pane has no size yet
 
 ;; ---------------------------------------------------------------------------
 ;; HTML escaping
@@ -47,7 +51,8 @@
        (apply str)))
 
 (defn- skeleton-html
-  "Static dock skeleton. The list is populated dynamically by render!."
+  "Static dock skeleton. The timeline body is populated dynamically by
+   render!; the tooltip starts hidden and is shown on dot hover."
   []
   (str "<div class='dock'>"
        "<div class='header'>"
@@ -66,36 +71,19 @@
        "<label><input type='checkbox' data-x-th-cat='dom' checked> dom</label>"
        "<label><input type='checkbox' data-x-th-cat='lifecycle' checked> lifecycle</label>"
        "</div>"
-       "<div class='list' data-x-th-list></div>"
+       "<div class='timeline' data-x-th-timeline>"
+       "<div class='lanes' data-x-th-lanes></div>"
+       "<div class='svg-pane' data-x-th-svg-pane></div>"
+       "<div class='tooltip' data-x-th-tooltip hidden></div>"
+       "</div>"
        "<div class='splitter' data-x-th-splitter hidden></div>"
        "<div class='detail' data-x-th-detail hidden></div>"
        "<div class='hint' data-x-th-hint></div>"
        "</div>"))
 
 ;; ---------------------------------------------------------------------------
-;; Row + list rendering
+;; Timeline rendering
 ;; ---------------------------------------------------------------------------
-
-(defn- row-html
-  [^js r selected-id]
-  (let [type-str  (.-type r)
-        cat       (model/categorize-type type-str)
-        cat-class (str "cat-" (name cat))
-        sel-class (if (= (.-id r) selected-id) " selected" "")]
-    (str "<div class='row " cat-class sel-class "' data-x-th-id='" (.-id r) "'>"
-         "<div class='t'>"   (escape-html (model/format-timestamp (.-t r))) "</div>"
-         "<div class='tag'>" (escape-html (.-tag r)) "</div>"
-         "<div class='body'>"
-         "<div class='type'>"    (escape-html type-str)                  "</div>"
-         "<div class='preview'>" (escape-html (model/payload-preview r)) "</div>"
-         "</div>"
-         "</div>")))
-
-(defn- rows-html
-  [rows selected-id]
-  (if (empty? rows)
-    "<div class='empty'>No records yet — interact with components to start tracing.</div>"
-    (apply str (map #(row-html % selected-id) rows))))
 
 (defn- find-record-by-id
   "Return the record with id `id`, or nil if not found / id non-numeric.
@@ -104,8 +92,68 @@
   (when (number? id)
     (.find records (fn [^js r] (= id (.-id r))))))
 
+(defn- lane-label-html
+  [{:keys [lane-id tag] :as lane}]
+  (let [text (model/lane-label lane)]
+    (str "<div class='lane-label' title='" (escape-html text) "'>"
+         (escape-html (if (= model/document-lane lane-id) "document" tag))
+         (when (not= model/document-lane lane-id)
+           (str " <span class='cid'>#" lane-id "</span>"))
+         "</div>")))
+
+(defn- lanes-html
+  [lanes]
+  (apply str (map lane-label-html lanes)))
+
+(defn- dot-html
+  [^js r lane-y bounds plot-width selected-id]
+  (let [cx   (model/time-x (.-t r) bounds plot-width)
+        cy   (+ lane-y (/ lane-h 2))
+        sel? (= (.-id r) selected-id)
+        rad  (if sel? dot-r-sel dot-r)]
+    (str "<circle class='dot' "
+         "data-x-th-id='" (.-id r) "' "
+         "cx='" cx "' cy='" cy "' r='" rad "' "
+         "fill='" (model/dot-color r) "'"
+         (when sel? " stroke='#fff' stroke-width='1.5'")
+         " />")))
+
+(defn- svg-html
+  "Build the timeline SVG markup. Records are positioned by lane (Y) and
+   time (X); selected dot is drawn last so its highlight stroke wins."
+  [filtered-records lanes bounds plot-width selected-id]
+  (let [lane-y  (into {} (map-indexed
+                          (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
+                          lanes))
+        h       (max lane-h (* lane-h (count lanes)))
+        ;; Selected dot last so its highlight stroke wins z-order.
+        ordered (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
+                         filtered-records)]
+    (str "<svg class='timeline-svg' width='" plot-width "' height='" h
+         "' viewBox='0 0 " plot-width " " h "'>"
+         (apply str
+                (map (fn [^js r]
+                       (dot-html r (get lane-y (model/lane-id-of r))
+                                 bounds plot-width selected-id))
+                     ordered))
+         "</svg>")))
+
+(defn- render-timeline!
+  "Repaint the lane-label column + SVG canvas. Caller passes the current
+   filtered records, bounds, etc. (so render! computes them once)."
+  [^js lanes-el ^js svg-pane-el filtered lanes bounds selected-id]
+  (if (zero? (count filtered))
+    (do
+      (set! (.-innerHTML lanes-el) "")
+      (set! (.-innerHTML svg-pane-el)
+            "<div class='timeline-empty'>No records match the current filter.</div>"))
+    (let [plot-w (max svg-min-w (.-clientWidth svg-pane-el))]
+      (set! (.-innerHTML lanes-el)    (lanes-html lanes))
+      (set! (.-innerHTML svg-pane-el) (svg-html filtered lanes bounds
+                                                plot-w selected-id)))))
+
 ;; ---------------------------------------------------------------------------
-;; Pause button + detail pane + hint updates
+;; Pause button + detail pane updates
 ;; ---------------------------------------------------------------------------
 
 (defn- refresh-pause-btn!
@@ -127,19 +175,11 @@
       (.setAttribute detail-el   "hidden" "")
       (.setAttribute splitter-el "hidden" ""))))
 
-(defn- format-hint-text
-  [cnt]
-  (cond
-    (> cnt max-rows) (str "Showing " max-rows " of " cnt)
-    (= cnt 1)        "1 record"
-    :else            (str cnt " records")))
-
 (defn- effective-selection!
   "Return the currently-selected record IFF it still passes the active
-   filter; otherwise clear the dock's selected-id and return nil. Reading
-   the selection through this helper is what keeps the detail pane in sync
-   with filter changes — selecting a row, then filtering it out, drops the
-   detail rather than leaving an orphan record visible."
+   filter; otherwise clear the dock's selected-id and return nil. Keeps
+   the detail pane in sync with filter changes — selecting a dot, then
+   filtering it out, drops the detail rather than leaving an orphan."
   [^js el ^js recs spec]
   (let [sel-id (gobj/get el model/k-selected-id)
         rec    (find-record-by-id recs sel-id)]
@@ -158,10 +198,11 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- render!
-  "Repaint the list, count, hint, detail pane, and pause-button state from
+  "Repaint timeline, count, hint, detail pane, and pause-button state from
    current recorder + filter + selection state."
   [^js el]
-  (let [^js list-el     (gobj/get el model/k-list-el)
+  (let [^js lanes-el    (gobj/get el model/k-lanes-el)
+        ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
         ^js count-el    (gobj/get el model/k-count-el)
         ^js detail-el   (gobj/get el model/k-detail-el)
         ^js splitter-el (gobj/get el model/k-splitter-el)
@@ -170,26 +211,36 @@
         spec            (gobj/get el model/k-filter)
         ^js recs        (recorder/records)
         filtered        (model/filter-records recs spec)
-        cnt             (count filtered)
-        start           (max 0 (- cnt max-rows))
-        visible         (vec (rseq (subvec filtered start cnt)))
+        cnt-filtered    (count filtered)
+        cnt-total       (.-length recs)
+        bounds          (model/time-bounds filtered)
+        lanes           (model/active-lanes filtered)
         sel-rec         (effective-selection! el recs spec)
         sel-id          (when sel-rec (.-id sel-rec))]
-    (set! (.-innerHTML list-el) (rows-html visible sel-id))
-    (set! (.-textContent count-el) (str cnt))
-    (set! (.-textContent hint-el) (format-hint-text cnt))
+    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-id)
+    (set! (.-textContent count-el) (str cnt-filtered))
+    (set! (.-textContent hint-el)
+          (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
     (refresh-detail! detail-el splitter-el sel-rec)
     (refresh-pause-btn! pause-btn)))
 
 ;; ---------------------------------------------------------------------------
-;; Event handlers
+;; Click + tooltip + filter handlers
 ;; ---------------------------------------------------------------------------
 
-(defn- on-row-click!
+(defn- circle-target?
+  [^js target]
+  (and target (= "circle" (.. target -tagName toLowerCase))))
+
+(defn- read-dot-id
+  [^js circle]
+  (when-let [s (.getAttribute circle "data-x-th-id")]
+    (js/parseInt s 10)))
+
+(defn- on-dot-click!
   [^js el ^js target]
-  (when-let [^js row (.closest target ".row")]
-    (let [id-str (.getAttribute row "data-x-th-id")
-          id     (when id-str (js/parseInt id-str 10))
+  (when (circle-target? target)
+    (let [id     (read-dot-id target)
           curr   (gobj/get el model/k-selected-id)
           new-id (if (= id curr) nil id)]
       (gobj/set el model/k-selected-id new-id)
@@ -207,7 +258,7 @@
   [^js el ^js e]
   (let [^js target (.-target e)]
     (on-action-click! el target)
-    (on-row-click!    el target)))
+    (on-dot-click!    el target)))
 
 (defn- handle-tag-change!
   [^js el ^js target]
@@ -237,6 +288,44 @@
 
       (some? (.getAttribute target "data-x-th-cat"))
       (handle-cat-change! el target))))
+
+(defn- show-tooltip!
+  [^js tooltip-el ^js timeline-el ^js circle ^js e ^js record]
+  (set! (.-textContent tooltip-el) (model/tooltip-text record))
+  (.removeAttribute tooltip-el "hidden")
+  (let [tl-rect (.getBoundingClientRect timeline-el)
+        x       (- (.-clientX e) (.-left tl-rect))
+        y       (- (.-clientY e) (.-top  tl-rect))
+        scroll-top  (.-scrollTop  timeline-el)
+        scroll-left (.-scrollLeft timeline-el)]
+    ;; Add scroll offsets so the tooltip stays anchored to the dot when
+    ;; the timeline is scrolled. Position offsets keep the cursor uncovered.
+    (set! (.. tooltip-el -style -left) (str (+ x scroll-left 12) "px"))
+    (set! (.. tooltip-el -style -top)  (str (+ y scroll-top 12)  "px"))
+    ;; circle is referenced so the linter doesn't complain; future PRs may
+    ;; pin tooltip to the dot's SVG coords rather than the cursor.
+    (when circle nil)))
+
+(defn- hide-tooltip!
+  [^js tooltip-el]
+  (.setAttribute tooltip-el "hidden" ""))
+
+(defn- handle-pointermove!
+  [^js el ^js e]
+  (let [^js target (.-target e)]
+    (if (circle-target? target)
+      (let [^js tooltip  (gobj/get el model/k-tooltip-el)
+            ^js timeline (gobj/get el model/k-timeline-el)
+            id           (read-dot-id target)
+            ^js recs     (recorder/records)
+            r            (find-record-by-id recs id)]
+        (when r
+          (show-tooltip! tooltip timeline target e r)))
+      (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))))
+
+(defn- handle-pointerleave!
+  [^js el _e]
+  (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Splitter — drag the divider above the detail pane to resize it
@@ -284,31 +373,45 @@
         (.appendChild shadow (.-firstChild wrap))))
     shadow))
 
+(defn- cache-refs!
+  "Resolve and cache every shadow-DOM ref the dock reads in the hot path
+   so render! doesn't repeat querySelector calls."
+  [^js el ^js shadow]
+  (gobj/set el model/k-shadow      shadow)
+  (gobj/set el model/k-timeline-el (.querySelector shadow "[data-x-th-timeline]"))
+  (gobj/set el model/k-lanes-el    (.querySelector shadow "[data-x-th-lanes]"))
+  (gobj/set el model/k-svg-pane-el (.querySelector shadow "[data-x-th-svg-pane]"))
+  (gobj/set el model/k-tooltip-el  (.querySelector shadow "[data-x-th-tooltip]"))
+  (gobj/set el model/k-count-el    (.querySelector shadow "[data-x-th-count]"))
+  (gobj/set el model/k-detail-el   (.querySelector shadow "[data-x-th-detail]"))
+  (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
+  (gobj/set el model/k-hint-el     (.querySelector shadow "[data-x-th-hint]"))
+  (gobj/set el model/k-pause-btn   (.querySelector shadow "[data-x-th-action='pause']")))
+
+(defn- bind-listeners!
+  [^js el ^js shadow]
+  (let [^js dock        (.querySelector shadow ".dock")
+        ^js timeline-el (gobj/get el model/k-timeline-el)
+        ^js splitter-el (gobj/get el model/k-splitter-el)
+        ^js detail-el   (gobj/get el model/k-detail-el)]
+    (.addEventListener dock "click"  (fn [^js e] (handle-click!  el e)))
+    (.addEventListener dock "change" (fn [^js e] (handle-change! el e)))
+    (.addEventListener timeline-el "pointermove"
+                       (fn [^js e] (handle-pointermove! el e)))
+    (.addEventListener timeline-el "pointerleave"
+                       (fn [^js e] (handle-pointerleave! el e)))
+    (.addEventListener splitter-el "pointerdown"
+                       (fn [^js e] (start-resize! detail-el splitter-el e)))))
+
 (defn- mount!
   [^js el]
   (when-not (gobj/get el model/k-mounted)
-    (let [^js shadow      (attach-skeleton! el)
-          ^js list-el     (.querySelector shadow "[data-x-th-list]")
-          ^js count-el    (.querySelector shadow "[data-x-th-count]")
-          ^js detail-el   (.querySelector shadow "[data-x-th-detail]")
-          ^js splitter-el (.querySelector shadow "[data-x-th-splitter]")
-          ^js hint-el     (.querySelector shadow "[data-x-th-hint]")
-          ^js pause-btn   (.querySelector shadow "[data-x-th-action='pause']")
-          ^js dock        (.querySelector shadow ".dock")]
-      (gobj/set el model/k-shadow shadow)
-      (gobj/set el model/k-list-el list-el)
-      (gobj/set el model/k-count-el count-el)
-      (gobj/set el model/k-detail-el detail-el)
-      (gobj/set el model/k-splitter-el splitter-el)
-      (gobj/set el model/k-hint-el hint-el)
-      (gobj/set el model/k-pause-btn pause-btn)
+    (let [^js shadow (attach-skeleton! el)]
+      (cache-refs! el shadow)
       (gobj/set el model/k-filter
                 {:tag nil :categories (set model/all-categories)})
       (gobj/set el model/k-selected-id nil)
-      (.addEventListener dock "click"  (fn [^js e] (handle-click!  el e)))
-      (.addEventListener dock "change" (fn [^js e] (handle-change! el e)))
-      (.addEventListener splitter-el "pointerdown"
-                         (fn [^js e] (start-resize! detail-el splitter-el e)))
+      (bind-listeners! el shadow)
       (let [tok (recorder/subscribe! (fn [] (render! el)))]
         (gobj/set el model/k-sub-token tok))
       (render! el)
