@@ -305,6 +305,42 @@
                 (is (= 1 (lane-count dock)))
                 (done)))))))))
 
+(deftest click-lane-label-toggles-tag-filter-test
+  (testing "clicking a lane label sets the tag filter to that lane's tag,
+            updates the dropdown, and adds the .active class. Clicking
+            the same lane again clears the filter."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js mod  (.createElement js/document "x-modal")]
+        (du/dispatch! btn "click" #js {})
+        (du/dispatch! mod "open"  #js {})
+        (after-frames 2
+          (fn []
+            (is (= 2 (lane-count dock)))
+            (let [labels    (array-seq (query-all dock ".lane-label"))
+                  btn-label (some (fn [^js l]
+                                    (when (= "x-button"
+                                             (.getAttribute l "data-x-th-lane-tag"))
+                                      l))
+                                  labels)]
+              (.click ^js btn-label))
+            (after-frames 1
+              (fn []
+                (is (= 1 (lane-count dock)))
+                (let [^js sel (query dock "[data-x-th-tag]")]
+                  (is (= "x-button" (.-value sel))))
+                (is (some? (query dock ".lane-label.active")))
+                ;; Click the (now sole) active lane again → toggle off.
+                (.click ^js (query dock ".lane-label.active"))
+                (after-frames 1
+                  (fn []
+                    (is (= 2 (lane-count dock)))
+                    (let [^js sel (query dock "[data-x-th-tag]")]
+                      (is (= "all" (.-value sel))))
+                    (is (nil? (query dock ".lane-label.active")))
+                    (done)))))))))))
+
 (deftest category-filter-narrows-dots-test
   (testing "unchecking a category checkbox hides records of that category"
     (async done

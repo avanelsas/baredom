@@ -93,17 +93,23 @@
     (.find records (fn [^js r] (= id (.-id r))))))
 
 (defn- lane-label-html
-  [{:keys [lane-id tag] :as lane}]
-  (let [text (model/lane-label lane)]
-    (str "<div class='lane-label' title='" (escape-html text) "'>"
+  [{:keys [lane-id tag] :as lane} active-tag]
+  (let [text     (model/lane-label lane)
+        ;; The tag attribute we filter on. Document-lane records carry
+        ;; tag="document" on the wire, so this matches.
+        tag-attr (if (= model/document-lane lane-id) "document" tag)
+        active?  (= active-tag tag-attr)]
+    (str "<div class='lane-label" (when active? " active") "' "
+         "data-x-th-lane-tag='" (escape-html tag-attr) "' "
+         "title='" (escape-html text) "'>"
          (escape-html (if (= model/document-lane lane-id) "document" tag))
          (when (not= model/document-lane lane-id)
            (str " <span class='cid'>#" lane-id "</span>"))
          "</div>")))
 
 (defn- lanes-html
-  [lanes]
-  (apply str (map lane-label-html lanes)))
+  [lanes active-tag]
+  (apply str (map #(lane-label-html % active-tag) lanes)))
 
 (defn- dot-html
   [^js r lane-y bounds plot-width selected-id]
@@ -141,14 +147,14 @@
 (defn- render-timeline!
   "Repaint the lane-label column + SVG canvas. Caller passes the current
    filtered records, bounds, etc. (so render! computes them once)."
-  [^js lanes-el ^js svg-pane-el filtered lanes bounds selected-id]
+  [^js lanes-el ^js svg-pane-el filtered lanes bounds selected-id active-tag]
   (if (zero? (count filtered))
     (do
       (set! (.-innerHTML lanes-el) "")
       (set! (.-innerHTML svg-pane-el)
             "<div class='timeline-empty'>No records match the current filter.</div>"))
     (let [plot-w (max svg-min-w (.-clientWidth svg-pane-el))]
-      (set! (.-innerHTML lanes-el)    (lanes-html lanes))
+      (set! (.-innerHTML lanes-el)    (lanes-html lanes active-tag))
       (set! (.-innerHTML svg-pane-el) (svg-html filtered lanes bounds
                                                 plot-w selected-id)))))
 
@@ -217,7 +223,7 @@
         lanes           (model/active-lanes filtered)
         sel-rec         (effective-selection! el recs spec)
         sel-id          (when sel-rec (.-id sel-rec))]
-    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-id)
+    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-id (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
@@ -254,11 +260,28 @@
       "clear" (do (gobj/set el model/k-selected-id nil) (recorder/clear!))
       nil)))
 
+(defn- on-lane-label-click!
+  "Toggle the tag filter for the clicked lane. Clicking the same lane label
+   again clears the filter (back to All tags). The tag-select dropdown is
+   kept in sync so its visible value matches the active filter."
+  [^js el ^js target]
+  (when-let [^js label (.closest target "[data-x-th-lane-tag]")]
+    (let [lane-tag (.getAttribute label "data-x-th-lane-tag")
+          spec     (gobj/get el model/k-filter)
+          curr-tag (:tag spec)
+          new-tag  (when-not (= lane-tag curr-tag) lane-tag)
+          new-spec (assoc spec :tag new-tag)]
+      (gobj/set el model/k-filter new-spec)
+      (when-let [^js sel (gobj/get el model/k-tag-select-el)]
+        (set! (.-value sel) (or new-tag "all")))
+      (render! el))))
+
 (defn- handle-click!
   [^js el ^js e]
   (let [^js target (.-target e)]
-    (on-action-click! el target)
-    (on-dot-click!    el target)))
+    (on-action-click!     el target)
+    (on-lane-label-click! el target)
+    (on-dot-click!        el target)))
 
 (defn- handle-tag-change!
   [^js el ^js target]
@@ -395,8 +418,9 @@
   (gobj/set el model/k-count-el    (.querySelector shadow "[data-x-th-count]"))
   (gobj/set el model/k-detail-el   (.querySelector shadow "[data-x-th-detail]"))
   (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
-  (gobj/set el model/k-hint-el     (.querySelector shadow "[data-x-th-hint]"))
-  (gobj/set el model/k-pause-btn   (.querySelector shadow "[data-x-th-action='pause']")))
+  (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
+  (gobj/set el model/k-tag-select-el (.querySelector shadow "[data-x-th-tag]"))
+  (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']")))
 
 (defn- bind-listeners!
   [^js el ^js shadow]

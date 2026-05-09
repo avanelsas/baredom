@@ -352,20 +352,21 @@
 ;; Dock — instance-field keys (Closure-safe string keys for gobj/get|set)
 ;; ---------------------------------------------------------------------------
 
-(def k-shadow      "__xTraceHistoryShadow")
-(def k-timeline-el "__xTraceHistoryTimelineEl")
-(def k-lanes-el    "__xTraceHistoryLanesEl")
-(def k-svg-pane-el "__xTraceHistorySvgPaneEl")
-(def k-tooltip-el  "__xTraceHistoryTooltipEl")
-(def k-count-el    "__xTraceHistoryCountEl")
-(def k-pause-btn   "__xTraceHistoryPauseBtn")
-(def k-detail-el   "__xTraceHistoryDetailEl")
-(def k-splitter-el "__xTraceHistorySplitterEl")
-(def k-hint-el     "__xTraceHistoryHintEl")
-(def k-filter      "__xTraceHistoryFilter")
-(def k-selected-id "__xTraceHistorySelectedId")
-(def k-sub-token   "__xTraceHistorySubToken")
-(def k-mounted     "__xTraceHistoryMounted")
+(def k-shadow        "__xTraceHistoryShadow")
+(def k-timeline-el   "__xTraceHistoryTimelineEl")
+(def k-lanes-el      "__xTraceHistoryLanesEl")
+(def k-svg-pane-el   "__xTraceHistorySvgPaneEl")
+(def k-tooltip-el    "__xTraceHistoryTooltipEl")
+(def k-count-el      "__xTraceHistoryCountEl")
+(def k-pause-btn     "__xTraceHistoryPauseBtn")
+(def k-detail-el     "__xTraceHistoryDetailEl")
+(def k-splitter-el   "__xTraceHistorySplitterEl")
+(def k-hint-el       "__xTraceHistoryHintEl")
+(def k-tag-select-el "__xTraceHistoryTagSelectEl")
+(def k-filter        "__xTraceHistoryFilter")
+(def k-selected-id   "__xTraceHistorySelectedId")
+(def k-sub-token     "__xTraceHistorySubToken")
+(def k-mounted       "__xTraceHistoryMounted")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS
@@ -467,12 +468,20 @@
   padding: 0 8px;
   display: flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 11px;
   color: #a6adc8;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
+}
+.lane-label:hover { background: rgba(59,130,246,0.08); color: #cdd6f4; }
+.lane-label.active {
+  background: rgba(59,130,246,0.18);
+  color: #89b4fa;
+  font-weight: 600;
 }
 .lane-label .cid { color: #6c7086; margin-left: 4px; }
 .svg-pane {
