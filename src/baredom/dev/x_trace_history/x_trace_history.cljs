@@ -289,22 +289,32 @@
       (some? (.getAttribute target "data-x-th-cat"))
       (handle-cat-change! el target))))
 
+(def ^:private tooltip-cursor-offset 12)
+(def ^:private tooltip-max-width    280)  ; mirrors CSS max-width
+
 (defn- show-tooltip!
-  [^js tooltip-el ^js timeline-el ^js circle ^js e ^js record]
+  "Place the tooltip near the cursor inside the timeline pane. Anchored to
+   the right of the cursor by default; flips to the left when staying right
+   would push the tooltip past the timeline's right edge. Uses the CSS
+   max-width as the worst-case tooltip width to avoid a measure pass."
+  [^js tooltip-el ^js timeline-el ^js e ^js record]
   (set! (.-textContent tooltip-el) (model/tooltip-text record))
   (.removeAttribute tooltip-el "hidden")
-  (let [tl-rect (.getBoundingClientRect timeline-el)
-        x       (- (.-clientX e) (.-left tl-rect))
-        y       (- (.-clientY e) (.-top  tl-rect))
+  (let [tl-rect     (.getBoundingClientRect timeline-el)
+        cursor-x    (- (.-clientX e) (.-left tl-rect))
+        cursor-y    (- (.-clientY e) (.-top  tl-rect))
         scroll-top  (.-scrollTop  timeline-el)
-        scroll-left (.-scrollLeft timeline-el)]
-    ;; Add scroll offsets so the tooltip stays anchored to the dot when
-    ;; the timeline is scrolled. Position offsets keep the cursor uncovered.
-    (set! (.. tooltip-el -style -left) (str (+ x scroll-left 12) "px"))
-    (set! (.. tooltip-el -style -top)  (str (+ y scroll-top 12)  "px"))
-    ;; circle is referenced so the linter doesn't complain; future PRs may
-    ;; pin tooltip to the dot's SVG coords rather than the cursor.
-    (when circle nil)))
+        scroll-left (.-scrollLeft timeline-el)
+        tl-width    (.-clientWidth timeline-el)
+        flip?       (> (+ cursor-x tooltip-cursor-offset tooltip-max-width)
+                       tl-width)
+        left-px     (max 0 (if flip?
+                             (- cursor-x tooltip-cursor-offset tooltip-max-width)
+                             (+ cursor-x tooltip-cursor-offset)))]
+    (set! (.. tooltip-el -style -left)
+          (str (+ left-px scroll-left) "px"))
+    (set! (.. tooltip-el -style -top)
+          (str (+ cursor-y scroll-top tooltip-cursor-offset) "px"))))
 
 (defn- hide-tooltip!
   [^js tooltip-el]
@@ -320,7 +330,7 @@
             ^js recs     (recorder/records)
             r            (find-record-by-id recs id)]
         (when r
-          (show-tooltip! tooltip timeline target e r)))
+          (show-tooltip! tooltip timeline e r)))
       (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))))
 
 (defn- handle-pointerleave!
