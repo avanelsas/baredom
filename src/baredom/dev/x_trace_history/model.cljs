@@ -375,8 +375,10 @@
   white-space: pre-wrap;
   word-break: break-all;
   color: #a6e3a1;
-  max-height: 40%;
+  min-height: 140px;
+  max-height: 60%;
   overflow-y: auto;
+  resize: vertical;
 }
 .empty {
   color: #6c7086;
