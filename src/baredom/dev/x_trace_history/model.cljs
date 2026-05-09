@@ -228,15 +228,15 @@
 
 (defn format-timestamp
   "Format a performance.now() timestamp (ms since page load) as a compact
-   relative string. <1s → 'Nms'; <1min → 'N.NNNs'; otherwise 'MmS.Ss'."
+   relative string. <1s → 'Nms'; <1min → 'N.NNNs'; otherwise 'MmS.Ss'.
+   Non-numeric input (nil / string / undefined) → empty string. The guard
+   matters because PR 11 will accept imported records whose `t` field is
+   external data; without it `.toFixed` throws on nil."
   [t]
   (cond
-    (< t 1000)
-    (str (.toFixed t 0) "ms")
-
-    (< t 60000)
-    (str (.toFixed (/ t 1000) 3) "s")
-
+    (not (number? t)) ""
+    (< t 1000)        (str (.toFixed t 0) "ms")
+    (< t 60000)       (str (.toFixed (/ t 1000) 3) "s")
     :else
     (let [m (js/Math.floor (/ t 60000))
           s (/ (mod t 60000) 1000)]

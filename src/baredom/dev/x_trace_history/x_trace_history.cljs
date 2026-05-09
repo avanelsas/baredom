@@ -97,16 +97,11 @@
     (apply str (map #(row-html % selected-id) rows))))
 
 (defn- find-record-by-id
-  "Linear scan for the record with the given id. nil if not found."
+  "Return the record with id `id`, or nil if not found / id non-numeric.
+   Delegates to Array.prototype.find for short-circuiting linear search."
   [^js records id]
   (when (number? id)
-    (let [n (.-length records)]
-      (loop [i 0]
-        (when (< i n)
-          (let [^js r (aget records i)]
-            (if (= (.-id r) id)
-              r
-              (recur (inc i)))))))))
+    (.find records (fn [^js r] (= id (.-id r))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Pause button + detail pane + hint updates

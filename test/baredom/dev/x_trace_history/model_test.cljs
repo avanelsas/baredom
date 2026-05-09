@@ -437,3 +437,11 @@
   (let [s (model/format-timestamp 65000)]
     (is (clojure.string/starts-with? s "1m"))
     (is (clojure.string/includes?    s "s"))))
+
+(deftest format-timestamp-non-numeric-test
+  (testing "nil / string / undefined inputs return empty string rather than
+            throwing — guards against malformed imported records and stale
+            tests poking format-timestamp directly"
+    (is (= "" (model/format-timestamp nil)))
+    (is (= "" (model/format-timestamp "12")))
+    (is (= "" (model/format-timestamp js/undefined)))))
