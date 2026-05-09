@@ -145,16 +145,7 @@
   nil)
 
 (defn- dispatch-disconnected! [^js _el]
-  ;; Intentionally non-bubbling, non-composed: an internal document-level
-  ;; signal to the parent x-table that this row is gone. Do NOT migrate to
-  ;; du/dispatch! — the helper always sets bubbles/composed true.
-  (.dispatchEvent js/document
-                  (js/CustomEvent.
-                   model/event-disconnected
-                   #js {:detail     #js {}
-                        :bubbles    false
-                        :composed   false
-                        :cancelable false}))
+  (du/dispatch-document! model/event-disconnected #js {})
   nil)
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────

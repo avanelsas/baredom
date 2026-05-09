@@ -125,15 +125,7 @@
   nil)
 
 (defn- disconnected! [^js _el]
-  ;; Intentionally non-bubbling, non-composed: an internal document-level
-  ;; signal to the tour controller that this step is gone. Do NOT migrate
-  ;; to du/dispatch! — the helper always sets bubbles/composed true.
-  (.dispatchEvent js/document
-                  (js/CustomEvent.
-                   model/event-disconnected
-                   #js {:bubbles    false
-                        :composed   false
-                        :cancelable false}))
+  (du/dispatch-document! model/event-disconnected)
   nil)
 
 (defn- attribute-changed! [^js el _name old-val new-val]
