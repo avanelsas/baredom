@@ -24,6 +24,7 @@
     (let [^js r (model/make-record
                  {:type :event/dispatch
                   :tag "x-button"
+                  :component-id 42
                   :event-name "x-button:click"
                   :detail #js {:value 42}
                   :cancelable? false
@@ -35,10 +36,24 @@
       (is (= 100.5              (.-t r)))
       (is (= "event/dispatch"   (.-type r)))
       (is (= "x-button"         (.-tag r)))
+      (is (= 42                 (.-componentId r)))
       (is (= "x-button:click"   (.-eventName r)))
       (is (= 42                 (.-value detail)))
       (is (false?               (.-cancelable r)))
       (is (false?               (.-defaultPrevented r))))))
+
+(deftest make-record-nil-component-id-test
+  (testing "nil component-id surfaces as null (e.g. for document-target events)"
+    (let [^js r (model/make-record
+                 {:type :event/dispatch-document
+                  :tag "document"
+                  :component-id nil
+                  :event-name "x-foo:disconnected"
+                  :detail nil
+                  :cancelable? false
+                  :default-prevented? false}
+                 0 0)]
+      (is (nil? (.-componentId r))))))
 
 (deftest make-record-cancelable-test
   (testing "cancelable + defaultPrevented preserved"
