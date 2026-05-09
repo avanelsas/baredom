@@ -37,6 +37,10 @@ Code must have **zero lint warnings and errors** before pushing to GitHub. Alway
 
 See [`docs/RELEASING.md`](docs/RELEASING.md) — update 4 version locations, tag, push via PR.
 
+## Roadmap
+
+See [`docs/x-trace-history-roadmap.md`](docs/x-trace-history-roadmap.md) — phased implementation plan for the `x-trace-history` debugger (FlowStorm-class time-travel debugger for BareDOM components).
+
 ## Philosophy — Simple Made Easy
 
 This codebase follows Rich Hickey's core tenets. These principles are non-negotiable and override convenience:
