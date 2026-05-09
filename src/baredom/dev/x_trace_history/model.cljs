@@ -1,7 +1,8 @@
 (ns baredom.dev.x-trace-history.model
   "Pure functions for x-trace-history: schema, ring-buffer ops, JS record
    construction. Effects (atom mutation, hook installation, JS API) live in
-   recorder.cljs.")
+   recorder.cljs."
+  (:require [goog.object :as gobj]))
 
 (def schema-version 1)
 
@@ -32,38 +33,66 @@
     (str ns "/" (name t))
     (name t)))
 
-(defn- safe-detail
-  "Coerce an event detail into something JSON-friendly. JS objects pass
-   through clj->js untouched; CLJS data is converted; cyclic / non-coercible
-   values fall back to (str detail) so the recorder never throws."
-  [detail]
+(defn- safe-value
+  "Coerce a value (event detail, instance-field value, etc.) into something
+   JSON-friendly. JS objects pass through clj->js untouched; CLJS data is
+   converted; cyclic / non-coercible values fall back to (str v) so the
+   recorder never throws."
+  [v]
   (try
     (cond
-      (nil? detail)        nil
-      (undefined? detail)  nil
-      :else                (clj->js detail))
+      (nil? v)        nil
+      (undefined? v)  nil
+      :else           (clj->js v))
     (catch :default _
-      (str detail))))
+      (str v))))
 
 (defn make-record
   "Construct a JS-shape record from a hook payload, monotonic id, and a
    timestamp (performance.now() value).
 
-   Payload keys: :type :tag :event-name :detail :cancelable? :default-prevented?
+   Common payload keys: :type :tag.
+   Type-specific keys are documented in docs/x-trace-history-schema.md.
 
    Uses string-keyed js-obj so Closure Advanced does not rename the schema
    field names — consumers read these properties from the wire."
-  [{:keys [type tag event-name detail cancelable? default-prevented?]} id t]
-  (js-obj
-   "schemaVersion"    schema-version
-   "id"               id
-   "t"                t
-   "type"             (format-type type)
-   "tag"              tag
-   "eventName"        event-name
-   "detail"           (safe-detail detail)
-   "cancelable"       (boolean cancelable?)
-   "defaultPrevented" (boolean default-prevented?)))
+  [{:keys [type tag] :as payload} id t]
+  (let [^js r (js-obj
+               "schemaVersion" schema-version
+               "id"            id
+               "t"             t
+               "type"          (format-type type)
+               "tag"           tag)]
+    (case type
+      (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
+      (doto r
+        (gobj/set "eventName"        (:event-name payload))
+        (gobj/set "detail"           (safe-value (:detail payload)))
+        (gobj/set "cancelable"       (boolean (:cancelable? payload)))
+        (gobj/set "defaultPrevented" (boolean (:default-prevented? payload))))
+
+      :state/instance-field-set
+      (doto r
+        (gobj/set "field" (:field payload))
+        (gobj/set "value" (safe-value (:value payload))))
+
+      :dom/attribute-set
+      (doto r
+        (gobj/set "attribute" (:attribute payload))
+        (gobj/set "value"     (:value payload)))
+
+      :dom/attribute-removed
+      (doto r
+        (gobj/set "attribute" (:attribute payload)))
+
+      :lifecycle/attribute-changed
+      (doto r
+        (gobj/set "attribute" (:attribute payload))
+        (gobj/set "oldValue"  (:old-value payload))
+        (gobj/set "newValue"  (:new-value payload)))
+
+      ;; :lifecycle/connected, :lifecycle/disconnected, anything else
+      r)))
 
 ;; ---------------------------------------------------------------------------
 ;; Ring buffer

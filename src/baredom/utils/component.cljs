@@ -1,5 +1,18 @@
 (ns baredom.utils.component)
 
+(defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
+                 1-arg function called on each lifecycle callback (connected,
+                 disconnected, attribute-changed). nil by default — each
+                 callback site is a single atom-deref + nil check when off."}
+  lifecycle-hook (atom nil))
+
+(defn- fire-lifecycle-hook!
+  "Invoke the lifecycle hook with a payload, swallowing any exception so
+   instrumentation never breaks the host component."
+  [payload]
+  (when-some [h @lifecycle-hook]
+    (try (h payload) (catch :default _ nil))))
+
 (defn make-element-class
   "Create a custom element class from a declarative options map.
 
@@ -31,14 +44,27 @@
       (set! (.-formAssociated klass) true))
 
     (set! (.-connectedCallback proto)
-          (fn [] (this-as ^js this (connected-fn this))))
+          (fn []
+            (this-as ^js this
+              (fire-lifecycle-hook! {:type :lifecycle/connected :el this})
+              (connected-fn this))))
 
     (when disconnected-fn
       (set! (.-disconnectedCallback proto)
-            (fn [] (this-as ^js this (disconnected-fn this)))))
+            (fn []
+              (this-as ^js this
+                (fire-lifecycle-hook! {:type :lifecycle/disconnected :el this})
+                (disconnected-fn this)))))
 
     (set! (.-attributeChangedCallback proto)
-          (fn [n o v] (this-as ^js this (attribute-changed-fn this n o v))))
+          (fn [n o v]
+            (this-as ^js this
+              (fire-lifecycle-hook! {:type      :lifecycle/attribute-changed
+                                     :el        this
+                                     :attribute n
+                                     :old-value o
+                                     :new-value v})
+              (attribute-changed-fn this n o v))))
 
     (when form-disabled-fn
       (set! (.-formDisabledCallback proto)

@@ -90,6 +90,82 @@
       (is (false? (.-cancelable r)))
       (is (false? (.-defaultPrevented r))))))
 
+;; ── make-record: state/instance-field-set ──────────────────────────────────
+
+(deftest make-record-state-set-test
+  (testing "state/instance-field-set has field + value, no event fields"
+    (let [^js r (model/make-record
+                 {:type :state/instance-field-set
+                  :tag "x-button"
+                  :field "__xButtonModel"
+                  :value {:variant "primary" :size 42}}
+                 0 0)
+          ^js value (.-value r)]
+      (is (= "state/instance-field-set" (.-type r)))
+      (is (= "__xButtonModel"           (.-field r)))
+      (is (= "primary"                  (.-variant value)))
+      (is (= 42                         (.-size value)))
+      (is (undefined?                   (.-eventName r)))
+      (is (undefined?                   (.-attribute r))))))
+
+;; ── make-record: dom/attribute-set + dom/attribute-removed ─────────────────
+
+(deftest make-record-attr-set-test
+  (testing "dom/attribute-set has attribute + value"
+    (let [^js r (model/make-record
+                 {:type :dom/attribute-set
+                  :tag "x-button"
+                  :attribute "disabled"
+                  :value ""}
+                 0 0)]
+      (is (= "dom/attribute-set" (.-type r)))
+      (is (= "disabled"          (.-attribute r)))
+      (is (= ""                  (.-value r))))))
+
+(deftest make-record-attr-removed-test
+  (testing "dom/attribute-removed has attribute, no value"
+    (let [^js r (model/make-record
+                 {:type :dom/attribute-removed
+                  :tag "x-button"
+                  :attribute "disabled"}
+                 0 0)]
+      (is (= "dom/attribute-removed" (.-type r)))
+      (is (= "disabled"              (.-attribute r)))
+      (is (undefined?                (.-value r))))))
+
+;; ── make-record: lifecycle records ──────────────────────────────────────────
+
+(deftest make-record-lifecycle-connected-test
+  (testing "lifecycle/connected has only common fields"
+    (let [^js r (model/make-record
+                 {:type :lifecycle/connected :tag "x-button"}
+                 0 0)]
+      (is (= "lifecycle/connected" (.-type r)))
+      (is (= "x-button"            (.-tag r)))
+      (is (undefined?              (.-eventName r)))
+      (is (undefined?              (.-attribute r))))))
+
+(deftest make-record-lifecycle-disconnected-test
+  (testing "lifecycle/disconnected has only common fields"
+    (let [^js r (model/make-record
+                 {:type :lifecycle/disconnected :tag "x-button"}
+                 0 0)]
+      (is (= "lifecycle/disconnected" (.-type r))))))
+
+(deftest make-record-lifecycle-attribute-changed-test
+  (testing "lifecycle/attribute-changed has attribute, oldValue, newValue"
+    (let [^js r (model/make-record
+                 {:type :lifecycle/attribute-changed
+                  :tag "x-button"
+                  :attribute "disabled"
+                  :old-value nil
+                  :new-value ""}
+                 0 0)]
+      (is (= "lifecycle/attribute-changed" (.-type r)))
+      (is (= "disabled" (.-attribute r)))
+      (is (nil? (.-oldValue r)))
+      (is (= "" (.-newValue r))))))
+
 ;; ── push-record ─────────────────────────────────────────────────────────────
 
 (deftest push-record-under-capacity-test
