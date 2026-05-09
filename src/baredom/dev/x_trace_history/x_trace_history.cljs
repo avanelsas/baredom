@@ -71,7 +71,7 @@
        "<label><input type='checkbox' data-x-th-cat='dom' checked> dom</label>"
        "<label><input type='checkbox' data-x-th-cat='lifecycle' checked> lifecycle</label>"
        "</div>"
-       "<div class='timeline' data-x-th-timeline>"
+       "<div class='timeline' data-x-th-timeline tabindex='0'>"
        "<div class='lanes' data-x-th-lanes></div>"
        "<div class='svg-pane' data-x-th-svg-pane></div>"
        "<div class='tooltip' data-x-th-tooltip hidden></div>"
@@ -124,17 +124,29 @@
          (when sel? " stroke='#fff' stroke-width='1.5'")
          " />")))
 
+(defn- scrubber-html
+  "Vertical drag-line drawn at the selected record's x. Returns the empty
+   string when no record is selected."
+  [^js sel-rec bounds plot-width svg-h]
+  (if sel-rec
+    (let [x (model/time-x (.-t sel-rec) bounds plot-width)]
+      (str "<line class='scrubber' x1='" x "' y1='0' "
+           "x2='" x "' y2='" svg-h "' />"))
+    ""))
+
 (defn- svg-html
   "Build the timeline SVG markup. Records are positioned by lane (Y) and
-   time (X); selected dot is drawn last so its highlight stroke wins."
-  [filtered-records lanes bounds plot-width selected-id]
-  (let [lane-y  (into {} (map-indexed
-                          (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
-                          lanes))
-        h       (max lane-h (* lane-h (count lanes)))
+   time (X); selected dot is drawn last so its highlight stroke wins, and
+   the scrubber line is drawn on top of everything."
+  [filtered-records lanes bounds plot-width ^js sel-rec]
+  (let [selected-id (when sel-rec (.-id sel-rec))
+        lane-y      (into {} (map-indexed
+                              (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
+                              lanes))
+        h           (max lane-h (* lane-h (count lanes)))
         ;; Selected dot last so its highlight stroke wins z-order.
-        ordered (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
-                         filtered-records)]
+        ordered     (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
+                             filtered-records)]
     (str "<svg class='timeline-svg' width='" plot-width "' height='" h
          "' viewBox='0 0 " plot-width " " h "'>"
          (apply str
@@ -142,12 +154,13 @@
                        (dot-html r (get lane-y (model/lane-id-of r))
                                  bounds plot-width selected-id))
                      ordered))
+         (scrubber-html sel-rec bounds plot-width h)
          "</svg>")))
 
 (defn- render-timeline!
   "Repaint the lane-label column + SVG canvas. Caller passes the current
    filtered records, bounds, etc. (so render! computes them once)."
-  [^js lanes-el ^js svg-pane-el filtered lanes bounds selected-id active-tag]
+  [^js lanes-el ^js svg-pane-el filtered lanes bounds ^js sel-rec active-tag]
   (if (zero? (count filtered))
     (do
       (set! (.-innerHTML lanes-el) "")
@@ -156,7 +169,7 @@
     (let [plot-w (max svg-min-w (.-clientWidth svg-pane-el))]
       (set! (.-innerHTML lanes-el)    (lanes-html lanes active-tag))
       (set! (.-innerHTML svg-pane-el) (svg-html filtered lanes bounds
-                                                plot-w selected-id)))))
+                                                plot-w sel-rec)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Pause button + detail pane updates
@@ -221,9 +234,8 @@
         cnt-total       (.-length recs)
         bounds          (model/time-bounds filtered)
         lanes           (model/active-lanes filtered)
-        sel-rec         (effective-selection! el recs spec)
-        sel-id          (when sel-rec (.-id sel-rec))]
-    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-id (:tag spec))
+        sel-rec         (effective-selection! el recs spec)]
+    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-rec (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
@@ -361,6 +373,73 @@
   (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))
 
 ;; ---------------------------------------------------------------------------
+;; Scrubber — pointer-drag on the SVG to step selection by nearest record
+;; ---------------------------------------------------------------------------
+
+(defn- select-nearest-at-x!
+  "Find the filtered record nearest to x-pixel `x` (relative to the
+   svg-pane's left edge) and select it, then re-render. No-op when no
+   records pass the filter."
+  [^js el x]
+  (let [^js svg-pane (gobj/get el model/k-svg-pane-el)
+        plot-w       (max svg-min-w (.-clientWidth svg-pane))
+        spec         (gobj/get el model/k-filter)
+        ^js recs     (recorder/records)
+        filtered     (model/filter-records recs spec)
+        bounds       (model/time-bounds filtered)
+        target-t     (model/time-from-x x bounds plot-w)
+        ^js nearest  (model/nearest-record filtered target-t)]
+    (when nearest
+      (gobj/set el model/k-selected-id (.-id nearest))
+      (render! el))))
+
+(defn- start-scrub!
+  "Begin a pointer-driven scrub. The pointer is captured on the svg-pane,
+   so the gesture survives the cursor leaving the SVG bounds. Each move
+   re-selects the nearest filtered record."
+  [^js el ^js svg-pane ^js e]
+  (.preventDefault e)
+  (.setPointerCapture svg-pane (.-pointerId e))
+  (let [pane-rect (.getBoundingClientRect svg-pane)
+        x-of     (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
+    (select-nearest-at-x! el (x-of e))
+    (let [on-move (fn [^js me] (select-nearest-at-x! el (x-of me)))
+          on-end  (fn end-fn [_]
+                    (.removeEventListener svg-pane "pointermove"   on-move)
+                    (.removeEventListener svg-pane "pointerup"     end-fn)
+                    (.removeEventListener svg-pane "pointercancel" end-fn))]
+      (.addEventListener svg-pane "pointermove"   on-move)
+      (.addEventListener svg-pane "pointerup"     on-end)
+      (.addEventListener svg-pane "pointercancel" on-end))))
+
+(defn- handle-svg-pointerdown!
+  [^js el ^js e]
+  (let [^js svg-pane (gobj/get el model/k-svg-pane-el)]
+    (start-scrub! el svg-pane e)))
+
+;; ---------------------------------------------------------------------------
+;; Keyboard navigation — Left/Right arrows step the selection
+;; ---------------------------------------------------------------------------
+
+(defn- step-selection!
+  [^js el dir]
+  (let [spec        (gobj/get el model/k-filter)
+        ^js recs    (recorder/records)
+        filtered    (model/filter-records recs spec)
+        curr-id     (gobj/get el model/k-selected-id)
+        ^js next-r  (model/step-record filtered curr-id dir)]
+    (when next-r
+      (gobj/set el model/k-selected-id (.-id next-r))
+      (render! el))))
+
+(defn- handle-keydown!
+  [^js el ^js e]
+  (case (.-key e)
+    "ArrowRight" (do (.preventDefault e) (step-selection! el :next))
+    "ArrowLeft"  (do (.preventDefault e) (step-selection! el :prev))
+    nil))
+
+;; ---------------------------------------------------------------------------
 ;; Splitter — drag the divider above the detail pane to resize it
 ;; ---------------------------------------------------------------------------
 
@@ -426,6 +505,7 @@
   [^js el ^js shadow]
   (let [^js dock        (.querySelector shadow ".dock")
         ^js timeline-el (gobj/get el model/k-timeline-el)
+        ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
         ^js splitter-el (gobj/get el model/k-splitter-el)
         ^js detail-el   (gobj/get el model/k-detail-el)]
     (.addEventListener dock "click"  (fn [^js e] (handle-click!  el e)))
@@ -434,6 +514,10 @@
                        (fn [^js e] (handle-pointermove! el e)))
     (.addEventListener timeline-el "pointerleave"
                        (fn [^js e] (handle-pointerleave! el e)))
+    (.addEventListener timeline-el "keydown"
+                       (fn [^js e] (handle-keydown! el e)))
+    (.addEventListener svg-pane-el "pointerdown"
+                       (fn [^js e] (handle-svg-pointerdown! el e)))
     (.addEventListener splitter-el "pointerdown"
                        (fn [^js e] (start-resize! detail-el splitter-el e)))))
 
