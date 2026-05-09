@@ -45,6 +45,12 @@
 ;; Event dispatch
 ;; ---------------------------------------------------------------------------
 
+(defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
+                 1-arg function that receives a CLJS payload describing each
+                 dispatch. Reset via reset!. nil by default — when nil, every
+                 dispatch is a single atom-deref + nil check (negligible cost)."}
+  trace-hook (atom nil))
+
 (defn dispatch!
   "Dispatch a non-cancelable CustomEvent that bubbles and is composed."
   [^js el event-name detail]
@@ -55,7 +61,15 @@
     #js {:detail     detail
          :bubbles    true
          :composed   true
-         :cancelable false})))
+         :cancelable false}))
+  (when-some [h @trace-hook]
+    (h {:type               :event/dispatch
+        :el                 el
+        :event-name         event-name
+        :detail             detail
+        :cancelable?        false
+        :default-prevented? false}))
+  nil)
 
 (defn dispatch-cancelable!
   "Dispatch a cancelable CustomEvent. Returns true when NOT cancelled."
@@ -65,9 +79,17 @@
                 #js {:detail     detail
                      :bubbles    true
                      :composed   true
-                     :cancelable true})]
-    (.dispatchEvent el ev)
-    (not (.-defaultPrevented ev))))
+                     :cancelable true})
+        _              (.dispatchEvent el ev)
+        prevented?     (.-defaultPrevented ev)]
+    (when-some [h @trace-hook]
+      (h {:type               :event/dispatch-cancelable
+          :el                 el
+          :event-name         event-name
+          :detail             detail
+          :cancelable?        true
+          :default-prevented? prevented?}))
+    (not prevented?)))
 
 (defn dispatch-document!
   "Dispatch a non-bubbling, non-composed CustomEvent on document.
@@ -80,7 +102,15 @@
                     event-name
                     #js {:bubbles    false
                          :composed   false
-                         :cancelable false})))
+                         :cancelable false}))
+   (when-some [h @trace-hook]
+     (h {:type               :event/dispatch-document
+         :el                 js/document
+         :event-name         event-name
+         :detail             nil
+         :cancelable?        false
+         :default-prevented? false}))
+   nil)
   ([event-name detail]
    (.dispatchEvent js/document
                    (js/CustomEvent.
@@ -88,7 +118,15 @@
                     #js {:detail     detail
                          :bubbles    false
                          :composed   false
-                         :cancelable false}))))
+                         :cancelable false}))
+   (when-some [h @trace-hook]
+     (h {:type               :event/dispatch-document
+         :el                 js/document
+         :event-name         event-name
+         :detail             detail
+         :cancelable?        false
+         :default-prevented? false}))
+   nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Property accessor installers
