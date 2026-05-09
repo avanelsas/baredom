@@ -1,9 +1,9 @@
 (ns baredom.core
   (:require
-   [baredom.registry                            :as registry]
-   [baredom.dev.hot-reload                      :as hot-reload]
-   [baredom.dev.x-debug.x-debug                 :as x-debug]
-   [baredom.dev.x-trace-history.recorder        :as x-trace-history]))
+   [baredom.registry                                :as registry]
+   [baredom.dev.hot-reload                          :as hot-reload]
+   [baredom.dev.x-debug.x-debug                     :as x-debug]
+   [baredom.dev.x-trace-history.x-trace-history     :as x-trace-history]))
 
 (defn ^:dev/after-load start!
   []
