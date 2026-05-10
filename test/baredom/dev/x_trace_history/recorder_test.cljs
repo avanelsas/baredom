@@ -689,3 +689,138 @@
     (let [el (make-el "x-button")]
       (du/dispatch! el "x" #js {})
       (is (= 1 (count-records))))))
+
+;; ── PR-A: internal-host recording boundary ──────────────────────────────────
+;;
+;; The dock UI uses BareDOM components internally. Without a boundary, every
+;; click on a dock x-button would record `x-button:press`. mark-internal!
+;; flags a host so events ORIGINATING inside its shadow tree bypass the
+;; recorder entirely. Lifecycle events ON the host itself remain visible.
+
+(defn- make-marked-host
+  "Build a host element with an open shadow root, mark it internal,
+   append it to body. Returns [host shadow]."
+  []
+  (let [^js host   (.createElement js/document "div")
+        ^js shadow (.attachShadow host #js {:mode "open"})]
+    (.appendChild (.-body js/document) host)
+    (recorder/mark-internal! host)
+    [host shadow]))
+
+(deftest internal-dispatch-not-recorded-test
+  (testing "a CustomEvent dispatched from inside a marked host's shadow
+            is bypassed by the wrapper — no record, no id consumed"
+    (let [[^js host ^js shadow] (make-marked-host)
+          ^js child              (.createElement js/document mutation-tag)]
+      (.appendChild shadow child)
+      (du/dispatch! child "click" #js {})
+      (is (zero? (count-records))
+          "internal dispatch does not appear in the buffer")
+      (.remove host))))
+
+(deftest internal-setv-not-recorded-test
+  (testing "du/setv! on an element inside a marked host's shadow is bypassed"
+    (let [[^js host ^js shadow] (make-marked-host)
+          ^js child              (.createElement js/document "div")]
+      (.appendChild shadow child)
+      (du/setv! child "__k" "v")
+      (is (zero? (count-records)))
+      (.remove host))))
+
+(deftest internal-set-attr-not-recorded-test
+  (testing "du/set-attr! on an element inside a marked host's shadow is bypassed"
+    (let [[^js host ^js shadow] (make-marked-host)
+          ^js child              (.createElement js/document "div")]
+      (.appendChild shadow child)
+      (du/set-attr! child "data-x" "y")
+      (is (zero? (count-records)))
+      (.remove host))))
+
+(deftest internal-dispatch-does-not-establish-cause-frame-test
+  (testing "an internal dispatch must NOT push a cause frame onto the
+            stack. Otherwise a subsequent unrelated dispatch (outside
+            the dock) would inherit the dock's reserved id as its
+            cause — corrupting the trace. Verify by dispatching from
+            outside immediately after; its causeId must still be null."
+    (let [[^js host ^js shadow] (make-marked-host)
+          ^js inner              (.createElement js/document mutation-tag)
+          ^js outer              (.createElement js/document mutation-tag)]
+      (.appendChild shadow inner)
+      (du/dispatch! inner "internal" #js {})
+      ;; Internal dispatch produced no records.
+      (is (zero? (count-records)))
+      ;; Now dispatch from outside the dock. This is a top-level frame
+      ;; with no enclosing dispatch in user code — causeId must be nil.
+      (du/dispatch! outer "external" #js {})
+      (is (= 1 (count-records)))
+      (is (nil? (.-causeId (record-at 0)))
+          "external dispatch is its own root, not nested under the
+           internal one (which never created a frame)")
+      (.remove host))))
+
+(deftest internal-host-children-do-not-pollute-cause-chain-test
+  (testing "when an external dispatch's handler triggers something inside
+            the dock (e.g. it scrolls the dock or focuses one of its
+            inputs), records produced inside the dock during that scope
+            are still skipped. The external dispatch's cause-frame stays
+            on the stack, so any sibling user-code records still attribute
+            cleanly to the external dispatch."
+    (let [[^js host ^js shadow] (make-marked-host)
+          ^js inner              (.createElement js/document mutation-tag)
+          ^js outer              (.createElement js/document mutation-tag)]
+      (.appendChild shadow inner)
+      (.addEventListener
+        outer "click"
+        (fn [_]
+          ;; Inside the external handler, do something inside the dock
+          ;; (an internal dispatch). It must NOT be recorded.
+          (du/dispatch! inner "click" #js {})
+          ;; And do something outside (external). This must be recorded
+          ;; with the OUTER dispatch as its cause.
+          (du/setv! outer "__from-handler" "v")))
+      (du/dispatch! outer "click" #js {})
+      (let [recs (array-seq (recorder/records))]
+        ;; Two records: outer dispatch + the setv. The internal x-button
+        ;; dispatch from inside the handler is gone.
+        (is (= 2 (count recs)))
+        (let [^js dispatch-rec (some (fn [^js r]
+                                       (when (= "event/dispatch" (.-type r)) r))
+                                     recs)
+              ^js setv-rec     (some (fn [^js r]
+                                       (when (= "state/instance-field-set" (.-type r)) r))
+                                     recs)]
+          (is (some? dispatch-rec))
+          (is (some? setv-rec))
+          (is (nil? (.-causeId dispatch-rec)) "outer dispatch is root")
+          (is (= (.-id dispatch-rec) (.-causeId setv-rec))
+              "setv attributes to outer, not to the bypassed internal dispatch")))
+      (.remove host))))
+
+(deftest unmarked-host-still-records-test
+  (testing "sanity check: a host WITHOUT the marker still records
+            events from its shadow descendants normally"
+    (let [^js host   (.createElement js/document "div")
+          ^js shadow (.attachShadow host #js {:mode "open"})
+          ^js child  (.createElement js/document mutation-tag)]
+      (.appendChild (.-body js/document) host)
+      ;; NOTE: no mark-internal! call.
+      (.appendChild shadow child)
+      (du/dispatch! child "click" #js {})
+      (is (= 1 (count-records))
+          "unmarked shadow tree records normally")
+      (.remove host))))
+
+(deftest mark-internal-does-not-suppress-host-itself-test
+  (testing "the marker suppresses events ORIGINATING INSIDE the host's
+            shadow tree — but events ON the host element itself are
+            still recorded. (The dock's own connect/disconnect should
+            remain visible in traces.)"
+    (let [^js host (.createElement js/document "div")]
+      (.appendChild (.-body js/document) host)
+      (recorder/mark-internal! host)
+      ;; Dispatch directly on the host (not on a shadow descendant).
+      ;; The host's own getRootNode is document — not "inside" the marker.
+      (du/dispatch! host "x" #js {})
+      (is (= 1 (count-records))
+          "events fired on the marked host itself are still recorded")
+      (.remove host))))

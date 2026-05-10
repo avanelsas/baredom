@@ -613,6 +613,10 @@
 (defn- mount!
   [^js el]
   (when-not (gobj/get el model/k-mounted)
+    ;; Mark BEFORE attaching the shadow so any synchronous lifecycle
+    ;; events from inside the shadow (e.g. nested components registering)
+    ;; are already gated by the recorder's internal-host boundary.
+    (recorder/mark-internal! el)
     (let [^js shadow (attach-skeleton! el)]
       (cache-refs! el shadow)
       (gobj/set el model/k-filter
