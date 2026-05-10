@@ -507,18 +507,6 @@
 }
 .title { font-weight: 700; color: #89b4fa; font-size: 12px; }
 .count { color: #6c7086; margin-left: auto; }
-.btn {
-  background: rgba(255,255,255,0.05);
-  color: #cdd6f4;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
-  padding: 2px 8px;
-  font: inherit;
-  font-size: 10px;
-  cursor: pointer;
-}
-.btn:hover  { background: rgba(255,255,255,0.1); }
-.btn.paused { background: rgba(245,194,231,0.2); border-color: rgba(245,194,231,0.5); color: #f5c2e7; }
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -528,24 +516,26 @@
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex: 0 0 auto;
 }
-.filters select {
-  background: #313244;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 3px;
-  padding: 1px 4px;
-  font: inherit;
-  font-size: 10px;
+/* The tag dropdown is an <x-select>; its own shadow brings styling.
+   We just constrain its width and font so it matches the dock's
+   ui-monospace 11px tone. */
+.filters x-select {
+  font-size: 11px;
+  max-width: 140px;
 }
-.filters label {
+/* x-checkbox has no slot for its label, so the visible text sits
+   next to the checkbox inside a <label> wrapper. The label uses
+   inline-flex to keep the checkbox + text on one row, with a small
+   gap. Cursor: pointer mirrors native checkbox-label affordance. */
+.filters label.cat {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   color: #a6adc8;
   font-size: 10px;
   cursor: pointer;
+  user-select: none;
 }
-.filters input[type=checkbox] { margin: 0; cursor: pointer; }
 .timeline {
   flex: 1 1 auto;
   overflow: auto;
@@ -677,29 +667,26 @@ line.scrubber {
   font-size: 10px;
   letter-spacing: 0.02em;
 }
+/* The host is an <x-button>; its own shadow brings background, hover,
+   border-radius, etc. We keep block-layout + width on the host so each
+   link fills its row, and reach into the button's `label` part to add
+   ellipsis truncation (the summary string can exceed the dock width). */
 .detail-link {
   display: block;
   width: 100%;
-  text-align: left;
-  background: rgba(255,255,255,0.04);
-  color: #cdd6f4;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 3px;
-  padding: 3px 6px;
   margin: 2px 0;
-  font: inherit;
-  font-size: 10px;
-  cursor: pointer;
-  white-space: nowrap;
+}
+.detail-link::part(label) {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.detail-link:hover {
-  background: rgba(59,130,246,0.18);
-  border-color: rgba(59,130,246,0.6);
-  color: #89b4fa;
+.detail-link::part(button) {
+  width: 100%;
+  justify-content: flex-start;
 }
-.detail-link .cid { color: #6c7086; }
 .detail-empty { color: #6c7086; font-style: italic; font-size: 10px; }
 .empty {
   color: #6c7086;

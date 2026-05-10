@@ -59,6 +59,14 @@
 ;; back to the original implementation when false.
 (defonce ^:private wrapper-active? (atom false))
 
+;; Counter for the dynamic-extent suppression scope used by
+;; with-suppressed-recording!. The dock wraps its mount! in this so
+;; that custom-element constructors triggered by parsing the dock's
+;; skeleton (e.g. x-checkbox's internal du/set-attr! calls on freshly-
+;; created, not-yet-appended divs) do not leak into the trace. Counter,
+;; not flag, so nested with-suppressed-recording! calls compose.
+(defonce ^:private suppression-depth (atom 0))
+
 ;; ---------------------------------------------------------------------------
 ;; Subscriber API
 ;; ---------------------------------------------------------------------------
@@ -147,6 +155,23 @@
   (gobj/set el internal-host-marker true)
   nil)
 
+(defn with-suppressed-recording!
+  "Call thunk f with all recording suppressed for its synchronous
+   extent. Use this around dock setup so custom-element constructors
+   that fire during innerHTML parsing — and call du/set-attr! /
+   du/setv! / dispatch on freshly-created, not-yet-appended internal
+   elements — do not leak records into the trace. The internal-host
+   marker only catches events whose target is already attached
+   somewhere in the marked shadow tree; constructor-time mutations
+   on detached internals predate that attachment, so they need this
+   broader gate. Counter-based, so nested calls compose."
+  [f]
+  (swap! suppression-depth inc)
+  (try
+    (f)
+    (finally
+      (swap! suppression-depth dec))))
+
 (defn- inside-internal-host?
   "True when `el` is a descendant of any element bearing the
    internal-host-marker, traversing across (open) shadow boundaries.
@@ -217,15 +242,22 @@
   "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
    CLJS payload, reserves an id, and pushes a record onto the ring buffer.
 
-   When the dispatch-wrapper is active, :event/* payloads from the
-   du/dispatch*! post-hooks are skipped — the wrapper itself produced
-   the record before the post-hook fired."
+   Skipped under any of these conditions, BEFORE id reservation so
+   internal activity does not consume numeric ids that user-facing
+   records would otherwise occupy:
+   - inside an active with-suppressed-recording! scope (dock setup)
+   - dispatch-wrapper handles :event/* itself (gated to avoid double-record)
+   - payload's :el is inside a marked internal host (PR-A boundary)"
   [payload]
-  (when-not (and @wrapper-active?
-                 (contains? wrapper-handled-types (:type payload)))
-    (let [id (reserve-id!)
-          t  (.now js/performance)]
-      (push-record-with-id! payload id t))))
+  (let [type (:type payload)
+        ^js el (:el payload)]
+    (when-not (or (pos? @suppression-depth)
+                  (and @wrapper-active?
+                       (contains? wrapper-handled-types type))
+                  (inside-internal-host? el))
+      (let [id (reserve-id!)
+            t  (.now js/performance)]
+        (push-record-with-id! payload id t)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch wrapper — synchronous cause-id chain
@@ -274,6 +306,7 @@
   (let [^js orig @original-dispatch-event]
     (if (or (not @wrapper-active?)
             (:paused? @state)
+            (pos? @suppression-depth)
             (inside-internal-host? this))
       ;; Inactive, paused, or dock-internal dispatch: no id reservation,
       ;; no cause-frame push, no record. Internal dispatches must NOT
@@ -402,11 +435,17 @@
 (defn install!
   "Activate recording. Idempotent and re-entrant: safe to call multiple
    times. Re-runs every time so hot-reloads of the recorder ns refresh the
-   hook references to the newly-loaded `record!` symbol."
+   hook references to the newly-loaded `record!` symbol.
+
+   Resets `suppression-depth` to 0 so a hot-reload that interrupts a
+   `with-suppressed-recording!` body cannot leave the counter stuck
+   above zero (which would silently disable all recording until the
+   page reloads)."
   []
   (swap! state assoc :capacity (read-capacity))
   (reset! du/trace-hook record!)
   (reset! comp/lifecycle-hook record!)
+  (reset! suppression-depth 0)
   (install-dispatch-wrapper-once!)
   (reset! wrapper-active? true)
   (install-window-api!)
