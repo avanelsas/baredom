@@ -19,12 +19,29 @@
 
 (def window-flag "BAREDOM_TRACE_HISTORY")
 
+(def forensic-value "raw")
+
 (defn enabled?
   "True iff the URL search of the supplied window contains
    ?baredom-trace-history OR window.BAREDOM_TRACE_HISTORY is truthy."
   [^js window]
   (or (some-> (.. window -location -search) (.includes url-param))
-      (true? (gobj/get window window-flag))))
+      (true? (gobj/get window window-flag))
+      (= forensic-value (gobj/get window window-flag))))
+
+(defn forensic?
+  "True iff trace-history is activated in forensic mode — `?baredom-
+   trace-history=raw` in the URL or `window.BAREDOM_TRACE_HISTORY =
+   \"raw\"`. Forensic mode disables the sample-rate cap and shows
+   :state events in the dock by default. Returns false when
+   trace-history is off or activated in normal mode."
+  [^js window]
+  (or (= forensic-value (gobj/get window window-flag))
+      (let [search (some-> (.. window -location -search))]
+        (boolean
+         (and search
+              (re-find (re-pattern (str url-param "=" forensic-value))
+                       search))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Tag extraction
@@ -149,6 +166,18 @@
 (def all-categories
   "All category keywords in stable display order."
   [:events :state :dom :lifecycle])
+
+(defn default-categories
+  "Initial filter category set the dock applies on mount. In normal
+   mode :state is excluded — instance-field writes are the noisiest
+   record type (every component caches models, refs, etc.) and
+   defaulting them off keeps the timeline focused on user-relevant
+   events. Forensic mode includes everything so users can capture
+   raw mutation history."
+  [forensic?]
+  (if forensic?
+    (set all-categories)
+    (disj (set all-categories) :state)))
 
 (defn categorize-type
   "Map a record-type string to its category keyword (:events, :state, :dom,

@@ -28,11 +28,18 @@
     (.remove el))
   (recorder/uninstall!)
   (recorder/resume!)
-  (recorder/clear!))
+  (recorder/clear!)
+  (gobj/remove js/window "BAREDOM_TRACE_HISTORY"))
 
 (defn- before-fixture
-  "Prep: install hooks fresh for each test."
+  "Prep: install hooks fresh for each test in forensic mode. Forensic
+   mode disables the PR 9 sample-rate cap and defaults all category
+   filters ON, so dock tests that assume every record lands and that
+   :state records show up by default keep working. Tests that need
+   normal-mode behavior (filter-default-state-off, rate-limit cap)
+   override the flag inline."
   []
+  (gobj/set js/window "BAREDOM_TRACE_HISTORY" "raw")
   (recorder/install!)
   (recorder/clear!))
 
@@ -997,3 +1004,77 @@
                           (is (= live-sel (gobj/get dock model/k-selected-id))
                               "live selection preserved across view switch")
                           (done))))))))))))))
+
+;; ---------------------------------------------------------------------------
+;; PR 9 — :state default off + forensic-mode mount
+;; ---------------------------------------------------------------------------
+;;
+;; The shared fixture installs in forensic mode so :state shows by
+;; default. These tests force normal-mode reinstall so we can verify
+;; the production default (state checkbox unchecked, :state filtered
+;; out of the dock view).
+
+(defn- enter-normal-mode!
+  "Uninstall, flip the activation flag to non-forensic, reinstall, clear.
+   Pair with leave-normal-mode! at the end of the test. Used pair-wise
+   for sync tests; for async tests, also call leave at the end of the
+   final after-frames callback."
+  []
+  (recorder/uninstall!)
+  (gobj/set js/window "BAREDOM_TRACE_HISTORY" true)
+  (recorder/install!)
+  (recorder/clear!))
+
+(defn- leave-normal-mode!
+  "Restore the fixture's forensic install."
+  []
+  (recorder/uninstall!)
+  (gobj/set js/window "BAREDOM_TRACE_HISTORY" "raw")
+  (recorder/install!)
+  (recorder/clear!))
+
+(defn- with-normal-mode!
+  "Reinstall the recorder in normal (non-forensic) mode for the
+   duration of `f`. Sync only — the finally cleanup runs as soon as
+   `f` returns, which is wrong for tests that schedule async work
+   inside `f`. Async tests should call enter/leave manually around
+   their done callback."
+  [f]
+  (enter-normal-mode!)
+  (try (f) (finally (leave-normal-mode!))))
+
+(deftest state-checkbox-unchecked-by-default-in-normal-mode-test
+  (testing "in normal mode the :state x-checkbox is rendered unchecked
+            so the timeline default focuses on user-relevant events"
+    (with-normal-mode!
+     #(let [^js dock     (mount-dock!)
+            ^js state-cb (query dock "[data-x-th-cat='state']")
+            ^js events-cb (query dock "[data-x-th-cat='events']")]
+        (is (false? (.hasAttribute state-cb "checked"))
+            ":state checkbox unchecked")
+        (is (true? (.hasAttribute events-cb "checked"))
+            ":events checkbox still checked")))))
+
+(deftest state-checkbox-checked-in-forensic-mode-test
+  (testing "the shared forensic-mode fixture leaves all four category
+            checkboxes checked"
+    (let [^js dock     (mount-dock!)
+          ^js state-cb (query dock "[data-x-th-cat='state']")]
+      (is (true? (.hasAttribute state-cb "checked"))))))
+
+(deftest state-filter-applies-by-default-in-normal-mode-test
+  (testing "in normal mode, a state record fires but the dock filter
+            keeps it off the timeline (until the user re-checks the
+            :state category)"
+    (async done
+      (enter-normal-mode!)
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "click" #js {})
+        (du/setv!     btn "__field" "v")
+        (after-frames 2
+          (fn []
+            (is (= 1 (dot-count dock))
+                "only the events dot shows; the state record is filtered")
+            (leave-normal-mode!)
+            (done)))))))

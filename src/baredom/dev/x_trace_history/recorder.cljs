@@ -40,7 +40,14 @@
          ;; session has :end-t = nil; stop-session! sets it.
          :sessions          []
          :next-session-id   0
-         :active-session-id nil}))
+         :active-session-id nil
+         ;; Sample-rate cap — see rate-limited? below. Map of string
+         ;; key → last-accepted t. Reset by clear!.
+         :rate-limit        {}
+         ;; Captured at install time from model/forensic? so per-record
+         ;; checks don't have to read window state. False unless the
+         ;; user activated with =raw.
+         :forensic?         false}))
 
 (defonce ^:private subscribers (atom {}))
 
@@ -246,6 +253,66 @@
    reserved id and entry timestamp."
   #{:event/dispatch :event/dispatch-cancelable :event/dispatch-document})
 
+;; ---------------------------------------------------------------------------
+;; Sample-rate cap — drop duplicates within 16ms per (componentId, key)
+;;
+;; Animation-driven components fire CustomEvents and instance-field
+;; writes once per frame (or more), and a 60fps drag fills the buffer
+;; with near-identical records. Rate-limiting keeps the trace
+;; representative without truncating the underlying buffer. Forensic
+;; mode (?baredom-trace-history=raw) bypasses the cap so users can
+;; capture every record for diagnostics.
+;; ---------------------------------------------------------------------------
+
+(def ^:private rate-limit-window-ms 16)
+
+(defn- rate-limit-key
+  "Build a string rate-limit key for a payload, or nil if the payload
+   is exempt. Three exemption categories:
+   - lifecycle/*: once-per-state-change, useful even when bursty
+   - unknown types: never seen, no contract
+   - elements without a stamped componentId: the first record from
+     any element always passes (cid is assigned by push-record-with-id!
+     on first record). Also catches document-target events which never
+     get a cid.
+   Reading componentId is side-effect-free here — it's just a gobj
+   read of the previously-stamped field."
+  [payload ^js el]
+  (when-let [cid (gobj/get el component-id-key)]
+    (case (:type payload)
+      (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
+      (str cid ":evt:" (:event-name payload))
+
+      :state/instance-field-set
+      (str cid ":fld:" (:field payload))
+
+      (:dom/attribute-set :dom/attribute-removed)
+      (str cid ":attr:" (:attribute payload))
+
+      ;; lifecycle/* and unknown types: nil → no rate-limit.
+      nil)))
+
+(defn- rate-limited?
+  "Pure: was this (payload, el, t) within `rate-limit-window-ms` of
+   the previously-accepted record under the same key? Forensic mode
+   never returns true. Lifecycle and unknown types never return true
+   (rate-limit-key returns nil for them)."
+  [s payload ^js el t]
+  (and (not (:forensic? s))
+       (when-let [k (rate-limit-key payload el)]
+         (when-let [last-t (get (:rate-limit s) k)]
+           (< (- t last-t) rate-limit-window-ms)))))
+
+(defn- remember-rate-limit!
+  "After a record is accepted, stamp `t` against its rate-limit key so
+   subsequent records within the window are dropped. No-op for exempt
+   types or in forensic mode."
+  [payload ^js el t]
+  (when-not (:forensic? @state)
+    (when-let [k (rate-limit-key payload el)]
+      (swap! state assoc-in [:rate-limit k] t)))
+  nil)
+
 (defn- record!
   "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
    CLJS payload, reserves an id, and pushes a record onto the ring buffer.
@@ -255,17 +322,21 @@
    records would otherwise occupy:
    - inside an active with-suppressed-recording! scope (dock setup)
    - dispatch-wrapper handles :event/* itself (gated to avoid double-record)
-   - payload's :el is inside a marked internal host (PR-A boundary)"
+   - payload's :el is inside a marked internal host (PR-A boundary)
+   - sample-rate cap: a record with the same (componentId, key) was
+     accepted within the last 16ms (PR 9). Forensic mode bypasses."
   [payload]
-  (let [type (:type payload)
-        ^js el (:el payload)]
+  (let [type   (:type payload)
+        ^js el (:el payload)
+        t      (.now js/performance)]
     (when-not (or (pos? @suppression-depth)
                   (and @wrapper-active?
                        (contains? wrapper-handled-types type))
-                  (inside-internal-host? el))
-      (let [id (reserve-id!)
-            t  (.now js/performance)]
-        (push-record-with-id! payload id t)))))
+                  (inside-internal-host? el)
+                  (rate-limited? @state payload el t))
+      (let [id (reserve-id!)]
+        (push-record-with-id! payload id t)
+        (remember-rate-limit! payload el t)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch wrapper — synchronous cause-id chain
@@ -312,28 +383,46 @@
    When inactive or paused, pass straight through to the original."
   [^js this ^js ev]
   (let [^js orig @original-dispatch-event]
-    (if (or (not @wrapper-active?)
-            (:paused? @state)
-            (pos? @suppression-depth)
-            (inside-internal-host? this))
+    (cond
       ;; Inactive, paused, or dock-internal dispatch: no id reservation,
       ;; no cause-frame push, no record. Internal dispatches must NOT
       ;; establish a cause frame — otherwise records produced after the
       ;; dispatch (in the same call stack but originating from outside
       ;; the dock) would wrongly stamp the dock dispatch's reserved id.
+      (or (not @wrapper-active?)
+          (:paused? @state)
+          (pos? @suppression-depth)
+          (inside-internal-host? this))
       (.call orig this ev)
-      (let [reserved-id (reserve-id!)
-            entry-t     (.now js/performance)
-            _           (swap! cause-stack conj reserved-id)
-            result      (try
-                          (.call orig this ev)
-                          (finally
-                            (swap! cause-stack pop)))]
-        (when (instance? js/CustomEvent ev)
-          (try
-            (push-dispatch-record! this ev reserved-id entry-t)
-            (catch :default _ nil)))
-        result))))
+
+      :else
+      (let [custom?  (instance? js/CustomEvent ev)
+            entry-t  (.now js/performance)
+            ;; Build a minimal payload for the rate-limit lookup.
+            ;; classify-dispatch is cheap (a couple of branches) and
+            ;; only invoked for CustomEvents where rate-limit applies.
+            payload  (when custom?
+                       {:type       (classify-dispatch this ev)
+                        :event-name (.-type ev)})]
+        (if (and custom? (rate-limited? @state payload this entry-t))
+          ;; Sample-rate cap fired: pass through with no frame, no
+          ;; record. Records produced inside the handler attribute to
+          ;; whatever frame is already on the cause-stack (could be
+          ;; nil) — same as for any rate-limited dispatch, no
+          ;; dangling causeId references.
+          (.call orig this ev)
+          (let [reserved-id (reserve-id!)
+                _           (swap! cause-stack conj reserved-id)
+                result      (try
+                              (.call orig this ev)
+                              (finally
+                                (swap! cause-stack pop)))]
+            (when custom?
+              (try
+                (push-dispatch-record! this ev reserved-id entry-t)
+                (remember-rate-limit! payload this entry-t)
+                (catch :default _ nil)))
+            result))))))
 
 (def ^:private wrapper-stamp-key
   "Marker stamped onto our wrapper function so install-once can detect
@@ -415,9 +504,19 @@
          :next-id           0
          :sessions          []
          :next-session-id   0
-         :active-session-id nil)
+         :active-session-id nil
+         :rate-limit        {})
   (schedule-notify!)
   nil)
+
+(defn forensic?
+  "True when the recorder was installed in forensic mode
+   (?baredom-trace-history=raw or window.BAREDOM_TRACE_HISTORY=\"raw\").
+   Forensic mode disables the sample-rate cap and is the dock's signal
+   to default the :state category checkbox to ON. Captured at install
+   time so per-record reads don't have to touch window state."
+  []
+  (:forensic? @state))
 
 ;; ---------------------------------------------------------------------------
 ;; Sessions — bounded recording slices the user explicitly captures
@@ -579,7 +678,9 @@
    above zero (which would silently disable all recording until the
    page reloads)."
   []
-  (swap! state assoc :capacity (read-capacity))
+  (swap! state assoc
+         :capacity  (read-capacity)
+         :forensic? (model/forensic? js/window))
   (reset! du/trace-hook record!)
   (reset! comp/lifecycle-hook record!)
   (reset! suppression-depth 0)

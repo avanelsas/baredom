@@ -41,13 +41,21 @@
 ;; fixtures when any test in the namespace uses (async ...)). The
 ;; async-callback-breaks-chain-test uses setTimeout, so we need the map form
 ;; even for the otherwise-synchronous tests.
+;;
+;; Most recorder tests fire multiple records with the same key in rapid
+;; succession (the "monotonic ids" / "lifecycle ordering" / "session
+;; bounds" assertions all assume every record lands). Forensic mode
+;; disables the PR 9 sample-rate cap so those assertions hold; the
+;; rate-limit-specific tests below explicitly toggle it back.
 (use-fixtures :each
   {:before (fn []
+             (gobj/set js/window "BAREDOM_TRACE_HISTORY" "raw")
              (recorder/install!)
              (recorder/clear!))
    :after  (fn []
              (recorder/uninstall!)
-             (recorder/clear!))})
+             (recorder/clear!)
+             (gobj/remove js/window "BAREDOM_TRACE_HISTORY"))})
 
 (defn- make-el
   [tag]
@@ -933,3 +941,139 @@
       (is (fn? (gobj/get api "stopSession")))
       (is (fn? (gobj/get api "sessions")))
       (is (fn? (gobj/get api "sessionRecords"))))))
+
+;; ── PR 9: sample-rate cap ───────────────────────────────────────────────────
+;;
+;; The shared fixture installs in forensic mode (=raw) so most tests
+;; aren't subject to the 16ms cap. These tests temporarily flip the
+;; flag back to normal mode to actually exercise the cap.
+
+(defn- with-normal-mode!
+  "Reinstall the recorder in normal (non-forensic) mode for the
+   duration of `f`. Restores forensic mode + clears state on the way
+   out so the next test starts clean."
+  [f]
+  (recorder/uninstall!)
+  (gobj/set js/window "BAREDOM_TRACE_HISTORY" true)
+  (recorder/install!)
+  (recorder/clear!)
+  (try (f)
+       (finally
+         (recorder/uninstall!)
+         (gobj/set js/window "BAREDOM_TRACE_HISTORY" "raw")
+         (recorder/install!)
+         (recorder/clear!))))
+
+(deftest forensic-fn-reflects-install-mode-test
+  (testing "recorder/forensic? returns true after the shared fixture's
+            =raw install, and false after a normal-mode reinstall"
+    (is (true? (recorder/forensic?))
+        "fixture installed in forensic mode")
+    (with-normal-mode!
+     #(is (false? (recorder/forensic?))))))
+
+(deftest rate-limit-drops-duplicate-setv-within-window-test
+  (testing "two du/setv! calls on the same element + field within 16ms
+            land as a single record"
+    (with-normal-mode!
+     (fn []
+       (let [el (make-el mutation-tag)]
+         ;; Prime: first setv records and assigns a componentId.
+         (du/setv! el "k" "v1")
+         (is (= 1 (count-records)))
+         ;; Second setv (same key, immediately) is dropped by the cap.
+         (du/setv! el "k" "v2")
+         (is (= 1 (count-records))
+             "duplicate within 16ms is dropped"))))))
+
+(deftest rate-limit-allows-different-key-test
+  (testing "two setv! on the same element with DIFFERENT field names
+            both record — keys are (componentId, field)"
+    (with-normal-mode!
+     (fn []
+       (let [el (make-el mutation-tag)]
+         (du/setv! el "k1" "v1")
+         (du/setv! el "k2" "v2")
+         (is (= 2 (count-records))))))))
+
+(deftest rate-limit-allows-different-component-test
+  (testing "the same field on different elements both record"
+    (with-normal-mode!
+     (fn []
+       (let [a (make-el mutation-tag)
+             b (make-el mutation-tag)]
+         (du/setv! a "k" "v")
+         (du/setv! b "k" "v")
+         (is (= 2 (count-records))))))))
+
+(deftest rate-limit-exempts-lifecycle-test
+  (testing "rapid attribute changes through native setAttribute fire
+            lifecycle/attribute-changed records — those are exempt
+            from the cap so reconnection storms remain visible"
+    (with-normal-mode!
+     (fn []
+       (with-test-el
+        (fn [^js el]
+          (recorder/clear!)
+          (.setAttribute el "foo" "1")
+          (.setAttribute el "foo" "2")
+          (.setAttribute el "foo" "3")
+          (let [recs   (array-seq (recorder/records))
+                lc-cnt (count (filter #(= "lifecycle/attribute-changed"
+                                          (.-type ^js %)) recs))]
+            (is (= 3 lc-cnt) "all three lifecycle records preserved"))))))))
+
+(deftest rate-limit-resets-on-clear-test
+  (testing "clear! drops the rate-limit map so a setv after clear
+            records immediately even if the same key fired pre-clear"
+    (with-normal-mode!
+     (fn []
+       (let [el (make-el mutation-tag)]
+         (du/setv! el "k" "v1")
+         (du/setv! el "k" "v2")  ; dropped by cap
+         (is (= 1 (count-records)))
+         (recorder/clear!)
+         (du/setv! el "k" "v3")
+         (is (= 1 (count-records))
+             "post-clear setv records — map was reset"))))))
+
+(deftest rate-limit-bypassed-in-forensic-mode-test
+  (testing "fixture-installed forensic mode lets back-to-back same-key
+            records both land — the explicit baseline for all the
+            other tests in this namespace that fire dups by design"
+    (let [el (make-el mutation-tag)]
+      (du/setv! el "k" "v1")
+      (du/setv! el "k" "v2")
+      (du/setv! el "k" "v3")
+      (is (= 3 (count-records))))))
+
+(deftest rate-limit-event-dispatch-via-wrapper-test
+  (testing "the dispatch wrapper rate-limits CustomEvents the same way:
+            two dispatches with the same event-name on the same element
+            within 16ms yield one record. The first goes through normal
+            cause-frame logic; the second passes through silently."
+    (with-normal-mode!
+     (fn []
+       (let [el (make-el mutation-tag)]
+         ;; Prime to get a componentId stamped.
+         (du/setv! el "__init" "v")
+         (recorder/clear!)
+         ;; Two CustomEvent dispatches with the same name back-to-back.
+         (du/dispatch! el "click" #js {})
+         (du/dispatch! el "click" #js {})
+         (let [recs (filter #(= "event/dispatch" (.-type ^js %))
+                            (array-seq (recorder/records)))]
+           (is (= 1 (count recs)) "second dispatch was rate-limited")))))))
+
+(deftest rate-limit-first-record-from-fresh-element-passes-test
+  (testing "before an element has a componentId stamped, rate-limit-key
+            returns nil and the record always passes. Verifies the
+            first event from any fresh element lands."
+    (with-normal-mode!
+     (fn []
+       ;; A fresh element with no prior interaction. Even if some other
+       ;; test left rate-limit state in place, this element's cid is
+       ;; nil so the cap doesn't apply.
+       (let [el (make-el mutation-tag)]
+         (du/setv! el "first-ever" "v")
+         (is (= 1 (count-records))))))))

@@ -254,8 +254,57 @@
     (is (true? (model/enabled? (fake-window {:flag true}))))))
 
 (deftest enabled-flag-truthy-but-not-true-test
-  (testing "BAREDOM_TRACE_HISTORY must be exactly true (truthy strings ignored)"
+  (testing "BAREDOM_TRACE_HISTORY must be exactly true or \"raw\"
+            (other truthy strings ignored)"
     (is (false? (model/enabled? (fake-window {:flag "yes"}))))))
+
+(deftest enabled-via-raw-flag-test
+  (testing "BAREDOM_TRACE_HISTORY = \"raw\" activates (forensic mode is
+            still an active mode)"
+    (is (true? (boolean (model/enabled? (fake-window {:flag "raw"})))))))
+
+;; ── forensic? ───────────────────────────────────────────────────────────────
+
+(deftest forensic-false-by-default-test
+  (testing "no flag, no URL = not forensic"
+    (is (false? (model/forensic? (fake-window {}))))))
+
+(deftest forensic-via-window-flag-raw-test
+  (testing "BAREDOM_TRACE_HISTORY = \"raw\" enables forensic mode"
+    (is (true? (model/forensic? (fake-window {:flag "raw"}))))))
+
+(deftest forensic-via-flag-true-not-raw-test
+  (testing "BAREDOM_TRACE_HISTORY = true is normal mode, NOT forensic"
+    (is (false? (model/forensic? (fake-window {:flag true}))))))
+
+(deftest forensic-via-url-param-raw-test
+  (testing "URL containing ?baredom-trace-history=raw enables forensic"
+    (is (true? (boolean
+                (model/forensic?
+                 (fake-window {:search "?baredom-trace-history=raw"})))))))
+
+(deftest forensic-bare-url-param-not-forensic-test
+  (testing "Bare ?baredom-trace-history (no =raw) is normal mode"
+    (is (false? (model/forensic?
+                 (fake-window {:search "?baredom-trace-history"}))))))
+
+;; ── default-categories ──────────────────────────────────────────────────────
+
+(deftest default-categories-normal-excludes-state-test
+  (testing "in normal mode :state is the only excluded category — :events,
+            :dom, :lifecycle are on so the timeline focuses on user-relevant
+            records by default"
+    (let [cats (model/default-categories false)]
+      (is (contains? cats :events))
+      (is (contains? cats :dom))
+      (is (contains? cats :lifecycle))
+      (is (not (contains? cats :state))))))
+
+(deftest default-categories-forensic-includes-all-test
+  (testing "in forensic mode every category is on — users opting in to
+            =raw want every record visible"
+    (is (= (set model/all-categories)
+           (model/default-categories true)))))
 
 ;; ── categorize-type ─────────────────────────────────────────────────────────
 
