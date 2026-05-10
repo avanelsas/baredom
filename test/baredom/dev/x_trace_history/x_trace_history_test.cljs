@@ -871,3 +871,129 @@
                       (is (= target-id (gobj/get dock model/k-selected-id))
                           "selection moved to the linked record")
                       (done))))))))))))
+
+;; ---------------------------------------------------------------------------
+;; PR 8 — Record/Stop sessions UI
+;; ---------------------------------------------------------------------------
+
+(deftest record-button-toggles-active-session-test
+  (testing "clicking the Record x-button starts a session; clicking
+            again stops it. Label flips to 'Stop' while active."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js host (query dock "[data-x-th-action='record']")]
+        (is (= "Record" (.-textContent host)) "starts in idle state")
+        (.click host)
+        (after-frames 2
+          (fn []
+            (is (some? (recorder/active-session-id)) "session opened")
+            (is (= "Stop" (.-textContent host)) "label flips to Stop")
+            (.click host)
+            (after-frames 2
+              (fn []
+                (is (nil? (recorder/active-session-id)) "session closed")
+                (is (= "Record" (.-textContent host)) "label back to Record")
+                (done)))))))))
+
+(deftest sessions-strip-hidden-when-no-sessions-test
+  (testing "the strip is hidden until at least one session exists"
+    (let [^js dock     (mount-dock!)
+          ^js strip-el (query dock "[data-x-th-sessions]")]
+      (is (true? (.hasAttribute strip-el "hidden"))))))
+
+(deftest sessions-strip-shows-live-and-session-chip-test
+  (testing "after a recording, the strip becomes visible with a Live
+            chip + one chip per session, and Live is the active chip
+            by default"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (recorder/start-session!)
+        (du/dispatch! btn "click" #js {})
+        (recorder/stop-session!)
+        (after-frames 2
+          (fn []
+            (let [^js strip (query dock "[data-x-th-sessions]")
+                  chips     (.querySelectorAll strip "[data-x-th-session]")]
+              (is (false? (.hasAttribute strip "hidden")))
+              (is (= 2 (.-length chips)) "Live + Session 0")
+              (let [^js live-chip (aget chips 0)]
+                (is (= "live" (.getAttribute live-chip "data-x-th-session")))
+                (is (.contains (.-classList live-chip) "active")
+                    "Live is the active chip by default"))
+              (done))))))))
+
+(deftest session-chip-click-switches-view-test
+  (testing "clicking a session chip activates that session as the view"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            id       (recorder/start-session!)]
+        (du/dispatch! btn "click" #js {})
+        (recorder/stop-session!)
+        (after-frames 2
+          (fn []
+            (let [^js chip (query dock
+                                  (str "[data-x-th-session='" id "']"))]
+              (.click chip))
+            (after-frames 1
+              (fn []
+                (is (= [:session 0] (gobj/get dock model/k-view))
+                    "view switched to the clicked session")
+                (let [^js active (query dock ".session-chip.active")]
+                  (is (= "0" (.getAttribute active "data-x-th-session"))))
+                (done)))))))))
+
+(deftest live-view-shows-all-records-test
+  (testing "switching back to the Live chip restores the full timeline"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "before" #js {})
+        (recorder/start-session!)
+        (du/dispatch! btn "inside" #js {})
+        (recorder/stop-session!)
+        (after-frames 2
+          (fn []
+            (.click ^js (query dock "[data-x-th-session='0']"))
+            (after-frames 1
+              (fn []
+                (is (= 1 (dot-count dock))
+                    "session view shows only the in-session record")
+                (.click ^js (query dock "[data-x-th-session='live']"))
+                (after-frames 1
+                  (fn []
+                    (is (= 2 (dot-count dock))
+                        "live view shows both records")
+                    (is (= :live (gobj/get dock model/k-view)))
+                    (done)))))))))))
+
+(deftest per-session-scrubber-state-test
+  (testing "each view keeps its own selection; switching back to Live
+            preserves what was selected there"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "live-only" #js {})
+        (recorder/start-session!)
+        (du/dispatch! btn "in-session" #js {})
+        (recorder/stop-session!)
+        (after-frames 2
+          (fn []
+            (.dispatchEvent ^js (first (array-seq (query-all dock "circle.dot")))
+                            (js/MouseEvent. "click" #js {:bubbles true}))
+            (after-frames 1
+              (fn []
+                (let [live-sel (gobj/get dock model/k-selected-id)]
+                  (.click ^js (query dock "[data-x-th-session='0']"))
+                  (after-frames 1
+                    (fn []
+                      (let [^js detail (query dock "[data-x-th-detail]")]
+                        (is (true? (.hasAttribute detail "hidden"))
+                            "session view starts with no selection"))
+                      (.click ^js (query dock "[data-x-th-session='live']"))
+                      (after-frames 1
+                        (fn []
+                          (is (= live-sel (gobj/get dock model/k-selected-id))
+                              "live selection preserved across view switch")
+                          (done))))))))))))))

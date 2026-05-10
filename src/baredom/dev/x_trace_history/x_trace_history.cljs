@@ -67,10 +67,14 @@
   (str "<div class='dock'>"
        "<div class='header'>"
        "<span class='title'>x-trace-history</span>"
-       "<x-button data-x-th-action='pause' size='sm' variant='ghost'>Pause</x-button>"
-       "<x-button data-x-th-action='clear' size='sm' variant='ghost'>Clear</x-button>"
+       "<x-button data-x-th-action='pause'  size='sm' variant='ghost'>Pause</x-button>"
+       "<x-button data-x-th-action='record' size='sm' variant='ghost'>Record</x-button>"
+       "<x-button data-x-th-action='clear'  size='sm' variant='ghost'>Clear</x-button>"
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
+       ;; Session strip: hidden by default; render! shows it once the
+       ;; user has captured at least one session. Populated dynamically.
+       "<div class='sessions' data-x-th-sessions hidden></div>"
        "<div class='filters'>"
        ;; <option selected> (rather than value='all' on the host)
        ;; survives x-select's sync-options! clone path. value-on-host
@@ -198,6 +202,58 @@
     ;; Use the property setter (gobj/set won't reach the accessor).
     (set! (.-pressed btn) paused?)))
 
+(defn- refresh-record-btn!
+  "Pause/Resume-style toggle for the Record button. While a session is
+   active the label reads 'Stop' and the button shows pressed."
+  [^js btn]
+  (let [active? (some? (recorder/active-session-id))]
+    (set! (.-textContent btn) (if active? "Stop" "Record"))
+    (set! (.-pressed btn) active?)))
+
+;; ---------------------------------------------------------------------------
+;; Session strip rendering
+;; ---------------------------------------------------------------------------
+
+(defn- session-chip-html
+  "One chip per session. data-x-th-session is `live` for the live view
+   or the numeric session id otherwise. The active flag styles the
+   currently-viewed chip; the recording flag adds the live-dot pulse
+   to whichever session is currently being captured."
+  [{:keys [chip-key active? recording? label]}]
+  (str "<button class='session-chip" (when active? " active") "' "
+       "type='button' data-x-th-session='" (escape-html chip-key) "'>"
+       (when recording? "<span class='live-dot' aria-hidden='true'></span>")
+       (escape-html label)
+       "</button>"))
+
+(defn- session-strip-html
+  "Build the strip: a Live chip plus one chip per recorded session,
+   sorted by session id ascending. Returns an empty string when no
+   sessions exist (the strip is then hidden)."
+  [^js sessions ^js view active-recording-id]
+  (let [view-id (model/view-id view)
+        live    {:chip-key   "live"
+                 :active?    (model/live-view? view)
+                 :recording? false
+                 :label      "Live"}
+        chips   (mapv (fn [^js s]
+                        (let [id (.-id s)]
+                          {:chip-key   (str id)
+                           :active?    (= id view-id)
+                           :recording? (= id active-recording-id)
+                           :label      (str (.-label s)
+                                            " · " (.-recordCount s))}))
+                      (array-seq sessions))]
+    (apply str (map session-chip-html (cons live chips)))))
+
+(defn- refresh-sessions-strip!
+  [^js sessions-el ^js sessions ^js view active-recording-id]
+  (set! (.-innerHTML sessions-el)
+        (session-strip-html sessions view active-recording-id))
+  (if (zero? (.-length sessions))
+    (.setAttribute sessions-el "hidden" "")
+    (.removeAttribute sessions-el "hidden")))
+
 (defn- record-link-summary
   "Compact one-line text for a cause/effect link button: '#id tag · type · preview'.
    payload-preview already handles the per-type rendering."
@@ -262,13 +318,49 @@
       (.setAttribute detail-el   "hidden" "")
       (.setAttribute splitter-el "hidden" ""))))
 
+;; ---------------------------------------------------------------------------
+;; View / selection helpers
+;; ---------------------------------------------------------------------------
+
+(defn- view-key
+  "Stable string key for a view, so the per-view selection map can use
+   it as a JS-object key. Live → 'live'; session → 'session:N'."
+  [view]
+  (cond
+    (model/live-view? view)    "live"
+    (model/session-view? view) (str "session:" (model/view-id view))
+    :else                      "live"))
+
+(defn- get-selected
+  "Read the selected record-id for the active view from k-view-selected."
+  [^js el]
+  (let [view (gobj/get el model/k-view)
+        ^js m (gobj/get el model/k-view-selected)]
+    (when m (gobj/get m (view-key view)))))
+
+(defn- set-selected!
+  "Write the selected record-id for the active view. Mirrors to the
+   legacy k-selected-id slot when the view is Live so existing test
+   assertions and any external readers keep working."
+  [^js el id]
+  (let [view  (gobj/get el model/k-view)
+        ^js m (or (gobj/get el model/k-view-selected) (js-obj))
+        k     (view-key view)]
+    (if (nil? id)
+      (gobj/remove m k)
+      (gobj/set    m k id))
+    (gobj/set el model/k-view-selected m)
+    (when (model/live-view? view)
+      (gobj/set el model/k-selected-id id))
+    nil))
+
 (defn- effective-selection!
   "Return the currently-selected record IFF it still passes the active
    filter; otherwise clear the dock's selected-id and return nil. Keeps
    the detail pane in sync with filter changes — selecting a dot, then
    filtering it out, drops the detail rather than leaving an orphan."
   [^js el ^js recs spec]
-  (let [sel-id (gobj/get el model/k-selected-id)
+  (let [sel-id (get-selected el)
         rec    (model/find-record-by-id recs sel-id)]
     (cond
       (nil? rec)
@@ -278,15 +370,32 @@
       rec
 
       :else
-      (do (gobj/set el model/k-selected-id nil) nil))))
+      (do (set-selected! el nil) nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Render orchestrator
 ;; ---------------------------------------------------------------------------
 
+(defn- view-records
+  "Pick the record source for the active view. Live → the full ring
+   buffer; session N → the records inside that session's t-range. If a
+   session has been deleted (or its id is stale) we fall back to live
+   so the dock keeps rendering instead of going blank."
+  [view]
+  (cond
+    (model/live-view? view)
+    (recorder/records)
+
+    (model/session-view? view)
+    (let [recs (recorder/session-records (model/view-id view))]
+      (if (zero? (.-length recs)) (recorder/records) recs))
+
+    :else
+    (recorder/records)))
+
 (defn- render!
-  "Repaint timeline, count, hint, detail pane, and pause-button state from
-   current recorder + filter + selection state."
+  "Repaint timeline, count, hint, detail pane, pause-button, record-button
+   and session strip from current recorder + filter + view + selection state."
   [^js el]
   (let [^js lanes-el    (gobj/get el model/k-lanes-el)
         ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
@@ -295,20 +404,27 @@
         ^js splitter-el (gobj/get el model/k-splitter-el)
         ^js hint-el     (gobj/get el model/k-hint-el)
         ^js pause-btn   (gobj/get el model/k-pause-btn)
+        ^js record-btn  (gobj/get el model/k-record-btn)
+        ^js sessions-el (gobj/get el model/k-sessions-el)
         spec            (gobj/get el model/k-filter)
-        ^js recs        (recorder/records)
+        view            (gobj/get el model/k-view)
+        ^js recs        (view-records view)
         filtered        (model/filter-records recs spec)
         cnt-filtered    (count filtered)
         cnt-total       (.-length recs)
         bounds          (model/time-bounds filtered)
         lanes           (model/active-lanes filtered)
-        sel-rec         (effective-selection! el recs spec)]
+        sel-rec         (effective-selection! el recs spec)
+        ^js sessions    (recorder/sessions)
+        active-rec-id   (recorder/active-session-id)]
     (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-rec (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
-    (refresh-detail! detail-el splitter-el recs sel-rec)
-    (refresh-pause-btn! pause-btn)))
+    (refresh-detail!         detail-el splitter-el recs sel-rec)
+    (refresh-pause-btn!      pause-btn)
+    (refresh-record-btn!     record-btn)
+    (refresh-sessions-strip! sessions-el sessions view active-rec-id)))
 
 ;; ---------------------------------------------------------------------------
 ;; Click + tooltip + filter handlers
@@ -327,18 +443,39 @@
   [^js el ^js target]
   (when (circle-target? target)
     (let [id     (read-dot-id target)
-          curr   (gobj/get el model/k-selected-id)
+          curr   (get-selected el)
           new-id (if (= id curr) nil id)]
-      (gobj/set el model/k-selected-id new-id)
+      (set-selected! el new-id)
       (render! el))))
 
 (defn- on-action-click!
   [^js el ^js target]
   (when-let [^js btn (.closest target "[data-x-th-action]")]
     (case (.getAttribute btn "data-x-th-action")
-      "pause" (if (recorder/paused?) (recorder/resume!) (recorder/pause!))
-      "clear" (do (gobj/set el model/k-selected-id nil) (recorder/clear!))
+      "pause"  (if (recorder/paused?) (recorder/resume!) (recorder/pause!))
+      "record" (if (some? (recorder/active-session-id))
+                 (recorder/stop-session!)
+                 (recorder/start-session!))
+      ;; Clear empties the buffer AND drops sessions; reset all per-view
+      ;; selections so we don't display stale ids after the buffer rolls.
+      "clear"  (do (gobj/set el model/k-view-selected (js-obj))
+                   (gobj/set el model/k-selected-id nil)
+                   (recorder/clear!))
       nil)))
+
+(defn- on-session-chip-click!
+  "Switch the dock's view when the user clicks a chip in the session
+   strip. data-x-th-session is 'live' or a numeric session id; the
+   chip's view becomes the active view and render! repaints from the
+   new record source."
+  [^js el ^js target]
+  (when-let [^js btn (.closest target "[data-x-th-session]")]
+    (let [k        (.getAttribute btn "data-x-th-session")
+          new-view (if (= k "live")
+                     :live
+                     [:session (js/parseInt k 10)])]
+      (gobj/set el model/k-view new-view)
+      (render! el))))
 
 (defn- on-lane-label-click!
   "Toggle the tag filter for the clicked lane. Clicking the same lane label
@@ -365,16 +502,17 @@
     (when-let [s (.getAttribute btn "data-x-th-link-id")]
       (let [id (js/parseInt s 10)]
         (when-not (js/isNaN id)
-          (gobj/set el model/k-selected-id id)
+          (set-selected! el id)
           (render! el))))))
 
 (defn- handle-click!
   [^js el ^js e]
   (let [^js target (.-target e)]
-    (on-action-click!      el target)
-    (on-lane-label-click!  el target)
-    (on-detail-link-click! el target)
-    (on-dot-click!         el target)))
+    (on-action-click!       el target)
+    (on-session-chip-click! el target)
+    (on-lane-label-click!   el target)
+    (on-detail-link-click!  el target)
+    (on-dot-click!          el target)))
 
 (defn- handle-tag-change!
   "Apply a new tag filter from a select-change detail value. The 'all'
@@ -475,7 +613,7 @@
   (let [target-t    (model/time-from-x x bounds plot-w)
         ^js nearest (model/nearest-record filtered target-t)]
     (when nearest
-      (gobj/set el model/k-selected-id (.-id nearest))
+      (set-selected! el (.-id nearest))
       (render! el))))
 
 (defn- start-scrub!
@@ -515,13 +653,14 @@
 
 (defn- step-selection!
   [^js el dir]
-  (let [spec        (gobj/get el model/k-filter)
-        ^js recs    (recorder/records)
-        filtered    (model/filter-records recs spec)
-        curr-id     (gobj/get el model/k-selected-id)
-        ^js next-r  (model/step-record filtered curr-id dir)]
+  (let [spec       (gobj/get el model/k-filter)
+        view       (gobj/get el model/k-view)
+        ^js recs   (view-records view)
+        filtered   (model/filter-records recs spec)
+        curr-id    (get-selected el)
+        ^js next-r (model/step-record filtered curr-id dir)]
     (when next-r
-      (gobj/set el model/k-selected-id (.-id next-r))
+      (set-selected! el (.-id next-r))
       (render! el))))
 
 (def ^:private form-control-tags
@@ -615,7 +754,9 @@
   (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
   (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
   (gobj/set el model/k-tag-select-el (.querySelector shadow "[data-x-th-tag]"))
-  (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']")))
+  (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
+  (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
+  (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]")))
 
 (defn- bind-listeners!
   [^js el ^js shadow]
@@ -678,7 +819,9 @@
           (cache-refs! el shadow)
           (gobj/set el model/k-filter
                     {:tag nil :categories (set model/all-categories)})
-          (gobj/set el model/k-selected-id nil)
+          (gobj/set el model/k-view          :live)
+          (gobj/set el model/k-view-selected (js-obj))
+          (gobj/set el model/k-selected-id   nil)
           (bind-listeners! el shadow)
           (let [tok (recorder/subscribe! (fn [] (render! el)))]
             (gobj/set el model/k-sub-token tok))
