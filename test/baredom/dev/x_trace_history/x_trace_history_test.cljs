@@ -760,6 +760,45 @@
                 (is (nil? (query dock "[data-x-th-detail-effects]")))
                 (done)))))))))
 
+(deftest pause-button-press-stays-out-of-trace-test
+  (testing "PR-B + PR-A: clicking the inner native button inside the
+            Pause x-button fires its press / press-start / press-end
+            CustomEvents, but the recorder's internal-host boundary
+            suppresses them — the trace stays empty even though pause
+            actually toggled."
+    (async done
+      (let [^js dock      (mount-dock!)
+            ^js host      (query dock "[data-x-th-action='pause']")
+            ^js inner-btn (.querySelector ^js (.-shadowRoot host) "button")]
+        (is (some? inner-btn) "x-button exposes its inner button via open shadow")
+        ;; Trigger x-button's full click chain so it dispatches press,
+        ;; press-start, press-end, etc.
+        (.click inner-btn)
+        (after-frames 2
+          (fn []
+            (is (true? (recorder/paused?)) "pause toggled via bubbled click")
+            (is (zero? (.-length (recorder/records)))
+                "no records added — boundary suppressed all dock-internal events")
+            (done)))))))
+
+(deftest pause-button-pressed-attribute-reflects-state-test
+  (testing "refresh-pause-btn! sets the x-button :pressed property,
+            which reflects to the `pressed` attribute and shows the
+            paused styling"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js host (query dock "[data-x-th-action='pause']")]
+        (is (false? (.hasAttribute host "pressed")) "starts unpressed")
+        (recorder/pause!)
+        (after-frames 2
+          (fn []
+            (is (true? (.hasAttribute host "pressed")) "pressed reflects after pause")
+            (recorder/resume!)
+            (after-frames 2
+              (fn []
+                (is (false? (.hasAttribute host "pressed")) "pressed reflects after resume")
+                (done)))))))))
+
 (deftest detail-pane-link-click-jumps-selection-test
   (testing "clicking an effect link in the detail pane moves the
             selection to the linked record"

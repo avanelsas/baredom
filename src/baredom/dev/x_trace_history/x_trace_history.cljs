@@ -12,7 +12,8 @@
    [goog.object :as gobj]
    [baredom.dev.x-debug-registry :as registry]
    [baredom.dev.x-trace-history.model :as model]
-   [baredom.dev.x-trace-history.recorder :as recorder]))
+   [baredom.dev.x-trace-history.recorder :as recorder]
+   [baredom.exports.x-button :as x-button-export]))
 
 ;; ---------------------------------------------------------------------------
 ;; Constants
@@ -53,13 +54,19 @@
 
 (defn- skeleton-html
   "Static dock skeleton. The timeline body is populated dynamically by
-   render!; the tooltip starts hidden and is shown on dot hover."
+   render!; the tooltip starts hidden and is shown on dot hover.
+
+   The Pause and Clear buttons are <x-button> instances. Click events
+   still bubble natively from the host, so the existing click delegate
+   on the dock root works unchanged. The recorder's internal-host
+   boundary (PR-A) suppresses x-button's own `press`/`hover` events
+   so they never appear in the trace."
   []
   (str "<div class='dock'>"
        "<div class='header'>"
        "<span class='title'>x-trace-history</span>"
-       "<button class='btn' data-x-th-action='pause' type='button'>Pause</button>"
-       "<button class='btn' data-x-th-action='clear' type='button'>Clear</button>"
+       "<x-button data-x-th-action='pause' size='sm' variant='ghost'>Pause</x-button>"
+       "<x-button data-x-th-action='clear' size='sm' variant='ghost'>Clear</x-button>"
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
        "<div class='filters'>"
@@ -173,9 +180,10 @@
   [^js btn]
   (let [paused? (recorder/paused?)]
     (set! (.-textContent btn) (if paused? "Resume" "Pause"))
-    (if paused?
-      (.add    (.-classList btn) "paused")
-      (.remove (.-classList btn) "paused"))))
+    ;; x-button reflects the `pressed` boolean property to the
+    ;; `pressed` attribute and reads either as the source of truth.
+    ;; Use the property setter (gobj/set won't reach the accessor).
+    (set! (.-pressed btn) paused?)))
 
 (defn- record-link-summary
   "Compact one-line text for a cause/effect link button: '#id tag · type · preview'.
@@ -187,15 +195,17 @@
            (str " · " preview)))))
 
 (defn- detail-link-html
-  "One <button> for the cause/effect rows. data-x-th-link-id is read by
-   on-detail-link-click! to set selection."
+  "One <x-button> for the cause/effect rows. data-x-th-link-id is read
+   by on-detail-link-click! to set selection. The host element bubbles
+   native click; the dock's internal-host boundary suppresses x-button's
+   own press/hover events from the trace."
   [^js r]
   (let [text (record-link-summary r)]
-    (str "<button class='detail-link' type='button' "
+    (str "<x-button class='detail-link' size='sm' variant='ghost' "
          "data-x-th-link-id='" (.-id r) "' "
          "title='" (escape-html text) "'>"
          (escape-html text)
-         "</button>")))
+         "</x-button>")))
 
 (defn- cause-section-html
   [^js cause-rec]
@@ -549,16 +559,20 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- attach-skeleton!
-  "Build shadow root, inject skeleton + style, return the shadow root."
+  "Build shadow root, inject skeleton + style, return the shadow root.
+
+   Sets innerHTML directly on the shadow root (rather than parsing
+   into a detached temp div first) so any custom-element children —
+   currently the Pause/Clear x-buttons — are upgraded INSIDE the
+   dock's marked shadow tree. Their attributeChangedCallback fires
+   immediately inside the boundary (PR-A), so initial size/variant
+   attribute changes are correctly suppressed. dock-css is verified
+   to contain no `</style>` substring so embedding it inside a
+   <style> tag is safe."
   [^js el]
-  (let [^js shadow (.attachShadow el #js {:mode "open"})
-        ^js style  (.createElement js/document "style")]
-    (set! (.-textContent style) model/dock-css)
-    (.appendChild shadow style)
-    (let [^js wrap (.createElement js/document "div")]
-      (set! (.-innerHTML wrap) (skeleton-html))
-      (while (.-firstChild wrap)
-        (.appendChild shadow (.-firstChild wrap))))
+  (let [^js shadow (.attachShadow el #js {:mode "open"})]
+    (set! (.-innerHTML shadow)
+          (str "<style>" model/dock-css "</style>" (skeleton-html)))
     shadow))
 
 (defn- cache-refs!
@@ -664,11 +678,13 @@
       (.appendChild (.-body js/document) el))))
 
 (defn register!
-  "Single entry point: install recorder hooks (idempotent), define the
+  "Single entry point: install recorder hooks (idempotent), register the
+   library components used inside the dock (x-button), define the
    custom element (idempotent), and auto-mount the dock if activation is on.
    Defers mounting to DOMContentLoaded if document.body is not yet available."
   []
   (recorder/register!)
+  (x-button-export/register!)
   (when-not (.get js/customElements model/tag-name)
     (.define js/customElements model/tag-name (element-class)))
   (when (model/enabled? js/window)

@@ -217,15 +217,20 @@
   "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
    CLJS payload, reserves an id, and pushes a record onto the ring buffer.
 
-   When the dispatch-wrapper is active, :event/* payloads from the
-   du/dispatch*! post-hooks are skipped — the wrapper itself produced
-   the record before the post-hook fired."
+   Skipped under three conditions, BEFORE id reservation so internal
+   activity does not consume numeric ids that user-facing records would
+   otherwise occupy:
+   - dispatch-wrapper handles :event/* itself (gated to avoid double-record)
+   - payload's :el is inside a marked internal host (PR-A boundary)"
   [payload]
-  (when-not (and @wrapper-active?
-                 (contains? wrapper-handled-types (:type payload)))
-    (let [id (reserve-id!)
-          t  (.now js/performance)]
-      (push-record-with-id! payload id t))))
+  (let [type (:type payload)
+        ^js el (:el payload)]
+    (when-not (or (and @wrapper-active?
+                       (contains? wrapper-handled-types type))
+                  (inside-internal-host? el))
+      (let [id (reserve-id!)
+            t  (.now js/performance)]
+        (push-record-with-id! payload id t)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch wrapper — synchronous cause-id chain
