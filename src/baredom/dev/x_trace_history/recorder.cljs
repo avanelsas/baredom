@@ -1,7 +1,9 @@
 (ns baredom.dev.x-trace-history.recorder
   "Effects layer for x-trace-history: state atom, hook installation,
-   activation gating, JS API at window.BareDOM.traceHistory.*, and a small
-   subscriber API consumed by the dock UI.
+   activation gating, JS API at window.BareDOM.traceHistory.*, a
+   synchronous cause-id chain via a wrapper around
+   EventTarget.prototype.dispatchEvent, and a small subscriber API
+   consumed by the dock UI.
 
    See docs/x-trace-history-roadmap.md for the broader plan."
   (:require
@@ -36,6 +38,25 @@
 (defonce ^:private next-sub-token (atom 0))
 
 (defonce ^:private notify-pending? (atom false))
+
+;; Cause-id chain: a stack of reserved record-ids. The dispatch-wrapper
+;; pushes the reserved id of the dispatch on entry and pops on exit, so
+;; any record produced inside the synchronous extent of a dispatch reads
+;; (peek @cause-stack) to learn its cause. Empty when no dispatch is in
+;; flight (top-level records, or async callbacks).
+(defonce ^:private cause-stack (atom []))
+
+;; Original EventTarget.prototype.dispatchEvent, captured the first time
+;; the wrapper is installed. nil before any install! call. Re-exposed via
+;; uninstall? checks so the wrapper can pass through cleanly when
+;; trace-history is inactive.
+(defonce ^:private original-dispatch-event (atom nil))
+
+;; True between install! and uninstall!. The wrapper stays on the
+;; EventTarget prototype across uninstall (defonce-shaped install can
+;; only be done once safely), but its body checks this flag and falls
+;; back to the original implementation when false.
+(defonce ^:private wrapper-active? (atom false))
 
 ;; ---------------------------------------------------------------------------
 ;; Subscriber API
@@ -95,20 +116,33 @@
           (gobj/set el component-id-key next-id)
           [next-id true])))))
 
-(defn- record!
-  "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
-   CLJS payload, derives tag + component-id from the element, builds a JS
-   record, pushes onto the ring buffer, and (for new components) updates the
-   :components side-index."
-  [payload]
+(defn- reserve-id!
+  "Atomically claim the next record-id, returning the value. The dispatch
+   wrapper reserves an id at frame entry so any records produced by
+   handlers can stamp it as their causeId — even though the dispatch's
+   own record is pushed AFTER handlers complete."
+  []
+  (let [s (swap! state update :next-id inc)]
+    (dec (:next-id s))))
+
+(defn- push-record-with-id!
+  "Build and push a record with a pre-determined id and timestamp. Reads
+   `(peek @cause-stack)` to stamp the record's causeId. Updates the
+   :components side-index when a new component is observed.
+
+   Used by both the auto-id path (record!) and the wrapper path
+   (record-dispatch!)."
+  [payload id t]
   (let [s @state]
     (when-not (:paused? s)
       (let [^js el           (:el payload)
             tag              (model/tag-of el)
-            t                (.now js/performance)
             [cid new-cid?]   (resolve-component-id! el tag (:next-component-id s))
-            id               (:next-id s)
-            payload+         (assoc payload :tag tag :component-id cid)
+            cause-id         (peek @cause-stack)
+            payload+         (assoc payload
+                                    :tag tag
+                                    :component-id cid
+                                    :cause-id cause-id)
             rec              (model/make-record payload+ id t)
             new-recs         (model/push-record (:records s) rec (:capacity s))
             new-comps        (if new-cid?
@@ -117,10 +151,112 @@
             new-next-cid     (if new-cid? (inc cid) (:next-component-id s))]
         (swap! state assoc
                :records           new-recs
-               :next-id           (inc id)
                :next-component-id new-next-cid
                :components        new-comps)
         (schedule-notify!)))))
+
+(def ^:private wrapper-handled-types
+  "Payload types whose recording is handled by the dispatch-wrapper itself.
+   When the wrapper is active these are gated out of record! to avoid
+   double-recording — the wrapper produces them with the correct
+   reserved id and entry timestamp."
+  #{:event/dispatch :event/dispatch-cancelable :event/dispatch-document})
+
+(defn- record!
+  "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
+   CLJS payload, reserves an id, and pushes a record onto the ring buffer.
+
+   When the dispatch-wrapper is active, :event/* payloads from the
+   du/dispatch*! post-hooks are skipped — the wrapper itself produced
+   the record before the post-hook fired."
+  [payload]
+  (when-not (and @wrapper-active?
+                 (contains? wrapper-handled-types (:type payload)))
+    (let [id (reserve-id!)
+          t  (.now js/performance)]
+      (push-record-with-id! payload id t))))
+
+;; ---------------------------------------------------------------------------
+;; Dispatch wrapper — synchronous cause-id chain
+;; ---------------------------------------------------------------------------
+
+(defn- classify-dispatch
+  "Map a (target, event) pair to one of the three :event/* type keywords.
+   Document target wins regardless of bubbles/composed flags so external
+   document-level dispatches still classify cleanly."
+  [^js this ^js ev]
+  (cond
+    (identical? this js/document) :event/dispatch-document
+    (.-cancelable ev)             :event/dispatch-cancelable
+    :else                         :event/dispatch))
+
+(defn- push-dispatch-record!
+  "Push a record describing `ev` using the reserved id and entry-time
+   captured at wrapper entry. Read `defaultPrevented` post-handler so
+   it reflects the final value."
+  [^js this ^js ev reserved-id entry-t]
+  (let [type (classify-dispatch this ev)
+        payload {:type               type
+                 :el                 this
+                 :event-name         (.-type ev)
+                 :detail             (.-detail ev)
+                 :cancelable?        (.-cancelable ev)
+                 :default-prevented? (.-defaultPrevented ev)}]
+    (push-record-with-id! payload reserved-id entry-t)))
+
+(defn- wrapped-dispatch
+  "Body of the dispatchEvent wrapper. When wrapper-active? and not paused:
+     1. Reserve an id and capture entry-time.
+     2. Push the reserved id onto the cause stack so any records
+        produced by handlers stamp it as their causeId.
+     3. Call the original dispatchEvent (handlers run synchronously).
+     4. Pop the cause stack (in finally so a throwing handler still
+        unwinds cleanly).
+     5. For CustomEvents, push the dispatch's own record with the
+        reserved id and entry-time. Native browser events (Pointer/
+        Mouse/Keyboard/etc.) are NOT recorded — only their cause
+        frames are tracked, since recording every browser event would
+        flood the buffer.
+
+   When inactive or paused, pass straight through to the original."
+  [^js this ^js ev]
+  (let [^js orig @original-dispatch-event]
+    (if (or (not @wrapper-active?) (:paused? @state))
+      (.call orig this ev)
+      (let [reserved-id (reserve-id!)
+            entry-t     (.now js/performance)
+            _           (swap! cause-stack conj reserved-id)
+            result      (try
+                          (.call orig this ev)
+                          (finally
+                            (swap! cause-stack pop)))]
+        (when (instance? js/CustomEvent ev)
+          (try
+            (push-dispatch-record! this ev reserved-id entry-t)
+            (catch :default _ nil)))
+        result))))
+
+(def ^:private wrapper-stamp-key
+  "Marker stamped onto our wrapper function so install-once can detect
+   whether dispatchEvent has already been replaced (e.g. on hot-reload
+   or repeated install!)."
+  "__xTraceHistoryWrapped")
+
+(defn- install-dispatch-wrapper-once!
+  "Replace EventTarget.prototype.dispatchEvent with a stamped wrapper that
+   delegates to wrapped-dispatch. Idempotent: subsequent calls are
+   no-ops. The wrapper is permanent — uninstall! flips wrapper-active?
+   to false and the wrapper falls through to the original."
+  []
+  (let [^js proto (.-prototype js/EventTarget)
+        ^js curr  (.-dispatchEvent proto)]
+    (when-not (gobj/get curr wrapper-stamp-key)
+      (reset! original-dispatch-event curr)
+      (let [wrapped (fn [^js ev]
+                      (this-as ^js this
+                        (wrapped-dispatch this ev)))]
+        (gobj/set wrapped wrapper-stamp-key true)
+        (set! (.-dispatchEvent proto) wrapped)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Public API (exposed via window.BareDOM.traceHistory)
@@ -213,15 +349,22 @@
   (swap! state assoc :capacity (read-capacity))
   (reset! du/trace-hook record!)
   (reset! comp/lifecycle-hook record!)
+  (install-dispatch-wrapper-once!)
+  (reset! wrapper-active? true)
   (install-window-api!)
   nil)
 
 (defn uninstall!
   "Deactivate recording. Used by tests; not part of the consumer API.
-   Leaves the JS API in place so any console references remain valid."
+   Leaves the dispatchEvent wrapper installed (it falls through when
+   inactive) and the JS API in place so any console references remain
+   valid. Clears the cause stack so a leftover frame from an
+   interrupted dispatch can't taint subsequent records."
   []
   (reset! du/trace-hook nil)
   (reset! comp/lifecycle-hook nil)
+  (reset! wrapper-active? false)
+  (reset! cause-stack [])
   nil)
 
 ;; ---------------------------------------------------------------------------

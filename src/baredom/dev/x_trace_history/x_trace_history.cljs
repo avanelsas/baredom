@@ -8,6 +8,7 @@
    lane per component instance (Y), event time on X, dots coloured by
    category. Hover for tooltip, click to open the JSON detail pane."
   (:require
+   [clojure.string :as str]
    [goog.object :as gobj]
    [baredom.dev.x-debug-registry :as registry]
    [baredom.dev.x-trace-history.model :as model]
@@ -84,13 +85,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Timeline rendering
 ;; ---------------------------------------------------------------------------
-
-(defn- find-record-by-id
-  "Return the record with id `id`, or nil if not found / id non-numeric.
-   Delegates to Array.prototype.find for short-circuiting linear search."
-  [^js records id]
-  (when (number? id)
-    (.find records (fn [^js r] (= id (.-id r))))))
 
 (defn- lane-label-html
   [{:keys [lane-id tag] :as lane} active-tag]
@@ -183,11 +177,62 @@
       (.add    (.-classList btn) "paused")
       (.remove (.-classList btn) "paused"))))
 
+(defn- record-link-summary
+  "Compact one-line text for a cause/effect link button: '#id tag · type · preview'.
+   payload-preview already handles the per-type rendering."
+  [^js r]
+  (let [preview (model/payload-preview r)]
+    (str "#" (.-id r) " " (.-tag r) " · " (.-type r)
+         (when (and preview (not (str/blank? preview)))
+           (str " · " preview)))))
+
+(defn- detail-link-html
+  "One <button> for the cause/effect rows. data-x-th-link-id is read by
+   on-detail-link-click! to set selection."
+  [^js r]
+  (let [text (record-link-summary r)]
+    (str "<button class='detail-link' type='button' "
+         "data-x-th-link-id='" (.-id r) "' "
+         "title='" (escape-html text) "'>"
+         (escape-html text)
+         "</button>")))
+
+(defn- cause-section-html
+  [^js cause-rec]
+  (when cause-rec
+    (str "<div class='detail-section' data-x-th-detail-cause>"
+         "<div class='detail-label'>Caused by</div>"
+         (detail-link-html cause-rec)
+         "</div>")))
+
+(defn- effects-section-html
+  [{:keys [total records]}]
+  (when (pos? total)
+    (let [shown (count records)
+          label (if (= shown total)
+                  (str "Effects (" total ")")
+                  (str "Effects (" shown " of " total ")"))]
+      (str "<div class='detail-section' data-x-th-detail-effects>"
+           "<div class='detail-label'>" label "</div>"
+           (apply str (map detail-link-html records))
+           "</div>"))))
+
+(defn- detail-html
+  "Render the full detail pane for a selected record: JSON dump, the
+   cause link (if any), and the effects list (if any)."
+  [^js record ^js all-records]
+  (let [json-str (js/JSON.stringify record nil 2)
+        cause    (model/cause-of   all-records record)
+        effects  (model/effects-of all-records record)]
+    (str "<pre class='detail-json'>" (escape-html json-str) "</pre>"
+         (cause-section-html   cause)
+         (effects-section-html effects))))
+
 (defn- refresh-detail!
-  [^js detail-el ^js splitter-el ^js record]
+  [^js detail-el ^js splitter-el ^js all-records ^js record]
   (if record
     (do
-      (set! (.-textContent detail-el) (js/JSON.stringify record nil 2))
+      (set! (.-innerHTML detail-el) (detail-html record all-records))
       (.removeAttribute detail-el   "hidden")
       (.removeAttribute splitter-el "hidden"))
     (do
@@ -201,7 +246,7 @@
    filtering it out, drops the detail rather than leaving an orphan."
   [^js el ^js recs spec]
   (let [sel-id (gobj/get el model/k-selected-id)
-        rec    (find-record-by-id recs sel-id)]
+        rec    (model/find-record-by-id recs sel-id)]
     (cond
       (nil? rec)
       nil
@@ -239,7 +284,7 @@
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
-    (refresh-detail! detail-el splitter-el sel-rec)
+    (refresh-detail! detail-el splitter-el recs sel-rec)
     (refresh-pause-btn! pause-btn)))
 
 ;; ---------------------------------------------------------------------------
@@ -288,12 +333,25 @@
         (set! (.-value sel) (or new-tag "all")))
       (render! el))))
 
+(defn- on-detail-link-click!
+  "Click on a cause/effect link in the detail pane: jump selection to
+   that record. The click is also bubbled through .closest so wrapping
+   markup inside the button (e.g. <span class='cid'>) routes correctly."
+  [^js el ^js target]
+  (when-let [^js btn (.closest target "[data-x-th-link-id]")]
+    (when-let [s (.getAttribute btn "data-x-th-link-id")]
+      (let [id (js/parseInt s 10)]
+        (when-not (js/isNaN id)
+          (gobj/set el model/k-selected-id id)
+          (render! el))))))
+
 (defn- handle-click!
   [^js el ^js e]
   (let [^js target (.-target e)]
-    (on-action-click!     el target)
-    (on-lane-label-click! el target)
-    (on-dot-click!        el target)))
+    (on-action-click!      el target)
+    (on-lane-label-click!  el target)
+    (on-detail-link-click! el target)
+    (on-dot-click!         el target)))
 
 (defn- handle-tag-change!
   [^js el ^js target]
@@ -363,7 +421,7 @@
             ^js timeline (gobj/get el model/k-timeline-el)
             id           (read-dot-id target)
             ^js recs     (recorder/records)
-            r            (find-record-by-id recs id)]
+            r            (model/find-record-by-id recs id)]
         (when r
           (show-tooltip! tooltip timeline e r)))
       (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))))
