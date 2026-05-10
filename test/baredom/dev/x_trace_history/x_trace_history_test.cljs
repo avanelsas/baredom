@@ -681,3 +681,115 @@
           (fn []
             (is (= 10 (dot-count dock)))
             (done)))))))
+
+;; ---------------------------------------------------------------------------
+;; PR 7 — detail-pane cause / effect navigation
+;; ---------------------------------------------------------------------------
+
+(deftest detail-pane-shows-effects-section-test
+  (testing "selecting a dispatch that caused other records reveals an
+            'Effects (N)' section with one button per effect"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Find the dispatch dot and click it.
+            (let [dots         (array-seq (query-all dock "circle.dot"))
+                  dispatch-dot (some (fn [^js d]
+                                       (when (= "#94e2d5"
+                                                (.getAttribute d "fill")) d))
+                                     dots)]
+              (.dispatchEvent ^js dispatch-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (let [^js detail (query dock "[data-x-th-detail]")
+                      effects   (query dock "[data-x-th-detail-effects]")
+                      links     (.querySelectorAll detail "[data-x-th-link-id]")]
+                  (is (some? effects))
+                  (is (= 1 (.-length links)))
+                  (is (clojure.string/includes? (.-textContent effects) "Effects (1)")))
+                (done)))))))))
+
+(deftest detail-pane-shows-cause-section-test
+  (testing "selecting a child record reveals a 'Caused by' section with
+            a single link to the parent dispatch"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Click the state-coloured dot (the setv).
+            (let [setv-dot (some (fn [^js d]
+                                   (when (= "#f9e2af"
+                                            (.getAttribute d "fill")) d))
+                                 (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js setv-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (let [cause (query dock "[data-x-th-detail-cause]")
+                      links (.querySelectorAll cause "[data-x-th-link-id]")]
+                  (is (some? cause))
+                  (is (= 1 (.-length links)))
+                  (is (clojure.string/includes? (.-textContent cause) "Caused by")))
+                (done)))))))))
+
+(deftest detail-pane-no-cause-section-when-top-level-test
+  (testing "a record with no cause has no 'Caused by' section"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        ;; Dispatch with no listeners — no children produced; this dispatch
+        ;; is itself top-level (causeId nil).
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (.dispatchEvent ^js (query dock "circle.dot")
+                            (js/MouseEvent. "click" #js {:bubbles true}))
+            (after-frames 1
+              (fn []
+                (is (nil? (query dock "[data-x-th-detail-cause]")))
+                (is (nil? (query dock "[data-x-th-detail-effects]")))
+                (done)))))))))
+
+(deftest detail-pane-link-click-jumps-selection-test
+  (testing "clicking an effect link in the detail pane moves the
+            selection to the linked record"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Select the dispatch dot first.
+            (let [dispatch-dot (some (fn [^js d]
+                                       (when (= "#94e2d5"
+                                                (.getAttribute d "fill")) d))
+                                     (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js dispatch-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                ;; The dispatch's effect link points at the setv. Click it.
+                (let [^js link (query dock
+                                      "[data-x-th-detail-effects] [data-x-th-link-id]")
+                      target-id (js/parseInt
+                                 (.getAttribute link "data-x-th-link-id") 10)]
+                  (is (some? link))
+                  (.dispatchEvent link
+                                  (js/MouseEvent. "click" #js {:bubbles true}))
+                  (after-frames 1
+                    (fn []
+                      (is (= target-id (gobj/get dock model/k-selected-id))
+                          "selection moved to the linked record")
+                      (done))))))))))))

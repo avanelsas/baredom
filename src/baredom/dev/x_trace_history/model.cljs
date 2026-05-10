@@ -65,19 +65,22 @@
   "Construct a JS-shape record from a hook payload, monotonic id, and a
    timestamp (performance.now() value).
 
-   Common payload keys: :type :tag :component-id.
+   Common payload keys: :type :tag :component-id :cause-id.
+   :cause-id is the id of the synchronously-enclosing dispatchEvent call,
+   or nil for records produced outside any dispatch (top-level, or async).
    Type-specific keys are documented in docs/x-trace-history-schema.md.
 
    Uses string-keyed js-obj so Closure Advanced does not rename the schema
    field names — consumers read these properties from the wire."
-  [{:keys [type tag component-id] :as payload} id t]
+  [{:keys [type tag component-id cause-id] :as payload} id t]
   (let [^js r (js-obj
                "schemaVersion" schema-version
                "id"            id
                "t"             t
                "type"          (format-type type)
                "tag"           tag
-               "componentId"   component-id)]
+               "componentId"   component-id
+               "causeId"       cause-id)]
     (case type
       (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
       (doto r
@@ -166,12 +169,23 @@
        (or (nil? categories) (contains? categories (categorize-type (.-type r))))))
 
 (defn filter-records
-  "Return a CLJS vector of records (oldest-first) matching the filter spec.
-   See `record-matches?` for spec keys."
+  "Return a CLJS vector of records matching the filter spec, sorted by `t`
+   ascending (chronological order). Sorting is necessary because PR 7
+   pushes a dispatch's record AFTER the records produced inside its
+   handlers — the ring buffer's insertion order no longer matches time
+   order. See `record-matches?` for spec keys."
   [^js records spec]
-  (into []
-        (filter (fn [r] (record-matches? r spec)))
-        (array-seq records)))
+  (->> (array-seq records)
+       (filter (fn [r] (record-matches? r spec)))
+       (sort-by (fn [^js r] (.-t r)))
+       vec))
+
+(defn find-record-by-id
+  "Return the record with id `id`, or nil if not found / id non-numeric.
+   Delegates to Array.prototype.find for short-circuiting linear search."
+  [^js records id]
+  (when (number? id)
+    (.find records (fn [^js r] (= id (.-id r))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — preview formatting
@@ -345,30 +359,67 @@
            records)))
 
 (defn step-record
-  "Return the next or previous filtered record relative to `current-id`,
-   ordered by id (= insertion order = time). `dir` is :next or :prev.
-   Returns the first/last record when current-id is nil. Returns nil if
-   no neighbour exists.
+  "Return the next or previous filtered record relative to `current-id`.
+   `dir` is :next or :prev. Returns the first/last record when current-id
+   is nil or when current-id is no longer in the filtered list.
 
-   Assumes `filtered-records` is in id-ascending order (filter-records
-   preserves the ring buffer's insertion order). Both directions
-   short-circuit on first match: :next scans forward, :prev scans
-   backward via rseq."
+   Stepping is by position in `filtered-records` — id-ordering is no
+   longer reliable since PR 7 dispatch records receive lower ids than
+   the children they cause (children push first, then the dispatch).
+   Callers pass the t-sorted vector that filter-records produces."
   [filtered-records current-id dir]
   (when (seq filtered-records)
-    (cond
-      (nil? current-id)
-      (case dir
-        :next (first filtered-records)
-        :prev (peek filtered-records))
+    (let [target-idx (when (some? current-id)
+                       (loop [i 0]
+                         (cond
+                           (>= i (count filtered-records)) nil
+                           (= current-id (.-id ^js (nth filtered-records i))) i
+                           :else (recur (inc i)))))]
+      (cond
+        ;; No current selection (or current selection no longer in filter):
+        ;; :next picks the first record, :prev picks the last.
+        (nil? target-idx)
+        (case dir
+          :next (first filtered-records)
+          :prev (peek  filtered-records))
 
-      (= dir :next)
-      (some (fn [^js r] (when (> (.-id r) current-id) r))
-            filtered-records)
+        (= dir :next)
+        (get filtered-records (inc target-idx))
 
-      :else
-      (some (fn [^js r] (when (< (.-id r) current-id) r))
-            (rseq filtered-records)))))
+        :else
+        (get filtered-records (dec target-idx))))))
+
+;; ---------------------------------------------------------------------------
+;; Causality — cause-of / effects-of
+;; ---------------------------------------------------------------------------
+
+(def effects-display-limit
+  "Cap on how many effect records the detail pane lists. Prevents the
+   pane from blowing up when a single dispatch causes hundreds of
+   downstream records (e.g. a render fan-out)."
+  50)
+
+(defn cause-of
+  "Return the cause record (record with id = `record`'s causeId) from
+   `records`, or nil if the record has no cause or the cause has been
+   evicted from the ring buffer."
+  [^js records ^js record]
+  (let [cid (.-causeId record)]
+    (when (number? cid)
+      (find-record-by-id records cid))))
+
+(defn effects-of
+  "Return {:total N :records [recs ...]} for `record`, where :records is
+   the list of records whose causeId equals `record`'s id, sorted by `t`
+   ascending and capped at `effects-display-limit`. :total is the
+   un-capped count, so the UI can show 'N of TOTAL' on truncation."
+  [^js records ^js record]
+  (let [target-id (.-id record)
+        all       (->> (array-seq records)
+                       (filter (fn [^js r] (= target-id (.-causeId r))))
+                       (sort-by (fn [^js r] (.-t r))))]
+    {:total   (count all)
+     :records (vec (take effects-display-limit all))}))
 
 (defn tooltip-text
   "Multi-line text shown when hovering a timeline dot."
@@ -604,15 +655,52 @@ line.scrubber {
   border-top: 1px solid rgba(59,130,246,0.2);
   padding: 8px 10px;
   font-size: 10px;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: #a6e3a1;
+  color: #cdd6f4;
   flex: 0 0 auto;
   height: 35vh;
   min-height: 60px;
   max-height: 80%;
   overflow-y: auto;
 }
+.detail-json {
+  margin: 0 0 8px 0;
+  font: inherit;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #a6e3a1;
+}
+.detail-section { margin-top: 6px; }
+.detail-label {
+  color: #89b4fa;
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.detail-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: rgba(255,255,255,0.04);
+  color: #cdd6f4;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 3px;
+  padding: 3px 6px;
+  margin: 2px 0;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-link:hover {
+  background: rgba(59,130,246,0.18);
+  border-color: rgba(59,130,246,0.6);
+  color: #89b4fa;
+}
+.detail-link .cid { color: #6c7086; }
+.detail-empty { color: #6c7086; font-style: italic; font-size: 10px; }
 .empty {
   color: #6c7086;
   font-style: italic;

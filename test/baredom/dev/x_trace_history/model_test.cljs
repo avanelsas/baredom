@@ -27,6 +27,7 @@
                  {:type :event/dispatch
                   :tag "x-button"
                   :component-id 42
+                  :cause-id 13
                   :event-name "x-button:click"
                   :detail #js {:value 42}
                   :cancelable? false
@@ -39,10 +40,24 @@
       (is (= "event/dispatch"   (.-type r)))
       (is (= "x-button"         (.-tag r)))
       (is (= 42                 (.-componentId r)))
+      (is (= 13                 (.-causeId r)))
       (is (= "x-button:click"   (.-eventName r)))
       (is (= 42                 (.-value detail)))
       (is (false?               (.-cancelable r)))
       (is (false?               (.-defaultPrevented r))))))
+
+(deftest make-record-default-cause-id-test
+  (testing "absent :cause-id surfaces as null (top-level / no enclosing dispatch)"
+    (let [^js r (model/make-record
+                 {:type :event/dispatch
+                  :tag "x-button"
+                  :component-id 1
+                  :event-name "click"
+                  :detail nil
+                  :cancelable? false
+                  :default-prevented? false}
+                 0 0)]
+      (is (nil? (.-causeId r))))))
 
 (deftest make-record-nil-component-id-test
   (testing "nil component-id surfaces as null (e.g. for document-target events)"
@@ -287,6 +302,24 @@
       (is (= 5 (count out)))
       (is (= [0 1 2 3 4] (mapv #(.-id ^js %) out))))))
 
+(deftest filter-records-sorts-by-t-test
+  (testing "filter-records sorts results by t ascending — required because
+            PR 7 dispatch records have lower ids than the children they
+            cause but later ring-buffer positions"
+    (let [;; Simulate the PR 7 push pattern: child1 (t=110, id=1) is pushed
+          ;; first, child2 (t=120, id=2) next, dispatch (t=100, id=0) last.
+          recs #js [(mk-rec 1 "state/instance-field-set" "x-button" 110)
+                    (mk-rec 2 "state/instance-field-set" "x-button" 120)
+                    (mk-rec 0 "event/dispatch"           "x-button" 100)]
+          out  (model/filter-records recs {})]
+      (is (= [0 1 2]       (mapv #(.-id ^js %) out)))
+      (is (= [100 110 120] (mapv #(.-t  ^js %) out))))))
+
+(deftest filter-records-stable-when-already-sorted-test
+  (testing "monotonic input passes through unchanged"
+    (let [out (model/filter-records sample-records {})]
+      (is (= [100 150 200 250 300] (mapv #(.-t ^js %) out))))))
+
 (deftest filter-records-by-tag-test
   (testing "tag filter narrows to matching tag only"
     (let [out (model/filter-records sample-records {:tag "x-button"})]
@@ -449,10 +482,13 @@
 ;; ── timeline: dot-color / lane-id-of / lane-label ───────────────────────────
 
 (defn- mk-rec-with
-  "Build a JS record with the given core fields. componentId may be nil."
-  [{:keys [id type tag t component-id]
-    :or   {id 0 type "event/dispatch" tag "x-button" t 100 component-id 1}}]
-  (js-obj "id" id "type" type "tag" tag "t" t "componentId" component-id))
+  "Build a JS record with the given core fields. componentId may be nil.
+   cause-id defaults to nil (record produced outside any dispatch)."
+  [{:keys [id type tag t component-id cause-id]
+    :or   {id 0 type "event/dispatch" tag "x-button" t 100 component-id 1
+           cause-id nil}}]
+  (js-obj "id" id "type" type "tag" tag "t" t
+          "componentId" component-id "causeId" cause-id))
 
 (deftest dot-color-by-category-test
   (is (= "#94e2d5" (model/dot-color (mk-rec-with {:type "event/dispatch"}))))
@@ -688,3 +724,84 @@
 (deftest timeline-hint-partial-filter-test
   (let [s (model/timeline-hint 1 5 {:span 500} 1)]
     (is (clojure.string/includes? s "1 of 5"))))
+
+;; ── find-record-by-id ───────────────────────────────────────────────────────
+
+(deftest find-record-by-id-hits-test
+  (let [recs #js [(mk-rec-with {:id 0 :t 100})
+                  (mk-rec-with {:id 1 :t 200})
+                  (mk-rec-with {:id 2 :t 300})]]
+    (is (= 1 (.-id ^js (model/find-record-by-id recs 1))))
+    (is (= 2 (.-id ^js (model/find-record-by-id recs 2))))))
+
+(deftest find-record-by-id-misses-test
+  (let [recs #js [(mk-rec-with {:id 5 :t 100})]]
+    (is (nil? (model/find-record-by-id recs 99)))
+    (is (nil? (model/find-record-by-id recs nil)))
+    (is (nil? (model/find-record-by-id recs "5"))
+        "non-numeric id is rejected to avoid coercion surprises")))
+
+;; ── cause-of / effects-of ───────────────────────────────────────────────────
+
+(deftest cause-of-nil-when-no-cause-id-test
+  (testing "record with causeId=nil (top-level / async) returns nil"
+    (let [r    (mk-rec-with {:id 1 :cause-id nil})
+          recs #js [r]]
+      (is (nil? (model/cause-of recs r))))))
+
+(deftest cause-of-resolves-cause-record-test
+  (testing "record with causeId pointing into the buffer returns that record"
+    (let [parent (mk-rec-with {:id 0 :t 100})
+          child  (mk-rec-with {:id 1 :t 110 :cause-id 0})
+          recs   #js [parent child]]
+      (is (= 0 (.-id ^js (model/cause-of recs child)))))))
+
+(deftest cause-of-evicted-test
+  (testing "if the cause record is no longer in the buffer (evicted by
+            ring-buffer rotation), cause-of returns nil"
+    (let [child (mk-rec-with {:id 1 :cause-id 999})
+          recs  #js [child]]
+      (is (nil? (model/cause-of recs child))))))
+
+(deftest effects-of-empty-test
+  (testing "record with no effects returns total=0 and empty :records"
+    (let [parent (mk-rec-with {:id 0 :t 100})
+          recs   #js [parent]
+          out    (model/effects-of recs parent)]
+      (is (= 0 (:total out)))
+      (is (empty? (:records out))))))
+
+(deftest effects-of-direct-children-only-test
+  (testing "only records whose causeId matches the parent's id count.
+            Grandchildren (causeId pointing at a child) do not appear
+            in the parent's :records list — that's the synchronous one-
+            level traversal the detail pane needs."
+    (let [parent (mk-rec-with {:id 0 :t 100})
+          child  (mk-rec-with {:id 1 :t 110 :cause-id 0})
+          grand  (mk-rec-with {:id 2 :t 120 :cause-id 1})
+          recs   #js [parent child grand]
+          out    (model/effects-of recs parent)]
+      (is (= 1 (:total out)))
+      (is (= [1] (mapv #(.-id ^js %) (:records out)))))))
+
+(deftest effects-of-sorted-by-t-test
+  (testing "effects come back in chronological order regardless of
+            ring-buffer position"
+    (let [parent (mk-rec-with {:id 0 :t 100})
+          c1     (mk-rec-with {:id 3 :t 300 :cause-id 0})
+          c2     (mk-rec-with {:id 1 :t 110 :cause-id 0})
+          c3     (mk-rec-with {:id 2 :t 200 :cause-id 0})
+          recs   #js [parent c1 c2 c3]
+          out    (model/effects-of recs parent)]
+      (is (= [1 2 3] (mapv #(.-id ^js %) (:records out)))))))
+
+(deftest effects-of-truncates-at-display-limit-test
+  (testing ":records is capped at effects-display-limit; :total is the
+            un-capped count so the UI can render 'N of TOTAL'"
+    (let [parent (mk-rec-with {:id 0 :t 100})
+          kids   (vec (for [i (range (+ model/effects-display-limit 5))]
+                        (mk-rec-with {:id (inc i) :t (+ 100 i) :cause-id 0})))
+          recs   (apply array parent kids)
+          out    (model/effects-of recs parent)]
+      (is (= (+ model/effects-display-limit 5) (:total out)))
+      (is (= model/effects-display-limit (count (:records out)))))))

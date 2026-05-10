@@ -1,5 +1,6 @@
 (ns baredom.dev.x-trace-history.recorder-test
-  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+  (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
+            [clojure.string]
             [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.utils.component :as comp]
@@ -36,15 +37,17 @@
 ;; with the dom/* records the mutation tests want to inspect in isolation).
 (def ^:private mutation-tag "x-trace-mutation-target")
 
-(defn install-fixture
-  [f]
-  (recorder/install!)
-  (recorder/clear!)
-  (f)
-  (recorder/uninstall!)
-  (recorder/clear!))
-
-(use-fixtures :each install-fixture)
+;; Async tests require map-style fixtures (cljs.test rejects function-style
+;; fixtures when any test in the namespace uses (async ...)). The
+;; async-callback-breaks-chain-test uses setTimeout, so we need the map form
+;; even for the otherwise-synchronous tests.
+(use-fixtures :each
+  {:before (fn []
+             (recorder/install!)
+             (recorder/clear!))
+   :after  (fn []
+             (recorder/uninstall!)
+             (recorder/clear!))})
 
 (defn- make-el
   [tag]
@@ -180,15 +183,21 @@
 ;; ── hook is exception-safe ──────────────────────────────────────────────────
 
 (deftest hook-exception-isolation-test
-  (testing "a throwing hook does not break dispatch! / dispatch-cancelable! / dispatch-document!"
+  (testing "a throwing hook does not break dispatch! / dispatch-cancelable! / dispatch-document!.
+            Replacing trace-hook with a throwing function affects only the
+            non-event paths (setv / set-attr / remove-attr / lifecycle).
+            Event recording is the wrapper's job — it pushes records
+            directly, not through the trace-hook — so the three dispatch
+            helpers still record one event each and complete normally."
     (let [el (make-el "x-button")]
       (reset! du/trace-hook (fn [_] (throw (js/Error. "boom"))))
-      ;; All three dispatch helpers must complete normally even when the hook throws.
       (du/dispatch! el "x" #js {})
       (is (true? (du/dispatch-cancelable! el "y" #js {})))
       (du/dispatch-document! "z" #js {})
-      ;; No records added (the throwing hook never wrote to state).
-      (is (= 0 (count-records))))))
+      ;; The throwing hook would only fire from the du/dispatch*! post-hooks,
+      ;; which the wrapper-active gate skips for :event/* payloads anyway.
+      ;; The wrapper records all three.
+      (is (= 3 (count-records))))))
 
 (deftest hook-reinstall-test
   (testing "install! is re-entrant — repeated calls refresh both hook references"
@@ -495,3 +504,188 @@
     (is (true?  (recorder/paused?)))
     (recorder/resume!)
     (is (false? (recorder/paused?)))))
+
+;; ── PR 7: synchronous cause-id chain ────────────────────────────────────────
+
+(deftest top-level-record-has-nil-cause-test
+  (testing "a record produced outside any dispatch has causeId = null"
+    (let [el (make-el mutation-tag)]
+      (du/setv! el "k" "v")
+      (is (nil? (.-causeId (record-at 0)))))))
+
+(deftest top-level-dispatch-has-nil-cause-test
+  (testing "a top-level CustomEvent dispatch is its own root — its
+            record's causeId is null"
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "click" #js {})
+      (is (nil? (.-causeId (record-at 0)))))))
+
+(deftest child-record-inherits-cause-test
+  (testing "a setv inside a dispatch handler stamps the dispatch's id as
+            its causeId. Records are sorted chronologically: dispatch
+            (entry-t) appears before its children."
+    (let [el (make-el "x-button")]
+      (.addEventListener el "click"
+                         (fn [_] (du/setv! el "__inside" "v")))
+      (du/dispatch! el "click" #js {})
+      ;; Two records exist: dispatch + setv. Find them by type.
+      (is (= 2 (count-records)))
+      (let [recs         (array-seq (recorder/records))
+            ^js dispatch (some (fn [^js r] (when (= "event/dispatch" (.-type r)) r)) recs)
+            ^js setv     (some (fn [^js r] (when (= "state/instance-field-set" (.-type r)) r)) recs)]
+        (is (some? dispatch))
+        (is (some? setv))
+        (is (nil? (.-causeId dispatch)) "dispatch is the root frame")
+        (is (= (.-id dispatch) (.-causeId setv))
+            "setv was produced inside the dispatch's synchronous extent")))))
+
+(deftest nested-dispatch-causality-test
+  (testing "a dispatch fired inside another dispatch's handler nests
+            cause frames: the inner's children point at the inner; the
+            inner itself points at the outer; the outer is root."
+    (let [el (make-el "x-button")]
+      (.addEventListener el "outer"
+                         (fn [_]
+                           (.addEventListener el "inner"
+                                              (fn [_]
+                                                (du/setv! el "__deep" 1)))
+                           (du/dispatch! el "inner" #js {})))
+      (du/dispatch! el "outer" #js {})
+      (let [recs            (array-seq (recorder/records))
+            ^js outer       (some (fn [^js r]
+                                    (when (and (= "event/dispatch" (.-type r))
+                                               (= "outer" (.-eventName r))) r))
+                                  recs)
+            ^js inner       (some (fn [^js r]
+                                    (when (and (= "event/dispatch" (.-type r))
+                                               (= "inner" (.-eventName r))) r))
+                                  recs)
+            ^js deep-setv   (some (fn [^js r]
+                                    (when (= "state/instance-field-set" (.-type r)) r))
+                                  recs)]
+        (is (some? outer))
+        (is (some? inner))
+        (is (some? deep-setv))
+        (is (nil?              (.-causeId outer))     "outer is root")
+        (is (= (.-id outer)    (.-causeId inner))     "inner caused by outer")
+        (is (= (.-id inner)    (.-causeId deep-setv)) "deep-setv caused by inner")))))
+
+(deftest async-callback-breaks-chain-test
+  (testing "a setTimeout scheduled inside a dispatch handler runs after
+            the dispatch frame has unwound. Records produced in the timer
+            callback have causeId = null because the cause stack is empty
+            when they're pushed. Documented limitation: synchronous-only."
+    (async done
+      (let [el (make-el mutation-tag)]
+        (.addEventListener el "click"
+                           (fn [_]
+                             (js/setTimeout
+                              (fn []
+                                (du/setv! el "__async" 1)
+                                ;; Verify: by the time the timer fires,
+                                ;; the dispatch frame has unwound and the
+                                ;; new record's causeId is null.
+                                (let [recs  (array-seq (recorder/records))
+                                      ^js a (some (fn [^js r]
+                                                    (when (and (= "state/instance-field-set" (.-type r))
+                                                               (= "__async" (.-field r))) r))
+                                                  recs)]
+                                  (is (some? a))
+                                  (is (nil? (.-causeId a))
+                                      "async record has no cause (chain broken)"))
+                                (done))
+                              0)))
+        (du/dispatch! el "click" #js {})))))
+
+(deftest external-dispatch-establishes-frame-test
+  (testing "a CustomEvent dispatched directly (not via du/dispatch!) still
+            establishes a cause frame because the wrapper sees every
+            dispatchEvent. Children pushed inside its handler stamp its
+            id as their cause."
+    (let [el (make-el "x-button")]
+      (.addEventListener el "external"
+                         (fn [_] (du/setv! el "__inside-external" "v")))
+      (.dispatchEvent el (js/CustomEvent. "external" #js {:bubbles true}))
+      (let [recs     (array-seq (recorder/records))
+            ^js ev   (some (fn [^js r]
+                             (when (= "external" (.-eventName r)) r))
+                           recs)
+            ^js setv (some (fn [^js r]
+                             (when (= "state/instance-field-set" (.-type r)) r))
+                           recs)]
+        (is (some? ev) "external CustomEvent recorded by the wrapper")
+        (is (some? setv))
+        (is (= (.-id ev) (.-causeId setv)))))))
+
+(deftest native-event-not-recorded-but-frames-test
+  (testing "a native browser-shaped event (PointerEvent) is NOT pushed as
+            a record (only CustomEvents are), but its dispatch still
+            establishes a cause frame. Setv inside the handler reads the
+            frame's reserved id even though the dispatching event itself
+            never lands in the buffer."
+    (let [el (make-el mutation-tag)]
+      (.addEventListener el "pointerdown"
+                         (fn [_] (du/setv! el "__inside-native" "v")))
+      (.dispatchEvent el (js/PointerEvent. "pointerdown" #js {:bubbles true}))
+      (let [recs     (array-seq (recorder/records))
+            evs      (filter #(clojure.string/starts-with? (.-type ^js %) "event/") recs)
+            ^js setv (some (fn [^js r]
+                             (when (= "state/instance-field-set" (.-type r)) r))
+                           recs)]
+        (is (zero? (count evs))
+            "native PointerEvent is not stored as a record")
+        (is (some? setv))
+        ;; The setv's cause-id is the reserved id of the native dispatch.
+        ;; We don't have a record-id to compare against (no dispatch
+        ;; record), but it must be a number — proof a frame was active.
+        (is (number? (.-causeId setv))
+            "setv carries the reserved id of the enclosing native dispatch")))))
+
+(deftest dispatch-after-children-but-t-precedes-test
+  (testing "dispatch's record is pushed AFTER its children (its handlers
+            run first), but its `t` is captured at frame entry — so it
+            shows up before its children when sorted chronologically.
+            This is what filter-records sorts on so the timeline reads
+            cause-then-effect."
+    (let [el (make-el "x-button")]
+      (.addEventListener el "click"
+                         (fn [_] (du/setv! el "__a" 1)))
+      (du/dispatch! el "click" #js {})
+      (let [recs         (array-seq (recorder/records))
+            ^js dispatch (some (fn [^js r] (when (= "event/dispatch" (.-type r)) r)) recs)
+            ^js setv     (some (fn [^js r] (when (= "state/instance-field-set" (.-type r)) r)) recs)]
+        (is (<= (.-t dispatch) (.-t setv))
+            "dispatch's t (entry-time) is at or before its child's t")))))
+
+;; ── PR 7: wrapper installation safety ───────────────────────────────────────
+
+(deftest install-twice-is-idempotent-test
+  (testing "calling install! twice does not double-wrap dispatchEvent.
+            A double-wrap would record dispatches twice."
+    (recorder/install!)
+    (recorder/install!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "x" #js {})
+      (is (= 1 (count-records))
+          "still exactly one record per dispatch after a second install!"))))
+
+(deftest uninstall-makes-dispatch-passthrough-test
+  (testing "after uninstall!, a dispatch produces no record — but the
+            event still fires its handlers. Verifies the wrapper's
+            inactive path."
+    (recorder/uninstall!)
+    (let [el (make-el "x-button")
+          fired (atom 0)]
+      (.addEventListener el "x" (fn [_] (swap! fired inc)))
+      (du/dispatch! el "x" #js {})
+      (is (zero? (count-records)) "no record after uninstall!")
+      (is (= 1 @fired) "handler still fired"))))
+
+(deftest reinstall-after-uninstall-resumes-recording-test
+  (testing "uninstall! then install! flips the wrapper-active flag back
+            on. The wrapper is permanent — re-install just reactivates."
+    (recorder/uninstall!)
+    (recorder/install!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "x" #js {})
+      (is (= 1 (count-records))))))
