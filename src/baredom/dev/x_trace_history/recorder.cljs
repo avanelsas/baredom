@@ -16,10 +16,11 @@
 ;; Constants
 ;; ---------------------------------------------------------------------------
 
-(def ^:private window-base-key    "BareDOM")
-(def ^:private window-api-key     "traceHistory")
-(def ^:private capacity-flag      "BAREDOM_TRACE_HISTORY_CAPACITY")
-(def ^:private component-id-key   "__xTraceHistoryId")
+(def ^:private window-base-key      "BareDOM")
+(def ^:private window-api-key       "traceHistory")
+(def ^:private capacity-flag        "BAREDOM_TRACE_HISTORY_CAPACITY")
+(def ^:private component-id-key     "__xTraceHistoryId")
+(def ^:private internal-host-marker "__xTraceHistoryInternal")
 
 ;; ---------------------------------------------------------------------------
 ;; State
@@ -125,18 +126,68 @@
   (let [s (swap! state update :next-id inc)]
     (dec (:next-id s))))
 
+;; ---------------------------------------------------------------------------
+;; Recording boundary — suppress dock-internal events
+;;
+;; The dock itself uses BareDOM components (x-button, x-checkbox, x-select)
+;; which fire CustomEvents. Without a boundary, every Pause click would
+;; record `x-button:press` and pollute the trace. mark-internal! flags a
+;; host element so the wrapper and record! both early-return for events
+;; whose origin is inside that host's shadow tree. The marker only blocks
+;; events ORIGINATING inside the host — lifecycle events ON the host
+;; itself are still recorded (the dock's own connect/disconnect remains
+;; visible in traces).
+;; ---------------------------------------------------------------------------
+
+(defn mark-internal!
+  "Stamp `el` so events originating inside its shadow tree are bypassed
+   by the recorder. Public — used by the dock to mark its host element
+   on mount."
+  [^js el]
+  (gobj/set el internal-host-marker true)
+  nil)
+
+(defn- inside-internal-host?
+  "True when `el` is a descendant of any element bearing the
+   internal-host-marker, traversing across (open) shadow boundaries.
+   Returns false for nil, document, and elements in the light tree of
+   the document. The marker on `el` itself does NOT count — we ask
+   whether `el` is *inside* a marked host, not whether it IS one."
+  [^js el]
+  (loop [^js node el]
+    (cond
+      (or (nil? node) (identical? node js/document))
+      false
+
+      :else
+      (let [^js root (.getRootNode node)]
+        (cond
+          (identical? root js/document) false
+
+          (instance? js/ShadowRoot root)
+          (let [^js host (.-host root)]
+            (if (gobj/get host internal-host-marker)
+              true
+              (recur host)))
+
+          :else false)))))
+
 (defn- push-record-with-id!
   "Build and push a record with a pre-determined id and timestamp. Reads
    `(peek @cause-stack)` to stamp the record's causeId. Updates the
    :components side-index when a new component is observed.
 
    Used by both the auto-id path (record!) and the wrapper path
-   (record-dispatch!)."
+   (record-dispatch!).
+
+   Skips when the payload's :el is inside an internal-marked host —
+   catches setv! / set-attr! / lifecycle records from components nested
+   inside the dock."
   [payload id t]
-  (let [s @state]
-    (when-not (:paused? s)
-      (let [^js el           (:el payload)
-            tag              (model/tag-of el)
+  (let [s @state
+        ^js el (:el payload)]
+    (when-not (or (:paused? s) (inside-internal-host? el))
+      (let [tag              (model/tag-of el)
             [cid new-cid?]   (resolve-component-id! el tag (:next-component-id s))
             cause-id         (peek @cause-stack)
             payload+         (assoc payload
@@ -221,7 +272,14 @@
    When inactive or paused, pass straight through to the original."
   [^js this ^js ev]
   (let [^js orig @original-dispatch-event]
-    (if (or (not @wrapper-active?) (:paused? @state))
+    (if (or (not @wrapper-active?)
+            (:paused? @state)
+            (inside-internal-host? this))
+      ;; Inactive, paused, or dock-internal dispatch: no id reservation,
+      ;; no cause-frame push, no record. Internal dispatches must NOT
+      ;; establish a cause frame — otherwise records produced after the
+      ;; dispatch (in the same call stack but originating from outside
+      ;; the dock) would wrongly stamp the dock dispatch's reserved id.
       (.call orig this ev)
       (let [reserved-id (reserve-id!)
             entry-t     (.now js/performance)
