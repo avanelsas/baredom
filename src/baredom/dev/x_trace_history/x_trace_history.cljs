@@ -653,6 +653,14 @@
     ;; leak records into the trace. The boundary alone catches events
     ;; from elements ATTACHED inside the marked shadow; this scope
     ;; catches events from elements that haven't been attached yet.
+    ;;
+    ;; INVARIANT for future maintainers: this scope only covers the
+    ;; INITIAL mount. If you add dynamic creation of x-checkbox /
+    ;; x-select / any component whose constructor calls du/set-attr!
+    ;; or du/setv! on detached internals (current x-button does NOT
+    ;; — it uses native setAttribute) — wrap that render call in
+    ;; recorder/with-suppressed-recording! too. Otherwise records
+    ;; will leak on every re-render that creates such instances.
     (recorder/with-suppressed-recording!
       (fn []
         (let [^js shadow (attach-skeleton! el)]

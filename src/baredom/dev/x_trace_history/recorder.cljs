@@ -435,11 +435,17 @@
 (defn install!
   "Activate recording. Idempotent and re-entrant: safe to call multiple
    times. Re-runs every time so hot-reloads of the recorder ns refresh the
-   hook references to the newly-loaded `record!` symbol."
+   hook references to the newly-loaded `record!` symbol.
+
+   Resets `suppression-depth` to 0 so a hot-reload that interrupts a
+   `with-suppressed-recording!` body cannot leave the counter stuck
+   above zero (which would silently disable all recording until the
+   page reloads)."
   []
   (swap! state assoc :capacity (read-capacity))
   (reset! du/trace-hook record!)
   (reset! comp/lifecycle-hook record!)
+  (reset! suppression-depth 0)
   (install-dispatch-wrapper-once!)
   (reset! wrapper-active? true)
   (install-window-api!)
