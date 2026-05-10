@@ -72,14 +72,25 @@
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
        "<div class='filters'>"
-       "<x-select data-x-th-tag size='sm' value='all'>"
-       "<option value='all'>All tags</option>"
+       ;; <option selected> (rather than value='all' on the host)
+       ;; survives x-select's sync-options! clone path. value-on-host
+       ;; gets applied during the initial render, but the inner native
+       ;; <select> is still empty at that point — its slotted options
+       ;; are cloned in asynchronously on slotchange, so the value
+       ;; never lands. The HTML `selected` attribute is preserved by
+       ;; cloneNode(true) and selects the option after the clone.
+       "<x-select data-x-th-tag size='sm'>"
+       "<option value='all' selected>All tags</option>"
        (tag-options-html)
        "</x-select>"
-       "<x-checkbox data-x-th-cat='events'    checked>events</x-checkbox>"
-       "<x-checkbox data-x-th-cat='state'     checked>state</x-checkbox>"
-       "<x-checkbox data-x-th-cat='dom'       checked>dom</x-checkbox>"
-       "<x-checkbox data-x-th-cat='lifecycle' checked>lifecycle</x-checkbox>"
+       ;; x-checkbox has no default slot — text inside the host is
+       ;; invisible. Wrap in <label> per docs/x-checkbox.md so the
+       ;; visible label sits next to the checkbox AND clicking it
+       ;; toggles the control (native label-association behavior).
+       "<label class='cat'><x-checkbox data-x-th-cat='events'    checked aria-label='events'></x-checkbox>events</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='state'     checked aria-label='state'></x-checkbox>state</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='dom'       checked aria-label='dom'></x-checkbox>dom</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='lifecycle' checked aria-label='lifecycle'></x-checkbox>lifecycle</label>"
        "</div>"
        "<div class='timeline' data-x-th-timeline tabindex='0'>"
        "<div class='lanes' data-x-th-lanes></div>"
