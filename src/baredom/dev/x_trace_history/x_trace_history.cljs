@@ -13,7 +13,9 @@
    [baredom.dev.x-debug-registry :as registry]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
-   [baredom.exports.x-button :as x-button-export]))
+   [baredom.exports.x-button   :as x-button-export]
+   [baredom.exports.x-checkbox :as x-checkbox-export]
+   [baredom.exports.x-select   :as x-select-export]))
 
 ;; ---------------------------------------------------------------------------
 ;; Constants
@@ -70,14 +72,25 @@
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
        "<div class='filters'>"
-       "<select data-x-th-tag>"
-       "<option value='all'>All tags</option>"
+       ;; <option selected> (rather than value='all' on the host)
+       ;; survives x-select's sync-options! clone path. value-on-host
+       ;; gets applied during the initial render, but the inner native
+       ;; <select> is still empty at that point — its slotted options
+       ;; are cloned in asynchronously on slotchange, so the value
+       ;; never lands. The HTML `selected` attribute is preserved by
+       ;; cloneNode(true) and selects the option after the clone.
+       "<x-select data-x-th-tag size='sm'>"
+       "<option value='all' selected>All tags</option>"
        (tag-options-html)
-       "</select>"
-       "<label><input type='checkbox' data-x-th-cat='events' checked> events</label>"
-       "<label><input type='checkbox' data-x-th-cat='state' checked> state</label>"
-       "<label><input type='checkbox' data-x-th-cat='dom' checked> dom</label>"
-       "<label><input type='checkbox' data-x-th-cat='lifecycle' checked> lifecycle</label>"
+       "</x-select>"
+       ;; x-checkbox has no default slot — text inside the host is
+       ;; invisible. Wrap in <label> per docs/x-checkbox.md so the
+       ;; visible label sits next to the checkbox AND clicking it
+       ;; toggles the control (native label-association behavior).
+       "<label class='cat'><x-checkbox data-x-th-cat='events'    checked aria-label='events'></x-checkbox>events</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='state'     checked aria-label='state'></x-checkbox>state</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='dom'       checked aria-label='dom'></x-checkbox>dom</label>"
+       "<label class='cat'><x-checkbox data-x-th-cat='lifecycle' checked aria-label='lifecycle'></x-checkbox>lifecycle</label>"
        "</div>"
        "<div class='timeline' data-x-th-timeline tabindex='0'>"
        "<div class='lanes' data-x-th-lanes></div>"
@@ -364,33 +377,41 @@
     (on-dot-click!         el target)))
 
 (defn- handle-tag-change!
-  [^js el ^js target]
-  (let [tag      (.-value target)
-        spec     (gobj/get el model/k-filter)
-        new-spec (assoc spec :tag (when-not (= tag "all") tag))]
+  "Apply a new tag filter from a select-change detail value. The 'all'
+   sentinel maps to nil :tag (matches every record)."
+  [^js el value]
+  (let [spec     (gobj/get el model/k-filter)
+        new-spec (assoc spec :tag (when-not (= value "all") value))]
     (gobj/set el model/k-filter new-spec)
     (render! el)))
 
 (defn- handle-cat-change!
-  [^js el ^js target]
-  (let [cat      (.getAttribute target "data-x-th-cat")
-        spec     (gobj/get el model/k-filter)
+  "Toggle a category in the filter from an x-checkbox-change detail
+   payload. `cat` is the data-x-th-cat string (e.g. \"events\");
+   `checked?` is the new boolean."
+  [^js el cat checked?]
+  (let [spec     (gobj/get el model/k-filter)
         cats     (or (:categories spec) (set model/all-categories))
         cat-kw   (keyword cat)
-        new-cats (if (.-checked target) (conj cats cat-kw) (disj cats cat-kw))
+        new-cats (if checked? (conj cats cat-kw) (disj cats cat-kw))
         new-spec (assoc spec :categories new-cats)]
     (gobj/set el model/k-filter new-spec)
     (render! el)))
 
-(defn- handle-change!
+(defn- handle-select-change!
+  "x-select fires `select-change` with detail = {value, label}."
   [^js el ^js e]
   (let [^js target (.-target e)]
-    (cond
-      (some? (.getAttribute target "data-x-th-tag"))
-      (handle-tag-change! el target)
+    (when (some? (.getAttribute target "data-x-th-tag"))
+      (handle-tag-change! el (.. e -detail -value)))))
 
-      (some? (.getAttribute target "data-x-th-cat"))
-      (handle-cat-change! el target))))
+(defn- handle-checkbox-change!
+  "x-checkbox fires `x-checkbox-change` with detail = {value, checked}."
+  [^js el ^js e]
+  (let [^js target (.-target e)
+        cat        (.getAttribute target "data-x-th-cat")]
+    (when (some? cat)
+      (handle-cat-change! el cat (.. e -detail -checked)))))
 
 (def ^:private tooltip-cursor-offset 12)
 (def ^:private tooltip-max-width    280)  ; mirrors CSS max-width
@@ -503,15 +524,20 @@
       (gobj/set el model/k-selected-id (.-id next-r))
       (render! el))))
 
-(def ^:private form-control-tags #{"input" "select" "textarea"})
+(def ^:private form-control-tags
+  ;; Native form controls plus the BareDOM equivalents the dock now
+  ;; uses (x-select for the tag filter, x-checkbox for category
+  ;; filters). Arrow keys have meaningful semantics inside these
+  ;; — option stepping in selects, focus traversal between
+  ;; checkboxes — that we should not preempt.
+  #{"input" "select" "textarea" "x-select" "x-checkbox"})
 
 (defn- in-form-control?
   "Skip arrow handling when focus is somewhere arrow keys have native
-   semantics — text inputs (cursor movement), selects (option stepping),
-   textareas, and contenteditable regions. Buttons are NOT included
-   because arrows do nothing native on a button, and excluding them
-   means the user can click Pause / Clear and immediately use arrows
-   without re-clicking the timeline."
+   semantics. Buttons (native or x-button) are NOT included because
+   arrows do nothing native on a button, and excluding them means the
+   user can click Pause / Clear and immediately use arrows without
+   re-clicking the timeline."
   [^js target]
   (or (boolean (some-> target .-isContentEditable))
       (let [tag (some-> target .-tagName .toLowerCase)]
@@ -598,8 +624,9 @@
         ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
         ^js splitter-el (gobj/get el model/k-splitter-el)
         ^js detail-el   (gobj/get el model/k-detail-el)]
-    (.addEventListener dock "click"  (fn [^js e] (handle-click!  el e)))
-    (.addEventListener dock "change" (fn [^js e] (handle-change! el e)))
+    (.addEventListener dock "click"             (fn [^js e] (handle-click!            el e)))
+    (.addEventListener dock "select-change"     (fn [^js e] (handle-select-change!    el e)))
+    (.addEventListener dock "x-checkbox-change" (fn [^js e] (handle-checkbox-change!  el e)))
     (.addEventListener timeline-el "pointermove"
                        (fn [^js e] (handle-pointermove! el e)))
     (.addEventListener timeline-el "pointerleave"
@@ -631,16 +658,32 @@
     ;; events from inside the shadow (e.g. nested components registering)
     ;; are already gated by the recorder's internal-host boundary.
     (recorder/mark-internal! el)
-    (let [^js shadow (attach-skeleton! el)]
-      (cache-refs! el shadow)
-      (gobj/set el model/k-filter
-                {:tag nil :categories (set model/all-categories)})
-      (gobj/set el model/k-selected-id nil)
-      (bind-listeners! el shadow)
-      (let [tok (recorder/subscribe! (fn [] (render! el)))]
-        (gobj/set el model/k-sub-token tok))
-      (render! el)
-      (gobj/set el model/k-mounted true))))
+    ;; Wrap the entire setup in with-suppressed-recording! so child
+    ;; component constructors that mutate freshly-created (not-yet-
+    ;; attached) internal elements via du/set-attr! / du/setv! don't
+    ;; leak records into the trace. The boundary alone catches events
+    ;; from elements ATTACHED inside the marked shadow; this scope
+    ;; catches events from elements that haven't been attached yet.
+    ;;
+    ;; INVARIANT for future maintainers: this scope only covers the
+    ;; INITIAL mount. If you add dynamic creation of x-checkbox /
+    ;; x-select / any component whose constructor calls du/set-attr!
+    ;; or du/setv! on detached internals (current x-button does NOT
+    ;; — it uses native setAttribute) — wrap that render call in
+    ;; recorder/with-suppressed-recording! too. Otherwise records
+    ;; will leak on every re-render that creates such instances.
+    (recorder/with-suppressed-recording!
+      (fn []
+        (let [^js shadow (attach-skeleton! el)]
+          (cache-refs! el shadow)
+          (gobj/set el model/k-filter
+                    {:tag nil :categories (set model/all-categories)})
+          (gobj/set el model/k-selected-id nil)
+          (bind-listeners! el shadow)
+          (let [tok (recorder/subscribe! (fn [] (render! el)))]
+            (gobj/set el model/k-sub-token tok))
+          (render! el)
+          (gobj/set el model/k-mounted true))))))
 
 (defn- unmount!
   [^js el]
@@ -679,12 +722,15 @@
 
 (defn register!
   "Single entry point: install recorder hooks (idempotent), register the
-   library components used inside the dock (x-button), define the
-   custom element (idempotent), and auto-mount the dock if activation is on.
-   Defers mounting to DOMContentLoaded if document.body is not yet available."
+   library components used inside the dock (x-button, x-checkbox,
+   x-select), define the custom element (idempotent), and auto-mount the
+   dock if activation is on. Defers mounting to DOMContentLoaded if
+   document.body is not yet available."
   []
   (recorder/register!)
   (x-button-export/register!)
+  (x-checkbox-export/register!)
+  (x-select-export/register!)
   (when-not (.get js/customElements model/tag-name)
     (.define js/customElements model/tag-name (element-class)))
   (when (model/enabled? js/window)

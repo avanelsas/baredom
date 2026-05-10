@@ -73,6 +73,32 @@
 (defn- lane-count [^js dock-el]
   (.-length (query-all dock-el ".lane-label")))
 
+(defn- dispatch-checkbox-change!
+  "Simulate the CustomEvent x-checkbox fires when its checked state
+   toggles. Keeps the host's `checked` attribute in sync so subsequent
+   query / state reads observe the new value."
+  [^js cb checked?]
+  (if checked? (.setAttribute cb "checked" "") (.removeAttribute cb "checked"))
+  (.dispatchEvent cb
+                  (js/CustomEvent. "x-checkbox-change"
+                                   #js {:bubbles true
+                                        :composed true
+                                        :detail #js {:value   (or (.getAttribute cb "value") "on")
+                                                     :checked checked?}})))
+
+(defn- dispatch-select-change!
+  "Simulate the CustomEvent x-select fires after the user picks an
+   option. Sets the host `value` first so subsequent reads observe
+   the new value."
+  [^js sel value]
+  (set! (.-value sel) value)
+  (.dispatchEvent sel
+                  (js/CustomEvent. "select-change"
+                                   #js {:bubbles true
+                                        :composed true
+                                        :detail #js {:value value
+                                                     :label value}})))
+
 ;; ---------------------------------------------------------------------------
 ;; Mount + skeleton
 ;; ---------------------------------------------------------------------------
@@ -243,8 +269,7 @@
               (fn []
                 (is (false? (.hasAttribute ^js (query dock "[data-x-th-detail]") "hidden")))
                 (let [^js cb (query dock "[data-x-th-cat='events']")]
-                  (set! (.-checked cb) false)
-                  (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
+                  (dispatch-checkbox-change! cb false))
                 (after-frames 1
                   (fn []
                     (is (true? (.hasAttribute ^js (query dock "[data-x-th-detail]") "hidden")))
@@ -296,9 +321,7 @@
           (fn []
             (is (= 3 (dot-count dock)))
             (is (= 2 (lane-count dock)))
-            (let [^js sel (query dock "[data-x-th-tag]")]
-              (set! (.-value sel) "x-button")
-              (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
+            (dispatch-select-change! ^js (query dock "[data-x-th-tag]") "x-button")
             (after-frames 1
               (fn []
                 (is (= 2 (dot-count dock)))
@@ -351,9 +374,7 @@
         (after-frames 2
           (fn []
             (is (= 2 (dot-count dock)))
-            (let [^js cb (query dock "[data-x-th-cat='events']")]
-              (set! (.-checked cb) false)
-              (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
+            (dispatch-checkbox-change! ^js (query dock "[data-x-th-cat='events']") false)
             (after-frames 1
               (fn []
                 (is (= 1 (dot-count dock)))
@@ -566,9 +587,7 @@
         (after-frames 2
           (fn []
             ;; Uncheck events: only the state record (id 1) remains.
-            (let [^js cb (query dock "[data-x-th-cat='events']")]
-              (set! (.-checked cb) false)
-              (.dispatchEvent cb (js/Event. "change" #js {:bubbles true})))
+            (dispatch-checkbox-change! ^js (query dock "[data-x-th-cat='events']") false)
             (after-frames 1
               (fn []
                 (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
@@ -759,6 +778,26 @@
                 (is (nil? (query dock "[data-x-th-detail-cause]")))
                 (is (nil? (query dock "[data-x-th-detail-effects]")))
                 (done)))))))))
+
+(deftest filters-do-not-pollute-trace-test
+  (testing "PR-C + PR-A: toggling each of the 4 category x-checkboxes
+            and the tag x-select fires their typed change events but
+            the recorder's internal-host boundary suppresses them —
+            the trace stays empty even though the filter spec changed."
+    (async done
+      (let [^js dock (mount-dock!)]
+        ;; Toggle every category checkbox off, then back on.
+        (doseq [cat ["events" "state" "dom" "lifecycle"]]
+          (dispatch-checkbox-change! ^js (query dock (str "[data-x-th-cat='" cat "']")) false)
+          (dispatch-checkbox-change! ^js (query dock (str "[data-x-th-cat='" cat "']")) true))
+        ;; Move the tag filter twice.
+        (dispatch-select-change! ^js (query dock "[data-x-th-tag]") "x-button")
+        (dispatch-select-change! ^js (query dock "[data-x-th-tag]") "all")
+        (after-frames 2
+          (fn []
+            (is (zero? (.-length (recorder/records)))
+                "no trace records added — boundary suppressed all filter events")
+            (done)))))))
 
 (deftest pause-button-press-stays-out-of-trace-test
   (testing "PR-B + PR-A: clicking the inner native button inside the

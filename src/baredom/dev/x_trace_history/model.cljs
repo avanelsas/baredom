@@ -516,24 +516,26 @@
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex: 0 0 auto;
 }
-.filters select {
-  background: #313244;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 3px;
-  padding: 1px 4px;
-  font: inherit;
-  font-size: 10px;
+/* The tag dropdown is an <x-select>; its own shadow brings styling.
+   We just constrain its width and font so it matches the dock's
+   ui-monospace 11px tone. */
+.filters x-select {
+  font-size: 11px;
+  max-width: 140px;
 }
-.filters label {
+/* x-checkbox has no slot for its label, so the visible text sits
+   next to the checkbox inside a <label> wrapper. The label uses
+   inline-flex to keep the checkbox + text on one row, with a small
+   gap. Cursor: pointer mirrors native checkbox-label affordance. */
+.filters label.cat {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   color: #a6adc8;
   font-size: 10px;
   cursor: pointer;
+  user-select: none;
 }
-.filters input[type=checkbox] { margin: 0; cursor: pointer; }
 .timeline {
   flex: 1 1 auto;
   overflow: auto;
