@@ -824,3 +824,112 @@
       (is (= 1 (count-records))
           "events fired on the marked host itself are still recorded")
       (.remove host))))
+
+;; ── PR 8: bounded recording sessions ────────────────────────────────────────
+
+(deftest start-session-opens-active-session-test
+  (testing "start-session! returns a numeric id and marks it active"
+    (let [id (recorder/start-session!)]
+      (is (number? id))
+      (is (= id (recorder/active-session-id)))
+      (recorder/stop-session!))))
+
+(deftest stop-session-closes-active-session-test
+  (testing "stop-session! clears active-session-id"
+    (recorder/start-session!)
+    (recorder/stop-session!)
+    (is (nil? (recorder/active-session-id)))))
+
+(deftest stop-session-noop-when-nothing-active-test
+  (testing "stop-session! with no active session does nothing"
+    (is (nil? (recorder/active-session-id)))
+    (recorder/stop-session!)
+    (is (nil? (recorder/active-session-id)))))
+
+(deftest sessions-metadata-shape-test
+  (testing "sessions returns JS objects with id, label, startT, endT, recordCount"
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "before" #js {})
+      (let [id (recorder/start-session!)]
+        (du/dispatch! el "during" #js {})
+        (recorder/stop-session!)
+        (let [^js arr (recorder/sessions)
+              ^js s   (aget arr 0)]
+          (is (= 1 (.-length arr)))
+          (is (= id (.-id s)))
+          (is (= (str "Session " id) (.-label s)))
+          (is (number? (.-startT s)))
+          (is (number? (.-endT s)) "endT set after stop"))))))
+
+(deftest sessions-active-has-null-end-t-test
+  (testing "an active session reports endT as null"
+    (recorder/start-session!)
+    (let [^js s (aget (recorder/sessions) 0)]
+      (is (nil? (.-endT s))))
+    (recorder/stop-session!)))
+
+(deftest session-records-filters-by-t-range-test
+  (testing "session-records returns only the records pushed inside the
+            session's t range"
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "before" #js {})
+      (let [id (recorder/start-session!)]
+        (du/dispatch! el "inside-1" #js {})
+        (du/dispatch! el "inside-2" #js {})
+        (recorder/stop-session!)
+        (du/dispatch! el "after" #js {})
+        (let [^js arr (recorder/session-records id)
+              ^js r0  (aget arr 0)
+              ^js r1  (aget arr 1)]
+          (is (= 2 (.-length arr)))
+          (is (= "inside-1" (.-eventName r0)))
+          (is (= "inside-2" (.-eventName r1))))))))
+
+(deftest session-records-empty-for-unknown-id-test
+  (testing "session-records of a non-existent id returns empty array"
+    (is (zero? (.-length (recorder/session-records 9999))))))
+
+(deftest session-record-count-reflects-live-buffer-test
+  (testing "recordCount on the sessions metadata is computed from the
+            live ring buffer at call time, not stored — adding events
+            inside an open session bumps the count"
+    (recorder/start-session!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "a" #js {})
+      (du/dispatch! el "b" #js {}))
+    (let [^js s (aget (recorder/sessions) 0)]
+      (is (= 2 (.-recordCount s))))
+    (recorder/stop-session!)))
+
+(deftest back-to-back-start-auto-stops-prior-test
+  (testing "calling start-session! while a session is active stops the
+            previous one (with a console warn) and opens a new one"
+    (let [a (recorder/start-session!)
+          b (recorder/start-session!)]
+      (is (not= a b) "second start gets a fresh id")
+      (is (= b (recorder/active-session-id)))
+      (let [^js arr   (recorder/sessions)
+            ^js first-s (aget arr 0)]
+        (is (= 2 (.-length arr)))
+        (is (some? (.-endT first-s)) "first session was auto-stopped"))
+      (recorder/stop-session!))))
+
+(deftest clear-drops-all-sessions-test
+  (testing "clear! empties sessions alongside the ring buffer"
+    (recorder/start-session!)
+    (recorder/stop-session!)
+    (recorder/start-session!)
+    (recorder/stop-session!)
+    (is (= 2 (.-length (recorder/sessions))))
+    (recorder/clear!)
+    (is (zero? (.-length (recorder/sessions))))
+    (is (nil? (recorder/active-session-id)))))
+
+(deftest window-api-includes-session-keys-test
+  (testing "install! exposes startSession, stopSession, sessions, sessionRecords"
+    (let [^js base (gobj/get js/window "BareDOM")
+          ^js api  (gobj/get base "traceHistory")]
+      (is (fn? (gobj/get api "startSession")))
+      (is (fn? (gobj/get api "stopSession")))
+      (is (fn? (gobj/get api "sessions")))
+      (is (fn? (gobj/get api "sessionRecords"))))))

@@ -452,25 +452,57 @@
            (str " · spanning " (format-timestamp span))))))
 
 ;; ---------------------------------------------------------------------------
+;; Sessions — view-state predicates
+;; ---------------------------------------------------------------------------
+
+(defn live-view?
+  "True when the dock's current view is the live buffer (default)."
+  [view]
+  (= view :live))
+
+(defn session-view?
+  "True when the dock's current view targets a specific session id."
+  [view]
+  (and (vector? view) (= :session (first view))))
+
+(defn view-id
+  "Extract the session id from a [:session N] view, or nil for :live.
+   Used for indexing the per-view selection map."
+  [view]
+  (when (session-view? view) (second view)))
+
+;; ---------------------------------------------------------------------------
 ;; Dock — instance-field keys (Closure-safe string keys for gobj/get|set)
 ;; ---------------------------------------------------------------------------
 
-(def k-shadow        "__xTraceHistoryShadow")
-(def k-keydown-fn    "__xTraceHistoryKeydownFn")
-(def k-timeline-el   "__xTraceHistoryTimelineEl")
-(def k-lanes-el      "__xTraceHistoryLanesEl")
-(def k-svg-pane-el   "__xTraceHistorySvgPaneEl")
-(def k-tooltip-el    "__xTraceHistoryTooltipEl")
-(def k-count-el      "__xTraceHistoryCountEl")
-(def k-pause-btn     "__xTraceHistoryPauseBtn")
-(def k-detail-el     "__xTraceHistoryDetailEl")
-(def k-splitter-el   "__xTraceHistorySplitterEl")
-(def k-hint-el       "__xTraceHistoryHintEl")
-(def k-tag-select-el "__xTraceHistoryTagSelectEl")
-(def k-filter        "__xTraceHistoryFilter")
-(def k-selected-id   "__xTraceHistorySelectedId")
-(def k-sub-token     "__xTraceHistorySubToken")
-(def k-mounted       "__xTraceHistoryMounted")
+(def k-shadow         "__xTraceHistoryShadow")
+(def k-keydown-fn     "__xTraceHistoryKeydownFn")
+(def k-timeline-el    "__xTraceHistoryTimelineEl")
+(def k-lanes-el       "__xTraceHistoryLanesEl")
+(def k-svg-pane-el    "__xTraceHistorySvgPaneEl")
+(def k-tooltip-el     "__xTraceHistoryTooltipEl")
+(def k-count-el       "__xTraceHistoryCountEl")
+(def k-pause-btn      "__xTraceHistoryPauseBtn")
+(def k-record-btn     "__xTraceHistoryRecordBtn")
+(def k-sessions-el    "__xTraceHistorySessionsEl")
+(def k-detail-el      "__xTraceHistoryDetailEl")
+(def k-splitter-el    "__xTraceHistorySplitterEl")
+(def k-hint-el        "__xTraceHistoryHintEl")
+(def k-tag-select-el  "__xTraceHistoryTagSelectEl")
+(def k-filter         "__xTraceHistoryFilter")
+;; The active view: :live (the always-on buffer) or [:session id].
+;; render! consults this to choose which records to display.
+(def k-view           "__xTraceHistoryView")
+;; Per-view scrubber state. A map keyed by view value (:live or
+;; [:session id]) → record-id. Replaces the old single k-selected-id
+;; slot so each session keeps its own selection across view switches.
+(def k-view-selected  "__xTraceHistoryViewSelected")
+;; Legacy alias kept so older test assertions and downstream readers
+;; that reach for the live-view selection through k-selected-id keep
+;; working. The dock writes through both keys when the view is :live.
+(def k-selected-id    "__xTraceHistorySelectedId")
+(def k-sub-token      "__xTraceHistorySubToken")
+(def k-mounted        "__xTraceHistoryMounted")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS
@@ -535,6 +567,58 @@
   font-size: 10px;
   cursor: pointer;
   user-select: none;
+}
+/* Session strip: thin row above the filter row listing the live view
+   plus any captured session as a clickable chip. Hidden when the only
+   chip is Live (no sessions yet) so the dock stays compact. Scrolls
+   horizontally if the chip count overflows the dock width. */
+.sessions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.15);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex: 0 0 auto;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.sessions[hidden] { display: none; }
+.session-chip {
+  flex: 0 0 auto;
+  background: rgba(255,255,255,0.04);
+  color: #a6adc8;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.session-chip:hover { background: rgba(59,130,246,0.12); color: #cdd6f4; }
+.session-chip.active {
+  background: rgba(59,130,246,0.22);
+  border-color: rgba(59,130,246,0.6);
+  color: #89b4fa;
+  font-weight: 600;
+}
+.session-chip .live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f38ba8;
+  margin-right: 4px;
+  vertical-align: middle;
+  animation: x-th-pulse 1s ease-in-out infinite;
+}
+@keyframes x-th-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-chip .live-dot { animation: none; }
 }
 .timeline {
   flex: 1 1 auto;

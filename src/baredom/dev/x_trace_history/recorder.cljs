@@ -32,7 +32,15 @@
          :paused?           false
          :capacity          model/default-capacity
          :next-component-id 0
-         :components        {}}))
+         :components        {}
+         ;; Sessions are bounded recording slices the user explicitly
+         ;; captures. They are metadata only — `start-t` and `end-t`
+         ;; give a t-range over the main ring buffer; records are
+         ;; filtered on demand. No copy, no extra storage. The active
+         ;; session has :end-t = nil; stop-session! sets it.
+         :sessions          []
+         :next-session-id   0
+         :active-session-id nil}))
 
 (defonce ^:private subscribers (atom {}))
 
@@ -392,7 +400,10 @@
   nil)
 
 (defn clear!
-  "Empty the ring buffer and reset the record-id counter to 0.
+  "Empty the ring buffer and reset the record-id counter to 0. Drops all
+   sessions too — sessions reference t-ranges in the buffer, so an
+   emptied buffer leaves them with no records anyway. Document the
+   joint behavior so callers don't expect sessions to survive Clear.
 
    Intentionally preserves :paused? state, the :components index, and the
    component-id counter — component identity is monotonic for the page
@@ -400,10 +411,132 @@
    would cause new components to collide with already-stored ids."
   []
   (swap! state assoc
-         :records model/empty-records
-         :next-id 0)
+         :records           model/empty-records
+         :next-id           0
+         :sessions          []
+         :next-session-id   0
+         :active-session-id nil)
   (schedule-notify!)
   nil)
+
+;; ---------------------------------------------------------------------------
+;; Sessions — bounded recording slices the user explicitly captures
+;; ---------------------------------------------------------------------------
+
+(defn active-session-id
+  "Return the id of the currently-recording session, or nil when no
+   session is active. Useful for UI state."
+  []
+  (:active-session-id @state))
+
+(defn- finalize-session
+  "Stamp end-t and end-id onto the currently-active session record.
+   Pure helper over the :sessions vector — caller swaps the result
+   back in. end-id is the FIRST id NOT in the session (half-open
+   interval), so a session with no recorded events satisfies
+   start-id == end-id."
+  [sessions active-id end-t end-id]
+  (if (nil? active-id)
+    sessions
+    (mapv (fn [{:keys [id] :as s}]
+            (if (= id active-id)
+              (assoc s :end-t end-t :end-id end-id)
+              s))
+          sessions)))
+
+(defn stop-session!
+  "Close the currently-active session by stamping its :end-t and
+   :end-id. No-op when nothing is active. After stop, sessions
+   reports the session with both timestamps and id bounds set."
+  []
+  (let [t (.now js/performance)]
+    (swap! state
+           (fn [s]
+             (-> s
+                 (update :sessions finalize-session
+                         (:active-session-id s) t (:next-id s))
+                 (assoc :active-session-id nil))))
+    (schedule-notify!)
+    nil))
+
+(defn start-session!
+  "Begin a new bounded recording slice. Returns the new session id.
+   If a session is already active, it is auto-stopped first (with a
+   console warning) so the user doesn't end up with a never-ending
+   open session because they forgot to click Stop.
+
+   Sessions are bounded by record-id range, not timestamp. Performance
+   timers have clamped resolution (Spectre mitigations) and adjacent
+   records can share a `t`, so a t-range filter is unreliable at the
+   boundaries. Ids are atomic and strictly monotonic."
+  []
+  (when (some? (active-session-id))
+    (js/console.warn
+     "[x-trace-history] start-session! called while a session was already active — stopping the previous one")
+    (stop-session!))
+  (let [t (.now js/performance)]
+    (swap! state
+           (fn [s]
+             (let [id       (:next-session-id s)
+                   start-id (:next-id s)]
+               (-> s
+                   (update :sessions conj
+                           {:id       id
+                            :label    (str "Session " id)
+                            :start-t  t
+                            :end-t    nil
+                            :start-id start-id
+                            :end-id   nil})
+                   (assoc :active-session-id id
+                          :next-session-id (inc id))))))
+    (schedule-notify!)
+    (:active-session-id @state)))
+
+(defn- session-record-range?
+  "Predicate: does record `r` fall inside session `sess`? Uses the
+   half-open id range [start-id, end-id). An open session (:end-id
+   nil) extends to +infinity, so records pushed during recording
+   show up live."
+  [^js r {:keys [start-id end-id]}]
+  (let [id (.-id r)]
+    (and (>= id start-id)
+         (or (nil? end-id) (< id end-id)))))
+
+(defn sessions
+  "Return a JS array of session metadata, one entry per session.
+   Each entry is a JS object: {id, label, startT, endT, recordCount}.
+   endT is null while the session is active. recordCount is computed
+   from the live ring buffer at call time — sessions do not own
+   storage."
+  []
+  (let [s @state
+        recs (:records s)]
+    (->> (:sessions s)
+         (mapv (fn [{:keys [id label start-t end-t] :as sess}]
+                 (let [n (count
+                          (filter (fn [^js r] (session-record-range? r sess))
+                                  (array-seq (clj->js (vec recs)))))]
+                   (js-obj "id"          id
+                           "label"       label
+                           "startT"      start-t
+                           "endT"        (or end-t nil)
+                           "recordCount" n))))
+         clj->js)))
+
+(defn session-records
+  "Return a JS array of records inside the session with the given id,
+   in chronological order. Empty array if id is unknown or the session
+   has no records in the current buffer."
+  [target-id]
+  (let [s    @state
+        sess (first (filter #(= (:id %) target-id) (:sessions s)))]
+    (if sess
+      (->> (clj->js (vec (:records s)))
+           array-seq
+           (filter (fn [^js r] (session-record-range? r sess)))
+           (sort-by (fn [^js r] (.-t r)))
+           clj->js)
+      #js [])))
 
 ;; ---------------------------------------------------------------------------
 ;; Install / uninstall
@@ -424,11 +557,15 @@
   []
   (let [^js base (or (gobj/get js/window window-base-key) (js-obj))
         ^js api  (js-obj
-                  "records"    records
-                  "components" components
-                  "pause"      pause!
-                  "resume"     resume!
-                  "clear"      clear!)]
+                  "records"        records
+                  "components"     components
+                  "pause"          pause!
+                  "resume"         resume!
+                  "clear"          clear!
+                  "startSession"   start-session!
+                  "stopSession"    stop-session!
+                  "sessions"       sessions
+                  "sessionRecords" session-records)]
     (gobj/set base window-api-key api)
     (gobj/set js/window window-base-key base)))
 
