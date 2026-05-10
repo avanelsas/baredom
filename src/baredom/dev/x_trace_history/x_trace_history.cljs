@@ -54,16 +54,27 @@
                    "</option>")))
        (apply str)))
 
-(defn- skeleton-html
-  "Static dock skeleton. The timeline body is populated dynamically by
-   render!; the tooltip starts hidden and is shown on dot hover.
+(defn- cat-checkbox-html
+  "One labeled x-checkbox for a category. `checked?` reflects the
+   initial filter spec — in normal mode :state is unchecked so the
+   skeleton + the spec stay in sync from frame zero (no flicker, no
+   visual lie about what's currently filtered)."
+  [cat checked?]
+  (str "<label class='cat'>"
+       "<x-checkbox data-x-th-cat='" cat "' "
+       (when checked? "checked ")
+       "aria-label='" cat "'></x-checkbox>"
+       cat
+       "</label>"))
 
-   The Pause and Clear buttons are <x-button> instances. Click events
-   still bubble natively from the host, so the existing click delegate
-   on the dock root works unchanged. The recorder's internal-host
-   boundary (PR-A) suppresses x-button's own `press`/`hover` events
-   so they never appear in the trace."
-  []
+(defn- skeleton-html
+  "Dock skeleton, parameterized by initial-categories so the rendered
+   <x-checkbox> elements agree with the dock's filter spec. Pause /
+   Record / Clear are <x-button>s; click events bubble natively so the
+   click delegate on the dock root works unchanged. The recorder's
+   internal-host boundary (PR-A) suppresses x-button's own press / hover
+   events so they never appear in the trace."
+  [initial-categories]
   (str "<div class='dock'>"
        "<div class='header'>"
        "<span class='title'>x-trace-history</span>"
@@ -91,10 +102,10 @@
        ;; invisible. Wrap in <label> per docs/x-checkbox.md so the
        ;; visible label sits next to the checkbox AND clicking it
        ;; toggles the control (native label-association behavior).
-       "<label class='cat'><x-checkbox data-x-th-cat='events'    checked aria-label='events'></x-checkbox>events</label>"
-       "<label class='cat'><x-checkbox data-x-th-cat='state'     checked aria-label='state'></x-checkbox>state</label>"
-       "<label class='cat'><x-checkbox data-x-th-cat='dom'       checked aria-label='dom'></x-checkbox>dom</label>"
-       "<label class='cat'><x-checkbox data-x-th-cat='lifecycle' checked aria-label='lifecycle'></x-checkbox>lifecycle</label>"
+       (cat-checkbox-html "events"    (contains? initial-categories :events))
+       (cat-checkbox-html "state"     (contains? initial-categories :state))
+       (cat-checkbox-html "dom"       (contains? initial-categories :dom))
+       (cat-checkbox-html "lifecycle" (contains? initial-categories :lifecycle))
        "</div>"
        "<div class='timeline' data-x-th-timeline tabindex='0'>"
        "<div class='lanes' data-x-th-lanes></div>"
@@ -734,10 +745,11 @@
    attribute changes are correctly suppressed. dock-css is verified
    to contain no `</style>` substring so embedding it inside a
    <style> tag is safe."
-  [^js el]
+  [^js el initial-categories]
   (let [^js shadow (.attachShadow el #js {:mode "open"})]
     (set! (.-innerHTML shadow)
-          (str "<style>" model/dock-css "</style>" (skeleton-html)))
+          (str "<style>" model/dock-css "</style>"
+               (skeleton-html initial-categories)))
     shadow))
 
 (defn- cache-refs!
@@ -815,10 +827,18 @@
     ;; will leak on every re-render that creates such instances.
     (recorder/with-suppressed-recording!
       (fn []
-        (let [^js shadow (attach-skeleton! el)]
+        ;; Default the :state checkbox off in normal mode (instance-
+        ;; field writes are the noisiest type and tend to drown out
+        ;; user-relevant events in the timeline). Forensic mode
+        ;; defaults all categories ON so users capturing edge-case
+        ;; mutation chains see everything.
+        ;; Compute once and thread to both the skeleton (so checkbox
+        ;; markup matches) and the filter spec.
+        (let [cats       (model/default-categories (recorder/forensic?))
+              ^js shadow (attach-skeleton! el cats)]
           (cache-refs! el shadow)
           (gobj/set el model/k-filter
-                    {:tag nil :categories (set model/all-categories)})
+                    {:tag nil :categories cats})
           (gobj/set el model/k-view          :live)
           (gobj/set el model/k-view-selected (js-obj))
           (gobj/set el model/k-selected-id   nil)
