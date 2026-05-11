@@ -18,10 +18,11 @@
    ;; shadow-cljs to move those entries into :base — breaking the
    ;; per-module ESM split. The components themselves are plain
    ;; shareable code that shadow-cljs is happy to land in :base on its
-   ;; own.
-   [baredom.components.x-button.x-button     :as x-button-impl]
-   [baredom.components.x-checkbox.x-checkbox :as x-checkbox-impl]
-   [baredom.components.x-select.x-select     :as x-select-impl]))
+   ;; own. Unaliased + fully-qualified call sites match the existing
+   ;; convention in baredom.exports.x_*.cljs.
+   [baredom.components.x-button.x-button]
+   [baredom.components.x-checkbox.x-checkbox]
+   [baredom.components.x-select.x-select]))
 
 ;; ---------------------------------------------------------------------------
 ;; Constants
@@ -1421,9 +1422,9 @@
    document.body is not yet available."
   []
   (recorder/register!)
-  (x-button-impl/init!)
-  (x-checkbox-impl/init!)
-  (x-select-impl/init!)
+  (baredom.components.x-button.x-button/init!)
+  (baredom.components.x-checkbox.x-checkbox/init!)
+  (baredom.components.x-select.x-select/init!)
   (when-not (.get js/customElements model/tag-name)
     (.define js/customElements model/tag-name (element-class)))
   (when (model/enabled? js/window)
