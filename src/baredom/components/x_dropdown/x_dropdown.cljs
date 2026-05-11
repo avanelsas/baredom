@@ -260,13 +260,18 @@
   (when-let [handlers (gobj/get el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
-      ;; Delay by one tick so the opening click does not immediately re-close
-      (js/setTimeout
+      ;; Defer one tick so the click that opens the dropdown finishes
+      ;; bubbling to document BEFORE doc-click-h is registered —
+      ;; otherwise the same click would synchronously re-close.
+      ;; Microtask is enough: it runs after the current task's event
+      ;; dispatch unwinds but before the next macrotask, and it does
+      ;; NOT add to the macrotask budget Chrome measures for setTimeout
+      ;; long-task violations.
+      (js/queueMicrotask
        (fn []
          (when (du/has-attr? el model/attr-open)
            (.addEventListener js/document "click"   doc-click-h)
-           (.addEventListener js/document "keydown" doc-keydown-h)))
-       0))))
+           (.addEventListener js/document "keydown" doc-keydown-h)))))))
 
 (defn- remove-doc-listeners! [^js el]
   (when-let [handlers (gobj/get el k-handlers)]
