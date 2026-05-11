@@ -625,12 +625,19 @@
         (is (some? setv))
         (is (= (.-id ev) (.-causeId setv)))))))
 
-(deftest native-event-not-recorded-but-frames-test
-  (testing "a native browser-shaped event (PointerEvent) is NOT pushed as
-            a record (only CustomEvents are), but its dispatch still
-            establishes a cause frame. Setv inside the handler reads the
-            frame's reserved id even though the dispatching event itself
-            never lands in the buffer."
+(deftest programmatic-native-event-not-recorded-but-frames-test
+  (testing "a programmatically-dispatched native-shaped event
+            (PointerEvent constructed in JS and fed to dispatchEvent) is
+            NOT pushed as a record (only CustomEvents are), but its
+            dispatch still establishes a cause frame. Setv inside the
+            handler reads the frame's reserved id even though the
+            dispatching event itself never lands in the buffer.
+
+            Note: real user-initiated events (browser-trusted clicks,
+            keys, pointermoves) are NOT delivered through the JS-
+            visible dispatchEvent and therefore do not establish a
+            cause frame in any browser. The cause chain anchors on
+            the first programmatic dispatch in the call stack."
     (let [el (make-el mutation-tag)]
       (.addEventListener el "pointerdown"
                          (fn [_] (du/setv! el "__inside-native" "v")))
@@ -912,15 +919,23 @@
 (deftest back-to-back-start-auto-stops-prior-test
   (testing "calling start-session! while a session is active stops the
             previous one (with a console warn) and opens a new one"
-    (let [a (recorder/start-session!)
-          b (recorder/start-session!)]
-      (is (not= a b) "second start gets a fresh id")
-      (is (= b (recorder/active-session-id)))
-      (let [^js arr   (recorder/sessions)
-            ^js first-s (aget arr 0)]
-        (is (= 2 (.-length arr)))
-        (is (some? (.-endT first-s)) "first session was auto-stopped"))
-      (recorder/stop-session!))))
+    ;; The second start-session! intentionally fires a console.warn
+    ;; — silence it so the test output stays clean while still
+    ;; verifying the behaviour (auto-stop + fresh id).
+    (let [orig (.-warn js/console)]
+      (try
+        (set! (.-warn js/console) (fn [& _] nil))
+        (let [a (recorder/start-session!)
+              b (recorder/start-session!)]
+          (is (not= a b) "second start gets a fresh id")
+          (is (= b (recorder/active-session-id)))
+          (let [^js arr     (recorder/sessions)
+                ^js first-s (aget arr 0)]
+            (is (= 2 (.-length arr)))
+            (is (some? (.-endT first-s)) "first session was auto-stopped"))
+          (recorder/stop-session!))
+        (finally
+          (set! (.-warn js/console) orig))))))
 
 (deftest clear-drops-all-sessions-test
   (testing "clear! empties sessions alongside the ring buffer"
@@ -964,13 +979,13 @@
          (recorder/install!)
          (recorder/clear!))))
 
-(deftest forensic-fn-reflects-install-mode-test
-  (testing "recorder/forensic? returns true after the shared fixture's
+(deftest forensic-mode-fn-reflects-install-mode-test
+  (testing "recorder/forensic-mode? returns true after the shared fixture's
             =raw install, and false after a normal-mode reinstall"
-    (is (true? (recorder/forensic?))
+    (is (true? (recorder/forensic-mode?))
         "fixture installed in forensic mode")
     (with-normal-mode!
-     #(is (false? (recorder/forensic?))))))
+     #(is (false? (recorder/forensic-mode?))))))
 
 (deftest rate-limit-drops-duplicate-setv-within-window-test
   (testing "two du/setv! calls on the same element + field within 16ms

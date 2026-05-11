@@ -123,10 +123,15 @@
 
 ;; ── Color parsing (offscreen canvas + HSL palette) ──────────────────────────
 (def ^:private color-parse-ctx
+  ;; 1×1 offscreen canvas used to resolve any CSS colour string to RGB.
+  ;; willReadFrequently=true tells Chrome to use a software backing
+  ;; store optimised for getImageData reads — otherwise the browser
+  ;; logs a Canvas2D performance warning because parse-rgb does a
+  ;; getImageData immediately after every fillRect.
   (let [^js c (.createElement js/document "canvas")]
     (set! (.-width c) 1)
     (set! (.-height c) 1)
-    (.getContext c "2d")))
+    (.getContext c "2d" #js {:willReadFrequently true})))
 
 (defn- parse-rgb
   "Parse any CSS color string to [r g b] (0-255) using offscreen canvas."

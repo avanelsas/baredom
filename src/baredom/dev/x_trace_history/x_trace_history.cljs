@@ -467,10 +467,13 @@
       "record" (if (some? (recorder/active-session-id))
                  (recorder/stop-session!)
                  (recorder/start-session!))
-      ;; Clear empties the buffer AND drops sessions; reset all per-view
-      ;; selections so we don't display stale ids after the buffer rolls.
+      ;; Clear empties the buffer AND drops sessions; reset per-view
+      ;; selections so stale ids don't linger, AND switch back to the
+      ;; Live view so the session strip's active chip doesn't dangle
+      ;; on a now-deleted session id.
       "clear"  (do (gobj/set el model/k-view-selected (js-obj))
                    (gobj/set el model/k-selected-id nil)
+                   (gobj/set el model/k-view :live)
                    (recorder/clear!))
       nil)))
 
@@ -735,7 +738,8 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- attach-skeleton!
-  "Build shadow root, inject skeleton + style, return the shadow root.
+  "Get-or-attach the dock's shadow root, injecting the skeleton + style
+   only on the first attach.
 
    Sets innerHTML directly on the shadow root (rather than parsing
    into a detached temp div first) so any custom-element children —
@@ -744,12 +748,19 @@
    immediately inside the boundary (PR-A), so initial size/variant
    attribute changes are correctly suppressed. dock-css is verified
    to contain no `</style>` substring so embedding it inside a
-   <style> tag is safe."
+   <style> tag is safe.
+
+   Idempotent on re-mount: if the host already carries a shadow root
+   (because the element was previously connected, then disconnected,
+   then re-appended), reuse it. `attachShadow` can only be called
+   once per host — a fresh call would throw `InvalidStateError`."
   [^js el initial-categories]
-  (let [^js shadow (.attachShadow el #js {:mode "open"})]
-    (set! (.-innerHTML shadow)
-          (str "<style>" model/dock-css "</style>"
-               (skeleton-html initial-categories)))
+  (let [^js existing (.-shadowRoot el)
+        ^js shadow   (or existing (.attachShadow el #js {:mode "open"}))]
+    (when (nil? existing)
+      (set! (.-innerHTML shadow)
+            (str "<style>" model/dock-css "</style>"
+                 (skeleton-html initial-categories))))
     shadow))
 
 (defn- cache-refs!
@@ -770,41 +781,97 @@
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
   (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]")))
 
+(defn- build-listener-tuples
+  "Allocate the dock's static event listeners as #js [target event
+   handler] triples. Handlers are closures over `el`; each tuple
+   captures a stable fn reference so the matching .removeEventListener
+   call in unmount! cancels the same listener that was added.
+
+   The encoding is the `listener-spec` named pattern from CLAUDE.md
+   — one place lists every static listener, and add/remove iterate
+   the same source of truth so they cannot drift."
+  [^js el ^js shadow ^js timeline-el ^js svg-pane-el ^js splitter-el ^js detail-el]
+  #js [#js [shadow      "click"             (fn [^js e] (handle-click!            el e))]
+       #js [shadow      "select-change"     (fn [^js e] (handle-select-change!    el e))]
+       #js [shadow      "x-checkbox-change" (fn [^js e] (handle-checkbox-change!  el e))]
+       #js [timeline-el "pointermove"       (fn [^js e] (handle-pointermove!      el e))]
+       #js [timeline-el "pointerleave"      (fn [^js e] (handle-pointerleave!     el e))]
+       ;; Pointerdown anywhere in the timeline focuses it so the
+       ;; keyboard outline shows the user their starting point.
+       #js [timeline-el "pointerdown"       (fn [_e] (.focus timeline-el))]
+       ;; Keydown is bound on the SHADOW ROOT (not the timeline) so the
+       ;; shadow receives keydown from any focused descendant — arrow
+       ;; keys keep working even when focus shifts to a control after
+       ;; a click. The handler ignores form-control targets so we
+       ;; don't fight native behaviour.
+       #js [shadow      "keydown"           (fn [^js e] (handle-keydown!          el e))]
+       #js [svg-pane-el "pointerdown"       (fn [^js e] (handle-svg-pointerdown!  el e))]
+       #js [splitter-el "pointerdown"       (fn [^js e] (start-resize! detail-el splitter-el e))]])
+
+(defn- add-listeners!
+  "Attach every entry in the listener-tuples JS array."
+  [^js tuples]
+  (dotimes [i (.-length tuples)]
+    (let [^js t (aget tuples i)]
+      (.addEventListener (aget t 0) (aget t 1) (aget t 2)))))
+
+(defn- remove-listeners!
+  "Detach every entry in a listener-tuples JS array. Symmetric with
+   add-listeners! — same fn references go through to removeEventListener
+   so each listener is actually cancelled."
+  [^js tuples]
+  (dotimes [i (.-length tuples)]
+    (let [^js t (aget tuples i)]
+      (.removeEventListener (aget t 0) (aget t 1) (aget t 2)))))
+
 (defn- bind-listeners!
+  "Build the tuples, stash them on the host so unmount! can remove
+   them, and attach. Called on every (re)mount — never produces
+   duplicate listeners because unmount! always cancels first."
   [^js el ^js shadow]
-  (let [^js dock        (.querySelector shadow ".dock")
-        ^js timeline-el (gobj/get el model/k-timeline-el)
+  (let [^js timeline-el (gobj/get el model/k-timeline-el)
         ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
         ^js splitter-el (gobj/get el model/k-splitter-el)
-        ^js detail-el   (gobj/get el model/k-detail-el)]
-    (.addEventListener dock "click"             (fn [^js e] (handle-click!            el e)))
-    (.addEventListener dock "select-change"     (fn [^js e] (handle-select-change!    el e)))
-    (.addEventListener dock "x-checkbox-change" (fn [^js e] (handle-checkbox-change!  el e)))
-    (.addEventListener timeline-el "pointermove"
-                       (fn [^js e] (handle-pointermove! el e)))
-    (.addEventListener timeline-el "pointerleave"
-                       (fn [^js e] (handle-pointerleave! el e)))
-    ;; Pointerdown anywhere in the timeline focuses it so the keyboard
-    ;; outline (the inset box-shadow on .timeline:focus) shows the user
-    ;; their starting point.
-    (.addEventListener timeline-el "pointerdown"
-                       (fn [_e] (.focus timeline-el)))
-    ;; Bind keydown on the SHADOW ROOT, not the timeline. The shadow
-    ;; receives keydown events from any focused descendant — so arrow
-    ;; keys keep working even when focus shifts to a control after a
-    ;; click. The handler ignores form-control targets so we don't
-    ;; fight native behaviour. The fn reference is cached so unmount!
-    ;; can detach it cleanly (the shadow root outlives many of its
-    ;; descendant listeners' element-bound counterparts).
-    (let [keydown-fn (fn [^js e] (handle-keydown! el e))]
-      (gobj/set el model/k-keydown-fn keydown-fn)
-      (.addEventListener shadow "keydown" keydown-fn))
-    (.addEventListener svg-pane-el "pointerdown"
-                       (fn [^js e] (handle-svg-pointerdown! el e)))
-    (.addEventListener splitter-el "pointerdown"
-                       (fn [^js e] (start-resize! detail-el splitter-el e)))))
+        ^js detail-el   (gobj/get el model/k-detail-el)
+        tuples          (build-listener-tuples
+                         el shadow timeline-el svg-pane-el splitter-el detail-el)]
+    (gobj/set el model/k-listeners tuples)
+    (add-listeners! tuples)))
+
+(defn- unbind-listeners!
+  "Cancel every static listener attached by bind-listeners! and clear
+   the slot. Idempotent — a second call with no listeners is a no-op."
+  [^js el]
+  (when-let [^js tuples (gobj/get el model/k-listeners)]
+    (remove-listeners! tuples)
+    (gobj/set el model/k-listeners nil)))
+
+(defn- initialize-filter-state!
+  "Set up k-filter / k-view / k-view-selected on the first mount only.
+   On re-mount these slots persist from the previous lifetime, so the
+   user's filter and selected session survive a disconnect/reconnect.
+
+   The skeleton's <x-checkbox checked> markup was rendered against
+   the saved categories on the first mount and is preserved in the
+   reused shadow tree, so the checkboxes stay in sync with the
+   filter spec across remount."
+  [^js el cats]
+  (when-not (gobj/get el model/k-filter)
+    (gobj/set el model/k-filter {:tag nil :categories cats}))
+  (when-not (gobj/get el model/k-view)
+    (gobj/set el model/k-view :live))
+  (when-not (gobj/get el model/k-view-selected)
+    (gobj/set el model/k-view-selected (js-obj))))
 
 (defn- mount!
+  "Connect the dock: attach (or reuse) the shadow root, cache refs,
+   bind listeners, and subscribe to recorder updates. Idempotent —
+   a second call while already mounted is a no-op.
+
+   Re-mountable: when the host is disconnected and re-appended,
+   `attach-skeleton!` reuses the existing shadow root (it can only
+   be attached once per host) and `bind-listeners!` installs a
+   fresh set of listeners after `unmount!`'s symmetric tear-down."
   [^js el]
   (when-not (gobj/get el model/k-mounted)
     ;; Mark BEFORE attaching the shadow so any synchronous lifecycle
@@ -832,16 +899,10 @@
         ;; user-relevant events in the timeline). Forensic mode
         ;; defaults all categories ON so users capturing edge-case
         ;; mutation chains see everything.
-        ;; Compute once and thread to both the skeleton (so checkbox
-        ;; markup matches) and the filter spec.
-        (let [cats       (model/default-categories (recorder/forensic?))
+        (let [cats       (model/default-categories (recorder/forensic-mode?))
               ^js shadow (attach-skeleton! el cats)]
           (cache-refs! el shadow)
-          (gobj/set el model/k-filter
-                    {:tag nil :categories cats})
-          (gobj/set el model/k-view          :live)
-          (gobj/set el model/k-view-selected (js-obj))
-          (gobj/set el model/k-selected-id   nil)
+          (initialize-filter-state! el cats)
           (bind-listeners! el shadow)
           (let [tok (recorder/subscribe! (fn [] (render! el)))]
             (gobj/set el model/k-sub-token tok))
@@ -849,14 +910,17 @@
           (gobj/set el model/k-mounted true))))))
 
 (defn- unmount!
+  "Symmetric tear-down for mount!. Removes every static listener via
+   the listener-spec, unsubscribes from recorder updates, and clears
+   the mounted flag. The shadow root and its skeleton stay in place
+   — `attachShadow` is one-shot per host, so a re-mount must reuse
+   the existing shadow. The cached refs (k-shadow, k-*-el) and the
+   user's filter / view state persist across mount cycles so the
+   dock comes back in the same shape it was in when disconnected."
   [^js el]
   (when-let [tok (gobj/get el model/k-sub-token)]
     (recorder/unsubscribe! tok))
-  (let [^js shadow     (gobj/get el model/k-shadow)
-        ^js keydown-fn (gobj/get el model/k-keydown-fn)]
-    (when (and shadow keydown-fn)
-      (.removeEventListener shadow "keydown" keydown-fn)))
-  (gobj/set el model/k-keydown-fn nil)
+  (unbind-listeners! el)
   (gobj/set el model/k-sub-token nil)
   (gobj/set el model/k-mounted nil))
 

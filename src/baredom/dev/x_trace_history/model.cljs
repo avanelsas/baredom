@@ -21,11 +21,29 @@
 
 (def forensic-value "raw")
 
+(def ^:private url-param-regex
+  "Matches `baredom-trace-history` as a complete URL query parameter
+   name (preceded by `?` or `&`, terminated by `=`, `&`, or end-of-
+   string). Anchored so `?baredom-trace-history-other` cannot
+   accidentally activate."
+  (re-pattern (str "(?:^\\?|&)" url-param "(?:=|&|$)")))
+
+(def ^:private forensic-url-regex
+  "Matches `baredom-trace-history=raw` as a complete URL query
+   parameter (anchored same as url-param-regex). The forensic
+   value can be followed by `&` or end-of-string but not by other
+   characters, so `=rawish` does not activate forensic mode."
+  (re-pattern (str "(?:^\\?|&)" url-param "=" forensic-value "(?:&|$)")))
+
 (defn enabled?
   "True iff the URL search of the supplied window contains
-   ?baredom-trace-history OR window.BAREDOM_TRACE_HISTORY is truthy."
+   `?baredom-trace-history` as a complete query parameter OR
+   window.BAREDOM_TRACE_HISTORY is `true` or the forensic-value
+   string \"raw\". Anchored URL match prevents look-alike params
+   from accidentally activating."
   [^js window]
-  (or (some-> (.. window -location -search) (.includes url-param))
+  (or (boolean (some->> (.. window -location -search)
+                        (re-find url-param-regex)))
       (true? (gobj/get window window-flag))
       (= forensic-value (gobj/get window window-flag))))
 
@@ -37,11 +55,8 @@
    trace-history is off or activated in normal mode."
   [^js window]
   (or (= forensic-value (gobj/get window window-flag))
-      (let [search (some-> (.. window -location -search))]
-        (boolean
-         (and search
-              (re-find (re-pattern (str url-param "=" forensic-value))
-                       search))))))
+      (boolean (some->> (.. window -location -search)
+                        (re-find forensic-url-regex)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Tag extraction
@@ -387,6 +402,19 @@
            (fn [^js r] (js/Math.abs (- (.-t r) target-t)))
            records)))
 
+(defn- index-of-record-id
+  "Linear-scan a vector of records, returning the index of the first
+   record whose `id` matches `target-id`, or nil if not found.
+   Uses a native CLJS loop with `nth` (O(1) per probe on vectors)
+   so we don't allocate a JS array just to call `.findIndex`."
+  [records target-id]
+  (let [n (count records)]
+    (loop [i 0]
+      (cond
+        (>= i n)                                          nil
+        (= target-id (.-id ^js (nth records i)))          i
+        :else                                             (recur (inc i))))))
+
 (defn step-record
   "Return the next or previous filtered record relative to `current-id`.
    `dir` is :next or :prev. Returns the first/last record when current-id
@@ -398,25 +426,18 @@
    Callers pass the t-sorted vector that filter-records produces."
   [filtered-records current-id dir]
   (when (seq filtered-records)
-    (let [target-idx (when (some? current-id)
-                       (loop [i 0]
-                         (cond
-                           (>= i (count filtered-records)) nil
-                           (= current-id (.-id ^js (nth filtered-records i))) i
-                           :else (recur (inc i)))))]
+    (let [idx (when (some? current-id)
+                (index-of-record-id filtered-records current-id))]
       (cond
         ;; No current selection (or current selection no longer in filter):
         ;; :next picks the first record, :prev picks the last.
-        (nil? target-idx)
+        (nil? idx)
         (case dir
           :next (first filtered-records)
           :prev (peek  filtered-records))
 
-        (= dir :next)
-        (get filtered-records (inc target-idx))
-
-        :else
-        (get filtered-records (dec target-idx))))))
+        (= dir :next) (get filtered-records (inc idx))
+        :else         (get filtered-records (dec idx))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Causality — cause-of / effects-of
@@ -505,7 +526,6 @@
 ;; ---------------------------------------------------------------------------
 
 (def k-shadow         "__xTraceHistoryShadow")
-(def k-keydown-fn     "__xTraceHistoryKeydownFn")
 (def k-timeline-el    "__xTraceHistoryTimelineEl")
 (def k-lanes-el       "__xTraceHistoryLanesEl")
 (def k-svg-pane-el    "__xTraceHistorySvgPaneEl")
@@ -532,6 +552,11 @@
 (def k-selected-id    "__xTraceHistorySelectedId")
 (def k-sub-token      "__xTraceHistorySubToken")
 (def k-mounted        "__xTraceHistoryMounted")
+;; JS array of #js [target event-name handler] triples captured at
+;; bind-listeners! time. unmount! iterates it to remove each listener,
+;; so the static dock listeners cannot leak across a disconnect /
+;; reconnect cycle.
+(def k-listeners      "__xTraceHistoryListeners")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS

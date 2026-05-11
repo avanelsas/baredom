@@ -82,6 +82,29 @@
 ;; not flag, so nested with-suppressed-recording! calls compose.
 (defonce ^:private suppression-depth (atom 0))
 
+;; Memoised JS-array view of the ring buffer for hot-path readers
+;; (records / session-records / sessions). Stored as #js [buf js-arr]
+;; so reference-equality on the (persistent) buffer is enough to know
+;; whether the cached array is still valid. Reset by every push (the
+;; buffer ref changes) and by clear!. Saves the dock from paying an
+;; O(N) clj->js+vec round-trip on every render tick.
+(defonce ^:private records-cache (atom #js [nil nil]))
+
+(defn- records-as-js-array
+  "Return a JS array view of the current ring buffer, memoised by
+   buffer identity. Callers MUST NOT mutate the returned array; the
+   recorder treats it as immutable until the next push."
+  []
+  (let [recs        (:records @state)
+        ^js cache   @records-cache
+        cached-buf  (aget cache 0)
+        cached-arr  (aget cache 1)]
+    (if (identical? cached-buf recs)
+      cached-arr
+      (let [arr (clj->js (vec recs))]
+        (reset! records-cache #js [recs arr])
+        arr))))
+
 ;; ---------------------------------------------------------------------------
 ;; Subscriber API
 ;; ---------------------------------------------------------------------------
@@ -375,10 +398,21 @@
      4. Pop the cause stack (in finally so a throwing handler still
         unwinds cleanly).
      5. For CustomEvents, push the dispatch's own record with the
-        reserved id and entry-time. Native browser events (Pointer/
-        Mouse/Keyboard/etc.) are NOT recorded — only their cause
-        frames are tracked, since recording every browser event would
-        flood the buffer.
+        reserved id and entry-time. Programmatically-dispatched
+        native-shaped events (e.g. `el.dispatchEvent(new PointerEvent
+        ('pointerdown'))`) are NOT recorded as records, but they DO
+        establish a cause frame so records produced inside the
+        handler attribute correctly.
+
+   IMPORTANT: trusted, user-initiated events (real clicks, keys,
+   pointermoves dispatched by the browser) are NOT routed through
+   the JS-visible `EventTarget.prototype.dispatchEvent` in any major
+   engine — the user agent delivers them via its internal dispatch
+   path. As a result, no cause frame is established for the root
+   user gesture; CustomEvents fired from a real click handler land
+   with `causeId: null`. The cause-chain anchors on the first
+   programmatic dispatch in the call stack, which is what consumers
+   of BareDOM care about in practice.
 
    When inactive or paused, pass straight through to the original."
   [^js this ^js ev]
@@ -451,9 +485,11 @@
 ;; ---------------------------------------------------------------------------
 
 (defn records
-  "Returns a JS Array of all recorded events, oldest first."
+  "Returns a JS Array of all recorded events, oldest first. The
+   returned array is memoised against the ring-buffer identity —
+   callers MUST NOT mutate it."
   []
-  (clj->js (vec (:records @state))))
+  (records-as-js-array))
 
 (defn components
   "Returns a JS object mapping componentId (as string key) to
@@ -509,12 +545,16 @@
   (schedule-notify!)
   nil)
 
-(defn forensic?
+(defn forensic-mode?
   "True when the recorder was installed in forensic mode
    (?baredom-trace-history=raw or window.BAREDOM_TRACE_HISTORY=\"raw\").
    Forensic mode disables the sample-rate cap and is the dock's signal
    to default the :state category checkbox to ON. Captured at install
-   time so per-record reads don't have to touch window state."
+   time so per-record reads don't have to touch window state.
+
+   Disambiguated from `model/forensic?` (which reads live window state
+   at the moment of the call) by name — the recorder's flag is frozen
+   at install."
   []
   (:forensic? @state))
 
@@ -606,15 +646,19 @@
    Each entry is a JS object: {id, label, startT, endT, recordCount}.
    endT is null while the session is active. recordCount is computed
    from the live ring buffer at call time — sessions do not own
-   storage."
+   storage.
+
+   The JS-array conversion of the buffer is hoisted out of the session
+   loop so it pays one O(N) materialisation instead of O(sessions × N)."
   []
-  (let [s @state
-        recs (:records s)]
+  (let [s         @state
+        ^js recs  (records-as-js-array)
+        rec-seq   (array-seq recs)]
     (->> (:sessions s)
          (mapv (fn [{:keys [id label start-t end-t] :as sess}]
                  (let [n (count
                           (filter (fn [^js r] (session-record-range? r sess))
-                                  (array-seq (clj->js (vec recs)))))]
+                                  rec-seq))]
                    (js-obj "id"          id
                            "label"       label
                            "startT"      start-t
@@ -630,7 +674,7 @@
   (let [s    @state
         sess (first (filter #(= (:id %) target-id) (:sessions s)))]
     (if sess
-      (->> (clj->js (vec (:records s)))
+      (->> (records-as-js-array)
            array-seq
            (filter (fn [^js r] (session-record-range? r sess)))
            (sort-by (fn [^js r] (.-t r)))

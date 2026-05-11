@@ -88,11 +88,20 @@
 
 (deftest make-record-plain-keyword-type-test
   (testing "non-namespaced :type keyword"
-    (let [r (model/make-record
-             {:type :foo :tag "x" :event-name "" :detail nil
-              :cancelable? false :default-prevented? false}
-             0 0)]
-      (is (= "foo" (.-type r))))))
+    ;; make-record warns on unknown types (developer-typo guard). :foo
+    ;; is not a real type — this test only checks that the type field
+    ;; serialises plain keywords as 'foo' (not ':foo'). Silence the
+    ;; expected console.warn so the test output stays clean.
+    (let [orig (.-warn js/console)]
+      (try
+        (set! (.-warn js/console) (fn [& _] nil))
+        (let [r (model/make-record
+                 {:type :foo :tag "x" :event-name "" :detail nil
+                  :cancelable? false :default-prevented? false}
+                 0 0)]
+          (is (= "foo" (.-type r))))
+        (finally
+          (set! (.-warn js/console) orig))))))
 
 (deftest make-record-nil-detail-test
   (testing "nil detail surfaces as null"

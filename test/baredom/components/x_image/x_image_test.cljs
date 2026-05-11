@@ -9,9 +9,15 @@
 (def valid-png-data-url
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=")
 
-;; Malformed data URL — triggers error synchronously.
+;; Syntactically-valid data URL whose base64 payload decodes to bytes
+;; that are not a PNG — the network stack accepts the URL, the image
+;; decoder rejects the content, and the <img> fires `error`. We
+;; deliberately avoid a syntactically-malformed URL (e.g. !!!not-valid!!!)
+;; because Chrome's URL parser would reject that with a
+;; `net::ERR_INVALID_URL` console error before the image element ever
+;; sees it — extra noise that obscures real failures during a test run.
 (def invalid-img-url
-  "data:image/png;base64,!!!not-valid!!!")
+  "data:image/png;base64,SGVsbG8=")
 
 (defn cleanup-dom! []
   (doseq [node (.querySelectorAll js/document model/tag-name)]
