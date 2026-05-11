@@ -183,6 +183,16 @@ function App() {
 
 The wrapper components are auto-generated from BareDOM's component model metadata using `bb scripts/generate_react.bb`. Adding a new component to BareDOM automatically produces its React wrapper.
 
+## Dev tools
+
+To enable the `<x-trace-history>` timeline dock in your React app, add a side-effect import at the top of `main.tsx`:
+
+```tsx
+import "@vanelsas/baredom/x-trace-history";
+```
+
+The dock only mounts when you load the page with `?baredom-trace-history` in the URL (or set `window.BAREDOM_TRACE_HISTORY = true` before the module loads). `register!` is idempotent — `<StrictMode>` double-effects do not double-mount the dock. See [docs/x-trace-history.md](../../docs/x-trace-history.md) for the full guide, and `test-app/` for a working smoke setup.
+
 ## License
 
 MIT

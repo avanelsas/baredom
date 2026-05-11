@@ -326,17 +326,77 @@ function describe(r: TraceRecord): string {
 ### Angular
 
 ```ts
-// main.ts
+// src/main.ts
+import "zone.js";
+// Side-effect import. Order matters: AFTER zone.js. Zone patches
+// EventTarget.prototype.dispatchEvent during its own load; importing
+// trace-history after zone means the recorder's wrapper layers on
+// top of zone's patch (each layer calls through to the previous one
+// via the JS prototype chain). The recorder's wrapper-stamp guard
+// prevents double-installation if the module loads twice. Empirical
+// end-to-end verification (does a zone-scheduled event reach the
+// recorder?) is left to the smoke test-app at
+// adapters/angular/test-app/ — run `ng serve` and check the live
+// record count increments as you interact with the Angular-wrapped
+// components.
 import "@vanelsas/baredom/x-trace-history";
-// …bootstrapApplication etc.
+import { bootstrapApplication } from "@angular/platform-browser";
+import { AppComponent } from "./app/app.component";
+
+bootstrapApplication(AppComponent);
 ```
+
+The standalone test-app at `adapters/angular/test-app/` ships a
+working smoke setup including a `TraceHistoryPanelComponent` that
+shows live record count from `window.BareDOM.traceHistory.records()`
+and a verifier button. Run `ng serve` from that directory and load
+`http://localhost:4200/?baredom-trace-history` to confirm the dock
+auto-mounts and records reach it from Angular-wrapped components.
 
 ### React
 
 ```tsx
-// index.tsx
-import "@vanelsas/baredom/x-trace-history";
-// …createRoot etc.
+// src/main.tsx
+import { createRoot } from "react-dom/client";
+import { App } from "./App";
+import "@vanelsas/baredom/x-trace-history";  // side effect
+
+createRoot(document.getElementById("root")!).render(<App />);
+```
+
+**StrictMode interaction.** `<StrictMode>` double-mounts effects in
+dev. The side-effect import at module scope runs once regardless of
+StrictMode, since ES module loading is independent of React's
+render lifecycle. Even if a consumer puts the import inside a
+`useEffect` that runs twice, the dock's `register!` is idempotent
+by design — a `register-is-idempotent-test` in the dock test suite
+asserts triple `register!` produces exactly one `<x-trace-history>`
+element, one dispatchEvent wrapper, and one custom-element
+definition. The smoke test-app at `adapters/react/test-app/` does
+not currently enable StrictMode, so the interaction is verified at
+the unit-test layer rather than the test-app layer.
+
+The standalone test-app at `adapters/react/test-app/` ships a working
+smoke setup with a `<TraceHistoryPanel>` React component. Run
+`npm run dev` from that directory and load
+`http://localhost:5173/?baredom-trace-history` to confirm the dock
+auto-mounts and records reach it from React-wrapped components.
+
+### Dev-only gating
+
+For production builds, gate the import behind your bundler's dev
+flag so the ~22 KB gzipped module doesn't ship to users:
+
+```ts
+// Vite
+if (import.meta.env.DEV) {
+  await import("@vanelsas/baredom/x-trace-history");
+}
+
+// Webpack / Next.js
+if (process.env.NODE_ENV !== "production") {
+  await import("@vanelsas/baredom/x-trace-history");
+}
 ```
 
 In all cases the URL flag or `window.BAREDOM_TRACE_HISTORY` decides

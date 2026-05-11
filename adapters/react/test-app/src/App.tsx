@@ -11,6 +11,7 @@ import { XDivider } from "@vanelsas/baredom-react/x-divider";
 import { useRegisterPreset } from "@vanelsas/baredom-react/hooks";
 import type { PresetData } from "@vanelsas/baredom-react/hooks";
 import type { XButton as XButtonElement } from "@vanelsas/baredom/x-button";
+import { TraceHistoryPanel } from "./components/TraceHistoryPanel";
 
 const candyPreset: PresetData = {
   light: {
@@ -213,6 +214,11 @@ export function App() {
             Switch presets to see all components above re-theme. "Candy" is registered via useRegisterPreset.
           </p>
         </section>
+
+        <XDivider style={{ margin: "1.5rem 0" }} />
+
+        {/* --- Test 9: Trace history dock smoke (PR 19) --- */}
+        <TraceHistoryPanel />
 
         <XDivider style={{ margin: "1.5rem 0" }} />
 
