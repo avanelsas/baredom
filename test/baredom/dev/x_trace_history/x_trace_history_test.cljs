@@ -210,6 +210,148 @@
                 (done)))))))))
 
 ;; ---------------------------------------------------------------------------
+;; Search input — PR 16
+;;
+;; The dock's filter bar carries a native <input type='search'>. Typing
+;; into it narrows the timeline to records whose JSON-serialised form
+;; contains the typed string. Empty input clears the filter. The handler
+;; is wired through a single shadow-root `input` listener gated on the
+;; data-x-th-search attribute.
+;; ---------------------------------------------------------------------------
+
+(defn- dispatch-search-input!
+  "Simulate a user typing into the search field — set the host's value
+   property and fire the CustomEvent x-search-field emits on every
+   keystroke. Mirrors the dispatch-checkbox-change! / dispatch-select-
+   change! helpers above. The event must bubble + compose so it
+   crosses the dock's shadow boundary to the dock's listener-spec
+   delegate."
+  [^js sf value]
+  (set! (.-value sf) value)
+  (.dispatchEvent sf
+                  (js/CustomEvent. "x-search-field-input"
+                                   #js {:bubbles  true
+                                        :composed true
+                                        :detail   #js {:name  "search"
+                                                       :value value}})))
+
+(deftest search-input-rendered-in-filter-bar-test
+  (testing "the dock skeleton ships an x-search-field next to the
+            tag/categories filters with the data-x-th-search marker
+            the handler gates on"
+    (let [^js dock (mount-dock!)
+          ^js inp  (query dock "[data-x-th-search]")]
+      (is (some? inp) "search field present in the filter bar")
+      (is (= "x-search-field" (.. inp -tagName toLowerCase))
+          "uses the BareDOM x-search-field component")
+      (is (.hasAttribute inp "data-x-th-search")))))
+
+(deftest search-narrows-dots-test
+  (testing "typing a substring of an event name filters the timeline
+            to matching dispatches only"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js cb   (.createElement js/document "x-checkbox")]
+        (du/dispatch! btn "press"  #js {})
+        (du/dispatch! cb  "toggle" #js {})
+        (after-frames 2
+          (fn []
+            (is (= 2 (dot-count dock)) "both records visible initially")
+            (dispatch-search-input! ^js (query dock "[data-x-th-search]") "press")
+            (after-frames 1
+              (fn []
+                (is (= 1 (dot-count dock))
+                    "only the 'press' record matches the search query")
+                (done)))))))))
+
+(deftest search-clearing-restores-all-records-test
+  (testing "blanking the search input drops the filter back to its
+            empty-string sentinel and shows every record again"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js cb   (.createElement js/document "x-checkbox")]
+        (du/dispatch! btn "press"  #js {})
+        (du/dispatch! cb  "toggle" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js inp (query dock "[data-x-th-search]")]
+              (dispatch-search-input! inp "press")
+              (after-frames 1
+                (fn []
+                  (is (= 1 (dot-count dock)))
+                  (dispatch-search-input! inp "")
+                  (after-frames 1
+                    (fn []
+                      (is (= 2 (dot-count dock))
+                          "both records back after clearing the search")
+                      (done))))))))))))
+
+(deftest search-is-case-insensitive-test
+  (testing "uppercase queries still match lowercase haystacks — the
+            handler lowercases the value once before storing it on
+            k-filter so model/matches-search? doesn't have to"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "PressEvent" #js {})
+        (after-frames 2
+          (fn []
+            (dispatch-search-input! ^js (query dock "[data-x-th-search]") "press")
+            (after-frames 1
+              (fn []
+                (is (= 1 (dot-count dock))
+                    "lowercase query matched the mixed-case event name")
+                (done)))))))))
+
+(deftest search-typing-does-not-pollute-live-records-test
+  (testing "x-search-field events fire from inside the dock's shadow,
+            so the recorder's internal-host filter (via mark-internal!)
+            must skip them. Typing into search should not add records
+            to the live buffer."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "press" #js {})
+        (after-frames 2
+          (fn []
+            (let [before-search (.-length (recorder/records))]
+              (dispatch-search-input!
+                ^js (query dock "[data-x-th-search]") "press")
+              (after-frames 2
+                (fn []
+                  (is (= before-search (.-length (recorder/records)))
+                      "no x-search-field-input records leaked into live")
+                  (done))))))))))
+
+(deftest search-combines-with-tag-filter-test
+  (testing "search AND tag both apply — the AND-semantics are inherited
+            from filter-records"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js cb   (.createElement js/document "x-checkbox")]
+        (du/dispatch! btn "press" #js {})
+        (du/dispatch! cb  "press" #js {})
+        (after-frames 2
+          (fn []
+            (is (= 2 (dot-count dock))
+                "two presses across two components before any filter")
+            (dispatch-search-input! ^js (query dock "[data-x-th-search]") "press")
+            (after-frames 1
+              (fn []
+                (is (= 2 (dot-count dock))
+                    "search alone still keeps both — both contain 'press'")
+                (dispatch-select-change!
+                  ^js (query dock "[data-x-th-tag]") "x-button")
+                (after-frames 1
+                  (fn []
+                    (is (= 1 (dot-count dock))
+                        "tag filter on top of search narrows to x-button only")
+                    (done)))))))))))
+
+;; ---------------------------------------------------------------------------
 ;; Records → dots
 ;; ---------------------------------------------------------------------------
 

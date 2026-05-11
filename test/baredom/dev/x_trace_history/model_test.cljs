@@ -455,6 +455,108 @@
     (is (false? (model/record-matches? r {:tag "x-modal"
                                           :categories #{:events}})))))
 
+;; ── search ─────────────────────────────────────────────────────────────────
+;;
+;; PR 16 — full-text search over the record's JSON-serialised form.
+;; The haystack is memoised on each record under a stable gobj key so
+;; the first query allocates the string and every subsequent query
+;; (across keystrokes, axis toggles, filter changes) reuses it.
+;; record-matches? folds the search check into its existing AND chain
+;; alongside :tag and :categories.
+
+(defn- mk-detail-rec
+  "Build a richer sample record carrying a CustomEvent-shaped detail
+   so the search tests can probe both top-level and nested fields."
+  [id type tag t extras]
+  (let [base (js-obj "id" id "type" type "tag" tag "t" t)]
+    (doseq [[k v] extras]
+      (gobj/set base k v))
+    base))
+
+(deftest searchable-haystack-is-lowercase-test
+  (testing "haystack lowercases the JSON form so case-insensitive
+            substring matching works without per-query lowercasing"
+    (let [r   (mk-detail-rec 0 "event/dispatch" "x-Button" 100
+                             {"eventName" "x-Button:Click"})
+          hay (model/searchable-haystack r)]
+      (is (= hay (.toLowerCase hay)))
+      (is (clojure.string/includes? hay "x-button:click"))
+      (is (clojure.string/includes? hay "event/dispatch")))))
+
+(deftest searchable-haystack-memoises-test
+  (testing "second call returns the identical string reference — the
+            haystack is cached on the record so high-frequency search
+            (every keystroke) pays the JSON.stringify cost once."
+    (let [r (mk-detail-rec 0 "event/dispatch" "x-button" 100 nil)
+          a (model/searchable-haystack r)
+          b (model/searchable-haystack r)]
+      (is (identical? a b)
+          "memoised — same reference returned on the second call"))))
+
+(deftest searchable-haystack-survives-cyclic-detail-test
+  (testing "a record with a cyclic detail (or anything that JSON.stringify
+            throws on) falls back to an empty string rather than
+            crashing the search path"
+    (let [d (js-obj "self" nil)]
+      (gobj/set d "self" d) ;; cyclic reference
+      (let [r   (mk-detail-rec 0 "event/dispatch" "x-button" 100
+                               {"detail" d})
+            hay (model/searchable-haystack r)]
+        (is (string? hay))
+        (is (= "" hay))))))
+
+(deftest record-matches-search-empty-test
+  (testing "nil and blank search match every record"
+    (let [^js r (aget sample-records 0)]
+      (is (true? (model/record-matches? r {:search nil})))
+      (is (true? (model/record-matches? r {:search ""}))))))
+
+(deftest record-matches-search-substring-test
+  (testing "search matches a substring of the record's JSON-serialised
+            form. The query is required to be lowercase already — the
+            haystack is normalised to lowercase by searchable-haystack
+            so callers lowercase the query once (the dock does this
+            in handle-search-input!) and matches-search? is a pure
+            substring check from there."
+    (let [r (mk-detail-rec 0 "event/dispatch" "x-button" 100
+                           {"eventName" "x-button:click"
+                            "detail"    (js-obj "id" 42)})]
+      (is (true?  (model/record-matches? r {:search "x-button:click"})))
+      (is (true?  (model/record-matches? r {:search "42"}))
+          "nested numeric value in detail matches when stringified")
+      (is (false? (model/record-matches? r {:search "x-modal"})))
+      ;; Contract: an uppercase query won't match the lowercase
+      ;; haystack. The dock lowercases on input; callers using the
+      ;; model directly must do the same.
+      (is (false? (model/record-matches? r {:search "X-BUTTON:CLICK"}))
+          "uppercase query is taken literally by the model; callers normalise"))))
+
+(deftest filter-records-by-search-test
+  (testing "filter-records prunes the result set to records whose
+            haystack contains the query"
+    (let [recs #js [(mk-detail-rec 0 "event/dispatch"      "x-button" 100
+                                   {"eventName" "press"})
+                    (mk-detail-rec 1 "event/dispatch"      "x-button" 110
+                                   {"eventName" "click"})
+                    (mk-detail-rec 2 "lifecycle/connected" "x-modal"  120 nil)]
+          out  (model/filter-records recs {:search "press"})]
+      (is (= 1 (count out)))
+      (is (= 0 (.-id ^js (first out)))))))
+
+(deftest filter-records-search-combines-with-tag-and-categories-test
+  (testing "search AND tag AND categories all apply (AND-semantics)"
+    (let [recs #js [(mk-detail-rec 0 "event/dispatch"      "x-button" 100
+                                   {"eventName" "press"})
+                    (mk-detail-rec 1 "event/dispatch"      "x-modal"  110
+                                   {"eventName" "press"})
+                    (mk-detail-rec 2 "lifecycle/connected" "x-button" 120 nil)]
+          out  (model/filter-records recs
+                                     {:search    "press"
+                                      :tag       "x-button"
+                                      :categories #{:events}})]
+      (is (= 1 (count out)))
+      (is (= 0 (.-id ^js (first out)))))))
+
 ;; ── payload-preview ─────────────────────────────────────────────────────────
 
 (defn- preview-of [^js payload]

@@ -89,7 +89,7 @@ Each PR is sized for ~1 hour of review, ships something visible, and ends green 
 
 ### Phase 8 — Advanced & polish (4 PRs)
 
-- **PR 16: Search across recorded values.** Full-text on payload (`detail.id == 42`, `attribute name == "disabled"`). Indexed lazily on first search to keep recording cost low. **(consumer-visible)**
+- **PR 16: Search across recorded values.** ✅ Native `<input type="search">` in the dock's filter bar. Every record gets a lazily-built lowercase JSON haystack memoised under a gobj key on the record itself, so the recording hot path pays nothing for search and the first keystroke pays one `JSON.stringify` + `toLowerCase` per record (subsequent keystrokes reuse the cached strings). Falls back to an empty haystack on cyclic detail payloads. AND-combines with the tag dropdown and category checkboxes.
 - **PR 17: Causality DAG view.** Graph rendering of cause→effect chains. Distinctively *not* what DevTools provides. Click a node to scrub to that record. **(consumer-visible)**
 - **PR 18: Heatmap density rendering.** When a lane crosses ~50 events/sec, render a colored band rather than individual dots. Click to drill in. Most visually elegant; useful for animation-heavy components. **(consumer-visible)**
 - **PR 19: Adapter integration tests.** Verify `x-trace-history` works inside `@vanelsas/baredom-react` and `@vanelsas/baredom-angular` consumer apps. Documents adapter-specific activation. **(consumer-visible)**

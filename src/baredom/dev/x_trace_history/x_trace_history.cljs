@@ -22,6 +22,7 @@
    ;; convention in baredom.exports.x_*.cljs.
    [baredom.components.x-button.x-button]
    [baredom.components.x-checkbox.x-checkbox]
+   [baredom.components.x-search-field.x-search-field]
    [baredom.components.x-select.x-select]))
 
 ;; ---------------------------------------------------------------------------
@@ -127,6 +128,15 @@
        "<x-select data-x-th-tag size='sm'>"
        "<option value='all' selected>All tags</option>"
        "</x-select>"
+       ;; PR 16 — full-text search across record JSON. Uses x-search-
+       ;; field so the dock's controls dogfood the library uniformly
+       ;; (x-button, x-checkbox, x-select, x-search-field). The search
+       ;; haystack is lazily indexed on the record itself (see
+       ;; model/searchable-haystack) so the recording hot path pays
+       ;; nothing; the first search per record allocates the haystack,
+       ;; subsequent searches reuse it.
+       "<x-search-field data-x-th-search name='search' "
+       "placeholder='Search records…' autocomplete='off'></x-search-field>"
        ;; x-checkbox has no default slot — text inside the host is
        ;; invisible. Wrap in <label> per docs/x-checkbox.md so the
        ;; visible label sits next to the checkbox AND clicking it
@@ -835,6 +845,23 @@
       (some? (.getAttribute target "data-x-th-axis"))
       (handle-axis-change! el value))))
 
+(defn- handle-search-input!
+  "x-search-field fires `x-search-field-input` on every keystroke with
+   detail = {name, value}. We lowercase the value once here so
+   model/matches-search? compares cheap lowercase-vs-lowercase without
+   re-lowercasing each haystack call. Empty value disables the filter.
+   Gated on data-x-th-search so a future second x-search-field in the
+   dock cannot stomp this spec through the same shadow delegate."
+  [^js el ^js e]
+  (let [^js target (.-target e)]
+    (when (and target (.hasAttribute target "data-x-th-search"))
+      (let [raw      (or (.. e -detail -value) "")
+            q        (.toLowerCase raw)
+            spec     (gobj/get el model/k-filter)
+            new-spec (assoc spec :search (when-not (= "" q) q))]
+        (gobj/set el model/k-filter new-spec)
+        (render! el)))))
+
 (defn- handle-checkbox-change!
   "x-checkbox fires `x-checkbox-change` with detail = {value, checked}."
   [^js el ^js e]
@@ -1257,7 +1284,8 @@
   (gobj/set el model/k-detail-el   (.querySelector shadow "[data-x-th-detail]"))
   (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
   (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
-  (gobj/set el model/k-tag-select-el (.querySelector shadow "[data-x-th-tag]"))
+  (gobj/set el model/k-tag-select-el   (.querySelector shadow "[data-x-th-tag]"))
+  (gobj/set el model/k-search-input-el (.querySelector shadow "[data-x-th-search]"))
   (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
   (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
@@ -1279,6 +1307,12 @@
   #js [#js [shadow       "click"             (fn [^js e] (handle-click!                 el e))]
        #js [shadow       "select-change"     (fn [^js e] (handle-select-change!         el e))]
        #js [shadow       "x-checkbox-change" (fn [^js e] (handle-checkbox-change!       el e))]
+       ;; PR 16 — x-search-field fires `x-search-field-input` on every
+       ;; keystroke with detail = {name, value}. The handler gates on
+       ;; data-x-th-search so a future second search field in the dock
+       ;; wouldn't pollute the search spec through this same shadow-
+       ;; root listener.
+       #js [shadow       "x-search-field-input" (fn [^js e] (handle-search-input!      el e))]
        #js [timeline-el  "pointermove"       (fn [^js e] (handle-pointermove!           el e))]
        #js [timeline-el  "pointerleave"      (fn [^js e] (handle-pointerleave!          el e))]
        ;; Pointerdown anywhere in the timeline focuses it so the
@@ -1359,7 +1393,7 @@
    filter spec across remount."
   [^js el cats]
   (when-not (gobj/get el model/k-filter)
-    (gobj/set el model/k-filter {:tag nil :categories cats}))
+    (gobj/set el model/k-filter {:tag nil :categories cats :search nil}))
   (when-not (gobj/get el model/k-view)
     (gobj/set el model/k-view :live))
   (when-not (gobj/get el model/k-view-selected)
@@ -1475,6 +1509,7 @@
   (recorder/register!)
   (baredom.components.x-button.x-button/init!)
   (baredom.components.x-checkbox.x-checkbox/init!)
+  (baredom.components.x-search-field.x-search-field/init!)
   (baredom.components.x-select.x-select/init!)
   (when-not (.get js/customElements model/tag-name)
     (.define js/customElements model/tag-name (element-class)))

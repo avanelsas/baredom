@@ -428,15 +428,54 @@
             event-type-categories)
       :other))
 
+(def ^:private search-cache-key "__xTraceHistorySearchable")
+
+(defn- safe-stringify
+  "JSON.stringify a record, swallowing exceptions (e.g. a detail payload
+   carrying a cyclic reference that slipped past the recorder's
+   coercion). Returns a lowercase string so callers can substring-
+   match case-insensitively."
+  [^js r]
+  (let [s (try (js/JSON.stringify r) (catch :default _ ""))]
+    (when s (.toLowerCase s))))
+
+(defn searchable-haystack
+  "Return a lowercase, JSON-serialised view of the record suitable for
+   substring matching. Memoised on the record itself under a stable
+   gobj key — records are immutable values that the recorder shares
+   across renders, so the first search builds the haystack once and
+   every later search reuses it. clear! drops the records, taking the
+   cache with them; the next batch of records gets a fresh haystack
+   built on first access. This is the 'indexed lazily on first search'
+   guarantee from the roadmap."
+  [^js r]
+  (or (gobj/get r search-cache-key)
+      (let [s (safe-stringify r)]
+        (gobj/set r search-cache-key s)
+        s)))
+
+(defn matches-search?
+  "True iff `q` (already lowercase) is empty, nil, or appears as a
+   substring of the record's searchable haystack. Pure helper for
+   record-matches?."
+  [^js r q]
+  (or (nil? q)
+      (= "" q)
+      (let [hay (searchable-haystack r)]
+        (and hay (not (neg? (.indexOf hay q)))))))
+
 (defn record-matches?
   "True iff a single record passes the filter spec.
 
    spec keys:
      :tag        — string tag name; nil / blank / 'all' = match any
-     :categories — set of category keywords to include; nil = include all"
-  [^js r {:keys [tag categories]}]
+     :categories — set of category keywords to include; nil = include all
+     :search     — lowercase substring required in the record's
+                   JSON-serialised form; nil / blank = include all"
+  [^js r {:keys [tag categories search]}]
   (and (or (nil? tag) (= "" tag) (= "all" tag) (= tag (.-tag r)))
-       (or (nil? categories) (contains? categories (categorize-type (.-type r))))))
+       (or (nil? categories) (contains? categories (categorize-type (.-type r))))
+       (matches-search? r search)))
 
 (defn filter-records
   "Return a CLJS vector of records matching the filter spec, sorted by `t`
@@ -886,6 +925,9 @@
 (def k-splitter-el    "__xTraceHistorySplitterEl")
 (def k-hint-el        "__xTraceHistoryHintEl")
 (def k-tag-select-el  "__xTraceHistoryTagSelectEl")
+;; PR 16 — search input across recorded values. Caches the input
+;; element so render!'s reads stay off querySelector.
+(def k-search-input-el "__xTraceHistorySearchInputEl")
 (def k-filter         "__xTraceHistoryFilter")
 ;; The active view: :live (the always-on buffer) or [:session id].
 ;; render! consults this to choose which records to display.
@@ -1032,6 +1074,15 @@
   font-size: 10px;
   cursor: pointer;
   user-select: none;
+}
+/* PR 16 — search input. x-search-field brings its own theming via its
+   shadow DOM; the dock just constrains the host width so it shares
+   the filter row's monospace tone with the tag dropdown. */
+.filters x-search-field {
+  font-size: 11px;
+  flex: 1 1 140px;
+  min-width: 100px;
+  max-width: 240px;
 }
 /* Session strip: thin row above the filter row listing the live view
    plus any captured session as a clickable chip. Hidden when the only

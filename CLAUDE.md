@@ -194,6 +194,29 @@ Components **must** use shared utility modules — never reimplement locally:
 
 See [`docs/UTILITIES.md`](docs/UTILITIES.md) for the complete function reference.
 
+### Reuse library components inside dev tools, demos, and compound components
+
+When building anything that needs a button, checkbox, select, search field, dropdown, modal, drawer, tooltip, etc., **reach for the corresponding `x-*` component first**. The library's own surfaces should dogfood the library:
+
+- Dev tools under `src/baredom/dev/` (`x-debug`, `x-trace-history`) are first-class consumers of `x-button`, `x-checkbox`, `x-select`, `x-search-field`, and friends.
+- Compound components that legitimately compose smaller ones (`x-table` → `x-table-row`/`x-table-cell`, `x-tabs` → `x-tab`, `x-form` → `x-form-field`) require the implementation namespace directly.
+- Demo pages and the trace viewer (`public/viewer.html`) load the components they showcase.
+
+**Why:** the alternative is bespoke HTML + ad-hoc CSS that drifts in accessibility, theming, and behaviour. A native `<input type="search">` next to an `x-select` in the same toolbar looks like a regression to a library reviewer; using `x-search-field` keeps the dock visually and behaviourally aligned with everything else the library ships. It also exercises every component in real use, which catches usability issues that pure unit tests miss.
+
+**How to apply:**
+
+- For dev tools and compound components, require the **implementation namespace** (`baredom.components.x-search-field.x-search-field`) and call `init!` in your `register!`. Do not require the exports namespace (`baredom.exports.x-search-field`) — each exports ns is the entry of a separate `:lib` module, and pulling one in from another module forces shadow-cljs to relocate the entry into `:base` and breaks the per-module ESM split. See `src/baredom/dev/x_trace_history/x_trace_history.cljs` for the canonical pattern.
+- Listen for the component's CustomEvents (`x-search-field-input`, `x-checkbox-change`, `select-change`, …) rather than native DOM events. Use `(.. e -detail -value)` to read the payload.
+- Bundle-size reality: each component referenced from a dev-tool or compound module gets promoted into `base.js` by shadow-cljs (it's now reachable from more than one module entry). That's the *correct* outcome — it deduplicates the implementation across every consumer — but it does mean `base.js` grows by ~1–3 KB gzipped per added component. The bundle-size budget in `scripts/check-bundle-size.sh` accommodates this; verify after every addition.
+- For dev tools, ensure the recorder's internal-host filter still covers the new component's events. `recorder/mark-internal!` on the dev tool's host element causes `inside-internal-host?` to walk the shadow chain — events from any nested `x-*` inside the marked host are correctly filtered. Add a test that the dev tool's own component interactions do not pollute live records (see `search-typing-does-not-pollute-live-records-test` in the trace-history suite for the pattern).
+
+**When to skip the rule:**
+
+- Inside a component's own implementation (`x-button` cannot use `x-button`).
+- When the surface absolutely cannot afford `base.js` growth (extremely rare; dev tools and demos do not qualify).
+- When the `x-*` equivalent is functionally insufficient for the use case — but flag the gap; usually the right answer is to extend the component rather than fork it.
+
 ### Build targets
 
 - `:app` — dev demo at `public/index.html` (loads `public/js/main.js`)
