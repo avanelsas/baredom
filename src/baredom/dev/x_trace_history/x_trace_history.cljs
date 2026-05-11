@@ -339,7 +339,13 @@
    label. data-x-th-link-id makes the rect routable through the
    existing on-detail-link-click! delegate that already handles
    numeric ids — so causality clicks reuse the same selection plumbing
-   the cause/effect detail-pane links use."
+   the cause/effect detail-pane links use.
+
+   Nodes carry role='button' (for screen-reader announcement on
+   click) but no tabindex — the parent pane is the single tab stop,
+   and arrow keys step the selection from there. A per-node tabindex
+   would create one tab stop per tree node, which is unmanageable
+   for trees near the 200-node cap."
   [{:keys [id ^js record cx cy]} selected-id]
   (let [^js r       record
         left-x      (- cx (/ model/causality-node-w 2))
@@ -352,7 +358,7 @@
         id-y        (+ top-y 11)
         title-text  (escape-html (str "#" id " " (label-of-node r)
                                       " · " (model/payload-preview r)))]
-    (str "<g data-x-th-link-id='" id "' role='button' tabindex='0' "
+    (str "<g data-x-th-link-id='" id "' role='button' "
          "aria-label='" title-text "'>"
          "<title>" title-text "</title>"
          "<rect class='node-rect" (when sel? " selected") "' "
@@ -416,7 +422,7 @@
   (cond
     (nil? sel-rec)
     (do
-      (gobj/set el "__xTraceHistoryCausalityLayout" nil)
+      (gobj/set el model/k-causality-layout nil)
       (set! (.-innerHTML causality-el)
             (str "<div class='causality-empty'>"
                  (escape-html (model/causality-empty-message))
@@ -429,7 +435,7 @@
       (cond
         (> (:node-count stats) model/causality-max-nodes)
         (do
-          (gobj/set el "__xTraceHistoryCausalityLayout" nil)
+          (gobj/set el model/k-causality-layout nil)
           (set! (.-innerHTML causality-el)
                 (str "<div class='causality-empty'>"
                      (escape-html (model/causality-over-cap-message stats))
@@ -438,7 +444,7 @@
         :else
         (let [layout (model/layout-tree tree)
               leaf?  (= 1 (:node-count stats))]
-          (gobj/set el "__xTraceHistoryCausalityLayout" layout)
+          (gobj/set el model/k-causality-layout layout)
           (set! (.-innerHTML causality-el)
                 (str (when leaf? (leaf-hint-html))
                      (causality-svg-html layout (.-id sel-rec)))))))))
@@ -461,7 +467,7 @@
   [^js el]
   (when (gobj/get el model/k-causality-needs-fit)
     (let [^js container (gobj/get el model/k-causality-el)
-          layout        (gobj/get el "__xTraceHistoryCausalityLayout")
+          layout        (gobj/get el model/k-causality-layout)
           sel-id        (get-selected el)
           node          (when layout (model/find-laid-node layout sel-id))
           vw            (some-> container .-clientWidth)
@@ -733,10 +739,14 @@
    legacy k-selected-id slot when the view is Live so existing test
    assertions and any external readers keep working.
 
-   When the dock is in :causality mode, mark `k-causality-needs-fit`
-   so the next render scrolls the freshly-selected node to the centre
-   of the causality pane. Selecting in :timeline mode does NOT scroll
-   the causality pane — the user hasn't asked to look at it yet."
+   When the dock is in :causality mode AND a non-nil id is being
+   selected, mark `k-causality-needs-fit` so the next render scrolls
+   the freshly-selected node to the centre of the causality pane.
+   We do NOT set the flag on a nil-id clear (which `effective-
+   selection!` triggers when a filter change drops the selection)
+   because apply-causality-fit! has nothing to scroll to AND the
+   stale flag would silently scroll a LATER unrelated render when
+   the user reselects."
   [^js el id]
   (let [view  (gobj/get el model/k-view)
         ^js m (or (gobj/get el model/k-view-selected) (js-obj))
@@ -747,7 +757,8 @@
     (gobj/set el model/k-view-selected m)
     (when (model/live-view? view)
       (gobj/set el model/k-selected-id id))
-    (when (= :causality (gobj/get el model/k-dock-mode))
+    (when (and (some? id)
+               (= :causality (gobj/get el model/k-dock-mode)))
       (gobj/set el model/k-causality-needs-fit true))
     nil))
 

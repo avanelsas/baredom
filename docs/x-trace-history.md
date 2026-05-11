@@ -357,8 +357,10 @@ currently-selected node is highlighted.
   detail pane shows a **Caused by** link) to see a real chain.
 - **Over-cap notice** — trees over 200 nodes show a notice instead
   of drawing. That's typically a render fan-out (one dispatch
-  causing hundreds of effects); narrow the tag / category filter or
-  click into a smaller leaf record to view a focussed subtree.
+  causing hundreds of effects); pick a smaller leaf record to view
+  its subtree. The tag / category filter intentionally does NOT
+  apply to the causality tree — filtering would silently break
+  chains by hiding causes, so narrowing it would not help here.
 - **Axis-mode hidden** — the Order / Time toggle only affects the
   Timeline pane, so it's hidden while you're in Causality view to
   reduce noise.

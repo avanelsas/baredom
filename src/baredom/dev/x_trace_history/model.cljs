@@ -861,7 +861,8 @@
 ;; across all records is a forest of trees, not a general DAG. The view
 ;; renders the tree containing the currently-selected record: walk up to
 ;; the root (highest ancestor still in the records array), then a
-;; breadth-first build of descendants via effects-of.
+;; depth-first build of descendants via the private `children-of`
+;; helper (which scans the records array for matching causeId).
 ;;
 ;; Layout is a simple post-order tidy:
 ;;   - leaves are placed left-to-right
@@ -1083,12 +1084,17 @@
 
 (defn causality-over-cap-message
   "Hint string shown when the tree containing the selected record
-   would exceed `causality-max-nodes`. Tells the user how big the
-   tree is and how to narrow it."
+   exceeds `causality-max-nodes`. The build truncates DFS once the
+   cap is hit, so `node-count` is a lower bound rather than an exact
+   count for deep trees; the wording (`≥ N nodes`) reflects that.
+   Suggests picking a smaller leaf — the dock filter intentionally
+   does NOT apply to the causality tree (which would silently break
+   chains by hiding causes), so we don't suggest narrowing the
+   filter here."
   [{:keys [node-count]}]
-  (str "Causality tree has " node-count " nodes (cap "
-       causality-max-nodes "). Narrow the tag / category filter or "
-       "pick a smaller leaf record to view its subtree."))
+  (str "Causality tree exceeds the " causality-max-nodes
+       "-node cap (≥ " node-count " nodes). "
+       "Pick a smaller leaf record to view its subtree."))
 
 (defn causality-leaf-message
   "Hint shown above the lone node when the selected record has
@@ -1227,17 +1233,19 @@
 ;; removed (rebaseline). See maybe-auto-switch-import! in the dock.
 (def k-auto-switch-import-count "__xTraceHistoryAutoSwitchImportCount")
 ;; PR 17 — causality DAG view. dock-mode is :timeline or :causality.
-;; k-causality-el is the cached scrollable container; k-causality-svg-el
-;; is the inner <svg> so the UI layer can read its rendered width /
-;; height for fit-to-view math. k-mode-select-el is the <x-select> the
-;; user clicks to switch modes. k-causality-needs-fit is a transient
-;; flag set by handlers that should trigger an auto-scroll on the next
-;; render (mode-switch, selection-change inside causality, key-step).
+;; k-causality-el is the cached scrollable container the UI layer
+;; reads clientWidth / clientHeight from for fit-to-view math.
+;; k-mode-select-el is the <x-select> the user clicks to switch modes.
+;; k-causality-needs-fit is a transient flag set by handlers that
+;; should trigger an auto-scroll on the next render (mode-switch,
+;; selection-change inside causality, key-step). k-causality-layout
+;; caches the last laid-out tree so apply-causality-fit! can resolve
+;; the selected node's coords without rebuilding.
 (def k-dock-mode             "__xTraceHistoryDockMode")
 (def k-mode-select-el        "__xTraceHistoryModeSelectEl")
 (def k-causality-el          "__xTraceHistoryCausalityEl")
-(def k-causality-svg-el      "__xTraceHistoryCausalitySvgEl")
 (def k-causality-needs-fit   "__xTraceHistoryCausalityNeedsFit")
+(def k-causality-layout      "__xTraceHistoryCausalityLayout")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS
@@ -1596,7 +1604,7 @@ svg.causality-svg .node-text {
   dominant-baseline: middle;
 }
 svg.causality-svg .node-text.id {
-  fill: #6c7086;
+  fill: #a6adc8;
   font-size: 9px;
 }
 .splitter {

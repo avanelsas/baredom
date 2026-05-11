@@ -1671,11 +1671,19 @@
       (is (clojure.string/includes? (clojure.string/lower-case s) "select")))))
 
 (deftest causality-over-cap-message-test
-  (testing "message names the node count and the cap so the user
-            can decide how aggressively to narrow"
+  (testing "message names the cap and the (lower-bound) node count
+            so the user knows the tree is too large to draw, AND
+            advises picking a smaller leaf — but does NOT advise
+            narrowing the tag / category filter, because those
+            filters intentionally do not apply to causality trees
+            (filtering would silently break chains)."
     (let [s (model/causality-over-cap-message {:node-count 257})]
       (is (clojure.string/includes? s "257"))
-      (is (clojure.string/includes? s (str model/causality-max-nodes))))))
+      (is (clojure.string/includes? s (str model/causality-max-nodes)))
+      (is (clojure.string/includes? s "leaf"))
+      (is (not (clojure.string/includes? s "filter"))
+          "advice about filtering is misleading — filters don't apply
+           to causality"))))
 
 (deftest causality-leaf-message-test
   (testing "non-blank string explaining there's no chain and pointing

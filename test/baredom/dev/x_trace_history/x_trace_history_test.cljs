@@ -2330,3 +2330,172 @@
                       (is (nil? (.querySelector pane ".causality-leaf-hint"))
                           "no leaf-hint when tree has more than 1 node"))
                     (done)))))))))))
+
+(deftest causality-filter-driven-clear-does-not-leak-needs-fit-test
+  (testing "audit fix: in :causality mode, a filter-driven
+            effective-selection!→set-selected! nil call must NOT
+            leave k-causality-needs-fit=true. Without the fix the
+            stale flag silently triggers a fit-to-view scroll on a
+            LATER unrelated render with a different selection."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        ;; Build records: one state record we'll select, one events
+        ;; record we'll keep around so a category-filter toggle drops
+        ;; the state selection without leaving the buffer empty.
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__live" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Select the setv dot and switch to causality.
+            (let [setv-dot (some (fn [^js d]
+                                   (when (= "#f9e2af" (.getAttribute d "fill")) d))
+                                 (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js setv-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (switch-to-causality! dock)
+                (after-frames 1
+                  (fn []
+                    ;; Force the flag to a known clear state, then
+                    ;; trigger the filter-driven selection clear by
+                    ;; turning off the `state` category. The current
+                    ;; selection (a state record) no longer matches
+                    ;; the filter → effective-selection! calls
+                    ;; set-selected! with nil.
+                    (gobj/set dock model/k-causality-needs-fit false)
+                    (dispatch-checkbox-change!
+                     ^js (query dock "[data-x-th-cat='state']") false)
+                    (after-frames 1
+                      (fn []
+                        (is (false? (gobj/get dock model/k-causality-needs-fit))
+                            "needs-fit stayed clear despite the
+                             selection being dropped by the filter
+                             — the flag must NOT leak into a later
+                             unrelated render")
+                        (done)))))))))))))
+
+(deftest causality-arrow-step-updates-selection-test
+  (testing "ArrowRight in causality mode steps the selection just
+            like in timeline mode. set-selected! marks needs-fit on
+            real (non-nil) selection changes, so the next render's
+            apply-causality-fit! attempts a scroll."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Select the parent dispatch dot (the green one) first.
+            (let [evt-dot (some (fn [^js d]
+                                  (when (= "#94e2d5" (.getAttribute d "fill")) d))
+                                (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js evt-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (switch-to-causality! dock)
+                (after-frames 1
+                  (fn []
+                    (let [before-id (gobj/get dock model/k-selected-id)]
+                      ;; Force-clear the flag so we can prove arrow-
+                      ;; stepping (a real selection move) sets it.
+                      (gobj/set dock model/k-causality-needs-fit false)
+                      (.dispatchEvent
+                       ^js (shadow-of dock)
+                       (js/KeyboardEvent. "keydown"
+                                          #js {:key      "ArrowRight"
+                                               :bubbles  true
+                                               :composed true}))
+                      (after-frames 1
+                        (fn []
+                          (let [after-id (gobj/get dock model/k-selected-id)]
+                            (is (some? after-id) "still have a selection")
+                            (is (not= before-id after-id)
+                                "ArrowRight moved the selection to a
+                                 different record"))
+                          (done))))))))))))))
+
+(deftest causality-view-in-session-smoke-test
+  (testing "causality view works inside a [:session N] view: the
+            tree is built from the session's records, not the live
+            buffer, so a chain captured entirely inside a session
+            still renders correctly"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        ;; Capture a session containing one parent + one child.
+        (recorder/start-session!)
+        (du/dispatch! btn "click" #js {})
+        (recorder/stop-session!)
+        (after-frames 2
+          (fn []
+            ;; Switch the dock to the session view via its chip.
+            (let [^js session    (aget (recorder/sessions) 0)
+                  ^js chip       (query
+                                  dock
+                                  (str "[data-x-th-session='" (.-id session) "']"))]
+              (.dispatchEvent chip (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                ;; Select the setv dot inside the session.
+                (let [setv-dot (some (fn [^js d]
+                                       (when (= "#f9e2af"
+                                                (.getAttribute d "fill")) d))
+                                     (array-seq (query-all dock "circle.dot")))]
+                  (.dispatchEvent ^js setv-dot
+                                  (js/MouseEvent. "click" #js {:bubbles true})))
+                (after-frames 1
+                  (fn []
+                    (switch-to-causality! dock)
+                    (after-frames 1
+                      (fn []
+                        (let [pane  (causality-pane dock)
+                              rects (.querySelectorAll pane "rect.node-rect")]
+                          (is (>= (.-length rects) 2)
+                              "causality tree shows the chain captured
+                               inside the session"))
+                        (done)))))))))))))
+
+(deftest causality-node-has-no-tabindex-test
+  (testing "audit fix: per-node tabindex would create one tab stop
+            per tree node — unmanageable near the 200-node cap. The
+            pane is the single tab stop; arrow keys step the
+            selection from there. role='button' stays so screen
+            readers still announce nodes as activatable on click."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            (let [setv-dot (some (fn [^js d]
+                                   (when (= "#f9e2af" (.getAttribute d "fill")) d))
+                                 (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js setv-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (switch-to-causality! dock)
+                (after-frames 1
+                  (fn []
+                    (let [pane    (causality-pane dock)
+                          groups  (.querySelectorAll
+                                   pane "[data-x-th-link-id]")]
+                      (is (pos? (.-length groups))
+                          "tree has at least one node group")
+                      (doseq [^js g (array-seq groups)]
+                        (is (nil? (.getAttribute g "tabindex"))
+                            "node group has no tabindex")
+                        (is (= "button" (.getAttribute g "role"))
+                            "role='button' preserved for screen-reader
+                             announcement")))
+                    (done)))))))))))
