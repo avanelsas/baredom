@@ -985,9 +985,12 @@
              (model/download-filename d))))))
 
 (deftest download-filename-double-digit-fields-test
-  (testing "two-digit fields are kept as-is, no leading zero stripping"
-    (let [d (js/Date. 2026 10 31 23 59 59)]
-      (is (= "baredom-trace-20261131-235959.trace.json"
+  (testing "two-digit fields are kept as-is, no leading zero stripping.
+            Use Dec 31 (month=11 0-indexed) — Dec has 31 days, so the
+            JS Date constructor doesn't roll the date forward like it
+            would for an out-of-range day in a 30-day month."
+    (let [d (js/Date. 2026 11 31 23 59 59)]
+      (is (= "baredom-trace-20261231-235959.trace.json"
              (model/download-filename d))))))
 
 (deftest download-filename-extension-constants-test
