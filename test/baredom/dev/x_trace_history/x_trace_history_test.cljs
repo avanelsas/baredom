@@ -2499,3 +2499,313 @@
                             "role='button' preserved for screen-reader
                              announcement")))
                     (done)))))))))))
+
+;; ---------------------------------------------------------------------------
+;; Heatmap density rendering (PR 18)
+;;
+;; In :time axis mode, lanes whose records overlap visually (>3
+;; records per 4 px bin) render as a coloured band instead of dots.
+;; Selection / detail-pane / arrow-stepping all keep working because
+;; a bin is just an alternate rendering of the same records — its
+;; data-x-th-bin-record-id routes the click through the existing
+;; selection plumbing.
+;; ---------------------------------------------------------------------------
+
+(defn- import-test-records!
+  "Import a hand-crafted records array and wait two frames so the
+   auto-switch heuristic moves the dock onto the new import.
+   `records-js` is a JS array of mk-test-record outputs."
+  [records-js label cb]
+  (let [env (mk-test-envelope records-js)]
+    (recorder/import-trace! env label)
+    (after-frames 2 cb)))
+
+(defn- mk-test-record-with
+  "Like mk-test-record but accepts an explicit componentId so tests
+   can spread records across multiple lanes (density rendering is
+   per-lane, so multi-lane setups need distinct cids)."
+  [id t type cid]
+  (js-obj "schemaVersion" 1
+          "id"            id
+          "t"             t
+          "type"          type
+          "tag"           "x-button"
+          "componentId"   cid
+          "causeId"       nil))
+
+(deftest density-dense-lane-renders-bands-test
+  (testing "in :time mode, a lane whose records cluster into one
+            pixel bin (because they all share the same t) renders as
+            density-bin rects instead of dots"
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; 20 records all at t=100 + componentId=1: one lane,
+            ;; one bin (post time-x normalization), > threshold.
+            recs     (apply array
+                            (for [i (range 20)]
+                              (mk-test-record-with i 100 "event/dispatch" 1)))]
+        (import-test-records!
+         recs "dense"
+         (fn []
+           ;; Axis mode is :order by default — switch to :time so the
+           ;; density path activates.
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [bins (query-all dock "rect.density-bin")
+                     dots (query-all dock "circle.dot")]
+                 (is (pos? (.-length bins))
+                     "dense lane rendered as density bins")
+                 (is (zero? (.-length dots))
+                     "no individual dots when the lane is a band"))
+               (done)))))))))
+
+(deftest density-sparse-lane-renders-dots-test
+  (testing ":time mode + sparse records (≤ threshold per bin) keeps
+            the dot rendering — density mode never activates"
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; 3 records spread across distinct t values → distinct
+            ;; bins → max bin count = 1, well below threshold.
+            recs     (array
+                      (mk-test-record-with 0 100 "event/dispatch"        1)
+                      (mk-test-record-with 1 500 "event/dispatch"        1)
+                      (mk-test-record-with 2 900 "event/dispatch"        1))]
+        (import-test-records!
+         recs "sparse"
+         (fn []
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [bins (query-all dock "rect.density-bin")
+                     dots (query-all dock "circle.dot")]
+                 (is (zero? (.-length bins)) "no bins in a sparse lane")
+                 (is (= 3 (.-length dots))
+                     "all three records rendered as dots"))
+               (done)))))))))
+
+(deftest density-order-mode-keeps-dots-test
+  (testing ":order axis mode never activates density rendering, even
+            for a record set that would be dense in :time mode —
+            order-axis spaces records uniformly so dots cannot
+            overlap"
+    (async done
+      (let [^js dock (mount-dock!)
+            recs     (apply array
+                            (for [i (range 20)]
+                              (mk-test-record-with i 100 "event/dispatch" 1)))]
+        (import-test-records!
+         recs "ordermode"
+         (fn []
+           ;; Stay on the default :order axis. Verify no bins.
+           (let [bins (query-all dock "rect.density-bin")
+                 dots (query-all dock "circle.dot")]
+             (is (zero? (.-length bins))
+                 ":order axis suppresses density rendering")
+             (is (= 20 (.-length dots))
+                 "every record rendered as an individual dot"))
+           (done)))))))
+
+(deftest density-mixed-lanes-test
+  (testing "a timeline can carry one dense lane (rendered as bins)
+            and one sparse lane (rendered as dots) in the same SVG.
+            Per-lane decision keeps the dock useful for mixed
+            workloads."
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; Lane cid=1: 15 records at t=100 → dense.
+            ;; Lane cid=2: 2 records at distinct t's → sparse.
+            recs     (apply array
+                            (concat
+                             (for [i (range 15)]
+                               (mk-test-record-with i 100 "event/dispatch" 1))
+                             [(mk-test-record-with 15 100 "event/dispatch" 2)
+                              (mk-test-record-with 16 900 "event/dispatch" 2)]))]
+        (import-test-records!
+         recs "mixed"
+         (fn []
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [bins (query-all dock "rect.density-bin")
+                     dots (query-all dock "circle.dot")]
+                 (is (pos? (.-length bins))
+                     "dense lane rendered as bins")
+                 (is (= 2 (.-length dots))
+                     "sparse lane stayed as 2 individual dots"))
+               (done)))))))))
+
+(deftest density-bin-click-selects-first-record-test
+  (testing "clicking a density bin selects the bin's first record
+            (its lowest id, set by bin-records-by-x's sort). The
+            same id is exposed on data-x-th-bin-record-id so the
+            existing click delegate picks it up without changes."
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; Record ids 10, 5, 20 all in the same bin — sorted by
+            ;; id ascending puts 5 first.
+            recs     (array
+                      (mk-test-record-with 10 100 "event/dispatch" 1)
+                      (mk-test-record-with 5  100 "event/dispatch" 1)
+                      (mk-test-record-with 20 100 "event/dispatch" 1)
+                      ;; Pad to push the lane over threshold.
+                      (mk-test-record-with 21 100 "event/dispatch" 1)
+                      (mk-test-record-with 22 100 "event/dispatch" 1))]
+        (import-test-records!
+         recs "click"
+         (fn []
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [^js bin (query dock "rect.density-bin")]
+                 (is (some? bin) "bin rendered")
+                 (is (= "5" (.getAttribute bin "data-x-th-bin-record-id"))
+                     "first record by id ascending is the bin's
+                      anchor id (deterministic for click routing)")
+                 (.dispatchEvent bin
+                                 (js/MouseEvent. "click" #js {:bubbles true}))
+                 (after-frames 1
+                   (fn []
+                     ;; The import view stores selection under
+                     ;; `import:<id>` in k-view-selected (a JS-obj
+                     ;; map). Fetch the only entry that lives in
+                     ;; this test's freshly-imported view.
+                     (let [^js m (gobj/get dock model/k-view-selected)
+                           keys' (when m (js-keys m))
+                           sel   (when (and m (pos? (.-length keys')))
+                                   (gobj/get m (aget keys' 0)))]
+                       (is (= 5 sel)
+                           "bin click selected the bin's first record"))
+                     (done))))))))))))
+
+(deftest density-bin-hover-shows-bin-tooltip-test
+  (testing "hovering a density bin produces a tooltip that mentions
+            the bin's count (rather than a single-record preview)"
+    (async done
+      (let [^js dock (mount-dock!)
+            recs     (apply array
+                            (for [i (range 12)]
+                              (mk-test-record-with i 100 "event/dispatch" 1)))]
+        (import-test-records!
+         recs "hover"
+         (fn []
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [^js bin     (query dock "rect.density-bin")
+                     ^js tooltip (query dock "[data-x-th-tooltip]")]
+                 (.dispatchEvent
+                  bin
+                  (js/PointerEvent. "pointermove"
+                                    #js {:bubbles true
+                                         :clientX 100
+                                         :clientY 50}))
+                 (after-frames 1
+                   (fn []
+                     (is (clojure.string/includes? (.-textContent tooltip)
+                                                   "12 records")
+                         "tooltip carries the bin count")
+                     (is (clojure.string/includes? (.-textContent tooltip)
+                                                   "events")
+                         "tooltip carries the dominant category")
+                     (done))))))))))))
+
+(deftest dot-hover-in-import-view-shows-tooltip-test
+  (testing "audit fix: hovering a dot in an import view shows the
+            tooltip. Pre-fix, handle-pointermove! read records from
+            the live buffer (always empty in viewer.html-style
+            usage), so find-record-by-id returned nil and the
+            tooltip stayed hidden. Now it reads from view-records."
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; A single sparse record so it renders as a dot, not a band.
+            recs     (array (mk-test-record-with 7 100 "event/dispatch" 1))]
+        (import-test-records!
+         recs "hover-dot"
+         (fn []
+           (let [^js dot     (query dock "circle.dot")
+                 ^js tooltip (query dock "[data-x-th-tooltip]")]
+             (is (some? dot) "import view rendered the record as a dot")
+             (.dispatchEvent
+              dot
+              (js/PointerEvent. "pointermove"
+                                #js {:bubbles  true
+                                     :clientX 50
+                                     :clientY 30}))
+             (after-frames 1
+               (fn []
+                 (is (clojure.string/includes?
+                      (.-textContent tooltip) "x-button")
+                     "dot tooltip resolved the record from the import
+                      view — empty tooltip would mean the fix
+                      regressed")
+                 (done))))))))))
+
+(deftest scrub-in-import-view-selects-record-test
+  (testing "audit fix: scrubbing inside an import view selects a
+            record from the import's records, not from the (empty)
+            live buffer. Pre-fix, start-scrub! read from
+            (recorder/records), so scrub gestures inside an import
+            no-op'd."
+    (async done
+      (let [^js dock (mount-dock!)
+            recs     (array
+                      (mk-test-record-with 0 100 "event/dispatch" 1)
+                      (mk-test-record-with 1 200 "event/dispatch" 1)
+                      (mk-test-record-with 2 300 "event/dispatch" 1))]
+        (import-test-records!
+         recs "scrub-import"
+         (fn []
+           (let [^js svg-pane (query dock "[data-x-th-svg-pane]")]
+             (.dispatchEvent
+              svg-pane
+              (js/PointerEvent. "pointerdown"
+                                #js {:bubbles    true
+                                     :clientX    100
+                                     :clientY    20
+                                     :pointerId  1
+                                     :pointerType "mouse"}))
+             (after-frames 1
+               (fn []
+                 (let [^js m (gobj/get dock model/k-view-selected)
+                       keys' (when m (js-keys m))
+                       sel   (when (and m (pos? (.-length keys')))
+                               (gobj/get m (aget keys' 0)))]
+                   (is (some? sel)
+                       "scrub selected a record from the import view"))
+                 (done))))))))))
+
+(deftest density-selected-marker-in-band-test
+  (testing "when a dense lane contains the currently-selected
+            record, the lane renders a thin density-selected line
+            at the record's exact x — preserves the scrubber-style
+            highlight without breaking the band's colour."
+    (async done
+      (let [^js dock (mount-dock!)
+            recs     (apply array
+                            (for [i (range 10)]
+                              (mk-test-record-with i 100 "event/dispatch" 1)))]
+        (import-test-records!
+         recs "selected"
+         (fn []
+           ;; Seed the selection BEFORE switching to :time. The
+           ;; axis-change handler triggers render!, which then picks
+           ;; up the selection without a separate render kick.
+           ;; Filter-toggling to force a re-render is unreliable
+           ;; here because the off-toggle would clear the selection
+           ;; via effective-selection! (the record no longer matches
+           ;; the temporarily-narrowed filter).
+           (let [^js imports (recorder/imports)
+                 import-id   (.-id ^js (aget imports 0))
+                 view-key    (str "import:" import-id)
+                 ^js m       (or (gobj/get dock model/k-view-selected)
+                                 (js-obj))]
+             (gobj/set m view-key 3)
+             (gobj/set dock model/k-view-selected m))
+           (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+           (after-frames 1
+             (fn []
+               (let [marker (query dock "line.density-selected")]
+                 (is (some? marker)
+                     "selected record marker drawn inside the band"))
+               (done)))))))))

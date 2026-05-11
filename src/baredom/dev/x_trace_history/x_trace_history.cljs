@@ -251,37 +251,118 @@
          "x2='" cx "' y2='" svg-h "' />")
     ""))
 
+(defn- dots-html
+  "Emit one <circle> per record in a lane. Selected dot drawn last so
+   its highlight stroke wins z-order."
+  [lane-recs lane-y cx-of selected-id]
+  (let [ordered (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
+                         lane-recs)]
+    (apply str
+           (map (fn [^js r] (dot-html r (cx-of r) lane-y selected-id))
+                ordered))))
+
+(defn- density-bin-rect-html
+  "One <rect> for a single heatmap bin. data-x-th-bin-record-id
+   carries the id of the bin's first record so the click delegate
+   (on-dot-click!) routes selection to a known record.
+   data-x-th-bin-count + data-x-th-bin-cat are surfaced so the
+   tooltip handler can build the bin tooltip without re-binning the
+   lane at hover time. role='button' + aria-label give screen-reader
+   users a summary of what the bin represents (count + category)
+   since a heatmap rectangle has no native semantics."
+  [{:keys [records dominant-cat x-start]} lane-y max-count]
+  (let [^js r0       (first records)
+        cat-color    (get model/category-colors dominant-cat "#6c7086")
+        opacity      (model/bin-opacity (count records) max-count)
+        cat-name     (escape-html (name (or dominant-cat :other)))
+        n            (count records)
+        aria-label   (str n " " (if (= 1 n) "record" "records")
+                          " · " (name (or dominant-cat :other)))]
+    (str "<rect class='density-bin' role='button' "
+         "aria-label='" (escape-html aria-label) "' "
+         "data-x-th-bin-record-id='" (.-id r0) "' "
+         "data-x-th-bin-count='" n "' "
+         "data-x-th-bin-cat='" cat-name "' "
+         "x='" x-start "' y='" lane-y "' "
+         "width='" model/density-bin-width "' height='" lane-h "' "
+         "fill='" cat-color "' fill-opacity='" opacity "' />")))
+
+(defn- selected-in-band-html
+  "Vertical 2px bar drawn at the selected record's exact x inside its
+   bin — marks the precise position without obscuring the band's
+   colour. Returns empty string when no record is selected OR when
+   the lane's bins don't contain it. The nil-id short-circuit skips
+   the O(N) walk over bins on every render-without-selection."
+  [bins lane-y selected-id cx-of]
+  (if (nil? selected-id)
+    ""
+    (let [^js sel-rec
+          (some (fn [{:keys [records]}]
+                  (some (fn [^js r] (when (= (.-id r) selected-id) r))
+                        records))
+                bins)]
+      (if sel-rec
+        (let [x (cx-of sel-rec)]
+          (str "<line class='density-selected' "
+               "x1='" x "' y1='" lane-y "' "
+               "x2='" x "' y2='" (+ lane-y lane-h) "' />"))
+        ""))))
+
+(defn- density-band-html
+  "Emit one <rect> per bin for a dense lane, plus a thin vertical bar
+   at the selected record's x if it lies in this lane."
+  [bins lane-y selected-id cx-of]
+  (let [max-count (model/lane-max-bin-count bins)]
+    (str (apply str
+                (map (fn [b] (density-bin-rect-html b lane-y max-count))
+                     bins))
+         (selected-in-band-html bins lane-y selected-id cx-of))))
+
+(defn- lane-svg-html
+  "Render one lane: either a heatmap band (if :time axis AND the lane
+   crosses the density threshold) or individual dots (everything
+   else). :order axis skips the density check — uniform-by-index
+   spacing means no overlap to compress."
+  [axis-mode lane-recs lane-y cx-of selected-id]
+  (if (= :time axis-mode)
+    (let [bins (model/bin-records-by-x lane-recs cx-of)]
+      (if (model/lane-is-dense? bins)
+        (density-band-html bins lane-y selected-id cx-of)
+        (dots-html lane-recs lane-y cx-of selected-id)))
+    (dots-html lane-recs lane-y cx-of selected-id)))
+
 (defn- svg-html
-  "Build the timeline SVG markup. Records are positioned by lane (Y)
-   and by the active axis mode (X) — :order spreads records evenly by
-   their index in the filtered list, :time maps them by their `t`
-   value. Selected dot is drawn last so its highlight stroke wins
-   z-order, and the scrubber line is drawn on top of everything."
+  "Build the timeline SVG markup. Records are grouped by lane (Y) and
+   positioned by the active axis mode (X) — :order spreads records
+   evenly by index, :time maps them by `t`. Each lane decides
+   independently whether to render as dots or as a heatmap band
+   (PR 18). The scrubber line is drawn last so it overlays
+   everything."
   [axis-mode filtered-records lanes bounds plot-width ^js sel-rec]
-  (let [selected-id (when sel-rec (.-id sel-rec))
-        lane-y      (into {} (map-indexed
-                              (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
-                              lanes))
-        h           (max lane-h (* lane-h (count lanes)))
-        n           (count filtered-records)
-        ;; Capture each filtered record's index BEFORE the z-order
-        ;; sort so the order-axis position survives the rearrangement.
-        id->index   (into {} (map-indexed
-                              (fn [i ^js r] [(.-id r) i]) filtered-records))
-        cx-of       (fn [^js r]
-                      (record-cx axis-mode r (get id->index (.-id r)) n
-                                 bounds plot-width))
-        ;; Selected dot last so its highlight stroke wins z-order.
-        ordered     (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
-                             filtered-records)]
+  (let [selected-id      (when sel-rec (.-id sel-rec))
+        lane-y           (into {} (map-indexed
+                                   (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
+                                   lanes))
+        h                (max lane-h (* lane-h (count lanes)))
+        n                (count filtered-records)
+        ;; Capture each filtered record's index BEFORE we partition
+        ;; by lane so the order-axis position survives the grouping.
+        id->index        (into {} (map-indexed
+                                   (fn [i ^js r] [(.-id r) i]) filtered-records))
+        cx-of            (fn [^js r]
+                           (record-cx axis-mode r (get id->index (.-id r)) n
+                                      bounds plot-width))
+        records-by-lane  (group-by model/lane-id-of filtered-records)]
     (str "<svg class='timeline-svg' width='" plot-width "' height='" h
          "' viewBox='0 0 " plot-width " " h "'>"
          (apply str
-                (map (fn [^js r]
-                       (dot-html r (cx-of r)
-                                 (get lane-y (model/lane-id-of r))
-                                 selected-id))
-                     ordered))
+                (map (fn [{:keys [lane-id]}]
+                       (lane-svg-html axis-mode
+                                      (get records-by-lane lane-id [])
+                                      (get lane-y lane-id)
+                                      cx-of
+                                      selected-id))
+                     lanes))
          (scrubber-html sel-rec (when sel-rec (cx-of sel-rec)) h)
          "</svg>")))
 
@@ -884,15 +965,49 @@
   [^js target]
   (and target (= "circle" (.. target -tagName toLowerCase))))
 
+(defn- density-bin-target?
+  "True for the heatmap bin <rect>s added in PR 18. A density-bin rect
+   carries data-x-th-bin-record-id (the bin's first record), so click
+   + hover routing can read a single id from either a dot or a bin."
+  [^js target]
+  (and target
+       (= "rect" (.. target -tagName toLowerCase))
+       (some? (.getAttribute target "data-x-th-bin-record-id"))))
+
+(defn- record-target?
+  "Either a dot or a density-bin rect — both resolve to a record id."
+  [^js target]
+  (or (circle-target?      target)
+      (density-bin-target? target)))
+
 (defn- read-dot-id
   [^js circle]
   (when-let [s (.getAttribute circle "data-x-th-id")]
     (js/parseInt s 10)))
 
+(defn- read-record-id-from-target
+  "Extract the record id a target represents:
+     - circle.dot              → data-x-th-id
+     - rect.density-bin        → data-x-th-bin-record-id (the bin's first record)
+   Returns nil for any other target."
+  [^js target]
+  (cond
+    (circle-target? target)
+    (read-dot-id target)
+
+    (density-bin-target? target)
+    (when-let [s (.getAttribute target "data-x-th-bin-record-id")]
+      (js/parseInt s 10))))
+
 (defn- on-dot-click!
+  "Click delegate for record-targets: a dot in a sparse lane, OR a
+   heatmap bin in a dense lane. Selecting a bin selects its first
+   record (the chronologically-earliest), which keeps the existing
+   detail-pane + arrow-step flow working unchanged — a bin is just
+   an alternate rendering of the same records."
   [^js el ^js target]
-  (when (circle-target? target)
-    (let [id     (read-dot-id target)
+  (when (record-target? target)
+    (let [id     (read-record-id-from-target target)
           curr   (get-selected el)
           new-id (if (= id curr) nil id)]
       (set-selected! el new-id)
@@ -1138,13 +1253,16 @@
 (def ^:private tooltip-cursor-offset 12)
 (def ^:private tooltip-max-width    280)  ; mirrors CSS max-width
 
-(defn- show-tooltip!
-  "Place the tooltip near the cursor inside the timeline pane. Anchored to
-   the right of the cursor by default; flips to the left when staying right
-   would push the tooltip past the timeline's right edge. Uses the CSS
-   max-width as the worst-case tooltip width to avoid a measure pass."
-  [^js tooltip-el ^js timeline-el ^js e ^js record]
-  (set! (.-textContent tooltip-el) (model/tooltip-text record))
+(defn- place-tooltip!
+  "Position-only logic: write `text` into the tooltip and place it
+   near the cursor. Anchored to the right of the cursor by default;
+   flips to the left when staying right would push the tooltip past
+   the timeline's right edge. Uses the CSS max-width as the worst-
+   case tooltip width to avoid a measure pass. Split from
+   show-tooltip! / show-bin-tooltip! so each caller writes its own
+   text exactly once (avoids a wasted double-write per hover)."
+  [^js tooltip-el ^js timeline-el ^js e text]
+  (set! (.-textContent tooltip-el) text)
   (.removeAttribute tooltip-el "hidden")
   (let [tl-rect     (.getBoundingClientRect timeline-el)
         cursor-x    (- (.-clientX e) (.-left tl-rect))
@@ -1162,22 +1280,63 @@
     (set! (.. tooltip-el -style -top)
           (str (+ cursor-y scroll-top tooltip-cursor-offset) "px"))))
 
+(defn- show-tooltip!
+  "Show the single-record dot tooltip near the cursor."
+  [^js tooltip-el ^js timeline-el ^js e ^js record]
+  (place-tooltip! tooltip-el timeline-el e (model/tooltip-text record)))
+
 (defn- hide-tooltip!
   [^js tooltip-el]
   (.setAttribute tooltip-el "hidden" ""))
 
+(defn- show-bin-tooltip!
+  "Show the heatmap-bin tooltip near the cursor. Uses
+   density-bin-tooltip-text built from the bin's first record + the
+   count + dominant category data attributes."
+  [^js tooltip-el ^js timeline-el ^js e ^js first-record bin-count dominant-cat]
+  (place-tooltip! tooltip-el timeline-el e
+                  (model/density-bin-tooltip-text first-record bin-count dominant-cat)))
+
+(defn- read-bin-meta
+  "Read the bin metadata the renderer stamped onto the rect: the
+   first record's id (resolved via the recorder), the bin's count,
+   and the bin's dominant-category keyword. Returns nil for a
+   malformed rect (missing attributes) so the caller can short-
+   circuit cleanly."
+  [^js rect]
+  (let [id-s    (.getAttribute rect "data-x-th-bin-record-id")
+        count-s (.getAttribute rect "data-x-th-bin-count")
+        cat-s   (.getAttribute rect "data-x-th-bin-cat")]
+    (when (and id-s count-s cat-s)
+      {:record-id   (js/parseInt id-s 10)
+       :bin-count   (js/parseInt count-s 10)
+       :dominant-cat (keyword cat-s)})))
+
 (defn- handle-pointermove!
   [^js el ^js e]
-  (let [^js target (.-target e)]
-    (if (circle-target? target)
-      (let [^js tooltip  (gobj/get el model/k-tooltip-el)
-            ^js timeline (gobj/get el model/k-timeline-el)
-            id           (read-dot-id target)
-            ^js recs     (recorder/records)
-            r            (model/find-record-by-id recs id)]
+  (let [^js target   (.-target e)
+        ^js tooltip  (gobj/get el model/k-tooltip-el)
+        ^js timeline (gobj/get el model/k-timeline-el)
+        ;; Resolve hovered records from the active view's source
+        ;; (live / session / import). Reading the live ring buffer
+        ;; here would lose the tooltip whenever the dock is viewing
+        ;; an import or session whose records aren't in :live.
+        view         (gobj/get el model/k-view)
+        ^js recs     (view-records view)]
+    (cond
+      (circle-target? target)
+      (let [id (read-dot-id target)
+            r  (model/find-record-by-id recs id)]
         (when r
           (show-tooltip! tooltip timeline e r)))
-      (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))))
+
+      (density-bin-target? target)
+      (when-let [{:keys [record-id bin-count dominant-cat]} (read-bin-meta target)]
+        (when-let [r0 (model/find-record-by-id recs record-id)]
+          (show-bin-tooltip! tooltip timeline e r0 bin-count dominant-cat)))
+
+      :else
+      (hide-tooltip! tooltip))))
 
 (defn- handle-pointerleave!
   [^js el _e]
@@ -1220,7 +1379,11 @@
   "Begin a pointer-driven scrub. The pointer is captured on the svg-pane,
    so the gesture survives the cursor leaving the SVG bounds. Filter
    snapshot, bounds, plot width, and axis-mode are computed once and
-   reused for every pointermove until pointerup / pointercancel."
+   reused for every pointermove until pointerup / pointercancel.
+
+   Reads records from the active view (live / session / import) so
+   scrubbing inside a captured-or-imported trace lands on records
+   that actually exist there — not the live buffer."
   [^js el ^js svg-pane ^js e]
   (.preventDefault e)
   (.setPointerCapture svg-pane (.-pointerId e))
@@ -1228,7 +1391,8 @@
         plot-w    (max svg-min-w (.-clientWidth svg-pane))
         spec      (gobj/get el model/k-filter)
         axis-mode (or (gobj/get el model/k-axis-mode) model/default-axis-mode)
-        ^js recs  (recorder/records)
+        view      (gobj/get el model/k-view)
+        ^js recs  (view-records view)
         filtered  (model/filter-records recs spec)
         bounds    (model/time-bounds filtered)
         x-of      (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
