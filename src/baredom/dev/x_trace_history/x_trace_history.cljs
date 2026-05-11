@@ -10,12 +10,19 @@
   (:require
    [clojure.string :as str]
    [goog.object :as gobj]
-   [baredom.dev.x-debug-registry :as registry]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
-   [baredom.exports.x-button   :as x-button-export]
-   [baredom.exports.x-checkbox :as x-checkbox-export]
-   [baredom.exports.x-select   :as x-select-export]))
+   ;; Require the component implementations directly rather than the
+   ;; baredom.exports.x-* wrappers: each exports ns is the entry of a
+   ;; separate :lib module, and pulling them in from here would force
+   ;; shadow-cljs to move those entries into :base — breaking the
+   ;; per-module ESM split. The components themselves are plain
+   ;; shareable code that shadow-cljs is happy to land in :base on its
+   ;; own. Unaliased + fully-qualified call sites match the existing
+   ;; convention in baredom.exports.x_*.cljs.
+   [baredom.components.x-button.x-button]
+   [baredom.components.x-checkbox.x-checkbox]
+   [baredom.components.x-select.x-select]))
 
 ;; ---------------------------------------------------------------------------
 ;; Constants
@@ -49,15 +56,14 @@
 ;; Static skeleton
 ;; ---------------------------------------------------------------------------
 
-(defn- tag-options-html
-  "Build <option> tags for every known component tag, sorted alphabetically."
-  []
-  (->> (sort (keys registry/registry))
-       (map (fn [t]
-              (str "<option value='" (escape-html t) "'>"
-                   (escape-html t)
-                   "</option>")))
-       (apply str)))
+(defn- tag-option-html
+  "One <option> tag for the tag-filter dropdown, with the tag name as
+   both value and visible label. Used by sync-tag-options! when a new
+   tag arrives — the static skeleton ships only the 'All tags' default,
+   and observed tags get appended at runtime so the dock has no static
+   dependency on the component registry."
+  [tag]
+  (str "<option value='" (escape-html tag) "'>" (escape-html tag) "</option>"))
 
 (defn- cat-checkbox-html
   "One labeled x-checkbox for a category. `checked?` reflects the
@@ -112,9 +118,14 @@
        ;; are cloned in asynchronously on slotchange, so the value
        ;; never lands. The HTML `selected` attribute is preserved by
        ;; cloneNode(true) and selects the option after the clone.
+       ;; Tag dropdown starts with only the 'All tags' default option;
+       ;; sync-tag-options! appends one <option> per observed tag on
+       ;; every render. We avoid statically enumerating the component
+       ;; registry here because that would transitively pull every
+       ;; BareDOM component into the x-trace-history ESM bundle and
+       ;; defeat per-module distribution.
        "<x-select data-x-th-tag size='sm'>"
        "<option value='all' selected>All tags</option>"
-       (tag-options-html)
        "</x-select>"
        ;; x-checkbox has no default slot — text inside the host is
        ;; invisible. Wrap in <label> per docs/x-checkbox.md so the
@@ -259,6 +270,38 @@
       (set! (.-innerHTML lanes-el)    (lanes-html lanes active-tag))
       (set! (.-innerHTML svg-pane-el) (svg-html axis-mode filtered lanes bounds
                                                 plot-w sel-rec)))))
+
+;; ---------------------------------------------------------------------------
+;; Tag dropdown — populated at runtime from observed tags
+;; ---------------------------------------------------------------------------
+
+(defn- existing-tag-options-set
+  "Return a CLJS set of every option value already present in the tag
+   select (excluding the static 'all' default)."
+  [^js select-el]
+  (let [^js opts (.querySelectorAll select-el "option")
+        n       (.-length opts)]
+    (loop [i 0 acc (transient #{})]
+      (if (>= i n)
+        (persistent! acc)
+        (let [^js opt (aget opts i)
+              v       (.-value opt)]
+          (recur (inc i)
+                 (if (= v "all") acc (conj! acc v))))))))
+
+(defn- sync-tag-options!
+  "Append one <option> per newly-observed tag to the tag-filter
+   <x-select>. Append-only so the user's current selection survives
+   re-renders, and so x-select's slotchange-driven option clone path
+   picks up additions without us having to rebuild its inner native
+   <select>. No-op when no new tags have appeared since the last call."
+  [^js select-el]
+  (let [observed (recorder/observed-tags)
+        existing (existing-tag-options-set select-el)
+        missing  (remove existing observed)]
+    (when (seq missing)
+      (let [html (apply str (map tag-option-html missing))]
+        (.insertAdjacentHTML select-el "beforeend" html)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Pause button + detail pane updates
@@ -505,6 +548,7 @@
         ^js pause-btn   (gobj/get el model/k-pause-btn)
         ^js record-btn  (gobj/get el model/k-record-btn)
         ^js sessions-el (gobj/get el model/k-sessions-el)
+        ^js tag-sel-el  (gobj/get el model/k-tag-select-el)
         spec            (gobj/get el model/k-filter)
         view            (gobj/get el model/k-view)
         ^js recs        (view-records view)
@@ -519,6 +563,7 @@
         active-rec-id   (recorder/active-session-id)
         axis-mode       (or (gobj/get el model/k-axis-mode)
                             model/default-axis-mode)]
+    (sync-tag-options!       tag-sel-el)
     (render-timeline! lanes-el svg-pane-el axis-mode filtered lanes bounds
                       sel-rec (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
@@ -1377,9 +1422,9 @@
    document.body is not yet available."
   []
   (recorder/register!)
-  (x-button-export/register!)
-  (x-checkbox-export/register!)
-  (x-select-export/register!)
+  (baredom.components.x-button.x-button/init!)
+  (baredom.components.x-checkbox.x-checkbox/init!)
+  (baredom.components.x-select.x-select/init!)
   (when-not (.get js/customElements model/tag-name)
     (.define js/customElements model/tag-name (element-class)))
   (when (model/enabled? js/window)

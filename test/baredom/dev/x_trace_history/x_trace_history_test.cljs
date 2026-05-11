@@ -139,6 +139,77 @@
       (is (zero? (lane-count el))))))
 
 ;; ---------------------------------------------------------------------------
+;; Tag dropdown — populated at runtime from observed tags
+;;
+;; PR 12 dropped the static x-debug-registry import so the dock can ship
+;; as a per-module ESM bundle. The dropdown now seeds with just the
+;; 'All tags' default and gains one <option> per observed tag on every
+;; render. The user's currently-selected value must survive the
+;; append-only sync.
+;;
+;; The recorder's :components index is monotonic for the page lifetime
+;; (clear! preserves it by design), so the dropdown may carry options
+;; for tags emitted by earlier tests. Assertions check *presence* and
+;; *invariants*, never exact-vector equality.
+;; ---------------------------------------------------------------------------
+
+(defn- tag-options [^js dock-el]
+  (->> (array-seq (query-all dock-el "[data-x-th-tag] option"))
+       (mapv #(.-value ^js %))))
+
+(deftest tag-dropdown-has-all-default-test
+  (testing "every mount renders the 'All tags' default option as the
+            first entry — observed tags are appended after it"
+    (let [^js dock (mount-dock!)
+          opts    (tag-options dock)]
+      (is (= "all" (first opts))
+          "'all' default is the first option"))))
+
+(deftest tag-dropdown-grows-with-observed-tags-test
+  (testing "after a dispatch on a new tag, the dropdown gains an
+            option for it; repeated dispatches do not duplicate the
+            option"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            ^js cb   (.createElement js/document "x-checkbox")]
+        (du/dispatch! btn "press"  #js {})
+        (du/dispatch! btn "press"  #js {})
+        (du/dispatch! cb  "toggle" #js {})
+        (after-frames 2
+          (fn []
+            (let [opts (tag-options dock)]
+              (is (some #{"x-button"}   opts))
+              (is (some #{"x-checkbox"} opts))
+              (is (= (count opts) (count (distinct opts)))
+                  "no duplicate options")
+              (done))))))))
+
+(deftest tag-dropdown-preserves-selection-across-sync-test
+  (testing "user's selected value survives the append-only refresh
+            when a new tag arrives. sync-tag-options! must never
+            blow away existing options."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "press" #js {})
+        (after-frames 2
+          (fn []
+            (dispatch-select-change!
+              ^js (query dock "[data-x-th-tag]") "x-button")
+            (let [^js cb (.createElement js/document "x-checkbox")]
+              (du/dispatch! cb "toggle" #js {}))
+            (after-frames 2
+              (fn []
+                (let [^js sel (query dock "[data-x-th-tag]")]
+                  (is (= "x-button" (.-value sel))
+                      "selection survives the second sync"))
+                (let [opts (tag-options dock)]
+                  (is (some #{"x-checkbox"} opts)
+                      "newly-observed tag was appended"))
+                (done)))))))))
+
+;; ---------------------------------------------------------------------------
 ;; Records → dots
 ;; ---------------------------------------------------------------------------
 

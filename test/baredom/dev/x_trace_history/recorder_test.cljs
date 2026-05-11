@@ -1481,3 +1481,65 @@
       (is (fn? (gobj/get api "imports")))
       (is (fn? (gobj/get api "importRecords")))
       (is (fn? (gobj/get api "removeImport"))))))
+
+;; ── observed-tags ───────────────────────────────────────────────────────────
+;;
+;; Backs the dock's tag-filter dropdown without a static dependency on
+;; the component registry — see x_trace_history.cljs/sync-tag-options!.
+;; The contract is: the returned vector is sorted, distinct, and merges
+;; live-observed component tags with tags carried in any imported
+;; envelope. PR 12 introduced this to keep the x-trace-history ESM
+;; bundle decoupled from the rest of the component library.
+;;
+;; The recorder's :components index is monotonic for the page lifetime
+;; — clear! intentionally preserves it (component ids stored on live
+;; elements would otherwise collide with reused ids). Tests therefore
+;; assert tag *presence* against a snapshot, not exact-vector equality.
+
+(deftest observed-tags-is-sorted-and-deduped-test
+  (testing "returned vector is in sorted order and contains no
+            duplicates, regardless of dispatch order"
+    (clear-imports!)
+    (du/dispatch! (make-el "x-button")   "press"  #js {})
+    (du/dispatch! (make-el "x-checkbox") "toggle" #js {})
+    (du/dispatch! (make-el "x-button")   "press"  #js {})
+    (let [tags (recorder/observed-tags)]
+      (is (= tags (sort tags))     "result is sorted")
+      (is (= (count tags) (count (distinct tags)))
+          "no duplicates"))))
+
+(deftest observed-tags-tracks-live-dispatches-test
+  (testing "every distinct tag that fires through the dispatch hook
+            appears in observed-tags"
+    (clear-imports!)
+    (du/dispatch! (make-el "x-button")   "press"  #js {})
+    (du/dispatch! (make-el "x-checkbox") "toggle" #js {})
+    (let [tags (set (recorder/observed-tags))]
+      (is (contains? tags "x-button"))
+      (is (contains? tags "x-checkbox")))))
+
+(deftest observed-tags-includes-import-component-tags-test
+  (testing "components carried in an imported envelope appear in
+            observed-tags, merged with live tags. Lets the dock's tag
+            filter target imported records the user has not yet
+            interacted with live."
+    (clear-imports!)
+    (let [^js env (mk-import-envelope)]
+      (gobj/set env "components"
+                (js-obj "0" (js-obj "tag" "x-import-tag-a" "firstSeen" 0)
+                        "1" (js-obj "tag" "x-import-tag-b" "firstSeen" 1)))
+      (recorder/import-trace! env "with-tags"))
+    (let [tags (set (recorder/observed-tags))]
+      (is (contains? tags "x-import-tag-a"))
+      (is (contains? tags "x-import-tag-b")))
+    (clear-imports!)))
+
+(deftest observed-tags-survives-empty-import-components-test
+  (testing "an imported envelope with no components index does not
+            blow up observed-tags. Older traces or hand-crafted
+            envelopes may have an empty components map."
+    (clear-imports!)
+    (recorder/import-trace! (mk-import-envelope) "empty-comps")
+    (is (vector? (recorder/observed-tags))
+        "still returns a vector even with empty-components imports")
+    (clear-imports!)))
