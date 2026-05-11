@@ -2249,3 +2249,84 @@
                 (is (= :causality (gobj/get dock model/k-dock-mode))
                     "mode preference survived remount")
                 (done)))))))))
+
+(deftest causality-mode-adds-host-class-test
+  (testing "switching to causality adds the .causality-mode class on
+            the host so :host(.causality-mode) CSS rules can hide
+            axis-mode and other timeline-only controls"
+    (async done
+      (let [^js dock (mount-dock!)]
+        (switch-to-causality! dock)
+        (after-frames 1
+          (fn []
+            (is (.contains (.-classList dock) "causality-mode"))
+            (switch-to-timeline! dock)
+            (after-frames 1
+              (fn []
+                (is (not (.contains (.-classList dock) "causality-mode")))
+                (done)))))))))
+
+(deftest causality-leaf-record-shows-hint-banner-test
+  (testing "selecting a record with no cause AND no effects renders
+            a leaf-hint banner above the lone node so the user knows
+            it's not a broken tree — they just picked an isolated
+            record (e.g. a lifecycle record emitted outside any
+            dispatch frame)."
+    (async done
+      (let [^js dock (mount-dock!)
+            ;; A bare setv with no enclosing dispatch — its causeId is
+            ;; nil and nothing references it, so the tree is just one
+            ;; node. Real-world equivalent: a setv from a component's
+            ;; connectedCallback.
+            ^js btn  (.createElement js/document "x-button")]
+        (du/setv! btn "__top-level" "v")
+        (after-frames 2
+          (fn []
+            ;; Select the lone state record from the timeline.
+            (let [setv-dot (some (fn [^js d]
+                                   (when (= "#f9e2af" (.getAttribute d "fill")) d))
+                                 (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js setv-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (switch-to-causality! dock)
+                (after-frames 1
+                  (fn []
+                    (let [pane (causality-pane dock)
+                          hint (.querySelector pane ".causality-leaf-hint")
+                          rects (.querySelectorAll pane "rect.node-rect")]
+                      (is (some? hint)
+                          "leaf-hint banner present for single-node tree")
+                      (is (clojure.string/includes? (.-textContent hint)
+                                                    "event/dispatch")
+                          "banner points at dispatches as the chain-bearing type")
+                      (is (= 1 (.-length rects))
+                          "the lone node still renders alongside the banner"))
+                    (done)))))))))))
+
+(deftest causality-non-leaf-tree-omits-hint-test
+  (testing "trees with multiple nodes don't show the leaf-hint banner
+            — it would be confusing alongside a real chain"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.addEventListener btn "click"
+                           (fn [_] (du/setv! btn "__inside" "v")))
+        (du/dispatch! btn "click" #js {})
+        (after-frames 2
+          (fn []
+            (let [setv-dot (some (fn [^js d]
+                                   (when (= "#f9e2af" (.getAttribute d "fill")) d))
+                                 (array-seq (query-all dock "circle.dot")))]
+              (.dispatchEvent ^js setv-dot
+                              (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (switch-to-causality! dock)
+                (after-frames 1
+                  (fn []
+                    (let [pane (causality-pane dock)]
+                      (is (nil? (.querySelector pane ".causality-leaf-hint"))
+                          "no leaf-hint when tree has more than 1 node"))
+                    (done)))))))))))

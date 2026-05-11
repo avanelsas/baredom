@@ -1090,6 +1090,18 @@
        causality-max-nodes "). Narrow the tag / category filter or "
        "pick a smaller leaf record to view its subtree."))
 
+(defn causality-leaf-message
+  "Hint shown above the lone node when the selected record has
+   neither a cause nor any effects in the buffer — most commonly a
+   lifecycle / dom-attribute record emitted by a component's
+   construction path (no enclosing dispatch frame, so causeId is
+   null). Explains why the tree is a single node and tells the user
+   what kind of record to pick if they want to see a chain."
+  []
+  (str "This record has no cause and no effects in the current "
+       "buffer. Pick an event/dispatch* record (or one with a "
+       "'Caused by' link in the detail pane) to see a chain."))
+
 (defn timeline-hint
   "One-line description of the current plot extent for the dock hint area.
    `cnt-filtered` is records visible after filter; `cnt-total` is full
@@ -1262,6 +1274,11 @@
   gap: 4px;
 }
 :host(.collapsed) .header > *:not([data-x-th-action='collapse']) {
+  display: none;
+}
+/* Causality mode: hide the axis-mode select (Order / Time only
+   affects the timeline pane, so it's noise in causality view). */
+:host(.causality-mode) [data-x-th-axis] {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1528,6 +1545,22 @@ line.scrubber {
   text-align: center;
   padding: 20px;
   width: 100%;
+}
+/* Leaf-hint banner rendered ABOVE the SVG when the tree has only
+   one node. Pinned via sticky positioning so it stays visible even
+   when the user scrolls the pane (the lone node sits at the
+   padded origin and could be obscured by the banner otherwise). */
+.causality-leaf-hint {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: rgba(249,226,175,0.10);
+  border-bottom: 1px solid rgba(249,226,175,0.35);
+  color: #f9e2af;
+  font-size: 10px;
+  padding: 6px 10px;
+  line-height: 1.4;
 }
 svg.causality-svg { display: block; }
 svg.causality-svg .edge {

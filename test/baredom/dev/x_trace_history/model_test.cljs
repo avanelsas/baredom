@@ -1676,3 +1676,10 @@
     (let [s (model/causality-over-cap-message {:node-count 257})]
       (is (clojure.string/includes? s "257"))
       (is (clojure.string/includes? s (str model/causality-max-nodes))))))
+
+(deftest causality-leaf-message-test
+  (testing "non-blank string explaining there's no chain and pointing
+            at event/dispatch* as the kind of record to pick"
+    (let [s (model/causality-leaf-message)]
+      (is (string? s))
+      (is (clojure.string/includes? s "event/dispatch")))))

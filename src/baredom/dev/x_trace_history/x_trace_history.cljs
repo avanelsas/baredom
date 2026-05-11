@@ -392,12 +392,24 @@
          (apply str (map #(causality-node-html % selected-id) nodes))
          "</svg>")))
 
+(defn- leaf-hint-html
+  "Banner above a single-node tree explaining there's no chain to draw.
+   Common case: the selected record was emitted outside any dispatch
+   frame (constructor / lifecycle path), so its causeId is null AND
+   nothing else has it as a cause. Without this banner the pane looks
+   indistinguishable from a broken view."
+  []
+  (str "<div class='causality-leaf-hint'>"
+       (escape-html (model/causality-leaf-message))
+       "</div>"))
+
 (defn- render-causality!
-  "Repaint the causality pane. Branches on selection / cap so the
+  "Repaint the causality pane. Branches on selection / size so the
    user always sees a useful message instead of a blank pane.
      - no selection         → empty-state hint
-     - selection found, ≤ cap → SVG tree
-     - selection found, > cap → over-cap hint
+     - tree > cap           → over-cap hint
+     - tree = 1 node        → SVG tree + leaf-hint banner
+     - else                 → SVG tree
    Stashes the layout map on the host so the post-render fit-to-view
    step can read node coordinates without rebuilding the tree."
   [^js el ^js causality-el ^js recs ^js sel-rec]
@@ -414,17 +426,22 @@
     (let [root   (model/causality-root recs sel-rec)
           tree   (model/causality-tree recs root)
           stats  (model/tree-size-stats tree)]
-      (if (> (:node-count stats) model/causality-max-nodes)
+      (cond
+        (> (:node-count stats) model/causality-max-nodes)
         (do
           (gobj/set el "__xTraceHistoryCausalityLayout" nil)
           (set! (.-innerHTML causality-el)
                 (str "<div class='causality-empty'>"
                      (escape-html (model/causality-over-cap-message stats))
                      "</div>")))
-        (let [layout (model/layout-tree tree)]
+
+        :else
+        (let [layout (model/layout-tree tree)
+              leaf?  (= 1 (:node-count stats))]
           (gobj/set el "__xTraceHistoryCausalityLayout" layout)
           (set! (.-innerHTML causality-el)
-                (causality-svg-html layout (.-id sel-rec))))))))
+                (str (when leaf? (leaf-hint-html))
+                     (causality-svg-html layout (.-id sel-rec)))))))))
 
 ;; Forward decl — get-selected is defined in the "View / selection
 ;; helpers" section further down. apply-causality-fit! reads the
@@ -781,14 +798,20 @@
 (defn- apply-pane-visibility!
   "Toggle the hidden attribute on the timeline / causality panes so
    only the active dock-mode is visible. Both panes share the
-   flex: 1 1 auto slot above the detail; only one renders at a time."
-  [^js timeline-el ^js causality-el dock-mode]
+   flex: 1 1 auto slot above the detail; only one renders at a time.
+
+   Also mirrors the dock-mode onto a host CSS class so the filter row
+   can conditionally hide controls that don't apply to the active
+   pane (e.g. the axis-mode select, which only affects the timeline)."
+  [^js host ^js timeline-el ^js causality-el dock-mode]
   (case dock-mode
     :causality
     (do (.setAttribute    timeline-el  "hidden" "")
-        (.removeAttribute causality-el "hidden"))
+        (.removeAttribute causality-el "hidden")
+        (.add    (.-classList host) "causality-mode"))
     (do (.removeAttribute timeline-el  "hidden")
-        (.setAttribute    causality-el "hidden" ""))))
+        (.setAttribute    causality-el "hidden" "")
+        (.remove (.-classList host) "causality-mode"))))
 
 (defn- render!
   "Repaint timeline, count, hint, detail pane, pause-button, record-button
@@ -823,7 +846,7 @@
         dock-mode        (or (gobj/get el model/k-dock-mode)
                              model/default-dock-mode)]
     (sync-tag-options!       tag-sel-el)
-    (apply-pane-visibility! timeline-el causality-el dock-mode)
+    (apply-pane-visibility! el timeline-el causality-el dock-mode)
     (case dock-mode
       :causality (render-causality! el causality-el recs sel-rec)
       (render-timeline! lanes-el svg-pane-el axis-mode filtered lanes bounds

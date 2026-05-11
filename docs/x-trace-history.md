@@ -348,10 +348,20 @@ currently-selected node is highlighted.
   in Causality mode.
 - **Empty state** — with no record selected, the pane shows a hint
   asking you to pick one. Select any record in Timeline first.
+- **Leaf record** — when the selected record has neither a cause
+  nor any effects in the buffer (commonly a lifecycle / dom-attribute
+  record emitted from a component's constructor or `connectedCallback`
+  — no enclosing dispatch frame, so `causeId` is `null`), the pane
+  shows a small banner above the lone node explaining that this isn't
+  a broken tree. Pick an `event/dispatch*` record (or one whose
+  detail pane shows a **Caused by** link) to see a real chain.
 - **Over-cap notice** — trees over 200 nodes show a notice instead
   of drawing. That's typically a render fan-out (one dispatch
   causing hundreds of effects); narrow the tag / category filter or
   click into a smaller leaf record to view a focussed subtree.
+- **Axis-mode hidden** — the Order / Time toggle only affects the
+  Timeline pane, so it's hidden while you're in Causality view to
+  reduce noise.
 
 Each record carries at most one `causeId`, so the causality structure
 is a forest of trees rather than a general DAG — there's never a
