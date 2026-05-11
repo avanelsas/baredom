@@ -77,11 +77,11 @@ Each PR is sized for ~1 hour of review, ships something visible, and ends green 
 - **PR 10: Export to `.trace.json`.** Toolbar button → Blob download. JSON schema versioned and documented in `docs/x-trace-history-schema.md`. **(consumer-visible)**
 - **PR 11: Import `.trace.json`.** Drag-drop on the dock or file-picker. Loaded sessions appear as read-only ghost lanes alongside live recording. Schema-version check; clear error on mismatch. **(consumer-visible)**
 
-### Phase 6 — Consumer distribution (3 PRs)
+### Phase 6 — Consumer distribution (3 PRs) — **shipped**
 
-- **PR 12: `:lib` module + ESM export.** Add `baredom.exports.x-trace-history` ns, register in `shadow-cljs.edn` `:lib :modules`, add `"./x-trace-history"` entry in `package.json` `exports`. Consumers can `<script type="module" src="…/x-trace-history.js">`-import. Update `src/baredom/registry.cljs` per the registration checklist in CLAUDE.md. **(consumer-visible)**
-- **PR 13: TypeScript declarations.** Hand-written `.d.ts` for `window.BareDOM.traceHistory.*` API and the `TraceRecord` JSON schema. Generated alongside other type files via `bb scripts/generate_types.bb` (the existing pipeline). Consumers get IDE autocomplete. **(consumer-visible)**
-- **PR 14: README + `docs/x-trace-history.md`.** User-facing docs aimed at app devs. Examples in vanilla JS, TypeScript, Angular, React. "How to capture a bug report and share it" workflow. **(consumer-visible)**
+- **PR 12: `:lib` module + ESM export.** ✅ Added `baredom.exports.x-trace-history`, registered in `shadow-cljs.edn` `:lib :modules`, added `"./x-trace-history"` entry in `package.json` `exports`, and wired the dock into `baredom.registry/all-registers` so the all-bundle ships it. Also decoupled the dock from `x-debug-registry` (which would have transitively pulled every component into the dev-tool bundle): tags are discovered dynamically from the recorder's observed-components index. Bundle-size budget bumped to accommodate the dev tool — `base.js` to 56 KB and a per-module override of 20 KB for `x-trace-history.js`.
+- **PR 13: TypeScript declarations.** ✅ Hand-authored `dist/x-trace-history.d.ts` emitted by `scripts/generate_types.bb` alongside the component `.d.ts` files. `TraceRecord` is a discriminated union on `type` covering all eight record kinds. `BareDOMNamespace` is exported as a top-level interface so future dev tools can augment it via TypeScript declaration merging.
+- **PR 14: README + `docs/x-trace-history.md`.** ✅ Expanded the doc into a full user guide: activation, dock anatomy + keyboard shortcuts, complete console-API table, capture-and-share-a-bug-report workflow, recording sessions, import/export, adapter notes (vanilla JS / TypeScript / Angular / React), performance contract, JSON-schema link. README points at the new doc from the **Stateless** design-principle bullet.
 
 ### Phase 7 — Standalone viewer (1 PR)
 
