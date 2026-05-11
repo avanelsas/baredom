@@ -233,8 +233,15 @@
         (set! (.-hidden ph-opt-el) false))
       (set! (.-hidden ph-opt-el) true))
 
-    ;; Sync value to internal select
-    (set! (.-value select-el) (or value ""))
+    ;; Sync value to internal select — only when the host has an
+    ;; explicit `value` attribute. Without the some? guard we'd write
+    ;; "" on every render, which deselects whatever <option selected>
+    ;; the user provided in markup and falls back to the hidden
+    ;; placeholder (display: empty). The slotted `selected` cloned in
+    ;; by sync-options! is the source of truth when the host has no
+    ;; value attr; an explicit attribute still overrides it.
+    (when (some? value)
+      (set! (.-value select-el) value))
 
     ;; data-size on wrapper for CSS size selectors
     (du/set-attr! wrapper-el "data-size" size)
