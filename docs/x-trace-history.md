@@ -13,6 +13,7 @@ per-event overhead — there is no production cost when off.
 - [Quick start](#quick-start)
 - [Activation](#activation)
 - [The dock](#the-dock)
+- [Search](#search)
 - [Console API](#console-api)
 - [Capture and share a bug report](#capture-and-share-a-bug-report)
   - [Sharing via URL](#sharing-via-url)
@@ -93,7 +94,7 @@ activates. Its anatomy, top to bottom:
 |---|---|
 | Toolbar | Pause / Resume · Record (start a session) · Clear · Export · Import · live record count |
 | Session chips | One chip per session and one per import, plus the always-on **Live** view. Click to switch the timeline source. |
-| Filters | Tag dropdown · category checkboxes (events, state, DOM, lifecycle) · axis-mode toggle (Order / Time) |
+| Filters | Tag dropdown · category checkboxes (events, state, DOM, lifecycle) · axis-mode toggle (Order / Time) · full-text search |
 | Timeline | One horizontal lane per component instance. Dots are coloured by category. Hover for tooltip; click to select. |
 | Splitter | Drag to resize the detail pane. |
 | Detail pane | Pretty-printed JSON for the selected record, plus **Caused by** / **Effects** links. |
@@ -106,6 +107,37 @@ Keyboard:
 - Click a lane label to filter the timeline to that component
   instance. Click again to clear.
 - Click anywhere in the timeline to focus it.
+
+## Search
+
+The filter bar carries a search input next to the tag dropdown.
+Typing into it narrows the timeline to records whose JSON-serialised
+form contains the typed string. Some examples of useful queries:
+
+- `disabled` — any record that mentions the `disabled` attribute or
+  property anywhere (events with `detail.disabled`, attribute writes,
+  lifecycle `attribute-changed`, etc.).
+- `"id":42` — a dispatch whose detail object carries `id: 42`. Quoted
+  fragments anchor against the JSON encoding.
+- `x-modal` — every record from any `x-modal` instance (overlaps with
+  the tag dropdown; either path works).
+- `lifecycle/connected` — every connected callback. Works for any
+  `type` value because the type string lives in the haystack too.
+
+The search combines with the tag dropdown and category checkboxes
+using AND-semantics: a record must satisfy every active filter to
+appear. Clearing the search input removes only the search constraint;
+the other filters remain.
+
+Matching is case-insensitive — the query is lowercased on input and
+each record's haystack is lowercased on first access. Empty input
+disables the search filter entirely.
+
+**Indexed lazily.** The haystack for each record is built on first
+use of the search input and cached on the record itself, so the
+recording hot path pays nothing for search. The first search after a
+batch of new records pays one `JSON.stringify` + `toLowerCase` per
+record; every subsequent keystroke reuses the cached strings.
 
 ## Console API
 
