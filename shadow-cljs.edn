@@ -542,4 +542,9 @@
       registerPreset baredom.exports.x-theme/registerPreset}
      :depends-on #{:base}}
 
+    :x-trace-history
+    {:exports
+     {init baredom.exports.x-trace-history/init}
+     :depends-on #{:base}}
+
     }}}}

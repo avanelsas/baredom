@@ -513,6 +513,34 @@
                         "firstSeen" (:first-seen info))))
     result))
 
+(defn- import-envelope-tags
+  "Pull every tag string out of an imported envelope's components index.
+   The envelope's `components` is a JS object (cid → {tag, firstSeen})
+   so we walk it via gobj rather than seq destructuring."
+  [^js envelope]
+  (let [^js comps (.-components envelope)]
+    (if (nil? comps)
+      []
+      (->> (.keys js/Object comps)
+           (map (fn [k] (.-tag (gobj/get comps k))))))))
+
+(defn observed-tags
+  "Returns a sorted, distinct CLJS vector of tag-name strings for every
+   component the recorder has seen — both live components on this page
+   and components carried in any imported traces. The dock uses this to
+   populate the tag-filter dropdown without taking a static dependency
+   on x-debug-registry, which would otherwise pull every component into
+   the x-trace-history ESM bundle and defeat per-module distribution."
+  []
+  (let [s         @state
+        live-tags (map :tag (vals (:components s)))
+        imp-tags  (mapcat (fn [{:keys [^js envelope]}]
+                            (import-envelope-tags envelope))
+                          (:imports s))]
+    (->> (concat live-tags imp-tags)
+         (into (sorted-set))
+         vec)))
+
 (defn paused?
   "Returns true iff recording is currently paused."
   []

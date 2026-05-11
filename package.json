@@ -515,6 +515,11 @@
       "types": "./dist/x-card.d.ts",
       "import": "./dist/x-card.js",
       "default": "./dist/x-card.js"
+    },
+    "./x-trace-history": {
+      "types": "./dist/x-trace-history.d.ts",
+      "import": "./dist/x-trace-history.js",
+      "default": "./dist/x-trace-history.js"
     }
   },
   "homepage": "https://github.com/avanelsas/baredom#readme",
