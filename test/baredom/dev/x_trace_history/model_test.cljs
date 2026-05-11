@@ -1001,3 +1001,132 @@
           name (model/download-filename d)]
       (is (clojure.string/starts-with? name model/filename-prefix))
       (is (clojure.string/ends-with?   name model/filename-extension)))))
+
+;; ── Import — validate-envelope / parse-export ───────────────────────────────
+
+(defn- mk-valid-record
+  "Build a minimally valid record JS object (id, t, type set)."
+  [id t type]
+  (js-obj "schemaVersion" 1
+          "id"            id
+          "t"             t
+          "type"          type
+          "tag"           "x-button"
+          "componentId"   nil
+          "causeId"       nil))
+
+(defn- mk-valid-envelope
+  "Build a minimally valid envelope JS object — used as a baseline so
+   per-test mutations isolate the field they exercise."
+  []
+  (js-obj "schemaVersion" 1
+          "exportedAt"    1715432100000
+          "origin"        "https://example.com/"
+          "userAgent"     "test"
+          "forensic"      false
+          "components"    (js-obj)
+          "sessions"      (array)
+          "records"       (array (mk-valid-record 0 1.0 "lifecycle/connected"))))
+
+(deftest validate-envelope-happy-path-test
+  (testing "a well-formed envelope yields {:ok env} with the same
+            reference passed through"
+    (let [env       (mk-valid-envelope)
+          {:keys [ok error]} (model/validate-envelope env)]
+      (is (nil? error))
+      (is (identical? env ok)))))
+
+(deftest validate-envelope-not-object-test
+  (testing "non-object input → error message naming the problem"
+    (let [{:keys [error]} (model/validate-envelope nil)]
+      (is (string? error))
+      (is (clojure.string/includes? error "not a JSON object")))))
+
+(deftest validate-envelope-missing-version-test
+  (testing "envelope without schemaVersion → error"
+    (let [^js env (mk-valid-envelope)]
+      (gobj/remove env "schemaVersion")
+      (let [{:keys [error]} (model/validate-envelope env)]
+        (is (clojure.string/includes? error "schemaVersion"))))))
+
+(deftest validate-envelope-version-mismatch-test
+  (testing "envelope with a different schemaVersion → error names the
+            mismatch so the user can tell what to do (re-export from
+            the matching version, etc.)"
+    (let [^js env (mk-valid-envelope)]
+      (gobj/set env "schemaVersion" 999)
+      (let [{:keys [error]} (model/validate-envelope env)]
+        (is (clojure.string/includes? error "expected 1"))
+        (is (clojure.string/includes? error "999"))))))
+
+(deftest validate-envelope-records-not-array-test
+  (testing "envelope.records that isn't an array → error"
+    (let [^js env (mk-valid-envelope)]
+      (gobj/set env "records" (js-obj))
+      (let [{:keys [error]} (model/validate-envelope env)]
+        (is (clojure.string/includes? error "not an array"))))))
+
+(deftest validate-envelope-bad-record-test
+  (testing "a record missing one of {id, t, type} fails validation
+            with the index of the bad record so the caller can point
+            the user at the right line"
+    (let [^js env (mk-valid-envelope)
+          ^js rs  (.-records env)]
+      (.push rs (js-obj "id" 1 "t" 2.0))  ; missing :type
+      (let [{:keys [error]} (model/validate-envelope env)]
+        (is (clojure.string/includes? error "index 1"))))))
+
+(deftest validate-envelope-empty-records-test
+  (testing "an empty records array is valid — a no-activity baseline
+            export still imports cleanly"
+    (let [^js env (mk-valid-envelope)]
+      (gobj/set env "records" (array))
+      (let [{:keys [ok]} (model/validate-envelope env)]
+        (is (some? ok))))))
+
+;; ── Import — parse-export string path ───────────────────────────────────────
+
+(deftest parse-export-valid-json-test
+  (testing "a valid JSON string round-trips through parse-export to
+            {:ok env}; the parsed envelope's records survives intact"
+    (let [json-str (js/JSON.stringify (mk-valid-envelope))
+          {:keys [ok error]} (model/parse-export json-str)]
+      (is (nil? error))
+      (is (= 1 (.-length (.-records ^js ok)))))))
+
+(deftest parse-export-invalid-json-test
+  (testing "non-JSON input → 'File is not valid JSON.' error; never
+            throws. This is the user-facing message that lands in
+            the dock hint."
+    (let [{:keys [error]} (model/parse-export "{not json")]
+      (is (= "File is not valid JSON." error)))))
+
+(deftest parse-export-empty-string-test
+  (testing "empty string is also rejected — JSON.parse('') throws."
+    (let [{:keys [error]} (model/parse-export "")]
+      (is (string? error)))))
+
+(deftest parse-export-invalid-schema-test
+  (testing "valid JSON that isn't a valid envelope falls through to
+            validate-envelope and surfaces the structural reason"
+    (let [{:keys [error]} (model/parse-export "{\"schemaVersion\":2}")]
+      (is (clojure.string/includes? error "expected 1")))))
+
+;; ── View predicates / view-id ──────────────────────────────────────────────
+
+(deftest import-view?-test
+  (testing "import-view? matches [:import N] but not :live or [:session N]"
+    (is (true?  (model/import-view? [:import 0])))
+    (is (true?  (model/import-view? [:import 99])))
+    (is (false? (model/import-view? :live)))
+    (is (false? (model/import-view? [:session 0])))
+    (is (false? (model/import-view? nil)))
+    (is (false? (model/import-view? [:other 5])))))
+
+(deftest view-id-import-test
+  (testing "view-id extracts the numeric id from both session and
+            import views; nil for :live"
+    (is (= 0   (model/view-id [:session 0])))
+    (is (= 42  (model/view-id [:import  42])))
+    (is (nil?  (model/view-id :live)))
+    (is (nil?  (model/view-id [:other 5])))))

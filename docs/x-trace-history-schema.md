@@ -130,6 +130,40 @@ as opaque JSON payloads.
   ring buffer that drops oldest records, the exported `records` array
   reflects a snapshot in time and ids are monotonic across the export.
 
+## Importer contract
+
+The recorder's import path (`window.BareDOM.traceHistory.import(...)` and
+the dock's drag-drop / file-picker entries) hard-rejects malformed
+envelopes. Validation is deliberately narrow so future schema additions
+stay backward-compatible — only the load-bearing fields are checked:
+
+| Layer    | Required                                                                 | Behavior on failure                                       |
+|----------|--------------------------------------------------------------------------|-----------------------------------------------------------|
+| Envelope | JSON object root                                                         | `{"error": "Envelope is not a JSON object."}`             |
+| Envelope | `schemaVersion` is a number                                              | `{"error": "Envelope is missing schemaVersion."}`         |
+| Envelope | `schemaVersion === 1`                                                    | `{"error": "Schema version mismatch: expected 1, got N."}`|
+| Envelope | `records` is an array                                                    | `{"error": "Envelope.records is not an array."}`          |
+| Record   | each entry is an object carrying numeric `id`, numeric `t`, string `type` | `{"error": "Record at index N is missing required fields …"}` |
+
+Type-specific record fields (`detail`, `value`, `attribute`, etc.) are
+NOT validated — they are pass-through, so an importer survives a
+forward-compatible release that adds optional fields. The dock's
+formatting layer is nil-safe for missing extras.
+
+A higher `schemaVersion` value signals a breaking change and is
+rejected. Receivers must surface the error message to the user
+verbatim; the recorder logs it via `console.warn` and the dock
+shows it as a transient `.hint.error` line below the timeline.
+
+### Reference-equality on import
+
+`window.BareDOM.traceHistory.import(jsObject)` accepts an already-parsed
+envelope and stores it by reference. The dock reads `envelope.records`
+on every render; mutating the array externally will be reflected in
+the dock view. For the safe case, pass a JSON string —
+`import(JSON.stringify(env))` decouples the import store from the
+caller's data.
+
 ## In-process callers: `export()` returns a live reference
 
 When you call `window.BareDOM.traceHistory.export()` from the console or
