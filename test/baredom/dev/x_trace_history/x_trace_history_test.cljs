@@ -1078,3 +1078,122 @@
                 "only the events dot shows; the state record is filtered")
             (leave-normal-mode!)
             (done)))))))
+
+;; ---------------------------------------------------------------------------
+;; PR 10 — Export button → download path
+;; ---------------------------------------------------------------------------
+;;
+;; The dock's Export button calls recorder/download-trace!, which builds
+;; a Blob and clicks a synthetic anchor. To verify the wiring without
+;; actually triggering a save-dialog, these tests stub URL.createObjectURL,
+;; URL.revokeObjectURL, and HTMLAnchorElement.prototype.click on entry
+;; and restore them on exit. The stubs collect the Blob and the anchor
+;; state so assertions can inspect the bytes that would have been saved.
+
+(defn- install-download-stubs!
+  "Replace the three download-path globals with capturing stubs. Returns
+   a map of {:orig, :captured} the test can hand to restore + assertions."
+  []
+  (let [orig-create  js/URL.createObjectURL
+        orig-revoke  js/URL.revokeObjectURL
+        orig-click   (.. js/HTMLAnchorElement -prototype -click)
+        captured     (atom {:created [] :revoked [] :clicks []})
+        stub-create  (fn [^js blob]
+                       (let [url (str "blob:test-"
+                                      (count (:created @captured)))]
+                         (swap! captured update :created conj
+                                {:blob blob :url url})
+                         url))
+        stub-revoke  (fn [url]
+                       (swap! captured update :revoked conj url))
+        stub-click   (fn []
+                       (this-as ^js this
+                         (swap! captured update :clicks conj
+                                {:download (.-download this)
+                                 :href     (.-href this)})))]
+    (set! js/URL.createObjectURL stub-create)
+    (set! js/URL.revokeObjectURL stub-revoke)
+    (set! (.. js/HTMLAnchorElement -prototype -click) stub-click)
+    {:orig     {:create orig-create
+                :revoke orig-revoke
+                :click  orig-click}
+     :captured captured}))
+
+(defn- restore-download-stubs!
+  "Symmetric tear-down for install-download-stubs!."
+  [{{:keys [create revoke click]} :orig}]
+  (set! js/URL.createObjectURL create)
+  (set! js/URL.revokeObjectURL revoke)
+  (set! (.. js/HTMLAnchorElement -prototype -click) click))
+
+(deftest export-button-rendered-in-header-test
+  (testing "the dock skeleton renders an Export x-button with the
+            data-x-th-action='export' marker the click delegate
+            dispatches on. Verifies the user-facing label so a
+            rename of the button (e.g. 'Download') doesn't sneak
+            through without updating the docs / a11y."
+    (let [^js dock (mount-dock!)
+          ^js btn  (query dock "[data-x-th-action='export']")]
+      (is (some? btn) "Export button present in the header")
+      (is (= "x-button" (.. btn -tagName toLowerCase))
+          "rendered as an <x-button> like the other action buttons")
+      (is (= "Export" (clojure.string/trim (.-textContent btn)))
+          "button label is the documented 'Export' string"))))
+
+(deftest export-click-triggers-anchor-click-test
+  (testing "clicking the Export button creates a Blob, clicks a synthetic
+            anchor with a .trace.json download name, and revokes the URL.
+            One full download cycle per click."
+    (let [{:keys [captured] :as ctx} (install-download-stubs!)]
+      (try
+        (let [^js dock (mount-dock!)
+              ^js btn  (query dock "[data-x-th-action='export']")
+              ^js el   (.createElement js/document "x-button")]
+          (du/dispatch! el "press" #js {:n 1})
+          (.click btn)
+          (let [{:keys [created revoked clicks]} @captured]
+            (is (= 1 (count created)) "exactly one Blob created")
+            (is (= 1 (count clicks))  "exactly one anchor click")
+            (is (= 1 (count revoked)) "object URL revoked after click")
+            (is (= (:url (first created)) (first revoked))
+                "the URL we created is the same URL we revoked — no
+                 leaked Blob, no double-revoke of a stale handle")
+            (let [{:keys [download href]} (first clicks)]
+              (is (clojure.string/starts-with? download
+                                                model/filename-prefix)
+                  "filename starts with the schema prefix")
+              (is (clojure.string/ends-with? download
+                                              model/filename-extension)
+                  "filename ends with .trace.json")
+              (is (= (:url (first created)) href)
+                  "anchor.href is the same blob URL we created")
+              (is (clojure.string/starts-with? href "blob:")
+                  "anchor href is the blob URL"))
+            (let [^js blob (:blob (first created))]
+              (is (= "application/json" (.-type blob))
+                  "Blob type signals JSON for the save dialog"))))
+        (finally
+          (restore-download-stubs! ctx))))))
+
+(deftest export-button-does-not-mutate-recorder-state-test
+  (testing "Export is read-only: clicking it must not pause / resume /
+            clear / change the view or selection. Sanity check the
+            common 'I want to download before I clear' workflow."
+    (let [ctx (install-download-stubs!)]
+      (try
+        (let [^js dock (mount-dock!)
+              ^js el   (.createElement js/document "x-button")]
+          (du/dispatch! el "press" #js {})
+          (let [paused-before  (recorder/paused?)
+                view-before    (gobj/get dock model/k-view)
+                count-before   (.-length (recorder/records))
+                ^js btn        (query dock "[data-x-th-action='export']")]
+            (.click btn)
+            (is (= paused-before  (recorder/paused?))
+                "paused state untouched")
+            (is (= view-before    (gobj/get dock model/k-view))
+                "view untouched")
+            (is (= count-before   (.-length (recorder/records)))
+                "records untouched")))
+        (finally
+          (restore-download-stubs! ctx))))))

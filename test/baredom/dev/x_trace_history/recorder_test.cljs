@@ -1092,3 +1092,227 @@
        (let [el (make-el mutation-tag)]
          (du/setv! el "first-ever" "v")
          (is (= 1 (count-records))))))))
+
+;; ── Export — JSON envelope from live state ─────────────────────────────────
+
+(deftest export-empty-envelope-test
+  (testing "calling export! before any records have flowed still
+            produces a valid envelope — a useful 'no activity' baseline
+            for bug reports. components map may be non-empty because
+            clear! preserves it across the test fixture; we only assert
+            it exists as an object."
+    (let [^js env (recorder/export!)]
+      (is (= 1 (.-schemaVersion env)))
+      (is (= 0 (.-length (.-records env))))
+      (is (= 0 (.-length (.-sessions env))))
+      (is (object? (.-components env))))))
+
+(deftest export-includes-current-records-test
+  (testing "every record produced before export! shows up in the
+            envelope's records array, in the same order"
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "click" #js {:value 1})
+      (du/setv!     el "field"  "value")
+      (let [^js env (recorder/export!)
+            ^js rs  (.-records env)]
+        (is (= (count-records) (.-length rs)))
+        (is (= "event/dispatch"          (.-type (aget rs 0))))
+        (is (= "state/instance-field-set" (.-type (aget rs 1))))))))
+
+(deftest export-components-cover-every-record-componentId-test
+  (testing "every componentId referenced by a record in envelope.records
+            also appears as a key in envelope.components — the side-index
+            is the resolution path for componentId-to-tag lookups, and a
+            record pointing at a missing entry breaks downstream tools
+            (importer, viewer)"
+    (let [a (make-el "x-button")
+          b (make-el "x-checkbox")]
+      (du/dispatch! a "press" #js {})
+      (du/dispatch! b "x-checkbox-change" #js {})
+      (du/setv!     a "f" "v")
+      (let [^js env       (recorder/export!)
+            ^js rs        (.-records env)
+            ^js comps     (.-components env)
+            seen-cids     (->> (array-seq rs)
+                               (map (fn [^js r] (.-componentId r)))
+                               (remove nil?)
+                               distinct)]
+        (doseq [cid seen-cids]
+          (is (some? (gobj/get comps (str cid)))
+              (str "componentId " cid " referenced by a record but
+                    missing from envelope.components")))))))
+
+(deftest export-components-side-index-test
+  (testing "the components map carries every element the recorder has
+            stamped a componentId onto, keyed by stringified id"
+    (let [a (make-el "x-button")
+          b (make-el "x-checkbox")]
+      (du/dispatch! a "press" #js {})
+      (du/dispatch! b "x-checkbox-change" #js {})
+      (let [^js env  (recorder/export!)
+            ^js c    (.-components env)
+            tags     (->> (gobj/getKeys c)
+                          (map (fn [k] (.-tag ^js (gobj/get c k))))
+                          set)]
+        (is (contains? tags "x-button"))
+        (is (contains? tags "x-checkbox"))))))
+
+(deftest export-sessions-metadata-test
+  (testing "active and closed sessions both survive into the envelope
+            with their start/end ids; an open session still carries
+            endT=null / endId=null"
+    (let [el (make-el "x-button")]
+      (recorder/start-session!)
+      (du/dispatch! el "press" #js {})
+      (recorder/stop-session!)
+      (recorder/start-session!)              ; second session, still open
+      (du/dispatch! el "press2" #js {})
+      (let [^js env  (recorder/export!)
+            ^js arr  (.-sessions env)
+            ^js s0   (aget arr 0)
+            ^js s1   (aget arr 1)]
+        (is (= 2 (.-length arr)))
+        (is (number? (.-endT s0)))
+        (is (number? (.-endId s0)))
+        (is (nil? (.-endT s1)) "open session keeps endT null on the wire")
+        (is (nil? (.-endId s1)) "open session keeps endId null on the wire"))
+      (recorder/stop-session!))))
+
+(deftest export-forensic-flag-mirrors-install-mode-test
+  (testing "the envelope's `forensic` flag reflects the recorder's
+            install-time mode (the fixture installs in raw, so true)"
+    (let [^js env (recorder/export!)]
+      (is (true? (.-forensic env))))))
+
+(deftest export-context-fields-present-test
+  (testing "exportedAt is a wall-clock timestamp; origin and userAgent
+            are populated from window / navigator"
+    (let [before  (.getTime (js/Date.))
+          ^js env (recorder/export!)
+          after   (.getTime (js/Date.))]
+      (is (<= before (.-exportedAt env) after))
+      (is (string? (.-origin env)))
+      (is (string? (.-userAgent env))))))
+
+(deftest export-while-paused-test
+  (testing "export! is read-only — pausing the recorder does NOT
+            invalidate it. The current buffer is exportable at any
+            time, which is what makes 'send me your trace' usable
+            after the user clicks Pause."
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "press" #js {})
+      (recorder/pause!)
+      (let [^js env (recorder/export!)]
+        (is (= 1 (.-schemaVersion env)))
+        (is (pos? (.-length (.-records env)))
+            "records captured before pause are still in the envelope")
+        (is (true? (recorder/paused?))
+            "pause state unchanged by export"))
+      (recorder/resume!))))
+
+(deftest export-stringifies-cleanly-test
+  (testing "the envelope round-trips through JSON.stringify / parse with
+            the schema-stable fields intact. JSON.stringify drops
+            functions / undefined silently, so a clean parse is the
+            integration check that the wire is free of non-JSON values."
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "press" #js {:n 1})
+      (let [^js env  (recorder/export!)
+            json-str (js/JSON.stringify env)
+            ^js back (js/JSON.parse json-str)
+            ^js rec0 (aget (.-records back) 0)]
+        (is (= 1                (.-schemaVersion back)))
+        (is (= (.-length (.-records env))
+               (.-length (.-records back))))
+        (is (= "event/dispatch" (.-type rec0)))))))
+
+(deftest export-is-on-window-api-test
+  (testing "window.BareDOM.traceHistory exposes both `export` and
+            `download` so consumers can call them from the console or
+            wire their own buttons"
+    (let [^js api (gobj/getValueByKeys js/window "BareDOM" "traceHistory")]
+      (is (fn? (gobj/get api "export")))
+      (is (fn? (gobj/get api "download"))))))
+
+(deftest download-trace-cleans-up-on-click-throw-test
+  (testing "if anchor.click throws (patched prototype, exotic CSP),
+            download-trace! still revokes the object URL — the
+            try/finally in trigger-download! guarantees we don't
+            leak Blobs even on the unhappy path. We also assert no
+            stray anchor is left under <body> after the call returns."
+    (let [orig-create  js/URL.createObjectURL
+          orig-revoke  js/URL.revokeObjectURL
+          orig-click   (.. js/HTMLAnchorElement -prototype -click)
+          revoked      (atom [])
+          stub-create  (fn [^js _blob] "blob:throw-test")
+          stub-revoke  (fn [url] (swap! revoked conj url))
+          stub-click   (fn [] (throw (js/Error. "simulated click throw")))
+          anchors-before (.-length (.querySelectorAll
+                                    js/document
+                                    "a[download$='.trace.json']"))]
+      (try
+        (set! js/URL.createObjectURL stub-create)
+        (set! js/URL.revokeObjectURL stub-revoke)
+        (set! (.. js/HTMLAnchorElement -prototype -click) stub-click)
+        (is (thrown? js/Error (recorder/download-trace!))
+            "the click error propagates — we don't swallow it")
+        (is (= ["blob:throw-test"] @revoked)
+            "object URL was revoked despite the throw")
+        (is (= anchors-before
+               (.-length (.querySelectorAll
+                          js/document
+                          "a[download$='.trace.json']")))
+            "no stray download anchor left under <body>")
+        (finally
+          (set! js/URL.createObjectURL orig-create)
+          (set! js/URL.revokeObjectURL orig-revoke)
+          (set! (.. js/HTMLAnchorElement -prototype -click) orig-click))))))
+
+(deftest download-trace-builds-blob-and-triggers-anchor-test
+  (testing "download-trace! constructs an object-URL-backed anchor,
+            clicks it (browser save dialog), and revokes the URL.
+            The test stubs URL.createObjectURL / revokeObjectURL +
+            HTMLAnchorElement.click to verify the sequence without
+            actually invoking a download prompt."
+    (let [orig-create  js/URL.createObjectURL
+          orig-revoke  js/URL.revokeObjectURL
+          orig-click   (.. js/HTMLAnchorElement -prototype -click)
+          created      (atom [])
+          revoked      (atom [])
+          clicked      (atom 0)
+          stub-create  (fn [^js blob]
+                         (let [url (str "blob:test-" (count @created))]
+                           (swap! created conj #js [blob url])
+                           url))
+          stub-revoke  (fn [url] (swap! revoked conj url))
+          stub-click   (fn []
+                         (this-as ^js this
+                           (swap! clicked inc)
+                           (is (string? (.-download this))
+                               "anchor.download attribute is set so the
+                                browser uses our filename")
+                           (is (clojure.string/ends-with?
+                                (.-download this) ".trace.json")
+                               "filename ends with .trace.json")
+                           (is (clojure.string/starts-with?
+                                (.-href this) "blob:")
+                               "anchor.href is a blob URL")))]
+      (try
+        (set! js/URL.createObjectURL stub-create)
+        (set! js/URL.revokeObjectURL stub-revoke)
+        (set! (.. js/HTMLAnchorElement -prototype -click) stub-click)
+        (let [el (make-el "x-button")]
+          (du/dispatch! el "press" #js {}))
+        (recorder/download-trace!)
+        (is (= 1 @clicked)        "anchor clicked exactly once")
+        (is (= 1 (count @created)) "one Blob created")
+        (is (= 1 (count @revoked)) "object URL revoked after click")
+        (is (= (second (first @created)) (first @revoked))
+            "revoked URL matches the one we created")
+        (let [^js blob (aget (first @created) 0)]
+          (is (= "application/json" (.-type blob))
+              "Blob type signals JSON for the OS save dialog"))
+        (finally
+          (set! js/URL.createObjectURL orig-create)
+          (set! js/URL.revokeObjectURL orig-revoke)
+          (set! (.. js/HTMLAnchorElement -prototype -click) orig-click))))))

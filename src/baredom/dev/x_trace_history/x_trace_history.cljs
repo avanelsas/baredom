@@ -81,6 +81,8 @@
        "<x-button data-x-th-action='pause'  size='sm' variant='ghost'>Pause</x-button>"
        "<x-button data-x-th-action='record' size='sm' variant='ghost'>Record</x-button>"
        "<x-button data-x-th-action='clear'  size='sm' variant='ghost'>Clear</x-button>"
+       "<x-button data-x-th-action='export' size='sm' variant='ghost' "
+       "title='Download trace as .trace.json'>Export</x-button>"
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
        ;; Session strip: hidden by default; render! shows it once the
@@ -475,6 +477,10 @@
                    (gobj/set el model/k-selected-id nil)
                    (gobj/set el model/k-view :live)
                    (recorder/clear!))
+      ;; Export is read-only — produce a .trace.json download from the
+      ;; current recorder snapshot. Does not change view, selection,
+      ;; filter, or recording state.
+      "export" (recorder/download-trace!)
       nil)))
 
 (defn- on-session-chip-click!
