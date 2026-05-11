@@ -1396,3 +1396,258 @@
                   (is (some? (query dock (chip-selector id)))
                       "import chip still rendered")
                   (done))))))))))
+
+;; ---------------------------------------------------------------------------
+;; Axis-mode toggle (hybrid Order/Time)
+;; ---------------------------------------------------------------------------
+
+(deftest axis-select-rendered-test
+  (testing "the dock skeleton renders an <x-select data-x-th-axis>
+            in the filters row with Order selected by default"
+    (let [^js dock (mount-dock!)
+          ^js sel  (query dock "[data-x-th-axis]")]
+      (is (some? sel)        "axis select rendered")
+      (is (= "x-select" (.. sel -tagName toLowerCase))))))
+
+(deftest axis-mode-default-is-order-test
+  (testing "on mount the dock's k-axis-mode slot is :order — encodes
+            the design decision that the order axis is the default
+            for state-time-travel debugging"
+    (let [^js dock (mount-dock!)]
+      (is (= :order (gobj/get dock model/k-axis-mode))))))
+
+(deftest axis-select-change-flips-mode-test
+  (testing "selecting 'time' from the axis dropdown writes :time to
+            k-axis-mode and triggers a re-render; selecting 'order'
+            flips it back"
+    (let [^js dock (mount-dock!)
+          ^js sel  (query dock "[data-x-th-axis]")]
+      (dispatch-select-change! sel "time")
+      (is (= :time  (gobj/get dock model/k-axis-mode))
+          "time mode applied after select-change")
+      (dispatch-select-change! sel "order")
+      (is (= :order (gobj/get dock model/k-axis-mode))
+          "order mode restored on second change"))))
+
+(deftest axis-select-change-malformed-value-test
+  (testing "an unknown value (defensive: external write, future-schema
+            value) falls back to the default :order instead of leaving
+            the dock with an unrenderable mode"
+    (let [^js dock (mount-dock!)
+          ^js sel  (query dock "[data-x-th-axis]")]
+      (dispatch-select-change! sel "garbage")
+      (is (= model/default-axis-mode (gobj/get dock model/k-axis-mode))))))
+
+(deftest axis-mode-affects-dot-positions-test
+  (testing "switching from order to time changes where the dots
+            render. With two records 50ms apart, the order axis
+            spreads them edge-to-edge (uniform spacing) while the
+            time axis bunches them according to their t-values
+            relative to the buffer's full span. The test asserts the
+            x-coordinates DIFFER between modes as a proxy for the
+            position dispatch actually firing."
+    (async done
+      (let [^js dock (mount-dock!)
+            el       (.createElement js/document "x-button")]
+        ;; Two records — order axis puts them at left/right pad, time
+        ;; axis puts them somewhere inside the plot based on t span.
+        (du/dispatch! el "a" #js {})
+        (du/dispatch! el "b" #js {})
+        (after-frames 2
+          (fn []
+            (let [order-xs (->> (query-all dock "circle.dot")
+                                array-seq
+                                (map (fn [^js c]
+                                       (js/parseFloat (.getAttribute c "cx"))))
+                                sort
+                                vec)]
+              (dispatch-select-change! ^js (query dock "[data-x-th-axis]") "time")
+              (after-frames 2
+                (fn []
+                  (let [time-xs (->> (query-all dock "circle.dot")
+                                     array-seq
+                                     (map (fn [^js c]
+                                            (js/parseFloat (.getAttribute c "cx"))))
+                                     sort
+                                     vec)]
+                    (is (= 2 (count order-xs)) "two dots in order mode")
+                    (is (= 2 (count time-xs))  "two dots in time mode")
+                    ;; In order mode, dots are at the padded edges.
+                    ;; In time mode, the two records share a t-bound of
+                    ;; ~0ms span (back-to-back dispatches), so they
+                    ;; collapse to the same x. Either way, at least one
+                    ;; position differs between the modes.
+                    (is (not= order-xs time-xs)
+                        "dot x-coordinates differ between axis modes")
+                    (done)))))))))))
+
+(deftest axis-mode-scrub-uses-order-test
+  (testing "with three records and axis-mode :order, clicking the
+            svg-pane near the right edge selects the third record
+            (the rightmost in order). With axis-mode :time, the
+            three back-to-back records all share roughly the same
+            t, so the scrubber picks whichever happens to be nearest
+            — we only assert the order path here, since that's the
+            new behaviour."
+    (async done
+      (let [^js dock (mount-dock!)
+            el       (.createElement js/document "x-button")]
+        (du/dispatch! el "a" #js {})
+        (du/dispatch! el "b" #js {})
+        (du/dispatch! el "c" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js svg-pane (gobj/get dock model/k-svg-pane-el)
+                  rect         (.getBoundingClientRect svg-pane)
+                  ;; Click at the far right of the pane. In :order
+                  ;; mode this maps to the last record (id of the
+                  ;; third dispatch).
+                  click-x      (- (.-right rect) 4)
+                  click-y      (+ (.-top rect) 10)]
+              (.dispatchEvent svg-pane
+                              (js/PointerEvent. "pointerdown"
+                                                #js {:bubbles  true
+                                                     :composed true
+                                                     :clientX  click-x
+                                                     :clientY  click-y
+                                                     :pointerId 1}))
+              (after-frames 2
+                (fn []
+                  (let [sel-id (gobj/get dock model/k-selected-id)
+                        ;; The last dispatched record is the one
+                        ;; recorded last — recorder/records is the
+                        ;; live ring buffer, so we look up its id.
+                        ^js recs (recorder/records)
+                        last-id  (.-id ^js (aget recs (dec (.-length recs))))]
+                    (is (= last-id sel-id)
+                        "scrubbing to the right edge under order mode
+                         selects the rightmost-in-order record")
+                    (done)))))))))))
+
+;; ---------------------------------------------------------------------------
+;; Collapse toggle + keyboard shortcut (A1 + E1)
+;; ---------------------------------------------------------------------------
+
+(defn- dispatch-keydown!
+  "Fire a keydown event on `target` with the given key + modifier
+   flags. Used by the keyboard-shortcut tests so we don't need a
+   real keyboard."
+  [^js target key {:keys [ctrl meta shift alt]
+                   :or {ctrl false meta false shift false alt false}}]
+  (.dispatchEvent target
+                  (js/KeyboardEvent. "keydown"
+                                     #js {:key      key
+                                          :bubbles  true
+                                          :composed true
+                                          :ctrlKey  ctrl
+                                          :metaKey  meta
+                                          :shiftKey shift
+                                          :altKey   alt})))
+
+(deftest collapse-button-rendered-test
+  (testing "the dock skeleton renders a collapse-toggle x-button as
+            the first item in the header so the user has an obvious
+            way to get the dock out of the way"
+    (let [^js dock (mount-dock!)
+          ^js btn  (query dock "[data-x-th-action='collapse']")]
+      (is (some? btn))
+      (is (= "x-button" (.. btn -tagName toLowerCase))))))
+
+(deftest collapse-default-is-expanded-test
+  (testing "freshly-mounted dock is expanded (k-collapsed = false)
+            and the host carries no .collapsed class"
+    (let [^js dock (mount-dock!)]
+      (is (false? (boolean (gobj/get dock model/k-collapsed))))
+      (is (not (.contains (.-classList dock) "collapsed"))
+          "no collapsed class on expanded dock"))))
+
+(deftest collapse-click-toggles-state-test
+  (testing "clicking the collapse button flips k-collapsed and
+            adds/removes the .collapsed class on the host; the
+            button's textContent flips between « and »"
+    (let [^js dock (mount-dock!)
+          ^js btn  (query dock "[data-x-th-action='collapse']")]
+      (.click btn)
+      (is (true? (gobj/get dock model/k-collapsed))
+          "first click collapses")
+      (is (.contains (.-classList dock) "collapsed")
+          "host gains .collapsed class")
+      (.click btn)
+      (is (false? (gobj/get dock model/k-collapsed))
+          "second click expands")
+      (is (not (.contains (.-classList dock) "collapsed"))
+          "host loses .collapsed class"))))
+
+(deftest collapse-aria-expanded-mirrors-state-test
+  (testing "the toggle button carries aria-expanded reflecting the
+            current state — screen readers track the disclosure"
+    (let [^js dock (mount-dock!)
+          ^js btn  (query dock "[data-x-th-action='collapse']")]
+      (is (= "true"  (.getAttribute btn "aria-expanded"))
+          "expanded by default")
+      (.click btn)
+      (is (= "false" (.getAttribute btn "aria-expanded"))
+          "collapsed after click"))))
+
+(deftest keyboard-shortcut-meta-toggles-collapsed-test
+  (testing "Cmd + \\ on document toggles the dock from anywhere on
+            the page. Meta-key path (Mac)."
+    (let [^js dock (mount-dock!)]
+      (dispatch-keydown! js/document "\\" {:meta true})
+      (is (true? (gobj/get dock model/k-collapsed))
+          "Cmd + \\ collapses")
+      (dispatch-keydown! js/document "\\" {:meta true})
+      (is (false? (gobj/get dock model/k-collapsed))
+          "Cmd + \\ again expands"))))
+
+(deftest keyboard-shortcut-ctrl-toggles-collapsed-test
+  (testing "Ctrl + \\ on document toggles the dock — Linux/Windows
+            path. Same handler, different modifier."
+    (let [^js dock (mount-dock!)]
+      (dispatch-keydown! js/document "\\" {:ctrl true})
+      (is (true? (gobj/get dock model/k-collapsed))))))
+
+(deftest keyboard-shortcut-ignores-bare-backslash-test
+  (testing "a backslash without Ctrl/Cmd is ignored — users typing
+            literal \\ characters in regular content shouldn't see
+            the dock flicker"
+    (let [^js dock (mount-dock!)]
+      (dispatch-keydown! js/document "\\" {})
+      (is (false? (boolean (gobj/get dock model/k-collapsed))))
+      (dispatch-keydown! js/document "\\" {:shift true})
+      (is (false? (boolean (gobj/get dock model/k-collapsed)))
+          "shift+\\ also doesn't trigger"))))
+
+(deftest keyboard-shortcut-ignores-form-control-target-test
+  (testing "Cmd + \\ while focused in an input is ignored — keyboard
+            shortcuts should never preempt the user typing in a
+            form field. Tests against a plain <input> appended to
+            <body>; the in-form-control? predicate handles the
+            BareDOM equivalents too."
+    (let [^js dock  (mount-dock!)
+          ^js input (.createElement js/document "input")]
+      (.appendChild (.-body js/document) input)
+      (.focus input)
+      (try
+        (dispatch-keydown! input "\\" {:meta true})
+        (is (false? (boolean (gobj/get dock model/k-collapsed)))
+            "shortcut suppressed while focus is in an input")
+        (finally
+          (.remove input))))))
+
+(deftest collapse-listener-removed-on-disconnect-test
+  (testing "the document-level keydown listener is removed when the
+            dock disconnects, so a stale handler on a detached
+            element doesn't keep toggling a no-longer-mounted dock
+            across remounts"
+    (let [^js dock (mount-dock!)]
+      ;; Sanity: shortcut works while mounted.
+      (dispatch-keydown! js/document "\\" {:meta true})
+      (is (true? (gobj/get dock model/k-collapsed)))
+      ;; Remove from DOM → disconnectedCallback fires → unmount! ->
+      ;; unbind-listeners! removes the document listener.
+      (.remove dock)
+      (let [collapsed-before (gobj/get dock model/k-collapsed)]
+        (dispatch-keydown! js/document "\\" {:meta true})
+        (is (= collapsed-before (gobj/get dock model/k-collapsed))
+            "shortcut no longer mutates state after disconnect")))))

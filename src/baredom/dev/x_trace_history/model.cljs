@@ -201,6 +201,34 @@
                         "firstSeen" (:first-seen info))))
     out))
 
+(defn referenced-component-ids
+  "Pure: return the set of componentIds appearing in the records JS
+   array. Records whose componentId is nil (document-target events
+   like dispatch-document) don't contribute — there's no component
+   to keep in the index for them."
+  [^js records]
+  (let [n (.-length records)]
+    (loop [i 0
+           acc (transient #{})]
+      (if (>= i n)
+        (persistent! acc)
+        (let [^js r (aget records i)
+              cid   (.-componentId r)]
+          (recur (inc i)
+                 (if (some? cid) (conj! acc cid) acc)))))))
+
+(defn filter-components
+  "Pure: keep only entries from `components` whose id is in `referenced-ids`.
+   The recorder's index is monotonic across the page lifetime and
+   survives clear!, so a fresh capture still picks up stale entries
+   from prior interactions. The export filter trims the index to
+   what the captured records actually reference so an exported trace
+   carries the minimum useful side-info."
+  [components referenced-ids]
+  (into {}
+        (filter (fn [[id _]] (contains? referenced-ids id)))
+        components))
+
 (defn- sessions->js
   "Convert the recorder's CLJS sessions vector into a JS array of session
    objects in the wire shape. `recordCount` from the live `recorder/sessions`
@@ -243,19 +271,29 @@
    resulting envelope as read-only; mutating envelope.records corrupts
    the recorder's internal cache.
 
+   `components` is FILTERED to only those entries whose id appears in
+   `records`. The recorder's live index is monotonic for the page
+   lifetime and survives `clear!`; without the filter an exported
+   trace carries every component ever seen, including stale entries
+   from prior interactions the user explicitly cleared. The filter
+   ensures `envelope.components` is the minimum side-info needed to
+   resolve the captured records — no more, no less.
+
    The full schema lives in docs/x-trace-history-schema.md and the
    `schemaVersion` field gates importers."
   [^js records components sessions
    {:keys [exported-at origin user-agent forensic?]}]
-  (js-obj
-   "schemaVersion" schema-version
-   "exportedAt"    exported-at
-   "origin"        origin
-   "userAgent"     user-agent
-   "forensic"      (boolean forensic?)
-   "components"    (components->js components)
-   "sessions"      (sessions->js sessions)
-   "records"       records))
+  (let [referenced (referenced-component-ids records)
+        trimmed    (filter-components components referenced)]
+    (js-obj
+     "schemaVersion" schema-version
+     "exportedAt"    exported-at
+     "origin"        origin
+     "userAgent"     user-agent
+     "forensic"      (boolean forensic?)
+     "components"    (components->js trimmed)
+     "sessions"      (sessions->js sessions)
+     "records"       records)))
 
 ;; ---------------------------------------------------------------------------
 ;; Import — envelope validation
@@ -554,31 +592,64 @@
           mx (apply max ts)]
       {:tmin mn :tmax mx :span (max 1 (- mx mn))})))
 
+(def plot-padding-x
+  "Horizontal padding (in CSS pixels) reserved on each side of the SVG
+   plot so dots at the temporal extremes (tmin / tmax) stay fully
+   inside the viewport instead of being half-clipped by the edges.
+   Sized to cover the largest dot radius the dock renders (`dot-r-sel`)
+   plus a small visual margin. Also bumps up the effective hit-target
+   for edge events, which a 0-padding linear mapping would render
+   inaccessible at the far left."
+  8)
+
+(def axis-modes
+  "Two axis layouts the dock supports. :order is the default — uniform
+   horizontal spacing by record index — and matches the use case
+   (sequence + causality navigation) the tool is built around. :time
+   keeps the linear-time mapping for users debugging timing or
+   animation density."
+  #{:order :time})
+
+(def default-axis-mode :order)
+
+(defn axis-mode?
+  "Predicate: is `m` one of the supported axis modes?"
+  [m]
+  (contains? axis-modes m))
+
 (defn time-x
   "Map a time value to an x-coordinate inside a plot of width `plot-width`,
-   given the bounds map returned by `time-bounds`. Returns 0 for nil
-   bounds (no records) and clamps t outside [tmin, tmax] into the plot."
+   given the bounds map returned by `time-bounds`. Returns the padded
+   left edge (`plot-padding-x`) for nil bounds (no records) and clamps
+   t outside [tmin, tmax] into the padded plot range
+   [plot-padding-x, plot-width - plot-padding-x]. Padding prevents the
+   leftmost / rightmost dots from being clipped at the SVG edges; when
+   plot-width is too narrow to honour both paddings (degenerate case),
+   the plot collapses to a single x value at the centre."
   [t {:keys [tmin span]} plot-width]
-  (if (or (nil? tmin) (nil? span))
-    0
-    (let [norm (-> (- t tmin) (/ span) (max 0) (min 1))]
-      (* norm plot-width))))
+  (let [inner (max 0 (- plot-width (* 2 plot-padding-x)))]
+    (if (or (nil? tmin) (nil? span))
+      plot-padding-x
+      (let [norm (-> (- t tmin) (/ span) (max 0) (min 1))]
+        (+ plot-padding-x (* norm inner))))))
 
 (defn time-from-x
   "Inverse of `time-x`: map an x-coordinate within a plot of width
    `plot-width` back to a time value. Returns 0 for nil bounds and
-   clamps x outside [0, plot-width] into [tmin, tmax]."
+   clamps x outside the padded plot range
+   [plot-padding-x, plot-width - plot-padding-x] into [tmin, tmax]."
   [x {:keys [tmin span] :as bounds} plot-width]
-  (cond
-    (or (nil? bounds) (nil? tmin) (nil? span))
-    0
+  (let [inner (max 0 (- plot-width (* 2 plot-padding-x)))]
+    (cond
+      (or (nil? bounds) (nil? tmin) (nil? span))
+      0
 
-    (or (zero? plot-width) (neg? plot-width))
-    tmin
+      (or (zero? plot-width) (neg? plot-width) (zero? inner))
+      tmin
 
-    :else
-    (let [norm (-> (/ x plot-width) (max 0) (min 1))]
-      (+ tmin (* norm span)))))
+      :else
+      (let [norm (-> (/ (- x plot-padding-x) inner) (max 0) (min 1))]
+        (+ tmin (* norm span))))))
 
 (defn nearest-record
   "Return the record from `records` whose t is closest to `target-t`. nil
@@ -589,6 +660,82 @@
     (apply min-key
            (fn [^js r] (js/Math.abs (- (.-t r) target-t)))
            records)))
+
+;; ---------------------------------------------------------------------------
+;; Order axis — position by index in the filtered list
+;;
+;; The order axis is the dock's default. For state-time-travel debugging
+;; the question is almost always "what fired, in what order, and what
+;; caused what" — sequence + causality. Time-axis density is useful for
+;; profiling, but Chrome DevTools' Performance panel already serves
+;; that case better. Order-axis renders every event with a uniform
+;; horizontal slot so sparse traces don't look mostly empty and edge
+;; events are easy to click.
+;;
+;; The `:time` mode (above) stays available behind a toggle for users
+;; debugging timing / animation density.
+;; ---------------------------------------------------------------------------
+
+(defn index-x
+  "Position the i-th record (0-based) of `n` total records inside the
+   padded plot. Uniform spacing — i=0 lands at the padded left edge,
+   i=n-1 lands at the padded right edge. A single-record plot
+   (n=1) places its dot at the centre of the inner plot rather than
+   collapsing to one edge, so it's discoverable. Padding matches
+   `plot-padding-x`, so dot radii survive at the extremes without
+   clipping just like the time-axis path."
+  [i n plot-width]
+  (let [inner (max 0 (- plot-width (* 2 plot-padding-x)))]
+    (cond
+      (or (zero? n) (neg? n))
+      plot-padding-x
+
+      (= 1 n)
+      (+ plot-padding-x (/ inner 2))
+
+      :else
+      (let [norm (-> (/ i (dec n)) (max 0) (min 1))]
+        (+ plot-padding-x (* norm inner))))))
+
+(defn index-from-x
+  "Inverse of `index-x`. Return the record index (0-based) closest to
+   cursor x for an n-record list. Out-of-range x clamps to [0, n-1].
+   Returns nil for n=0 so callers can treat 'no record under cursor'
+   distinctly from 'first record'."
+  [x n plot-width]
+  (let [inner (max 0 (- plot-width (* 2 plot-padding-x)))]
+    (cond
+      (or (zero? n) (neg? n))
+      nil
+
+      (= 1 n)
+      0
+
+      (zero? inner)
+      0
+
+      :else
+      (let [norm (-> (/ (- x plot-padding-x) inner) (max 0) (min 1))]
+        (js/Math.round (* norm (dec n)))))))
+
+(defn index-of-record
+  "Linear-scan `records` (a CLJS vector or seq, in the dock's filtered
+   t-sorted order) and return the index of the record whose id matches
+   `target-id`. nil if not found / non-numeric id. Used by the order-
+   axis renderer to translate a record into its x-coordinate, and by
+   keyboard / scrubber paths to find adjacent records.
+
+   Distinct from the private `index-of-record-id` helper used by
+   `step-record` because that one operates on a vector specifically;
+   this version works for any sequential input the caller has."
+  [records target-id]
+  (when (number? target-id)
+    (let [n (count records)]
+      (loop [i 0]
+        (cond
+          (>= i n)                                           nil
+          (= target-id (.-id ^js (nth records i)))           i
+          :else                                              (recur (inc i)))))))
 
 (defn- index-of-record-id
   "Linear-scan a vector of records, returning the index of the first
@@ -753,6 +900,18 @@
 (def k-selected-id    "__xTraceHistorySelectedId")
 (def k-sub-token      "__xTraceHistorySubToken")
 (def k-mounted        "__xTraceHistoryMounted")
+;; PR (this branch) — axis-mode toggle: :order (default) or :time.
+;; The dock renders dots and routes the scrubber via the selected
+;; mode. See index-x / time-x above for the math.
+(def k-axis-mode      "__xTraceHistoryAxisMode")
+;; PR (this branch) — collapse toggle. When true the dock shrinks to
+;; a thin strip on the right edge so the user can interact with
+;; components the full dock would otherwise cover. State lives on
+;; the host so it survives a disconnect/reconnect cycle. k-collapse-btn
+;; is the cached toggle <x-button> ref so apply-collapsed-state! can
+;; swap the icon without re-querying.
+(def k-collapsed      "__xTraceHistoryCollapsed")
+(def k-collapse-btn   "__xTraceHistoryCollapseBtn")
 ;; PR 11 import-flow refs.
 ;; The hidden <input type="file"> the Import button delegates to; the
 ;; full-dock drag-drop overlay that surfaces while a file is being
@@ -787,6 +946,30 @@
   font: 11px/1.4 ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
   color: #cdd6f4;
   pointer-events: auto;
+  /* The width transition makes the collapse / expand toggle feel
+     responsive without being slow. The dock is otherwise position:
+     fixed so transitioning width doesn't reflow the host page. */
+  transition: width 160ms ease;
+}
+/* Collapsed mode: shrink the host to a thin vertical strip so the
+   user can reach components the full dock would otherwise cover.
+   The only interactive element left is the collapse-toggle button,
+   which expands the dock back to full width when clicked. */
+:host(.collapsed) {
+  width: 32px;
+}
+:host(.collapsed) .dock > *:not(.header) { display: none; }
+:host(.collapsed) .header {
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+}
+:host(.collapsed) .header > *:not([data-x-th-action='collapse']) {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :host { transition: none; }
 }
 .dock {
   display: flex;

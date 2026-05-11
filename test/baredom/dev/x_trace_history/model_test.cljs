@@ -591,51 +591,87 @@
     (is (= 150 (:span b)))))
 
 ;; ── time-x ──────────────────────────────────────────────────────────────────
+;;
+;; The plot reserves `plot-padding-x` pixels on each side so dots at the
+;; temporal extremes (tmin/tmax) don't get clipped by the SVG viewport.
+;; That means tmin maps to x = plot-padding-x (not 0) and tmax maps to
+;; x = plot-width - plot-padding-x (not plot-width). The tests below are
+;; written in terms of the constant so a future tweak (e.g. doubling
+;; the padding) doesn't require rewriting numerics across the suite.
 
-(deftest time-x-at-tmin-is-zero-test
-  (is (zero? (model/time-x 100 {:tmin 100 :tmax 200 :span 100} 500))))
+(def ^:private pad model/plot-padding-x)
 
-(deftest time-x-at-tmax-is-full-width-test
-  (is (= 500 (model/time-x 200 {:tmin 100 :tmax 200 :span 100} 500))))
+(deftest time-x-at-tmin-is-left-pad-test
+  (testing "tmin lands at the padded left edge, not x=0 — keeps the
+            edge dot fully inside the viewport"
+    (is (= pad (model/time-x 100 {:tmin 100 :tmax 200 :span 100} 500)))))
+
+(deftest time-x-at-tmax-is-right-pad-test
+  (testing "tmax lands at plot-width - padding (the right edge of the
+            inner plot rectangle)"
+    (is (= (- 500 pad)
+           (model/time-x 200 {:tmin 100 :tmax 200 :span 100} 500)))))
 
 (deftest time-x-midpoint-test
-  (is (= 250 (model/time-x 150 {:tmin 100 :tmax 200 :span 100} 500))))
+  (testing "midpoint t lands halfway between the two padded edges"
+    (let [w 500
+          inner (- w (* 2 pad))]
+      (is (= (+ pad (/ inner 2))
+             (model/time-x 150 {:tmin 100 :tmax 200 :span 100} w))))))
 
 (deftest time-x-clamps-out-of-range-test
-  (testing "values outside [tmin, tmax] clamp to the plot edges"
-    (let [bounds {:tmin 100 :tmax 200 :span 100}]
-      (is (zero? (model/time-x 50  bounds 500)))   ; before
-      (is (= 500 (model/time-x 999 bounds 500))))))  ; after
+  (testing "values outside [tmin, tmax] clamp to the padded edges,
+            not the raw 0 / plot-width edges"
+    (let [bounds {:tmin 100 :tmax 200 :span 100}
+          w      500]
+      (is (= pad         (model/time-x 50  bounds w)))   ; before
+      (is (= (- w pad)   (model/time-x 999 bounds w)))))) ; after
 
 (deftest time-x-nil-bounds-test
-  (testing "nil bounds yields x=0 instead of throwing"
-    (is (zero? (model/time-x 100 {:tmin nil :tmax nil :span nil} 500)))))
+  (testing "nil bounds yields x = padded left edge instead of throwing —
+            the dock renders no dots in this case anyway, but it
+            shouldn't surprise callers with NaN"
+    (is (= pad (model/time-x 100 {:tmin nil :tmax nil :span nil} 500)))))
 
 ;; ── time-from-x (inverse of time-x) ────────────────────────────────────────
 
-(deftest time-from-x-at-zero-is-tmin-test
-  (is (= 100 (model/time-from-x 0 {:tmin 100 :tmax 200 :span 100} 500))))
+(deftest time-from-x-at-left-pad-is-tmin-test
+  (testing "x = plot-padding-x (the padded left edge) maps back to tmin"
+    (is (= 100 (model/time-from-x pad {:tmin 100 :tmax 200 :span 100} 500)))))
 
-(deftest time-from-x-at-full-width-is-tmax-test
-  (is (= 200 (model/time-from-x 500 {:tmin 100 :tmax 200 :span 100} 500))))
+(deftest time-from-x-at-right-pad-is-tmax-test
+  (testing "x = plot-width - padding (the padded right edge) maps to tmax"
+    (is (= 200 (model/time-from-x (- 500 pad)
+                                  {:tmin 100 :tmax 200 :span 100} 500)))))
 
 (deftest time-from-x-midpoint-test
-  (is (= 150 (model/time-from-x 250 {:tmin 100 :tmax 200 :span 100} 500))))
+  (testing "x at the centre of the inner plot maps to the temporal
+            midpoint (a halfway scrub picks the middle record)"
+    (let [w 500
+          inner (- w (* 2 pad))]
+      (is (= 150 (model/time-from-x (+ pad (/ inner 2))
+                                    {:tmin 100 :tmax 200 :span 100} w))))))
 
 (deftest time-from-x-clamps-out-of-range-test
-  (let [bounds {:tmin 100 :tmax 200 :span 100}]
-    (is (= 100 (model/time-from-x -50  bounds 500)))
-    (is (= 200 (model/time-from-x 999  bounds 500)))))
+  (testing "x outside the padded plot range clamps to [tmin, tmax].
+            That keeps the scrubber on the nearest dot even when the
+            user drags past the dock edges."
+    (let [bounds {:tmin 100 :tmax 200 :span 100}]
+      (is (= 100 (model/time-from-x -50  bounds 500)))
+      (is (= 200 (model/time-from-x 999  bounds 500))))))
 
 (deftest time-from-x-zero-width-test
-  (is (= 100 (model/time-from-x 50 {:tmin 100 :tmax 200 :span 100} 0))))
+  (testing "zero-width plot collapses x → tmin so the scrubber doesn't
+            error out before the SVG pane has measurable width"
+    (is (= 100 (model/time-from-x 50 {:tmin 100 :tmax 200 :span 100} 0)))))
 
 (deftest time-from-x-nil-bounds-test
   (is (zero? (model/time-from-x 100 nil 500)))
   (is (zero? (model/time-from-x 100 {:tmin nil :tmax nil :span nil} 500))))
 
 (deftest time-x-and-back-is-identity-test
-  (testing "time-x and time-from-x are inverses for in-range inputs"
+  (testing "time-x and time-from-x are inverses for in-range inputs,
+            even after the plot-padding offset"
     (let [bounds {:tmin 100 :tmax 1100 :span 1000}
           w      500]
       (doseq [t [100 250 500 800 1100]]
@@ -643,6 +679,120 @@
               t' (model/time-from-x x bounds w)]
           (is (< (js/Math.abs (- t t')) 0.001)
               (str "round-trip for t=" t)))))))
+
+(deftest time-x-narrow-plot-doesnt-overflow-test
+  (testing "when plot-width is smaller than 2 × padding (edge case
+            during initial layout / collapsed dock), time-x degrades
+            gracefully: tmin still lands at the padded x, no overflow"
+    (let [bounds {:tmin 100 :tmax 200 :span 100}
+          w      (dec (* 2 pad))]
+      ;; Inner plot collapses to width 0; tmin and tmax both land at
+      ;; the padded left edge. Not pretty, but doesn't NaN.
+      (is (= pad (model/time-x 100 bounds w)))
+      (is (= pad (model/time-x 200 bounds w))))))
+
+;; ── index-x / index-from-x (order axis) ────────────────────────────────────
+
+(deftest index-x-first-record-is-left-pad-test
+  (testing "i=0 of n records lands at the padded left edge — the
+            same x the time-axis path uses for tmin so dots are
+            consistent across modes at the leftmost slot"
+    (is (= pad (model/index-x 0 5 500)))))
+
+(deftest index-x-last-record-is-right-pad-test
+  (testing "i=n-1 lands at plot-width - padding (the padded right edge)"
+    (is (= (- 500 pad) (model/index-x 4 5 500)))))
+
+(deftest index-x-uniform-spacing-test
+  (testing "intermediate records are evenly spaced between the padded
+            edges — the order axis's defining property"
+    (let [w 500
+          inner (- w (* 2 pad))]
+      (is (= (+ pad (/ inner 4)) (model/index-x 1 5 w)))
+      (is (= (+ pad (/ inner 2)) (model/index-x 2 5 w)))
+      (is (= (+ pad (* 3 (/ inner 4))) (model/index-x 3 5 w))))))
+
+(deftest index-x-single-record-centers-test
+  (testing "n=1 places the lone dot at the centre of the inner plot
+            so it's discoverable instead of collapsed onto an edge"
+    (let [w 500
+          inner (- w (* 2 pad))]
+      (is (= (+ pad (/ inner 2)) (model/index-x 0 1 w))))))
+
+(deftest index-x-empty-list-degenerates-test
+  (testing "n=0 or negative returns the padded left edge — never
+            errors. The dock would never render dots in this state
+            anyway, but the helper must not throw."
+    (is (= pad (model/index-x 0 0 500)))
+    (is (= pad (model/index-x 0 -1 500)))))
+
+(deftest index-x-clamps-i-test
+  (testing "indices outside [0, n-1] clamp into the padded plot range
+            — guards against off-by-one bugs at callers"
+    (is (= pad         (model/index-x -1 5 500)))
+    (is (= (- 500 pad) (model/index-x 99 5 500)))))
+
+(deftest index-from-x-at-left-pad-is-zero-test
+  (testing "x at the padded left edge maps to index 0 (the first record)"
+    (is (= 0 (model/index-from-x pad 5 500)))))
+
+(deftest index-from-x-at-right-pad-is-last-test
+  (testing "x at the padded right edge maps to index n-1"
+    (is (= 4 (model/index-from-x (- 500 pad) 5 500)))))
+
+(deftest index-from-x-midpoint-test
+  (testing "x at the inner-plot midpoint rounds to the middle record"
+    (let [w 500
+          inner (- w (* 2 pad))]
+      (is (= 2 (model/index-from-x (+ pad (/ inner 2)) 5 w))))))
+
+(deftest index-from-x-clamps-out-of-range-test
+  (testing "cursor x outside the padded plot clamps to [0, n-1] so a
+            drag past the dock edges still picks a record"
+    (is (= 0 (model/index-from-x -50  5 500)))
+    (is (= 4 (model/index-from-x 999  5 500)))))
+
+(deftest index-from-x-empty-list-test
+  (testing "nil for n=0 so callers can distinguish 'no record under
+            cursor' from 'first record'"
+    (is (nil? (model/index-from-x 100 0 500)))
+    (is (nil? (model/index-from-x 100 -1 500)))))
+
+(deftest index-from-x-single-record-test
+  (testing "n=1 always returns 0 regardless of cursor position — the
+            sole record is the only valid pick"
+    (is (= 0 (model/index-from-x -100 1 500)))
+    (is (= 0 (model/index-from-x 250  1 500)))
+    (is (= 0 (model/index-from-x 999  1 500)))))
+
+(deftest index-roundtrip-test
+  (testing "index-x and index-from-x are inverses across every record
+            slot — the scrubber lands on the correct record under any
+            uniform cursor position"
+    (let [n 7
+          w 500]
+      (doseq [i (range n)]
+        (let [x  (model/index-x i n w)
+              i' (model/index-from-x x n w)]
+          (is (= i i') (str "round-trip for i=" i)))))))
+
+;; ── axis-mode predicate ────────────────────────────────────────────────────
+
+(deftest axis-mode?-test
+  (testing "the dock only accepts :order and :time as legal modes"
+    (is (true?  (model/axis-mode? :order)))
+    (is (true?  (model/axis-mode? :time)))
+    (is (false? (model/axis-mode? :other)))
+    (is (false? (model/axis-mode? "order")))
+    (is (false? (model/axis-mode? nil)))))
+
+(deftest default-axis-mode-is-order-test
+  (testing "default-axis-mode is :order. The recommendation in the
+            design write-up — sequence + causality navigation matters
+            more than wall-clock duration for state-time-travel
+            debugging — is encoded here. A change to :time as default
+            should be a deliberate decision, not a typo."
+    (is (= :order model/default-axis-mode))))
 
 ;; ── nearest-record ─────────────────────────────────────────────────────────
 
@@ -893,10 +1043,17 @@
 
 (deftest make-export-components-map-shape-test
   (testing "components index converts to string-keyed JS object with
-            tag + firstSeen fields"
+            tag + firstSeen fields. The components map is filtered to
+            ids referenced in records, so this test wires up two
+            records (one per cid) to keep both entries through the
+            filter."
     (let [comps   {0 {:tag "x-button"   :first-seen 1.0}
                    7 {:tag "x-checkbox" :first-seen 5.5}}
-          ^js env (model/make-export #js [] comps [] export-ctx)
+          recs    #js [#js {"id" 0 "t" 1.0 "type" "lifecycle/connected"
+                            "componentId" 0}
+                       #js {"id" 1 "t" 2.0 "type" "lifecycle/connected"
+                            "componentId" 7}]
+          ^js env (model/make-export recs comps [] export-ctx)
           ^js c   (.-components env)
           ^js c0  (gobj/get c "0")
           ^js c7  (gobj/get c "7")]
@@ -932,6 +1089,67 @@
             "open sessions surface end-t as null on the wire")
         (is (nil?          (.-endId s1))
             "open sessions surface end-id as null on the wire")))))
+
+(deftest make-export-components-filtered-to-referenced-ids-test
+  (testing "components in the recorder's index that are NOT referenced
+            by any record in the export are dropped. Matches the
+            'send me a focused trace' workflow — recipients don't see
+            stale entries from the captor's earlier page activity."
+    (let [comps  {0 {:tag "x-button"   :first-seen 1.0}
+                  ;; cid 7 is in the index but no record references it
+                  7 {:tag "x-checkbox" :first-seen 5.5}
+                  ;; cid 99 referenced by a record, kept
+                  99 {:tag "x-modal"   :first-seen 9.0}}
+          recs   #js [#js {"id" 0 "t" 1.0 "type" "lifecycle/connected"
+                           "componentId" 0}
+                      #js {"id" 1 "t" 2.0 "type" "event/dispatch"
+                           "componentId" 99}]
+          ^js env (model/make-export recs comps [] export-ctx)
+          ^js c   (.-components env)]
+      (is (= #{"0" "99"} (set (gobj/getKeys c)))
+          "only cids referenced by records survive the filter")
+      (is (nil? (gobj/get c "7"))
+          "unreferenced cid is dropped"))))
+
+(deftest make-export-components-empty-when-no-references-test
+  (testing "records with only document-target events (componentId null)
+            produce an empty components map — there's nothing to
+            resolve. Different from 'no records at all'; the records
+            are present, they just don't name any element."
+    (let [comps   {0 {:tag "x-button" :first-seen 1.0}}
+          recs    #js [#js {"id" 0 "t" 1.0
+                            "type" "event/dispatch-document"
+                            "componentId" nil}]
+          ^js env (model/make-export recs comps [] export-ctx)
+          ^js c   (.-components env)]
+      (is (zero? (count (gobj/getKeys c)))
+          "no component referenced → empty components"))))
+
+;; ── referenced-component-ids ───────────────────────────────────────────────
+
+(deftest referenced-component-ids-test
+  (testing "pure helper: scans the records array and returns the set
+            of non-nil componentId values"
+    (let [recs #js [#js {"componentId" 0}
+                    #js {"componentId" 7}
+                    #js {"componentId" 0}     ; duplicate ok
+                    #js {"componentId" nil}]] ; null skipped
+      (is (= #{0 7} (model/referenced-component-ids recs))))))
+
+(deftest referenced-component-ids-empty-test
+  (is (= #{} (model/referenced-component-ids #js []))))
+
+;; ── filter-components ──────────────────────────────────────────────────────
+
+(deftest filter-components-keeps-referenced-test
+  (let [comps {0 {:tag "x-button"} 1 {:tag "x-modal"} 2 {:tag "x-card"}}]
+    (is (= {0 {:tag "x-button"} 2 {:tag "x-card"}}
+           (model/filter-components comps #{0 2})))))
+
+(deftest filter-components-empty-referenced-test
+  (testing "empty referenced set → empty result, regardless of input"
+    (let [comps {0 {:tag "x-button"} 1 {:tag "x-modal"}}]
+      (is (= {} (model/filter-components comps #{}))))))
 
 (deftest make-export-forensic-flag-test
   (testing "boolean coercion: truthy :forensic? lands as true; nil / false
