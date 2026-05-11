@@ -24,24 +24,30 @@ per-event overhead — there is no production cost when off.
 
 ## Quick start
 
-```html
-<!doctype html>
-<html>
-  <head>
-    <script type="module" src="https://cdn.example.com/@vanelsas/baredom/x-trace-history.js"></script>
-  </head>
-  <body>
-    <x-button id="hello">Click me</x-button>
-    <script type="module">
-      // …your app code
-    </script>
-  </body>
-</html>
+`x-trace-history` ships in the same npm package as the rest of BareDOM
+and as a self-hostable ES module under `dist/`. Pick whichever matches
+how the rest of your app loads BareDOM — both paths use the same
+activation signals and the same console API.
+
+**Via npm (most apps):**
+
+```js
+import "@vanelsas/baredom/x-trace-history";
 ```
 
-Visit the page with `?baredom-trace-history` appended to the URL. A
-floating dock docks to the right edge of the viewport, recording every
-event the app produces.
+**Via self-hosted ES module:**
+
+```html
+<script type="module" src="/dist/x-trace-history.js"></script>
+```
+
+Then visit the page with `?baredom-trace-history` appended to the URL.
+A floating dock attaches to the right edge of the viewport, recording
+every event the app produces.
+
+See [`installation.md`](./installation.md) for the full set of import
+paths supported by the rest of the library — the same options apply
+here.
 
 ## Activation
 
@@ -54,10 +60,11 @@ order:
 | `window.BAREDOM_TRACE_HISTORY = true` set before app boot | CI / E2E test harnesses; consumers that want the dock on every page. |
 | `window.BAREDOM_TRACE_HISTORY = "raw"` (or `?baredom-trace-history=raw`) | Forensic mode — disables the sample-rate cap and shows `state/*` records by default. Use when investigating high-frequency animation components. |
 
-The recorder pays zero per-event cost when no signal is set. Hooks
-remain installed once the page loads, but their nil-check path is the
-hot path. The dock is not mounted and `window.BareDOM.traceHistory` is
-not installed.
+The recorder pays zero per-event cost when no signal is set. The
+nil-check call sites are present in the compiled code unconditionally,
+but the hook atoms stay nil unless `install!` runs — and `install!`
+only runs when one of the signals above is true. The dock element is
+not mounted and `window.BareDOM.traceHistory` is not installed.
 
 ### Capacity override
 
