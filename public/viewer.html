@@ -88,7 +88,13 @@
     <p>
       Drop a <code>.trace.json</code> onto the dock, or share a trace via
       <code>?trace=&lt;base64&gt;</code>. See
-      <a href="https://github.com/avanelsas/baredom/blob/main/docs/x-trace-history.md">docs/x-trace-history.md</a>
+      <!--
+        rel="noreferrer" prevents the browser from leaking the current
+        viewer URL (which may carry ?trace=… containing trace contents)
+        to GitHub in the Referer header when the link is clicked.
+      -->
+      <a href="https://github.com/avanelsas/baredom/blob/main/docs/x-trace-history.md"
+         rel="noreferrer">docs/x-trace-history.md</a>
       for the schema and export workflow.
     </p>
   </header>
@@ -109,9 +115,12 @@
     // ────────────────────────────────────────────────────────────────────
 
     function decodeTraceParam(raw) {
-      // URL-safe base64 → standard base64.
+      // URL-safe base64 → standard base64. Common URL-safe encoders
+      // (btoa + replace + strip-=) drop the trailing `=` padding
+      // because `=` requires URL-encoding, so restore it before atob.
       const norm = raw.replace(/-/g, "+").replace(/_/g, "/");
-      const json = atob(norm);
+      const padded = norm + "=".repeat((4 - (norm.length % 4)) % 4);
+      const json = atob(padded);
       return JSON.parse(json);
     }
 

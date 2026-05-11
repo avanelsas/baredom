@@ -341,11 +341,14 @@
                 id         (.-id latest)]
             (gobj/set el model/k-view [:import id]))))
 
-      ;; Imports were removed (or none yet). Rebaseline so a later
-      ;; addition still registers as a new-import transition.
-      (not= cur-count prev)
+      ;; Imports shrank (the user dropped one while we weren't
+      ;; mounted, or some test path called remove-import!). Rebaseline
+      ;; the counter so a later addition still registers as a
+      ;; new-import transition.
+      (< cur-count prev)
       (gobj/set el model/k-auto-switch-import-count cur-count)
 
+      ;; cur-count == prev: nothing changed, nothing to do.
       :else nil)))
 
 ;; ---------------------------------------------------------------------------

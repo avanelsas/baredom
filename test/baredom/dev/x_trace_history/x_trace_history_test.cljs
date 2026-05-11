@@ -1790,10 +1790,18 @@
               (fn []
                 (is (model/import-view? (gobj/get dock model/k-view))
                     "auto-switch landed us on the import")
-                ;; User manually returns to :live.
+                ;; User manually returns to :live. gobj/set alone does
+                ;; not schedule a subscriber tick, so we'd never run
+                ;; the heuristic again — the next two assertions would
+                ;; pass trivially. recorder/pause! does call
+                ;; schedule-notify!, which forces a subscriber tick
+                ;; without adding a new import. That's the path that
+                ;; actually exercises the no-re-yank branch.
                 (gobj/set dock model/k-view :live)
+                (recorder/pause!)
                 (after-frames 2
                   (fn []
                     (is (model/live-view? (gobj/get dock model/k-view))
-                        "view stays on :live without a new import")
+                        "view stays on :live across a heuristic-run with no new import")
+                    (recorder/resume!)
                     (done)))))))))))
