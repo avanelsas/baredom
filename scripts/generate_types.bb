@@ -166,6 +166,241 @@
 (def extra-export-signatures
   {"x-theme" ["export function registerPreset(presetName: string, data: { light: Record<string, string>; dark?: Record<string, string> }): void;"]})
 
+;; ── Hand-authored .d.ts for dev tools ───────────────────────────────────────
+;;
+;; x-trace-history lives in src/baredom/dev/, not src/baredom/components/, so
+;; discover-models can't reach it. The schema is hand-authored here from
+;; docs/x-trace-history-schema.md and the surface defined in
+;; src/baredom/dev/x_trace_history/recorder.cljs (window.BareDOM.traceHistory).
+;; Future dev tools that ship their own ESM bundle can follow the same
+;; pattern.
+
+(def trace-history-dts
+  "// x-trace-history.d.ts — hand-authored from docs/x-trace-history-schema.md.
+// Regenerated alongside the component .d.ts files by scripts/generate_types.bb.
+// Schema is frozen at schemaVersion 1; bumps land here and in the recorder
+// together.
+
+export function init(): void;
+
+/**
+ * Stable on-disk schema version. Importers reject mismatched values.
+ */
+export type TraceSchemaVersion = 1;
+
+/**
+ * One entry in the recorder's component side-index. Maps a stable
+ * componentId (assigned the first time a record mentions an element)
+ * to the element's tag and the time we first saw it.
+ */
+export interface TraceComponentInfo {
+  tag: string;
+  firstSeen: number;
+}
+
+/**
+ * Baseline fields carried by every record. Type-specific extras live
+ * on the discriminated-union variants below.
+ */
+export interface TraceRecordBase {
+  schemaVersion: TraceSchemaVersion;
+  id: number;
+  t: number;
+  tag: string;
+  componentId: number | null;
+  causeId: number | null;
+}
+
+export interface TraceRecordDispatch extends TraceRecordBase {
+  type: \"event/dispatch\" | \"event/dispatch-cancelable\" | \"event/dispatch-document\";
+  eventName: string;
+  detail: unknown;
+  cancelable: boolean;
+  defaultPrevented: boolean;
+}
+
+export interface TraceRecordInstanceFieldSet extends TraceRecordBase {
+  type: \"state/instance-field-set\";
+  field: string;
+  value: unknown;
+}
+
+export interface TraceRecordAttributeSet extends TraceRecordBase {
+  type: \"dom/attribute-set\";
+  attribute: string;
+  value: unknown;
+}
+
+export interface TraceRecordAttributeRemoved extends TraceRecordBase {
+  type: \"dom/attribute-removed\";
+  attribute: string;
+}
+
+export interface TraceRecordLifecycleConnected extends TraceRecordBase {
+  type: \"lifecycle/connected\";
+}
+
+export interface TraceRecordLifecycleDisconnected extends TraceRecordBase {
+  type: \"lifecycle/disconnected\";
+}
+
+export interface TraceRecordLifecycleAttributeChanged extends TraceRecordBase {
+  type: \"lifecycle/attribute-changed\";
+  attribute: string;
+  oldValue: string | null;
+  newValue: string | null;
+}
+
+/**
+ * Discriminated union over every record kind the recorder produces.
+ * Switch on `.type` for exhaustiveness.
+ */
+export type TraceRecord =
+  | TraceRecordDispatch
+  | TraceRecordInstanceFieldSet
+  | TraceRecordAttributeSet
+  | TraceRecordAttributeRemoved
+  | TraceRecordLifecycleConnected
+  | TraceRecordLifecycleDisconnected
+  | TraceRecordLifecycleAttributeChanged;
+
+/**
+ * Session metadata as returned by `sessions()`. Bounded recording
+ * slices the user explicitly captured.
+ */
+export interface TraceSession {
+  id: number;
+  label: string;
+  startT: number;
+  endT: number | null;
+  recordCount: number;
+}
+
+/**
+ * Session metadata as carried on the wire inside a `.trace.json`
+ * envelope. Differs from `TraceSession` in that the wire form names
+ * the record-id bounds directly (`startId`/`endId`) and omits
+ * `recordCount` (membership is derived from the bounds).
+ */
+export interface TraceEnvelopeSession {
+  id: number;
+  label: string;
+  startT: number;
+  endT: number | null;
+  startId: number;
+  endId: number | null;
+}
+
+/**
+ * The full exported envelope — what `export()` returns and what
+ * `download()` serialises to a `.trace.json` file. Importers must
+ * reject envelopes whose `schemaVersion` does not match.
+ */
+export interface TraceEnvelope {
+  schemaVersion: TraceSchemaVersion;
+  exportedAt: number;
+  origin: string;
+  userAgent: string;
+  forensic: boolean;
+  components: Record<string, TraceComponentInfo>;
+  sessions: TraceEnvelopeSession[];
+  records: TraceRecord[];
+}
+
+/**
+ * Metadata for one loaded import, as returned by `imports()`. The
+ * record array itself is fetched with `importRecords(id)`.
+ */
+export interface TraceImport {
+  id: number;
+  label: string;
+  importedAt: number;
+  recordCount: number;
+}
+
+/**
+ * The JS API installed at `window.BareDOM.traceHistory` when the
+ * recorder activates (via `?baredom-trace-history` URL flag or
+ * `window.BAREDOM_TRACE_HISTORY = true`).
+ *
+ * All methods are safe to call from the console or programmatically.
+ * The returned arrays are memoised against the recorder's internal
+ * buffer — treat them as read-only.
+ */
+export interface BareDOMTraceHistory {
+  /** All records, oldest first. */
+  records(): TraceRecord[];
+  /** Stringified componentId -> {tag, firstSeen} for every observed instance. */
+  components(): Record<string, TraceComponentInfo>;
+  /** Stop accepting new records. Already-captured records survive. */
+  pause(): void;
+  /** Resume after pause. */
+  resume(): void;
+  /** Drop the live ring buffer and sessions. Imports survive. */
+  clear(): void;
+  /** Begin a bounded recording slice. Returns the new session id. */
+  startSession(): number;
+  /** Close the active session, if any. */
+  stopSession(): void;
+  /** Metadata for every session captured this page life. */
+  sessions(): TraceSession[];
+  /** Records inside the named session, chronological. */
+  sessionRecords(id: number): TraceRecord[];
+  /**
+   * Materialise the current recorder state as a JSON-serialisable
+   * envelope. The returned object shares its `records` array with
+   * the recorder's internal cache — treat as read-only or deep-copy.
+   */
+  export(): TraceEnvelope;
+  /** Trigger a browser download of the current envelope as `.trace.json`. */
+  download(): void;
+  /**
+   * Load a previously-exported envelope. Pass a parsed JS object or a
+   * JSON string. Returns the new import id, or `null` when the
+   * envelope is malformed or carries a mismatched `schemaVersion`.
+   */
+  import(input: string | TraceEnvelope, label?: string): number | null;
+  /** Metadata for every loaded import. */
+  imports(): TraceImport[];
+  /** Records inside the named import, chronological. */
+  importRecords(id: number): TraceRecord[];
+  /** Drop one import by id. */
+  removeImport(id: number): void;
+}
+
+/**
+ * The `<x-trace-history>` custom element auto-mounted to <body> when
+ * the recorder activates. The element has no public attributes or
+ * properties — it is a self-contained floating dock that subscribes
+ * to recorder updates and renders the timeline UI.
+ */
+export interface XTraceHistory extends HTMLElement {}
+
+declare global {
+  interface Window {
+    /**
+     * Namespace installed by every BareDOM ESM module that ships a
+     * console-callable API. `traceHistory` appears when the
+     * x-trace-history recorder activates.
+     */
+    BareDOM?: {
+      traceHistory?: BareDOMTraceHistory;
+    };
+    /**
+     * Set to `true` (or the string `\"raw\"` for forensic mode) before
+     * the app boots to activate the recorder without a URL flag.
+     */
+    BAREDOM_TRACE_HISTORY?: boolean | \"raw\";
+    /** Override the ring-buffer capacity. Default 5000. */
+    BAREDOM_TRACE_HISTORY_CAPACITY?: number;
+  }
+
+  interface HTMLElementTagNameMap {
+    \"x-trace-history\": XTraceHistory;
+  }
+}
+")
+
 ;; ── Main ────────────────────────────────────────────────────────────────────
 (defn -main []
   (println "Generating TypeScript declarations and Custom Elements Manifest...")
@@ -195,14 +430,42 @@
           (doseq [child children]
             (swap! cem-modules conj (generate-cem-module child))))))
 
-    (let [global-content
+    ;; x-trace-history lives outside src/baredom/components/ and is not
+    ;; in @global-entries (which is fed by discover-models). Write its
+    ;; hand-authored .d.ts here and tack the re-export onto baredom.d.ts
+    ;; so `import type { TraceRecord } from "@vanelsas/baredom"` works.
+    (when (contains? exported-names "x-trace-history")
+      (spit (io/file dist-dir "x-trace-history.d.ts") trace-history-dts))
+
+    (let [trace-history? (contains? exported-names "x-trace-history")
+          global-content
           (str "// baredom.d.ts — auto-generated by generate_types.bb, do not edit\n\n"
                (str/join "\n"
                          (map (fn [{:keys [tag interface]}]
                                 (when (contains? exported-names tag)
                                   (str "export { " interface " } from \"./" tag "\";")))
                               @global-entries))
-               "\n")]
+               "\n"
+               (when trace-history?
+                 (str "export {\n"
+                      "  XTraceHistory,\n"
+                      "  BareDOMTraceHistory,\n"
+                      "  TraceRecord,\n"
+                      "  TraceRecordBase,\n"
+                      "  TraceRecordDispatch,\n"
+                      "  TraceRecordInstanceFieldSet,\n"
+                      "  TraceRecordAttributeSet,\n"
+                      "  TraceRecordAttributeRemoved,\n"
+                      "  TraceRecordLifecycleConnected,\n"
+                      "  TraceRecordLifecycleDisconnected,\n"
+                      "  TraceRecordLifecycleAttributeChanged,\n"
+                      "  TraceComponentInfo,\n"
+                      "  TraceEnvelope,\n"
+                      "  TraceEnvelopeSession,\n"
+                      "  TraceSession,\n"
+                      "  TraceImport,\n"
+                      "  TraceSchemaVersion\n"
+                      "} from \"./x-trace-history\";\n")))]
       (spit (io/file dist-dir "baredom.d.ts") global-content))
 
     (let [cem {:schemaVersion "1.0.0"
@@ -211,7 +474,9 @@
       (spit "custom-elements.json"
             (json/generate-string cem {:pretty true})))
 
-    (println (str "Generated " (count exported-models) " .d.ts files, "
-                  "baredom.d.ts, and custom-elements.json"))))
+    (let [trace-history? (contains? exported-names "x-trace-history")]
+      (println (str "Generated " (count exported-models) " .d.ts files"
+                    (when trace-history? " + x-trace-history.d.ts")
+                    ", baredom.d.ts, and custom-elements.json")))))
 
 (-main)
