@@ -854,6 +854,260 @@
        "\n" (payload-preview r)
        "\n@ " (format-timestamp (.-t r))))
 
+;; ---------------------------------------------------------------------------
+;; Causality DAG view — tree building + layout
+;;
+;; Each record carries at most one causeId, so the causality structure
+;; across all records is a forest of trees, not a general DAG. The view
+;; renders the tree containing the currently-selected record: walk up to
+;; the root (highest ancestor still in the records array), then a
+;; depth-first build of descendants via the private `children-of`
+;; helper (which scans the records array for matching causeId).
+;;
+;; Layout is a simple post-order tidy:
+;;   - leaves are placed left-to-right
+;;   - each parent sits at the horizontal midpoint of its children's centres
+;;   - depth maps to y
+;;
+;; Coordinates are CENTRES (cx/cy), so SVG nodes and connecting edges
+;; share one coordinate system. The renderer translates by
+;; `causality-padding` on both axes before drawing.
+;; ---------------------------------------------------------------------------
+
+(def causality-node-w  140)
+(def causality-node-h   28)
+(def causality-h-gap    18)
+(def causality-v-gap    28)
+(def causality-padding  16)
+
+(def causality-max-nodes
+  "Hard cap on tree size the renderer will draw. Trees over this size
+   show a notice instead, asking the user to narrow the filter or pick
+   a leaf. 200 keeps the SVG dense-but-legible at the dock's typical
+   420 px width and is well clear of the 5000-record ring buffer cap."
+  200)
+
+(def causality-walk-cap
+  "Upper bound on how deep `causality-root` will walk up the cause
+   chain. Records have a single causeId so this should never matter,
+   but the defensive cap means a corrupted import with a circular
+   causeId can never hang the renderer."
+  5000)
+
+(defn causality-root
+  "Walk the causeId chain up from `record` and return the highest
+   ancestor still present in `records`. When a record's causeId points
+   to something evicted from the ring buffer (or never present, in an
+   imported partial trace), the walk stops there — that's the root we
+   render. Returns `record` itself when it has no cause."
+  [^js records ^js record]
+  (loop [^js r record
+         steps 0]
+    (let [cid (.-causeId r)]
+      (cond
+        (not (number? cid))           r
+        (>= steps causality-walk-cap) r
+        :else
+        (if-let [^js parent (find-record-by-id records cid)]
+          (recur parent (inc steps))
+          r)))))
+
+(defn- children-of
+  "All records whose causeId equals `target-id`, sorted by id ascending
+   for deterministic layout. PR 7 pushes the dispatch's record AFTER its
+   effects, but ids are assigned in arrival order — sorting by id puts
+   the earliest-occurring effect leftmost in the tree."
+  [^js records target-id]
+  (->> (array-seq records)
+       (filter (fn [^js r] (= target-id (.-causeId r))))
+       (sort-by (fn [^js r] (.-id r)))
+       vec))
+
+(defn causality-tree
+  "Build a nested CLJS tree rooted at `root-record`:
+     {:record ^js :children [{:record ^js :children [...]} ...]}.
+   Children are discovered by scanning the records array for matching
+   causeId. Stops descending once total node count would exceed
+   `causality-max-nodes` — the renderer checks size separately and
+   shows an over-cap notice, so we don't waste cycles building a tree
+   we won't draw. Pure: depends only on its arguments."
+  [^js records ^js root-record]
+  (let [counter (volatile! 0)]
+    (letfn [(build [^js r]
+              (vswap! counter inc)
+              (if (>= @counter (inc causality-max-nodes))
+                {:record r :children []}
+                (let [kids (children-of records (.-id r))]
+                  {:record   r
+                   :children (mapv build kids)})))]
+      (build root-record))))
+
+(defn tree-node-count
+  "Total number of records in a built causality tree."
+  [tree]
+  (inc (reduce + 0 (map tree-node-count (:children tree)))))
+
+(defn tree-max-depth
+  "Maximum depth (0-based) of a built causality tree."
+  [tree]
+  (if (empty? (:children tree))
+    0
+    (inc (apply max (map tree-max-depth (:children tree))))))
+
+(defn tree-size-stats
+  "Return {:node-count N :max-depth D} for a built causality tree.
+   Used by the renderer to decide whether to draw or show a notice."
+  [tree]
+  {:node-count (tree-node-count tree)
+   :max-depth  (tree-max-depth  tree)})
+
+(defn- layout-subtree
+  "Post-order layout. Returns [laid-tree next-left-x] where:
+     - laid-tree mirrors the input but every node carries
+       {:id :record :cx :cy :depth :children}
+     - cx/cy are pixel centres. Both axes start at `causality-padding`
+       so dots/labels don't graze the top-left edge of the SVG, and the
+       width/height returned by `layout-tree` reserves the same
+       padding on the trailing edge.
+     - next-left-x is the leftmost x at which the next leaf could start
+   For internal nodes, cx is the midpoint of first / last child centre."
+  [tree depth next-left-x]
+  (let [^js r       (:record tree)
+        children    (:children tree)
+        slot-step   (+ causality-node-w causality-h-gap)
+        row-step    (+ causality-node-h causality-v-gap)
+        cy          (+ causality-padding
+                       (/ causality-node-h 2)
+                       (* depth row-step))]
+    (if (empty? children)
+      (let [cx (+ next-left-x (/ causality-node-w 2))]
+        [{:id (.-id r) :record r :cx cx :cy cy :depth depth :children []}
+         (+ next-left-x slot-step)])
+      (let [[laid-children x-after]
+            (reduce (fn [[acc nx] child]
+                      (let [[laid-child nx'] (layout-subtree child (inc depth) nx)]
+                        [(conj acc laid-child) nx']))
+                    [[] next-left-x]
+                    children)
+            first-cx (:cx (first laid-children))
+            last-cx  (:cx (last  laid-children))
+            cx       (/ (+ first-cx last-cx) 2)]
+        [{:id (.-id r) :record r :cx cx :cy cy :depth depth :children laid-children}
+         x-after]))))
+
+(defn- collect-nodes
+  "Walk a laid-out tree and return a flat vector of its nodes (each
+   carrying :id :record :cx :cy :depth, without :children). Pure helper
+   for the SVG renderer, which doesn't care about the tree shape once
+   coords are assigned."
+  [laid]
+  (into [(dissoc laid :children)]
+        (mapcat collect-nodes (:children laid))))
+
+(defn- collect-edges
+  "Walk a laid-out tree and return a flat vector of parent→child edges
+   as {:from-id :from-cx :from-cy :to-id :to-cx :to-cy}. Drawn before
+   nodes so the connectors sit underneath the boxes in z-order."
+  [laid]
+  (let [pid (:id laid)
+        pcx (:cx laid)
+        pcy (:cy laid)]
+    (vec
+     (mapcat
+      (fn [child]
+        (cons {:from-id pid :from-cx pcx :from-cy pcy
+               :to-id   (:id child) :to-cx (:cx child) :to-cy (:cy child)}
+              (collect-edges child)))
+      (:children laid)))))
+
+(defn layout-tree
+  "Pure layout: take a built causality tree and produce
+     {:nodes [...] :edges [...] :width W :height H}
+   in a coordinate system where the leftmost leaf's centre sits at
+   x = causality-padding + node-w/2 and the root sits at y =
+   causality-padding + node-h/2. Width / height span the full tree
+   bounding box including padding on both ends."
+  [tree]
+  (let [[laid _] (layout-subtree tree 0 causality-padding)
+        nodes    (collect-nodes laid)
+        edges    (collect-edges laid)
+        max-cx   (reduce max 0 (map :cx nodes))
+        max-cy   (reduce max 0 (map :cy nodes))]
+    {:nodes  nodes
+     :edges  edges
+     :width  (+ max-cx (/ causality-node-w 2) causality-padding)
+     :height (+ max-cy (/ causality-node-h 2) causality-padding)}))
+
+(defn fit-to-view-scroll
+  "Compute {:scroll-left :scroll-top} that centres a node at (cx, cy)
+   within a viewport of `viewport-w × viewport-h` rendering a tree of
+   `tree-w × tree-h`. Clamps to [0, max-scroll] on each axis so we
+   never scroll past the edges. Pure — the actual scrollLeft / scrollTop
+   assignment lives in the UI layer."
+  [cx cy viewport-w viewport-h tree-w tree-h]
+  (let [target-x (- cx (/ viewport-w 2))
+        target-y (- cy (/ viewport-h 2))
+        max-x    (max 0 (- tree-w viewport-w))
+        max-y    (max 0 (- tree-h viewport-h))]
+    {:scroll-left (max 0 (min max-x target-x))
+     :scroll-top  (max 0 (min max-y target-y))}))
+
+(defn find-laid-node
+  "Return the laid-out node with id `target-id` from a layout map's
+   :nodes vector, or nil if not found. Used by the UI layer to drive
+   fit-to-view scroll after a render."
+  [layout target-id]
+  (when (number? target-id)
+    (some (fn [n] (when (= target-id (:id n)) n))
+          (:nodes layout))))
+
+(def dock-modes
+  "View kinds the dock supports above the detail pane. :timeline is
+   the SVG lane view (the default since PR 5); :causality is the tree
+   view added in this PR. Dock-mode is orthogonal to axis-mode — only
+   :timeline reads axis-mode at all."
+  #{:timeline :causality})
+
+(def default-dock-mode :timeline)
+
+(defn dock-mode?
+  "Predicate: is `m` one of the supported dock modes?"
+  [m]
+  (contains? dock-modes m))
+
+(defn causality-empty-message
+  "Hint string for the causality pane when no record is selected.
+   The pane is only useful with a selection, so we explain that
+   instead of showing a blank area."
+  []
+  "Select a record from the timeline to see its causality tree.")
+
+(defn causality-over-cap-message
+  "Hint string shown when the tree containing the selected record
+   exceeds `causality-max-nodes`. The build truncates DFS once the
+   cap is hit, so `node-count` is a lower bound rather than an exact
+   count for deep trees; the wording (`≥ N nodes`) reflects that.
+   Suggests picking a smaller leaf — the dock filter intentionally
+   does NOT apply to the causality tree (which would silently break
+   chains by hiding causes), so we don't suggest narrowing the
+   filter here."
+  [{:keys [node-count]}]
+  (str "Causality tree exceeds the " causality-max-nodes
+       "-node cap (≥ " node-count " nodes). "
+       "Pick a smaller leaf record to view its subtree."))
+
+(defn causality-leaf-message
+  "Hint shown above the lone node when the selected record has
+   neither a cause nor any effects in the buffer — most commonly a
+   lifecycle / dom-attribute record emitted by a component's
+   construction path (no enclosing dispatch frame, so causeId is
+   null). Explains why the tree is a single node and tells the user
+   what kind of record to pick if they want to see a chain."
+  []
+  (str "This record has no cause and no effects in the current "
+       "buffer. Pick an event/dispatch* record (or one with a "
+       "'Caused by' link in the detail pane) to see a chain."))
+
 (defn timeline-hint
   "One-line description of the current plot extent for the dock hint area.
    `cnt-filtered` is records visible after filter; `cnt-total` is full
@@ -978,6 +1232,20 @@
 ;; Mutates only when (a) a new import appears, or (b) imports were
 ;; removed (rebaseline). See maybe-auto-switch-import! in the dock.
 (def k-auto-switch-import-count "__xTraceHistoryAutoSwitchImportCount")
+;; PR 17 — causality DAG view. dock-mode is :timeline or :causality.
+;; k-causality-el is the cached scrollable container the UI layer
+;; reads clientWidth / clientHeight from for fit-to-view math.
+;; k-mode-select-el is the <x-select> the user clicks to switch modes.
+;; k-causality-needs-fit is a transient flag set by handlers that
+;; should trigger an auto-scroll on the next render (mode-switch,
+;; selection-change inside causality, key-step). k-causality-layout
+;; caches the last laid-out tree so apply-causality-fit! can resolve
+;; the selected node's coords without rebuilding.
+(def k-dock-mode             "__xTraceHistoryDockMode")
+(def k-mode-select-el        "__xTraceHistoryModeSelectEl")
+(def k-causality-el          "__xTraceHistoryCausalityEl")
+(def k-causality-needs-fit   "__xTraceHistoryCausalityNeedsFit")
+(def k-causality-layout      "__xTraceHistoryCausalityLayout")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS
@@ -1014,6 +1282,11 @@
   gap: 4px;
 }
 :host(.collapsed) .header > *:not([data-x-th-action='collapse']) {
+  display: none;
+}
+/* Causality mode: hide the axis-mode select (Order / Time only
+   affects the timeline pane, so it's noise in causality view). */
+:host(.causality-mode) [data-x-th-axis] {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1256,6 +1529,83 @@ line.scrubber {
   text-align: center;
   padding: 20px;
   width: 100%;
+}
+/* Causality DAG pane (PR 17). Shares the flexible vertical slot with
+   .timeline — render! toggles which one is hidden by dock-mode. The
+   scrollable container holds an inner <svg> sized to the tree's
+   bounding box so the scrollbars correctly reflect off-screen depth
+   and breadth. */
+.causality {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+  position: relative;
+  background: #11111b;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+.causality:focus { outline: none; border-color: #89b4fa; }
+.causality[hidden] { display: none; }
+.timeline[hidden]  { display: none; }
+.causality-empty {
+  color: #6c7086;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+}
+/* Leaf-hint banner rendered ABOVE the SVG when the tree has only
+   one node. Pinned via sticky positioning so it stays visible even
+   when the user scrolls the pane (the lone node sits at the
+   padded origin and could be obscured by the banner otherwise). */
+.causality-leaf-hint {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: rgba(249,226,175,0.10);
+  border-bottom: 1px solid rgba(249,226,175,0.35);
+  color: #f9e2af;
+  font-size: 10px;
+  padding: 6px 10px;
+  line-height: 1.4;
+}
+svg.causality-svg { display: block; }
+svg.causality-svg .edge {
+  stroke: rgba(255,255,255,0.18);
+  stroke-width: 1;
+  fill: none;
+}
+svg.causality-svg .node-rect {
+  fill: rgba(255,255,255,0.04);
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 1;
+  cursor: pointer;
+  rx: 4;
+  ry: 4;
+  transition: fill 80ms ease, stroke 80ms ease;
+}
+svg.causality-svg .node-rect:hover {
+  fill: rgba(59,130,246,0.16);
+  stroke: rgba(59,130,246,0.6);
+}
+svg.causality-svg .node-rect.selected {
+  fill: rgba(245,194,231,0.18);
+  stroke: #f5c2e7;
+  stroke-width: 1.5;
+}
+svg.causality-svg .node-dot {
+  pointer-events: none;
+}
+svg.causality-svg .node-text {
+  fill: #cdd6f4;
+  font: 10px ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  pointer-events: none;
+  dominant-baseline: middle;
+}
+svg.causality-svg .node-text.id {
+  fill: #a6adc8;
+  font-size: 9px;
 }
 .splitter {
   flex: 0 0 auto;
