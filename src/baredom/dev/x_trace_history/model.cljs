@@ -258,6 +258,87 @@
    "records"       records))
 
 ;; ---------------------------------------------------------------------------
+;; Import — envelope validation
+;;
+;; Pure validation for `.trace.json` files dragged onto the dock or fed
+;; through window.BareDOM.traceHistory.import. The recorder hard-rejects
+;; mismatched envelopes — no partial loads, no silent coercion — so PR 11
+;; consumers and the future standalone viewer (Phase 7) agree on what
+;; "valid" means. See docs/x-trace-history-schema.md for the on-disk
+;; contract this enforces.
+;; ---------------------------------------------------------------------------
+
+(defn- valid-record?
+  "Pure: every imported record must at least carry the baseline fields
+   the dock reads on every render (`id`, `t`, `type`). Type-specific
+   extras are pass-through — we don't validate them here, because an
+   importer should tolerate forward-compatible additions and the dock
+   already has nil-safe formatting for missing fields."
+  [^js r]
+  (and (object? r)
+       (number? (.-id r))
+       (number? (.-t r))
+       (string? (.-type r))))
+
+(defn validate-envelope
+  "Pure validator. Takes a parsed JS value and returns either
+   `{:ok ^js envelope}` for a well-formed `.trace.json` payload or
+   `{:error msg}` with a short user-readable reason on rejection.
+   The recorder surfaces the error string back through the JS API
+   and the dock hint area, so phrasing should read cleanly in both.
+
+   Validation rules — kept deliberately narrow so future schema
+   additions stay backward-compatible:
+   - envelope must be a JS object
+   - envelope.schemaVersion must equal the current schema-version
+   - envelope.records must be an array of objects, each with the
+     baseline fields (id, t, type) populated with the right types"
+  [^js env]
+  (cond
+    (not (object? env))
+    {:error "Envelope is not a JSON object."}
+
+    (not (number? (.-schemaVersion env)))
+    {:error "Envelope is missing schemaVersion."}
+
+    (not= schema-version (.-schemaVersion env))
+    {:error (str "Schema version mismatch: expected "
+                 schema-version ", got " (.-schemaVersion env) ".")}
+
+    (not (array? (.-records env)))
+    {:error "Envelope.records is not an array."}
+
+    :else
+    (let [^js recs (.-records env)
+          n        (.-length recs)
+          bad-i    (loop [i 0]
+                     (cond
+                       (>= i n)                                    nil
+                       (not (valid-record? (aget recs i)))         i
+                       :else                                       (recur (inc i))))]
+      (if (nil? bad-i)
+        {:ok env}
+        {:error (str "Record at index " bad-i
+                     " is missing required fields (id, t, type).")}))))
+
+(defn parse-export
+  "Parse a JSON string into a validated envelope. Returns
+   `{:ok ^js envelope}` or `{:error msg}` — never throws. Wraps
+   `validate-envelope` so callers can hand it raw user input from
+   a drag-drop / file-picker / paste path without try/catch.
+
+   Empty string / whitespace-only / non-JSON input all produce
+   structured errors. The recorder's import path uses this so the
+   dock can surface 'why' to the user."
+  [^js json-str]
+  (let [parsed (try
+                 (js/JSON.parse json-str)
+                 (catch :default _ ::parse-error))]
+    (if (= parsed ::parse-error)
+      {:error "File is not valid JSON."}
+      (validate-envelope parsed))))
+
+;; ---------------------------------------------------------------------------
 ;; Ring buffer
 ;; ---------------------------------------------------------------------------
 
@@ -622,11 +703,24 @@
   [view]
   (and (vector? view) (= :session (first view))))
 
-(defn view-id
-  "Extract the session id from a [:session N] view, or nil for :live.
-   Used for indexing the per-view selection map."
+(defn import-view?
+  "True when the dock's current view targets a specific imported trace.
+   Imports are PR 11's loaded-from-disk record sets; structurally a
+   third view-kind alongside :live and [:session N]. The dock chooses
+   the record source for rendering by dispatching on these three
+   predicates."
   [view]
-  (when (session-view? view) (second view)))
+  (and (vector? view) (= :import (first view))))
+
+(defn view-id
+  "Extract the id from a session or import view, or nil for :live.
+   Used for indexing the per-view selection map and for resolving a
+   chip click back to a stored session/import."
+  [view]
+  (when (and (vector? view)
+             (or (= :session (first view))
+                 (= :import  (first view))))
+    (second view)))
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — instance-field keys (Closure-safe string keys for gobj/get|set)
@@ -659,6 +753,19 @@
 (def k-selected-id    "__xTraceHistorySelectedId")
 (def k-sub-token      "__xTraceHistorySubToken")
 (def k-mounted        "__xTraceHistoryMounted")
+;; PR 11 import-flow refs.
+;; The hidden <input type="file"> the Import button delegates to; the
+;; full-dock drag-drop overlay that surfaces while a file is being
+;; hovered; the transient {msg, expires-at} pair the dock shows in
+;; the hint area when validation rejects a drop.
+(def k-import-input   "__xTraceHistoryImportInput")
+(def k-drop-overlay   "__xTraceHistoryDropOverlay")
+(def k-import-error   "__xTraceHistoryImportError")
+;; Counter tracking nested dragenter/dragleave pairs across the
+;; dock's descendants. The drop overlay shows while > 0 and hides at
+;; 0; using a counter (rather than a flag) prevents flicker when a
+;; drag passes over a child element.
+(def k-drag-depth     "__xTraceHistoryDragDepth")
 ;; JS array of #js [target event-name handler] triples captured at
 ;; bind-listeners! time. unmount! iterates it to remove each listener,
 ;; so the static dock listeners cannot leak across a disconnect /
@@ -688,6 +795,9 @@
   background: #11111b;
   border-left: 1px solid rgba(59,130,246,0.6);
   box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+  /* Anchor for the absolutely-positioned drop-overlay added in PR 11
+     so its `inset: 0` reaches the dock edges. */
+  position: relative;
 }
 .header {
   display: flex;
@@ -769,6 +879,32 @@
   color: #89b4fa;
   font-weight: 600;
 }
+/* Imported traces are visually distinct from locally-captured
+   sessions: amber border instead of blue, plus a small close button
+   inside the chip so the user can drop the import without clearing
+   live state. */
+.session-chip.import {
+  border-color: rgba(249,226,175,0.45);
+  color: #f9e2af;
+}
+.session-chip.import.active {
+  background: rgba(249,226,175,0.18);
+  border-color: rgba(249,226,175,0.7);
+  color: #f9e2af;
+}
+.session-chip.import .chip-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 0 0 6px;
+  margin: 0;
+  opacity: 0.6;
+}
+.session-chip.import .chip-close:hover { opacity: 1; }
 .session-chip .live-dot {
   display: inline-block;
   width: 6px;
@@ -944,4 +1080,28 @@ line.scrubber {
   text-align: center;
   padding: 20px;
 }
-.hint { color: #6c7086; font-size: 10px; padding: 4px 10px; flex: 0 0 auto; }")
+.hint { color: #6c7086; font-size: 10px; padding: 4px 10px; flex: 0 0 auto; }
+.hint.error { color: #f38ba8; }
+/* Drop overlay — covers the whole dock while a file is being hovered.
+   pointer-events:none keeps drag events flowing through to the dock root
+   so the dragleave/drop bookkeeping doesn't fight the overlay layer. */
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(249,226,175,0.10);
+  border: 2px dashed rgba(249,226,175,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f9e2af;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  z-index: 100;
+  pointer-events: none;
+}
+.drop-overlay[hidden] { display: none; }
+/* The hidden file input is kept off-screen — clicked programmatically
+   by the Import button — but we mark it `display:none` to keep it out
+   of layout entirely. */
+.import-input { display: none; }")

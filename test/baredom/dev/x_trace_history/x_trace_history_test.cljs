@@ -19,16 +19,25 @@
 ;; tag is defined for the rest of the test page.
 (dock/register!)
 
+(defn- drop-all-imports!
+  "Remove every import currently held by the recorder. `recorder/clear!`
+   preserves imports by design (PR 11), so the after-fixture has to do
+   this explicitly to isolate tests."
+  []
+  (doseq [^js imp (array-seq (recorder/imports))]
+    (recorder/remove-import! (.-id imp))))
+
 (defn- after-fixture
   "Tear down between tests: remove any leftover dock element, clear the
-   recorder buffer, ensure resume state, and uninstall hooks (the next test
-   re-installs)."
+   recorder buffer, drop any imports the test loaded, ensure resume
+   state, and uninstall hooks (the next test re-installs)."
   []
   (when-let [^js el (.querySelector js/document model/tag-name)]
     (.remove el))
   (recorder/uninstall!)
   (recorder/resume!)
   (recorder/clear!)
+  (drop-all-imports!)
   (gobj/remove js/window "BAREDOM_TRACE_HISTORY"))
 
 (defn- before-fixture
@@ -1197,3 +1206,193 @@
                 "records untouched")))
         (finally
           (restore-download-stubs! ctx))))))
+
+;; ---------------------------------------------------------------------------
+;; PR 11 — Import button + drag-drop + chips
+;; ---------------------------------------------------------------------------
+;;
+;; `recorder/import-trace!` does NOT reset its id counter across calls,
+;; so tests that need to query for a specific chip must use the id
+;; returned from the trace call rather than hardcoding 0. The fixture's
+;; `drop-all-imports!` keeps the recorder's `:imports` slot clean but
+;; the counter monotonically grows.
+
+(defn- mk-test-record
+  [id t type]
+  (js-obj "schemaVersion" 1
+          "id"            id
+          "t"             t
+          "type"          type
+          "tag"           "x-button"
+          "componentId"   nil
+          "causeId"       nil))
+
+(defn- mk-test-envelope
+  [^js records]
+  (js-obj "schemaVersion" 1
+          "exportedAt"    1715432100000
+          "origin"        "https://example.com/"
+          "userAgent"     "test"
+          "forensic"      false
+          "components"    (js-obj)
+          "sessions"      (array)
+          "records"       records))
+
+(defn- chip-selector
+  "Build a `[data-x-th-session='import:N']` attribute selector for the
+   import-id `id`. Tests capture the id from import-trace! rather than
+   hardcoding it since the counter persists across the suite."
+  [id]
+  (str "[data-x-th-session='import:" id "']"))
+
+(deftest import-button-rendered-in-header-test
+  (testing "the dock skeleton renders an Import x-button next to Export
+            so the file-picker entry point is discoverable"
+    (let [^js dock (mount-dock!)
+          ^js btn  (query dock "[data-x-th-action='import']")]
+      (is (some? btn) "Import button present in the header")
+      (is (= "Import" (clojure.string/trim (.-textContent btn)))
+          "label reads 'Import'"))))
+
+(deftest import-input-hidden-and-accepts-trace-json-test
+  (testing "the hidden <input type='file'> exists and has accept
+            attributes that bias the OS picker toward .trace.json /
+            .json files"
+    (let [^js dock  (mount-dock!)
+          ^js input (query dock "[data-x-th-import-input]")]
+      (is (some? input))
+      (is (= "file"  (.-type input)))
+      (let [accept (.getAttribute input "accept")]
+        (is (clojure.string/includes? accept ".trace.json"))
+        (is (clojure.string/includes? accept ".json"))))))
+
+(deftest import-button-click-opens-file-picker-test
+  (testing "clicking the Import button programmatically clicks the
+            hidden file input. Stubs the input's click method so the
+            OS picker doesn't actually open during the test."
+    (let [^js dock  (mount-dock!)
+          ^js btn   (query dock "[data-x-th-action='import']")
+          ^js input (query dock "[data-x-th-import-input]")
+          clicks    (atom 0)
+          orig      (.-click input)]
+      (try
+        (set! (.-click input) (fn [] (swap! clicks inc)))
+        (.click btn)
+        (is (= 1 @clicks) "input clicked once per Import button click")
+        (finally
+          (set! (.-click input) orig))))))
+
+(deftest import-trace!-via-api-adds-chip-test
+  (testing "after recorder/import-trace! the session strip surfaces an
+            import chip with the file's label. The chip carries an
+            'import:N' wire key and the visual `.import` class."
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))
+            id       (recorder/import-trace! env "bug-report")]
+        (after-frames 2
+          (fn []
+            (let [^js chip (query dock (chip-selector id))]
+              (is (some? chip) "import chip rendered in the strip")
+              (is (.contains (.-classList chip) "import")
+                  "import chip carries the .import styling modifier")
+              (is (clojure.string/includes? (.-textContent chip) "bug-report")
+                  "chip label is the filename-derived label")
+              (done))))))))
+
+(deftest import-chip-click-switches-view-test
+  (testing "clicking an import chip switches the dock to the
+            [:import N] view; the records on the timeline come from
+            the imported envelope rather than the live buffer"
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope
+                       (array (mk-test-record 0 1.0 "lifecycle/connected")
+                              (mk-test-record 1 2.0 "lifecycle/connected")))
+            id       (recorder/import-trace! env "two-records")]
+        (after-frames 2
+          (fn []
+            (let [^js chip (query dock (chip-selector id))]
+              (.click chip)
+              (after-frames 2
+                (fn []
+                  (is (= [:import id] (gobj/get dock model/k-view))
+                      "dock view switched to the import")
+                  (is (= 2 (dot-count dock))
+                      "imported records render as timeline dots")
+                  (done))))))))))
+
+(deftest import-chip-close-removes-import-test
+  (testing "clicking the × close button on an import chip drops the
+            import from the recorder AND switches the view back to
+            :live when the closed import was active.
+
+            Re-query the chip after the activate-click — render!
+            re-renders the strip, so the original close-button node
+            is detached after the first click and a fresh one stands
+            in its place."
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))
+            id       (recorder/import-trace! env "closable")]
+        (after-frames 2
+          (fn []
+            ;; Switch into the import first so we can verify the close
+            ;; switches back to :live.
+            (.click ^js (query dock (chip-selector id)))
+            (after-frames 2
+              (fn []
+                (let [^js close (.querySelector
+                                 ^js (query dock (chip-selector id))
+                                 "[data-x-th-import-close]")]
+                  (.click close)
+                  (after-frames 2
+                    (fn []
+                      (is (= 0 (.-length (recorder/imports)))
+                          "import removed from the recorder")
+                      (is (= :live (gobj/get dock model/k-view))
+                          "view reset to :live since the closed import
+                           was the active view")
+                      (done))))))))))))
+
+(deftest import-rejects-bad-schema-shows-hint-error-test
+  (testing "a malformed envelope passed through import-trace! is
+            rejected; the dock's hint area shows a transient error
+            line that the .error class styles distinctly. The error
+            wiring sits in the dock's import-file path; here we
+            simulate the reject directly via recorder/import-trace!,
+            since the input/drop paths route through it identically."
+    (let [^js dock (mount-dock!)
+          ^js env  (mk-test-envelope (array))]
+      (gobj/set env "schemaVersion" 999)
+      (let [imports-before (.-length (recorder/imports))
+            id             (recorder/import-trace! env)
+            imports-after  (.-length (recorder/imports))]
+        (is (nil? id) "rejected envelope returns nil — no chip added")
+        (is (= imports-before imports-after)
+            "recorder :imports unchanged on rejection")
+        (is (= 0 (.-length (query-all dock "[data-x-th-import-close]")))
+            "no import chip rendered for the failed envelope")))))
+
+(deftest import-survives-recorder-clear-test
+  (testing "clicking Clear empties the live buffer but the import
+            chip stays in the strip — imports are user-owned data"
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))
+            id       (recorder/import-trace! env "persistent")]
+        (let [el (.createElement js/document "x-button")]
+          (du/dispatch! el "press" #js {}))
+        (after-frames 2
+          (fn []
+            (let [^js clear-btn (query dock "[data-x-th-action='clear']")]
+              (.click clear-btn)
+              (after-frames 2
+                (fn []
+                  (is (= 0 (.-length (recorder/records)))
+                      "live records cleared")
+                  (is (= 1 (.-length (recorder/imports)))
+                      "import survives the Clear")
+                  (is (some? (query dock (chip-selector id)))
+                      "import chip still rendered")
+                  (done))))))))))

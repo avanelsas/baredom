@@ -44,6 +44,14 @@
          ;; Sample-rate cap — see rate-limited? below. Map of string
          ;; key → last-accepted t. Reset by clear!.
          :rate-limit        {}
+         ;; Imports are PR 11's loaded-from-disk traces. Each entry is
+         ;; {:id :label :imported-at :envelope} — the envelope is the
+         ;; full JS object that came in, so records/components/sessions
+         ;; are all addressable without re-parsing. Imports are
+         ;; preserved across clear! because the user dragged them in
+         ;; deliberately; remove-import! drops them individually.
+         :imports           []
+         :next-import-id    0
          ;; Captured at install time from model/forensic? so per-record
          ;; checks don't have to read window state. False unless the
          ;; user activated with =raw.
@@ -682,6 +690,96 @@
       #js [])))
 
 ;; ---------------------------------------------------------------------------
+;; Imports — loaded-from-disk traces shown alongside the live recording
+;;
+;; PR 11 introduces a third "view kind" for the dock: alongside :live
+;; and [:session N], an imported trace presents as [:import N] with
+;; its own records, components index, and sessions metadata read
+;; straight from the dropped/picked envelope. Live recording continues
+;; underneath; imports are independent storage and survive clear!.
+;; ---------------------------------------------------------------------------
+
+(defn- coerce-to-envelope
+  "Accept either a JS object (already parsed) or a string (JSON to
+   parse) and return a `{:ok env}` or `{:error msg}` map. Centralises
+   the entry-point coercion so import-trace! handles both flavours
+   uniformly."
+  [input]
+  (cond
+    (string? input)            (model/parse-export input)
+    (object? input)            (model/validate-envelope input)
+    :else                      {:error "Import expects a JSON string or a parsed envelope object."}))
+
+(defn import-trace!
+  "Load an exported trace into the recorder. Accepts either a JSON
+   string or an already-parsed JS object. On success returns the new
+   import id (number); on validation failure returns nil and logs
+   the reason via console.warn so callers can react.
+
+   `label` is the human-readable string shown on the chip — usually
+   the source filename minus extension; falls back to `Import N` when
+   blank/missing. Imports do NOT replace the live buffer — they are
+   stored alongside it. `clear!` does NOT drop imports; use
+   `remove-import!` to remove a single one."
+  ([input] (import-trace! input nil))
+  ([input label]
+   (let [{:keys [ok error]} (coerce-to-envelope input)]
+     (cond
+       error
+       (do (js/console.warn "[x-trace-history] import rejected:" error)
+           nil)
+
+       :else
+       (let [t      (.now js/performance)
+             id     (:next-import-id @state)
+             label* (if (or (nil? label) (= "" label))
+                      (str "Import " id)
+                      label)
+             entry  {:id          id
+                     :label       label*
+                     :imported-at t
+                     :envelope    ok}]
+         (swap! state (fn [s]
+                        (-> s
+                            (update :imports conj entry)
+                            (update :next-import-id inc))))
+         (schedule-notify!)
+         id)))))
+
+(defn remove-import!
+  "Drop the import with id `target-id`. No-op when id is unknown so
+   double-removes from concurrent UI clicks don't error. Returns nil."
+  [target-id]
+  (swap! state update :imports
+         (fn [imports]
+           (vec (remove (fn [{:keys [id]}] (= id target-id)) imports))))
+  (schedule-notify!)
+  nil)
+
+(defn imports
+  "Return a JS array of import metadata: {id, label, importedAt,
+   recordCount}. recordCount is computed from the stored envelope at
+   call time (cheap — it's a `.-length` read on the envelope's records
+   array, no allocation)."
+  []
+  (->> (:imports @state)
+       (mapv (fn [{:keys [id label imported-at ^js envelope]}]
+               (js-obj "id"          id
+                       "label"       label
+                       "importedAt"  imported-at
+                       "recordCount" (.-length (.-records envelope)))))
+       clj->js))
+
+(defn import-records
+  "Return the JS array of records inside the import with id `target-id`,
+   in chronological order. Returns an empty array when the id is
+   unknown so the dock can degrade gracefully on a stale chip click."
+  [target-id]
+  (if-let [entry (first (filter #(= (:id %) target-id) (:imports @state)))]
+    (.-records ^js (:envelope entry))
+    #js []))
+
+;; ---------------------------------------------------------------------------
 ;; Export — JSON envelope + Blob download
 ;;
 ;; export! materialises the current recorder state into the schema-stable
@@ -798,7 +896,11 @@
                   "sessions"       sessions
                   "sessionRecords" session-records
                   "export"         export!
-                  "download"       download-trace!)]
+                  "download"       download-trace!
+                  "import"         import-trace!
+                  "imports"        imports
+                  "importRecords"  import-records
+                  "removeImport"   remove-import!)]
     (gobj/set base window-api-key api)
     (gobj/set js/window window-base-key base)))
 

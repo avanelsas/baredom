@@ -1316,3 +1316,165 @@
           (set! js/URL.createObjectURL orig-create)
           (set! js/URL.revokeObjectURL orig-revoke)
           (set! (.. js/HTMLAnchorElement -prototype -click) orig-click))))))
+
+;; ── PR 11: Import — load envelopes back into the recorder ──────────────────
+
+(defn- mk-import-record
+  "Build a minimal valid record JS object — only the fields the
+   recorder/importer cares about."
+  [id t type]
+  (js-obj "schemaVersion" 1
+          "id"            id
+          "t"             t
+          "type"          type
+          "tag"           "x-button"
+          "componentId"   nil
+          "causeId"       nil))
+
+(defn- mk-import-envelope
+  ([] (mk-import-envelope (array (mk-import-record 0 1.0 "lifecycle/connected"))))
+  ([^js records]
+   (js-obj "schemaVersion" 1
+           "exportedAt"    1715432100000
+           "origin"        "https://example.com/"
+           "userAgent"     "test"
+           "forensic"      false
+           "components"    (js-obj)
+           "sessions"      (array)
+           "records"       records)))
+
+(defn- clear-imports!
+  "Tests in this section may leave imports across the recorder atom
+   even though clear! preserves them by design — so reset the slot
+   explicitly to keep test isolation."
+  []
+  (doseq [^js imp (array-seq (recorder/imports))]
+    (recorder/remove-import! (.-id imp))))
+
+(deftest import-trace!-with-object-test
+  (testing "import-trace! accepts an already-parsed JS object and
+            returns the new import id; the import appears in
+            recorder/imports() with a default label"
+    (clear-imports!)
+    (let [env (mk-import-envelope)
+          id  (recorder/import-trace! env)]
+      (is (number? id) "import id is a number")
+      (let [^js imps (recorder/imports)
+            ^js imp0 (aget imps 0)]
+        (is (= 1 (.-length imps)))
+        (is (= id (.-id imp0)))
+        (is (= "Import 0" (.-label imp0))
+            "blank label falls back to 'Import N'")
+        (is (= 1 (.-recordCount imp0)))))))
+
+(deftest import-trace!-with-string-test
+  (testing "import-trace! accepts a JSON string and parses it
+            internally — same return contract as the object path"
+    (clear-imports!)
+    (let [json-str (js/JSON.stringify (mk-import-envelope))
+          id       (recorder/import-trace! json-str "bug-report")]
+      (is (number? id))
+      (let [^js imps (recorder/imports)
+            ^js imp0 (aget imps 0)]
+        (is (= "bug-report" (.-label imp0))
+            "explicit label survives")))))
+
+(deftest import-trace!-invalid-rejects-test
+  (testing "import-trace! returns nil and logs to console.warn when
+            the envelope is malformed. The recorder's :imports slot
+            stays unchanged so a bad drop doesn't corrupt the dock."
+    (clear-imports!)
+    (let [^js env (mk-import-envelope)]
+      (gobj/set env "schemaVersion" 999)
+      (let [before (.-length (recorder/imports))
+            id     (recorder/import-trace! env)
+            after  (.-length (recorder/imports))]
+        (is (nil? id))
+        (is (= before after) ":imports unchanged on rejection")))))
+
+(deftest import-trace!-monotonic-ids-test
+  (testing "ids are monotonically increasing across imports — the
+            dock's view-key encoding relies on this for chip identity"
+    (clear-imports!)
+    (let [id-a (recorder/import-trace! (mk-import-envelope) "a")
+          id-b (recorder/import-trace! (mk-import-envelope) "b")
+          id-c (recorder/import-trace! (mk-import-envelope) "c")]
+      (is (< id-a id-b id-c)))))
+
+(deftest import-records-returns-stored-records-test
+  (testing "import-records resolves an import id back to its records
+            array, in the order they were stored"
+    (clear-imports!)
+    (let [recs (array (mk-import-record 0 1.0 "event/dispatch")
+                      (mk-import-record 1 2.0 "lifecycle/connected"))
+          env  (mk-import-envelope recs)
+          id   (recorder/import-trace! env)
+          ^js  out (recorder/import-records id)]
+      (is (= 2 (.-length out)))
+      (is (= "event/dispatch"      (.-type (aget out 0))))
+      (is (= "lifecycle/connected" (.-type (aget out 1)))))))
+
+(deftest import-records-unknown-id-test
+  (testing "asking for records under an unknown id returns an empty
+            array — the dock falls back to :live silently in that case"
+    (is (= 0 (.-length (recorder/import-records 999999))))))
+
+(deftest remove-import!-drops-entry-test
+  (testing "remove-import! removes one import by id; subsequent calls
+            with the same id are no-ops"
+    (clear-imports!)
+    (let [id (recorder/import-trace! (mk-import-envelope))]
+      (is (= 1 (.-length (recorder/imports))))
+      (recorder/remove-import! id)
+      (is (= 0 (.-length (recorder/imports))))
+      ;; second call is a no-op, not an error
+      (recorder/remove-import! id)
+      (is (= 0 (.-length (recorder/imports)))))))
+
+(deftest clear!-preserves-imports-test
+  (testing "Clear empties the live ring buffer and drops sessions
+            (per the existing contract) but PRESERVES imports — the
+            user dragged them in deliberately"
+    (clear-imports!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "press" #js {}))
+    (recorder/import-trace! (mk-import-envelope) "preserved")
+    (is (pos? (count-records)))
+    (is (= 1 (.-length (recorder/imports))))
+    (recorder/clear!)
+    (is (= 0 (count-records))           "live buffer empty after clear")
+    (is (= 1 (.-length (recorder/imports)))
+        "imports survive clear")
+    (clear-imports!)))
+
+(deftest import-roundtrip-export-then-import-test
+  (testing "the export → JSON → import path round-trips: records
+            inside the envelope come back identical from
+            import-records"
+    (clear-imports!)
+    (let [el (make-el "x-button")]
+      (du/dispatch! el "press" #js {:n 1})
+      (du/setv!     el "field"  "value"))
+    (let [^js env  (recorder/export!)
+          json-str (js/JSON.stringify env)
+          before-n (.-length (.-records env))
+          id       (recorder/import-trace! json-str "from-export")
+          ^js back (recorder/import-records id)]
+      (is (number? id))
+      (is (= before-n (.-length back))
+          "all records survive the JSON round trip")
+      ;; The 'tag' field should pass through unchanged.
+      (when (pos? before-n)
+        (is (= (.-tag (aget (.-records env) 0))
+               (.-tag (aget back 0))))))
+    (clear-imports!)))
+
+(deftest import-window-api-exposed-test
+  (testing "window.BareDOM.traceHistory carries import / imports /
+            importRecords / removeImport so consumers can drive the
+            flow from the console"
+    (let [^js api (gobj/getValueByKeys js/window "BareDOM" "traceHistory")]
+      (is (fn? (gobj/get api "import")))
+      (is (fn? (gobj/get api "imports")))
+      (is (fn? (gobj/get api "importRecords")))
+      (is (fn? (gobj/get api "removeImport"))))))

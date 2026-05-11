@@ -83,6 +83,8 @@
        "<x-button data-x-th-action='clear'  size='sm' variant='ghost'>Clear</x-button>"
        "<x-button data-x-th-action='export' size='sm' variant='ghost' "
        "title='Download trace as .trace.json'>Export</x-button>"
+       "<x-button data-x-th-action='import' size='sm' variant='ghost' "
+       "title='Load a .trace.json file (or drag-drop one onto the dock)'>Import</x-button>"
        "<span class='count' data-x-th-count>0</span>"
        "</div>"
        ;; Session strip: hidden by default; render! shows it once the
@@ -117,6 +119,17 @@
        "<div class='splitter' data-x-th-splitter hidden></div>"
        "<div class='detail' data-x-th-detail hidden></div>"
        "<div class='hint' data-x-th-hint></div>"
+       ;; Drop overlay sits inside .dock (which is position:relative) so
+       ;; `inset: 0` covers the dock. pointer-events:none on the overlay
+       ;; (CSS) lets drag events pass through to .dock so the dragenter
+       ;; / dragleave counter stays accurate.
+       "<div class='drop-overlay' data-x-th-drop-overlay hidden>"
+       "Drop .trace.json to import</div>"
+       ;; Hidden <input type='file'> that the Import button clicks to
+       ;; open the OS picker. accept gates by extension; the change
+       ;; handler still validates the contents.
+       "<input class='import-input' data-x-th-import-input "
+       "type='file' accept='.json,.trace.json,application/json' />"
        "</div>"))
 
 ;; ---------------------------------------------------------------------------
@@ -228,42 +241,63 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- session-chip-html
-  "One chip per session. data-x-th-session is `live` for the live view
-   or the numeric session id otherwise. The active flag styles the
-   currently-viewed chip; the recording flag adds the live-dot pulse
-   to whichever session is currently being captured."
-  [{:keys [chip-key active? recording? label]}]
-  (str "<button class='session-chip" (when active? " active") "' "
-       "type='button' data-x-th-session='" (escape-html chip-key) "'>"
+  "One chip per record source. `chip-key` is the wire token the click
+   delegate parses: `live`, a stringified session id, or
+   `import:N` for an imported trace. `import?` toggles the styling
+   modifier and the inline close (×) button — clicking the close
+   button drops the import without changing the view."
+  [{:keys [chip-key active? recording? import? label import-id]}]
+  (str "<button class='session-chip"
+       (when active? " active")
+       (when import? " import")
+       "' type='button' data-x-th-session='" (escape-html chip-key) "'>"
        (when recording? "<span class='live-dot' aria-hidden='true'></span>")
        (escape-html label)
+       (when import?
+         (str "<span class='chip-close' role='button' "
+              "aria-label='Remove import' "
+              "data-x-th-import-close='" import-id "'>×</span>"))
        "</button>"))
 
 (defn- session-strip-html
-  "Build the strip: a Live chip plus one chip per recorded session,
-   sorted by session id ascending. Returns an empty string when no
-   sessions exist (the strip is then hidden)."
-  [^js sessions ^js view active-recording-id]
-  (let [view-id (model/view-id view)
-        live    {:chip-key   "live"
-                 :active?    (model/live-view? view)
-                 :recording? false
-                 :label      "Live"}
-        chips   (mapv (fn [^js s]
-                        (let [id (.-id s)]
-                          {:chip-key   (str id)
-                           :active?    (= id view-id)
-                           :recording? (= id active-recording-id)
-                           :label      (str (.-label s)
-                                            " · " (.-recordCount s))}))
-                      (array-seq sessions))]
-    (apply str (map session-chip-html (cons live chips)))))
+  "Build the strip: a Live chip, one chip per recorded session, and one
+   per imported trace. Returns an empty string when no sessions and no
+   imports exist (the strip is then hidden)."
+  [^js sessions ^js imports ^js view active-recording-id]
+  (let [live      {:chip-key   "live"
+                   :active?    (model/live-view? view)
+                   :recording? false
+                   :import?    false
+                   :label      "Live"}
+        session-id (when (model/session-view? view) (model/view-id view))
+        import-id  (when (model/import-view? view)  (model/view-id view))
+        sess-chips (mapv (fn [^js s]
+                           (let [id (.-id s)]
+                             {:chip-key   (str id)
+                              :active?    (= id session-id)
+                              :recording? (= id active-recording-id)
+                              :import?    false
+                              :label      (str (.-label s)
+                                               " · " (.-recordCount s))}))
+                         (array-seq sessions))
+        imp-chips  (mapv (fn [^js imp]
+                           (let [id (.-id imp)]
+                             {:chip-key   (str "import:" id)
+                              :active?    (= id import-id)
+                              :recording? false
+                              :import?    true
+                              :import-id  id
+                              :label      (str (.-label imp)
+                                               " · " (.-recordCount imp))}))
+                         (array-seq imports))]
+    (apply str (map session-chip-html
+                    (concat [live] sess-chips imp-chips)))))
 
 (defn- refresh-sessions-strip!
-  [^js sessions-el ^js sessions ^js view active-recording-id]
+  [^js sessions-el ^js sessions ^js imports ^js view active-recording-id]
   (set! (.-innerHTML sessions-el)
-        (session-strip-html sessions view active-recording-id))
-  (if (zero? (.-length sessions))
+        (session-strip-html sessions imports view active-recording-id))
+  (if (and (zero? (.-length sessions)) (zero? (.-length imports)))
     (.setAttribute sessions-el "hidden" "")
     (.removeAttribute sessions-el "hidden")))
 
@@ -337,11 +371,13 @@
 
 (defn- view-key
   "Stable string key for a view, so the per-view selection map can use
-   it as a JS-object key. Live → 'live'; session → 'session:N'."
+   it as a JS-object key. Live → 'live'; session → 'session:N';
+   import → 'import:N'."
   [view]
   (cond
     (model/live-view? view)    "live"
     (model/session-view? view) (str "session:" (model/view-id view))
+    (model/import-view? view)  (str "import:"  (model/view-id view))
     :else                      "live"))
 
 (defn- get-selected
@@ -391,9 +427,10 @@
 
 (defn- view-records
   "Pick the record source for the active view. Live → the full ring
-   buffer; session N → the records inside that session's t-range. If a
-   session has been deleted (or its id is stale) we fall back to live
-   so the dock keeps rendering instead of going blank."
+   buffer; session N → the records inside that session's t-range;
+   import N → the records inside the dropped/picked envelope. If a
+   session or import has been deleted (or its id is stale) we fall
+   back to live so the dock keeps rendering instead of going blank."
   [view]
   (cond
     (model/live-view? view)
@@ -401,6 +438,10 @@
 
     (model/session-view? view)
     (let [recs (recorder/session-records (model/view-id view))]
+      (if (zero? (.-length recs)) (recorder/records) recs))
+
+    (model/import-view? view)
+    (let [recs (recorder/import-records (model/view-id view))]
       (if (zero? (.-length recs)) (recorder/records) recs))
 
     :else
@@ -429,6 +470,7 @@
         lanes           (model/active-lanes filtered)
         sel-rec         (effective-selection! el recs spec)
         ^js sessions    (recorder/sessions)
+        ^js imports     (recorder/imports)
         active-rec-id   (recorder/active-session-id)]
     (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-rec (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
@@ -437,7 +479,7 @@
     (refresh-detail!         detail-el splitter-el recs sel-rec)
     (refresh-pause-btn!      pause-btn)
     (refresh-record-btn!     record-btn)
-    (refresh-sessions-strip! sessions-el sessions view active-rec-id)))
+    (refresh-sessions-strip! sessions-el sessions imports view active-rec-id)))
 
 ;; ---------------------------------------------------------------------------
 ;; Click + tooltip + filter handlers
@@ -481,21 +523,57 @@
       ;; current recorder snapshot. Does not change view, selection,
       ;; filter, or recording state.
       "export" (recorder/download-trace!)
+      ;; Import delegates to the hidden <input type='file'>. Drag-drop
+      ;; is the other entry point; both routes converge on
+      ;; import-file! below.
+      "import" (when-let [^js input (gobj/get el model/k-import-input)]
+                 (set! (.-value input) "")  ; allow re-picking the same file
+                 (.click input))
       nil)))
+
+(defn- parse-chip-key
+  "Map a chip's data-x-th-session value to a dock view value. 'live'
+   → :live; 'import:N' → [:import N]; everything else is parsed as a
+   numeric session id and yields [:session N]."
+  [k]
+  (cond
+    (= k "live")
+    :live
+
+    (str/starts-with? k "import:")
+    [:import (js/parseInt (subs k (count "import:")) 10)]
+
+    :else
+    [:session (js/parseInt k 10)]))
 
 (defn- on-session-chip-click!
   "Switch the dock's view when the user clicks a chip in the session
-   strip. data-x-th-session is 'live' or a numeric session id; the
-   chip's view becomes the active view and render! repaints from the
-   new record source."
+   strip. data-x-th-session is 'live', a numeric session id, or
+   'import:N' for an imported trace. Clicking the inline × close
+   button on an import chip is handled separately (see
+   `on-import-close-click!`) — we short-circuit when the actual
+   click target is the close button so the parent-chip click doesn't
+   also fire."
   [^js el ^js target]
-  (when-let [^js btn (.closest target "[data-x-th-session]")]
-    (let [k        (.getAttribute btn "data-x-th-session")
-          new-view (if (= k "live")
-                     :live
-                     [:session (js/parseInt k 10)])]
-      (gobj/set el model/k-view new-view)
-      (render! el))))
+  (when-not (.closest target "[data-x-th-import-close]")
+    (when-let [^js btn (.closest target "[data-x-th-session]")]
+      (let [k        (.getAttribute btn "data-x-th-session")
+            new-view (parse-chip-key k)]
+        (gobj/set el model/k-view new-view)
+        (render! el)))))
+
+(defn- on-import-close-click!
+  "Drop the import whose × close button was clicked. If the dock is
+   currently viewing that import, switch back to :live before removing
+   it so render! doesn't briefly render a dangling [:import N] view."
+  [^js el ^js target]
+  (when-let [^js close-btn (.closest target "[data-x-th-import-close]")]
+    (let [id   (js/parseInt (.getAttribute close-btn "data-x-th-import-close") 10)
+          view (gobj/get el model/k-view)]
+      (when (and (model/import-view? view)
+                 (= id (model/view-id view)))
+        (gobj/set el model/k-view :live))
+      (recorder/remove-import! id))))
 
 (defn- on-lane-label-click!
   "Toggle the tag filter for the clicked lane. Clicking the same lane label
@@ -528,11 +606,12 @@
 (defn- handle-click!
   [^js el ^js e]
   (let [^js target (.-target e)]
-    (on-action-click!       el target)
-    (on-session-chip-click! el target)
-    (on-lane-label-click!   el target)
-    (on-detail-link-click!  el target)
-    (on-dot-click!          el target)))
+    (on-action-click!        el target)
+    (on-import-close-click!  el target)
+    (on-session-chip-click!  el target)
+    (on-lane-label-click!    el target)
+    (on-detail-link-click!   el target)
+    (on-dot-click!           el target)))
 
 (defn- handle-tag-change!
   "Apply a new tag filter from a select-change detail value. The 'all'
@@ -740,6 +819,173 @@
     (.addEventListener splitter-el "pointercancel" on-end)))
 
 ;; ---------------------------------------------------------------------------
+;; Import flow — file → JSON → envelope → recorder
+;;
+;; Two entry points converge here: the Import button (hidden <input
+;; type='file'>) and drag-drop on the dock root. Both end up handing
+;; us a File; we read it as text, pass the JSON to recorder/import-trace!,
+;; and switch the dock view to the new import on success. Validation
+;; failure surfaces a brief red message in the hint area (`.hint.error`)
+;; that the next non-error render replaces.
+;; ---------------------------------------------------------------------------
+
+(def ^:private import-error-display-ms
+  "How long a validation-error message stays visible in the hint area
+   before being replaced by the next normal render. Long enough to
+   read, short enough not to feel sticky."
+  4000)
+
+(defn- label-from-filename
+  "Strip the `.trace.json` (or `.json`) extension off a filename so it
+   reads cleanly on a chip. Falls back to the original string when no
+   recognised extension is present, and to nil when the input is
+   nil/blank."
+  [name]
+  (cond
+    (or (nil? name) (= "" name))
+    nil
+
+    (str/ends-with? name ".trace.json")
+    (subs name 0 (- (count name) (count ".trace.json")))
+
+    (str/ends-with? name ".json")
+    (subs name 0 (- (count name) (count ".json")))
+
+    :else
+    name))
+
+(defn- show-import-error!
+  "Push a transient error message into the hint area + add the
+   `.error` class. A setTimeout clears the override after
+   `import-error-display-ms` and re-renders, so the next regular
+   hint string lands. Storing the timeout id on the host lets us
+   replace it when a second error fires before the first cleared."
+  [^js el msg]
+  (let [^js hint-el (gobj/get el model/k-hint-el)
+        prev-tok    (gobj/get el model/k-import-error)]
+    (when (number? prev-tok)
+      (js/clearTimeout prev-tok))
+    (set! (.-textContent hint-el) msg)
+    (.add (.-classList hint-el) "error")
+    (let [tok (js/setTimeout
+               (fn []
+                 (.remove (.-classList hint-el) "error")
+                 (gobj/set el model/k-import-error nil)
+                 (render! el))
+               import-error-display-ms)]
+      (gobj/set el model/k-import-error tok))))
+
+(defn- on-import-success!
+  "Switch the dock view to the freshly-imported trace so the user
+   immediately sees what they just loaded. Also clears any prior
+   error so the regular hint message returns on the next render."
+  [^js el import-id]
+  (let [^js hint-el (gobj/get el model/k-hint-el)]
+    (.remove (.-classList hint-el) "error"))
+  (gobj/set el model/k-view [:import import-id])
+  (render! el))
+
+(defn- import-text!
+  "Hand the file's text contents to recorder/import-trace!, branching
+   on success vs. validation failure. The text path is the same for
+   both Import-button picks and drag-drop drops."
+  [^js el text label]
+  (let [id (recorder/import-trace! text label)]
+    (if (some? id)
+      (on-import-success! el id)
+      (show-import-error! el "Import failed — see console for details."))))
+
+(defn- import-file!
+  "Read a File object as text, then route through import-text!. Wraps
+   the FileReader callback so caller doesn't need to know about it."
+  [^js el ^js file]
+  (let [^js reader (js/FileReader.)
+        label      (label-from-filename (.-name file))]
+    (set! (.-onload reader)
+          (fn [^js _e]
+            (import-text! el (.-result reader) label)))
+    (set! (.-onerror reader)
+          (fn [^js _e]
+            (show-import-error! el "Could not read file.")))
+    (.readAsText reader file)))
+
+(defn- handle-import-input-change!
+  "Change handler for the hidden <input type='file'>. Routes the first
+   selected file through import-file!. Multiple-file selection is not
+   supported in v1 — only the first file is loaded."
+  [^js el ^js e]
+  (let [^js input  (.-target e)
+        ^js files  (.-files input)]
+    (when (pos? (.-length files))
+      (import-file! el (aget files 0)))))
+
+(defn- on-drag-overlay-show!
+  "Show the drop-overlay when a dragenter crosses into the dock.
+   Counter-based (k-drag-depth) so passing over a child element
+   doesn't flicker the overlay."
+  [^js el]
+  (let [^js overlay (gobj/get el model/k-drop-overlay)
+        d           (or (gobj/get el model/k-drag-depth) 0)]
+    (gobj/set el model/k-drag-depth (inc d))
+    (.removeAttribute overlay "hidden")))
+
+(defn- on-drag-overlay-hide!
+  "Hide the drop-overlay when the dragleave count returns to 0 or
+   after a successful drop."
+  [^js el]
+  (let [^js overlay (gobj/get el model/k-drop-overlay)
+        d           (max 0 (dec (or (gobj/get el model/k-drag-depth) 0)))]
+    (gobj/set el model/k-drag-depth d)
+    (when (zero? d)
+      (.setAttribute overlay "hidden" ""))))
+
+(defn- drag-contains-file?
+  "True when the event's dataTransfer carries at least one File item.
+   Filters out drags of text selections, page elements, etc. — the
+   overlay only appears for actual file drags."
+  [^js e]
+  (when-let [^js dt (.-dataTransfer e)]
+    (let [^js types (.-types dt)]
+      (.includes types "Files"))))
+
+(defn- handle-dragenter!
+  [^js el ^js e]
+  (when (drag-contains-file? e)
+    (.preventDefault e)
+    (on-drag-overlay-show! el)))
+
+(defn- handle-dragover!
+  [^js _el ^js e]
+  (when (drag-contains-file? e)
+    (.preventDefault e)
+    ;; Mark the drop effect explicitly so the cursor reads as 'copy'
+    ;; rather than the OS default 'move'.
+    (when-let [^js dt (.-dataTransfer e)]
+      (set! (.-dropEffect dt) "copy"))))
+
+(defn- handle-dragleave!
+  [^js el ^js e]
+  (when (drag-contains-file? e)
+    (on-drag-overlay-hide! el)))
+
+(defn- handle-drop!
+  "On drop: hide the overlay and route the first dropped file through
+   import-file!. preventDefault stops the browser's default behaviour
+   of opening the file in a new tab when the user misses the dock."
+  [^js el ^js e]
+  (when (drag-contains-file? e)
+    (.preventDefault e)
+    ;; Reset the drag counter unconditionally — a drop fires WITHOUT a
+    ;; final dragleave on every browser we care about.
+    (gobj/set el model/k-drag-depth 0)
+    (let [^js overlay (gobj/get el model/k-drop-overlay)]
+      (.setAttribute overlay "hidden" ""))
+    (let [^js dt    (.-dataTransfer e)
+          ^js files (when dt (.-files dt))]
+      (when (and files (pos? (.-length files)))
+        (import-file! el (aget files 0))))))
+
+;; ---------------------------------------------------------------------------
 ;; Mount / unmount
 ;; ---------------------------------------------------------------------------
 
@@ -785,7 +1031,9 @@
   (gobj/set el model/k-tag-select-el (.querySelector shadow "[data-x-th-tag]"))
   (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
-  (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]")))
+  (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
+  (gobj/set el model/k-import-input  (.querySelector shadow "[data-x-th-import-input]"))
+  (gobj/set el model/k-drop-overlay  (.querySelector shadow "[data-x-th-drop-overlay]")))
 
 (defn- build-listener-tuples
   "Allocate the dock's static event listeners as #js [target event
@@ -796,23 +1044,34 @@
    The encoding is the `listener-spec` named pattern from CLAUDE.md
    — one place lists every static listener, and add/remove iterate
    the same source of truth so they cannot drift."
-  [^js el ^js shadow ^js timeline-el ^js svg-pane-el ^js splitter-el ^js detail-el]
-  #js [#js [shadow      "click"             (fn [^js e] (handle-click!            el e))]
-       #js [shadow      "select-change"     (fn [^js e] (handle-select-change!    el e))]
-       #js [shadow      "x-checkbox-change" (fn [^js e] (handle-checkbox-change!  el e))]
-       #js [timeline-el "pointermove"       (fn [^js e] (handle-pointermove!      el e))]
-       #js [timeline-el "pointerleave"      (fn [^js e] (handle-pointerleave!     el e))]
+  [^js el ^js shadow ^js timeline-el ^js svg-pane-el ^js splitter-el ^js detail-el
+   ^js import-input]
+  #js [#js [shadow       "click"             (fn [^js e] (handle-click!                 el e))]
+       #js [shadow       "select-change"     (fn [^js e] (handle-select-change!         el e))]
+       #js [shadow       "x-checkbox-change" (fn [^js e] (handle-checkbox-change!       el e))]
+       #js [timeline-el  "pointermove"       (fn [^js e] (handle-pointermove!           el e))]
+       #js [timeline-el  "pointerleave"      (fn [^js e] (handle-pointerleave!          el e))]
        ;; Pointerdown anywhere in the timeline focuses it so the
        ;; keyboard outline shows the user their starting point.
-       #js [timeline-el "pointerdown"       (fn [_e] (.focus timeline-el))]
+       #js [timeline-el  "pointerdown"       (fn [_e] (.focus timeline-el))]
        ;; Keydown is bound on the SHADOW ROOT (not the timeline) so the
        ;; shadow receives keydown from any focused descendant — arrow
        ;; keys keep working even when focus shifts to a control after
        ;; a click. The handler ignores form-control targets so we
        ;; don't fight native behaviour.
-       #js [shadow      "keydown"           (fn [^js e] (handle-keydown!          el e))]
-       #js [svg-pane-el "pointerdown"       (fn [^js e] (handle-svg-pointerdown!  el e))]
-       #js [splitter-el "pointerdown"       (fn [^js e] (start-resize! detail-el splitter-el e))]])
+       #js [shadow       "keydown"           (fn [^js e] (handle-keydown!               el e))]
+       #js [svg-pane-el  "pointerdown"       (fn [^js e] (handle-svg-pointerdown!       el e))]
+       #js [splitter-el  "pointerdown"       (fn [^js e] (start-resize! detail-el splitter-el e))]
+       ;; PR 11 import flow: file-picker change + dock-root drag/drop.
+       ;; Drag listeners attach to the shadow root so any descendant
+       ;; participates in the drop target; the overlay's CSS
+       ;; pointer-events:none keeps the drag counter accurate as the
+       ;; cursor crosses children.
+       #js [import-input "change"            (fn [^js e] (handle-import-input-change!   el e))]
+       #js [shadow       "dragenter"         (fn [^js e] (handle-dragenter!             el e))]
+       #js [shadow       "dragover"          (fn [^js e] (handle-dragover!              el e))]
+       #js [shadow       "dragleave"         (fn [^js e] (handle-dragleave!             el e))]
+       #js [shadow       "drop"              (fn [^js e] (handle-drop!                  el e))]])
 
 (defn- add-listeners!
   "Attach every entry in the listener-tuples JS array."
@@ -835,12 +1094,14 @@
    them, and attach. Called on every (re)mount — never produces
    duplicate listeners because unmount! always cancels first."
   [^js el ^js shadow]
-  (let [^js timeline-el (gobj/get el model/k-timeline-el)
-        ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
-        ^js splitter-el (gobj/get el model/k-splitter-el)
-        ^js detail-el   (gobj/get el model/k-detail-el)
-        tuples          (build-listener-tuples
-                         el shadow timeline-el svg-pane-el splitter-el detail-el)]
+  (let [^js timeline-el   (gobj/get el model/k-timeline-el)
+        ^js svg-pane-el   (gobj/get el model/k-svg-pane-el)
+        ^js splitter-el   (gobj/get el model/k-splitter-el)
+        ^js detail-el     (gobj/get el model/k-detail-el)
+        ^js import-input  (gobj/get el model/k-import-input)
+        tuples            (build-listener-tuples
+                           el shadow timeline-el svg-pane-el splitter-el detail-el
+                           import-input)]
     (gobj/set el model/k-listeners tuples)
     (add-listeners! tuples)))
 
@@ -917,17 +1178,22 @@
 
 (defn- unmount!
   "Symmetric tear-down for mount!. Removes every static listener via
-   the listener-spec, unsubscribes from recorder updates, and clears
-   the mounted flag. The shadow root and its skeleton stay in place
-   — `attachShadow` is one-shot per host, so a re-mount must reuse
-   the existing shadow. The cached refs (k-shadow, k-*-el) and the
-   user's filter / view state persist across mount cycles so the
-   dock comes back in the same shape it was in when disconnected."
+   the listener-spec, unsubscribes from recorder updates, clears any
+   pending import-error timeout (PR 11), and resets the mounted flag.
+   The shadow root and its skeleton stay in place — `attachShadow` is
+   one-shot per host, so a re-mount must reuse the existing shadow.
+   The cached refs (k-shadow, k-*-el) and the user's filter / view
+   state persist across mount cycles so the dock comes back in the
+   same shape it was in when disconnected."
   [^js el]
   (when-let [tok (gobj/get el model/k-sub-token)]
     (recorder/unsubscribe! tok))
+  (when-let [err-tok (gobj/get el model/k-import-error)]
+    (when (number? err-tok)
+      (js/clearTimeout err-tok)))
   (unbind-listeners! el)
   (gobj/set el model/k-sub-token nil)
+  (gobj/set el model/k-import-error nil)
   (gobj/set el model/k-mounted nil))
 
 ;; ---------------------------------------------------------------------------
