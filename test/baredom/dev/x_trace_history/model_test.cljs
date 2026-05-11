@@ -1691,3 +1691,188 @@
     (let [s (model/causality-leaf-message)]
       (is (string? s))
       (is (clojure.string/includes? s "event/dispatch")))))
+
+;; ── Density binning: dominant-category ──────────────────────────────────────
+
+(deftest dominant-category-empty-test
+  (testing "nil for an empty seq — the renderer skips empty bins"
+    (is (nil? (model/dominant-category [])))))
+
+(deftest dominant-category-clear-winner-test
+  (testing "clear majority wins"
+    (let [recs [(mk-rec-with {:type "event/dispatch"})
+                (mk-rec-with {:type "event/dispatch"})
+                (mk-rec-with {:type "state/instance-field-set"})]]
+      (is (= :events (model/dominant-category recs))))))
+
+(deftest dominant-category-tie-uses-all-categories-order-test
+  (testing "ties broken by `all-categories` order so the colour is
+            deterministic across runs — :events comes first, so an
+            events-vs-dom tie picks :events"
+    (let [recs [(mk-rec-with {:type "event/dispatch"})
+                (mk-rec-with {:type "dom/attribute-set"})]]
+      (is (= :events (model/dominant-category recs))))))
+
+(deftest dominant-category-other-strictly-beats-test
+  (testing "records with unrecognised types contribute to :other.
+            When :other STRICTLY beats every recognised category,
+            we render in the neutral :other colour."
+    (let [recs [(mk-rec-with {:type "totally/made-up"})
+                (mk-rec-with {:type "still/unknown"})]]
+      (is (= :other (model/dominant-category recs))))))
+
+(deftest dominant-category-other-ties-loses-to-events-test
+  (testing "audit fix: :other only wins when it STRICTLY beats every
+            recognised category. A tie between :other and any
+            all-categories entry resolves to the recognised entry
+            (more semantic meaning than the catch-all). Two
+            :events + two :other → :events wins."
+    (let [recs [(mk-rec-with {:type "event/dispatch"})
+                (mk-rec-with {:type "event/dispatch"})
+                (mk-rec-with {:type "totally/made-up"})
+                (mk-rec-with {:type "still/unknown"})]]
+      (is (= :events (model/dominant-category recs))))))
+
+;; ── Density binning: bin-records-by-x ───────────────────────────────────────
+
+(deftest bin-records-by-x-empty-test
+  (is (= [] (model/bin-records-by-x [] (constantly 0)))))
+
+(deftest bin-records-by-x-single-bin-test
+  (testing "records that all land in the same pixel column produce
+            one bin with all of them"
+    (let [recs   [(mk-rec-with {:id 0 :t 100})
+                  (mk-rec-with {:id 1 :t 101})
+                  (mk-rec-with {:id 2 :t 102})]
+          ;; Place every record at x=5 (bin index 1 with bin-width=4)
+          cx-of  (constantly 5)
+          bins   (model/bin-records-by-x recs cx-of)]
+      (is (= 1 (count bins)))
+      (is (= 1 (:bin-i (first bins))))
+      (is (= [0 1 2] (mapv #(.-id ^js %) (:records (first bins)))))
+      (is (= 4 (:x-start (first bins))))
+      (is (= 8 (:x-end   (first bins)))))))
+
+(deftest bin-records-by-x-multiple-bins-sorted-test
+  (testing "records spanning multiple bins return one bin per
+            occupied column, sorted by :bin-i ascending"
+    (let [recs   [(mk-rec-with {:id 0})
+                  (mk-rec-with {:id 1})
+                  (mk-rec-with {:id 2})]
+          xs     {0 1 1 9 2 5}  ; bin indices 0, 2, 1 respectively
+          cx-of  (fn [^js r] (get xs (.-id r)))
+          bins   (model/bin-records-by-x recs cx-of)]
+      (is (= [0 1 2] (mapv :bin-i bins))
+          "bin output is sorted ascending by index"))))
+
+(deftest bin-records-by-x-records-sorted-by-id-within-bin-test
+  (testing "records inside a bin are sorted by id ascending so the
+            'first record' chosen for click-routing is deterministic
+            (also matches the order children-of uses in PR 17)"
+    (let [recs  [(mk-rec-with {:id 5 :t 100})
+                 (mk-rec-with {:id 2 :t 101})
+                 (mk-rec-with {:id 9 :t 102})]
+          cx-of (constantly 6)
+          bins  (model/bin-records-by-x recs cx-of)]
+      (is (= [2 5 9] (mapv #(.-id ^js %) (:records (first bins))))))))
+
+(deftest bin-records-by-x-t-min-max-test
+  (testing "bin :t-min and :t-max reflect the chronological extent
+            of the bin's records"
+    (let [recs  [(mk-rec-with {:id 0 :t 200})
+                 (mk-rec-with {:id 1 :t 100})
+                 (mk-rec-with {:id 2 :t 150})]
+          cx-of (constantly 4)
+          {:keys [t-min t-max]} (first (model/bin-records-by-x recs cx-of))]
+      (is (= 100 t-min))
+      (is (= 200 t-max)))))
+
+(deftest bin-records-by-x-bin-boundary-test
+  (testing "records straddling bin boundaries land in the right bin.
+            x=4 is the first pixel of bin 1 (4/4=1, floor=1). x=3.99
+            still lands in bin 0."
+    (let [recs  [(mk-rec-with {:id 0})
+                 (mk-rec-with {:id 1})]
+          xs    {0 3.99 1 4.0}
+          cx-of (fn [^js r] (get xs (.-id r)))
+          bins  (model/bin-records-by-x recs cx-of)]
+      (is (= [0 1] (mapv :bin-i bins))))))
+
+;; ── Density binning: lane-is-dense? ─────────────────────────────────────────
+
+(deftest lane-is-dense-empty-test
+  (is (false? (boolean (model/lane-is-dense? [])))))
+
+(deftest lane-is-dense-below-threshold-test
+  (testing "all bins at or below density-threshold → not dense"
+    (let [bins [{:records (range model/density-threshold)}
+                {:records (range (dec model/density-threshold))}]]
+      (is (false? (boolean (model/lane-is-dense? bins)))))))
+
+(deftest lane-is-dense-exact-threshold-test
+  (testing "a bin EXACTLY at the threshold is still not dense — the
+            comparison is strict >. The threshold value itself is the
+            'allowed' count."
+    (let [bins [{:records (range model/density-threshold)}]]
+      (is (false? (boolean (model/lane-is-dense? bins)))))))
+
+(deftest lane-is-dense-above-threshold-test
+  (testing "one bin above threshold flips the whole lane to dense"
+    (let [bins [{:records (range (inc model/density-threshold))}
+                {:records [::r]}]]
+      (is (true? (boolean (model/lane-is-dense? bins)))))))
+
+;; ── Density binning: bin-opacity ────────────────────────────────────────────
+
+(deftest bin-opacity-zero-cases-test
+  (is (= 0.0 (model/bin-opacity nil 5)))
+  (is (= 0.0 (model/bin-opacity 0 5)))
+  (is (= 0.0 (model/bin-opacity 3 0)))
+  (is (= 0.0 (model/bin-opacity 3 nil))))
+
+(deftest bin-opacity-max-clamp-test
+  (testing "count at or above lane-max-count → fully opaque"
+    (is (= 1.0 (model/bin-opacity 5 5)))
+    (is (= 1.0 (model/bin-opacity 99 5)))))
+
+(deftest bin-opacity-floor-test
+  (testing "a single-record bin sits at the visual floor (0.4) so
+            sparse bins inside a dense lane still read as a band
+            rather than disappearing. The floor is calibrated for
+            WCAG AA 3:1 non-text contrast against the dock's dark
+            background — lower values render as nearly invisible
+            for the cooler category colours."
+    (is (= 0.4 (model/bin-opacity 1 10)))))
+
+(deftest bin-opacity-monotonic-test
+  (testing "opacity strictly increases with count up to lane-max"
+    (let [vs (mapv #(model/bin-opacity % 10) (range 1 11))]
+      (doseq [[a b] (partition 2 1 vs)]
+        (is (<= a b))))))
+
+;; ── Density binning: lane-max-bin-count + tooltip ───────────────────────────
+
+(deftest lane-max-bin-count-test
+  (let [bins [{:records (range 3)}
+              {:records (range 7)}
+              {:records (range 2)}]]
+    (is (= 7 (model/lane-max-bin-count bins))))
+  (is (= 0 (model/lane-max-bin-count []))))
+
+(deftest density-bin-tooltip-text-test
+  (testing "tooltip carries tag, count, dominant category, and the
+            first record's time. Lines mirror the dot tooltip's
+            format so users get consistent affordances."
+    (let [r0   (mk-rec-with {:id 5 :t 1234 :tag "x-button" :component-id 7})
+          text (model/density-bin-tooltip-text r0 12 :events)]
+      (is (clojure.string/includes? text "x-button"))
+      (is (clojure.string/includes? text "#7"))
+      (is (clojure.string/includes? text "12 records"))
+      (is (clojure.string/includes? text "events")))))
+
+(deftest density-bin-tooltip-text-singular-test
+  (testing "singular vs plural — '1 record' not '1 records'"
+    (let [r0   (mk-rec-with {:id 0 :t 0})
+          text (model/density-bin-tooltip-text r0 1 :state)]
+      (is (clojure.string/includes? text "1 record · state"))
+      (is (not (clojure.string/includes? text "1 records"))))))

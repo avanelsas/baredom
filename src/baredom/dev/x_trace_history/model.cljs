@@ -814,6 +814,159 @@
         :else         (get filtered-records (dec idx))))))
 
 ;; ---------------------------------------------------------------------------
+;; Density binning — heatmap rendering for animation-heavy lanes (PR 18)
+;;
+;; When a lane carries enough records to overlap visually (e.g. a 60fps
+;; drag firing CustomEvents), drawing individual dots becomes unreadable.
+;; Instead we bin the lane's records by pixel column and render a
+;; coloured band: one <rect> per bin, opacity scaled to the bin's count.
+;;
+;; The trigger is pixel-overlap, not events/sec — a 50/sec rate may or
+;; may not overlap depending on zoom level. Each render bins from
+;; scratch off the current plot width, so the visualization adapts to
+;; resizes for free.
+;;
+;; :order axis mode does NOT use density rendering: records are
+;; uniformly spaced by index there, so dots never overlap.
+;; ---------------------------------------------------------------------------
+
+(def density-bin-width
+  "Width of one heatmap bin in CSS pixels. Records are bucketed by
+   `floor(x / bin-width)`. 4 px is wide enough to be a visible band
+   at typical dock zoom and narrow enough to preserve temporal
+   resolution within a lane."
+  4)
+
+(def density-threshold
+  "If any bin in a lane holds MORE than this many records, the lane
+   renders as a heatmap band instead of individual dots. 3 records
+   per 4 px (i.e. > one record per pixel) is the point at which dot
+   overlap becomes visually confusing."
+  3)
+
+(defn- bin-index-of-x
+  "Floor an x-coordinate to its bin index. Pure."
+  [x]
+  (js/Math.floor (/ x density-bin-width)))
+
+(defn dominant-category
+  "Return the category keyword that appears most often in a sequence
+   of records. Ties between two `all-categories` entries are broken
+   by `all-categories` order so a bin with equal counts always
+   renders in the same colour across runs (e.g. an equal mix of
+   events + dom always picks :events).
+
+   Records whose `type` is unrecognised contribute to the `:other`
+   bucket. `:other` only wins when it STRICTLY beats every recognised
+   category — a tie with any `all-categories` entry resolves to that
+   entry, since recognised categories carry more semantic meaning
+   for visualization than the catch-all.
+
+   Returns nil for an empty seq."
+  [records]
+  (when (seq records)
+    (let [counts    (frequencies (map (fn [^js r] (categorize-type (.-type r)))
+                                      records))
+          max-count (apply max (vals counts))]
+      (or (some (fn [cat] (when (= max-count (get counts cat)) cat))
+                all-categories)
+          :other))))
+
+(defn bin-records-by-x
+  "Bucket a lane's records into pixel-aligned bins for heatmap
+   rendering. Each record contributes to exactly one bin via
+   `record-cx` under the active axis mode.
+
+   `record-cx-fn` is a (^js r) → x function the caller threads from
+   the renderer (it already knows the index map, bounds, and plot
+   width). Keeps this fn pure — model.cljs has no DOM knowledge.
+
+   Returns a vector of bin maps sorted by `:bin-i`, each:
+     {:bin-i        N
+      :records      [r ...]          (sorted by id ascending)
+      :dominant-cat :kw
+      :x-start      px
+      :x-end        px
+      :t-min        ms
+      :t-max        ms}"
+  [lane-records record-cx-fn]
+  (let [grouped (group-by (fn [^js r] (bin-index-of-x (record-cx-fn r)))
+                          lane-records)]
+    (vec
+     (sort-by
+      :bin-i
+      (map (fn [[bin-i rs]]
+             (let [ts          (map (fn [^js r] (.-t r)) rs)
+                   sorted-recs (vec (sort-by (fn [^js r] (.-id r)) rs))]
+               {:bin-i        bin-i
+                :records      sorted-recs
+                :dominant-cat (dominant-category sorted-recs)
+                :x-start      (* bin-i density-bin-width)
+                :x-end        (* (inc bin-i) density-bin-width)
+                :t-min        (apply min ts)
+                :t-max        (apply max ts)}))
+           grouped)))))
+
+(defn lane-is-dense?
+  "True iff any bin in `bins` exceeds `density-threshold`. Empty input
+   is sparse by definition."
+  [bins]
+  (some (fn [b] (> (count (:records b)) density-threshold)) bins))
+
+(def ^:private bin-opacity-floor
+  "Lowest opacity a one-record bin renders at. 0.4 is the minimum
+   that keeps the band visible at WCAG AA 3:1 non-text contrast on
+   the dock's `#11111b` background for every category colour we
+   ship; lower values (we shipped 0.3 in a draft) read as nearly
+   invisible for cool colours like the events green."
+  0.4)
+
+(defn bin-opacity
+  "Linear opacity from `bin-opacity-floor` (a single-record bin) to
+   1.0 (a bin at `lane-max-count`). One-record bins land at the low
+   end — but not below the contrast floor — so the heatmap still
+   reads as a continuous band including the sparse bins inside an
+   otherwise-dense lane. Bins above the lane's own max-count clamp
+   to 1.0 (defensive — shouldn't happen)."
+  [count lane-max-count]
+  (cond
+    (or (nil? count) (zero? count) (nil? lane-max-count) (zero? lane-max-count))
+    0.0
+
+    (>= count lane-max-count)
+    1.0
+
+    :else
+    (let [span (- 1.0 bin-opacity-floor)
+          norm (/ (- count 1) (max 1 (- lane-max-count 1)))]
+      (+ bin-opacity-floor (* span norm)))))
+
+(defn lane-max-bin-count
+  "Largest record count across any bin in the lane. Used to scale
+   bin opacities relative to the lane's local peak so sparse-but-
+   dense lanes still read as full-strength."
+  [bins]
+  (if (seq bins)
+    (apply max (map (fn [b] (count (:records b))) bins))
+    0))
+
+(defn density-bin-tooltip-text
+  "Multi-line text for the heatmap-bin hover tooltip. Mirrors
+   `tooltip-text`'s shape so users get the same information density.
+   Takes the bin's first record, its count, and its dominant
+   category as separate args (rather than a full bin map) — the UI
+   layer reads count + category from the rect's data attributes and
+   resolves the first-record from the recorder, which avoids
+   re-binning at hover time AND keeps the SVG markup lean."
+  [^js first-record bin-count dominant-cat]
+  (let [^js r0 first-record]
+    (str (.-tag r0)
+         (when-let [cid (.-componentId r0)] (str " #" cid))
+         "\n" bin-count " " (if (= 1 bin-count) "record" "records")
+         " · " (name (or dominant-cat :other))
+         "\n@ " (format-timestamp (.-t r0)))))
+
+;; ---------------------------------------------------------------------------
 ;; Causality — cause-of / effects-of
 ;; ---------------------------------------------------------------------------
 
@@ -1498,6 +1651,26 @@ svg.timeline-svg {
 }
 .dot { cursor: pointer; transition: r 80ms ease; }
 .dot:hover { stroke: #fff; stroke-width: 1; }
+/* Heatmap bins (PR 18). Each lane that exceeds the density threshold
+   renders as a row of these rects rather than individual dots; the
+   per-bin fill-opacity is set inline by the renderer (scales with
+   the bin's record count relative to the lane's max). */
+.density-bin {
+  cursor: pointer;
+  transition: stroke 80ms ease, fill-opacity 80ms ease;
+}
+.density-bin:hover {
+  stroke: #fff;
+  stroke-width: 0.5;
+}
+/* Thin pink bar drawn at the selected record's exact x inside its
+   bin — keeps the scrubber-style highlight in dense lanes without
+   obscuring the bin's category colour. */
+line.density-selected {
+  stroke: #f5c2e7;
+  stroke-width: 2;
+  pointer-events: none;
+}
 line.scrubber {
   stroke: #f5c2e7;
   stroke-width: 1.5;

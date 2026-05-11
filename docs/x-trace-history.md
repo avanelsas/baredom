@@ -95,7 +95,7 @@ activates. Its anatomy, top to bottom:
 | Toolbar | Pause / Resume · Record (start a session) · Clear · Export · Import · live record count |
 | Session chips | One chip per session and one per import, plus the always-on **Live** view. Click to switch the timeline source. |
 | Filters | Tag dropdown · view-mode toggle (Timeline / Causality) · category checkboxes (events, state, DOM, lifecycle) · axis-mode toggle (Order / Time) · full-text search |
-| Timeline | One horizontal lane per component instance. Dots are coloured by category. Hover for tooltip; click to select. |
+| Timeline | One horizontal lane per component instance. Dots are coloured by category. Hover for tooltip; click to select. Lanes with overlapping events auto-render as a coloured heatmap band — see **Heatmap density** below. |
 | Causality | (View-mode: Causality) Tree-shaped view of cause→effect rooted at the currently-selected record's highest ancestor. Click a node to scrub to it. The pane auto-scrolls so the selected node sits at the centre. |
 | Splitter | Drag to resize the detail pane. |
 | Detail pane | Pretty-printed JSON for the selected record, plus **Caused by** / **Effects** links. |
@@ -110,6 +110,37 @@ Keyboard:
 - Click a lane label to filter the timeline to that component
   instance. Click again to clear.
 - Click anywhere in the timeline (or causality pane) to focus it.
+
+## Heatmap density
+
+In **Time** axis mode, lanes with overlapping events render as a
+coloured heatmap band instead of individual dots. This avoids the
+unreadable pile-up you'd otherwise get from a 60fps drag, a
+rapid-fire animation, or any component that emits many CustomEvents
+per second.
+
+- **How it triggers.** Each lane is binned into 4 px-wide columns
+  along the time axis. If any bin in a lane holds more than 3
+  records, that lane switches to band rendering. Otherwise it stays
+  as dots. The decision is per-lane, so a busy animation lane can
+  coexist with a quiet button-click lane in the same timeline.
+- **What the band shows.** One filled rectangle per bin. The fill
+  colour is the bin's dominant event category (events / state /
+  DOM / lifecycle); the fill opacity scales with the bin's record
+  count, from 0.3 (a single record) to 1.0 (the lane's busiest bin).
+  Sparse bins inside an otherwise-dense lane still read as part of
+  the band rather than disappearing.
+- **Click a band.** Selects the first record (lowest id) inside the
+  clicked bin. The detail pane and arrow-stepping work unchanged —
+  a bin is just an alternate rendering of the same records.
+- **Selected record indicator.** A thin pink vertical line marks
+  the selected record's exact x inside its bin, so the
+  scrubber-style highlight survives the band rendering.
+- **Hover.** Shows a tooltip with the bin's record count, its
+  dominant category, and the first record's tag and time.
+- **Order axis.** Density rendering never activates in Order mode
+  — records are uniformly spaced by their index there, so dots
+  cannot overlap.
 
 ## Search
 
