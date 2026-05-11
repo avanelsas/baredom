@@ -1098,14 +1098,16 @@
 (deftest export-empty-envelope-test
   (testing "calling export! before any records have flowed still
             produces a valid envelope — a useful 'no activity' baseline
-            for bug reports. components map may be non-empty because
-            clear! preserves it across the test fixture; we only assert
-            it exists as an object."
+            for bug reports. With the components filter (PR-this-branch)
+            the components map is guaranteed empty when records is
+            empty: no records means no referenced cids means no
+            entries survive the filter."
     (let [^js env (recorder/export!)]
       (is (= 1 (.-schemaVersion env)))
       (is (= 0 (.-length (.-records env))))
       (is (= 0 (.-length (.-sessions env))))
-      (is (object? (.-components env))))))
+      (is (zero? (count (gobj/getKeys (.-components env))))
+          "components filtered to empty when no records reference any cid"))))
 
 (deftest export-includes-current-records-test
   (testing "every record produced before export! shows up in the
@@ -1143,8 +1145,9 @@
                     missing from envelope.components")))))))
 
 (deftest export-components-side-index-test
-  (testing "the components map carries every element the recorder has
-            stamped a componentId onto, keyed by stringified id"
+  (testing "the components map carries every element referenced by a
+            record in the export, keyed by stringified id. Filter
+            keeps cids that appear in records and drops the rest."
     (let [a (make-el "x-button")
           b (make-el "x-checkbox")]
       (du/dispatch! a "press" #js {})

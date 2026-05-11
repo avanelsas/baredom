@@ -40,7 +40,7 @@ A trace file is a single JSON object:
 | `origin`        | string              | yes      | `window.location.href` at export time. Useful for bug reports; will be sanitised against credentials in a later phase. |
 | `userAgent`     | string              | yes      | `navigator.userAgent` at export time. |
 | `forensic`      | boolean             | yes      | True when the recorder was installed in forensic mode (`?baredom-trace-history=raw`). Receivers can interpret the absence of sample-rate gaps. |
-| `components`    | object (id→info)    | yes      | Snapshot of the recorder's component side-index. Keys are stringified `componentId` integers. |
+| `components`    | object (id→info)    | yes      | Subset of the recorder's component side-index — only entries whose id is referenced by at least one record in `records[]`. Keys are stringified `componentId` integers. May be empty when records contain only document-target events (`componentId: null`). |
 | `sessions`      | array of session    | yes      | Bounded recording slices the user captured. Empty array when none. |
 | `records`       | array of record     | yes      | The full ring buffer, oldest first. May be empty. |
 
@@ -129,6 +129,20 @@ as opaque JSON payloads.
 - **Records are append-only on the wire.** Even though the recorder uses a
   ring buffer that drops oldest records, the exported `records` array
   reflects a snapshot in time and ids are monotonic across the export.
+
+### Why `components` is filtered (not a full snapshot)
+
+The recorder assigns a stable `componentId` to every element the first
+time a record mentions it, and keeps the resulting `id → {tag, firstSeen}`
+table monotonically for the page lifetime — `clear!` deliberately
+preserves it so the same element keeps the same id across captures.
+Without trimming, an exported `.trace.json` would carry every component
+ever observed, including stale entries the user explicitly cleared away
+before pressing Record.
+
+The export filter keeps the components index aligned with the records
+in the trace: the recipient of a shared trace only sees the components
+referenced by the captured events, not the page's full history.
 
 ## Importer contract
 

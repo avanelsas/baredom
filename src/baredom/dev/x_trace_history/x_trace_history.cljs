@@ -21,9 +21,14 @@
 ;; Constants
 ;; ---------------------------------------------------------------------------
 
-(def ^:private lane-h     20)   ; px per timeline lane
-(def ^:private dot-r       3)   ; default dot radius
-(def ^:private dot-r-sel  4.8)  ; dot radius when selected
+(def ^:private lane-h      20)  ; px per timeline lane
+;; Dot radii sized for clickable hit targets at typical dock width.
+;; A 4.5px radius reads as a clear 9px-diameter circle on screen and
+;; pairs with model/plot-padding-x (8px) to keep edge dots fully
+;; visible without overlapping into the lane-label column. Selected
+;; dots get a 6.5px radius so the highlight reads at a glance.
+(def ^:private dot-r      4.5)  ; default dot radius
+(def ^:private dot-r-sel  6.5)  ; dot radius when selected
 (def ^:private svg-min-w 200)   ; floor for plot width when pane has no size yet
 
 ;; ---------------------------------------------------------------------------
@@ -77,6 +82,15 @@
   [initial-categories]
   (str "<div class='dock'>"
        "<div class='header'>"
+       ;; Collapse-toggle button. Placed first so it stays in the same
+       ;; spot whether the dock is expanded (leftmost in the header
+       ;; row) or collapsed (top of the thin vertical strip — the
+       ;; only visible control). Default content is `«` meaning
+       ;; 'push me to the right'; the toggle swaps it to `»` when
+       ;; collapsed. Keyboard shortcut documented in the title.
+       "<x-button data-x-th-action='collapse' size='sm' variant='ghost' "
+       "aria-label='Collapse panel' "
+       "title='Collapse / expand panel (Ctrl/Cmd + \\\\)'>«</x-button>"
        "<span class='title'>x-trace-history</span>"
        "<x-button data-x-th-action='pause'  size='sm' variant='ghost'>Pause</x-button>"
        "<x-button data-x-th-action='record' size='sm' variant='ghost'>Record</x-button>"
@@ -110,6 +124,14 @@
        (cat-checkbox-html "state"     (contains? initial-categories :state))
        (cat-checkbox-html "dom"       (contains? initial-categories :dom))
        (cat-checkbox-html "lifecycle" (contains? initial-categories :lifecycle))
+       ;; Axis-mode toggle. Default option is rendered with `selected`
+       ;; so x-select picks it up after its slotchange clone, same
+       ;; trick as the tag filter above. Order is the default — see
+       ;; the design rationale in model/axis-modes.
+       "<x-select data-x-th-axis size='sm'>"
+       "<option value='order' selected>Order</option>"
+       "<option value='time'>Time</option>"
+       "</x-select>"
        "</div>"
        "<div class='timeline' data-x-th-timeline tabindex='0'>"
        "<div class='lanes' data-x-th-lanes></div>"
@@ -155,10 +177,21 @@
   [lanes active-tag]
   (apply str (map #(lane-label-html % active-tag) lanes)))
 
+(defn- record-cx
+  "Compute the x-coordinate for a single record under the active
+   axis mode. :order uses index-x against the record's position in
+   the filtered list; :time uses the linear time-x mapping. Pulled
+   out of dot-html so the scrubber can share it without duplicating
+   the dispatch."
+  [axis-mode ^js r index n bounds plot-width]
+  (case axis-mode
+    :order (model/index-x index n plot-width)
+    :time  (model/time-x (.-t r) bounds plot-width)
+    (model/index-x index n plot-width)))
+
 (defn- dot-html
-  [^js r lane-y bounds plot-width selected-id]
-  (let [cx   (model/time-x (.-t r) bounds plot-width)
-        cy   (+ lane-y (/ lane-h 2))
+  [^js r cx lane-y selected-id]
+  (let [cy   (+ lane-y (/ lane-h 2))
         sel? (= (.-id r) selected-id)
         rad  (if sel? dot-r-sel dot-r)]
     (str "<circle class='dot' "
@@ -169,25 +202,35 @@
          " />")))
 
 (defn- scrubber-html
-  "Vertical drag-line drawn at the selected record's x. Returns the empty
-   string when no record is selected."
-  [^js sel-rec bounds plot-width svg-h]
+  "Vertical drag-line drawn at the selected record's x. Returns the
+   empty string when no record is selected. `cx` is pre-computed by
+   svg-html under whichever axis mode is active."
+  [^js sel-rec cx svg-h]
   (if sel-rec
-    (let [x (model/time-x (.-t sel-rec) bounds plot-width)]
-      (str "<line class='scrubber' x1='" x "' y1='0' "
-           "x2='" x "' y2='" svg-h "' />"))
+    (str "<line class='scrubber' x1='" cx "' y1='0' "
+         "x2='" cx "' y2='" svg-h "' />")
     ""))
 
 (defn- svg-html
-  "Build the timeline SVG markup. Records are positioned by lane (Y) and
-   time (X); selected dot is drawn last so its highlight stroke wins, and
-   the scrubber line is drawn on top of everything."
-  [filtered-records lanes bounds plot-width ^js sel-rec]
+  "Build the timeline SVG markup. Records are positioned by lane (Y)
+   and by the active axis mode (X) — :order spreads records evenly by
+   their index in the filtered list, :time maps them by their `t`
+   value. Selected dot is drawn last so its highlight stroke wins
+   z-order, and the scrubber line is drawn on top of everything."
+  [axis-mode filtered-records lanes bounds plot-width ^js sel-rec]
   (let [selected-id (when sel-rec (.-id sel-rec))
         lane-y      (into {} (map-indexed
                               (fn [i {:keys [lane-id]}] [lane-id (* i lane-h)])
                               lanes))
         h           (max lane-h (* lane-h (count lanes)))
+        n           (count filtered-records)
+        ;; Capture each filtered record's index BEFORE the z-order
+        ;; sort so the order-axis position survives the rearrangement.
+        id->index   (into {} (map-indexed
+                              (fn [i ^js r] [(.-id r) i]) filtered-records))
+        cx-of       (fn [^js r]
+                      (record-cx axis-mode r (get id->index (.-id r)) n
+                                 bounds plot-width))
         ;; Selected dot last so its highlight stroke wins z-order.
         ordered     (sort-by (fn [^js r] (if (= (.-id r) selected-id) 1 0))
                              filtered-records)]
@@ -195,16 +238,18 @@
          "' viewBox='0 0 " plot-width " " h "'>"
          (apply str
                 (map (fn [^js r]
-                       (dot-html r (get lane-y (model/lane-id-of r))
-                                 bounds plot-width selected-id))
+                       (dot-html r (cx-of r)
+                                 (get lane-y (model/lane-id-of r))
+                                 selected-id))
                      ordered))
-         (scrubber-html sel-rec bounds plot-width h)
+         (scrubber-html sel-rec (when sel-rec (cx-of sel-rec)) h)
          "</svg>")))
 
 (defn- render-timeline!
   "Repaint the lane-label column + SVG canvas. Caller passes the current
-   filtered records, bounds, etc. (so render! computes them once)."
-  [^js lanes-el ^js svg-pane-el filtered lanes bounds ^js sel-rec active-tag]
+   filtered records, bounds, axis-mode, etc. (so render! computes them
+   once)."
+  [^js lanes-el ^js svg-pane-el axis-mode filtered lanes bounds ^js sel-rec active-tag]
   (if (zero? (count filtered))
     (do
       (set! (.-innerHTML lanes-el) "")
@@ -212,7 +257,7 @@
             "<div class='timeline-empty'>No records match the current filter.</div>"))
     (let [plot-w (max svg-min-w (.-clientWidth svg-pane-el))]
       (set! (.-innerHTML lanes-el)    (lanes-html lanes active-tag))
-      (set! (.-innerHTML svg-pane-el) (svg-html filtered lanes bounds
+      (set! (.-innerHTML svg-pane-el) (svg-html axis-mode filtered lanes bounds
                                                 plot-w sel-rec)))))
 
 ;; ---------------------------------------------------------------------------
@@ -471,8 +516,11 @@
         sel-rec         (effective-selection! el recs spec)
         ^js sessions    (recorder/sessions)
         ^js imports     (recorder/imports)
-        active-rec-id   (recorder/active-session-id)]
-    (render-timeline! lanes-el svg-pane-el filtered lanes bounds sel-rec (:tag spec))
+        active-rec-id   (recorder/active-session-id)
+        axis-mode       (or (gobj/get el model/k-axis-mode)
+                            model/default-axis-mode)]
+    (render-timeline! lanes-el svg-pane-el axis-mode filtered lanes bounds
+                      sel-rec (:tag spec))
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
@@ -503,6 +551,33 @@
       (set-selected! el new-id)
       (render! el))))
 
+(def ^:private collapse-icon-open  "«")
+(def ^:private collapse-icon-closed "»")
+
+(defn- apply-collapsed-state!
+  "Apply the collapsed boolean to the host element: toggle the
+   `collapsed` class so the :host(.collapsed) CSS rules apply, and
+   swap the toggle button's icon so the user can tell which way it'll
+   move next. Pure visual — does NOT touch any other dock state."
+  [^js el collapsed?]
+  (if collapsed?
+    (.add    (.-classList el) "collapsed")
+    (.remove (.-classList el) "collapsed"))
+  (when-let [^js btn (gobj/get el model/k-collapse-btn)]
+    (set! (.-textContent btn)
+          (if collapsed? collapse-icon-closed collapse-icon-open))
+    ;; aria-expanded so screen readers track the disclosure state.
+    (.setAttribute btn "aria-expanded" (if collapsed? "false" "true"))))
+
+(defn- toggle-collapsed!
+  "Flip the dock's collapsed state and apply the visual class. Used
+   by both the click handler and the document-level keyboard
+   shortcut so the two entry points stay in sync."
+  [^js el]
+  (let [next? (not (boolean (gobj/get el model/k-collapsed)))]
+    (gobj/set el model/k-collapsed next?)
+    (apply-collapsed-state! el next?)))
+
 (defn- on-action-click!
   [^js el ^js target]
   (when-let [^js btn (.closest target "[data-x-th-action]")]
@@ -529,6 +604,11 @@
       "import" (when-let [^js input (gobj/get el model/k-import-input)]
                  (set! (.-value input) "")  ; allow re-picking the same file
                  (.click input))
+      ;; Collapse toggle — flips the dock between full-width and a
+      ;; thin strip so components behind it become reachable. The
+      ;; document-level keyboard shortcut (Ctrl/Cmd + \) also routes
+      ;; through `toggle-collapsed!`.
+      "collapse" (toggle-collapsed! el)
       nil)))
 
 (defn- parse-chip-key
@@ -622,6 +702,19 @@
     (gobj/set el model/k-filter new-spec)
     (render! el)))
 
+(defn- handle-axis-change!
+  "Switch the dock's axis layout. `value` is either 'order' (the
+   default) or 'time' as emitted by the <x-select data-x-th-axis>.
+   Unknown values fall back to the default so a malformed external
+   write doesn't put the dock into a broken state."
+  [^js el value]
+  (let [mode (case value
+               "order" :order
+               "time"  :time
+               model/default-axis-mode)]
+    (gobj/set el model/k-axis-mode mode)
+    (render! el)))
+
 (defn- handle-cat-change!
   "Toggle a category in the filter from an x-checkbox-change detail
    payload. `cat` is the data-x-th-cat string (e.g. \"events\");
@@ -636,11 +729,18 @@
     (render! el)))
 
 (defn- handle-select-change!
-  "x-select fires `select-change` with detail = {value, label}."
+  "x-select fires `select-change` with detail = {value, label}. Two
+   selects live in the dock (tag filter + axis mode); the data
+   attribute disambiguates."
   [^js el ^js e]
-  (let [^js target (.-target e)]
-    (when (some? (.getAttribute target "data-x-th-tag"))
-      (handle-tag-change! el (.. e -detail -value)))))
+  (let [^js target (.-target e)
+        value      (.. e -detail -value)]
+    (cond
+      (some? (.getAttribute target "data-x-th-tag"))
+      (handle-tag-change! el value)
+
+      (some? (.getAttribute target "data-x-th-axis"))
+      (handle-axis-change! el value))))
 
 (defn- handle-checkbox-change!
   "x-checkbox fires `x-checkbox-change` with detail = {value, checked}."
@@ -702,37 +802,54 @@
 ;; Scrubber — pointer-drag on the SVG to step selection by nearest record
 ;; ---------------------------------------------------------------------------
 
+(defn- record-at-cursor
+  "Pick the filtered record closest to cursor x under the active
+   axis mode. :order maps x to a list index and picks `filtered[i]`;
+   :time picks the record with the nearest `t` value. Returns nil
+   for empty input so the scrubber can no-op cleanly."
+  [axis-mode filtered bounds plot-w x]
+  (case axis-mode
+    :order
+    (when-let [i (model/index-from-x x (count filtered) plot-w)]
+      (nth filtered i nil))
+
+    :time
+    (model/nearest-record filtered (model/time-from-x x bounds plot-w))
+
+    (when-let [i (model/index-from-x x (count filtered) plot-w)]
+      (nth filtered i nil))))
+
 (defn- select-nearest!
   "Apply a precomputed scrub context to a raw cursor x. Used by the
    scrub-start kick-off and by every pointermove that follows so the
-   filter / records / bounds / plot-width snapshot is taken once at
-   gesture start (a drag is a moment in time — capturing newly arriving
-   records mid-drag would be more confusing than helpful)."
-  [^js el filtered bounds plot-w x]
-  (let [target-t    (model/time-from-x x bounds plot-w)
-        ^js nearest (model/nearest-record filtered target-t)]
-    (when nearest
-      (set-selected! el (.-id nearest))
-      (render! el))))
+   filter / records / bounds / plot-width / axis-mode snapshot is
+   taken once at gesture start (a drag is a moment in time — capturing
+   newly arriving records mid-drag would be more confusing than
+   helpful)."
+  [^js el axis-mode filtered bounds plot-w x]
+  (when-let [^js nearest (record-at-cursor axis-mode filtered bounds plot-w x)]
+    (set-selected! el (.-id nearest))
+    (render! el)))
 
 (defn- start-scrub!
   "Begin a pointer-driven scrub. The pointer is captured on the svg-pane,
    so the gesture survives the cursor leaving the SVG bounds. Filter
-   snapshot, bounds, and plot width are computed once and reused for
-   every pointermove until pointerup / pointercancel."
+   snapshot, bounds, plot width, and axis-mode are computed once and
+   reused for every pointermove until pointerup / pointercancel."
   [^js el ^js svg-pane ^js e]
   (.preventDefault e)
   (.setPointerCapture svg-pane (.-pointerId e))
   (let [pane-rect (.getBoundingClientRect svg-pane)
         plot-w    (max svg-min-w (.-clientWidth svg-pane))
         spec      (gobj/get el model/k-filter)
+        axis-mode (or (gobj/get el model/k-axis-mode) model/default-axis-mode)
         ^js recs  (recorder/records)
         filtered  (model/filter-records recs spec)
         bounds    (model/time-bounds filtered)
         x-of      (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
-    (select-nearest! el filtered bounds plot-w (x-of e))
+    (select-nearest! el axis-mode filtered bounds plot-w (x-of e))
     (let [on-move (fn [^js me]
-                    (select-nearest! el filtered bounds plot-w (x-of me)))
+                    (select-nearest! el axis-mode filtered bounds plot-w (x-of me)))
           on-end  (fn end-fn [_]
                     (.removeEventListener svg-pane "pointermove"   on-move)
                     (.removeEventListener svg-pane "pointerup"     end-fn)
@@ -788,6 +905,25 @@
       "ArrowRight" (do (.preventDefault e) (step-selection! el :next))
       "ArrowLeft"  (do (.preventDefault e) (step-selection! el :prev))
       nil)))
+
+(defn- handle-document-keydown!
+  "Listen on `document` (not just the shadow root) so the
+   collapse-toggle keyboard shortcut works from anywhere on the page.
+
+   The shortcut is `Ctrl + \\` (Linux/Windows) or `Cmd + \\` (Mac):
+   uncommon enough not to collide with browser, OS, or app
+   shortcuts, two-key combo so it doesn't trigger while typing
+   regular content. Suppressed when target is a form control or
+   contenteditable so users typing literal `\\` characters into an
+   editor aren't interrupted."
+  [^js el ^js e]
+  (when (and (= "\\" (.-key e))
+             (or (.-metaKey e) (.-ctrlKey e))
+             (not (.-altKey e))
+             (not (.-shiftKey e))
+             (not (in-form-control? (.-target e))))
+    (.preventDefault e)
+    (toggle-collapsed! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Splitter — drag the divider above the detail pane to resize it
@@ -1033,7 +1169,8 @@
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
   (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
   (gobj/set el model/k-import-input  (.querySelector shadow "[data-x-th-import-input]"))
-  (gobj/set el model/k-drop-overlay  (.querySelector shadow "[data-x-th-drop-overlay]")))
+  (gobj/set el model/k-drop-overlay  (.querySelector shadow "[data-x-th-drop-overlay]"))
+  (gobj/set el model/k-collapse-btn  (.querySelector shadow "[data-x-th-action='collapse']")))
 
 (defn- build-listener-tuples
   "Allocate the dock's static event listeners as #js [target event
@@ -1071,7 +1208,11 @@
        #js [shadow       "dragenter"         (fn [^js e] (handle-dragenter!             el e))]
        #js [shadow       "dragover"          (fn [^js e] (handle-dragover!              el e))]
        #js [shadow       "dragleave"         (fn [^js e] (handle-dragleave!             el e))]
-       #js [shadow       "drop"              (fn [^js e] (handle-drop!                  el e))]])
+       #js [shadow       "drop"              (fn [^js e] (handle-drop!                  el e))]
+       ;; Collapse-toggle keyboard shortcut: bound on document so it
+       ;; fires regardless of focus. Symmetric add/remove keeps it
+       ;; from leaking across mount/unmount cycles.
+       #js [js/document  "keydown"           (fn [^js e] (handle-document-keydown!      el e))]])
 
 (defn- add-listeners!
   "Attach every entry in the listener-tuples JS array."
@@ -1114,9 +1255,10 @@
     (gobj/set el model/k-listeners nil)))
 
 (defn- initialize-filter-state!
-  "Set up k-filter / k-view / k-view-selected on the first mount only.
-   On re-mount these slots persist from the previous lifetime, so the
-   user's filter and selected session survive a disconnect/reconnect.
+  "Set up k-filter / k-view / k-view-selected / k-axis-mode on the
+   first mount only. On re-mount these slots persist from the
+   previous lifetime, so the user's filter, selected session, and
+   axis preference survive a disconnect/reconnect.
 
    The skeleton's <x-checkbox checked> markup was rendered against
    the saved categories on the first mount and is preserved in the
@@ -1128,7 +1270,15 @@
   (when-not (gobj/get el model/k-view)
     (gobj/set el model/k-view :live))
   (when-not (gobj/get el model/k-view-selected)
-    (gobj/set el model/k-view-selected (js-obj))))
+    (gobj/set el model/k-view-selected (js-obj)))
+  (when-not (gobj/get el model/k-axis-mode)
+    (gobj/set el model/k-axis-mode model/default-axis-mode))
+  ;; Default is expanded (collapsed = false). After this slot is set
+  ;; once it survives remount, so apply-collapsed-state! below re-
+  ;; applies the user's prior choice when the dock reconnects.
+  (when-not (some? (gobj/get el model/k-collapsed))
+    (gobj/set el model/k-collapsed false))
+  (apply-collapsed-state! el (boolean (gobj/get el model/k-collapsed))))
 
 (defn- mount!
   "Connect the dock: attach (or reuse) the shadow root, cache refs,
