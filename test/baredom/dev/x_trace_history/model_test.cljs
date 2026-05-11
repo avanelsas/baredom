@@ -1450,3 +1450,229 @@
     (is (= 42  (model/view-id [:import  42])))
     (is (nil?  (model/view-id :live)))
     (is (nil?  (model/view-id [:other 5])))))
+
+;; ── Causality DAG: causality-root ───────────────────────────────────────────
+
+(deftest causality-root-no-cause-test
+  (testing "record with causeId=nil is its own root"
+    (let [r    (mk-rec-with {:id 1 :cause-id nil})
+          recs #js [r]]
+      (is (identical? r (model/causality-root recs r))))))
+
+(deftest causality-root-walks-chain-test
+  (testing "causality-root walks up the causeId chain to the highest
+            ancestor still in the records buffer"
+    (let [root  (mk-rec-with {:id 0 :cause-id nil})
+          mid   (mk-rec-with {:id 1 :cause-id 0})
+          leaf  (mk-rec-with {:id 2 :cause-id 1})
+          recs  #js [root mid leaf]]
+      (is (= 0 (.-id ^js (model/causality-root recs leaf))))
+      (is (= 0 (.-id ^js (model/causality-root recs mid))))
+      (is (= 0 (.-id ^js (model/causality-root recs root)))))))
+
+(deftest causality-root-stops-at-evicted-cause-test
+  (testing "if an ancestor has been evicted from the buffer, the walk
+            stops at the highest record still present (treats the
+            orphan as a local root). This is the partial-trace import
+            case AND the live-trace ring-buffer-rotation case."
+    (let [;; id=0 has been evicted; ancestor of id=1 is missing.
+          mid   (mk-rec-with {:id 1 :cause-id 0})
+          leaf  (mk-rec-with {:id 2 :cause-id 1})
+          recs  #js [mid leaf]]
+      (is (= 1 (.-id ^js (model/causality-root recs leaf)))))))
+
+;; ── Causality DAG: causality-tree ───────────────────────────────────────────
+
+(deftest causality-tree-leaf-root-test
+  (testing "root with no children produces a leaf tree"
+    (let [root (mk-rec-with {:id 0 :cause-id nil})
+          recs #js [root]
+          tree (model/causality-tree recs root)]
+      (is (= 0 (.-id ^js (:record tree))))
+      (is (empty? (:children tree))))))
+
+(deftest causality-tree-builds-children-test
+  (testing "children are records whose causeId equals the root's id,
+            sorted by id ascending so layout is deterministic"
+    (let [root (mk-rec-with {:id 0 :cause-id nil})
+          c1   (mk-rec-with {:id 5 :cause-id 0})
+          c2   (mk-rec-with {:id 2 :cause-id 0})
+          c3   (mk-rec-with {:id 9 :cause-id 0})
+          recs #js [root c1 c2 c3]
+          tree (model/causality-tree recs root)]
+      (is (= [2 5 9] (mapv #(.-id ^js (:record %)) (:children tree)))))))
+
+(deftest causality-tree-recurses-test
+  (testing "grandchildren attach to the right intermediate parent"
+    (let [root  (mk-rec-with {:id 0 :cause-id nil})
+          mid   (mk-rec-with {:id 1 :cause-id 0})
+          grand (mk-rec-with {:id 2 :cause-id 1})
+          recs  #js [root mid grand]
+          tree  (model/causality-tree recs root)
+          mid-node (first (:children tree))]
+      (is (= 1 (.-id ^js (:record mid-node))))
+      (is (= [2] (mapv #(.-id ^js (:record %)) (:children mid-node)))))))
+
+;; ── Causality DAG: tree-size-stats ──────────────────────────────────────────
+
+(deftest tree-size-stats-leaf-test
+  (let [root (mk-rec-with {:id 0 :cause-id nil})
+        recs #js [root]
+        tree (model/causality-tree recs root)
+        {:keys [node-count max-depth]} (model/tree-size-stats tree)]
+    (is (= 1 node-count))
+    (is (= 0 max-depth))))
+
+(deftest tree-size-stats-deep-chain-test
+  (testing "a chain a → b → c → d has 4 nodes and max-depth 3"
+    (let [a    (mk-rec-with {:id 0 :cause-id nil})
+          b    (mk-rec-with {:id 1 :cause-id 0})
+          c    (mk-rec-with {:id 2 :cause-id 1})
+          d    (mk-rec-with {:id 3 :cause-id 2})
+          recs #js [a b c d]
+          tree (model/causality-tree recs a)
+          {:keys [node-count max-depth]} (model/tree-size-stats tree)]
+      (is (= 4 node-count))
+      (is (= 3 max-depth)))))
+
+(deftest tree-size-stats-fanout-test
+  (testing "a fan-out root with 3 leaf children has 4 nodes and depth 1"
+    (let [root (mk-rec-with {:id 0 :cause-id nil})
+          c1   (mk-rec-with {:id 1 :cause-id 0})
+          c2   (mk-rec-with {:id 2 :cause-id 0})
+          c3   (mk-rec-with {:id 3 :cause-id 0})
+          recs #js [root c1 c2 c3]
+          tree (model/causality-tree recs root)
+          {:keys [node-count max-depth]} (model/tree-size-stats tree)]
+      (is (= 4 node-count))
+      (is (= 1 max-depth)))))
+
+;; ── Causality DAG: layout-tree ──────────────────────────────────────────────
+
+(deftest layout-tree-single-node-test
+  (testing "a leaf tree lays out at the padded origin"
+    (let [root  (mk-rec-with {:id 0 :cause-id nil})
+          recs  #js [root]
+          tree  (model/causality-tree recs root)
+          {:keys [nodes edges width height]} (model/layout-tree tree)]
+      (is (= 1 (count nodes)))
+      (is (empty? edges))
+      (is (= (+ model/causality-padding (/ model/causality-node-w 2))
+             (:cx (first nodes))))
+      (is (= (+ model/causality-padding (/ model/causality-node-h 2))
+             (:cy (first nodes))))
+      (is (= (+ (:cx (first nodes)) (/ model/causality-node-w 2)
+                model/causality-padding)
+             width))
+      (is (= (+ (:cy (first nodes)) (/ model/causality-node-h 2)
+                model/causality-padding)
+             height)))))
+
+(deftest layout-tree-fanout-parent-centered-test
+  (testing "with three leaf children, the parent sits at the midpoint of
+            the leftmost and rightmost child's centres"
+    (let [root  (mk-rec-with {:id 0 :cause-id nil})
+          c1    (mk-rec-with {:id 1 :cause-id 0})
+          c2    (mk-rec-with {:id 2 :cause-id 0})
+          c3    (mk-rec-with {:id 3 :cause-id 0})
+          recs  #js [root c1 c2 c3]
+          tree  (model/causality-tree recs root)
+          {:keys [nodes edges]} (model/layout-tree tree)
+          by-id (into {} (map (fn [n] [(:id n) n]) nodes))]
+      (is (= 4 (count nodes)))
+      (is (= 3 (count edges)))
+      (is (= (/ (+ (:cx (by-id 1)) (:cx (by-id 3))) 2)
+             (:cx (by-id 0))))
+      ;; Root is at depth 0; children at depth 1 — different cy.
+      (is (< (:cy (by-id 0)) (:cy (by-id 1)))))))
+
+(deftest layout-tree-edge-coords-match-nodes-test
+  (testing "every edge's from-cx/cy and to-cx/cy reference the actual
+            laid-out node centres"
+    (let [root  (mk-rec-with {:id 0 :cause-id nil})
+          c1    (mk-rec-with {:id 1 :cause-id 0})
+          recs  #js [root c1]
+          tree  (model/causality-tree recs root)
+          {:keys [nodes edges]} (model/layout-tree tree)
+          by-id (into {} (map (fn [n] [(:id n) n]) nodes))
+          ^js e (first edges)]
+      (is (= (:cx (by-id 0)) (:from-cx e)))
+      (is (= (:cy (by-id 0)) (:from-cy e)))
+      (is (= (:cx (by-id 1)) (:to-cx   e)))
+      (is (= (:cy (by-id 1)) (:to-cy   e))))))
+
+;; ── Causality DAG: find-laid-node ───────────────────────────────────────────
+
+(deftest find-laid-node-hits-test
+  (let [root (mk-rec-with {:id 0 :cause-id nil})
+        c1   (mk-rec-with {:id 1 :cause-id 0})
+        recs #js [root c1]
+        tree (model/causality-tree recs root)
+        layout (model/layout-tree tree)]
+    (is (= 0 (:id (model/find-laid-node layout 0))))
+    (is (= 1 (:id (model/find-laid-node layout 1))))))
+
+(deftest find-laid-node-misses-test
+  (let [root (mk-rec-with {:id 0 :cause-id nil})
+        recs #js [root]
+        tree (model/causality-tree recs root)
+        layout (model/layout-tree tree)]
+    (is (nil? (model/find-laid-node layout 99)))
+    (is (nil? (model/find-laid-node layout nil)))
+    (is (nil? (model/find-laid-node layout "0"))
+        "non-numeric ids are rejected so a stale string id can't match")))
+
+;; ── Causality DAG: fit-to-view-scroll ───────────────────────────────────────
+
+(deftest fit-to-view-centers-node-test
+  (testing "with a node at (500, 300) and a 200×100 viewport, the
+            scroll positions centre the node — left=400, top=250"
+    (let [{:keys [scroll-left scroll-top]}
+          (model/fit-to-view-scroll 500 300 200 100 1000 600)]
+      (is (= 400 scroll-left))
+      (is (= 250 scroll-top)))))
+
+(deftest fit-to-view-clamps-near-origin-test
+  (testing "a node near the top-left of the tree clamps scroll to 0;0
+            (cannot scroll past origin)"
+    (let [{:keys [scroll-left scroll-top]}
+          (model/fit-to-view-scroll 20 10 400 200 1000 600)]
+      (is (= 0 scroll-left))
+      (is (= 0 scroll-top)))))
+
+(deftest fit-to-view-clamps-near-far-edge-test
+  (testing "a node near the bottom-right of a tree clamps scroll to
+            (tree-w - viewport-w); cannot scroll past end"
+    (let [{:keys [scroll-left scroll-top]}
+          (model/fit-to-view-scroll 950 580 200 100 1000 600)]
+      (is (= 800 scroll-left))   ; max-x = 1000 - 200 = 800
+      (is (= 500 scroll-top))))) ; max-y = 600 - 100 = 500
+
+(deftest fit-to-view-tree-smaller-than-viewport-test
+  (testing "when the tree fits entirely in the viewport (tree-w <
+            viewport-w), max-scroll is 0 and the target clamps there"
+    (let [{:keys [scroll-left scroll-top]}
+          (model/fit-to-view-scroll 50 50 500 500 100 100)]
+      (is (= 0 scroll-left))
+      (is (= 0 scroll-top)))))
+
+;; ── Causality DAG: dock-mode predicate / messages ───────────────────────────
+
+(deftest dock-mode-predicate-test
+  (is (true?  (model/dock-mode? :timeline)))
+  (is (true?  (model/dock-mode? :causality)))
+  (is (false? (model/dock-mode? :other)))
+  (is (false? (model/dock-mode? nil))))
+
+(deftest causality-empty-message-test
+  (testing "non-blank string mentioning 'select'"
+    (let [s (model/causality-empty-message)]
+      (is (string? s))
+      (is (clojure.string/includes? (clojure.string/lower-case s) "select")))))
+
+(deftest causality-over-cap-message-test
+  (testing "message names the node count and the cap so the user
+            can decide how aggressively to narrow"
+    (let [s (model/causality-over-cap-message {:node-count 257})]
+      (is (clojure.string/includes? s "257"))
+      (is (clojure.string/includes? s (str model/causality-max-nodes))))))

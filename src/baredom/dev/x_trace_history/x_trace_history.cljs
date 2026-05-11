@@ -39,6 +39,11 @@
 (def ^:private dot-r-sel  6.5)  ; dot radius when selected
 (def ^:private svg-min-w 200)   ; floor for plot width when pane has no size yet
 
+;; PR 17 — causality node dot radius (the colour indicator on the
+;; leading edge of each tree node). Small enough not to crowd the
+;; label, big enough to read at dock zoom.
+(def ^:private causality-dot-r 4)
+
 ;; ---------------------------------------------------------------------------
 ;; HTML escaping
 ;; ---------------------------------------------------------------------------
@@ -145,6 +150,15 @@
        (cat-checkbox-html "state"     (contains? initial-categories :state))
        (cat-checkbox-html "dom"       (contains? initial-categories :dom))
        (cat-checkbox-html "lifecycle" (contains? initial-categories :lifecycle))
+       ;; PR 17 — view-mode toggle. :timeline shows the SVG lane view
+       ;; (the default since PR 5); :causality shows the cause→effect
+       ;; tree of the currently-selected record. The two panes share
+       ;; the flexible vertical slot above the detail; render! hides
+       ;; whichever isn't active.
+       "<x-select data-x-th-mode size='sm'>"
+       "<option value='timeline' selected>Timeline</option>"
+       "<option value='causality'>Causality</option>"
+       "</x-select>"
        ;; Axis-mode toggle. Default option is rendered with `selected`
        ;; so x-select picks it up after its slotchange clone, same
        ;; trick as the tag filter above. Order is the default — see
@@ -159,6 +173,11 @@
        "<div class='svg-pane' data-x-th-svg-pane></div>"
        "<div class='tooltip' data-x-th-tooltip hidden></div>"
        "</div>"
+       ;; Causality DAG pane — shares the flexible slot with .timeline.
+       ;; Hidden by default; render! flips the hidden attributes based
+       ;; on the active dock-mode. tabindex makes it focusable so the
+       ;; keyboard arrow stepping works the same way the timeline does.
+       "<div class='causality' data-x-th-causality tabindex='0' hidden></div>"
        "<div class='splitter' data-x-th-splitter hidden></div>"
        "<div class='detail' data-x-th-detail hidden></div>"
        "<div class='hint' data-x-th-hint></div>"
@@ -280,6 +299,165 @@
       (set! (.-innerHTML lanes-el)    (lanes-html lanes active-tag))
       (set! (.-innerHTML svg-pane-el) (svg-html axis-mode filtered lanes bounds
                                                 plot-w sel-rec)))))
+
+;; ---------------------------------------------------------------------------
+;; Causality DAG rendering (PR 17)
+;;
+;; The causality pane shares the flexible vertical slot with the
+;; timeline pane. render! decides which one is visible by toggling
+;; their hidden attributes from the active dock-mode. Inside the
+;; causality pane the renderer builds a tree rooted at the highest
+;; ancestor of the currently-selected record, lays it out, and emits
+;; one <rect>+<text>+<circle> group per node plus one <line> per edge.
+;;
+;; Selection / scrubbing stays in sync with the timeline: clicking a
+;; node updates k-view-selected exactly like the timeline's dot click,
+;; so toggling back to :timeline keeps the user oriented.
+;; ---------------------------------------------------------------------------
+
+(defn- label-of-node
+  "Compact label rendered inside a tree-node rect: 'tag · type'. The
+   leading '#id' goes into a secondary smaller label on the same row
+   so the primary text doesn't repeat what the rect's hover-title
+   already says."
+  [^js r]
+  (str (.-tag r) " · " (.-type r)))
+
+(defn- short-label
+  "Truncate a label string to fit inside a node rect. The node is 140
+   px wide; at the dock's 10 px monospace font ~22 chars fit before
+   the text would clip the right border."
+  [s]
+  (let [s (str s)]
+    (if (<= (count s) 22)
+      s
+      (str (subs s 0 21) "…"))))
+
+(defn- causality-node-html
+  "One <g> per node: a coloured dot on the left, a rect that hosts the
+   click target, an `#id` minor label, and the primary tag · type
+   label. data-x-th-link-id makes the rect routable through the
+   existing on-detail-link-click! delegate that already handles
+   numeric ids — so causality clicks reuse the same selection plumbing
+   the cause/effect detail-pane links use."
+  [{:keys [id ^js record cx cy]} selected-id]
+  (let [^js r       record
+        left-x      (- cx (/ model/causality-node-w 2))
+        top-y       (- cy (/ model/causality-node-h 2))
+        sel?        (= id selected-id)
+        dot-cx      (+ left-x 12)
+        id-x        (+ left-x 22)
+        label-x     (+ left-x 22)
+        label-y     (+ top-y 18)
+        id-y        (+ top-y 11)
+        title-text  (escape-html (str "#" id " " (label-of-node r)
+                                      " · " (model/payload-preview r)))]
+    (str "<g data-x-th-link-id='" id "' role='button' tabindex='0' "
+         "aria-label='" title-text "'>"
+         "<title>" title-text "</title>"
+         "<rect class='node-rect" (when sel? " selected") "' "
+         "x='" left-x "' y='" top-y "' "
+         "width='" model/causality-node-w "' height='" model/causality-node-h "' "
+         "/>"
+         "<circle class='node-dot' cx='" dot-cx "' cy='" cy "' "
+         "r='" causality-dot-r "' fill='" (model/dot-color r) "' />"
+         "<text class='node-text id' x='" id-x "' y='" id-y "'>#" id "</text>"
+         "<text class='node-text' x='" label-x "' y='" label-y "'>"
+         (escape-html (short-label (label-of-node r))) "</text>"
+         "</g>")))
+
+(defn- causality-edge-html
+  "One <line> per parent→child edge. Drawn before nodes so they sit
+   underneath rects in the SVG z-order."
+  [{:keys [from-cx from-cy to-cx to-cy]}]
+  (let [;; Connect bottom of parent to top of child so the line doesn't
+        ;; pierce the node rects.
+        y1 (+ from-cy (/ model/causality-node-h 2))
+        y2 (- to-cy   (/ model/causality-node-h 2))]
+    (str "<line class='edge' "
+         "x1='" from-cx "' y1='" y1 "' "
+         "x2='" to-cx   "' y2='" y2 "' />")))
+
+(defn- causality-svg-html
+  "Build the inner SVG markup for a laid-out tree. Edges first (z-order
+   underneath), then nodes. width / height come from layout-tree so
+   the SVG's intrinsic size matches the tree's bounding box, which
+   makes the scrolling container's scrollbars accurate."
+  [layout selected-id]
+  (let [{:keys [nodes edges width height]} layout]
+    (str "<svg class='causality-svg' "
+         "width='" width "' height='" height "' "
+         "viewBox='0 0 " width " " height "'>"
+         (apply str (map causality-edge-html edges))
+         (apply str (map #(causality-node-html % selected-id) nodes))
+         "</svg>")))
+
+(defn- render-causality!
+  "Repaint the causality pane. Branches on selection / cap so the
+   user always sees a useful message instead of a blank pane.
+     - no selection         → empty-state hint
+     - selection found, ≤ cap → SVG tree
+     - selection found, > cap → over-cap hint
+   Stashes the layout map on the host so the post-render fit-to-view
+   step can read node coordinates without rebuilding the tree."
+  [^js el ^js causality-el ^js recs ^js sel-rec]
+  (cond
+    (nil? sel-rec)
+    (do
+      (gobj/set el "__xTraceHistoryCausalityLayout" nil)
+      (set! (.-innerHTML causality-el)
+            (str "<div class='causality-empty'>"
+                 (escape-html (model/causality-empty-message))
+                 "</div>")))
+
+    :else
+    (let [root   (model/causality-root recs sel-rec)
+          tree   (model/causality-tree recs root)
+          stats  (model/tree-size-stats tree)]
+      (if (> (:node-count stats) model/causality-max-nodes)
+        (do
+          (gobj/set el "__xTraceHistoryCausalityLayout" nil)
+          (set! (.-innerHTML causality-el)
+                (str "<div class='causality-empty'>"
+                     (escape-html (model/causality-over-cap-message stats))
+                     "</div>")))
+        (let [layout (model/layout-tree tree)]
+          (gobj/set el "__xTraceHistoryCausalityLayout" layout)
+          (set! (.-innerHTML causality-el)
+                (causality-svg-html layout (.-id sel-rec))))))))
+
+;; Forward decl — get-selected is defined in the "View / selection
+;; helpers" section further down. apply-causality-fit! reads the
+;; current selection to drive the scroll, but the causality renderer
+;; itself takes the selected record as a parameter, so only the
+;; post-render fit step needs the helper.
+(declare get-selected)
+
+(defn- apply-causality-fit!
+  "If the causality pane is on AND the needs-fit flag is set AND a
+   layout is cached AND a record is selected, scroll the pane so the
+   selected node sits at the centre of the viewport. Clears the flag
+   on a successful fit. Safe to call when the pane is hidden (the
+   container has zero clientWidth/Height — fit-to-view-scroll then
+   returns {0, 0} which is a no-op against scroll positions already
+   at the start)."
+  [^js el]
+  (when (gobj/get el model/k-causality-needs-fit)
+    (let [^js container (gobj/get el model/k-causality-el)
+          layout        (gobj/get el "__xTraceHistoryCausalityLayout")
+          sel-id        (get-selected el)
+          node          (when layout (model/find-laid-node layout sel-id))
+          vw            (some-> container .-clientWidth)
+          vh            (some-> container .-clientHeight)]
+      (when (and container layout node
+                 (number? vw) (number? vh)
+                 (pos? vw)    (pos? vh))
+        (let [{:keys [width height]} layout
+              {sl :scroll-left st :scroll-top}
+              (model/fit-to-view-scroll (:cx node) (:cy node) vw vh width height)]
+          (set! (.-scrollLeft container) sl)
+          (set! (.-scrollTop  container) st)
+          (gobj/set el model/k-causality-needs-fit false))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Tag dropdown — populated at runtime from observed tags
@@ -536,7 +714,12 @@
 (defn- set-selected!
   "Write the selected record-id for the active view. Mirrors to the
    legacy k-selected-id slot when the view is Live so existing test
-   assertions and any external readers keep working."
+   assertions and any external readers keep working.
+
+   When the dock is in :causality mode, mark `k-causality-needs-fit`
+   so the next render scrolls the freshly-selected node to the centre
+   of the causality pane. Selecting in :timeline mode does NOT scroll
+   the causality pane — the user hasn't asked to look at it yet."
   [^js el id]
   (let [view  (gobj/get el model/k-view)
         ^js m (or (gobj/get el model/k-view-selected) (js-obj))
@@ -547,6 +730,8 @@
     (gobj/set el model/k-view-selected m)
     (when (model/live-view? view)
       (gobj/set el model/k-selected-id id))
+    (when (= :causality (gobj/get el model/k-dock-mode))
+      (gobj/set el model/k-causality-needs-fit true))
     nil))
 
 (defn- effective-selection!
@@ -593,44 +778,69 @@
     :else
     (recorder/records)))
 
+(defn- apply-pane-visibility!
+  "Toggle the hidden attribute on the timeline / causality panes so
+   only the active dock-mode is visible. Both panes share the
+   flex: 1 1 auto slot above the detail; only one renders at a time."
+  [^js timeline-el ^js causality-el dock-mode]
+  (case dock-mode
+    :causality
+    (do (.setAttribute    timeline-el  "hidden" "")
+        (.removeAttribute causality-el "hidden"))
+    (do (.removeAttribute timeline-el  "hidden")
+        (.setAttribute    causality-el "hidden" ""))))
+
 (defn- render!
   "Repaint timeline, count, hint, detail pane, pause-button, record-button
    and session strip from current recorder + filter + view + selection state."
   [^js el]
-  (let [^js lanes-el    (gobj/get el model/k-lanes-el)
-        ^js svg-pane-el (gobj/get el model/k-svg-pane-el)
-        ^js count-el    (gobj/get el model/k-count-el)
-        ^js detail-el   (gobj/get el model/k-detail-el)
-        ^js splitter-el (gobj/get el model/k-splitter-el)
-        ^js hint-el     (gobj/get el model/k-hint-el)
-        ^js pause-btn   (gobj/get el model/k-pause-btn)
-        ^js record-btn  (gobj/get el model/k-record-btn)
-        ^js sessions-el (gobj/get el model/k-sessions-el)
-        ^js tag-sel-el  (gobj/get el model/k-tag-select-el)
-        spec            (gobj/get el model/k-filter)
-        view            (gobj/get el model/k-view)
-        ^js recs        (view-records view)
-        filtered        (model/filter-records recs spec)
-        cnt-filtered    (count filtered)
-        cnt-total       (.-length recs)
-        bounds          (model/time-bounds filtered)
-        lanes           (model/active-lanes filtered)
-        sel-rec         (effective-selection! el recs spec)
-        ^js sessions    (recorder/sessions)
-        ^js imports     (recorder/imports)
-        active-rec-id   (recorder/active-session-id)
-        axis-mode       (or (gobj/get el model/k-axis-mode)
-                            model/default-axis-mode)]
+  (let [^js timeline-el  (gobj/get el model/k-timeline-el)
+        ^js causality-el (gobj/get el model/k-causality-el)
+        ^js lanes-el     (gobj/get el model/k-lanes-el)
+        ^js svg-pane-el  (gobj/get el model/k-svg-pane-el)
+        ^js count-el     (gobj/get el model/k-count-el)
+        ^js detail-el    (gobj/get el model/k-detail-el)
+        ^js splitter-el  (gobj/get el model/k-splitter-el)
+        ^js hint-el      (gobj/get el model/k-hint-el)
+        ^js pause-btn    (gobj/get el model/k-pause-btn)
+        ^js record-btn   (gobj/get el model/k-record-btn)
+        ^js sessions-el  (gobj/get el model/k-sessions-el)
+        ^js tag-sel-el   (gobj/get el model/k-tag-select-el)
+        spec             (gobj/get el model/k-filter)
+        view             (gobj/get el model/k-view)
+        ^js recs         (view-records view)
+        filtered         (model/filter-records recs spec)
+        cnt-filtered     (count filtered)
+        cnt-total        (.-length recs)
+        bounds           (model/time-bounds filtered)
+        lanes            (model/active-lanes filtered)
+        sel-rec          (effective-selection! el recs spec)
+        ^js sessions     (recorder/sessions)
+        ^js imports      (recorder/imports)
+        active-rec-id    (recorder/active-session-id)
+        axis-mode        (or (gobj/get el model/k-axis-mode)
+                             model/default-axis-mode)
+        dock-mode        (or (gobj/get el model/k-dock-mode)
+                             model/default-dock-mode)]
     (sync-tag-options!       tag-sel-el)
-    (render-timeline! lanes-el svg-pane-el axis-mode filtered lanes bounds
-                      sel-rec (:tag spec))
+    (apply-pane-visibility! timeline-el causality-el dock-mode)
+    (case dock-mode
+      :causality (render-causality! el causality-el recs sel-rec)
+      (render-timeline! lanes-el svg-pane-el axis-mode filtered lanes bounds
+                        sel-rec (:tag spec)))
     (set! (.-textContent count-el) (str cnt-filtered))
     (set! (.-textContent hint-el)
           (model/timeline-hint cnt-filtered cnt-total bounds (count lanes)))
     (refresh-detail!         detail-el splitter-el recs sel-rec)
     (refresh-pause-btn!      pause-btn)
     (refresh-record-btn!     record-btn)
-    (refresh-sessions-strip! sessions-el sessions imports view active-rec-id)))
+    (refresh-sessions-strip! sessions-el sessions imports view active-rec-id)
+    ;; Fit-to-view runs LAST so the causality pane has its final
+    ;; visibility / SVG contents in place when we read its
+    ;; clientWidth/Height. apply-causality-fit! is a no-op unless the
+    ;; pane is visible, the needs-fit flag is set, and a selection
+    ;; resolves to a laid-out node.
+    (apply-causality-fit! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Click + tooltip + filter handlers
@@ -818,6 +1028,24 @@
     (gobj/set el model/k-axis-mode mode)
     (render! el)))
 
+(defn- handle-mode-change!
+  "Switch the dock's view between :timeline and :causality. Toggling
+   TO causality always marks needs-fit so the next render scrolls
+   the selected node into the centre of the new pane (the user's
+   intent on switching is 'show me the chain for what I've got
+   selected'). Toggling back to :timeline clears the flag so a
+   later return to causality doesn't fight a stale request."
+  [^js el value]
+  (let [mode (case value
+               "timeline"  :timeline
+               "causality" :causality
+               model/default-dock-mode)]
+    (gobj/set el model/k-dock-mode mode)
+    (if (= :causality mode)
+      (gobj/set el model/k-causality-needs-fit true)
+      (gobj/set el model/k-causality-needs-fit false))
+    (render! el)))
+
 (defn- handle-cat-change!
   "Toggle a category in the filter from an x-checkbox-change detail
    payload. `cat` is the data-x-th-cat string (e.g. \"events\");
@@ -832,15 +1060,18 @@
     (render! el)))
 
 (defn- handle-select-change!
-  "x-select fires `select-change` with detail = {value, label}. Two
-   selects live in the dock (tag filter + axis mode); the data
-   attribute disambiguates."
+  "x-select fires `select-change` with detail = {value, label}. Three
+   selects live in the dock (tag filter + view mode + axis mode); the
+   data attribute disambiguates."
   [^js el ^js e]
   (let [^js target (.-target e)
         value      (.. e -detail -value)]
     (cond
       (some? (.getAttribute target "data-x-th-tag"))
       (handle-tag-change! el value)
+
+      (some? (.getAttribute target "data-x-th-mode"))
+      (handle-mode-change! el value)
 
       (some? (.getAttribute target "data-x-th-axis"))
       (handle-axis-change! el value))))
@@ -1285,6 +1516,8 @@
   (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
   (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
   (gobj/set el model/k-tag-select-el   (.querySelector shadow "[data-x-th-tag]"))
+  (gobj/set el model/k-mode-select-el  (.querySelector shadow "[data-x-th-mode]"))
+  (gobj/set el model/k-causality-el    (.querySelector shadow "[data-x-th-causality]"))
   (gobj/set el model/k-search-input-el (.querySelector shadow "[data-x-th-search]"))
   (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
@@ -1303,7 +1536,7 @@
    — one place lists every static listener, and add/remove iterate
    the same source of truth so they cannot drift."
   [^js el ^js shadow ^js timeline-el ^js svg-pane-el ^js splitter-el ^js detail-el
-   ^js import-input]
+   ^js import-input ^js causality-el]
   #js [#js [shadow       "click"             (fn [^js e] (handle-click!                 el e))]
        #js [shadow       "select-change"     (fn [^js e] (handle-select-change!         el e))]
        #js [shadow       "x-checkbox-change" (fn [^js e] (handle-checkbox-change!       el e))]
@@ -1318,6 +1551,12 @@
        ;; Pointerdown anywhere in the timeline focuses it so the
        ;; keyboard outline shows the user their starting point.
        #js [timeline-el  "pointerdown"       (fn [_e] (.focus timeline-el))]
+       ;; Causality pane mirrors the timeline's focus pattern so arrow
+       ;; keys step the selection when the user is browsing the tree.
+       ;; Pointerdown bubbles from any SVG descendant (rect / text /
+       ;; circle) so a single listener on the pane covers all node
+       ;; clicks. The pane is focusable via tabindex='0'.
+       #js [causality-el "pointerdown"       (fn [_e] (.focus causality-el))]
        ;; Keydown is bound on the SHADOW ROOT (not the timeline) so the
        ;; shadow receives keydown from any focused descendant — arrow
        ;; keys keep working even when focus shifts to a control after
@@ -1367,9 +1606,10 @@
         ^js splitter-el   (gobj/get el model/k-splitter-el)
         ^js detail-el     (gobj/get el model/k-detail-el)
         ^js import-input  (gobj/get el model/k-import-input)
+        ^js causality-el  (gobj/get el model/k-causality-el)
         tuples            (build-listener-tuples
                            el shadow timeline-el svg-pane-el splitter-el detail-el
-                           import-input)]
+                           import-input causality-el)]
     (gobj/set el model/k-listeners tuples)
     (add-listeners! tuples)))
 
@@ -1400,6 +1640,11 @@
     (gobj/set el model/k-view-selected (js-obj)))
   (when-not (gobj/get el model/k-axis-mode)
     (gobj/set el model/k-axis-mode model/default-axis-mode))
+  ;; Dock-mode persists across remount, same as axis-mode: a user
+  ;; flipped to :causality before disconnect should land back in
+  ;; causality on reconnect rather than getting reset to timeline.
+  (when-not (gobj/get el model/k-dock-mode)
+    (gobj/set el model/k-dock-mode model/default-dock-mode))
   ;; Default is expanded (collapsed = false). After this slot is set
   ;; once it survives remount, so apply-collapsed-state! below re-
   ;; applies the user's prior choice when the dock reconnects.

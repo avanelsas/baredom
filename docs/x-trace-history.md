@@ -94,19 +94,22 @@ activates. Its anatomy, top to bottom:
 |---|---|
 | Toolbar | Pause / Resume · Record (start a session) · Clear · Export · Import · live record count |
 | Session chips | One chip per session and one per import, plus the always-on **Live** view. Click to switch the timeline source. |
-| Filters | Tag dropdown · category checkboxes (events, state, DOM, lifecycle) · axis-mode toggle (Order / Time) · full-text search |
+| Filters | Tag dropdown · view-mode toggle (Timeline / Causality) · category checkboxes (events, state, DOM, lifecycle) · axis-mode toggle (Order / Time) · full-text search |
 | Timeline | One horizontal lane per component instance. Dots are coloured by category. Hover for tooltip; click to select. |
+| Causality | (View-mode: Causality) Tree-shaped view of cause→effect rooted at the currently-selected record's highest ancestor. Click a node to scrub to it. The pane auto-scrolls so the selected node sits at the centre. |
 | Splitter | Drag to resize the detail pane. |
 | Detail pane | Pretty-printed JSON for the selected record, plus **Caused by** / **Effects** links. |
 | Hint line | Record count, time-bounds, lane count. |
 
 Keyboard:
 
-- **Left / Right** while the timeline has focus — step the scrubber by
-  one record.
+- **Left / Right** while the timeline OR causality pane has focus —
+  step the scrubber by one record. In causality mode the next record
+  may belong to a different tree; the pane redraws automatically and
+  auto-scrolls to the new selection.
 - Click a lane label to filter the timeline to that component
   instance. Click again to clear.
-- Click anywhere in the timeline to focus it.
+- Click anywhere in the timeline (or causality pane) to focus it.
 
 ## Search
 
@@ -326,6 +329,34 @@ The detail pane shows:
 
 Clicking a link jumps the timeline selection to that record so you can
 walk a chain step by step.
+
+### Causality DAG view
+
+For a graphical view of the same chain, flip the filter row's
+**view-mode** select from **Timeline** to **Causality**. The pane
+above the splitter is replaced with an SVG tree rooted at the highest
+ancestor of the currently-selected record. Boxes are individual
+records (`tag · type`), edges connect cause to effect, and the
+currently-selected node is highlighted.
+
+- **Click a node** — selects that record. The detail pane updates,
+  and toggling back to **Timeline** lands the scrubber on the same
+  spot. The same selection model works in both views.
+- **Auto-scroll on switch** — switching to Causality scrolls the pane
+  so the selected node sits in the centre of the viewport. The same
+  thing happens whenever the selection changes while you're already
+  in Causality mode.
+- **Empty state** — with no record selected, the pane shows a hint
+  asking you to pick one. Select any record in Timeline first.
+- **Over-cap notice** — trees over 200 nodes show a notice instead
+  of drawing. That's typically a render fan-out (one dispatch
+  causing hundreds of effects); narrow the tag / category filter or
+  click into a smaller leaf record to view a focussed subtree.
+
+Each record carries at most one `causeId`, so the causality structure
+is a forest of trees rather than a general DAG — there's never a
+cycle and never more than one parent per node. The view name ("DAG")
+is general-correct but the algorithm is just tree layout.
 
 ### What IS tracked
 
