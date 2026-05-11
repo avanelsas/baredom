@@ -13,7 +13,18 @@ import type {
   TraceEnvelope,
   TraceImport,
   TraceSession,
+  BareDOMNamespace,
 } from "@vanelsas/baredom/x-trace-history";
+
+// Declaration-merging smoke test: a hypothetical future dev tool
+// should be able to add its own slot to BareDOMNamespace without
+// disturbing the trace-history slot. If this compiles, future dev
+// tools can ship typed APIs alongside trace-history.
+declare module "@vanelsas/baredom/x-trace-history" {
+  interface BareDOMNamespace {
+    _smokeTestFutureTool?: { ping(): void };
+  }
+}
 
 // ── HTMLElementTagNameMap augmentation ───────────────────────────────────────
 const btn: XButton = document.createElement("x-button");
@@ -122,6 +133,15 @@ if (_api) {
 // ── querySelector type narrowing for the dock ───────────────────────────────
 declare const dockEl: HTMLElementTagNameMap["x-trace-history"];
 void dockEl;
+
+// ── BareDOMNamespace merging contract ──────────────────────────────────────
+// Both the built-in trace-history slot AND the merged-in future-tool
+// slot must be reachable on the merged BareDOMNamespace type. Reading
+// either through the optional Window.BareDOM should compile.
+declare const _ns: BareDOMNamespace;
+const _ft = _ns._smokeTestFutureTool;
+const _th = _ns.traceHistory;
+void [_ft, _th];
 
 // ── Suppress unused warnings ────────────────────────────────────────────────
 void [_disabled, _loading, _alertText, _alertType, _total, _b, _target];

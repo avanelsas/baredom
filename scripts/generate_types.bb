@@ -369,6 +369,26 @@ export interface BareDOMTraceHistory {
 }
 
 /**
+ * The shared `window.BareDOM` namespace. Each BareDOM dev tool slots
+ * its console API in here under its own key — `traceHistory` for
+ * x-trace-history. Future dev tools augment this interface via
+ * TypeScript declaration merging:
+ *
+ * ```ts
+ * declare module \"@vanelsas/baredom/x-trace-history\" {
+ *   interface BareDOMNamespace { myDevTool?: MyDevToolApi }
+ * }
+ * ```
+ *
+ * This lives in the x-trace-history module today because that is the
+ * first dev tool to ship; it can move to a shared types module if and
+ * when a second tool joins.
+ */
+export interface BareDOMNamespace {
+  traceHistory?: BareDOMTraceHistory;
+}
+
+/**
  * The `<x-trace-history>` custom element auto-mounted to <body> when
  * the recorder activates. The element has no public attributes or
  * properties — it is a self-contained floating dock that subscribes
@@ -379,13 +399,12 @@ export interface XTraceHistory extends HTMLElement {}
 declare global {
   interface Window {
     /**
-     * Namespace installed by every BareDOM ESM module that ships a
-     * console-callable API. `traceHistory` appears when the
-     * x-trace-history recorder activates.
+     * Shared namespace installed by every BareDOM ESM module that
+     * ships a console-callable API. See `BareDOMNamespace` for the
+     * slots populated by x-trace-history; future dev tools augment
+     * the interface via declaration merging.
      */
-    BareDOM?: {
-      traceHistory?: BareDOMTraceHistory;
-    };
+    BareDOM?: BareDOMNamespace;
     /**
      * Set to `true` (or the string `\"raw\"` for forensic mode) before
      * the app boots to activate the recorder without a URL flag.
@@ -449,6 +468,7 @@ declare global {
                (when trace-history?
                  (str "export {\n"
                       "  XTraceHistory,\n"
+                      "  BareDOMNamespace,\n"
                       "  BareDOMTraceHistory,\n"
                       "  TraceRecord,\n"
                       "  TraceRecordBase,\n"
