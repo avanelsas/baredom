@@ -465,3 +465,66 @@
             (done))
           0))
        0))))
+
+;; ---------------------------------------------------------------------------
+;; Slotted <option selected> survives when host has no `value` attr
+;; ---------------------------------------------------------------------------
+
+(deftest slotted-selected-default-survives-test
+  ;; Regression: prior to this fix, apply-model! wrote
+  ;; (set! (.-value select-el) "") on every render when the host had
+  ;; no `value` attribute. That clobbered the slotted <option selected>
+  ;; default, leaving the inner select on its hidden placeholder so
+  ;; the dropdown appeared blank — visible in any consumer that
+  ;; chose to mark the default option in markup rather than via the
+  ;; `value` attribute on the host.
+  (async done
+    (let [el (append! (make-el))
+          opt-a (.createElement js/document "option")
+          opt-b (.createElement js/document "option")]
+      (set! (.-value opt-a) "all")
+      (set! (.-text  opt-a) "All tags")
+      (.setAttribute opt-a "selected" "")
+      (set! (.-value opt-b) "x-button")
+      (set! (.-text  opt-b) "x-button")
+      (.appendChild el opt-a)
+      (.appendChild el opt-b)
+      ;; The slotchange handler runs asynchronously after the slot
+      ;; sees its assigned options. Wait a frame for the clone +
+      ;; subsequent render! to settle, then check the inner select.
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")]
+           (is (= "all" (.-value sel))
+               "inner select honours the slotted <option selected>
+                when the host has no value attribute")
+           (is (= "All tags"
+                  (some-> (.-selectedOptions sel) (aget 0) .-text))
+               "the displayed option label is the slotted default —
+                not the hidden placeholder"))
+         (done))
+       0))))
+
+(deftest explicit-value-attr-overrides-slotted-selected-test
+  ;; The complement to the previous test: an explicit `value` attr on
+  ;; the host still wins, so callers can programmatically select an
+  ;; option that wasn't marked `selected` in markup.
+  (async done
+    (let [el (append! (make-el))
+          opt-a (.createElement js/document "option")
+          opt-b (.createElement js/document "option")]
+      (.setAttribute el "value" "x-button")
+      (set! (.-value opt-a) "all")
+      (set! (.-text  opt-a) "All tags")
+      (.setAttribute opt-a "selected" "")
+      (set! (.-value opt-b) "x-button")
+      (set! (.-text  opt-b) "x-button")
+      (.appendChild el opt-a)
+      (.appendChild el opt-b)
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")]
+           (is (= "x-button" (.-value sel))
+               "explicit host value attribute overrides slotted <option selected>"))
+         (done))
+       0))))
