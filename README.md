@@ -244,7 +244,7 @@ BareDOM components are native HTML elements. Import, register, and use them in a
 
 ## Design Principles
 
-**Stateless.** No `atom`, no signal, no reactive state container lives inside a component. Every render is a pure function of the current attributes and properties. Debugging a component means inspecting attributes in DevTools — no hidden state to hunt for.
+**Stateless.** No `atom`, no signal, no reactive state container lives inside a component. Every render is a pure function of the current attributes and properties. Debugging a component means inspecting attributes in DevTools — no hidden state to hunt for. For deeper investigations, the optional [`x-trace-history`](./docs/x-trace-history.md) dev tool ships as a separate ESM module and records every dispatch, attribute change, and lifecycle callback as a navigable timeline with cause→effect chains. Load it with `<script type="module" src="…/x-trace-history.js">` and activate via `?baredom-trace-history`; zero cost when the flag is absent.
 
 **Standards-only.** BareDOM relies on Custom Elements v1, Shadow DOM v1, and ES modules — all natively supported in modern browsers. There are no polyfills required and no proprietary APIs to learn.
 
