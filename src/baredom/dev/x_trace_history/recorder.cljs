@@ -682,6 +682,94 @@
       #js [])))
 
 ;; ---------------------------------------------------------------------------
+;; Export — JSON envelope + Blob download
+;;
+;; export! materialises the current recorder state into the schema-stable
+;; JS envelope documented in docs/x-trace-history-schema.md. download-trace!
+;; serialises that envelope, constructs a Blob, and clicks a synthetic
+;; anchor so the browser saves it under the canonical filename. Both
+;; functions are exposed on window.BareDOM.traceHistory so consumers can
+;; trigger exports from the console or build their own toolbars.
+;; ---------------------------------------------------------------------------
+
+(defn- export-context
+  "Capture the wall-clock + environment context that gets stamped into
+   the envelope's top-level fields. Pure of recorder state — only reads
+   the supplied `now`, `js/window`, and `js/navigator`. The caller is
+   responsible for plumbing `:forensic?` in so make-export sees a
+   consistent snapshot. Split out so download-trace! can pass a shared
+   timestamp to both the envelope and the filename slug."
+  [^js now forensic?]
+  {:exported-at (.getTime now)
+   :origin      (or (some-> js/window .-location .-href) "")
+   :user-agent  (or (some-> js/navigator .-userAgent) "")
+   :forensic?   forensic?})
+
+(defn export!
+  "Return the current recorder state as a schema-stable JS envelope
+   ready for `JSON.stringify`. Captures records, the components index,
+   and any sessions metadata, plus wall-clock context (`exportedAt`,
+   `origin`, `userAgent`, `forensic`). Does NOT mutate state.
+
+   The returned envelope's `records` field is reference-equal to the
+   recorder's memoised JS array — callers MUST NOT mutate it. Treat
+   the envelope as read-only or call `JSON.parse(JSON.stringify(env))`
+   for an independent copy.
+
+   Safe to call when paused, mid-session, or with an empty buffer.
+   See docs/x-trace-history-schema.md for the contract."
+  []
+  (let [s        @state
+        ^js recs (records-as-js-array)
+        ctx      (export-context (js/Date.) (:forensic? s))]
+    (model/make-export recs (:components s) (:sessions s) ctx)))
+
+(defn- trigger-download!
+  "Build a Blob from a pretty-printed JSON string, attach an off-DOM
+   anchor whose download attribute drives the filename, click it, then
+   revoke the object URL so the Blob is eligible for GC. The anchor is
+   appended to <body> (not just constructed) because Firefox ignores
+   programmatic clicks on detached anchors.
+
+   The append/click/remove triple and the object-URL allocation are
+   wrapped in try/finally so a throw inside `.click()` (patched
+   prototype, exotic CSP, etc.) still revokes the URL and detaches
+   the anchor — no leaks, no orphan nodes."
+  [json-str filename]
+  (let [^js blob (js/Blob. #js [json-str] #js {:type "application/json"})
+        url      (js/URL.createObjectURL blob)
+        ^js a    (.createElement js/document "a")]
+    (set! (.-href a) url)
+    (set! (.-download a) filename)
+    (set! (.. a -style -display) "none")
+    (.appendChild (.-body js/document) a)
+    (try
+      (.click a)
+      (finally
+        (.removeChild (.-body js/document) a)
+        (js/URL.revokeObjectURL url)))
+    nil))
+
+(defn download-trace!
+  "Trigger a browser download of the current trace as
+   `baredom-trace-YYYYMMDD-HHmmss.trace.json`. The same timestamp drives
+   both the envelope's `exportedAt` and the filename slug, so a file's
+   name and contents agree on when it was captured.
+
+   Returns nil. Safe to call from anywhere — pure side effect on the
+   document."
+  []
+  (let [now      (js/Date.)
+        s        @state
+        ^js recs (records-as-js-array)
+        ctx      (export-context now (:forensic? s))
+        envelope (model/make-export recs (:components s) (:sessions s) ctx)
+        json-str (js/JSON.stringify envelope nil 2)
+        filename (model/download-filename now)]
+    (trigger-download! json-str filename)
+    nil))
+
+;; ---------------------------------------------------------------------------
 ;; Install / uninstall
 ;; ---------------------------------------------------------------------------
 
@@ -708,7 +796,9 @@
                   "startSession"   start-session!
                   "stopSession"    stop-session!
                   "sessions"       sessions
-                  "sessionRecords" session-records)]
+                  "sessionRecords" session-records
+                  "export"         export!
+                  "download"       download-trace!)]
     (gobj/set base window-api-key api)
     (gobj/set js/window window-base-key base)))
 

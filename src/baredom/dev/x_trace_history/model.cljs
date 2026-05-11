@@ -151,6 +151,113 @@
         r))))
 
 ;; ---------------------------------------------------------------------------
+;; Export — envelope construction
+;;
+;; Pure helpers for building the on-disk JSON shape produced by PR 10's
+;; Export button. The recorder calls `make-export` with its current state
+;; snapshot; this namespace is responsible only for translating that
+;; snapshot into the schema-stable wire format documented in
+;; docs/x-trace-history-schema.md. Effects (Blob construction, anchor
+;; click, window API wiring) live in recorder.cljs / x_trace_history.cljs.
+;; ---------------------------------------------------------------------------
+
+(def filename-prefix "baredom-trace-")
+
+(def filename-extension ".trace.json")
+
+(defn- pad2
+  "Left-pad a non-negative integer to two characters with '0'. Used by
+   download-filename to build a sortable timestamp slug."
+  [n]
+  (let [s (str n)]
+    (if (< (count s) 2)
+      (str "0" s)
+      s)))
+
+(defn download-filename
+  "Format a Date into the canonical export filename:
+   `baredom-trace-YYYYMMDD-HHmmss.trace.json`. Using local time
+   (matches the user's clock on disk) and zero-padded fields so
+   filenames sort chronologically."
+  [^js d]
+  (str filename-prefix
+       (.getFullYear d)
+       (pad2 (inc (.getMonth d)))
+       (pad2 (.getDate d))
+       "-"
+       (pad2 (.getHours d))
+       (pad2 (.getMinutes d))
+       (pad2 (.getSeconds d))
+       filename-extension))
+
+(defn- components->js
+  "Convert the recorder's CLJS components index (id → {:tag :first-seen})
+   into the schema's JS-object shape (stringified id → {tag, firstSeen})."
+  [components]
+  (let [^js out (js-obj)]
+    (doseq [[id info] components]
+      (gobj/set out (str id)
+                (js-obj "tag"       (:tag info)
+                        "firstSeen" (:first-seen info))))
+    out))
+
+(defn- sessions->js
+  "Convert the recorder's CLJS sessions vector into a JS array of session
+   objects in the wire shape. `recordCount` from the live `recorder/sessions`
+   JS API is intentionally omitted — it's a derived value, not part of the
+   on-disk contract. `endT` / `endId` survive as nil for sessions still
+   active at export time."
+  [sessions]
+  (let [^js arr (array)]
+    (doseq [{:keys [id label start-t end-t start-id end-id]} sessions]
+      (.push arr (js-obj "id"      id
+                         "label"   label
+                         "startT"  start-t
+                         "endT"    end-t
+                         "startId" start-id
+                         "endId"   end-id)))
+    arr))
+
+(defn make-export
+  "Build the JS-object envelope that gets JSON.stringified into a
+   `.trace.json` file. Pure: depends only on its arguments, no atom
+   reads, no Date.now() calls.
+
+   Inputs:
+     records    — JS array of record objects (the recorder's
+                  memoised view, oldest first).
+     components — CLJS map componentId → {:tag :first-seen}.
+     sessions   — CLJS vector of session maps with the recorder's
+                  internal keys (:id :label :start-t :end-t :start-id
+                  :end-id).
+     ctx        — CLJS map of caller-supplied context:
+                    :exported-at (number)  — Date.now() ms
+                    :origin      (string)  — window.location.href
+                    :user-agent  (string)  — navigator.userAgent
+                    :forensic?   (boolean) — recorder/forensic-mode?
+
+   Returns a JS object suitable for `JSON.stringify(envelope, null, 2)`.
+   The envelope's `records` field is reference-equal to the passed-in
+   `records` array — make-export does NOT copy. Callers passing the
+   recorder's memoised array (`records-as-js-array`) must treat the
+   resulting envelope as read-only; mutating envelope.records corrupts
+   the recorder's internal cache.
+
+   The full schema lives in docs/x-trace-history-schema.md and the
+   `schemaVersion` field gates importers."
+  [^js records components sessions
+   {:keys [exported-at origin user-agent forensic?]}]
+  (js-obj
+   "schemaVersion" schema-version
+   "exportedAt"    exported-at
+   "origin"        origin
+   "userAgent"     user-agent
+   "forensic"      (boolean forensic?)
+   "components"    (components->js components)
+   "sessions"      (sessions->js sessions)
+   "records"       records))
+
+;; ---------------------------------------------------------------------------
 ;; Ring buffer
 ;; ---------------------------------------------------------------------------
 
@@ -584,6 +691,11 @@
 }
 .header {
   display: flex;
+  /* Wrap so the count + action buttons survive narrow viewports
+     (`min(420px, calc(100vw - 1rem))` reaches 304px at 320px screens,
+     which is too tight for four action buttons + title + count on
+     one row). */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;

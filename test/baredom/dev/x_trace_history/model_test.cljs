@@ -863,3 +863,138 @@
           out    (model/effects-of recs parent)]
       (is (= (+ model/effects-display-limit 5) (:total out)))
       (is (= model/effects-display-limit (count (:records out)))))))
+
+;; ── Export envelope ─────────────────────────────────────────────────────────
+
+(def ^:private export-ctx
+  "Stable context map reused by every envelope test so individual cases
+   only assert the shape they care about."
+  {:exported-at 1715432100000
+   :origin      "https://app.example.com/?baredom-trace-history"
+   :user-agent  "Mozilla/5.0 test"
+   :forensic?   false})
+
+(deftest make-export-envelope-shape-test
+  (testing "envelope carries every top-level field with the expected
+            types and pass-throughs"
+    (let [^js recs #js [#js {"id" 0 "t" 1.0 "type" "lifecycle/connected"}]
+          comps    {0 {:tag "x-button" :first-seen 1.0}}
+          sessions []
+          ^js env  (model/make-export recs comps sessions export-ctx)]
+      (is (= 1                          (.-schemaVersion env)))
+      (is (= 1715432100000              (.-exportedAt env)))
+      (is (= "https://app.example.com/?baredom-trace-history"
+             (.-origin env)))
+      (is (= "Mozilla/5.0 test"         (.-userAgent env)))
+      (is (false?                       (.-forensic env)))
+      (is (identical? recs              (.-records env))
+          "records pass through by reference — schema avoids re-allocating
+           an O(N) copy of the ring buffer just to export"))))
+
+(deftest make-export-components-map-shape-test
+  (testing "components index converts to string-keyed JS object with
+            tag + firstSeen fields"
+    (let [comps   {0 {:tag "x-button"   :first-seen 1.0}
+                   7 {:tag "x-checkbox" :first-seen 5.5}}
+          ^js env (model/make-export #js [] comps [] export-ctx)
+          ^js c   (.-components env)
+          ^js c0  (gobj/get c "0")
+          ^js c7  (gobj/get c "7")]
+      (is (= "x-button"   (.-tag c0)))
+      (is (= 1.0          (.-firstSeen c0)))
+      (is (= "x-checkbox" (.-tag c7)))
+      (is (= 5.5          (.-firstSeen c7)))
+      (is (= #{"0" "7"}   (set (gobj/getKeys c)))
+          "keys are strings — schema commits to stringified ids so JSON
+           objects round-trip cleanly"))))
+
+(deftest make-export-sessions-shape-test
+  (testing "sessions array carries id/label/startT/endT/startId/endId
+            in wire-name form, dropping recorder-only :record-count"
+    (let [sessions [{:id 0 :label "Session 0"
+                     :start-t 100.5 :end-t 250.7
+                     :start-id 42   :end-id 67}
+                    {:id 1 :label "Active"
+                     :start-t 300.0 :end-t nil
+                     :start-id 70   :end-id nil}]
+          ^js env  (model/make-export #js [] {} sessions export-ctx)
+          ^js arr  (.-sessions env)]
+      (is (= 2 (.-length arr)))
+      (let [^js s0 (aget arr 0)
+            ^js s1 (aget arr 1)]
+        (is (= 0           (.-id s0)))
+        (is (= "Session 0" (.-label s0)))
+        (is (= 100.5       (.-startT s0)))
+        (is (= 250.7       (.-endT s0)))
+        (is (= 42          (.-startId s0)))
+        (is (= 67          (.-endId s0)))
+        (is (nil?          (.-endT s1))
+            "open sessions surface end-t as null on the wire")
+        (is (nil?          (.-endId s1))
+            "open sessions surface end-id as null on the wire")))))
+
+(deftest make-export-forensic-flag-test
+  (testing "boolean coercion: truthy :forensic? lands as true; nil / false
+            lands as false — never undefined"
+    (let [ctx-on  (assoc export-ctx :forensic? true)
+          ctx-nil (assoc export-ctx :forensic? nil)]
+      (is (true?  (.-forensic ^js (model/make-export #js [] {} [] ctx-on))))
+      (is (false? (.-forensic ^js (model/make-export #js [] {} [] ctx-nil)))))))
+
+(deftest make-export-empty-buffer-test
+  (testing "empty records / components / sessions still produce a valid
+            envelope — useful for capturing 'nothing happened yet' as a
+            baseline for a bug report"
+    (let [^js env (model/make-export #js [] {} [] export-ctx)]
+      (is (= 1 (.-schemaVersion env)))
+      (is (= 0 (.-length (.-records env))))
+      (is (= 0 (.-length (.-sessions env))))
+      (is (zero? (count (gobj/getKeys (.-components env))))))))
+
+(deftest make-export-stringifies-to-valid-json-test
+  (testing "the envelope is JSON.stringify-clean: no circular refs, no
+            symbol keys, parseable back to the same shape"
+    (let [^js rec  (model/make-record
+                    {:type :event/dispatch
+                     :tag "x-button"
+                     :component-id 0
+                     :cause-id nil
+                     :event-name "press"
+                     :detail #js {:foo 1}
+                     :cancelable? false
+                     :default-prevented? false}
+                    0 1.0)
+          ^js env  (model/make-export #js [rec]
+                                       {0 {:tag "x-button" :first-seen 0.5}}
+                                       []
+                                       export-ctx)
+          json-str (js/JSON.stringify env)
+          ^js back (js/JSON.parse json-str)
+          ^js rec0 (aget (.-records back) 0)]
+      (is (= 1               (.-schemaVersion back)))
+      (is (= 1               (.-length (.-records back))))
+      (is (= "event/dispatch" (.-type rec0))))))
+
+;; ── download-filename ──────────────────────────────────────────────────────
+
+(deftest download-filename-pad-and-extension-test
+  (testing "zero-padded YYYYMMDD-HHmmss slug with .trace.json extension"
+    ;; JS Date months are 0-indexed; March = 2.
+    (let [d (js/Date. 2026 2 7 9 4 5)]
+      (is (= "baredom-trace-20260307-090405.trace.json"
+             (model/download-filename d))))))
+
+(deftest download-filename-double-digit-fields-test
+  (testing "two-digit fields are kept as-is, no leading zero stripping"
+    (let [d (js/Date. 2026 10 31 23 59 59)]
+      (is (= "baredom-trace-20261131-235959.trace.json"
+             (model/download-filename d))))))
+
+(deftest download-filename-extension-constants-test
+  (testing "filename composes from the exported prefix + extension
+            constants so PR 11 import-side validation can reuse them
+            without duplicating string literals"
+    (let [d    (js/Date. 2026 0 1 0 0 0)
+          name (model/download-filename d)]
+      (is (clojure.string/starts-with? name model/filename-prefix))
+      (is (clojure.string/ends-with?   name model/filename-extension)))))
