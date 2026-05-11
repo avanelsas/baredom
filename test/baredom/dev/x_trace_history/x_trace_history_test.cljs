@@ -220,22 +220,30 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- dispatch-search-input!
-  "Simulate a user typing into the search input — set value, fire an
-   `input` event that bubbles up to the shadow root where the dock's
-   delegate handles it."
-  [^js input value]
-  (set! (.-value input) value)
-  (.dispatchEvent input
-                  (js/Event. "input" #js {:bubbles true :composed true})))
+  "Simulate a user typing into the search field — set the host's value
+   property and fire the CustomEvent x-search-field emits on every
+   keystroke. Mirrors the dispatch-checkbox-change! / dispatch-select-
+   change! helpers above. The event must bubble + compose so it
+   crosses the dock's shadow boundary to the dock's listener-spec
+   delegate."
+  [^js sf value]
+  (set! (.-value sf) value)
+  (.dispatchEvent sf
+                  (js/CustomEvent. "x-search-field-input"
+                                   #js {:bubbles  true
+                                        :composed true
+                                        :detail   #js {:name  "search"
+                                                       :value value}})))
 
 (deftest search-input-rendered-in-filter-bar-test
-  (testing "the dock skeleton ships a native <input type='search'>
-            next to the tag/categories filters with the data-x-th-
-            search marker the handler gates on"
+  (testing "the dock skeleton ships an x-search-field next to the
+            tag/categories filters with the data-x-th-search marker
+            the handler gates on"
     (let [^js dock (mount-dock!)
           ^js inp  (query dock "[data-x-th-search]")]
-      (is (some? inp) "search input present in the filter bar")
-      (is (= "search" (.-type inp)))
+      (is (some? inp) "search field present in the filter bar")
+      (is (= "x-search-field" (.. inp -tagName toLowerCase))
+          "uses the BareDOM x-search-field component")
       (is (.hasAttribute inp "data-x-th-search")))))
 
 (deftest search-narrows-dots-test
@@ -296,6 +304,26 @@
                 (is (= 1 (dot-count dock))
                     "lowercase query matched the mixed-case event name")
                 (done)))))))))
+
+(deftest search-typing-does-not-pollute-live-records-test
+  (testing "x-search-field events fire from inside the dock's shadow,
+            so the recorder's internal-host filter (via mark-internal!)
+            must skip them. Typing into search should not add records
+            to the live buffer."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (du/dispatch! btn "press" #js {})
+        (after-frames 2
+          (fn []
+            (let [before-search (.-length (recorder/records))]
+              (dispatch-search-input!
+                ^js (query dock "[data-x-th-search]") "press")
+              (after-frames 2
+                (fn []
+                  (is (= before-search (.-length (recorder/records)))
+                      "no x-search-field-input records leaked into live")
+                  (done))))))))))
 
 (deftest search-combines-with-tag-filter-test
   (testing "search AND tag both apply — the AND-semantics are inherited

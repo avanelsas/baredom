@@ -1075,28 +1075,14 @@
   cursor: pointer;
   user-select: none;
 }
-/* PR 16 search input — a native <input type='search'> styled to match
-   the dock's monospace tone. Substring-matches against the JSON-
-   serialised form of every record. Empty input = no filter. */
-.filters input.search {
-  font: inherit;
+/* PR 16 — search input. x-search-field brings its own theming via its
+   shadow DOM; the dock just constrains the host width so it shares
+   the filter row's monospace tone with the tag dropdown. */
+.filters x-search-field {
   font-size: 11px;
   flex: 1 1 140px;
   min-width: 100px;
   max-width: 240px;
-  padding: 2px 6px;
-  background: rgba(255,255,255,0.04);
-  color: #cdd6f4;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 3px;
-  outline: none;
-}
-.filters input.search:focus {
-  border-color: #89b4fa;
-  background: rgba(255,255,255,0.06);
-}
-.filters input.search::placeholder {
-  color: #6c7086;
 }
 /* Session strip: thin row above the filter row listing the live view
    plus any captured session as a clickable chip. Hidden when the only
