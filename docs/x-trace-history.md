@@ -15,6 +15,8 @@ per-event overhead — there is no production cost when off.
 - [The dock](#the-dock)
 - [Console API](#console-api)
 - [Capture and share a bug report](#capture-and-share-a-bug-report)
+  - [Sharing via URL](#sharing-via-url)
+  - [Auto-switch on first import](#auto-switch-on-first-import)
 - [Recording sessions](#recording-sessions)
 - [Import / export](#import--export)
 - [Adapter notes](#adapter-notes)
@@ -137,13 +139,44 @@ BareDOMTraceHistory } from '@vanelsas/baredom/x-trace-history'`.
    `window.BareDOM.traceHistory.download()` from the console). A
    `.trace.json` file downloads.
 3. Attach the file to the bug report.
-4. The recipient drags the file onto their dock (or calls
-   `window.BareDOM.traceHistory.import(text)` with the file contents).
-   The imported trace appears as a read-only chip alongside the live
-   view.
+4. The recipient has two options:
+   - **Standalone viewer.** Open the
+     [BareDOM trace viewer](https://avanelsas.github.io/baredom/viewer.html)
+     and drag the file onto the dock. No app required; the viewer is
+     read-only and shows exactly what the reporter saw.
+   - **Their own app.** If they are running an app that already includes
+     x-trace-history, they can drag the file onto their dock (or call
+     `window.BareDOM.traceHistory.import(text)` with the file contents).
+     The imported trace appears as a chip alongside the live view.
 
 Trace files are pure JSON, validated against `schemaVersion: 1`. Older
 or newer schema versions are rejected with a clear error.
+
+### Sharing via URL
+
+For tiny traces (~6 KB of JSON), the viewer also accepts a base64-
+encoded envelope directly in the URL:
+
+```
+https://avanelsas.github.io/baredom/viewer.html?trace=<base64>
+```
+
+Encode with `btoa(JSON.stringify(envelope))` and append. URL-safe
+base64 (`-_` in place of `+/`) is also accepted. Larger traces should
+travel as files — most servers cap URLs around 8 KB, and base64
+inflates the payload by 33%.
+
+Privacy note: anything in the URL is visible to anyone with the link
+and to URL-logging proxies. Use the file-drop path for sensitive
+traces.
+
+### Auto-switch on first import
+
+When an imported trace lands on a dock with an empty live buffer (the
+viewer page, or any otherwise-idle app), the dock auto-switches the
+view to the new import. Drag a file onto an active session with live
+records and the view stays put — the heuristic only kicks in when
+there is no active session to disturb.
 
 ## Recording sessions
 

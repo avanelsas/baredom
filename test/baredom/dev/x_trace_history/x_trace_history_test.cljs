@@ -1722,3 +1722,86 @@
         (dispatch-keydown! js/document "\\" {:meta true})
         (is (= collapsed-before (gobj/get dock model/k-collapsed))
             "shortcut no longer mutates state after disconnect")))))
+
+;; ---------------------------------------------------------------------------
+;; Auto-switch to a fresh import — PR 15 (Phase 7, viewer.html)
+;;
+;; The viewer page boots the dock with no live records, then loads a
+;; trace via URL param or drag-drop. The dock should switch to the
+;; import automatically so the user lands on the trace instead of an
+;; empty :live view with an import chip they have to click. The same
+;; UX win applies to regular pages where an idle dock receives an
+;; import. The switch must NOT fire when the user has live records —
+;; that would yank them out of their session.
+;; ---------------------------------------------------------------------------
+
+(deftest auto-switch-on-first-import-when-live-empty-test
+  (testing "an import landing on an idle :live view auto-switches the
+            dock to that import — the viewer.html landing experience"
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))]
+        (after-frames 1
+          (fn []
+            (is (model/live-view? (gobj/get dock model/k-view))
+                "dock starts on :live")
+            (let [id (recorder/import-trace! env "drop")]
+              (after-frames 2
+                (fn []
+                  (let [view (gobj/get dock model/k-view)]
+                    (is (model/import-view? view)
+                        "view switched off :live after first import")
+                    (is (= id (model/view-id view))
+                        "view targets the newly-loaded import"))
+                  (done))))))))))
+
+(deftest no-auto-switch-when-live-has-records-test
+  (testing "an import does NOT auto-switch when the live buffer has
+            records — protects an active session from being yanked
+            into a freshly-imported trace"
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))]
+        (du/dispatch! btn "press" #js {})
+        (after-frames 2
+          (fn []
+            (is (model/live-view? (gobj/get dock model/k-view))
+                "view is :live after dispatching a record")
+            (recorder/import-trace! env "drop")
+            (after-frames 2
+              (fn []
+                (is (model/live-view? (gobj/get dock model/k-view))
+                    "view stays on :live because live had records")
+                (done)))))))))
+
+(deftest no-auto-switch-after-user-returns-to-live-without-new-import-test
+  (testing "after the dock auto-switches once, the user clicking back
+            to :live should not be re-yanked into the same import on
+            the next render — the heuristic only fires on NEW import
+            transitions"
+    (async done
+      (let [^js dock (mount-dock!)
+            env      (mk-test-envelope (array (mk-test-record 0 1.0 "lifecycle/connected")))]
+        (after-frames 1
+          (fn []
+            (recorder/import-trace! env "drop")
+            (after-frames 2
+              (fn []
+                (is (model/import-view? (gobj/get dock model/k-view))
+                    "auto-switch landed us on the import")
+                ;; User manually returns to :live. gobj/set alone does
+                ;; not schedule a subscriber tick, so we'd never run
+                ;; the heuristic again — the next two assertions would
+                ;; pass trivially. recorder/pause! does call
+                ;; schedule-notify!, which forces a subscriber tick
+                ;; without adding a new import. That's the path that
+                ;; actually exercises the no-re-yank branch.
+                (gobj/set dock model/k-view :live)
+                (recorder/pause!)
+                (after-frames 2
+                  (fn []
+                    (is (model/live-view? (gobj/get dock model/k-view))
+                        "view stays on :live across a heuristic-run with no new import")
+                    (recorder/resume!)
+                    (done)))))))))))

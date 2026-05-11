@@ -83,9 +83,9 @@ Each PR is sized for ~1 hour of review, ships something visible, and ends green 
 - **PR 13: TypeScript declarations.** ✅ Hand-authored `dist/x-trace-history.d.ts` emitted by `scripts/generate_types.bb` alongside the component `.d.ts` files. `TraceRecord` is a discriminated union on `type` covering all eight record kinds. `BareDOMNamespace` is exported as a top-level interface so future dev tools can augment it via TypeScript declaration merging.
 - **PR 14: README + `docs/x-trace-history.md`.** ✅ Expanded the doc into a full user guide: activation, dock anatomy + keyboard shortcuts, complete console-API table, capture-and-share-a-bug-report workflow, recording sessions, import/export, adapter notes (vanilla JS / TypeScript / Angular / React), performance contract, JSON-schema link. README points at the new doc from the **Stateless** design-principle bullet.
 
-### Phase 7 — Standalone viewer (1 PR)
+### Phase 7 — Standalone viewer (1 PR) — **shipped**
 
-- **PR 15: `viewer.html` for sharing traces.** Standalone page that loads `.trace.json` files without recording. Same UI as the live dock, read-only. Hosted on the BareDOM site; consumers can share a URL with `?trace=<base64>` for tiny traces or instruct recipients to drag-drop a file. The OSS-support superpower. **(consumer-visible)**
+- **PR 15: `viewer.html` for sharing traces.** ✅ Standalone page at `public/viewer.html`, deployed alongside the demo site to `avanelsas.github.io/baredom/viewer.html`. Activates the recorder before loading the all-bundle, then drag-drop or `?trace=<base64>` feeds the dock. Dock auto-switches to the freshly-loaded import when live is empty (heuristic only fires on new-import transitions, so an active session with records is never yanked). URL-param decoder supports both standard and URL-safe base64.
 
 ### Phase 8 — Advanced & polish (4 PRs)
 

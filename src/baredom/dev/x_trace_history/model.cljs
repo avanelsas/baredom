@@ -930,6 +930,12 @@
 ;; so the static dock listeners cannot leak across a disconnect /
 ;; reconnect cycle.
 (def k-listeners      "__xTraceHistoryListeners")
+;; PR 15 — auto-switch heuristic. Records the import count seen at the
+;; last subscriber tick so the dock can detect that a new import has
+;; arrived (without re-firing for every render after the switch).
+;; Mutates only when (a) a new import appears, or (b) imports were
+;; removed (rebaseline). See maybe-auto-switch-import! in the dock.
+(def k-auto-switch-import-count "__xTraceHistoryAutoSwitchImportCount")
 
 ;; ---------------------------------------------------------------------------
 ;; Dock — CSS

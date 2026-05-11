@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>BareDOM Trace Viewer</title>
+
+  <!--
+    Activate x-trace-history BEFORE main.js loads so the dock auto-
+    mounts on DOMContentLoaded. The all-bundle's init! installs the
+    recorder hooks during the synchronous run after this <script>
+    element executes; the dock then activates once <body> is parsed.
+  -->
+  <script>
+    window.BAREDOM_TRACE_HISTORY = true;
+  </script>
+  <script src="js/main.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f8fafc;
+      --page-fg: #0f172a;
+      --muted: #64748b;
+      --error-bg: #fef2f2;
+      --error-fg: #991b1b;
+      --error-border: #fecaca;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #0f172a;
+        --page-fg: #f1f5f9;
+        --muted: #94a3b8;
+        --error-bg: #450a0a;
+        --error-fg: #fecaca;
+        --error-border: #7f1d1d;
+      }
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--page-bg);
+      color: var(--page-fg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .viewer-header {
+      padding: 1.25rem 1.5rem 0.75rem;
+      max-width: 64rem;
+    }
+    .viewer-header h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .viewer-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    .viewer-header code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85em;
+      padding: 0.05rem 0.3rem;
+      border-radius: 3px;
+      background: rgba(127, 127, 127, 0.15);
+    }
+    #trace-error {
+      display: none;
+      margin: 0.75rem 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--error-bg);
+      color: var(--error-fg);
+      border: 1px solid var(--error-border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      max-width: 60rem;
+    }
+    #trace-error[hidden] { display: none; }
+    #trace-error.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <header class="viewer-header">
+    <h1>BareDOM Trace Viewer</h1>
+    <p>
+      Drop a <code>.trace.json</code> onto the dock, or share a trace via
+      <code>?trace=&lt;base64&gt;</code>. See
+      <!--
+        rel="noreferrer" prevents the browser from leaking the current
+        viewer URL (which may carry ?trace=… containing trace contents)
+        to GitHub in the Referer header when the link is clicked.
+      -->
+      <a href="https://github.com/avanelsas/baredom/blob/main/docs/x-trace-history.md"
+         rel="noreferrer">docs/x-trace-history.md</a>
+      for the schema and export workflow.
+    </p>
+  </header>
+
+  <div id="trace-error" role="alert"></div>
+
+  <script>
+    // ────────────────────────────────────────────────────────────────────
+    // URL-param trace loader
+    //
+    // ?trace=<base64-of-JSON> loads a small trace directly from the URL.
+    // Supports both standard base64 and URL-safe base64 (-_ instead of
+    // +/) so consumers can paste a btoa() result or a URL-safe encode.
+    //
+    // Practical size ceiling: ~6 KB of JSON. Base64 inflates by 33%, and
+    // most servers / clipboards cope with URLs up to ~8 KB. Larger
+    // traces should travel as files via drag-drop.
+    // ────────────────────────────────────────────────────────────────────
+
+    function decodeTraceParam(raw) {
+      // URL-safe base64 → standard base64. Common URL-safe encoders
+      // (btoa + replace + strip-=) drop the trailing `=` padding
+      // because `=` requires URL-encoding, so restore it before atob.
+      const norm = raw.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = norm + "=".repeat((4 - (norm.length % 4)) % 4);
+      const json = atob(padded);
+      return JSON.parse(json);
+    }
+
+    function showError(message) {
+      const el = document.getElementById("trace-error");
+      el.textContent = message;
+      el.classList.add("show");
+    }
+
+    function loadTraceFromUrl() {
+      const params = new URL(location.href).searchParams;
+      const raw = params.get("trace");
+      if (!raw) return;
+
+      let envelope;
+      try {
+        envelope = decodeTraceParam(raw);
+      } catch (e) {
+        showError("Failed to decode ?trace=… parameter: " + e.message);
+        return;
+      }
+
+      const api = window.BareDOM && window.BareDOM.traceHistory;
+      if (!api) {
+        // Should not happen — main.js installs the API synchronously
+        // during init!, which runs before DOMContentLoaded. Guard
+        // anyway so a future load-order change degrades to a banner
+        // instead of a silent failure.
+        showError("BareDOM trace-history API not available.");
+        return;
+      }
+
+      const id = api.import(envelope, "URL");
+      if (id === null) {
+        showError("Trace envelope rejected — see the browser console for the reason.");
+      }
+    }
+
+    // Run after DOMContentLoaded so the dock has mounted and subscribed
+    // to recorder updates. The auto-switch heuristic in the dock will
+    // then transition the view to the freshly-loaded import.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", loadTraceFromUrl);
+    } else {
+      loadTraceFromUrl();
+    }
+  </script>
+
+</body>
+</html>

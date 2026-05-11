@@ -304,6 +304,54 @@
         (.insertAdjacentHTML select-el "beforeend" html)))))
 
 ;; ---------------------------------------------------------------------------
+;; Auto-switch to a fresh import — PR 15 (Phase 7)
+;;
+;; When a new import lands AND the dock is on :live AND the live buffer
+;; is empty, switch the view to that import. Covers two callsites:
+;;   - viewer.html: live is always empty, so dropping/loading a trace
+;;     puts the user on it immediately.
+;;   - regular dock: drag-drop or console import on an idle page does
+;;     the same thing, saving a chip click.
+;;
+;; Stays off when the user has live records. We compare imports.length
+;; against a per-host counter so the switch only fires on *transitions*
+;; (a new import arriving), not on every render after the user clicks
+;; back to :live.
+;; ---------------------------------------------------------------------------
+
+(defn- maybe-auto-switch-import!
+  "If a new import has appeared since the last subscriber tick and the
+   dock is sitting on an empty live view, switch view to the newest
+   import. Otherwise, just keep the import counter in sync so a later
+   addition is detected as a transition. No-op once the user has any
+   live records or has manually navigated off :live."
+  [^js el]
+  (let [view       (gobj/get el model/k-view)
+        ^js imps   (recorder/imports)
+        cur-count  (.-length imps)
+        prev       (or (gobj/get el model/k-auto-switch-import-count) 0)]
+    (cond
+      ;; New import landed. Consider switching.
+      (> cur-count prev)
+      (do
+        (gobj/set el model/k-auto-switch-import-count cur-count)
+        (when (and (model/live-view? view)
+                   (zero? (.-length ^js (recorder/records))))
+          (let [^js latest (aget imps (dec cur-count))
+                id         (.-id latest)]
+            (gobj/set el model/k-view [:import id]))))
+
+      ;; Imports shrank (the user dropped one while we weren't
+      ;; mounted, or some test path called remove-import!). Rebaseline
+      ;; the counter so a later addition still registers as a
+      ;; new-import transition.
+      (< cur-count prev)
+      (gobj/set el model/k-auto-switch-import-count cur-count)
+
+      ;; cur-count == prev: nothing changed, nothing to do.
+      :else nil)))
+
+;; ---------------------------------------------------------------------------
 ;; Pause button + detail pane updates
 ;; ---------------------------------------------------------------------------
 
@@ -1366,7 +1414,10 @@
           (cache-refs! el shadow)
           (initialize-filter-state! el cats)
           (bind-listeners! el shadow)
-          (let [tok (recorder/subscribe! (fn [] (render! el)))]
+          (let [tok (recorder/subscribe!
+                     (fn []
+                       (maybe-auto-switch-import! el)
+                       (render! el)))]
             (gobj/set el model/k-sub-token tok))
           (render! el)
           (gobj/set el model/k-mounted true))))))
