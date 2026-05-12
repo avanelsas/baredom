@@ -440,15 +440,32 @@
   (let [s (try (js/JSON.stringify r) (catch :default _ ""))]
     (if s (.toLowerCase s) "")))
 
-(defn- matches-search?
-  "True iff `q` (already lowercase) is empty, nil, or appears as a
-   substring of `haystack`."
-  [haystack q]
-  (or (nil? q) (= "" q)
-      (and haystack (not (neg? (.indexOf haystack q))))))
+(defn- blank?
+  "Treat nil and the empty string as 'no filter'. Centralises the
+   no-filter convention shared by :tag and :search."
+  [s]
+  (or (nil? s) (= "" s)))
+
+(defn- tag-matches?
+  "True iff `tag` is inactive (blank or 'all') or equals r's tag."
+  [^js r tag]
+  (or (blank? tag) (= "all" tag) (= tag (.-tag r))))
+
+(defn- categories-match?
+  "True iff `categories` is nil (no filter) or contains r's category."
+  [^js r categories]
+  (or (nil? categories)
+      (contains? categories (categorize-type (.-type r)))))
+
+(defn- search-matches?
+  "True iff `search` is blank (no filter) or `(haystack-fn r)` contains
+   the (already lowercase) search query as a substring."
+  [^js r search haystack-fn]
+  (or (blank? search)
+      (not (neg? (.indexOf (haystack-fn r) search)))))
 
 (defn record-matches?
-  "True iff a single record passes the filter spec.
+  "True iff `r` passes the filter spec.
 
    spec keys:
      :tag         — string tag name; nil / blank / 'all' = match any
@@ -456,15 +473,14 @@
      :search      — lowercase substring required in the record's
                     JSON-serialised form; nil / blank = include all
      :haystack-fn — fn from ^js record → lowercase JSON string. Defaults
-                    to `searchable-haystack` (pure). The dock passes a
-                    WeakMap-memoised version so search across thousands
-                    of records pays JSON.stringify once per record."
+                    to `searchable-haystack`. The dock passes a
+                    WeakMap-memoised version so search across the whole
+                    ring buffer pays JSON.stringify once per record."
   [^js r {:keys [tag categories search haystack-fn]
           :or   {haystack-fn searchable-haystack}}]
-  (and (or (nil? tag) (= "" tag) (= "all" tag) (= tag (.-tag r)))
-       (or (nil? categories) (contains? categories (categorize-type (.-type r))))
-       (or (nil? search) (= "" search)
-           (matches-search? (haystack-fn r) search))))
+  (and (tag-matches?      r tag)
+       (categories-match? r categories)
+       (search-matches?   r search haystack-fn)))
 
 (defn filter-records
   "Return a CLJS vector of records matching the filter spec, sorted by `t`
