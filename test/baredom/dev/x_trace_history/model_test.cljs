@@ -483,15 +483,18 @@
       (is (clojure.string/includes? hay "x-button:click"))
       (is (clojure.string/includes? hay "event/dispatch")))))
 
-(deftest searchable-haystack-memoises-test
-  (testing "second call returns the identical string reference — the
-            haystack is cached on the record so high-frequency search
-            (every keystroke) pays the JSON.stringify cost once."
-    (let [r (mk-detail-rec 0 "event/dispatch" "x-button" 100 nil)
-          a (model/searchable-haystack r)
-          b (model/searchable-haystack r)]
-      (is (identical? a b)
-          "memoised — same reference returned on the second call"))))
+(deftest searchable-haystack-is-pure-test
+  (testing "repeated calls return equal strings and do not mutate the
+            record (caching is the dock's concern, threaded into
+            record-matches? as :haystack-fn)."
+    (let [r           (mk-detail-rec 0 "event/dispatch" "x-button" 100 nil)
+          keys-before (alength (.keys js/Object r))
+          a           (model/searchable-haystack r)
+          b           (model/searchable-haystack r)
+          keys-after  (alength (.keys js/Object r))]
+      (is (= a b))
+      (is (= keys-before keys-after)
+          "no fields stamped onto the record across calls"))))
 
 (deftest searchable-haystack-survives-cyclic-detail-test
   (testing "a record with a cyclic detail (or anything that JSON.stringify

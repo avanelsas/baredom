@@ -11,6 +11,7 @@
    [clojure.string :as str]
    [goog.object :as gobj]
    [baredom.utils.component :as comp]
+   [baredom.dev.x-trace-history.dock-css :as dock-css]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
    ;; Require the component implementations directly rather than the
@@ -795,6 +796,38 @@
       (.setAttribute splitter-el "hidden" ""))))
 
 ;; ---------------------------------------------------------------------------
+;; Search haystack cache
+;;
+;; Records are immutable per the recorder's contract, so a WeakMap keyed
+;; by record reference is the natural place for memoised search
+;; haystacks: JSON.stringify is paid once per record, the entry is
+;; collected automatically when the record is evicted from the ring
+;; buffer, and the model namespace stays pure (it no longer mutates
+;; records via gobj/set to cache the haystack on them).
+;; ---------------------------------------------------------------------------
+
+(defonce ^:private haystack-cache (js/WeakMap.))
+
+(defn- cached-haystack [^js r]
+  (or (.get haystack-cache r)
+      (let [s (model/searchable-haystack r)]
+        (.set haystack-cache r s)
+        s)))
+
+(defn- filter-recs
+  "Dock wrapper around `model/filter-records` that injects the
+   WeakMap-memoised haystack-fn so per-keystroke search across the
+   whole ring buffer pays JSON.stringify once per record."
+  [^js recs spec]
+  (model/filter-records recs (assoc spec :haystack-fn cached-haystack)))
+
+(defn- matches?
+  "Dock wrapper around `model/record-matches?` with the cached
+   haystack-fn injected."
+  [^js r spec]
+  (model/record-matches? r (assoc spec :haystack-fn cached-haystack)))
+
+;; ---------------------------------------------------------------------------
 ;; View / selection helpers
 ;; ---------------------------------------------------------------------------
 
@@ -856,7 +889,7 @@
       (nil? rec)
       nil
 
-      (model/record-matches? rec spec)
+      (matches? rec spec)
       rec
 
       :else
@@ -925,7 +958,7 @@
         spec             (gobj/get el model/k-filter)
         view             (gobj/get el model/k-view)
         ^js recs         (view-records view)
-        filtered         (model/filter-records recs spec)
+        filtered         (filter-recs recs spec)
         cnt-filtered     (count filtered)
         cnt-total        (.-length recs)
         bounds           (model/time-bounds filtered)
@@ -1394,7 +1427,7 @@
         axis-mode (or (gobj/get el model/k-axis-mode) model/default-axis-mode)
         view      (gobj/get el model/k-view)
         ^js recs  (view-records view)
-        filtered  (model/filter-records recs spec)
+        filtered  (filter-recs recs spec)
         bounds    (model/time-bounds filtered)
         x-of      (fn [^js me] (- (.-clientX me) (.-left pane-rect)))]
     (select-nearest! el axis-mode filtered bounds plot-w (x-of e))
@@ -1422,7 +1455,7 @@
   (let [spec       (gobj/get el model/k-filter)
         view       (gobj/get el model/k-view)
         ^js recs   (view-records view)
-        filtered   (model/filter-records recs spec)
+        filtered   (filter-recs recs spec)
         curr-id    (get-selected el)
         ^js next-r (model/step-record filtered curr-id dir)]
     (when next-r
@@ -1697,7 +1730,7 @@
         ^js shadow   (or existing (.attachShadow el #js {:mode "open"}))]
     (when (nil? existing)
       (set! (.-innerHTML shadow)
-            (str "<style>" model/dock-css "</style>"
+            (str "<style>" dock-css/dock-css "</style>"
                  (skeleton-html initial-categories))))
     shadow))
 
