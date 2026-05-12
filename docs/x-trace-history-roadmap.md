@@ -1,6 +1,6 @@
 # `x-trace-history` Roadmap
 
-A FlowStorm-class debugger for BareDOM web components.
+A time-travel debugger for BareDOM web components.
 
 ## Context
 
@@ -16,7 +16,7 @@ A prerequisite shipped earlier (PRs #108, #109): every CustomEvent in BareDOM no
 
 - **Multi-audience.** Works for CLJS authors of components, *and* JS/TS/Angular/React/Vue app developers consuming components. Records are JSON-shaped, API is JS-friendly, types are published as `.d.ts`.
 - **Two recording modes.** Always-on timeline dock **and** bounded recording sessions. Sessions resolve high-cardinality animation components.
-- **All four FlowStorm pillars.** Append-only history + drill-down + search · cross-instance timeline + scrubber · cause→effect causality · export/import.
+- **Four pillars.** Append-only history + drill-down + search · cross-instance timeline + scrubber · cause→effect causality · export/import.
 - **Small shippable steps.** Each PR is a vertical slice that does something visible. No "infrastructure-for-later" PRs.
 - **Zero overhead when off.** Activation gated by `?baredom-trace-history` URL param or `window.BAREDOM_TRACE_HISTORY = true` — same opt-in pattern as the existing `x-debug`.
 - **Closure Advanced safe.** `^js` hints, `gobj/get|set` for non-native fields, no monkey-patching.
