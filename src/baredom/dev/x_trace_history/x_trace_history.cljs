@@ -514,7 +514,7 @@
           tree   (model/causality-tree recs root)
           stats  (model/tree-size-stats tree)]
       (cond
-        (> (:node-count stats) model/causality-max-nodes)
+        (:capped? tree)
         (do
           (gobj/set el model/k-causality-layout nil)
           (set! (.-innerHTML causality-el)
@@ -1959,4 +1959,5 @@
   (when (model/enabled? js/window)
     (if (.-body js/document)
       (activate!)
-      (.addEventListener js/document "DOMContentLoaded" activate!))))
+      (.addEventListener js/document "DOMContentLoaded" activate!
+                         #js {:once true}))))

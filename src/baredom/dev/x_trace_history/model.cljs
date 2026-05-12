@@ -1076,24 +1076,32 @@
        (sort-by (fn [^js r] (.-id r)))
        vec))
 
+(defn- causality-dfs-seq
+  "Lazy depth-first seq of `root` and its descendants in the cause-id
+   forest. Each parent precedes its subtree; siblings appear in id
+   order (matching `children-of`)."
+  [^js records ^js root]
+  (cons root
+        (lazy-seq
+         (mapcat #(causality-dfs-seq records %)
+                 (children-of records (.-id root))))))
+
 (defn causality-tree
-  "Build a nested CLJS tree rooted at `root-record`:
-     {:record ^js :children [{:record ^js :children [...]} ...]}.
-   Children are discovered by scanning the records array for matching
-   causeId. Stops descending once total node count would exceed
-   `causality-max-nodes` — the renderer checks size separately and
-   shows an over-cap notice, so we don't waste cycles building a tree
-   we won't draw. Pure: depends only on its arguments."
+  "Nested causality tree rooted at `root-record`:
+     {:record :children :capped?}.
+   Children come from records whose causeId matches a parent's id.
+   The build is capped at `causality-max-nodes` in DFS order; when
+   truncated, the root carries :capped? true and the renderer shows
+   an over-cap notice. Pure: depends only on its arguments."
   [^js records ^js root-record]
-  (let [counter (volatile! 0)]
-    (letfn [(build [^js r]
-              (vswap! counter inc)
-              (if (>= @counter (inc causality-max-nodes))
-                {:record r :children []}
-                (let [kids (children-of records (.-id r))]
-                  {:record   r
-                   :children (mapv build kids)})))]
-      (build root-record))))
+  (let [[kept overflow] (split-at causality-max-nodes
+                                  (causality-dfs-seq records root-record))
+        kids-of         (group-by #(.-causeId ^js %) kept)
+        build           (fn build [^js r]
+                          {:record   r
+                           :children (mapv build (kids-of (.-id r)))})]
+    (-> (build root-record)
+        (assoc :capped? (boolean (seq overflow))))))
 
 (defn tree-node-count
   "Total number of records in a built causality tree."
