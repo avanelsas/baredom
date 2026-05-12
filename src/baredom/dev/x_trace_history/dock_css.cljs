@@ -250,6 +250,7 @@ svg.timeline-svg {
 }
 .dot { cursor: pointer; transition: r 80ms ease; }
 .dot:hover { stroke: #fff; stroke-width: 1; }
+.dot.selected { stroke: #fff; stroke-width: 1.5; }
 /* Heatmap bins (PR 18). Each lane that exceeds the density threshold
    renders as a row of these rects rather than individual dots; the
    per-bin fill-opacity is set inline by the renderer (scales with
