@@ -83,6 +83,17 @@
 (defn- query-all [^js dock-el sel]
   (.querySelectorAll (shadow-of dock-el) sel))
 
+(defn- live-selected-id
+  "Read the dock's selection for the Live view via the canonical
+   k-view-selected map. Replaces the previous k-selected-id mirror,
+   which was a duplicate slot maintained solely for test reads.
+   Returns nil when nothing is selected (undefined is mapped to nil
+   so `(is (nil? (live-selected-id ...)))` works)."
+  [^js dock]
+  (when-let [^js m (gobj/get dock model/k-view-selected)]
+    (let [v (gobj/get m "live")]
+      (when-not (undefined? v) v))))
+
 (defn- dot-count [^js dock-el]
   (.-length (query-all dock-el "circle.dot")))
 
@@ -786,7 +797,7 @@
                                                       :key "ArrowRight"})))
             (after-frames 1
               (fn []
-                (is (= 0 (gobj/get dock model/k-selected-id)))
+                (is (= 0 (live-selected-id dock)))
                 ;; Another ArrowRight → id=1.
                 (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
                                 (js/KeyboardEvent. "keydown"
@@ -794,7 +805,7 @@
                                                         :key "ArrowRight"}))
                 (after-frames 1
                   (fn []
-                    (is (= 1 (gobj/get dock model/k-selected-id)))
+                    (is (= 1 (live-selected-id dock)))
                     (done)))))))))))
 
 (deftest keyboard-arrow-left-steps-prev-test
@@ -814,14 +825,14 @@
                                                     :key "ArrowLeft"}))
             (after-frames 1
               (fn []
-                (is (= 2 (gobj/get dock model/k-selected-id)))
+                (is (= 2 (live-selected-id dock)))
                 (.dispatchEvent ^js (query dock "[data-x-th-timeline]")
                                 (js/KeyboardEvent. "keydown"
                                                    #js {:bubbles true
                                                         :key "ArrowLeft"}))
                 (after-frames 1
                   (fn []
-                    (is (= 1 (gobj/get dock model/k-selected-id)))
+                    (is (= 1 (live-selected-id dock)))
                     (done)))))))))))
 
 (deftest keyboard-step-respects-filter-test
@@ -844,7 +855,7 @@
                                                         :key "ArrowRight"}))
                 (after-frames 1
                   (fn []
-                    (is (= 1 (gobj/get dock model/k-selected-id))
+                    (is (= 1 (live-selected-id dock))
                         "first filtered record is id 1 (state)")
                     (done)))))))))))
 
@@ -872,7 +883,7 @@
             (after-frames 1
               (fn []
                 ;; nil → 0 → 1 → 2
-                (is (= 2 (gobj/get dock model/k-selected-id)))
+                (is (= 2 (live-selected-id dock)))
                 (done)))))))))
 
 (deftest keyboard-arrow-on-button-still-steps-test
@@ -893,7 +904,7 @@
                                                       :key "ArrowRight"})))
             (after-frames 1
               (fn []
-                (is (= 0 (gobj/get dock model/k-selected-id))
+                (is (= 0 (live-selected-id dock))
                     "selection advanced to first record despite focus
                      being on the pause button")
                 (done)))))))))
@@ -915,7 +926,7 @@
                                                       :key "ArrowRight"})))
             (after-frames 1
               (fn []
-                (is (nil? (gobj/get dock model/k-selected-id))
+                (is (nil? (live-selected-id dock))
                     "selection did not advance because target was a select")
                 (done)))))))))
 
@@ -934,7 +945,7 @@
                                                        :cancelable true})]
               (.dispatchEvent timeline evt)
               (is (false? (.-defaultPrevented evt)))
-              (is (nil? (gobj/get dock model/k-selected-id))))
+              (is (nil? (live-selected-id dock))))
             (done)))))))
 
 (deftest coalesced-renders-survive-burst-test
@@ -1116,7 +1127,7 @@
                                   (js/MouseEvent. "click" #js {:bubbles true}))
                   (after-frames 1
                     (fn []
-                      (is (= target-id (gobj/get dock model/k-selected-id))
+                      (is (= target-id (live-selected-id dock))
                           "selection moved to the linked record")
                       (done))))))))))))
 
@@ -1232,7 +1243,7 @@
                             (js/MouseEvent. "click" #js {:bubbles true}))
             (after-frames 1
               (fn []
-                (let [live-sel (gobj/get dock model/k-selected-id)]
+                (let [live-sel (live-selected-id dock)]
                   (.click ^js (query dock "[data-x-th-session='0']"))
                   (after-frames 1
                     (fn []
@@ -1242,7 +1253,7 @@
                       (.click ^js (query dock "[data-x-th-session='live']"))
                       (after-frames 1
                         (fn []
-                          (is (= live-sel (gobj/get dock model/k-selected-id))
+                          (is (= live-sel (live-selected-id dock))
                               "live selection preserved across view switch")
                           (done))))))))))))))
 
@@ -1745,7 +1756,7 @@
                                                      :pointerId 1}))
               (after-frames 2
                 (fn []
-                  (let [sel-id (gobj/get dock model/k-selected-id)
+                  (let [sel-id (live-selected-id dock)
                         ;; The last dispatched record is the one
                         ;; recorded last — recorder/records is the
                         ;; live ring buffer, so we look up its id.
@@ -2134,7 +2145,7 @@
                                       (js/MouseEvent. "click" #js {:bubbles true}))
                       (after-frames 1
                         (fn []
-                          (is (= new-id (gobj/get dock model/k-selected-id))
+                          (is (= new-id (live-selected-id dock))
                               "selected id flipped to the clicked node's record")
                           (done))))))))))))))
 
@@ -2420,7 +2431,7 @@
                 (switch-to-causality! dock)
                 (after-frames 1
                   (fn []
-                    (let [before-id (gobj/get dock model/k-selected-id)]
+                    (let [before-id (live-selected-id dock)]
                       ;; Force-clear the flag so we can prove arrow-
                       ;; stepping (a real selection move) sets it.
                       (gobj/set dock model/k-causality-needs-fit false)
@@ -2432,7 +2443,7 @@
                                                :composed true}))
                       (after-frames 1
                         (fn []
-                          (let [after-id (gobj/get dock model/k-selected-id)]
+                          (let [after-id (live-selected-id dock)]
                             (is (some? after-id) "still have a selection")
                             (is (not= before-id after-id)
                                 "ArrowRight moved the selection to a

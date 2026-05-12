@@ -1328,21 +1328,14 @@
 (def k-splitter-el    "__xTraceHistorySplitterEl")
 (def k-hint-el        "__xTraceHistoryHintEl")
 (def k-tag-select-el  "__xTraceHistoryTagSelectEl")
-;; PR 16 — search input across recorded values. Caches the input
-;; element so render!'s reads stay off querySelector.
-(def k-search-input-el "__xTraceHistorySearchInputEl")
 (def k-filter         "__xTraceHistoryFilter")
 ;; The active view: :live (the always-on buffer) or [:session id].
 ;; render! consults this to choose which records to display.
 (def k-view           "__xTraceHistoryView")
 ;; Per-view scrubber state. A map keyed by view value (:live or
-;; [:session id]) → record-id. Replaces the old single k-selected-id
-;; slot so each session keeps its own selection across view switches.
+;; [:session id]) → record-id. Each session keeps its own selection
+;; across view switches.
 (def k-view-selected  "__xTraceHistoryViewSelected")
-;; Legacy alias kept so older test assertions and downstream readers
-;; that reach for the live-view selection through k-selected-id keep
-;; working. The dock writes through both keys when the view is :live.
-(def k-selected-id    "__xTraceHistorySelectedId")
 (def k-sub-token      "__xTraceHistorySubToken")
 (def k-mounted        "__xTraceHistoryMounted")
 ;; PR (this branch) — axis-mode toggle: :order (default) or :time.
@@ -1384,14 +1377,12 @@
 ;; PR 17 — causality DAG view. dock-mode is :timeline or :causality.
 ;; k-causality-el is the cached scrollable container the UI layer
 ;; reads clientWidth / clientHeight from for fit-to-view math.
-;; k-mode-select-el is the <x-select> the user clicks to switch modes.
 ;; k-causality-needs-fit is a transient flag set by handlers that
 ;; should trigger an auto-scroll on the next render (mode-switch,
 ;; selection-change inside causality, key-step). k-causality-layout
 ;; caches the last laid-out tree so apply-causality-fit! can resolve
 ;; the selected node's coords without rebuilding.
 (def k-dock-mode             "__xTraceHistoryDockMode")
-(def k-mode-select-el        "__xTraceHistoryModeSelectEl")
 (def k-causality-el          "__xTraceHistoryCausalityEl")
 (def k-causality-needs-fit   "__xTraceHistoryCausalityNeedsFit")
 (def k-causality-layout      "__xTraceHistoryCausalityLayout")

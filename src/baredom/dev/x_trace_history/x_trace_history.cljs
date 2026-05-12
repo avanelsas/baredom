@@ -850,9 +850,7 @@
     (when m (gobj/get m (view-key view)))))
 
 (defn- set-selected!
-  "Write the selected record-id for the active view. Mirrors to the
-   legacy k-selected-id slot when the view is Live so existing test
-   assertions and any external readers keep working.
+  "Write the selected record-id for the active view.
 
    When the dock is in :causality mode AND a non-nil id is being
    selected, mark `k-causality-needs-fit` so the next render scrolls
@@ -870,8 +868,6 @@
       (gobj/remove m k)
       (gobj/set    m k id))
     (gobj/set el model/k-view-selected m)
-    (when (model/live-view? view)
-      (gobj/set el model/k-selected-id id))
     (when (and (some? id)
                (= :causality (gobj/get el model/k-dock-mode)))
       (gobj/set el model/k-causality-needs-fit true))
@@ -1087,7 +1083,6 @@
       ;; Live view so the session strip's active chip doesn't dangle
       ;; on a now-deleted session id.
       "clear"  (do (gobj/set el model/k-view-selected (js-obj))
-                   (gobj/set el model/k-selected-id nil)
                    (gobj/set el model/k-view :live)
                    (recorder/clear!))
       ;; Export is read-only — produce a .trace.json download from the
@@ -1748,9 +1743,7 @@
   (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
   (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
   (gobj/set el model/k-tag-select-el   (.querySelector shadow "[data-x-th-tag]"))
-  (gobj/set el model/k-mode-select-el  (.querySelector shadow "[data-x-th-mode]"))
   (gobj/set el model/k-causality-el    (.querySelector shadow "[data-x-th-causality]"))
-  (gobj/set el model/k-search-input-el (.querySelector shadow "[data-x-th-search]"))
   (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
   (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
   (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
