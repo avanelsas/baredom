@@ -165,6 +165,32 @@
       (is (= "before" (.-eventName (record-at 0))))
       (is (= "after"  (.-eventName (record-at 1)))))))
 
+(deftest pause-mid-dispatch-keeps-cause-record-test
+  (testing "if a handler calls pause! after producing records, the
+            dispatch record is still pushed so handler records' causeId
+            resolves to a real record"
+    (let [el (make-el "x-button")]
+      (.addEventListener el "x-button:click"
+                         (fn [_]
+                           (du/setv! el "__field" "before-pause")
+                           (recorder/pause!)
+                           (du/setv! el "__field" "after-pause")))
+      (du/dispatch! el "x-button:click" #js {:v 1})
+      (recorder/resume!)
+      (let [recs       (vec (array-seq (recorder/records)))
+            by-id      (into {} (map (fn [^js r] [(.-id r) r])) recs)
+            handler-rs (filter (fn [^js r] (= "state/instance-field-set" (.-type r))) recs)
+            dispatch-r (some (fn [^js r] (when (= "event/dispatch" (.-type r)) r)) recs)]
+        (is (some? dispatch-r)
+            "dispatch record force-pushed despite mid-dispatch pause")
+        (is (= 1 (count handler-rs))
+            "only the pre-pause handler record landed; the post-pause one was dropped")
+        (let [^js handler-r (first handler-rs)
+              cid           (.-causeId handler-r)]
+          (is (number? cid))
+          (is (contains? by-id cid)
+              "handler record's causeId resolves to a real dispatch record"))))))
+
 ;; ── clear ───────────────────────────────────────────────────────────────────
 
 (deftest clear-empties-and-resets-id-test

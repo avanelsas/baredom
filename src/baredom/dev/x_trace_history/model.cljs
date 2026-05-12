@@ -1078,22 +1078,38 @@
 
 (defn causality-tree
   "Build a nested CLJS tree rooted at `root-record`:
-     {:record ^js :children [{:record ^js :children [...]} ...]}.
+     {:record ^js :children [...] :capped? bool}.
    Children are discovered by scanning the records array for matching
-   causeId. Stops descending once total node count would exceed
-   `causality-max-nodes` — the renderer checks size separately and
-   shows an over-cap notice, so we don't waste cycles building a tree
-   we won't draw. Pure: depends only on its arguments."
+   causeId. Stops once `causality-max-nodes` records have been built;
+   when that happens, the root's `:capped?` flag is true and the
+   renderer shows an over-cap notice instead of drawing. Only the root
+   carries `:capped?`; intermediate nodes do not. Pure: depends only
+   on its arguments."
   [^js records ^js root-record]
-  (let [counter (volatile! 0)]
-    (letfn [(build [^js r]
-              (vswap! counter inc)
-              (if (>= @counter (inc causality-max-nodes))
-                {:record r :children []}
-                (let [kids (children-of records (.-id r))]
-                  {:record   r
-                   :children (mapv build kids)})))]
-      (build root-record))))
+  (letfn [(build-kids [parent-id remaining]
+            ;; Returns [child-trees remaining-after capped?]. capped?
+            ;; is true iff at least one would-be child or descendant
+            ;; could not be built because the budget ran out.
+            (loop [todo   (children-of records parent-id)
+                   built  []
+                   remain remaining
+                   cap?   false]
+              (cond
+                (empty? todo)  [built remain cap?]
+                (zero? remain) [built 0 true]
+                :else          (let [[child r' c?] (build (first todo) remain)]
+                                 (recur (rest todo)
+                                        (conj built child)
+                                        r'
+                                        (or cap? c?))))))
+          (build [^js r remaining]
+            ;; Precondition: remaining ≥ 1 (caller has already
+            ;; reserved a slot for this node). Returns
+            ;; [tree-node remaining-after capped?].
+            (let [[kids r' cap?] (build-kids (.-id r) (dec remaining))]
+              [{:record r :children kids} r' cap?]))]
+    (let [[tree _ capped?] (build root-record causality-max-nodes)]
+      (assoc tree :capped? capped?))))
 
 (defn tree-node-count
   "Total number of records in a built causality tree."

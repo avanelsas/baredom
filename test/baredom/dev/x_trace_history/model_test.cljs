@@ -1513,6 +1513,27 @@
       (is (= 1 (.-id ^js (:record mid-node))))
       (is (= [2] (mapv #(.-id ^js (:record %)) (:children mid-node)))))))
 
+(deftest causality-tree-not-capped-when-under-limit-test
+  (testing "tree below the cap has :capped? false"
+    (let [root (mk-rec-with {:id 0 :cause-id nil})
+          c1   (mk-rec-with {:id 1 :cause-id 0})
+          recs #js [root c1]
+          tree (model/causality-tree recs root)]
+      (is (false? (:capped? tree))))))
+
+(deftest causality-tree-capped-flag-test
+  (testing "trees larger than causality-max-nodes carry :capped? true
+            and contain at most causality-max-nodes records"
+    (let [recs (clj->js
+                (cons {:id 0 :causeId nil}
+                      (for [i (range 1 (+ 50 model/causality-max-nodes))]
+                        {:id i :causeId (dec i)})))
+          root (aget recs 0)
+          tree (model/causality-tree recs root)
+          {:keys [node-count]} (model/tree-size-stats tree)]
+      (is (true? (:capped? tree)))
+      (is (<= node-count model/causality-max-nodes)))))
+
 ;; ── Causality DAG: tree-size-stats ──────────────────────────────────────────
 
 (deftest tree-size-stats-leaf-test

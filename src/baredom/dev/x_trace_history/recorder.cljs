@@ -263,11 +263,20 @@
 
    Skips when the payload's :el is inside an internal-marked host —
    catches setv! / set-attr! / lifecycle records from components nested
-   inside the dock."
-  [payload id t]
+   inside the dock.
+
+   When `force?` is true, bypasses the `:paused?` check. The dispatch
+   wrapper sets this for the post-handler dispatch record so that any
+   handler records already in the buffer that cite the reserved id as
+   their causeId still resolve to a real record when `pause!` lands
+   mid-dispatch. Internal-host events remain filtered."
+  ([payload id t]
+   (push-record-with-id! payload id t false))
+  ([payload id t force?]
   (let [s @state
         ^js el (:el payload)]
-    (when-not (or (:paused? s) (inside-internal-host? el))
+    (when-not (or (and (not force?) (:paused? s))
+                  (inside-internal-host? el))
       (let [tag              (model/tag-of el)
             [cid new-cid?]   (resolve-component-id! el tag (:next-component-id s))
             cause-id         (peek @cause-stack)
@@ -285,7 +294,7 @@
                :records           new-recs
                :next-component-id new-next-cid
                :components        new-comps)
-        (schedule-notify!)))))
+        (schedule-notify!))))))
 
 (def ^:private wrapper-handled-types
   "Payload types whose recording is handled by the dispatch-wrapper itself.
@@ -396,7 +405,11 @@
 (defn- push-dispatch-record!
   "Push a record describing `ev` using the reserved id and entry-time
    captured at wrapper entry. Read `defaultPrevented` post-handler so
-   it reflects the final value."
+   it reflects the final value.
+
+   Forces the push (bypasses `:paused?`) so that handler records
+   pushed before a mid-dispatch `pause!` always have a real cause
+   record to resolve. Internal-host events stay filtered."
   [^js this ^js ev reserved-id entry-t]
   (let [type (classify-dispatch this ev)
         payload {:type               type
@@ -405,7 +418,7 @@
                  :detail             (.-detail ev)
                  :cancelable?        (.-cancelable ev)
                  :default-prevented? (.-defaultPrevented ev)}]
-    (push-record-with-id! payload reserved-id entry-t)))
+    (push-record-with-id! payload reserved-id entry-t true)))
 
 (defn- wrapped-dispatch
   "Body of the dispatchEvent wrapper. When wrapper-active? and not paused:
@@ -947,10 +960,11 @@
    times. Re-runs every time so hot-reloads of the recorder ns refresh the
    hook references to the newly-loaded `record!` symbol.
 
-   Resets `suppression-depth` to 0 so a hot-reload that interrupts a
-   `with-suppressed-recording!` body cannot leave the counter stuck
-   above zero (which would silently disable all recording until the
-   page reloads)."
+   Resets `suppression-depth` and `cause-stack` so a hot-reload that
+   interrupts a `with-suppressed-recording!` body or a throwing handler
+   inside the dispatch wrapper cannot leave either stuck (a stuck
+   suppression-depth silently disables recording; a stuck cause-stack
+   stamps every subsequent record with a stale causeId)."
   []
   (swap! state assoc
          :capacity  (read-capacity)
@@ -958,6 +972,7 @@
   (reset! du/trace-hook record!)
   (reset! comp/lifecycle-hook record!)
   (reset! suppression-depth 0)
+  (reset! cause-stack [])
   (install-dispatch-wrapper-once!)
   (reset! wrapper-active? true)
   (install-window-api!)
