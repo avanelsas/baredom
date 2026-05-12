@@ -234,40 +234,33 @@
     (finally
       (swap! suppression-depth dec))))
 
+(defn- ancestor-up
+  "Climb one step toward the root: across the shadow boundary when
+   `node` is inside one (root.host), else via parentNode. Returns nil
+   when no parent exists."
+  [^js node]
+  (let [^js root (.getRootNode node)]
+    (if (instance? js/ShadowRoot root)
+      (.-host root)
+      (.-parentNode node))))
+
 (defn- inside-internal-host?
-  "True when `el` is a descendant of any element bearing the
-   internal-host-marker, traversing across (open) shadow boundaries.
-   Returns false for nil, document, non-Node EventTargets (window,
-   XMLHttpRequest, MessagePort, WebSocket — all dispatch targets
-   apps use, but none have getRootNode), and elements in the light
-   tree of the document. The marker on `el` itself does NOT count —
-   we ask whether `el` is *inside* a marked host, not whether it IS
-   one."
+  "True when an ancestor of `el` bears the internal-host-marker. Walks
+   across (open) shadow boundaries via root.host and through the light
+   tree via parentNode, so a marked host outside any shadow still acts
+   as a boundary. The marker on `el` itself does NOT count — we ask
+   whether `el` is *inside* a marked host, not whether it IS one.
+
+   Returns false for nil, document, and non-Node EventTargets (window,
+   XMLHttpRequest, MessagePort, WebSocket — none have getRootNode)."
   [^js el]
-  (loop [^js node el]
-    (cond
-      (or (nil? node) (identical? node js/document))
-      false
-
-      ;; Non-Node EventTargets (window, XHR, MessagePort, WebSocket,
-      ;; etc.) have no getRootNode. These are always outside any
-      ;; internal-marked host by construction — the dock marks element
-      ;; hosts only — so short-circuit to false.
-      (not (instance? js/Node node))
-      false
-
-      :else
-      (let [^js root (.getRootNode node)]
-        (cond
-          (identical? root js/document) false
-
-          (instance? js/ShadowRoot root)
-          (let [^js host (.-host root)]
-            (if (gobj/get host internal-host-marker)
-              true
-              (recur host)))
-
-          :else false)))))
+  (if-not (instance? js/Node el)
+    false
+    (loop [^js node (ancestor-up el)]
+      (cond
+        (or (nil? node) (identical? node js/document)) false
+        (gobj/get node internal-host-marker)           true
+        :else                                          (recur (ancestor-up node))))))
 
 (defn- push-record-with-id!
   "Build and push a record with a pre-determined id and timestamp. Reads
