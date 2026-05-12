@@ -26,7 +26,13 @@
      :form-associated?     — true to mark as form-associated element
      :form-disabled-fn     — (fn [el disabled?] ...) called on formDisabledCallback
      :form-reset-fn        — (fn [el] ...) called on formResetCallback
-     :setup-prototype-fn   — (fn [proto] ...) install properties/methods on prototype"
+     :setup-prototype-fn   — (fn [proto] ...) install properties/methods on prototype
+     :internal?            — when true, skip firing the dev-tool lifecycle hook
+                             on every callback. Set this on elements that are
+                             themselves part of the dev tooling (e.g. the
+                             x-trace-history dock); otherwise their own
+                             connect/disconnect/attribute records would
+                             pollute the trace they produce."
   [{:keys [observed-attributes
            connected-fn
            disconnected-fn
@@ -34,9 +40,11 @@
            form-associated?
            form-disabled-fn
            form-reset-fn
-           setup-prototype-fn]}]
+           setup-prototype-fn
+           internal?]}]
   (let [klass (js* "(class extends HTMLElement {})")
-        proto (.-prototype klass)]
+        proto (.-prototype klass)
+        fire! (if internal? (fn [_]) fire-lifecycle-hook!)]
 
     (set! (.-observedAttributes klass) observed-attributes)
 
@@ -46,24 +54,24 @@
     (set! (.-connectedCallback proto)
           (fn []
             (this-as ^js this
-              (fire-lifecycle-hook! {:type :lifecycle/connected :el this})
+              (fire! {:type :lifecycle/connected :el this})
               (connected-fn this))))
 
     (when disconnected-fn
       (set! (.-disconnectedCallback proto)
             (fn []
               (this-as ^js this
-                (fire-lifecycle-hook! {:type :lifecycle/disconnected :el this})
+                (fire! {:type :lifecycle/disconnected :el this})
                 (disconnected-fn this)))))
 
     (set! (.-attributeChangedCallback proto)
           (fn [n o v]
             (this-as ^js this
-              (fire-lifecycle-hook! {:type      :lifecycle/attribute-changed
-                                     :el        this
-                                     :attribute n
-                                     :old-value o
-                                     :new-value v})
+              (fire! {:type      :lifecycle/attribute-changed
+                      :el        this
+                      :attribute n
+                      :old-value o
+                      :new-value v})
               (attribute-changed-fn this n o v))))
 
     (when form-disabled-fn
