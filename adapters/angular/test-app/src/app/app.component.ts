@@ -14,6 +14,7 @@ import {
   BaredomDivider,
   BaredomTheme,
 } from '@vanelsas/baredom-angular';
+import { TraceHistoryPanelComponent } from './trace-history-panel.component';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ import {
     BaredomSpinner,
     BaredomDivider,
     BaredomTheme,
+    TraceHistoryPanelComponent,
   ],
   template: `
     <x-theme [attr.preset]="preset">
@@ -145,6 +147,11 @@ import {
             </span>
           </div>
         </section>
+
+        <x-divider style="margin: 1.5rem 0"></x-divider>
+
+        <!-- Test 9: Trace history dock smoke (PR 19) -->
+        <trace-history-panel></trace-history-panel>
 
         <x-divider style="margin: 1.5rem 0"></x-divider>
 

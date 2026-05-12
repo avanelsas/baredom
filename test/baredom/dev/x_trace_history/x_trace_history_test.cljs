@@ -131,6 +131,25 @@
       (is (some? (query el "[data-x-th-action='pause']")))
       (is (some? (query el "[data-x-th-action='clear']"))))))
 
+(deftest register-is-idempotent-test
+  (testing "calling dock/register! more than once produces exactly one
+            <x-trace-history> element on body — protects against
+            React-StrictMode-style double-effects, bundlers that
+            include the module twice, or any consumer code path that
+            ends up importing the side-effect entry more than once.
+            The recorder's wrapper-stamp guard prevents double-wrapping
+            dispatchEvent (covered separately in recorder_test.cljs);
+            this test focuses on the dock layer."
+    (dock/register!)
+    (dock/register!)
+    (dock/register!)
+    (let [els (.querySelectorAll js/document model/tag-name)]
+      (is (= 1 (.-length els))
+          "exactly one dock element after triple register!"))
+    ;; And the custom element is defined exactly once (a second
+    ;; .define would throw NotSupportedError).
+    (is (some? (.get js/customElements model/tag-name)))))
+
 (deftest empty-state-shows-placeholder-test
   (testing "with no records, the svg pane shows the empty hint and the lanes
             column is empty"

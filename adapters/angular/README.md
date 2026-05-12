@@ -158,6 +158,21 @@ Wrap your app with `<x-theme>` to enable BareDOM's design tokens:
 
 The directives are auto-generated from BareDOM's component model metadata using `bb scripts/generate_angular.bb`. Adding a new component to BareDOM automatically produces its Angular directive.
 
+## Dev tools
+
+To enable the `<x-trace-history>` timeline dock in your Angular app, add a side-effect import to `main.ts` — **after** `zone.js` so the recorder's `dispatchEvent` wrapper installs on top of zone's patch:
+
+```ts
+import "zone.js";
+import "@vanelsas/baredom/x-trace-history";  // side effect
+import { bootstrapApplication } from "@angular/platform-browser";
+import { AppComponent } from "./app/app.component";
+
+bootstrapApplication(AppComponent);
+```
+
+The dock only mounts when you load the page with `?baredom-trace-history` in the URL (or set `window.BAREDOM_TRACE_HISTORY = true` before the module loads). See [docs/x-trace-history.md](../../docs/x-trace-history.md) for the full guide, and `test-app/` for a working smoke setup.
+
 ## License
 
 MIT

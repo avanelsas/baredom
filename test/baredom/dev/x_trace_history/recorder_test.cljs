@@ -705,6 +705,31 @@
       (du/dispatch! el "x" #js {})
       (is (= 1 (count-records))))))
 
+(deftest dispatch-on-non-node-event-target-does-not-throw-test
+  (testing "Found in PR 19 smoke-testing the Angular adapter: Angular
+            (and many vanilla apps) dispatch CustomEvents on window —
+            popstate, resize, hashchange — and on XHR/MessagePort
+            instances. All are EventTargets, none have getRootNode.
+            The internal-host walk must short-circuit instead of
+            throwing TypeError 'a.getRootNode is not a function'.
+
+            The classifier currently lumps window dispatches in with
+            element dispatches as `event/dispatch` (only `document`
+            is special-cased). That semantic is preserved; this test
+            only asserts the wrapper survives the crash and the
+            record is captured."
+    (.dispatchEvent js/window
+                    (js/CustomEvent. "window-event"
+                                     #js {:bubbles    false
+                                          :cancelable false}))
+    (is (= 1 (count-records))
+        "dispatch on window survived the wrapper and produced a record")
+    (let [^js r (aget (recorder/records) 0)]
+      (is (string? (.-type r))
+          "type field populated — wrapper finished its classify path")
+      (is (nil? (.-componentId r))
+          "non-element targets have no componentId"))))
+
 ;; ── PR-A: internal-host recording boundary ──────────────────────────────────
 ;;
 ;; The dock UI uses BareDOM components internally. Without a boundary, every

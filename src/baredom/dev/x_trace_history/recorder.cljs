@@ -221,13 +221,23 @@
 (defn- inside-internal-host?
   "True when `el` is a descendant of any element bearing the
    internal-host-marker, traversing across (open) shadow boundaries.
-   Returns false for nil, document, and elements in the light tree of
-   the document. The marker on `el` itself does NOT count — we ask
-   whether `el` is *inside* a marked host, not whether it IS one."
+   Returns false for nil, document, non-Node EventTargets (window,
+   XMLHttpRequest, MessagePort, WebSocket — all dispatch targets
+   apps use, but none have getRootNode), and elements in the light
+   tree of the document. The marker on `el` itself does NOT count —
+   we ask whether `el` is *inside* a marked host, not whether it IS
+   one."
   [^js el]
   (loop [^js node el]
     (cond
       (or (nil? node) (identical? node js/document))
+      false
+
+      ;; Non-Node EventTargets (window, XHR, MessagePort, WebSocket,
+      ;; etc.) have no getRootNode. These are always outside any
+      ;; internal-marked host by construction — the dock marks element
+      ;; hosts only — so short-circuit to false.
+      (not (instance? js/Node node))
       false
 
       :else
