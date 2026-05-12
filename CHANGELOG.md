@@ -2,6 +2,23 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.0.0] - 2026-05-12
+
+### Added
+
+- **x-trace-history** — A time-travel debugger for BareDOM components. Records every CustomEvent, attribute mutation, instance-field write, and lifecycle callback as plain JS records with a stable schema. Floating dock with cross-instance lanes, scrubber, synchronous cause→effect causality DAG view, heatmap density rendering for animation-heavy lanes, full-text search across recorded values, bounded recording sessions, and JSON export/import. Ships as a separate ESM module (`@vanelsas/baredom/x-trace-history`) activated by `?baredom-trace-history` URL param or `window.BAREDOM_TRACE_HISTORY = true` — zero overhead when off. TypeScript declarations (`TraceRecord` discriminated union + `window.BareDOM.traceHistory` console API) included. See [`docs/x-trace-history.md`](docs/x-trace-history.md) and [`docs/x-trace-history-schema.md`](docs/x-trace-history-schema.md).
+- **Standalone trace viewer** — `public/viewer.html` deployed alongside the demo site for sharing recorded traces. Drag-drop a `.trace.json` file or pass `?trace=<base64>` to load a trace into the dock.
+- **Adapter integration tests** — React (`adapters/react/test-app/`) and Angular (`adapters/angular/test-app/`) test-apps now exercise the trace-history dock end-to-end, with dev-tool guidance added to each adapter's README and main doc.
+- **Dispatch + lifecycle hook points** — `baredom.utils.dom` and `baredom.utils.component` expose `*trace-hook*` / `*lifecycle-hook*` extension atoms gating instrumentation of every CustomEvent dispatch, attribute mutation, instance-field write, and lifecycle callback. One nil-check cost when no recorder is installed.
+
+### Fixed
+
+- **x-select** — Slotted `<option selected>` default no longer gets stomped on render when the host has no `value` attribute. An explicit `value` attribute still overrides the slotted default.
+
+### Changed
+
+- **Tooling** — Sibling demo build outputs (`bare-demo/public/js/`, `bare-html/js/`, etc.), the Angular CLI cache, and the clj-kondo cache are now correctly gitignored. Adapter test-app `package-lock.json` files are tracked for reproducible smoke-test installs.
+
 ## [2.9.0] - 2026-05-09
 
 ### Added
