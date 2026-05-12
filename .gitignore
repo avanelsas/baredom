@@ -3,9 +3,16 @@ dist/
 out/
 target/
 public/js/
+bare-demo/public/js/
+bare-reagent-demo/public/js/
+bare-node-demo/public/js/
+bare-html/js/
 
 # Shadow-cljs cache
 .shadow-cljs/
+
+# clj-kondo cache
+.clj-kondo/.cache/
 
 # reports
 report.html
@@ -36,3 +43,4 @@ vanelsas-baredom-*.tgz
 adapters/*/dist/
 adapters/*/node_modules/
 adapters/*/test-app/node_modules/
+adapters/*/test-app/.angular/
