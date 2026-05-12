@@ -10,6 +10,7 @@
   (:require
    [clojure.string :as str]
    [goog.object :as gobj]
+   [baredom.utils.component :as comp]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
    ;; Require the component implementations directly rather than the
@@ -1920,18 +1921,6 @@
   (gobj/set el model/k-mounted nil))
 
 ;; ---------------------------------------------------------------------------
-;; Element class
-;; ---------------------------------------------------------------------------
-
-(defn- element-class []
-  (let [klass (js* "(class extends HTMLElement {})")]
-    (set! (.-connectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (mount!   this))))
-    (set! (.-disconnectedCallback (.-prototype klass))
-          (fn [] (this-as ^js this (unmount! this))))
-    klass))
-
-;; ---------------------------------------------------------------------------
 ;; Activation
 ;; ---------------------------------------------------------------------------
 
@@ -1942,20 +1931,32 @@
     (let [^js el (.createElement js/document model/tag-name)]
       (.appendChild (.-body js/document) el))))
 
+(def ^:private element-opts
+  "Declarative class options passed to component/register!. `:internal? true`
+   keeps the dev-tool lifecycle hook from firing on the dock's own
+   connect/disconnect — otherwise those records would pollute every trace
+   the dock records. There are no observed attributes; the no-op
+   attribute-changed-fn is a formality (the callback can never fire)."
+  {:internal?            true
+   :observed-attributes  #js []
+   :connected-fn         (fn [^js el] (mount!   el))
+   :disconnected-fn      (fn [^js el] (unmount! el))
+   :attribute-changed-fn (fn [_ _ _ _] nil)})
+
 (defn register!
   "Single entry point: install recorder hooks (idempotent), register the
    library components used inside the dock (x-button, x-checkbox,
-   x-select), define the custom element (idempotent), and auto-mount the
-   dock if activation is on. Defers mounting to DOMContentLoaded if
-   document.body is not yet available."
+   x-search-field, x-select), register the <x-trace-history> custom
+   element (idempotent), and auto-mount the dock if activation is on.
+   Defers mounting to DOMContentLoaded if document.body is not yet
+   available."
   []
   (recorder/register!)
   (baredom.components.x-button.x-button/init!)
   (baredom.components.x-checkbox.x-checkbox/init!)
   (baredom.components.x-search-field.x-search-field/init!)
   (baredom.components.x-select.x-select/init!)
-  (when-not (.get js/customElements model/tag-name)
-    (.define js/customElements model/tag-name (element-class)))
+  (comp/register! model/tag-name element-opts)
   (when (model/enabled? js/window)
     (if (.-body js/document)
       (activate!)
