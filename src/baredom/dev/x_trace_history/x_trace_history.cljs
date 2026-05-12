@@ -238,8 +238,7 @@
   [axis-mode ^js r index n bounds plot-width]
   (case axis-mode
     :order (model/index-x index n plot-width)
-    :time  (model/time-x (.-t r) bounds plot-width)
-    (model/index-x index n plot-width)))
+    :time  (model/time-x (.-t r) bounds plot-width)))
 
 (defn- dot-html
   [^js r cx lane-y selected-id]
@@ -513,7 +512,7 @@
   (cond
     (nil? sel-rec)
     (do
-      (gobj/set el model/k-causality-layout nil)
+      (model/set-ui-state! el :causality-layout nil)
       (set! (.-innerHTML causality-el)
             (str "<div class='causality-empty'>"
                  (escape-html (model/causality-empty-message))
@@ -526,7 +525,7 @@
       (cond
         (:capped? tree)
         (do
-          (gobj/set el model/k-causality-layout nil)
+          (model/set-ui-state! el :causality-layout nil)
           (set! (.-innerHTML causality-el)
                 (str "<div class='causality-empty'>"
                      (escape-html (model/causality-over-cap-message stats))
@@ -535,7 +534,7 @@
         :else
         (let [layout (model/layout-tree tree)
               leaf?  (= 1 (:node-count stats))]
-          (gobj/set el model/k-causality-layout layout)
+          (model/set-ui-state! el :causality-layout layout)
           (set! (.-innerHTML causality-el)
                 (str (when leaf? (leaf-hint-html))
                      (causality-svg-html layout (.-id sel-rec)))))))))
@@ -556,9 +555,9 @@
    returns {0, 0} which is a no-op against scroll positions already
    at the start)."
   [^js el]
-  (when (gobj/get el model/k-causality-needs-fit)
+  (when (model/ui-state el :causality-needs-fit)
     (let [^js container (gobj/get el model/k-causality-el)
-          layout        (gobj/get el model/k-causality-layout)
+          layout        (model/ui-state el :causality-layout)
           sel-id        (get-selected el)
           node          (when layout (model/find-laid-node layout sel-id))
           vw            (some-> container .-clientWidth)
@@ -571,7 +570,7 @@
               (model/fit-to-view-scroll (:cx node) (:cy node) vw vh width height)]
           (set! (.-scrollLeft container) sl)
           (set! (.-scrollTop  container) st)
-          (gobj/set el model/k-causality-needs-fit false))))))
+          (model/set-ui-state! el :causality-needs-fit false))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Tag dropdown — populated at runtime from observed tags
@@ -631,12 +630,12 @@
   (let [view       (gobj/get el model/k-view)
         ^js imps   (recorder/imports)
         cur-count  (.-length imps)
-        prev       (or (gobj/get el model/k-auto-switch-import-count) 0)]
+        prev       (or (model/ui-state el :auto-switch-import) 0)]
     (cond
       ;; New import landed. Consider switching.
       (> cur-count prev)
       (do
-        (gobj/set el model/k-auto-switch-import-count cur-count)
+        (model/set-ui-state! el :auto-switch-import cur-count)
         (when (and (model/live-view? view)
                    (zero? (.-length ^js (recorder/records))))
           (let [^js latest (aget imps (dec cur-count))
@@ -648,7 +647,7 @@
       ;; the counter so a later addition still registers as a
       ;; new-import transition.
       (< cur-count prev)
-      (gobj/set el model/k-auto-switch-import-count cur-count)
+      (model/set-ui-state! el :auto-switch-import cur-count)
 
       ;; cur-count == prev: nothing changed, nothing to do.
       :else nil)))
@@ -861,7 +860,7 @@
   "Write the selected record-id for the active view.
 
    When the dock is in :causality mode AND a non-nil id is being
-   selected, mark `k-causality-needs-fit` so the next render scrolls
+   selected, mark :causality-needs-fit in ui-state so the next render scrolls
    the freshly-selected node to the centre of the causality pane.
    We do NOT set the flag on a nil-id clear (which `effective-
    selection!` triggers when a filter change drops the selection)
@@ -878,7 +877,7 @@
     (gobj/set el model/k-view-selected m)
     (when (and (some? id)
                (= :causality (gobj/get el model/k-dock-mode)))
-      (gobj/set el model/k-causality-needs-fit true))
+      (model/set-ui-state! el :causality-needs-fit true))
     nil))
 
 (defn- effective-selection!
@@ -1228,8 +1227,8 @@
                model/default-dock-mode)]
     (gobj/set el model/k-dock-mode mode)
     (if (= :causality mode)
-      (gobj/set el model/k-causality-needs-fit true)
-      (gobj/set el model/k-causality-needs-fit false))
+      (model/set-ui-state! el :causality-needs-fit true)
+      (model/set-ui-state! el :causality-needs-fit false))
     (render! el)))
 
 (defn- handle-cat-change!
@@ -1395,10 +1394,7 @@
       (nth filtered i nil))
 
     :time
-    (model/nearest-record filtered (model/time-from-x x bounds plot-w))
-
-    (when-let [i (model/index-from-x x (count filtered) plot-w)]
-      (nth filtered i nil))))
+    (model/nearest-record filtered (model/time-from-x x bounds plot-w))))
 
 (defn- select-nearest!
   "Apply a precomputed scrub context to a raw cursor x. Used by the
@@ -1584,7 +1580,7 @@
    replace it when a second error fires before the first cleared."
   [^js el msg]
   (let [^js hint-el (gobj/get el model/k-hint-el)
-        prev-tok    (gobj/get el model/k-import-error)]
+        prev-tok    (model/ui-state el :import-error)]
     (when (number? prev-tok)
       (js/clearTimeout prev-tok))
     (set! (.-textContent hint-el) msg)
@@ -1592,10 +1588,10 @@
     (let [tok (js/setTimeout
                (fn []
                  (.remove (.-classList hint-el) "error")
-                 (gobj/set el model/k-import-error nil)
+                 (model/set-ui-state! el :import-error nil)
                  (render! el))
                import-error-display-ms)]
-      (gobj/set el model/k-import-error tok))))
+      (model/set-ui-state! el :import-error tok))))
 
 (defn- on-import-success!
   "Switch the dock view to the freshly-imported trace so the user
@@ -1643,12 +1639,12 @@
 
 (defn- on-drag-overlay-show!
   "Show the drop-overlay when a dragenter crosses into the dock.
-   Counter-based (k-drag-depth) so passing over a child element
-   doesn't flicker the overlay."
+   Counter-based (:drag-depth in ui-state) so passing over a child
+   element doesn't flicker the overlay."
   [^js el]
   (let [^js overlay (gobj/get el model/k-drop-overlay)
-        d           (or (gobj/get el model/k-drag-depth) 0)]
-    (gobj/set el model/k-drag-depth (inc d))
+        d           (or (model/ui-state el :drag-depth) 0)]
+    (model/set-ui-state! el :drag-depth (inc d))
     (.removeAttribute overlay "hidden")))
 
 (defn- on-drag-overlay-hide!
@@ -1656,8 +1652,8 @@
    after a successful drop."
   [^js el]
   (let [^js overlay (gobj/get el model/k-drop-overlay)
-        d           (max 0 (dec (or (gobj/get el model/k-drag-depth) 0)))]
-    (gobj/set el model/k-drag-depth d)
+        d           (max 0 (dec (or (model/ui-state el :drag-depth) 0)))]
+    (model/set-ui-state! el :drag-depth d)
     (when (zero? d)
       (.setAttribute overlay "hidden" ""))))
 
@@ -1699,7 +1695,7 @@
     (.preventDefault e)
     ;; Reset the drag counter unconditionally — a drop fires WITHOUT a
     ;; final dragleave on every browser we care about.
-    (gobj/set el model/k-drag-depth 0)
+    (model/set-ui-state! el :drag-depth 0)
     (let [^js overlay (gobj/get el model/k-drop-overlay)]
       (.setAttribute overlay "hidden" ""))
     (let [^js dt    (.-dataTransfer e)
@@ -1897,42 +1893,44 @@
   [^js el]
   (when-not (gobj/get el model/k-mounted)
     ;; Mark BEFORE attaching the shadow so any synchronous lifecycle
-    ;; events from inside the shadow (e.g. nested components registering)
-    ;; are already gated by the recorder's internal-host boundary.
+    ;; events from inside the shadow (e.g. nested components
+    ;; registering) are already gated by the recorder's internal-host
+    ;; boundary. Wrap the setup in with-suppressed-recording! to
+    ;; catch records from elements that haven't been attached yet
+    ;; (child constructors calling du/set-attr! / du/setv! on
+    ;; detached internals).
     (recorder/mark-internal! el)
-    ;; Wrap the entire setup in with-suppressed-recording! so child
-    ;; component constructors that mutate freshly-created (not-yet-
-    ;; attached) internal elements via du/set-attr! / du/setv! don't
-    ;; leak records into the trace. The boundary alone catches events
-    ;; from elements ATTACHED inside the marked shadow; this scope
-    ;; catches events from elements that haven't been attached yet.
-    ;;
-    ;; INVARIANT for future maintainers: this scope only covers the
-    ;; INITIAL mount. If you add dynamic creation of x-checkbox /
-    ;; x-select / any component whose constructor calls du/set-attr!
-    ;; or du/setv! on detached internals (current x-button does NOT
-    ;; — it uses native setAttribute) — wrap that render call in
-    ;; recorder/with-suppressed-recording! too. Otherwise records
-    ;; will leak on every re-render that creates such instances.
-    (recorder/with-suppressed-recording!
-      (fn []
-        ;; Default the :state checkbox off in normal mode (instance-
-        ;; field writes are the noisiest type and tend to drown out
-        ;; user-relevant events in the timeline). Forensic mode
-        ;; defaults all categories ON so users capturing edge-case
-        ;; mutation chains see everything.
-        (let [cats       (model/default-categories (recorder/forensic-mode?))
-              ^js shadow (attach-skeleton! el cats)]
-          (cache-refs! el shadow)
-          (initialize-filter-state! el cats)
-          (bind-listeners! el shadow)
-          (let [tok (recorder/subscribe!
-                     (fn []
-                       (maybe-auto-switch-import! el)
-                       (render! el)))]
-            (gobj/set el model/k-sub-token tok))
-          (render! el)
-          (gobj/set el model/k-mounted true))))))
+    (let [records-before (.-length (recorder/records))]
+      (recorder/with-suppressed-recording!
+        (fn []
+          ;; Default the :state checkbox off in normal mode (instance-
+          ;; field writes are the noisiest type and tend to drown out
+          ;; user-relevant events in the timeline). Forensic mode
+          ;; defaults all categories ON so users capturing edge-case
+          ;; mutation chains see everything.
+          (let [cats       (model/default-categories (recorder/forensic-mode?))
+                ^js shadow (attach-skeleton! el cats)]
+            (cache-refs! el shadow)
+            (initialize-filter-state! el cats)
+            (bind-listeners! el shadow)
+            (let [tok (recorder/subscribe!
+                       (fn []
+                         (maybe-auto-switch-import! el)
+                         (render! el)))]
+              (gobj/set el model/k-sub-token tok))
+            (render! el)
+            (gobj/set el model/k-mounted true))))
+      ;; INVARIANT (runtime-checked): every record emitted during
+      ;; mount must be caught by either the suppression scope above
+      ;; (for detached internals) or the internal-host marker (for
+      ;; elements already attached inside the marked shadow). A leak
+      ;; here means a future dynamic component constructor needs its
+      ;; own with-suppressed-recording! wrapper around the render
+      ;; call that creates it.
+      (when (not= records-before (.-length (recorder/records)))
+        (js/console.warn
+         "[x-trace-history] dock mount produced records — internal-host suppression is leaking. "
+         "Wrap dynamic child-component constructors in recorder/with-suppressed-recording!.")))))
 
 (defn- unmount!
   "Symmetric tear-down for mount!. Removes every static listener via
@@ -1946,12 +1944,12 @@
   [^js el]
   (when-let [tok (gobj/get el model/k-sub-token)]
     (recorder/unsubscribe! tok))
-  (when-let [err-tok (gobj/get el model/k-import-error)]
+  (when-let [err-tok (model/ui-state el :import-error)]
     (when (number? err-tok)
       (js/clearTimeout err-tok)))
   (unbind-listeners! el)
   (gobj/set el model/k-sub-token nil)
-  (gobj/set el model/k-import-error nil)
+  (model/set-ui-state! el :import-error nil)
   (gobj/set el model/k-mounted nil))
 
 ;; ---------------------------------------------------------------------------

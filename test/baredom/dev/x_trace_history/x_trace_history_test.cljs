@@ -2150,13 +2150,13 @@
                           (done))))))))))))))
 
 (deftest causality-mode-toggle-marks-needs-fit-test
-  (testing "switching to :causality always marks k-causality-needs-fit
-            so the next render's apply-causality-fit! has a chance to
+  (testing "switching to :causality always marks :causality-needs-fit
+            in ui-state so the next render's apply-causality-fit! has a chance to
             scroll the selected node into the centre of the viewport"
     (async done
       (let [^js dock (mount-dock!)]
         ;; Force the flag clear so we know our toggle sets it.
-        (gobj/set dock model/k-causality-needs-fit false)
+        (model/set-ui-state! dock :causality-needs-fit false)
         (switch-to-causality! dock)
         (after-frames 1
           (fn []
@@ -2172,7 +2172,7 @@
             (switch-to-timeline! dock)
             (after-frames 1
               (fn []
-                (is (false? (gobj/get dock model/k-causality-needs-fit))
+                (is (false? (model/ui-state dock :causality-needs-fit))
                     "toggling back to timeline clears the flag")
                 (done)))))))))
 
@@ -2364,7 +2364,7 @@
 (deftest causality-filter-driven-clear-does-not-leak-needs-fit-test
   (testing "audit fix: in :causality mode, a filter-driven
             effective-selection!→set-selected! nil call must NOT
-            leave k-causality-needs-fit=true. Without the fix the
+            leave :causality-needs-fit=true. Without the fix the
             stale flag silently triggers a fit-to-view scroll on a
             LATER unrelated render with a different selection."
     (async done
@@ -2395,12 +2395,12 @@
                     ;; selection (a state record) no longer matches
                     ;; the filter → effective-selection! calls
                     ;; set-selected! with nil.
-                    (gobj/set dock model/k-causality-needs-fit false)
+                    (model/set-ui-state! dock :causality-needs-fit false)
                     (dispatch-checkbox-change!
                      ^js (query dock "[data-x-th-cat='state']") false)
                     (after-frames 1
                       (fn []
-                        (is (false? (gobj/get dock model/k-causality-needs-fit))
+                        (is (false? (model/ui-state dock :causality-needs-fit))
                             "needs-fit stayed clear despite the
                              selection being dropped by the filter
                              — the flag must NOT leak into a later
@@ -2434,7 +2434,7 @@
                     (let [before-id (live-selected-id dock)]
                       ;; Force-clear the flag so we can prove arrow-
                       ;; stepping (a real selection move) sets it.
-                      (gobj/set dock model/k-causality-needs-fit false)
+                      (model/set-ui-state! dock :causality-needs-fit false)
                       (.dispatchEvent
                        ^js (shadow-of dock)
                        (js/KeyboardEvent. "keydown"

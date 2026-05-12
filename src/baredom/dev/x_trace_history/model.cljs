@@ -1357,33 +1357,55 @@
 ;; the hint area when validation rejects a drop.
 (def k-import-input   "__xTraceHistoryImportInput")
 (def k-drop-overlay   "__xTraceHistoryDropOverlay")
-(def k-import-error   "__xTraceHistoryImportError")
-;; Counter tracking nested dragenter/dragleave pairs across the
-;; dock's descendants. The drop overlay shows while > 0 and hides at
-;; 0; using a counter (rather than a flag) prevents flicker when a
-;; drag passes over a child element.
-(def k-drag-depth     "__xTraceHistoryDragDepth")
 ;; JS array of #js [target event-name handler] triples captured at
 ;; bind-listeners! time. unmount! iterates it to remove each listener,
 ;; so the static dock listeners cannot leak across a disconnect /
 ;; reconnect cycle.
 (def k-listeners      "__xTraceHistoryListeners")
-;; PR 15 — auto-switch heuristic. Records the import count seen at the
-;; last subscriber tick so the dock can detect that a new import has
-;; arrived (without re-firing for every render after the switch).
-;; Mutates only when (a) a new import appears, or (b) imports were
-;; removed (rebaseline). See maybe-auto-switch-import! in the dock.
-(def k-auto-switch-import-count "__xTraceHistoryAutoSwitchImportCount")
 ;; PR 17 — causality DAG view. dock-mode is :timeline or :causality.
 ;; k-causality-el is the cached scrollable container the UI layer
 ;; reads clientWidth / clientHeight from for fit-to-view math.
-;; k-causality-needs-fit is a transient flag set by handlers that
-;; should trigger an auto-scroll on the next render (mode-switch,
-;; selection-change inside causality, key-step). k-causality-layout
-;; caches the last laid-out tree so apply-causality-fit! can resolve
-;; the selected node's coords without rebuilding.
 (def k-dock-mode             "__xTraceHistoryDockMode")
 (def k-causality-el          "__xTraceHistoryCausalityEl")
-(def k-causality-needs-fit   "__xTraceHistoryCausalityNeedsFit")
-(def k-causality-layout      "__xTraceHistoryCausalityLayout")
+
+;; ---------------------------------------------------------------------------
+;; Transient UI state
+;; ---------------------------------------------------------------------------
+;; A single JS-object slot on the host holds short-lived bookkeeping
+;; that the dock reads/writes during interaction. One slot beats five
+;; flat fields: it names the concept ("ui state"), survives a
+;; disconnect/reconnect intact, and dumps cleanly when inspected.
+;;
+;; Keyword key catalogue:
+;;   :drag-depth          — counter for nested dragenter/dragleave
+;;                          pairs across the dock's descendants. Drop
+;;                          overlay is visible while > 0.
+;;   :causality-needs-fit — one-shot flag: next render should auto-scroll
+;;                          the causality pane to centre the selection.
+;;   :causality-layout    — cached laid-out tree so apply-causality-fit!
+;;                          can resolve a node's coords without rebuild.
+;;   :auto-switch-import  — PR 15 heuristic: last-observed import count,
+;;                          so subscriber ticks only auto-switch on a
+;;                          NEW import, not on every render after.
+;;   :import-error        — setTimeout token (or nil) for the import-
+;;                          error hint that hides after a few seconds.
+(def ^:private k-ui-state "__xTraceHistoryUiState")
+
+(defn ui-state
+  "Read a transient UI-state value from `host` by keyword key. Returns
+   nil when the slot or key is unset. Pure read; no mutation."
+  [^js host k]
+  (let [^js m (gobj/get host k-ui-state)]
+    (when m
+      (let [v (gobj/get m (name k))]
+        (when-not (undefined? v) v)))))
+
+(defn set-ui-state!
+  "Write a transient UI-state value on `host`. Initializes the slot
+   lazily on first write."
+  [^js host k v]
+  (let [^js m (or (gobj/get host k-ui-state) (js-obj))]
+    (gobj/set m (name k) v)
+    (gobj/set host k-ui-state m)
+    nil))
 
