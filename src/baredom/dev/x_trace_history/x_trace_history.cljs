@@ -49,16 +49,26 @@
 ;; ---------------------------------------------------------------------------
 ;; HTML escaping
 ;; ---------------------------------------------------------------------------
+;; Each render passes hundreds of strings through escape-html (every
+;; label, every tooltip, every detail JSON). The five patterns are
+;; module-level constants so we don't allocate fresh RegExp instances
+;; on every call.
+
+(def ^:private re-amp   (js/RegExp. "&"  "g"))
+(def ^:private re-lt    (js/RegExp. "<"  "g"))
+(def ^:private re-gt    (js/RegExp. ">"  "g"))
+(def ^:private re-quot  (js/RegExp. "\"" "g"))
+(def ^:private re-apos  (js/RegExp. "'"  "g"))
 
 (defn- escape-html
   "Escape HTML metacharacters for safe interpolation into innerHTML."
   [s]
   (-> (str s)
-      (.replace (js/RegExp. "&"  "g") "&amp;")
-      (.replace (js/RegExp. "<"  "g") "&lt;")
-      (.replace (js/RegExp. ">"  "g") "&gt;")
-      (.replace (js/RegExp. "\"" "g") "&quot;")
-      (.replace (js/RegExp. "'"  "g") "&#39;")))
+      (.replace re-amp  "&amp;")
+      (.replace re-lt   "&lt;")
+      (.replace re-gt   "&gt;")
+      (.replace re-quot "&quot;")
+      (.replace re-apos "&#39;")))
 
 ;; ---------------------------------------------------------------------------
 ;; Static skeleton
@@ -236,12 +246,10 @@
   (let [cy   (+ lane-y (/ lane-h 2))
         sel? (= (.-id r) selected-id)
         rad  (if sel? dot-r-sel dot-r)]
-    (str "<circle class='dot' "
+    (str "<circle class='dot" (when sel? " selected") "' "
          "data-x-th-id='" (.-id r) "' "
          "cx='" cx "' cy='" cy "' r='" rad "' "
-         "fill='" (model/dot-color r) "'"
-         (when sel? " stroke='#fff' stroke-width='1.5'")
-         " />")))
+         "fill='" (model/dot-color r) "' />")))
 
 (defn- scrubber-html
   "Vertical drag-line drawn at the selected record's x. Returns the
@@ -274,7 +282,7 @@
    since a heatmap rectangle has no native semantics."
   [{:keys [records dominant-cat x-start]} lane-y max-count]
   (let [^js r0       (first records)
-        cat-color    (get model/category-colors dominant-cat "#6c7086")
+        cat-color    (get model/category-colors (or dominant-cat :other))
         opacity      (model/bin-opacity (count records) max-count)
         cat-name     (escape-html (name (or dominant-cat :other)))
         n            (count records)

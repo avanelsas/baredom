@@ -587,7 +587,7 @@
 (defn dot-color
   "Fill colour for a record's timeline dot, derived from its category."
   [^js r]
-  (get category-colors (categorize-type (.-type r)) "#6c7086"))
+  (get category-colors (or (categorize-type (.-type r)) :other)))
 
 (def document-lane
   "Sentinel lane-id for records whose target was js/document (componentId
