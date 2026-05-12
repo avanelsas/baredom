@@ -57,11 +57,14 @@
          ;; user activated with =raw.
          :forensic?         false}))
 
-(defonce ^:private subscribers (atom {}))
-
-(defonce ^:private next-sub-token (atom 0))
-
-(defonce ^:private notify-pending? (atom false))
+;; Subscriber pub/sub — one atom for three concerns: the token counter,
+;; the rAF-coalesce flag, and the token→callback map. Folding them into
+;; a single value keeps token allocation atomic with map insertion
+;; (subscribe!) and removes the per-frame second atom read.
+(defonce ^:private subscribers
+  (atom {:next-token 0
+         :pending?   false
+         :by-token   {}}))
 
 ;; Cause-id chain: a stack of reserved record-ids. The dispatch-wrapper
 ;; pushes the reserved id of the dispatch on entry and pops on exit, so
@@ -118,34 +121,44 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- fire-subscribers!
-  "Invoked from rAF. Reset the pending flag and call every subscriber. A
-   throwing subscriber must not block the others or break the recorder."
+  "Invoked from rAF. Clear the pending flag and call every subscriber.
+   A throwing subscriber must not block the others or break the
+   recorder."
   []
-  (reset! notify-pending? false)
-  (doseq [[_ f] @subscribers]
-    (try (f) (catch :default _ nil))))
+  (let [{:keys [by-token]} (swap! subscribers assoc :pending? false)]
+    (doseq [[_ f] by-token]
+      (try (f) (catch :default _ nil)))))
 
 (defn- schedule-notify!
-  "Coalesce subscriber notifications to one per animation frame. Multiple
-   pushes within a single frame trigger a single rAF callback."
+  "Coalesce subscriber notifications to one per animation frame.
+   Multiple pushes within a single frame trigger a single rAF callback."
   []
-  (when (compare-and-set! notify-pending? false true)
-    (js/requestAnimationFrame fire-subscribers!)))
+  (let [[before _] (swap-vals! subscribers assoc :pending? true)]
+    (when-not (:pending? before)
+      (js/requestAnimationFrame fire-subscribers!))))
+
+(defn- register-subscriber
+  "Pure: returns updated subscribers state with `f` registered under
+   a fresh token. The new token is `(:next-token result)`."
+  [s f]
+  (let [tok (inc (:next-token s))]
+    (-> s
+        (assoc :next-token tok)
+        (assoc-in [:by-token tok] f))))
 
 (defn subscribe!
-  "Register f as a no-arg callback fired on the next animation frame after
-   any record is pushed (or after pause! / resume! / clear!). Returns an
-   opaque token to pass to unsubscribe!. Safe to call before install!."
+  "Register f as a no-arg callback fired on the next animation frame
+   after any record is pushed (or after pause! / resume! / clear!).
+   Returns an opaque token to pass to unsubscribe!. Safe to call
+   before install!."
   [f]
-  (let [tok (swap! next-sub-token inc)]
-    (swap! subscribers assoc tok f)
-    tok))
+  (:next-token (swap! subscribers register-subscriber f)))
 
 (defn unsubscribe!
-  "Remove the subscriber identified by `tok`. Idempotent: calling with an
-   unknown token is a no-op."
+  "Remove the subscriber identified by `tok`. Idempotent: calling with
+   an unknown token is a no-op."
   [tok]
-  (swap! subscribers dissoc tok)
+  (swap! subscribers update :by-token dissoc tok)
   nil)
 
 ;; ---------------------------------------------------------------------------
@@ -153,23 +166,26 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- resolve-component-id!
-  "Get-or-assign a stable component-id stored on the element via gobj. Returns
-   [id new?] where id is nil for non-element targets (e.g. js/document).
+  "Get-or-assign a stable component-id stored on the element via gobj.
+   Returns {:id id :new? bool}. :id is nil for non-element targets
+   (e.g. js/document); :new? is true iff this call wrote a fresh id
+   onto the element.
 
-   Side effect: when the element has no id yet, writes one to it.
-   The id survives disconnect — a component removed and re-added keeps its id."
+   Side effect: when the element has no id yet, writes one to it. The
+   id survives disconnect — a component removed and re-added keeps
+   its id."
   [^js el tag next-id]
   (cond
     (= "document" tag)
-    [nil false]
+    {:id nil :new? false}
 
     :else
     (let [existing (gobj/get el component-id-key)]
       (if (some? existing)
-        [existing false]
+        {:id existing :new? false}
         (do
           (gobj/set el component-id-key next-id)
-          [next-id true])))))
+          {:id next-id :new? true})))))
 
 (defn- reserve-id!
   "Atomically claim the next record-id, returning the value. The dispatch
@@ -277,9 +293,9 @@
         ^js el (:el payload)]
     (when-not (or (and (not force?) (:paused? s))
                   (inside-internal-host? el))
-      (let [tag              (model/tag-of el)
-            [cid new-cid?]   (resolve-component-id! el tag (:next-component-id s))
-            cause-id         (peek @cause-stack)
+      (let [tag                  (model/tag-of el)
+            {cid :id new-cid? :new?} (resolve-component-id! el tag (:next-component-id s))
+            cause-id             (peek @cause-stack)
             payload+         (assoc payload
                                     :tag tag
                                     :component-id cid
