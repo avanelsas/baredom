@@ -855,42 +855,55 @@
   (remove-listeners! el))
 
 (defn- attribute-changed!
-  [^js el _n _o _v]
-  ;; Force the popover closed when disabled is set while open. Done here, not
-  ;; inside render!, so the render path doesn't write observed attrs.
-  (when (and (du/has-attr? el model/attr-disabled)
-             (du/has-attr? el "open"))
-    (du/remove-attr! el "open"))
-  (read-state! el)
-  (render! el))
+  [^js el _n old-val new-val]
+  (when (not= old-val new-val)
+    ;; Force the popover closed when disabled is set while open. Done here, not
+    ;; inside render!, so the render path doesn't write observed attrs.
+    (when (and (du/has-attr? el model/attr-disabled)
+               (du/has-attr? el "open"))
+      (du/remove-attr! el "open"))
+    (read-state! el)
+    (render! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property definitions
 ;; ---------------------------------------------------------------------------
 
+(defn- xdp-focus!
+  "Body of the focus() prototype method — exposed so the .defineProperty
+  :value descriptor stays a tight thunk."
+  [^js this]
+  (let [refs (gobj/get this k-refs)
+        ^js inp (when refs (gobj/get refs "input"))]
+    (when inp (.focus inp))))
+
+(defn- xdp-clear!
+  "Body of the clear() prototype method."
+  [^js this]
+  (let [state (gobj/get this k-state)
+        canon (when state (gobj/get state "canon"))]
+    (if (= (:mode canon) :single)
+      (.removeAttribute this model/attr-value)
+      (do (.removeAttribute this model/attr-start)
+          (.removeAttribute this model/attr-end)))
+    (read-state! this)
+    (render! this)))
+
 (defn- define-methods!
   [^js proto]
-  (aset proto "focus"
-        (fn []
-          (this-as ^js this
-                   (let [refs (gobj/get this k-refs)
-                         ^js inp (when refs (gobj/get refs "input"))]
-                     (when inp (.focus inp))))))
-  (aset proto "commit"
-        (fn []
-          (this-as ^js this
-                   (commit-display! this "programmatic"))))
-  (aset proto "clear"
-        (fn []
-          (this-as ^js this
-                   (let [state (gobj/get this k-state)
-                         canon (when state (gobj/get state "canon"))]
-                     (if (= (:mode canon) :single)
-                       (.removeAttribute this model/attr-value)
-                       (do (.removeAttribute this model/attr-start)
-                           (.removeAttribute this model/attr-end)))
-                     (read-state! this)
-                     (render! this))))))
+  ;; focus / commit / clear — .defineProperty per the Tier-2 idiom (bare aset
+  ;; on the prototype was audited out in PR #155).
+  (.defineProperty js/Object proto "focus"
+                   #js {:value (fn xdp-focus [] (this-as ^js this (xdp-focus! this)))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "commit"
+                   #js {:value (fn xdp-commit []
+                                 (this-as ^js this
+                                   (commit-display! this "programmatic")))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "clear"
+                   #js {:value (fn xdp-clear [] (this-as ^js this (xdp-clear! this)))
+                        :writable true :configurable true}))
 
 ;; ---------------------------------------------------------------------------
 ;; Registration

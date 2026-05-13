@@ -8,6 +8,7 @@
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xFileUploadRefs")
+(def ^:private k-model     "__xFileUploadModel")
 (def ^:private k-handlers  "__xFileUploadHandlers")
 (def ^:private k-files     "__xFileUploadFiles")
 (def ^:private k-internals "__xFileUploadInternals")
@@ -273,19 +274,32 @@
 ;; ---------------------------------------------------------------------------
 ;; Render (attribute sync)
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-file-input! [^js file-input {:keys [accept multiple?]}]
+  (if (= accept "")
+    (.removeAttribute file-input "accept")
+    (du/set-attr! file-input "accept" accept))
+  (if multiple?
+    (du/set-attr! file-input "multiple" "")
+    (.removeAttribute file-input "multiple")))
+
+(defn- apply-drop-zone-state! [^js drop-zone {:keys [disabled?]}]
+  (du/set-attr! drop-zone "tabindex"      (if disabled? "-1" "0"))
+  (du/set-attr! drop-zone "aria-disabled" (str disabled?)))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
-    (let [{:keys [accept multiple? disabled?]} (read-model el)
-          ^js file-input (gobj/get refs "fileInput")
+    (let [^js file-input (gobj/get refs "fileInput")
           ^js drop-zone  (gobj/get refs "dropZone")]
-      (if (= accept "")
-        (.removeAttribute file-input "accept")
-        (du/set-attr! file-input "accept" accept))
-      (if multiple?
-        (du/set-attr! file-input "multiple" "")
-        (.removeAttribute file-input "multiple"))
-      (du/set-attr! drop-zone "tabindex" (if disabled? "-1" "0"))
-      (du/set-attr! drop-zone "aria-disabled" (str disabled?)))))
+      (apply-file-input!      file-input m)
+      (apply-drop-zone-state! drop-zone  m)
+      (du/setv! el k-model m))))
+
+(defn- update-from-attrs! [^js el]
+  (when (du/getv el k-refs)
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Blob URL management
@@ -543,7 +557,7 @@
   (remove-listeners! el)
   (du/setv! el k-handlers (make-handlers el))
   (add-listeners! el)
-  (render! el)
+  (update-from-attrs! el)
   (sync-validity! el))
 
 (defn- disconnected! [^js el]
@@ -552,16 +566,16 @@
   (when-let [refs (du/getv el k-refs)]
     (revoke-thumbnails! (gobj/get refs "fileList"))))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/getv el k-refs)
-    (render! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Form callbacks
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
   (du/set-bool-attr! el model/attr-disabled disabled?)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- form-reset! [^js el]
   (let [^js files (du/getv el k-files)]
@@ -594,14 +608,20 @@
         :enumerable   true
         :get (fn [] (this-as ^js this
                              (.slice (or (du/getv this k-files) #js []))))})
-  (aset proto "checkValidity"
-        (fn [] (this-as ^js this
-                        (when-let [^js i (du/getv this k-internals)]
-                          (.checkValidity i)))))
-  (aset proto "reportValidity"
-        (fn [] (this-as ^js this
-                        (when-let [^js i (du/getv this k-internals)]
-                          (.reportValidity i))))))
+  ;; checkValidity / reportValidity — .defineProperty per the Tier-2 idiom
+  ;; (bare aset on the prototype was audited out in PR #155).
+  (.defineProperty js/Object proto "checkValidity"
+                   #js {:value (fn xfu-check-validity []
+                                 (this-as ^js this
+                                   (when-let [^js i (du/getv this k-internals)]
+                                     (.checkValidity i))))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "reportValidity"
+                   #js {:value (fn xfu-report-validity []
+                                 (this-as ^js this
+                                   (when-let [^js i (du/getv this k-internals)]
+                                     (.reportValidity i))))
+                        :writable true :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name

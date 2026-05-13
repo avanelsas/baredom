@@ -6,9 +6,9 @@
    [baredom.components.x-drawer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────────
-(def ^:private k-refs     "__xDrawerRefs")
-(def ^:private k-handlers "__xDrawerHandlers")
-(def ^:private k-prev-open "__xDrawerPrevOpen")
+(def ^:private k-refs      "__xDrawerRefs")
+(def ^:private k-model     "__xDrawerModel")
+(def ^:private k-handlers  "__xDrawerHandlers")
 (def ^:private k-restore   "__xDrawerRestore")
 (def ^:private k-tabbables "__xDrawerTabbables")
 (def ^:private k-panel-tab "__xDrawerPanelTab")
@@ -261,34 +261,46 @@
     (do-hide! el)
     (do-show! el)))
 
-;; ── Render ────────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [refs      (ensure-refs! el)
-        ^js panel (gobj/get refs "panel")
-        m         (read-model el)
-        open?     (:open? m)
-        prev-open (gobj/get el k-prev-open)]
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
+(defn- apply-host-data! [^js el {:keys [open? placement]}]
+  (du/set-attr! el "data-open"      (if open? "true" "false"))
+  (du/set-attr! el "data-placement" placement))
 
-    ;; Apply data attributes to host for CSS selectors
-    (du/set-attr! el "data-open" (if open? "true" "false"))
-    (du/set-attr! el "data-placement" (:placement m))
+(defn- apply-panel-aria! [^js panel {:keys [open? label]}]
+  (.setAttribute panel "aria-label" label)
+  ;; Hide the panel from AT when closed — CSS transform alone is insufficient.
+  (if open?
+    (.removeAttribute panel "aria-hidden")
+    (.setAttribute    panel "aria-hidden" "true")))
 
-    ;; aria-label on panel
-    (.setAttribute panel "aria-label" (:label m))
-
-    ;; Hide panel from AT when closed so screen readers cannot navigate
-    ;; into off-screen drawer content (CSS transform alone is insufficient)
-    (if open?
-      (.removeAttribute panel "aria-hidden")
-      (.setAttribute    panel "aria-hidden" "true"))
-
-    ;; Detect open state transition
-    (when (not= prev-open open?)
-      (gobj/set el k-prev-open open?)
-      (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
-      (if open?
+(defn- apply-open-transition!
+  "Fire the toggle event and (de)activate the focus trap when `:open?`
+  transitions. Uses old-m vs new-m rather than a separate k-prev-open
+  field — same epochal-time pattern x-cancel-dialogue's
+  apply-open-transition! uses."
+  [^js el old-m new-m]
+  (let [old-open? (boolean (:open? old-m))
+        new-open? (boolean (:open? new-m))]
+    (when (not= old-open? new-open?)
+      (du/dispatch! el model/event-toggle (model/toggle-event-detail new-open?))
+      (if new-open?
         (js/setTimeout (fn defer-activate-trap [] (activate-focus-trap! el)) 0)
         (deactivate-focus-trap! el)))))
+
+(defn- apply-model! [^js el old-m new-m]
+  (let [refs      (ensure-refs! el)
+        ^js panel (gobj/get refs "panel")]
+    (apply-host-data!        el new-m)
+    (apply-panel-aria!       panel new-m)
+    (apply-open-transition!  el old-m new-m)
+    (gobj/set el k-model new-m)))
+
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el old-m new-m)))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- on-keydown! [^js el ^js e]
@@ -330,7 +342,7 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
@@ -338,7 +350,7 @@
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]
