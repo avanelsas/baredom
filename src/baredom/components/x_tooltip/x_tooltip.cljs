@@ -8,6 +8,7 @@
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs       "__xTooltipRefs")
+(def ^:private k-model      "__xTooltipModel")
 (def ^:private k-handlers   "__xTooltipHandlers")
 (def ^:private k-show-timer "__xTooltipShowTimer")
 (def ^:private k-tooltip-id "__xTooltipId")
@@ -250,18 +251,22 @@
     :open-present?     (du/has-attr? el model/attr-open)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; DOM patching
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-model! [^js el {:keys [text placement open?] :as m}]
   (when-let [refs (du/getv el k-refs)]
-    (let [{:keys [text placement open?]} (read-model el)
-          ^js panel-el (gobj/get refs "panel")
+    (let [^js panel-el (gobj/get refs "panel")
           ^js text-el  (gobj/get refs "text")]
-
       (du/set-attr! panel-el "data-placement" placement)
       (du/set-attr! panel-el "aria-hidden" (str (not open?)))
+      (set! (.-textContent text-el) text)
+      (du/setv! el k-model m))))
 
-      (set! (.-textContent text-el) text))))
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
@@ -371,27 +376,38 @@
 ;; ---------------------------------------------------------------------------
 ;; Listener management
 ;; ---------------------------------------------------------------------------
+(def ^:private listener-spec
+  "Single source of truth for static listener wiring. Each entry is
+   [target-key event handler-key]. `:host` resolves to the host element;
+   any other keyword is a refs key. add-listeners! and remove-listeners!
+   both iterate this vector so they cannot drift apart."
+  [[:host        "pointerenter" "pointerenter"]
+   [:host        "pointerleave" "pointerleave"]
+   [:host        "focusin"      "focusin"]
+   [:host        "focusout"     "focusout"]
+   [:host        "keydown"      "keydown"]
+   ["triggerSlot" "slotchange"  "slotchange"]])
+
+(defn- resolve-listener-target [^js el ^js refs target-key]
+  (if (= target-key :host)
+    el
+    (gobj/get refs target-key)))
+
 (defn- add-listeners! [^js el]
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
-      (let [^js trigger-slot (gobj/get refs "triggerSlot")]
-        (.addEventListener el "pointerenter" (gobj/get handlers "pointerenter"))
-        (.addEventListener el "pointerleave" (gobj/get handlers "pointerleave"))
-        (.addEventListener el "focusin"      (gobj/get handlers "focusin"))
-        (.addEventListener el "focusout"     (gobj/get handlers "focusout"))
-        (.addEventListener el "keydown"      (gobj/get handlers "keydown"))
-        (.addEventListener trigger-slot "slotchange" (gobj/get handlers "slotchange"))))))
+      (doseq [[target-key event handler-key] listener-spec]
+        (.addEventListener (resolve-listener-target el refs target-key)
+                           event
+                           (gobj/get handlers handler-key))))))
 
 (defn- remove-listeners! [^js el]
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
-      (let [^js trigger-slot (gobj/get refs "triggerSlot")]
-        (.removeEventListener el "pointerenter" (gobj/get handlers "pointerenter"))
-        (.removeEventListener el "pointerleave" (gobj/get handlers "pointerleave"))
-        (.removeEventListener el "focusin"      (gobj/get handlers "focusin"))
-        (.removeEventListener el "focusout"     (gobj/get handlers "focusout"))
-        (.removeEventListener el "keydown"      (gobj/get handlers "keydown"))
-        (.removeEventListener trigger-slot "slotchange" (gobj/get handlers "slotchange"))))))
+      (doseq [[target-key event handler-key] listener-spec]
+        (.removeEventListener (resolve-listener-target el refs target-key)
+                              event
+                              (gobj/get handlers handler-key))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
@@ -402,7 +418,7 @@
   (remove-listeners! el)
   (du/setv! el k-handlers (make-handlers el))
   (add-listeners! el)
-  (render! el)
+  (update-from-attrs! el)
   (update-trigger-a11y! el))
 
 (defn- disconnected! [^js el]
@@ -410,9 +426,9 @@
   (remove-listeners! el)
   (cleanup-trigger-a11y! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/getv el k-refs)
-    (render! el)
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (and (not= old-val new-val) (du/getv el k-refs))
+    (update-from-attrs! el)
     ;; If disabled while open, hide
     (when (and (du/has-attr? el model/attr-disabled)
                (du/has-attr? el model/attr-open))
@@ -427,10 +443,14 @@
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
-  (aset proto "show"
-        (fn [] (this-as ^js this (do-show! this true))))
-  (aset proto "hide"
-        (fn [] (this-as ^js this (do-hide! this)))))
+  (.defineProperty js/Object proto "show"
+                   #js {:value (fn []
+                                 (this-as ^js this (do-show! this true)))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "hide"
+                   #js {:value (fn []
+                                 (this-as ^js this (do-hide! this)))
+                        :writable true :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name

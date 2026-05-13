@@ -57,3 +57,11 @@
 
 (deftest normalize-open-test
   (is (true? (:open? (model/normalize {:open-present? true})))))
+
+(deftest method-api-declares-show-and-hide-test
+  (is (contains? model/method-api :show))
+  (is (contains? model/method-api :hide))
+  (is (= 'void (get-in model/method-api [:show :returns])))
+  (is (= 'void (get-in model/method-api [:hide :returns])))
+  (is (= [] (get-in model/method-api [:show :args])))
+  (is (= [] (get-in model/method-api [:hide :args]))))

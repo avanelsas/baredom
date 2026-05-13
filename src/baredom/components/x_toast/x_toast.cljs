@@ -581,14 +581,15 @@
 
 ;; ── Dismiss method ───────────────────────────────────────────────────────────
 (defn- install-dismiss-method! [^js proto]
-  (set! (.-dismiss proto)
-        (fn [reason]
-          (this-as ^js this
-                   (let [r (if (string? reason) reason "api")]
-                     (when (and (not (gobj/get this k-exiting))
-                                (.-isConnected this))
-                       (dispatch-dismiss! this r)))
-                   nil))))
+  (.defineProperty js/Object proto "dismiss"
+                   #js {:value (fn [reason]
+                                 (this-as ^js this
+                                   (let [r (if (string? reason) reason "api")]
+                                     (when (and (not (gobj/get this k-exiting))
+                                                (.-isConnected this))
+                                       (dispatch-dismiss! this r)))
+                                   nil))
+                        :writable true :configurable true}))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

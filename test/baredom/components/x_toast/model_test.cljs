@@ -167,3 +167,10 @@
   (is (false? (model/progress-eligible? {:show-progress? true  :timeout-ms nil})))
   (is (false? (model/progress-eligible? {:show-progress? true  :timeout-ms 0})))
   (is (false? (model/progress-eligible? {}))))
+
+;; ── method-api ────────────────────────────────────────────────────────────────
+(deftest method-api-declares-dismiss-test
+  (is (contains? model/method-api :dismiss))
+  (let [{:keys [args returns]} (:dismiss model/method-api)]
+    (is (= 'void returns))
+    (is (= [{:name "reason" :type 'string}] args))))
