@@ -258,6 +258,22 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-search-field-input",

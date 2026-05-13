@@ -169,8 +169,6 @@
           ^js preset-el (gobj/get refs "preset")]
 
       (when (not= m old-m)
-        (du/setv! el k-model m)
-
         (let [{:keys [preset animation count]} m]
           ;; Build or clear preset
           (if preset
@@ -185,18 +183,21 @@
 
         ;; Accessibility
         (when-not (du/has-attr? el "aria-hidden")
-          (du/set-attr! el "aria-hidden" "true"))))))
+          (du/set-attr! el "aria-hidden" "true"))
+
+        ;; Cache the applied model at the tail (epochal-time invariant).
+        (du/setv! el k-model m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Handlers
 ;; ---------------------------------------------------------------------------
+(defn- handle-slotchange [^js el ^js _evt]
+  (let [{:keys [animation]} (read-model el)]
+    (propagate-animation! el animation)
+    (sync-animations! el)))
+
 (defn- make-handlers [^js el]
-  (let [on-slotchange
-        (fn [^js _evt]
-          (let [{:keys [animation]} (read-model el)]
-            (propagate-animation! el animation)
-            (sync-animations! el)))]
-    #js {:slotchange on-slotchange}))
+  #js {:slotchange (fn on-slotchange [evt] (handle-slotchange el evt))})
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
