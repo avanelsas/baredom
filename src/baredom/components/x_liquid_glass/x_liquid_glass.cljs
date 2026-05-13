@@ -719,181 +719,24 @@
       (gobj/set el k-model new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
+(defn- parse-mode-prop [v]
+  (if (= v "submerged") "submerged" "surface"))
+
 (defn- install-property-accessors! [^js proto]
-  ;; blobs (number)
-  (.defineProperty js/Object proto model/attr-blobs
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blobs
-                                         (.getAttribute this model/attr-blobs))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blobs)
-                                          (.setAttribute this model/attr-blobs (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; speed (number)
-  (.defineProperty js/Object proto model/attr-speed
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-speed
-                                         (.getAttribute this model/attr-speed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-speed)
-                                          (.setAttribute this model/attr-speed (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; amplitude (number)
-  (.defineProperty js/Object proto model/attr-amplitude
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-amplitude
-                                         (.getAttribute this model/attr-amplitude))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-amplitude)
-                                          (.setAttribute this model/attr-amplitude (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; blur (number)
-  (.defineProperty js/Object proto model/attr-blur
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blur
-                                         (.getAttribute this model/attr-blur))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blur)
-                                          (.setAttribute this model/attr-blur (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; goo (number)
-  (.defineProperty js/Object proto model/attr-goo
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-goo
-                                         (.getAttribute this model/attr-goo))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-goo)
-                                          (.setAttribute this model/attr-goo (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; tint (string)
-  (.defineProperty js/Object proto model/attr-tint
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-tint)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-tint)
-                                          (.setAttribute this model/attr-tint (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; specular (boolean)
-  (.defineProperty js/Object proto model/attr-specular
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-specular)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-specular "")
-                                          (.removeAttribute this model/attr-specular))))
-                        :enumerable true :configurable true})
-
-  ;; specularSize (camelCase for kebab-case attribute)
-  (.defineProperty js/Object proto "specularSize"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-specular-size
-                                         (.getAttribute this model/attr-specular-size))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-specular-size)
-                                          (.setAttribute this model/attr-specular-size (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; specularIntensity (camelCase for kebab-case attribute)
-  (.defineProperty js/Object proto "specularIntensity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-specular-intensity
-                                         (.getAttribute this model/attr-specular-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-specular-intensity)
-                                          (.setAttribute this model/attr-specular-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
-
-  ;; mode (string)
-  (.defineProperty js/Object proto model/attr-mode
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (let [v (.getAttribute this model/attr-mode)]
-                                          (if (= v "submerged") "submerged" "surface"))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-mode)
-                                          (.setAttribute this model/attr-mode (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; frost (number)
-  (.defineProperty js/Object proto model/attr-frost
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-frost
-                                         (.getAttribute this model/attr-frost))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-frost)
-                                          (.setAttribute this model/attr-frost (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; color1 (string, reflects color-1 attribute)
-  (.defineProperty js/Object proto "color1"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-color-1)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color-1)
-                                          (.setAttribute this model/attr-color-1 (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; color2 (string, reflects color-2 attribute)
-  (.defineProperty js/Object proto "color2"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-color-2)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color-2)
-                                          (.setAttribute this model/attr-color-2 (str v)))))
-                        :enumerable true :configurable true}))
+  (du/define-parsed-prop! proto model/attr-blobs         model/attr-blobs              model/parse-blobs)
+  (du/define-parsed-prop! proto model/attr-speed         model/attr-speed              model/parse-speed)
+  (du/define-parsed-prop! proto model/attr-amplitude     model/attr-amplitude          model/parse-amplitude)
+  (du/define-parsed-prop! proto model/attr-blur          model/attr-blur               model/parse-blur)
+  (du/define-parsed-prop! proto model/attr-goo           model/attr-goo                model/parse-goo)
+  (du/define-string-prop! proto model/attr-tint          model/attr-tint)
+  (du/define-bool-prop!   proto model/attr-specular      model/attr-specular)
+  (du/define-parsed-prop! proto "specularSize"           model/attr-specular-size      model/parse-specular-size)
+  (du/define-parsed-prop! proto "specularIntensity"      model/attr-specular-intensity model/parse-specular-intensity)
+  (du/define-bool-prop!   proto model/attr-disabled      model/attr-disabled)
+  (du/define-parsed-prop! proto model/attr-mode          model/attr-mode               parse-mode-prop)
+  (du/define-parsed-prop! proto model/attr-frost         model/attr-frost              model/parse-frost)
+  (du/define-string-prop! proto "color1"                 model/attr-color-1)
+  (du/define-string-prop! proto "color2"                 model/attr-color-2))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]

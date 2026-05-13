@@ -705,108 +705,16 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; target (string)
-  (.defineProperty js/Object proto model/attr-target
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-target)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-target (str v))
-                                          (.removeAttribute this model/attr-target))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-target      model/attr-target)
+  (du/define-parsed-prop! proto model/attr-orientation model/attr-orientation     model/parse-orientation)
+  (du/define-parsed-prop! proto model/attr-mode        model/attr-mode            model/parse-mode)
+  (du/define-parsed-prop! proto model/attr-theme       model/attr-theme           model/parse-theme)
+  (du/define-parsed-prop! proto "waveIntensity"        model/attr-wave-intensity  model/parse-wave-intensity)
+  (du/define-parsed-prop! proto "splashIntensity"      model/attr-splash-intensity model/parse-splash-intensity)
+  (du/define-parsed-prop! proto model/attr-layers      model/attr-layers          model/parse-layers)
+  (du/define-bool-prop!   proto model/attr-disabled    model/attr-disabled)
 
-  ;; orientation (string)
-  (.defineProperty js/Object proto model/attr-orientation
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-orientation
-                                         (.getAttribute this model/attr-orientation))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-orientation (str v))
-                                          (.removeAttribute this model/attr-orientation))))
-                        :enumerable true :configurable true})
-
-  ;; mode (string)
-  (.defineProperty js/Object proto model/attr-mode
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-mode
-                                         (.getAttribute this model/attr-mode))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-mode (str v))
-                                          (.removeAttribute this model/attr-mode))))
-                        :enumerable true :configurable true})
-
-  ;; theme (string)
-  (.defineProperty js/Object proto model/attr-theme
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-theme
-                                         (.getAttribute this model/attr-theme))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-theme (str v))
-                                          (.removeAttribute this model/attr-theme))))
-                        :enumerable true :configurable true})
-
-  ;; waveIntensity (number, camelCase)
-  (.defineProperty js/Object proto "waveIntensity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-wave-intensity
-                                         (.getAttribute this model/attr-wave-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-wave-intensity)
-                                          (.setAttribute this model/attr-wave-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; splashIntensity (number, camelCase)
-  (.defineProperty js/Object proto "splashIntensity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-splash-intensity
-                                         (.getAttribute this model/attr-splash-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-splash-intensity)
-                                          (.setAttribute this model/attr-splash-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; layers (number)
-  (.defineProperty js/Object proto model/attr-layers
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-layers
-                                         (.getAttribute this model/attr-layers))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-layers)
-                                          (.setAttribute this model/attr-layers (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true})
-
-  ;; progress (read-only)
+  ;; progress is read-only — no equivalent helper for a getter-only descriptor.
   (.defineProperty js/Object proto "progress"
                    #js {:get (fn []
                                (this-as ^js this

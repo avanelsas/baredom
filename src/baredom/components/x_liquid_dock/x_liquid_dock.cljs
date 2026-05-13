@@ -701,146 +701,17 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; position
-  (.defineProperty js/Object proto "position"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-position
-                                         (.getAttribute this model/attr-position))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-position)
-                                          (.setAttribute this model/attr-position (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; gap
-  (.defineProperty js/Object proto "gap"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-gap
-                                         (.getAttribute this model/attr-gap))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-gap)
-                                          (.setAttribute this model/attr-gap (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; blur
-  (.defineProperty js/Object proto "blur"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blur
-                                         (.getAttribute this model/attr-blur))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blur)
-                                          (.setAttribute this model/attr-blur (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; threshold
-  (.defineProperty js/Object proto "threshold"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-threshold
-                                         (.getAttribute this model/attr-threshold))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-threshold)
-                                          (.setAttribute this model/attr-threshold (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; rippleScale → ripple-scale
-  (.defineProperty js/Object proto "rippleScale"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-ripple-scale
-                                         (.getAttribute this model/attr-ripple-scale))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-ripple-scale)
-                                          (.setAttribute this model/attr-ripple-scale (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; rippleSpeed → ripple-speed
-  (.defineProperty js/Object proto "rippleSpeed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-ripple-speed
-                                         (.getAttribute this model/attr-ripple-speed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-ripple-speed)
-                                          (.setAttribute this model/attr-ripple-speed (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; color
-  (.defineProperty js/Object proto "color"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color
-                                         (.getAttribute this model/attr-color))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color)
-                                          (.setAttribute this model/attr-color (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; magnetRadius → magnet-radius
-  (.defineProperty js/Object proto "magnetRadius"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-magnet-radius
-                                         (.getAttribute this model/attr-magnet-radius))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-magnet-radius)
-                                          (.setAttribute this model/attr-magnet-radius (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; magnetStrength → magnet-strength
-  (.defineProperty js/Object proto "magnetStrength"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-magnet-strength
-                                         (.getAttribute this model/attr-magnet-strength))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-magnet-strength)
-                                          (.setAttribute this model/attr-magnet-strength (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; bobIntensity → bob-intensity
-  (.defineProperty js/Object proto "bobIntensity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-bob-intensity
-                                         (.getAttribute this model/attr-bob-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-bob-intensity)
-                                          (.setAttribute this model/attr-bob-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto "disabled"
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-parsed-prop! proto "position"       model/attr-position       model/parse-position)
+  (du/define-parsed-prop! proto "gap"            model/attr-gap            model/parse-gap)
+  (du/define-parsed-prop! proto "blur"           model/attr-blur           model/parse-blur)
+  (du/define-parsed-prop! proto "threshold"      model/attr-threshold      model/parse-threshold)
+  (du/define-parsed-prop! proto "rippleScale"    model/attr-ripple-scale   model/parse-ripple-scale)
+  (du/define-parsed-prop! proto "rippleSpeed"    model/attr-ripple-speed   model/parse-ripple-speed)
+  (du/define-parsed-prop! proto "color"          model/attr-color          model/parse-color)
+  (du/define-parsed-prop! proto "magnetRadius"   model/attr-magnet-radius  model/parse-magnet-radius)
+  (du/define-parsed-prop! proto "magnetStrength" model/attr-magnet-strength model/parse-magnet-strength)
+  (du/define-parsed-prop! proto "bobIntensity"   model/attr-bob-intensity  model/parse-bob-intensity)
+  (du/define-bool-prop!   proto "disabled"       model/attr-disabled))
 
 ;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ────────
 (defn- apply-model! [^js el m]
