@@ -7,6 +7,28 @@
 (def ^:private key-refs "__xMenuRefs")
 (def ^:private key-handlers "__xMenuHandlers")
 (def ^:private key-init "__xMenuInit")
+(def ^:private key-model "__xMenuModel")
+
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private rk-base         "base")
+(def ^:private rk-popup        "popup")
+(def ^:private rk-trigger-slot "trigger-slot")
+(def ^:private rk-item-slot    "item-slot")
+(def ^:private hk-click        "click")
+(def ^:private hk-doc-click    "doc-click")
+(def ^:private hk-keydown      "keydown")
+(def ^:private hk-item-select  "item-select")
+(def ^:private attr-part           "part")
+(def ^:private attr-name           "name")
+(def ^:private attr-role           "role")
+(def ^:private attr-data-placement "data-placement")
+(def ^:private attr-aria-label     "aria-label")
+(def ^:private part-base       "base")
+(def ^:private part-popup      "popup")
+(def ^:private slot-trigger    "trigger")
+(def ^:private role-menu       "menu")
+(def ^:private ev-click        "click")
+(def ^:private ev-keydown      "keydown")
 
 (def ^:private style-text
   (str
@@ -42,10 +64,11 @@
    ".popup[data-placement='top-start']{bottom:100%;left:0;margin-bottom:4px;}"
    ".popup[data-placement='top-end']{bottom:100%;right:0;margin-bottom:4px;}"))
 
-(defn- read-inputs [^js el]
-  {:open (du/has-attr? el model/attr-open)
-   :placement (du/get-attr el model/attr-placement)
-   :label (du/get-attr el model/attr-label)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:open (du/has-attr? el model/attr-open)
+    :placement (du/get-attr el model/attr-placement)
+    :label (du/get-attr el model/attr-label)}))
 
 (defn- get-focusable-items [^js el]
   (let [all (.querySelectorAll el "x-menu-item")
@@ -62,7 +85,7 @@
 
 (defn- get-trigger [^js el]
   (let [refs (du/getv el key-refs)
-        trigger-slot (when refs (gobj/get refs "trigger-slot"))
+        trigger-slot (when refs (gobj/get refs rk-trigger-slot))
         assigned (when trigger-slot (.assignedElements trigger-slot))]
     (when (and assigned (> (alength assigned) 0))
       (aget assigned 0))))
@@ -94,7 +117,7 @@
 
 (defn- handle-el-click! [^js el ^js evt]
   (let [refs (du/getv el key-refs)
-        trigger-slot (when refs (gobj/get refs "trigger-slot"))]
+        trigger-slot (when refs (gobj/get refs rk-trigger-slot))]
     (when (and trigger-slot (trigger-clicked? trigger-slot evt))
       (if (du/has-attr? el model/attr-open)
         (close-menu! el true)
@@ -155,16 +178,22 @@
     (close-menu! el false)
     (du/dispatch! el model/event-select #js {:value (or value "")})))
 
-(defn- render! [^js el]
+(defn- apply-model! [^js el m]
   (let [refs (du/getv el key-refs)
-        popup (when refs (gobj/get refs "popup"))
-        state (model/derive-state (read-inputs el))]
+        ^js popup (when refs (gobj/get refs rk-popup))]
     (when popup
-      (.setAttribute popup "data-placement" (:placement state))
-      (let [label (:label state)]
+      (.setAttribute popup attr-data-placement (:placement m))
+      (let [label (:label m)]
         (if (and label (not= label ""))
-          (.setAttribute popup "aria-label" label)
-          (.removeAttribute popup "aria-label"))))))
+          (.setAttribute popup attr-aria-label label)
+          (.removeAttribute popup attr-aria-label))))
+    (du/setv! el key-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el key-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 (defn- init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
@@ -172,52 +201,52 @@
         base (.createElement js/document "div")
         trigger-slot (.createElement js/document "slot")
         popup (.createElement js/document "div")
-        item-slot (.createElement js/document "slot")]
+        item-slot (.createElement js/document "slot")
+        refs #js {}]
     (set! (.-textContent style) style-text)
-    (.setAttribute base "part" "base")
-    (set! (.-className base) "base")
-    (.setAttribute trigger-slot "name" "trigger")
-    (.setAttribute popup "part" "popup")
-    (set! (.-className popup) "popup")
-    (.setAttribute popup "role" "menu")
+    (.setAttribute base attr-part part-base)
+    (set! (.-className base) part-base)
+    (.setAttribute trigger-slot attr-name slot-trigger)
+    (.setAttribute popup attr-part part-popup)
+    (set! (.-className popup) part-popup)
+    (.setAttribute popup attr-role role-menu)
     (.appendChild popup item-slot)
     (.appendChild base trigger-slot)
     (.appendChild base popup)
     (.appendChild root style)
     (.appendChild root base)
-    (let [refs #js {}]
-      (gobj/set refs "base" base)
-      (gobj/set refs "popup" popup)
-      (gobj/set refs "trigger-slot" trigger-slot)
-      (gobj/set refs "item-slot" item-slot)
-      (du/setv! el key-refs refs))))
+    (gobj/set refs rk-base base)
+    (gobj/set refs rk-popup popup)
+    (gobj/set refs rk-trigger-slot trigger-slot)
+    (gobj/set refs rk-item-slot item-slot)
+    (du/setv! el key-refs refs)))
 
 (defn- install-listeners! [^js el]
-  (let [on-click (fn [^js e] (handle-el-click! el e))
-        on-doc-click (fn [^js e] (handle-doc-click! el e))
-        on-keydown (fn [^js e] (handle-keydown! el e))
-        on-item-select (fn [^js e] (handle-item-select! el e))
+  (let [on-click       (fn handle-host-click [^js e] (handle-el-click! el e))
+        on-doc-click   (fn handle-doc-click* [^js e] (handle-doc-click! el e))
+        on-keydown     (fn handle-host-keydown [^js e] (handle-keydown! el e))
+        on-item-select (fn handle-item-select* [^js e] (handle-item-select! el e))
         handlers #js {}]
-    (.addEventListener el "click" on-click)
-    (.addEventListener js/document "click" on-doc-click true)
-    (.addEventListener el "keydown" on-keydown)
+    (.addEventListener el ev-click on-click)
+    (.addEventListener js/document ev-click on-doc-click true)
+    (.addEventListener el ev-keydown on-keydown)
     (.addEventListener el model/event-item-select on-item-select)
-    (gobj/set handlers "click" on-click)
-    (gobj/set handlers "doc-click" on-doc-click)
-    (gobj/set handlers "keydown" on-keydown)
-    (gobj/set handlers "item-select" on-item-select)
+    (gobj/set handlers hk-click on-click)
+    (gobj/set handlers hk-doc-click on-doc-click)
+    (gobj/set handlers hk-keydown on-keydown)
+    (gobj/set handlers hk-item-select on-item-select)
     (du/setv! el key-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (let [handlers (du/getv el key-handlers)]
     (when handlers
-      (let [on-click (gobj/get handlers "click")
-            on-doc-click (gobj/get handlers "doc-click")
-            on-keydown (gobj/get handlers "keydown")
-            on-item-select (gobj/get handlers "item-select")]
-        (.removeEventListener el "click" on-click)
-        (.removeEventListener js/document "click" on-doc-click true)
-        (.removeEventListener el "keydown" on-keydown)
+      (let [on-click       (gobj/get handlers hk-click)
+            on-doc-click   (gobj/get handlers hk-doc-click)
+            on-keydown     (gobj/get handlers hk-keydown)
+            on-item-select (gobj/get handlers hk-item-select)]
+        (.removeEventListener el ev-click on-click)
+        (.removeEventListener js/document ev-click on-doc-click true)
+        (.removeEventListener el ev-keydown on-keydown)
         (.removeEventListener el model/event-item-select on-item-select)))))
 
 (defn- init-element! [^js el]
@@ -225,20 +254,20 @@
     (init-dom! el)
     (install-listeners! el)
     (du/mark-initialized! el key-init))
-  (render! el)
+  (update-from-attrs! el)
   el)
 
 (defn- connected! [^js el]
   (if (du/initialized? el key-init)
-    (do (install-listeners! el) (render! el))
+    (do (install-listeners! el) (update-from-attrs! el))
     (init-element! el)))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/initialized? el key-init)
-    (render! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (and (not= old-val new-val) (du/initialized? el key-init))
+    (update-from-attrs! el)))
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
