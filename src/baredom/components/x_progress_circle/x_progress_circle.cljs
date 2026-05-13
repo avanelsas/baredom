@@ -224,24 +224,10 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-value
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-value) "0")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-value (str v))))
-                        :enumerable true :configurable true})
-  (.defineProperty js/Object proto model/attr-max
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-max) "100")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-max (str v))))
-                        :enumerable true :configurable true})
-  (du/define-bool-prop! proto "indeterminate" model/attr-indeterminate)
-  (du/define-bool-prop! proto "showValue"     model/attr-show-value))
+  (du/define-string-prop! proto model/attr-value model/attr-value "0")
+  (du/define-string-prop! proto model/attr-max   model/attr-max   "100")
+  (du/define-bool-prop!   proto "indeterminate"  model/attr-indeterminate)
+  (du/define-bool-prop!   proto "showValue"      model/attr-show-value))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

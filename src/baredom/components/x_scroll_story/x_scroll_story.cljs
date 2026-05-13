@@ -583,98 +583,44 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; layout (string)
-  (.defineProperty js/Object proto model/attr-layout
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-layout) "left")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-layout (str v))
-                                          (.removeAttribute this model/attr-layout))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-layout    model/attr-layout    "left")
+  (du/define-parsed-prop! proto model/attr-threshold model/attr-threshold model/parse-threshold)
+  (du/define-parsed-prop! proto model/attr-split     model/attr-split     model/parse-split)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled)
+  (du/define-bool-prop!   proto model/attr-autoplay  model/attr-autoplay)
+  (du/define-parsed-prop! proto "autoplaySpeed"      model/attr-autoplay-speed model/parse-autoplay-speed)
+  (du/define-bool-prop!   proto "autoplayLoop"       model/attr-autoplay-loop)
+  (du/define-bool-prop!   proto "autoplayIndicator"  model/attr-autoplay-indicator)
 
-  ;; threshold (number)
-  (.defineProperty js/Object proto model/attr-threshold
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-threshold (.getAttribute this model/attr-threshold))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-threshold (str v))
-                                          (.removeAttribute this model/attr-threshold))))
-                        :enumerable true :configurable true})
-
-  ;; split (number)
-  (.defineProperty js/Object proto model/attr-split
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-split (.getAttribute this model/attr-split))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-split (str v))
-                                          (.removeAttribute this model/attr-split))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
-
-  ;; label (string)
+  ;; label uses strict-empty setter semantics: setting "" removes the
+  ;; attribute so the empty-default applies. define-string-prop! would
+  ;; keep "" as an explicit empty attribute.
   (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true})
+    #js {:get (fn xss-get-label []
+                (this-as ^js this
+                  (or (.getAttribute this model/attr-label) "")))
+         :set (fn xss-set-label [v]
+                (this-as ^js this
+                  (if (and v (not= v ""))
+                    (.setAttribute this model/attr-label (str v))
+                    (.removeAttribute this model/attr-label))))
+         :enumerable true :configurable true})
 
-  ;; activeIndex (read-only number)
+  ;; Read-only props — no setter, no shared helper applies.
   (.defineProperty js/Object proto "activeIndex"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (let [idx (gobj/get this k-active-index)]
-                                          (if (some? idx) idx -1))))
-                        :enumerable true :configurable true})
-
-  ;; progress (read-only number)
+    #js {:get (fn xss-get-active-index []
+                (this-as ^js this
+                  (let [idx (gobj/get this k-active-index)]
+                    (if (some? idx) idx -1))))
+         :enumerable true :configurable true})
   (.defineProperty js/Object proto "progress"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (gobj/get this k-last-prog) 0)))
-                        :enumerable true :configurable true})
-
-  ;; autoplay (boolean)
-  (du/define-bool-prop! proto model/attr-autoplay model/attr-autoplay)
-
-  ;; autoplaySpeed (number)
-  (.defineProperty js/Object proto "autoplaySpeed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-autoplay-speed
-                                         (.getAttribute this model/attr-autoplay-speed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-autoplay-speed (str v))
-                                          (.removeAttribute this model/attr-autoplay-speed))))
-                        :enumerable true :configurable true})
-
-  ;; autoplayLoop / autoplayIndicator (booleans)
-  (du/define-bool-prop! proto "autoplayLoop"      model/attr-autoplay-loop)
-  (du/define-bool-prop! proto "autoplayIndicator" model/attr-autoplay-indicator)
-
-  ;; autoplayPaused (read-only boolean)
+    #js {:get (fn xss-get-progress []
+                (this-as ^js this (or (gobj/get this k-last-prog) 0)))
+         :enumerable true :configurable true})
   (.defineProperty js/Object proto "autoplayPaused"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (boolean (gobj/get this k-autoplay-paused))))
-                        :enumerable true :configurable true}))
+    #js {:get (fn xss-get-autoplay-paused []
+                (this-as ^js this (boolean (gobj/get this k-autoplay-paused))))
+         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
