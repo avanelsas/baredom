@@ -40,4 +40,5 @@ export class BaredomCollapse implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  toggleMethod(): void { return this.el.toggle(); }
 }

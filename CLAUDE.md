@@ -82,6 +82,15 @@ The model is cached inside `apply-model!` at the end (via `du/setv! el k-model m
 
 **Critical rule:** Never set observed attributes on the host element inside `apply-model!` without the change guard — this is the #1 cause of infinite recursion in web components.
 
+### Render-pipeline conformance — accepted variants
+
+The full pipeline above is what new components should use. Two variants exist in the codebase for legitimate reasons and are documented here so reviewers don't try to "fix" them and so the next new component doesn't invent a third:
+
+1. **Full pipeline (canonical).** Every component that renders visible DOM uses this. Golden sample: `x-icon`. If you find a visibly-rendering component that bypasses the change guard, it's a bug — recursion risk.
+2. **Passive child elements — model-stash only.** A component that has no visible DOM of its own (its only job is to hold attributes for a parent to read) needs a cached model but does not need an `apply-model!`. Example: `x-welcome-tour-step` — the parent `x-welcome-tour` reads its model on each render; the step element itself never paints. These components have `read-model` + `update-model!` (cache only), no `apply-model!`. The change guard is *moot* because there are no effects to gate.
+
+Anything else — a component that re-runs DOM writes on every `attributeChangedCallback` without comparing the cached model — should be moved onto the full pipeline.
+
 ### Naming conventions
 
 - Functions ending with `!` have side effects (DOM mutation, event dispatch, state changes).

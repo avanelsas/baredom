@@ -64,4 +64,5 @@
   [open? source]
   #js {:open open? :source source})
 
-(def method-api {})
+(def method-api
+  {:toggle {:args [] :returns 'void}})

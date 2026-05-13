@@ -31,7 +31,10 @@
 
 ;; ── Method API ──────────────────────────────────────────────────────────────
 (def method-api
-  {:translateSubtree {:description "Re-scan subtree for data-i18n-* attributes and apply current translations."}})
+  {:translateSubtree
+   {:args        []
+    :returns     'void
+    :description "Re-scan subtree for data-i18n-* attributes and apply current translations."}})
 
 ;; ── Default locale ──────────────────────────────────────────────────────────
 (def default-locale "en")

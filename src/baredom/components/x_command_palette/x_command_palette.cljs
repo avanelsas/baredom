@@ -570,10 +570,14 @@
                                  (render-items! this)))}))
 
 (defn- define-methods! [^js proto]
-  (.defineProperty js/Object proto "open"
+  ;; `show()` matches the HTMLDialogElement imperative-open convention.
+  ;; Using "open" here would collide with the `open` boolean property
+  ;; (the .defineProperty :value descriptor would shadow the accessor
+  ;; at runtime, breaking `el.open = true`).
+  (.defineProperty js/Object proto "show"
                    #js {:configurable true
                         :writable     true
-                        :value        (fn cp-open [] (this-as ^js this (request-open! this)))})
+                        :value        (fn cp-show [] (this-as ^js this (request-open! this)))})
   (.defineProperty js/Object proto "close"
                    #js {:configurable true
                         :writable     true

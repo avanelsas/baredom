@@ -1,9 +1,8 @@
 (ns baredom.components.x-kinetic-font.x-kinetic-font
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-kinetic-font.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-kinetic-font.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs         "__xKineticFontRefs")

@@ -195,7 +195,13 @@
                  (when-let [^js t (du/getv this k-translations)]
                    (gobj/get t tk-current))))
         :enumerable   true
-        :configurable true}))
+        :configurable true})
+  ;; translateSubtree() — re-scan subtree for data-i18n-* attributes
+  (.defineProperty js/Object proto "translateSubtree"
+                   #js {:value (fn xip-translate-subtree []
+                                 (this-as ^js this
+                                   (translate-subtree! this)))
+                        :writable true :configurable true}))
 
 ;; ── Registration ────────────────────────────────────────────────────────────
 (defn init! []

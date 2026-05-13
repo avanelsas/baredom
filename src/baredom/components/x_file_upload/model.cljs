@@ -153,4 +153,6 @@
     (< bytes 1073741824) (str (.toFixed (/ bytes 1048576) 1) " MB")
     :else                (str (.toFixed (/ bytes 1073741824) 1) " GB")))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

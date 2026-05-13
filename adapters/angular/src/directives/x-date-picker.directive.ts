@@ -46,4 +46,7 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  focus(): void { return this.el.focus(); }
+  commit(): void { return this.el.commit(); }
+  clear(): void { return this.el.clear(); }
 }

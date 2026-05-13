@@ -66,10 +66,10 @@
     (.removeAttribute el model/attr-open)
     (is (not (.hasAttribute el model/attr-open)) "closed after remove")))
 
-(deftest open-method-test
+(deftest show-method-test
   (let [el (append! (make-el))]
-    (.open el)
-    (is (.hasAttribute el model/attr-open) "open() sets open attr")))
+    (.show el)
+    (is (.hasAttribute el model/attr-open) "show() sets open attr")))
 
 (deftest close-method-test
   (let [el (append! (make-el))]
@@ -90,7 +90,7 @@
           fired  (atom false)]
       (.addEventListener el model/event-open
                          (fn [_] (reset! fired true)))
-      (.open el)
+      (.show el)
       (js/setTimeout
        (fn []
          (is (= true @fired) "x-command-palette-open event fired")
@@ -101,7 +101,7 @@
   (let [el (append! (make-el))]
     (.addEventListener el model/event-open-request
                        (fn [^js e] (.preventDefault e)))
-    (.open el)
+    (.show el)
     (is (not (.hasAttribute el model/attr-open))
         "open should be prevented when open-request is cancelled")))
 
