@@ -1,8 +1,8 @@
 (ns baredom.components.x-avatar-group.x-avatar-group
   (:require
-[baredom.utils.component :as component]
+   [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [goog.object :as gobj]
    [baredom.components.x-avatar-group.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -78,8 +78,7 @@
     (.appendChild root slot-el)
     (.appendChild root overflow)
     (gobj/set el k-refs {:slot-el  slot-el
-                         :overflow overflow}))
-  nil)
+                         :overflow overflow})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -150,20 +149,18 @@
         (set! (.-textContent overflow) "")
         (set! (.. overflow -style -display) "none")))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-layout! el new-m)))
-  nil)
+      (apply-layout! el new-m))))
 
-(defn- refresh-layout! [^js el]
-  ;; Force re-apply even when model hasn't changed (children changed)
-  (apply-layout! el (read-model el))
-  nil)
+(defn- refresh-layout!
+  "Force re-apply even when model hasn't changed (children changed)."
+  [^js el]
+  (apply-layout! el (read-model el)))
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -171,8 +168,7 @@
         ^js slot-el slot-el
         on-slot (fn [_] (refresh-layout! el))]
     (when slot-el (.addEventListener slot-el "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:slot on-slot}))
-  nil)
+    (gobj/set el k-handlers #js {:slot on-slot})))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
@@ -181,8 +177,7 @@
             on-slot (gobj/get hs "slot")]
         (when (and slot-el on-slot)
           (.removeEventListener slot-el "slotchange" on-slot)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; max uses model/parse-max for getter — keep as inline custom accessor
@@ -209,19 +204,16 @@
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (remove-listeners! el)   ; reconnect guard
+  (remove-listeners! el)
   (add-listeners! el)
-  (refresh-layout! el)
-  nil)
+  (refresh-layout! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _attr old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 

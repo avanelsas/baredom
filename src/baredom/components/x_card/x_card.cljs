@@ -1,54 +1,51 @@
 (ns baredom.components.x-card.x-card
   (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
    [baredom.components.x-card.model :as model]))
 
-(def key-root "__xCardRoot")
-(def key-style "__xCardStyle")
-(def key-base "__xCardBase")
-(def key-slot "__xCardSlot")
-(def key-initialized "__xCardInitialized")
+(def ^:private key-root        "__xCardRoot")
+(def ^:private key-style       "__xCardStyle")
+(def ^:private key-base        "__xCardBase")
+(def ^:private key-slot        "__xCardSlot")
+(def ^:private key-initialized "__xCardInitialized")
 
-(defn shadow-root-of [^js el]
-  (du/getv el key-root))
-
-(defn base-node-of [^js el]
+(defn- base-node-of [^js el]
   (du/getv el key-base))
 
-(defn read-inputs [^js el]
-  {:variant (du/get-attr el model/attr-variant)
-   :padding (du/get-attr el model/attr-padding)
-   :radius (du/get-attr el model/attr-radius)
+(defn- read-inputs [^js el]
+  {:variant     (du/get-attr el model/attr-variant)
+   :padding     (du/get-attr el model/attr-padding)
+   :radius      (du/get-attr el model/attr-radius)
    :interactive (du/has-attr? el model/attr-interactive)
-   :disabled (du/has-attr? el model/attr-disabled)
-   :label (du/get-attr el model/attr-label)})
+   :disabled    (du/has-attr? el model/attr-disabled)
+   :label       (du/get-attr el model/attr-label)})
 
-(defn interactive-active? [state]
+(defn- interactive-active? [state]
   (and (:interactive state) (not (:disabled state))))
 
-(defn dispatch-press! [^js el]
+(defn- dispatch-press! [^js el]
   (du/dispatch! el model/event-press #js {}))
 
-(defn set-or-remove-attr! [^js el name value]
+(defn- set-or-remove-attr! [^js el name value]
   (if (some? value)
     (du/set-attr! el name value)
     (du/remove-attr! el name)))
 
-(defn reflect-host-a11y! [^js el state]
+(defn- reflect-host-a11y! [^js el state]
   (set-or-remove-attr! el "role" (:role state))
   (set-or-remove-attr! el "tabindex" (:tabindex state))
   (set-or-remove-attr! el "aria-label" (:aria-label state))
   (set-or-remove-attr! el "aria-disabled" (:aria-disabled state)))
 
-(defn reflect-base-state! [^js base state]
+(defn- reflect-base-state! [^js base state]
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-padding" (:padding state))
   (.setAttribute base "data-radius" (:radius state))
   (set-or-remove-attr! base "data-interactive" (when (:interactive state) "true"))
   (set-or-remove-attr! base "data-disabled" (when (:disabled state) "true")))
 
-(defn style-text []
+(def ^:private style-text
   "
   :host {
   display: block;
@@ -178,25 +175,25 @@
   }
   ")
 
-(defn create-style-node []
+(defn- create-style-node! []
   (let [node (.createElement js/document "style")]
-    (set! (.-textContent node) (style-text))
+    (set! (.-textContent node) style-text)
     node))
 
-(defn create-base-node []
+(defn- create-base-node! []
   (let [node (.createElement js/document "div")]
     (.setAttribute node "part" "base")
     (set! (.-className node) "base")
     node))
 
-(defn create-slot-node []
+(defn- create-slot-node! []
   (.createElement js/document "slot"))
 
-(defn init-shadow-dom! [^js el]
+(defn- init-shadow-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
-        style-node (create-style-node)
-        base-node (create-base-node)
-        slot-node (create-slot-node)]
+        style-node (create-style-node!)
+        base-node  (create-base-node!)
+        slot-node  (create-slot-node!)]
     (.appendChild base-node slot-node)
     (.appendChild root style-node)
     (.appendChild root base-node)
@@ -206,42 +203,34 @@
     (du/setv! el key-slot slot-node)
     root))
 
-(defn render! [^js el]
+(defn- render! [^js el]
   (let [state (model/derive-state (read-inputs el))
-        base (base-node-of el)]
+        base  (base-node-of el)]
     (reflect-host-a11y! el state)
     (reflect-base-state! base state)))
 
-(defn on-click [^js el ^js _event]
+(defn- on-click [^js el ^js _event]
   (let [state (model/derive-state (read-inputs el))]
     (when (interactive-active? state)
       (dispatch-press! el))))
 
-(defn on-keydown [^js el ^js event]
+(defn- on-keydown [^js el ^js event]
   (let [state (model/derive-state (read-inputs el))
-        key (.-key event)]
+        key   (.-key event)]
     (when (interactive-active? state)
       (cond
         (= key "Enter")
         (dispatch-press! el)
 
-        (= key " ")
-        (do
-          (.preventDefault event)
-          (dispatch-press! el))
+        (contains? #{" " "Spacebar"} key)
+        (do (.preventDefault event)
+            (dispatch-press! el))))))
 
-        (= key "Spacebar")
-        (do
-          (.preventDefault event)
-          (dispatch-press! el))
+(defn- install-listeners! [^js el]
+  (.addEventListener el "click"   (fn handle-click   [event] (on-click   el event)))
+  (.addEventListener el "keydown" (fn handle-keydown [event] (on-keydown el event))))
 
-        :else nil))))
-
-(defn install-listeners! [^js el]
-  (.addEventListener el "click" (fn [event] (on-click el event)))
-  (.addEventListener el "keydown" (fn [event] (on-keydown el event))))
-
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
   (when-not (du/initialized? el key-initialized)
     (init-shadow-dom! el)
     (install-listeners! el)
@@ -258,13 +247,13 @@
   (when (du/initialized? el key-initialized)
     (render! el)))
 
-(defn install-property-accessors! [^js proto]
+(defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))

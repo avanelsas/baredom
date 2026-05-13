@@ -128,4 +128,4 @@
   [{:keys [type text]} reason]
   {:type (type->attr type) :reason reason :text text})
 
-(def method-api nil)
+(def method-api {})

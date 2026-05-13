@@ -74,4 +74,4 @@
      :column-gap (gap->css cg)
      :row-height rh}))
 
-(def method-api nil)
+(def method-api {})

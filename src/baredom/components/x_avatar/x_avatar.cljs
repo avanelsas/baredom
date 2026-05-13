@@ -1,8 +1,8 @@
 (ns baredom.components.x-avatar.x-avatar
   (:require
-[baredom.utils.component :as component]
+   [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [goog.object :as gobj]
    [baredom.components.x-avatar.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -181,8 +181,7 @@
                :fallback-el fallback
                :status-el   status
                :badge-el    badge
-               :badge-slot  badge-slot}))
-  nil)
+               :badge-slot  badge-slot})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -209,8 +208,7 @@
     (pos? (.-length (.assignedNodes slot-el)))))
 
 (defn- set-display! [^js node v]
-  (set! (.. node -style -display) v)
-  nil)
+  (set! (.. node -style -display) v))
 
 (defn- apply-model! [^js el {:keys [src size shape variant status disabled] :as m}]
   (let [{:keys [img initials-el fallback-el status-el badge-el badge-slot]}
@@ -276,15 +274,13 @@
     ;; Badge wrapper
     (set-display! badge-el (if has-badge? "block" "none"))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -297,8 +293,7 @@
     (.addEventListener img "load"  on-load)
     (.addEventListener img "error" on-error)
     (when badge-slot (.addEventListener badge-slot "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:load on-load :error on-error :slot on-slot}))
-  nil)
+    (gobj/set el k-handlers #js {:load on-load :error on-error :slot on-slot})))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
@@ -312,8 +307,7 @@
         (when on-error (.removeEventListener img "error" on-error))
         (when (and badge-slot on-slot)
           (.removeEventListener badge-slot "slotchange" on-slot)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -322,22 +316,18 @@
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (remove-listeners! el)   ; reconnect guard — prevents listener doubling
+  (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
-  ;; Reset image-ok only when src changes
-  (when (= attr-name model/attr-src)
-  (gobj/set el k-img-ok false))
-  (update-from-attrs! el))
-  nil)
+    (when (= attr-name model/attr-src)
+      (gobj/set el k-img-ok false))
+    (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 
