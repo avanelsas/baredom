@@ -52,8 +52,7 @@
 
     (gobj/set el k-refs {:root      root
                          :label-div label-div
-                         :slot-el   slot-el}))
-  nil)
+                         :slot-el   slot-el})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -85,15 +84,13 @@
       (do (set! (.-textContent label-div) "")
           (.setAttribute label-div "hidden" "")))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Child update (core coordinator) ─────────────────────────────────────────
 (defn- update-items! [^js el]
@@ -112,24 +109,20 @@
           (if striped?
             (.setAttribute item "data-striped" "")
             (.removeAttribute item "data-striped")))
-        (recur (inc i)))))
-  nil)
+        (recur (inc i))))))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-select! [^js el index status label]
-  (du/dispatch! el model/event-select (clj->js (model/select-detail index status label)))
-  nil)
+  (du/dispatch! el model/event-select (clj->js (model/select-detail index status label))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────────
 (defn- on-item-connected [^js el ^js _e]
-  (update-items! el)
-  nil)
+  (update-items! el))
 
 (defn- on-item-disconnected [^js el ^js _e]
   ;; Guard: document listener may fire after x-timeline itself has disconnected.
   (when (.-isConnected el)
-    (update-items! el))
-  nil)
+    (update-items! el)))
 
 (defn- on-item-click [^js el ^js e]
   (.stopPropagation e)
@@ -141,8 +134,7 @@
         ^js detail   (.-detail e)
         status       (gobj/get detail "status")
         label        (gobj/get detail "label")]
-    (dispatch-select! el index status label))
-  nil)
+    (dispatch-select! el index status label)))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -155,8 +147,7 @@
     (gobj/set el k-handlers
               #js {"item-connected"        conn-h
                    "item-click"            click-h
-                   "item-disconnected-doc" doc-h}))
-  nil)
+                   "item-disconnected-doc" doc-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -167,8 +158,7 @@
         (when conn-h  (.removeEventListener el model/child-event-connected conn-h))
         (when click-h (.removeEventListener el model/child-event-click click-h))
         (when doc-h   (.removeEventListener js/document model/child-event-disconnected doc-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -202,18 +192,15 @@
   (update-from-attrs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-items! el)
-  nil)
+  (update-items! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (update-from-attrs! el)
-    (update-items! el))
-  nil)
+    (update-items! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────────
 

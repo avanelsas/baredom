@@ -198,13 +198,11 @@
 
 (defn- on-pointerenter [^js el ^js _e]
   (when-let [^js card (du/getv el k-card)]
-    (.setAttribute card "data-active" "true"))
-  nil)
+    (.setAttribute card "data-active" "true")))
 
 (defn- on-pointerleave [^js el ^js _e]
   (when-let [^js card (du/getv el k-card)]
-    (.removeAttribute card "data-active"))
-  nil)
+    (.removeAttribute card "data-active")))
 
 (defn- on-pointermove [^js el ^js e]
   (let [^js rect (.getBoundingClientRect el)
@@ -215,8 +213,7 @@
             y  (* (/ (- (.-clientY e) (.-top rect))  h) 100)
             ^js style (.-style el)]
         (.setProperty style css-var-x (str x "%"))
-        (.setProperty style css-var-y (str y "%")))))
-  nil)
+        (.setProperty style css-var-y (str y "%"))))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 
@@ -242,8 +239,7 @@
       (.removeEventListener el "pointerleave" f))
     (when-let [f (gobj/get handlers "move")]
       (.removeEventListener el "pointermove"  f))
-    (du/setv! el k-handlers nil))
-  nil)
+    (du/setv! el k-handlers nil)))
 
 ;; ── Apply model ─────────────────────────────────────────────────────────────
 
@@ -253,16 +249,14 @@
   (.setAttribute card "data-padding" (:padding m))
   (if (:static? m)
     (.setAttribute    card "data-static" "true")
-    (.removeAttribute card "data-static"))
-  ;; data-active is owned by pointer handlers — never set/cleared here.
-  nil)
+    (.removeAttribute card "data-static")))
+;; data-active is owned by pointer handlers — never set/cleared here.
 
 (defn- reflect-host-style! [^js el m]
   (let [^js style (.-style el)]
     (.setProperty style css-var-color     (:color-css m))
     (.setProperty style css-var-intensity (:intensity-css m))
-    (.setProperty style css-var-size      (:size-css m)))
-  nil)
+    (.setProperty style css-var-size      (:size-css m))))
 
 (defn- apply-model! [^js el m]
   (when-let [^js card (du/getv el k-card)]
@@ -276,15 +270,13 @@
       (when-let [^js card (du/getv el k-card)]
         (.removeAttribute card "data-active")))
     (add-listeners! el))
-  (du/setv! el k-model m)
-  nil)
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (model/derive-state (read-inputs el))
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Reduced-motion observer ─────────────────────────────────────────────────
 
@@ -301,8 +293,7 @@
     (when-let [handler (du/getv el k-mq-listener)]
       (.removeEventListener mq "change" handler))
     (du/setv! el k-mq nil)
-    (du/setv! el k-mq-listener nil))
-  nil)
+    (du/setv! el k-mq-listener nil)))
 
 ;; ── Lifecycle ───────────────────────────────────────────────────────────────
 
