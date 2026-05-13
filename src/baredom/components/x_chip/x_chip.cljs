@@ -1,8 +1,8 @@
 (ns baredom.components.x-chip.x-chip
   (:require
-[baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
    [baredom.components.x-chip.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -10,7 +10,7 @@
 (def ^:private k-handlers "__xChipHandlers")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "--x-chip-bg:var(--x-color-surface,rgba(0,0,0,0.08));"
@@ -126,8 +126,7 @@
               {:root       root
                :container  container
                :label-el   label-el
-               :remove-btn remove-btn}))
-  nil)
+               :remove-btn remove-btn})))
 
 ;; ── Removal logic ─────────────────────────────────────────────────────────
 (defn- dispatch-remove!
@@ -199,8 +198,7 @@
     (when remove-btn
       (if disabled?
         (.setAttribute remove-btn "disabled" "")
-        (.removeAttribute remove-btn "disabled"))))
-  nil)
+        (.removeAttribute remove-btn "disabled")))))
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -217,8 +215,7 @@
     (.addEventListener el "keydown" on-keydown)
     (gobj/set el k-handlers
               #js {:click   on-click
-                   :keydown on-keydown}))
-  nil)
+                   :keydown on-keydown})))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
@@ -231,8 +228,7 @@
             (.removeEventListener remove-btn "click" on-click))))
       (when on-keydown
         (.removeEventListener el "keydown" on-keydown))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

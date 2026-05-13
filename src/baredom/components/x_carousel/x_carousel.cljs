@@ -263,8 +263,7 @@
                    "prev"     prev-btn
                    "next"     next-btn
                    "dots"     dots-el
-                   "live"     live-el}))
-  nil)
+                   "live"     live-el})))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -288,8 +287,7 @@
 (defn- stop-autoplay! [^js el]
   (when-let [tid (du/getv el k-autoplay-timer)]
     (js/clearInterval tid)
-    (du/setv! el k-autoplay-timer nil))
-  nil)
+    (du/setv! el k-autoplay-timer nil)))
 
 (defn- start-autoplay! [^js el]
   (stop-autoplay! el)
@@ -301,12 +299,11 @@
                (.-isConnected el))
       (du/setv! el k-autoplay-timer
                 (js/setInterval
-                 (fn []
+                 (fn on-autoplay-tick []
                    (when (.-isConnected el)
                      (let [m2 (read-model el)]
                        (go-to! el (model/next-index m2) "autoplay"))))
-                 (:interval m)))))
-  nil)
+                 (:interval m))))))
 
 ;; ── Dots rebuild ────────────────────────────────────────────────────────────
 (defn- rebuild-dots! [^js el ^js dots-el slide-count current]
@@ -328,8 +325,7 @@
       (dotimes [i (.-length children)]
         (let [^js dot (aget children i)]
           (.setAttribute dot "aria-current" (str (= i current)))
-          (.setAttribute dot "aria-selected" (str (= i current)))))))
-  nil)
+          (.setAttribute dot "aria-selected" (str (= i current))))))))
 
 ;; ── Fade mode helpers ───────────────────────────────────────────────────────
 (defn- update-fade-active! [^js el current]
@@ -338,8 +334,7 @@
         children (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
-        (set! (.. child -style -opacity) (if (= i current) "1" "0")))))
-  nil)
+        (set! (.. child -style -opacity) (if (= i current) "1" "0"))))))
 
 (defn- clear-fade-styles! [^js el]
   (let [refs (du/getv el k-refs)
@@ -347,8 +342,7 @@
         children (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
-        (set! (.. child -style -opacity) ""))))
-  nil)
+        (set! (.. child -style -opacity) "")))))
 
 ;; ── Render ──────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -433,8 +427,7 @@
       ;; Autoplay live region adjustment
       (if (:autoplay? m)
         (.setAttribute live "aria-live" "off")
-        (.setAttribute live "aria-live" "polite"))))))
-  nil)
+        (.setAttribute live "aria-live" "polite")))))))
 
 ;; ── Navigation ──────────────────────────────────────────────────────────────
 (defn- go-to! [^js el index reason]
@@ -447,8 +440,7 @@
               #js {:index         target
                    :previousIndex current
                    :reason        reason})
-        (du/set-attr! el model/attr-current (str target)))))
-  nil)
+        (du/set-attr! el model/attr-current (str target))))))
 
 ;; ── Pointer drag ────────────────────────────────────────────────────────────
 (defn- on-pointerdown! [^js el ^js evt]
@@ -469,8 +461,7 @@
         (du/setv! el k-drag-current coord)
         ;; Pause autoplay during drag
         (du/setv! el k-paused true)
-        (stop-autoplay! el))))
-  nil)
+        (stop-autoplay! el)))))
 
 (defn- on-pointermove! [^js el ^js evt]
   (when (du/getv el k-dragging)
@@ -492,8 +483,7 @@
         (set! (.. track -style -transform)
               (str "translate" axis "(calc("
                    (* current -1) " * (100% - " peek-val " * 2) + "
-                   peek-val " + " delta "px))")))))
-  nil)
+                   peek-val " + " delta "px))"))))))
 
 (defn- on-pointerup! [^js el ^js _evt]
   (when (du/getv el k-dragging)
@@ -514,8 +504,7 @@
         (render! el))
       ;; Resume autoplay
       (du/setv! el k-paused false)
-      (start-autoplay! el)))
-  nil)
+      (start-autoplay! el))))
 
 ;; ── Keyboard ────────────────────────────────────────────────────────────────
 (defn- on-keydown! [^js el ^js evt]
@@ -538,8 +527,7 @@
 
         (= key "End")
         (do (.preventDefault evt)
-            (go-to! el (dec (:slide-count m)) "keyboard")))))
-  nil)
+            (go-to! el (dec (:slide-count m)) "keyboard"))))))
 
 ;; ── Dot click (event delegation) ────────────────────────────────────────────
 (defn- on-dot-click! [^js el ^js evt]
@@ -547,42 +535,35 @@
     (when-let [idx-str (.getAttribute target "data-index")]
       (let [idx (js/parseInt idx-str 10)]
         (when-not (js/isNaN idx)
-          (go-to! el idx "dot")))))
-  nil)
+          (go-to! el idx "dot"))))))
 
 ;; ── Arrow clicks ────────────────────────────────────────────────────────────
 (defn- on-prev-click! [^js el ^js _evt]
   (let [m (read-model el)]
-    (go-to! el (model/prev-index m) "arrow"))
-  nil)
+    (go-to! el (model/prev-index m) "arrow")))
 
 (defn- on-next-click! [^js el ^js _evt]
   (let [m (read-model el)]
-    (go-to! el (model/next-index m) "arrow"))
-  nil)
+    (go-to! el (model/next-index m) "arrow")))
 
 ;; ── Autoplay pause/resume on hover & focus ──────────────────────────────────
 (defn- on-pointerenter! [^js el ^js _evt]
   (du/setv! el k-paused true)
-  (stop-autoplay! el)
-  nil)
+  (stop-autoplay! el))
 
 (defn- on-pointerleave! [^js el ^js _evt]
   (du/setv! el k-paused false)
-  (start-autoplay! el)
-  nil)
+  (start-autoplay! el))
 
 (defn- on-focusin! [^js el ^js _evt]
   (du/setv! el k-paused true)
-  (stop-autoplay! el)
-  nil)
+  (stop-autoplay! el))
 
 (defn- on-focusout! [^js el ^js evt]
   ;; Only resume if focus left the component entirely
   (when-not (.contains el (.-relatedTarget evt))
     (du/setv! el k-paused false)
-    (start-autoplay! el))
-  nil)
+    (start-autoplay! el)))
 
 ;; ── Slotchange ──────────────────────────────────────────────────────────────
 (defn- on-slotchange! [^js el]
@@ -597,8 +578,7 @@
       (when (not= clamped (:current m))
         (du/set-attr! el model/attr-current (str clamped))))
     (render! el)
-    (start-autoplay! el))
-  nil)
+    (start-autoplay! el)))
 
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -648,8 +628,7 @@
                    "enter"    h-enter
                    "leave"    h-leave
                    "focusin"  h-focusin
-                   "focusout" h-focusout}))
-  nil)
+                   "focusout" h-focusout})))
 
 (defn- remove-listeners! [^js el]
   (stop-autoplay! el)
@@ -674,8 +653,7 @@
         (.removeEventListener el    "pointerleave" (gobj/get hs "leave"))
         (.removeEventListener el    "focusin"      (gobj/get hs "focusin"))
         (.removeEventListener el    "focusout"     (gobj/get hs "focusout")))))
-  (du/setv! el k-handlers nil)
-  nil)
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -799,19 +777,16 @@
         children (.assignedElements slot)]
     (du/setv! el k-slide-count (.-length children)))
   (render! el)
-  (start-autoplay! el)
-  nil)
+  (start-autoplay! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name _old _new]
   (when (du/initialized? el k-init)
     (render! el)
     (when (.-isConnected el)
-      (start-autoplay! el)))
-  nil)
+      (start-autoplay! el))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 ;; ── Public API ──────────────────────────────────────────────────────────────

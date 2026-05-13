@@ -118,4 +118,4 @@
            :match  (.substring label idx end)
            :after  (.substring label end)})))))
 
-(def method-api nil)
+(def method-api {})

@@ -3,22 +3,22 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-container.model :as model]))
 
-(def state-key "__xContainerState")
+(def ^:private state-key "__xContainerState")
 
-(defn get-prop [^js obj k] (aget obj k))
-(defn set-prop! [^js obj k v] (aset obj k v))
+(defn- get-prop [^js obj k] (aget obj k))
+(defn- set-prop! [^js obj k v] (aset obj k v))
 
-(defn get-el-state [^js el]
+(defn- get-el-state [^js el]
   (get-prop el state-key))
 
-(defn set-el-state! [^js el state]
+(defn- set-el-state! [^js el state]
   (set-prop! el state-key state))
 
-(defn get-default-true-bool
+(defn- get-default-true-bool
   [^js el attr-name]
   (not= "false" (du/get-attr el attr-name)))
 
-(defn read-public-state [^js el]
+(defn- read-public-state [^js el]
   (model/public-state
    {:as (du/get-attr el model/attr-as)
     :size (du/get-attr el model/attr-size)
@@ -27,7 +27,7 @@
     :fluid (du/has-attr? el model/attr-fluid)
     :label (du/get-attr el model/attr-label)}))
 
-(defn define-default-true-bool-prop!
+(defn- define-default-true-bool-prop!
   [^js proto prop attr]
   (.defineProperty
    js/Object
@@ -44,7 +44,7 @@
                           (.removeAttribute this attr)
                           (.setAttribute this attr "false"))))}))
 
-(def style-text
+(def ^:private style-text
   "
   :host{
   display:block;
@@ -122,7 +122,7 @@
 
   ")
 
-(defn create-shadow! [^js el]
+(defn- create-shadow! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base (.createElement js/document "div")
@@ -141,7 +141,7 @@
          :base base
          :slot slot}))
 
-(defn ensure-root-tag!
+(defn- ensure-root-tag!
   [^js state tag]
   (let [base (aget state "base")
         current (.-tagName base)]
@@ -154,7 +154,7 @@
         (.replaceChild root new-el base)
         (aset state "base" new-el)))))
 
-(defn render!
+(defn- render!
   [^js el ^js state]
   (let [public (read-public-state el)]
 
