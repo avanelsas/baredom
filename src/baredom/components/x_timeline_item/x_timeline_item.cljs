@@ -303,65 +303,54 @@
     :data-striped?     (du/has-attr? el model/data-attr-striped)}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el
-                     {:keys [label title status effective-position
-                              disabled? marker-icon marker-aria] :as m}]
-  (let [{:keys [label-text marker title-el default-icon]}
-        (ensure-refs! el)
-        ^js label-text   label-text
-        ^js marker       marker
-        ^js title-el     title-el
-        ^js default-icon default-icon]
+(defn- apply-host-data-attrs! [^js el {:keys [status effective-position connector]}]
+  (du/set-attr! el "data-status" (model/status->attr status))
+  ;; Setting data-position on the host is a *self-write*: it fires
+  ;; attributeChangedCallback, which is observed. The k-self-pos flag
+  ;; suppresses the resulting feedback loop — see attribute-changed!.
+  (gobj/set el k-self-pos true)
+  (du/set-attr! el "data-position" (name effective-position))
+  (gobj/set el k-self-pos nil)
+  (case connector
+    :dashed (du/set-attr! el "data-connector" "dashed")
+    :none   (du/set-attr! el "data-connector" "none")
+    (du/remove-attr! el "data-connector")))
 
-    ;; Host data attributes for CSS targeting
-    (du/set-attr! el "data-status" (model/status->attr status))
-    (gobj/set el k-self-pos true)
-    (du/set-attr! el "data-position" (name effective-position))
-    (gobj/set el k-self-pos nil)
-    (if (= (:connector m) :dashed)
-      (du/set-attr! el "data-connector" "dashed")
-      (if (= (:connector m) :none)
-        (du/set-attr! el "data-connector" "none")
-        (du/remove-attr! el "data-connector")))
+(defn- apply-host-a11y! [^js el {:keys [label title disabled?]}]
+  (du/set-attr! el "role" "listitem")
+  (if disabled?
+    (do (du/set-attr! el "aria-disabled" "true")
+        (set! (.-tabIndex el) -1))
+    (do (du/remove-attr! el "aria-disabled")
+        (set! (.-tabIndex el) 0)))
+  (let [host-label (cond
+                     (not= title "") title
+                     (not= label "") label
+                     :else           nil)]
+    (if host-label
+      (du/set-attr! el "aria-label" host-label)
+      (du/remove-attr! el "aria-label"))))
 
-    ;; ARIA and interactivity
-    (du/set-attr! el "role" "listitem")
+(defn- apply-marker! [^js marker ^js default-icon {:keys [marker-icon marker-aria]}]
+  (.setAttribute marker "aria-label" marker-aria)
+  (set! (.-textContent default-icon)
+        (if (some? marker-icon) marker-icon "")))
 
-    (if disabled?
-      (do (du/set-attr! el "aria-disabled" "true")
-          (set! (.-tabIndex el) -1))
-      (do (du/remove-attr! el "aria-disabled")
-          (set! (.-tabIndex el) 0)))
+(defn- apply-text! [^js label-text ^js title-el {:keys [label title]}]
+  (set! (.-textContent label-text) label)
+  (if (not= title "")
+    (do (.removeAttribute title-el "hidden")
+        (set! (.-textContent title-el) title))
+    (do (.setAttribute title-el "hidden" "")
+        (set! (.-textContent title-el) ""))))
 
-    ;; Host aria-label: prefer title, then label
-    (let [host-label (cond
-                       (not= title "") title
-                       (not= label "") label
-                       :else           nil)]
-      (if host-label
-        (du/set-attr! el "aria-label" host-label)
-        (du/remove-attr! el "aria-label")))
-
-    ;; Marker aria-label
-    (.setAttribute marker "aria-label" marker-aria)
-
-    ;; Label text fallback
-    (set! (.-textContent label-text) label)
-
-    ;; Default icon
-    (if (some? marker-icon)
-      (set! (.-textContent default-icon) marker-icon)
-      (set! (.-textContent default-icon) ""))
-
-    ;; Title element
-    (if (not= title "")
-      (do (.removeAttribute title-el "hidden")
-          (set! (.-textContent title-el) title))
-      (do (.setAttribute title-el "hidden" "")
-          (set! (.-textContent title-el) "")))
-
-    (gobj/set el k-model m))
-  nil)
+(defn- apply-model! [^js el m]
+  (let [{:keys [label-text marker title-el default-icon]} (ensure-refs! el)]
+    (apply-host-data-attrs! el m)
+    (apply-host-a11y!       el m)
+    (apply-marker!          marker default-icon m)
+    (apply-text!            label-text title-el m)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
