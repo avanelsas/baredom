@@ -224,151 +224,131 @@
         el))))
 
 ;; ── Create overlay layer DOM ────────────────────────────────────────────────
-(defn- create-layer-dom!
-  "Build the overlay layer with SVG backdrop, popover, and connector.
-   Returns a map of DOM refs."
-  [^js trigger-el]
-  (let [^js layer  (overlay/make-layer! trigger-el layer-style-text
-                                         "var(--x-welcome-tour-backdrop-z,var(--x-z-modal,1100))")
-        ^js shadow (.-shadowRoot layer)
+(defn- set-attrs!
+  "Apply `attrs` (a flat seq of k v k v) on `el` via setAttribute."
+  [^js el attrs]
+  (doseq [[k v] (partition 2 attrs)]
+    (.setAttribute el k v)))
 
-        ;; SVG backdrop with mask cutout
-        ^js svg    (svg-el "svg")
-        ^js defs   (svg-el "defs")
-        ^js mask   (svg-el "mask")
+(defn- make-svg-backdrop!
+  "Build the SVG backdrop with mask cutout and glow rect.
+   Returns {:svg :mask-cut :glow}."
+  []
+  (let [^js svg        (svg-el "svg")
+        ^js defs       (svg-el "defs")
+        ^js mask       (svg-el "mask")
         ^js mask-white (svg-el "rect")
         ^js mask-cut   (svg-el "rect")
         ^js filter-el  (svg-el "filter")
         ^js blur       (svg-el "feGaussianBlur")
         ^js backdrop   (svg-el "rect")
-        ^js glow       (svg-el "rect")
-
-        ;; Popover
-        ^js popover      (.createElement js/document "div")
-        ^js header       (.createElement js/document "div")
-        ^js title-el     (.createElement js/document "span")
-        ^js counter-el   (.createElement js/document "span")
-        ^js close-btn    (.createElement js/document "button")
-        ^js body-el      (.createElement js/document "div")
-        ^js footer       (.createElement js/document "div")
-        ^js prev-btn     (.createElement js/document "button")
-        ^js dots-el      (.createElement js/document "div")
-        ^js next-btn     (.createElement js/document "button")
-        ^js arrow-el     (.createElement js/document "div")
-
-        ;; Connector SVG
-        ^js conn-svg     (svg-el "svg")
-        ^js conn-path    (svg-el "path")]
-
-    ;; --- SVG backdrop ---
-    (.setAttribute svg "part" "backdrop-svg")
-    (.setAttribute svg "aria-hidden" "true")
-
-    (.setAttribute mask "id" "tour-cutout-mask")
-    (.setAttribute mask-white "width" "100%")
-    (.setAttribute mask-white "height" "100%")
-    (.setAttribute mask-white "fill" "white")
-    (.setAttribute mask-cut "class" "cutout-rect")
-    (.setAttribute mask-cut "fill" "black")
-    (.setAttribute mask-cut "x" "0")
-    (.setAttribute mask-cut "y" "0")
-    (.setAttribute mask-cut "width" "0")
-    (.setAttribute mask-cut "height" "0")
-    (.setAttribute mask-cut "rx" "0")
-    (.setAttribute mask-cut "ry" "0")
+        ^js glow       (svg-el "rect")]
+    (set-attrs! svg        ["part" "backdrop-svg" "aria-hidden" "true"])
+    (set-attrs! mask       ["id" "tour-cutout-mask"])
+    (set-attrs! mask-white ["width" "100%" "height" "100%" "fill" "white"])
+    (set-attrs! mask-cut   ["class" "cutout-rect" "fill" "black"
+                            "x" "0" "y" "0" "width" "0" "height" "0"
+                            "rx" "0" "ry" "0"])
     (.appendChild mask mask-white)
     (.appendChild mask mask-cut)
-
-    (.setAttribute filter-el "id" "tour-glow")
-    (.setAttribute blur "stdDeviation" "8")
-    (.setAttribute blur "in" "SourceGraphic")
+    (set-attrs! filter-el ["id" "tour-glow"])
+    (set-attrs! blur      ["stdDeviation" "8" "in" "SourceGraphic"])
     (.appendChild filter-el blur)
-
     (.appendChild defs mask)
     (.appendChild defs filter-el)
     (.appendChild svg defs)
-
-    (.setAttribute backdrop "width" "100%")
-    (.setAttribute backdrop "height" "100%")
-    (.setAttribute backdrop "fill"
-                   "var(--x-welcome-tour-backdrop,rgba(0,0,0,0.5))")
-    (.setAttribute backdrop "mask" "url(#tour-cutout-mask)")
+    (set-attrs! backdrop ["width" "100%" "height" "100%"
+                          "fill" "var(--x-welcome-tour-backdrop,rgba(0,0,0,0.5))"
+                          "mask" "url(#tour-cutout-mask)"])
     (.appendChild svg backdrop)
-
-    (.setAttribute glow "class" "cutout-rect")
-    (.setAttribute glow "fill"
-                   "var(--x-welcome-tour-glow-color,rgba(255,255,255,0.15))")
-    (.setAttribute glow "filter" "url(#tour-glow)")
-    (.setAttribute glow "x" "0")
-    (.setAttribute glow "y" "0")
-    (.setAttribute glow "width" "0")
-    (.setAttribute glow "height" "0")
-    (.setAttribute glow "rx" "0")
-    (.setAttribute glow "ry" "0")
+    (set-attrs! glow ["class" "cutout-rect"
+                      "fill" "var(--x-welcome-tour-glow-color,rgba(255,255,255,0.15))"
+                      "filter" "url(#tour-glow)"
+                      "x" "0" "y" "0" "width" "0" "height" "0"
+                      "rx" "0" "ry" "0"])
     (.appendChild svg glow)
+    {:svg svg :mask-cut mask-cut :glow glow}))
 
-    ;; --- Popover ---
-    (.setAttribute popover "part" "popover")
-    (.setAttribute popover "role" "dialog")
-    (.setAttribute popover "aria-modal" "false")
-
-    (.setAttribute header "part" "header")
-    (.setAttribute title-el "part" "title")
-    (.setAttribute counter-el "part" "counter")
-    (.setAttribute close-btn "part" "close-button")
-    (.setAttribute close-btn "type" "button")
-    (.setAttribute close-btn "aria-label" "Close tour")
+(defn- make-popover-header! []
+  (let [^js header     (.createElement js/document "div")
+        ^js title-el   (.createElement js/document "span")
+        ^js counter-el (.createElement js/document "span")
+        ^js close-btn  (.createElement js/document "button")]
+    (set-attrs! header     ["part" "header"])
+    (set-attrs! title-el   ["part" "title"])
+    (set-attrs! counter-el ["part" "counter"])
+    (set-attrs! close-btn  ["part" "close-button" "type" "button"
+                            "aria-label" "Close tour"])
     (set! (.-textContent close-btn) "\u00d7")
     (.appendChild header title-el)
     (.appendChild header counter-el)
     (.appendChild header close-btn)
+    {:header header :title-el title-el :counter-el counter-el :close-btn close-btn}))
 
-    (.setAttribute body-el "part" "body")
-
-    (.setAttribute footer "part" "footer")
-    (.setAttribute prev-btn "part" "prev-button")
-    (.setAttribute prev-btn "type" "button")
-    (.setAttribute dots-el "part" "dots")
-    (.setAttribute next-btn "part" "next-button")
-    (.setAttribute next-btn "type" "button")
+(defn- make-popover-footer! []
+  (let [^js footer   (.createElement js/document "div")
+        ^js prev-btn (.createElement js/document "button")
+        ^js dots-el  (.createElement js/document "div")
+        ^js next-btn (.createElement js/document "button")]
+    (set-attrs! footer   ["part" "footer"])
+    (set-attrs! prev-btn ["part" "prev-button" "type" "button"])
+    (set-attrs! dots-el  ["part" "dots"])
+    (set-attrs! next-btn ["part" "next-button" "type" "button"])
     (.appendChild footer prev-btn)
     (.appendChild footer dots-el)
     (.appendChild footer next-btn)
+    {:footer footer :prev-btn prev-btn :dots-el dots-el :next-btn next-btn}))
 
-    (.setAttribute arrow-el "part" "arrow")
+(defn- make-popover!
+  "Build the popover with header, body, footer, and arrow.
+   Returns {:popover :title-el :counter-el :close-btn :body-el :prev-btn
+            :dots-el :next-btn :arrow-el}."
+  []
+  (let [^js popover  (.createElement js/document "div")
+        ^js body-el  (.createElement js/document "div")
+        ^js arrow-el (.createElement js/document "div")
+        header-refs  (make-popover-header!)
+        footer-refs  (make-popover-footer!)]
+    (set-attrs! popover  ["part" "popover" "role" "dialog" "aria-modal" "false"])
+    (set-attrs! body-el  ["part" "body"])
+    (set-attrs! arrow-el ["part" "arrow"])
     (.appendChild popover arrow-el)
-    (.appendChild popover header)
+    (.appendChild popover (:header header-refs))
     (.appendChild popover body-el)
-    (.appendChild popover footer)
+    (.appendChild popover (:footer footer-refs))
+    (-> {:popover popover :body-el body-el :arrow-el arrow-el}
+        (merge (select-keys header-refs [:title-el :counter-el :close-btn]))
+        (merge (select-keys footer-refs [:prev-btn :dots-el :next-btn])))))
 
-    ;; --- Connector SVG ---
-    (.setAttribute conn-svg "part" "connector-svg")
-    (.setAttribute conn-svg "aria-hidden" "true")
+(defn- make-connector-svg!
+  "Build the connector SVG.
+   Returns {:conn-svg :conn-path}."
+  []
+  (let [^js conn-svg  (svg-el "svg")
+        ^js conn-path (svg-el "path")]
+    (set-attrs! conn-svg ["part" "connector-svg" "aria-hidden" "true"])
     (.appendChild conn-svg conn-path)
+    {:conn-svg conn-svg :conn-path conn-path}))
 
-    ;; --- Assemble in shadow ---
-    (.appendChild shadow svg)
-    (.appendChild shadow popover)
-    (.appendChild shadow conn-svg)
-
-    ;; Enable pointer events on the layer itself
+(defn- create-layer-dom!
+  "Build the overlay layer with SVG backdrop, popover, and connector.
+   Composes section-builders; each returns a refs sub-map. Returns the
+   merged ref map for the orchestrator's `render!` phases to consume."
+  [^js trigger-el]
+  (let [^js layer       (overlay/make-layer! trigger-el layer-style-text
+                                             "var(--x-welcome-tour-backdrop-z,var(--x-z-modal,1100))")
+        ^js shadow      (.-shadowRoot layer)
+        backdrop-refs   (make-svg-backdrop!)
+        popover-refs    (make-popover!)
+        connector-refs  (make-connector-svg!)]
+    (.appendChild shadow (:svg backdrop-refs))
+    (.appendChild shadow (:popover popover-refs))
+    (.appendChild shadow (:conn-svg connector-refs))
     (set! (.. layer -style -pointerEvents) "auto")
-
-    {:layer      layer
-     :svg        svg
-     :mask-cut   mask-cut
-     :glow       glow
-     :popover    popover
-     :title-el   title-el
-     :counter-el counter-el
-     :close-btn  close-btn
-     :body-el    body-el
-     :prev-btn   prev-btn
-     :dots-el    dots-el
-     :next-btn   next-btn
-     :arrow-el   arrow-el
-     :conn-svg   conn-svg
-     :conn-path  conn-path}))
+    (merge {:layer layer}
+           backdrop-refs
+           popover-refs
+           connector-refs)))
 
 ;; ── Update cutout rect ──────────────────────────────────────────────────────
 (defn- update-cutout!
@@ -542,98 +522,126 @@
     :dots?          (du/has-attr? el model/attr-dots)}))
 
 ;; ── Core render ─────────────────────────────────────────────────────────────
-(defn- render!
-  "Main render function. Reads current state and updates the overlay layer.
-   Caches `k-model` at the tail so a throw in any effect leaves the cache
-   pointing at the last successfully applied state (epochal-time rule)."
+;; ── render! phases ──────────────────────────────────────────────────────────
+
+(defn- tear-down-layer!
+  "Tour is closed — remove the overlay layer and disarm the focus trap.
+   No-op when the layer was never built."
   [^js el]
-  (let [m          (read-model el)
-        layer-refs (du/getv el k-layer)]
-    (if-not (:open? m)
-      ;; --- Tour closed ---
-      (when layer-refs
-        (overlay/remove-layer! (:layer layer-refs))
-        (du/setv! el k-layer nil)
-        (deactivate-focus-trap! el))
+  (when-let [layer-refs (du/getv el k-layer)]
+    (overlay/remove-layer! (:layer layer-refs))
+    (du/setv! el k-layer nil)
+    (deactivate-focus-trap! el)))
 
-      ;; --- Tour open ---
-      (let [refs       (or layer-refs (create-layer-dom! el))
-            _          (when-not layer-refs (du/setv! el k-layer refs))
-            step-els   (get-step-els el)
-            total      (.-length step-els)
-            step-idx   (model/clamp-step (:step m) total)]
-        (when (pos? total)
-          (let [^js step-el  (aget step-els step-idx)
-                step-m       (read-step-model step-el)
-                connector    (or (:connector step-m) (:connector m))
-                ^js target   (resolve-target (:target step-m))
-                target-rect  (when target
-                               (let [r (.getBoundingClientRect target)]
-                                 {:x (.-x r) :y (.-y r)
-                                  :width (.-width r) :height (.-height r)}))
-                cutout       (when target-rect
-                               (model/compute-cutout target-rect
-                                                     (:cutout-padding step-m)
-                                                     (:cutout-radius step-m)))
-                vp           {:width (.-innerWidth js/window)
-                              :height (.-innerHeight js/window)}
-                ^js popover  (:popover refs)
-                ;; Measure popover to compute position
-                pop-w        (.-offsetWidth popover)
-                pop-h        (.-offsetHeight popover)
-                pop-size     {:width (if (pos? pop-w) pop-w 360)
-                              :height (if (pos? pop-h) pop-h 200)}
-                pos          (when target-rect
-                               (model/compute-position
-                                (:placement step-m) target-rect pop-size vp connector))
-                final-pl     (or (:final-placement pos) (:placement step-m))
-                popover-rect (when pos {:x (:x pos) :y (:y pos)
-                                        :width pop-w :height pop-h})
-                last?        (model/last-step? step-idx total)
-                first?       (model/first-step? step-idx)]
+(defn- ensure-layer!
+  "Build (or fetch the cached) overlay layer for the open tour."
+  [^js el]
+  (or (du/getv el k-layer)
+      (let [refs (create-layer-dom! el)]
+        (du/setv! el k-layer refs)
+        refs)))
 
-            ;; Update cutout
-            (if cutout
-              (update-cutout! refs cutout)
-              ;; No target — hide cutout off-screen
-              (update-cutout! refs {:x -9999 :y -9999 :width 0 :height 0 :rx 0 :ry 0}))
+(defn- popover-size
+  "Read the live popover measurements with sane fallbacks for the
+   first paint when offset* is still 0."
+  [^js popover]
+  (let [pop-w (.-offsetWidth popover)
+        pop-h (.-offsetHeight popover)]
+    {:width  (if (pos? pop-w) pop-w 360)
+     :height (if (pos? pop-h) pop-h 200)
+     :raw-w  pop-w
+     :raw-h  pop-h}))
 
-            ;; Update popover position
-            (when pos
-              (update-popover-position! popover (:x pos) (:y pos)))
+(defn- derive-frame
+  "Compute every derived value the open-tour effects need from the
+   current step element + model + live popover measurements.
+   Pure transformation modulo the popover-rect / target-rect reads."
+  [step-m m refs]
+  (let [connector   (or (:connector step-m) (:connector m))
+        ^js target  (resolve-target (:target step-m))
+        target-rect (when target
+                      (let [r (.getBoundingClientRect target)]
+                        {:x (.-x r) :y (.-y r)
+                         :width (.-width r) :height (.-height r)}))
+        cutout      (when target-rect
+                      (model/compute-cutout target-rect
+                                            (:cutout-padding step-m)
+                                            (:cutout-radius step-m)))
+        vp          {:width  (.-innerWidth js/window)
+                     :height (.-innerHeight js/window)}
+        pop-size    (popover-size (:popover refs))
+        pos         (when target-rect
+                      (model/compute-position
+                       (:placement step-m) target-rect pop-size vp connector))
+        final-pl    (or (:final-placement pos) (:placement step-m))
+        popover-rect (when pos {:x (:x pos) :y (:y pos)
+                                :width (:raw-w pop-size) :height (:raw-h pop-size)})]
+    {:connector    connector
+     :target-rect  target-rect
+     :cutout       cutout
+     :pos          pos
+     :final-pl     final-pl
+     :popover-rect popover-rect}))
 
-            ;; Update arrow (points at target centre, clamped to popover edge)
-            (when (and target-rect popover-rect)
-              (update-arrow! (:arrow-el refs) connector final-pl
-                             target-rect popover-rect))
+(def ^:private offscreen-cutout
+  {:x -9999 :y -9999 :width 0 :height 0 :rx 0 :ry 0})
 
-            ;; Update connector line/curve
-            (when (and target-rect popover-rect)
-              (update-connector! refs connector target-rect popover-rect final-pl))
+(defn- apply-spotlight!
+  "Position the SVG cutout, the popover, the arrow, and the connector
+   for the current frame."
+  [refs {:keys [cutout pos connector final-pl target-rect popover-rect]}]
+  (update-cutout! refs (or cutout offscreen-cutout))
+  (when pos
+    (update-popover-position! (:popover refs) (:x pos) (:y pos)))
+  (when (and target-rect popover-rect)
+    (update-arrow! (:arrow-el refs) connector final-pl
+                   target-rect popover-rect)
+    (update-connector! refs connector target-rect popover-rect final-pl)))
 
-            ;; Update popover content
-            (set! (.-textContent (:title-el refs)) (:title step-m))
-            (inject-step-content! (:body-el refs) step-el)
+(defn- apply-step-content! [refs ^js step-el step-m]
+  (set! (.-textContent (:title-el refs)) (:title step-m))
+  (inject-step-content! (:body-el refs) step-el))
 
-            ;; Counter / dots
-            (if (:counter? m)
-              (do (set! (.. (:counter-el refs) -style -display) "inline")
-                  (set! (.-textContent (:counter-el refs))
-                        (model/counter-text step-idx total)))
-              (set! (.. (:counter-el refs) -style -display) "none"))
+(defn- apply-counter-and-dots! [refs {:keys [counter? dots?]} step-idx total]
+  (if counter?
+    (do (set! (.. (:counter-el refs) -style -display) "inline")
+        (set! (.-textContent (:counter-el refs))
+              (model/counter-text step-idx total)))
+    (set! (.. (:counter-el refs) -style -display) "none"))
+  (update-dots! (:dots-el refs) step-idx total dots?))
 
-            (update-dots! (:dots-el refs) step-idx total (:dots? m))
+(defn- apply-footer-controls! [refs {:keys [prev-label next-label done-label skip-label]}
+                               first? last?]
+  (set! (.-textContent (:prev-btn refs)) prev-label)
+  (set! (.-textContent (:next-btn refs)) (if last? done-label next-label))
+  (set! (.. (:prev-btn refs) -style -visibility) (if first? "hidden" "visible"))
+  (.setAttribute (:close-btn refs) "aria-label" (str skip-label " tour")))
 
-            ;; Button labels and visibility
-            (set! (.-textContent (:prev-btn refs)) (:prev-label m))
-            (set! (.-textContent (:next-btn refs))
-                  (if last? (:done-label m) (:next-label m)))
-            (set! (.. (:prev-btn refs) -style -visibility)
-                  (if first? "hidden" "visible"))
+(defn- apply-open-step! [el refs m]
+  (let [step-els (get-step-els el)
+        total    (.-length step-els)
+        step-idx (model/clamp-step (:step m) total)]
+    (when (pos? total)
+      (let [^js step-el (aget step-els step-idx)
+            step-m      (read-step-model step-el)
+            frame       (derive-frame step-m m refs)]
+        (apply-spotlight!         refs frame)
+        (apply-step-content!      refs step-el step-m)
+        (apply-counter-and-dots!  refs m step-idx total)
+        (apply-footer-controls!   refs m
+                                  (model/first-step? step-idx)
+                                  (model/last-step? step-idx total))))))
 
-            ;; Close button label
-            (.setAttribute (:close-btn refs) "aria-label"
-                          (str (:skip-label m) " tour"))))))
+(defn- render!
+  "Main render function. Reads current state and updates the overlay
+   layer. Phase list of effect helpers. Caches `k-model` at the tail so
+   a throw in any effect leaves the cache pointing at the last
+   successfully applied state (epochal-time rule)."
+  [^js el]
+  (let [m (read-model el)]
+    (if (:open? m)
+      (apply-open-step! el (ensure-layer! el) m)
+      (tear-down-layer! el))
     (du/setv! el k-model m)))
 
 ;; ── Forward declarations ────────────────────────────────────────────────────
