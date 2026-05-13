@@ -5,23 +5,41 @@
             [baredom.utils.overlay :as overlay]
             [goog.object :as gobj]))
 
-;; ---- Instance field keys ----
-
-(def ^:private k-refs     "__xContextMenuRefs")
-(def ^:private k-layer    "__xContextMenuLayer")
+;; ── Instance-field keys ───────────────────────────────────────────────────
+(def ^:private k-refs         "__xContextMenuRefs")
+(def ^:private k-layer        "__xContextMenuLayer")
 (def ^:private k-doc-handlers "__xContextMenuDocH")
+(def ^:private k-anchor       "__xContextMenuAnchor")
+(def ^:private k-model        "__xContextMenuModel")
 
-;; ---- Forward declarations ----
-
+;; ── Forward declarations ──────────────────────────────────────────────────
 (declare close!)
 
-;; ---- DOM helpers ----
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part        "part")
+(def ^:private attr-role        "role")
+(def ^:private attr-tabindex    "tabindex")
+(def ^:private part-panel       "panel")
+(def ^:private role-menu "menu")
+(def ^:private sel-menuitem
+  "[role=menuitem]:not([disabled]):not([aria-disabled=true])")
+(def ^:private sel-menuitem-any "[role=menuitem]")
 
+(def ^:private reason-keyboard     "keyboard")
+(def ^:private reason-backdrop     "backdrop")
+(def ^:private reason-select       "select")
+(def ^:private reason-programmatic "programmatic")
+(def ^:private reason-toggle       "toggle")
+
+(def ^:private margin-px 8)
+(def ^:private panel-est-w 200)
+(def ^:private panel-est-h 300)
+
+;; ── DOM helpers ───────────────────────────────────────────────────────────
 (defn- make-el [tag]
   (.createElement js/document tag))
 
-;; ---- Styles ----
-
+;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private host-style-text
   ":host{display:contents;}slot{display:none;}")
 
@@ -67,8 +85,7 @@
    "[role=menuitem]{color:var(--x-context-menu-item-fg);}"
    "[role=menuitem]:hover{background:var(--x-context-menu-item-hover);}"))
 
-;; ---- Read model ----
-
+;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
    {:open-present?     (when (du/has-attr? el model/attr-open)
@@ -79,14 +96,9 @@
     :offset-raw        (du/get-attr el model/attr-offset)
     :z-index-raw       (du/get-attr el model/attr-z-index)}))
 
-;; ---- Event dispatch ----
-
-;; ---- Overlay root (via shared utility) ----
-
-;; ---- Keyboard navigation in panel ----
-
+;; ── Keyboard navigation in panel ─────────────────────────────────────────
 (defn- menu-items [^js panel]
-  (array-seq (.querySelectorAll panel "[role=menuitem]:not([disabled]):not([aria-disabled=true])")))
+  (array-seq (.querySelectorAll panel sel-menuitem)))
 
 (defn- focus-item! [^js item]
   (when item (.focus item)))
@@ -107,14 +119,13 @@
 (defn- focus-first! [^js panel]
   (focus-item! (first (menu-items panel))))
 
-;; ---- Layer management ----
-
+;; ── Layer management ──────────────────────────────────────────────────────
 (defn- make-layer! [^js el z-index]
   (let [^js layer (overlay/make-layer! el panel-style-text z-index)
         ^js panel (make-el "div")]
-    (.setAttribute panel "part"     "panel")
-    (.setAttribute panel "role"     "menu")
-    (.setAttribute panel "tabindex" "-1")
+    (.setAttribute panel attr-part     part-panel)
+    (.setAttribute panel attr-role     role-menu)
+    (.setAttribute panel attr-tabindex "-1")
     (.appendChild (.-shadowRoot layer) panel)
     layer))
 
@@ -130,16 +141,36 @@
   (doseq [^js child (array-seq (.-children el))]
     (.appendChild panel (.cloneNode child true))))
 
+(defn- viewport-size []
+  {:width (.-innerWidth js/window) :height (.-innerHeight js/window)})
+
+(defn- compute-and-place! [^js layer anchor-rect placement offset panel-size z-index]
+  (let [pos (model/compute-position placement offset anchor-rect panel-size
+                                    (viewport-size) margin-px)]
+    (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))))
+
+(defn- reposition!
+  "Reposition the open layer using stored anchor + latest attribute model."
+  [^js el]
+  (when-let [^js layer (gobj/get el k-layer)]
+    (when-let [anchor (gobj/get el k-anchor)]
+      (let [{:keys [placement offset z-index]} (read-model el)
+            ^js panel (overlay/get-panel layer)
+            panel-size (if panel
+                         {:width (.-offsetWidth panel) :height (.-offsetHeight panel)}
+                         {:width panel-est-w :height panel-est-h})]
+        (compute-and-place! layer anchor placement offset panel-size z-index)))))
+
 (defn- add-layer-listeners! [^js el ^js layer]
   (let [^js panel (overlay/get-panel layer)
 
         on-key
-        (fn [^js ev]
+        (fn on-layer-keydown [^js ev]
           (let [key (.-key ev)
                 ^js focused (.-activeElement (.-shadowRoot layer))]
             (cond
               (= key "Tab")
-              (close! el "keyboard")
+              (close! el reason-keyboard)
 
               (= key "ArrowDown")
               (do (.preventDefault ev)
@@ -159,39 +190,38 @@
                 (.click focused)))))
 
         on-item-click
-        (fn [^js ev]
+        (fn on-panel-click [^js ev]
           (.stopPropagation ev)
           (let [^js target (.-target ev)
-                ^js item   (.closest target "[role=menuitem]")]
+                ^js item   (.closest target sel-menuitem-any)]
             (when item
               (du/dispatch! el model/event-select #js {:item item})
-              (close! el "select"))))]
+              (close! el reason-select))))]
 
     (overlay/attach-listener! layer layer "keydown" on-key true)
     (when panel
       (overlay/attach-listener! layer panel "click" on-item-click false))))
 
-;; ---- Document-level listeners (Escape + click-outside) ----
-
+;; ── Document-level listeners (Escape + click-outside) ────────────────────
 (defn- add-doc-listeners! [^js el]
   (let [on-doc-keydown
-        (fn [^js ev]
+        (fn handle-doc-keydown [^js ev]
           (when (= (.-key ev) "Escape")
             (.preventDefault ev)
-            (close! el "keyboard")))
+            (close! el reason-keyboard)))
 
         on-doc-click
-        (fn [^js ev]
+        (fn handle-doc-click [^js ev]
           (when-let [^js lyr (gobj/get el k-layer)]
             (let [^js panel (overlay/get-panel lyr)
                   path      (.composedPath ev)
                   inside?   (some #(identical? % panel) (array-seq path))]
               (when (and panel (not inside?))
-                (close! el "backdrop")))))]
+                (close! el reason-backdrop)))))]
 
     ;; Delay by one tick so the opening click/contextmenu does not immediately close
     (js/setTimeout
-     (fn []
+     (fn delayed-add-doc-listeners []
        (when (du/has-attr? el model/attr-open)
          (.addEventListener js/document "keydown" on-doc-keydown)
          (.addEventListener js/document "click"   on-doc-click)
@@ -208,8 +238,7 @@
 (defn- remove-layer! [^js layer]
   (overlay/remove-layer! layer))
 
-;; ---- close! ----
-
+;; ── close! ────────────────────────────────────────────────────────────────
 (defn- close! [^js el reason]
   (when (du/has-attr? el model/attr-open)
     (let [proceed? (du/dispatch-cancelable! el model/event-close-request #js {:reason reason})]
@@ -219,158 +248,139 @@
         (let [^js layer (gobj/get el k-layer)]
           (remove-layer! layer)
           (gobj/set el k-layer nil))
+        (gobj/set el k-anchor nil)
+        (gobj/set el k-model nil)
         (du/dispatch! el model/event-close #js {:reason reason})))))
 
-;; ---- open! ----
-
-(defn- open-at-coords! [^js el x y reason]
+;; ── open! ─────────────────────────────────────────────────────────────────
+(defn- open-with-anchor-rect!
+  "Shared open path: place a layer for the given anchor rect, install listeners,
+   and dispatch open-request / open events."
+  [^js el anchor-rect reason]
   (when-not (du/has-attr? el model/attr-disabled)
     (let [proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
       (when proceed?
-        (let [m           (read-model el)
-              {:keys [placement offset z-index]} m
-              vw          (.-innerWidth js/window)
-              vh          (.-innerHeight js/window)
-              ;; Use a 1x1 anchor at the coordinate
-              anchor-rect {:x x :y y :width 1 :height 1}
-              ;; Estimate panel size (will be corrected after render)
-              panel-est   {:width 200 :height 300}
-              pos         (model/compute-position
-                           placement offset anchor-rect panel-est
-                           {:width vw :height vh} 8)
-              ^js layer   (make-layer! el z-index)]
-
-          (clone-children-to-panel! el (overlay/get-panel layer))
-          (add-layer-listeners! el layer)
-          (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
-
-          (du/set-attr! el model/attr-open "")
-          (gobj/set el k-layer layer)
-          (add-doc-listeners! el)
-
-          ;; Re-position after actual panel dimensions are known
-          (js/requestAnimationFrame
-           (fn []
-             (let [^js panel (overlay/get-panel layer)]
-               (when panel
-                 (let [pw  (.-offsetWidth panel)
-                       ph  (.-offsetHeight panel)
-                       pos2 (model/compute-position
-                              placement offset anchor-rect
-                              {:width pw :height ph}
-                              {:width vw :height vh} 8)]
-                   (position-layer! layer (:x pos2) (:y pos2) (assoc pos2 :z-index z-index)))
-                 (focus-first! panel)))))
-
-          (du/dispatch! el model/event-open #js {:reason reason}))))))
-
-(defn- open-for-element! [^js el ^js anchor-el reason]
-  (when-not (du/has-attr? el model/attr-disabled)
-    (let [^js rect (.getBoundingClientRect anchor-el)
-          m        (read-model el)
-          {:keys [placement offset z-index]} m
-          vw       (.-innerWidth js/window)
-          vh       (.-innerHeight js/window)
-          anchor   {:x (.-left rect) :y (.-top rect)
-                    :width (.-width rect) :height (.-height rect)}
-          proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
-      (when proceed?
-        (let [panel-est {:width 200 :height 300}
-              pos       (model/compute-position
-                         placement offset anchor panel-est {:width vw :height vh} 8)
+        (let [{:keys [placement offset z-index] :as m} (read-model el)
               ^js layer (make-layer! el z-index)]
 
           (clone-children-to-panel! el (overlay/get-panel layer))
           (add-layer-listeners! el layer)
-          (position-layer! layer (:x pos) (:y pos) (assoc pos :z-index z-index))
+          (compute-and-place! layer anchor-rect placement offset
+                              {:width panel-est-w :height panel-est-h} z-index)
 
           (du/set-attr! el model/attr-open "")
-          (gobj/set el k-layer layer)
+          (gobj/set el k-layer  layer)
+          (gobj/set el k-anchor anchor-rect)
+          (gobj/set el k-model  m)
           (add-doc-listeners! el)
 
+          ;; Re-position after actual panel dimensions are known
           (js/requestAnimationFrame
-           (fn []
+           (fn refine-position []
              (let [^js panel (overlay/get-panel layer)]
                (when panel
-                 (let [pw  (.-offsetWidth panel)
-                       ph  (.-offsetHeight panel)
-                       pos2 (model/compute-position
-                              placement offset anchor
-                              {:width pw :height ph}
-                              {:width vw :height vh} 8)]
-                   (position-layer! layer (:x pos2) (:y pos2) (assoc pos2 :z-index z-index)))
-                 (focus-first! panel)))))
+                 (let [panel-size {:width (.-offsetWidth panel) :height (.-offsetHeight panel)}]
+                   (compute-and-place! layer anchor-rect placement offset panel-size z-index)))
+               (when panel (focus-first! panel)))))
 
           (du/dispatch! el model/event-open #js {:reason reason}))))))
 
-;; ---- Shadow DOM creation ----
+(defn- open-at-coords! [^js el x y reason]
+  (open-with-anchor-rect! el {:x x :y y :width 1 :height 1} reason))
 
+(defn- open-for-element! [^js el ^js anchor-el reason]
+  (let [^js rect (.getBoundingClientRect anchor-el)]
+    (open-with-anchor-rect!
+     el
+     {:x (.-left rect) :y (.-top rect)
+      :width (.-width rect) :height (.-height rect)}
+     reason)))
+
+;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
-  (let [^js root    (.attachShadow el #js {:mode "open"})
-        ^js style   (make-el "style")
-        ^js slot    (make-el "slot")]
+  (let [^js root  (.attachShadow el #js {:mode "open"})
+        ^js style (make-el "style")
+        ^js slot  (make-el "slot")
+        refs      #js {}]
 
     (set! (.-textContent style) host-style-text)
     (.appendChild root style)
     (.appendChild root slot)
 
-    (let [refs #js {}]
-      (gobj/set refs "root" root)
-      (gobj/set refs "slot" slot)
-      (gobj/set el k-refs refs))))
+    (gobj/set refs "root" root)
+    (gobj/set refs "slot" slot)
+    (gobj/set el k-refs refs)))
 
-;; ---- Lifecycle ----
-
+;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-refs)
     (make-shadow! el))
-  ;; If open attr was already set (e.g. SSR), sync visual state
+  ;; If open attr was already set (e.g. SSR), the layer was not created yet.
+  ;; Clear the attribute so subsequent open() calls work correctly.
   (when (du/has-attr? el model/attr-open)
-    ;; Re-opening: the layer was not created yet (first connect), clear attr
     (du/remove-attr! el model/attr-open)))
 
 (defn- disconnected! [^js el]
   (let [^js layer (gobj/get el k-layer)]
     (when layer
       (remove-layer! layer)
-      (gobj/set el k-layer nil))))
+      (gobj/set el k-layer nil)
+      (gobj/set el k-anchor nil)
+      (gobj/set el k-model nil))))
 
-(defn- attribute-changed! [^js el name _old _new]
-  ;; If open attr removed externally, close the layer
-  (when (= name model/attr-open)
-    (when-not (du/has-attr? el model/attr-open)
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+    (cond
+      ;; open attribute removed externally → tear down layer
+      (and (= attr-name model/attr-open)
+           (not (du/has-attr? el model/attr-open)))
       (let [^js layer (gobj/get el k-layer)]
         (when layer
+          (remove-doc-listeners! el)
           (remove-layer! layer)
-          (gobj/set el k-layer nil))))))
+          (gobj/set el k-layer nil)
+          (gobj/set el k-anchor nil)
+          (gobj/set el k-model nil)))
 
-;; ---- Public methods ----
+      ;; placement / offset / z-index changed while open → reposition
+      (and (gobj/get el k-layer)
+           (or (= attr-name model/attr-placement)
+               (= attr-name model/attr-offset)
+               (= attr-name model/attr-z-index)))
+      (let [new-m (read-model el)]
+        (when (not= new-m (gobj/get el k-model))
+          (reposition! el)
+          (gobj/set el k-model new-m))))))
 
+;; ── Public methods (Tier-2 .defineProperty migration) ────────────────────
 (defn- define-methods! [^js proto]
-  (aset proto "openAt"
-        (fn [x y]
-          (this-as ^js this
-                   (open-at-coords! this x y "programmatic"))))
+  (.defineProperty js/Object proto "openAt"
+    #js {:value (fn xcm-open-at [x y]
+                  (this-as ^js this
+                    (open-at-coords! this x y reason-programmatic)))
+         :writable true :configurable true})
 
-  (aset proto "toggleAt"
-        (fn [x y]
-          (this-as ^js this
-                   (if (.hasAttribute this model/attr-open)
-                     (close! this "toggle")
-                     (open-at-coords! this x y "toggle")))))
+  (.defineProperty js/Object proto "toggleAt"
+    #js {:value (fn xcm-toggle-at [x y]
+                  (this-as ^js this
+                    (if (.hasAttribute this model/attr-open)
+                      (close! this reason-toggle)
+                      (open-at-coords! this x y reason-toggle))))
+         :writable true :configurable true})
 
-  (aset proto "openForElement"
-        (fn [^js anchor-el]
-          (this-as ^js this
-                   (open-for-element! this anchor-el "programmatic"))))
+  (.defineProperty js/Object proto "openForElement"
+    #js {:value (fn xcm-open-for-element [^js anchor-el]
+                  (this-as ^js this
+                    (open-for-element! this anchor-el reason-programmatic)))
+         :writable true :configurable true})
 
-  (aset proto "close"
-        (fn []
-          (this-as ^js this
-                   (close! this "programmatic")))))
+  (.defineProperty js/Object proto "close"
+    #js {:value (fn xcm-close []
+                  (this-as ^js this
+                    (close! this reason-programmatic)))
+         :writable true :configurable true}))
 
-;; ---- Element class + registration ----
-
+;; ── Element class + registration ──────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
   (define-methods!        proto))
