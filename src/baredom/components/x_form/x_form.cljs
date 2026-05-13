@@ -1,23 +1,47 @@
 (ns baredom.components.x-form.x-form
-  (:require [baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-            [goog.object :as gobj]
-            [baredom.components.x-form.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-form.model :as model]))
 
-;; ---------------------------------------------------------------------------
-;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
-;; ---------------------------------------------------------------------------
+;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xFormRefs")
+(def ^:private k-model    "__xFormModel")
 (def ^:private k-handlers "__xFormHandlers")
 
-;; ---------------------------------------------------------------------------
-;; Style
-;; ---------------------------------------------------------------------------
+;; ── Refs / handler / string-literal constants ─────────────────────────────
+(def ^:private rk-form "form")
+
+(def ^:private hk-submit "submit")
+(def ^:private hk-reset  "reset")
+(def ^:private hk-click  "click")
+
+(def ^:private attr-part         "part")
+(def ^:private attr-novalidate   "novalidate")
+(def ^:private attr-autocomplete "autocomplete")
+(def ^:private attr-aria-busy    "aria-busy")
+(def ^:private attr-data-loading "data-loading")
+(def ^:private attr-error        "error")
+
+(def ^:private part-root "root")
+
+(def ^:private val-true "true")
+
+(def ^:private ev-submit "submit")
+(def ^:private ev-reset  "reset")
+(def ^:private ev-click  "click")
+
+;; Selectors — extracted because they're constructed once and referenced twice.
+(def ^:private sel-named-enabled "[name]:not([disabled])")
+(def ^:private sel-named         "[name]")
+(def ^:private sel-error         "[error]")
+(def ^:private sel-button        "button,input[type=submit],input[type=reset]")
+
+;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
-   ":host{"
-   "display:block;"
-   "}"
+   ":host{display:block;}"
    "[part=root]{"
    "display:flex;"
    "flex-direction:column;"
@@ -26,60 +50,62 @@
    "}"
    ":host([loading]){pointer-events:none;opacity:0.6;}"))
 
-;; ---------------------------------------------------------------------------
-;; DOM helpers
-;; ---------------------------------------------------------------------------
+;; ── DOM helpers ───────────────────────────────────────────────────────────
 (defn- make-el [tag] (.createElement js/document tag))
 
-;; ---------------------------------------------------------------------------
-;; Shadow DOM construction
-;; ---------------------------------------------------------------------------
+;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (when-not (.-shadowRoot el)
     (let [root     (.attachShadow el #js {:mode "open"})
           style-el (make-el "style")
           form-el  (make-el "form")
-          slot-el  (make-el "slot")]
+          slot-el  (make-el "slot")
+          refs     #js {}]
 
       (set! (.-textContent style-el) style-text)
 
-      (du/set-attr! form-el "part"       "root")
-      (du/set-attr! form-el "novalidate" "")
+      (du/set-attr! form-el attr-part       part-root)
+      (du/set-attr! form-el attr-novalidate "")
 
       (.appendChild form-el slot-el)
       (.appendChild root style-el)
       (.appendChild root form-el)
 
-      (gobj/set el k-refs #js {:form form-el}))))
+      (gobj/set refs rk-form form-el)
+      (gobj/set el k-refs refs))))
 
-;; ---------------------------------------------------------------------------
-;; Read element state from attributes
-;; ---------------------------------------------------------------------------
+;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
    {:loading-raw      (du/get-attr el model/attr-loading)
     :novalidate-raw   (when (du/has-attr? el model/attr-novalidate) "")
     :autocomplete-raw (du/get-attr el model/attr-autocomplete)}))
 
-;; ---------------------------------------------------------------------------
-;; Render
-;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (let [^js form-el (gobj/get refs "form")
-          m           (read-model el)]
-      (du/set-attr! form-el "autocomplete" (:autocomplete m))
-      (if (:loading? m)
-        (do (du/set-attr! form-el "aria-busy"     "true")
-            (du/set-attr! form-el "data-loading"  ""))
-        (do (du/remove-attr! form-el "aria-busy")
-            (du/remove-attr! form-el "data-loading"))))))
+;; ── DOM patching ──────────────────────────────────────────────────────────
+(defn- apply-form-attrs! [^js form-el {:keys [autocomplete loading?]}]
+  (du/set-attr! form-el attr-autocomplete autocomplete)
+  (if loading?
+    (do (du/set-attr! form-el attr-aria-busy     val-true)
+        (du/set-attr! form-el attr-data-loading  ""))
+    (do (du/remove-attr! form-el attr-aria-busy)
+        (du/remove-attr! form-el attr-data-loading))))
 
-;; ---------------------------------------------------------------------------
-;; Validation
-;; ---------------------------------------------------------------------------
+(defn- apply-model! [^js el m]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js form-el (gobj/get refs rk-form)]
+      (apply-form-attrs! form-el m)
+      (gobj/set el k-model m))))
+
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
+
+;; ── Validation ────────────────────────────────────────────────────────────
 (defn- report-fields-validity! [^js el]
-  (let [fields (.querySelectorAll el "[name]:not([disabled])")
+  (let [fields (.querySelectorAll el sel-named-enabled)
         result #js {:ok true}]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)]
@@ -88,11 +114,9 @@
             (aset result "ok" false)))))
     (aget result "ok")))
 
-;; ---------------------------------------------------------------------------
-;; Value collection
-;; ---------------------------------------------------------------------------
+;; ── Value collection ──────────────────────────────────────────────────────
 (defn- collect-values [^js el]
-  (let [fields (.querySelectorAll el "[name]:not([disabled])")
+  (let [fields (.querySelectorAll el sel-named-enabled)
         result (js/Object.)]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)
@@ -109,13 +133,8 @@
               (aset result field-name (or (.-value field) "")))))))
     result))
 
-;; ---------------------------------------------------------------------------
-;; Event dispatch
-;; ---------------------------------------------------------------------------
-;; ---------------------------------------------------------------------------
-;; Event handlers
-;; ---------------------------------------------------------------------------
-(defn- handle-submit! [^js el ^js e]
+;; ── Event handlers ────────────────────────────────────────────────────────
+(defn- on-submit [^js el ^js e]
   (.preventDefault e)
   (let [m (read-model el)]
     (when-not (:loading? m)
@@ -124,103 +143,116 @@
           (let [values (collect-values el)]
             (du/dispatch-cancelable! el model/event-submit #js {:values values})))))))
 
-(defn- handle-reset! [^js el ^js _e]
-  (let [fields (.querySelectorAll el "[name]")]
+(defn- on-reset [^js el ^js _e]
+  (let [fields (.querySelectorAll el sel-named)]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)]
         (when (.-formResetCallback field)
           (.formResetCallback field)))))
   (du/dispatch! el model/event-reset #js {}))
 
-(defn- handle-click! [^js el ^js e]
-  (when-let [^js btn (.closest (.-target e) "button,input[type=submit],input[type=reset]")]
+(defn- on-click [^js el ^js e]
+  (when-let [^js btn (.closest (.-target e) sel-button)]
     (let [btn-type (.-type btn)]
       (when-let [refs (gobj/get el k-refs)]
-        (let [^js form-el (gobj/get refs "form")]
+        (let [^js form-el (gobj/get refs rk-form)]
           (cond
             (or (= btn-type "submit") (= btn-type ""))
             (.requestSubmit form-el)
             (= btn-type "reset")
             (.reset form-el)))))))
 
-;; ---------------------------------------------------------------------------
-;; Listener management
-;; ---------------------------------------------------------------------------
+;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js form-el (gobj/get refs "form")
-          submit-h    (fn [^js e] (handle-submit! el e))
-          reset-h     (fn [^js e] (handle-reset! el e))
-          click-h     (fn [^js e] (handle-click! el e))]
-      (.addEventListener form-el "submit" submit-h)
-      (.addEventListener form-el "reset"  reset-h)
-      (.addEventListener el      "click"  click-h)
-      (gobj/set el k-handlers #js {:submit submit-h :reset reset-h :click click-h}))))
+    (let [^js form-el (gobj/get refs rk-form)
+          submit-h    (fn handle-form-submit [e] (on-submit el e))
+          reset-h     (fn handle-form-reset  [e] (on-reset  el e))
+          click-h     (fn handle-host-click  [e] (on-click  el e))
+          handlers    #js {}]
+      (.addEventListener form-el ev-submit submit-h)
+      (.addEventListener form-el ev-reset  reset-h)
+      (.addEventListener el      ev-click  click-h)
+      (gobj/set handlers hk-submit submit-h)
+      (gobj/set handlers hk-reset  reset-h)
+      (gobj/set handlers hk-click  click-h)
+      (gobj/set el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
+  (when-let [refs (gobj/get el k-refs)]
     (when-let [handlers (gobj/get el k-handlers)]
-      (let [^js form-el (gobj/get refs "form")]
-        (.removeEventListener form-el "submit" (gobj/get handlers "submit"))
-        (.removeEventListener form-el "reset"  (gobj/get handlers "reset"))
-        (.removeEventListener el      "click"  (gobj/get handlers "click")))
+      (let [^js form-el (gobj/get refs rk-form)]
+        (.removeEventListener form-el ev-submit (gobj/get handlers hk-submit))
+        (.removeEventListener form-el ev-reset  (gobj/get handlers hk-reset))
+        (.removeEventListener el      ev-click  (gobj/get handlers hk-click)))
       (gobj/set el k-handlers nil))))
 
-;; ---------------------------------------------------------------------------
-;; Lifecycle
-;; ---------------------------------------------------------------------------
+;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (make-shadow! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new-val]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
-;; ---------------------------------------------------------------------------
-;; Property helpers
-;; ---------------------------------------------------------------------------
-;; ---------------------------------------------------------------------------
-;; Element class and registration
-;; ---------------------------------------------------------------------------
+;; ── Public methods ────────────────────────────────────────────────────────
+(defn- form-of [^js this]
+  (when-let [refs (gobj/get this k-refs)]
+    (gobj/get refs rk-form)))
+
+(defn- set-field-error! [^js this field-name msg]
+  (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
+    (if (or (nil? msg) (= msg "") (= msg js/undefined))
+      (du/remove-attr! field attr-error)
+      (du/set-attr! field attr-error msg))))
+
+(defn- clear-errors! [^js this]
+  (let [fields (.querySelectorAll this sel-error)]
+    (dotimes [i (.-length fields)]
+      (du/remove-attr! (aget fields i) attr-error))))
+
+(defn- install-methods! [^js proto]
+  ;; .defineProperty with a :value descriptor — same Tier-2 idiom adopted
+  ;; in x-cancel-dialogue, x-alert, x-collapse, x-combobox. Bare `aset`
+  ;; on the prototype was audited out of x-button in PR #155 and the
+  ;; rest of the components in PRs #160-#162.
+  (.defineProperty js/Object proto "submit"
+                   #js {:value (fn xf-submit []
+                                 (this-as ^js this
+                                   (when-let [^js form-el (form-of this)]
+                                     (.requestSubmit form-el))))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "reset"
+                   #js {:value (fn xf-reset []
+                                 (this-as ^js this
+                                   (when-let [^js form-el (form-of this)]
+                                     (.reset form-el))))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "setFieldError"
+                   #js {:value (fn xf-set-field-error [field-name msg]
+                                 (this-as ^js this
+                                   (set-field-error! this field-name msg)))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "clearErrors"
+                   #js {:value (fn xf-clear-errors []
+                                 (this-as ^js this (clear-errors! this)))
+                        :writable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
-  ;; Methods
-  (aset proto "submit"
-        (fn []
-          (this-as ^js this
-                   (when-let [refs (gobj/get this k-refs)]
-                     (let [^js form-el (gobj/get refs "form")]
-                       (.requestSubmit form-el))))))
-  (aset proto "reset"
-        (fn []
-          (this-as ^js this
-                   (when-let [refs (gobj/get this k-refs)]
-                     (let [^js form-el (gobj/get refs "form")]
-                       (.reset form-el))))))
-  (aset proto "setFieldError"
-        (fn [field-name msg]
-          (this-as ^js this
-                   (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
-                     (if (or (nil? msg) (= msg "") (= msg js/undefined))
-                       (du/remove-attr! field "error")
-                       (du/set-attr! field "error" msg))))))
-  (aset proto "clearErrors"
-        (fn []
-          (this-as ^js this
-                   (let [fields (.querySelectorAll this "[error]")]
-                     (dotimes [i (.-length fields)]
-                       (du/remove-attr! (aget fields i) "error")))))))
+  (install-methods! proto))
 
+;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
