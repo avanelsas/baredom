@@ -161,4 +161,4 @@
   [src]
   {:src (or src "")})
 
-(def method-api nil)
+(def method-api {})

@@ -116,8 +116,7 @@
     (gobj/set el k-backdrop backdrop)
     (gobj/set el k-slot     slot-el)
     (gobj/set el k-blobs    #js [])
-    (gobj/set el k-initialized true))
-  nil)
+    (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -217,32 +216,28 @@
     (reconcile-blobs! el state)
 
     ;; Accessibility
-    (update-a11y! el slot-el))
-  nil)
+    (update-a11y! el slot-el)))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
   (let [^js slot-el (gobj/get el k-slot)
-        handler (fn [] (update-a11y! el slot-el))]
+        handler     (fn handle-slotchange [] (update-a11y! el slot-el))]
     (gobj/set el k-slotchange handler)
     (.addEventListener slot-el "slotchange" handler))
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- disconnected! [^js el]
   (let [^js slot-el (gobj/get el k-slot)
         handler     (gobj/get el k-slotchange)]
     (when (and slot-el handler)
-      (.removeEventListener slot-el "slotchange" handler)))
-  nil)
+      (.removeEventListener slot-el "slotchange" handler))))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

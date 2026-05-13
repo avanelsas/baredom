@@ -12,7 +12,7 @@
 (def ^:private k-detected-platform "__xKbdDetectedPlatform")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-flex;"
@@ -108,8 +108,7 @@
     (.setAttribute base "part" "base")
     (.appendChild root style)
     (.appendChild root base)
-    (gobj/set el k-refs #js {:base base}))
-  nil)
+    (gobj/set el k-refs #js {:base base})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -175,15 +174,13 @@
     (du/set-attr! el "data-size" size)
     (apply-host-aria! el label)
     (render-base! base m)
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -193,13 +190,11 @@
 (defn- connected! [^js el]
   (ensure-refs! el)
   (ensure-detected-platform! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 (defn init! []

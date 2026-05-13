@@ -1,7 +1,7 @@
 (ns baredom.components.x-image.x-image
   (:require
-[baredom.utils.component :as component]
-               [baredom.components.x-image.model :as model]
+   [baredom.utils.component :as component]
+   [baredom.components.x-image.model :as model]
    [baredom.utils.dom :as du]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set via du) ──────────────────────────
@@ -16,7 +16,7 @@
 (def ^:private data-state-attr "data-state")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -159,8 +159,7 @@
                :shimmer    shimmer
                :img        img
                :error-box  error-box
-               :error-slot error-slot}))
-  nil)
+               :error-slot error-slot})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -170,8 +169,7 @@
 ;; ── Host state helpers ───────────────────────────────────────────────────────
 (defn- set-host-state! [^js el state-str]
   (du/setv! el k-state state-str)
-  (du/set-attr! el data-state-attr state-str)
-  nil)
+  (du/set-attr! el data-state-attr state-str))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -187,12 +185,10 @@
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-load! [^js el src natural-w natural-h]
-  (du/dispatch! el model/event-load (clj->js (model/load-detail src natural-w natural-h)))
-  nil)
+  (du/dispatch! el model/event-load (clj->js (model/load-detail src natural-w natural-h))))
 
 (defn- dispatch-error! [^js el src]
-  (du/dispatch! el model/event-error (clj->js (model/error-detail src)))
-  nil)
+  (du/dispatch! el model/event-error (clj->js (model/error-detail src))))
 
 ;; ── Image load / error handling ──────────────────────────────────────────────
 (defn- on-img-load [^js el]
@@ -206,8 +202,7 @@
       (let [attr-src (.getAttribute img "src")]
         (when (= attr-src expected)
           (set-host-state! el model/state-loaded)
-          (dispatch-load! el expected (.-naturalWidth img) (.-naturalHeight img))))))
-  nil)
+          (dispatch-load! el expected (.-naturalWidth img) (.-naturalHeight img)))))))
 
 (defn- on-img-error [^js el]
   (let [{:keys [img]} (du/getv el k-refs)
@@ -217,8 +212,7 @@
       (let [attr-src (.getAttribute img "src")]
         (when (= attr-src expected)
           (set-host-state! el model/state-error)
-          (dispatch-error! el expected)))))
-  nil)
+          (dispatch-error! el expected))))))
 
 (defn- set-img-src! [^js el new-src]
   (let [{:keys [img]} (du/getv el k-refs)
@@ -234,15 +228,13 @@
           (.setAttribute img "src" new-src))
         (do
           (.removeAttribute img "src")
-          (set-host-state! el model/state-loading)))))
-  nil)
+          (set-host-state! el model/state-loading))))))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- warn-once! [^js el key msg]
   (when-not (du/getv el key)
     (du/setv! el key true)
-    (js/console.warn msg))
-  nil)
+    (js/console.warn msg)))
 
 (defn- apply-model! [^js el m]
   (let [{:keys [frame img error-box]} (ensure-refs! el)
@@ -290,15 +282,13 @@
     (when src-changed?
       (set-img-src! el (:src m)))
 
-    (du/setv! el k-model m))
-  nil)
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -308,8 +298,7 @@
         err-h   (fn [_e] (on-img-error el))]
     (.addEventListener img "load" load-h)
     (.addEventListener img "error" err-h)
-    (du/setv! el k-handlers {:load load-h :error err-h}))
-  nil)
+    (du/setv! el k-handlers {:load load-h :error err-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (du/getv el k-handlers)
@@ -320,8 +309,7 @@
             err-h   (:error hs)]
         (when load-h (.removeEventListener img "load" load-h))
         (when err-h  (.removeEventListener img "error" err-h)))))
-  (du/setv! el k-handlers nil)
-  nil)
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 ;; Strings here use stricter empty-string semantics: setting to "" removes the
@@ -379,18 +367,15 @@
   (remove-listeners! el)
   (add-listeners! el)
   (when (nil? (du/getv el k-state))
-  (set-host-state! el model/state-loading))
-  (update-from-attrs! el)
-  nil)
+    (set-host-state! el model/state-loading))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

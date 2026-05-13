@@ -134,14 +134,12 @@
     (du/setv! el k-refs
               {:root   root
                :canvas canvas
-               :ctx    (.getContext canvas "2d")}))
-  nil)
+               :ctx    (.getContext canvas "2d")})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
       (do (init-dom! el)
-          (du/getv el k-refs)))
-  nil)
+          (du/getv el k-refs))))
 
 ;; ── Entity management ───────────────────────────────────────────────────────
 
@@ -237,21 +235,18 @@
 
       ;; Schedule next frame
       (du/setv! el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
     (du/setv! el k-lf (js/performance.now))
     (du/setv! el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil))
-  nil)
+    (du/setv! el k-raf nil)))
 
 ;; ── Observers ───────────────────────────────────────────────────────────────
 
@@ -269,8 +264,7 @@
         (create-entities! el)
         (if (or (:paused? (du/getv el k-model)) (reduced-motion? el))
           (render-frame! el)
-          (start-animation! el)))))
-  nil)
+          (start-animation! el))))))
 
 (defn- on-intersection [^js el ^js entries]
   (let [^js entry  (aget entries 0)
@@ -280,8 +274,7 @@
       (if is-visible
         (when-not (or (:paused? m) (reduced-motion? el))
           (start-animation! el))
-        (stop-animation! el))))
-  nil)
+        (stop-animation! el)))))
 
 (defn- on-motion-change! [^js el ^js e]
   (let [reduced (.-matches e)]
@@ -309,8 +302,7 @@
   (let [ro (js/ResizeObserver.
             (fn [^js entries] (on-resize! el entries)))]
     (.observe ro el)
-    (du/setv! el k-ro ro))
-  nil)
+    (du/setv! el k-ro ro)))
 
 (defn- teardown-observers! [^js el]
   (when-let [^js mql-obj (du/getv el k-mql)]
@@ -323,8 +315,7 @@
     (du/setv! el k-io nil))
   (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (du/setv! el k-ro nil))
-  nil)
+    (du/setv! el k-ro nil)))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 
@@ -347,8 +338,7 @@
           (do (stop-animation! el)
               (render-frame! el))
           (do (render-frame! el)
-              (start-animation! el))))))
-  nil)
+              (start-animation! el)))))))
 
 ;; ── Lifecycle callbacks ─────────────────────────────────────────────────────
 
@@ -358,20 +348,17 @@
     (du/setv! el k-time 0.0)
     (du/setv! el k-visible true)
     (ensure-refs! el)
-    (setup-observers! el))
-  nil)
+    (setup-observers! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (teardown-observers! el)
-  (du/setv! el k-visible false)
-  nil)
+  (du/setv! el k-visible false))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (du/getv el k-refs)
-      (update-from-attrs! el)))
-  nil)
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 
