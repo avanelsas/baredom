@@ -164,4 +164,4 @@
      :mirror     (normalize-boolean mirror)
      :animation  effective-anim}))
 
-(def method-api nil)
+(def method-api {})

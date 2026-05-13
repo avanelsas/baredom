@@ -1,9 +1,8 @@
 (ns baredom.components.x-navbar.x-navbar
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-navbar.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-navbar.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs          "__xNavbarRefs")

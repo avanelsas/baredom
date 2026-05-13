@@ -138,4 +138,4 @@
   {event-change-request {:cancelable true :detail {:page 'number :previousPage 'number}}
    event-page-change    {:detail {:page 'number}}})
 
-(def method-api nil)
+(def method-api {})

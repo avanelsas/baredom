@@ -289,4 +289,4 @@ void main() {
     gl_FragColor = vec4(color, u_opacity);
 }"))
 
-(def method-api nil)
+(def method-api {})

@@ -1,9 +1,8 @@
 (ns baredom.components.x-organic-progress.x-organic-progress
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-organic-progress.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-organic-progress.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs          "__xOrganicProgressRefs")
@@ -141,8 +140,7 @@
                         :svg        svg
                         :branches-g branches-g
                         :nodes-g    nodes-g
-                        :blooms-g   blooms-g}))))
-  nil)
+                        :blooms-g   blooms-g})))))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -207,8 +205,7 @@
         (recur (inc i))))
 
     (gobj/set el k-lines new-lines)
-    (gobj/set el k-prev-visible -1))
-  nil)
+    (gobj/set el k-prev-visible -1)))
 
 (defn- update-filter-for-variant!
   "Enable gooey filter for vine, disable for honeycomb (keep lines crisp)."
@@ -224,8 +221,7 @@
         (.setAttribute branches-g "filter" "url(#x-organic-progress-gooey)")))
     ;; Adjust blur for vine
     (when (and blur-el (not honeycomb?))
-      (.setAttribute blur-el "stdDeviation" "2")))
-  nil)
+      (.setAttribute blur-el "stdDeviation" "2"))))
 
 (defn- clear-nodes!
   "Remove all lattice node circles."
@@ -240,8 +236,7 @@
             (.removeChild nodes-g c))))))
   (gobj/set el k-node-els nil)
   (gobj/set el k-node-data nil)
-  (gobj/set el k-node-count 0)
-  nil)
+  (gobj/set el k-node-count 0))
 
 (defn- regenerate-segments!
   "Regenerate segments and reconcile SVG elements."
@@ -306,8 +301,7 @@
             (.setAttribute line "stroke-width" (str w))
             (set! (.. line -style -stroke) color)
             (.setAttribute line "stroke-linecap" "round")
-            (.setAttribute line "stroke-opacity" "1")))))
-  nil)
+            (.setAttribute line "stroke-opacity" "1"))))))
 
 ;; ── Segment rendering (progressive reveal) ─────────────────────────────────
 
@@ -338,8 +332,7 @@
                 (when c
                   (.setAttribute c "opacity"
                                  (if (< i visible-nodes) "1" "0"))))))))
-      (gobj/set el k-prev-visible visible-count)))
-  nil)
+      (gobj/set el k-prev-visible visible-count))))
 
 ;; ── Bloom effect ────────────────────────────────────────────────────────────
 
@@ -375,8 +368,7 @@
             (.push bloom-els circle)))))
     (gobj/set el k-bloom-els bloom-els)
     (gobj/set el k-bloom-active true)
-    (gobj/set el k-bloom-time 0.0))
-  nil)
+    (gobj/set el k-bloom-time 0.0)))
 
 (defn- finish-bloom! [^js el]
   (let [{:keys [blooms-g]} (gobj/get el k-refs)
@@ -391,8 +383,7 @@
     (gobj/set el k-bloom-els nil)
     (gobj/set el k-bloom-active false)
     ;; Dispatch bloom-end event
-    (du/dispatch! el model/event-bloom-end #js {:progress 100}))
-  nil)
+    (du/dispatch! el model/event-bloom-end #js {:progress 100})))
 
 (defn- update-bloom! [^js el dt]
   (let [bloom-time (+ (gobj/get el k-bloom-time) dt)
@@ -413,8 +404,7 @@
             (.setAttribute c "r" (str (* scale 2.5)))
             (.setAttribute c "opacity" (str opacity))
             (.setAttribute c "transform"
-                           (str "translate(" dx "," dy ")")))))))
-  nil)
+                           (str "translate(" dx "," dy ")"))))))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 
@@ -463,8 +453,7 @@
 
       ;; Schedule next frame
       (gobj/set el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (gobj/set el k-time 0.0)
@@ -475,14 +464,12 @@
   (gobj/set el k-bloom-active false)
   (gobj/set el k-prev-visible -1)
   (gobj/set el k-raf
-            (js/requestAnimationFrame (fn [_] (animate! el))))
-  nil)
+            (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Static render (for reduced motion) ─────────────────────────────────────
 
@@ -511,8 +498,7 @@
     ;; Fire completion for static mode
     (when (and (:complete? m) (not (gobj/get el k-completed)))
       (gobj/set el k-completed true)
-      (du/dispatch! el model/event-complete #js {:progress 100})))
-  nil)
+      (du/dispatch! el model/event-complete #js {:progress 100}))))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 
@@ -529,8 +515,7 @@
         (du/set-attr! el "aria-valuetext" (:aria-valuetext m))))
   (if-let [label (:label m)]
     (du/set-attr! el "aria-label" label)
-    (du/remove-attr! el "aria-label"))
-  nil)
+    (du/remove-attr! el "aria-label")))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 
@@ -550,8 +535,7 @@
       ;; Re-render current state
       (gobj/set el k-prev-visible -1)
       (when (prefers-reduced-motion?)
-        (render-static! el))))
-  nil)
+        (render-static! el)))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 
@@ -651,38 +635,35 @@
 
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (ensure-refs! el)
-  (update-from-attrs! el nil)
-  (apply-line-styles! el)
-  (if (prefers-reduced-motion?)
-  (render-static! el)
-  (start-animation! el)))
-  nil)
+    (gobj/set el k-model m)
+    (ensure-refs! el)
+    (update-from-attrs! el nil)
+    (apply-line-styles! el)
+    (if (prefers-reduced-motion?)
+      (render-static! el)
+      (start-animation! el))))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   ;; Clean up bloom elements
   (when (gobj/get el k-bloom-active)
-  (let [{:keys [blooms-g]} (gobj/get el k-refs)
-  ^js blooms-g blooms-g
-  ^js bloom-els (gobj/get el k-bloom-els)]
-  (when bloom-els
-  (dotimes [i (.-length bloom-els)]
-  (let [^js c (aget bloom-els i)]
-  (when (.-parentNode c)
-  (.removeChild blooms-g c))))))
-  (gobj/set el k-bloom-els nil)
-  (gobj/set el k-bloom-active false))
-  nil)
+    (let [{:keys [blooms-g]} (gobj/get el k-refs)
+          ^js blooms-g blooms-g
+          ^js bloom-els (gobj/get el k-bloom-els)]
+      (when bloom-els
+        (dotimes [i (.-length bloom-els)]
+          (let [^js c (aget bloom-els i)]
+            (when (.-parentNode c)
+              (.removeChild blooms-g c))))))
+    (gobj/set el k-bloom-els nil)
+    (gobj/set el k-bloom-active false)))
 
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
-  (when (gobj/get el k-refs)
-  (update-from-attrs! el attr-name)
-  (when (not (contains? structural-attrs attr-name))
-  (apply-line-styles! el))))
-  nil)
+    (when (gobj/get el k-refs)
+      (update-from-attrs! el attr-name)
+      (when (not (contains? structural-attrs attr-name))
+        (apply-line-styles! el)))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

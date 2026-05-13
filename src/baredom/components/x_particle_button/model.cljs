@@ -403,4 +403,4 @@
     "warning" {:glow-intensity 1.3 :shadow-depth 1.1}
     {:glow-intensity 1.0 :shadow-depth 1.0}))
 
-(def method-api nil)
+(def method-api {})

@@ -1,10 +1,9 @@
 (ns baredom.components.x-notification-center.x-notification-center
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-notification-center.model :as model]
-   [baredom.components.x-alert.model :as alert-model]))
+            [goog.object :as gobj]
+            [baredom.components.x-notification-center.model :as model]
+            [baredom.components.x-alert.model :as alert-model]))
 
 ;; ── Instance-field key constants ─────────────────────────────────────────────
 (def ^:private k-refs     "__xNcRefs")
@@ -91,8 +90,7 @@
     (.setAttribute container "aria-live" "polite")
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs #js {"root" root "container" container}))
-  nil)
+    (gobj/set el k-refs #js {"root" root "container" container})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -103,8 +101,7 @@
 (defn- apply-position! [^js el]
   (let [raw (du/get-attr el model/attr-position)
         pos (model/parse-position raw)]
-    (du/set-attr! el model/data-position pos))
-  nil)
+    (du/set-attr! el model/data-position pos)))
 
 ;; ── Event dispatch helpers ────────────────────────────────────────────────────
 ;; ── Alert dismiss handler ─────────────────────────────────────────────────────
@@ -125,8 +122,7 @@
                       :text   (or text-val "")
                       :count  new-count})
     (when (zero? new-count)
-      (du/dispatch! el model/event-empty #js {})))
-  nil)
+      (du/dispatch! el model/event-empty #js {}))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -134,8 +130,7 @@
         ^js root (gobj/get refs "root")
         dismiss-h (fn [e] (on-alert-dismiss el e))]
     (.addEventListener root alert-model/event-dismiss dismiss-h #js {:capture false})
-    (gobj/set el k-handlers #js {"dismiss" dismiss-h}))
-  nil)
+    (gobj/set el k-handlers #js {"dismiss" dismiss-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
@@ -145,8 +140,7 @@
             dismiss-h (gobj/get hs "dismiss")]
         (when dismiss-h
           (.removeEventListener root alert-model/event-dismiss dismiss-h #js {:capture false})))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── push! ────────────────────────────────────────────────────────────────────
 (defn- push! [^js el ^js opts]
@@ -180,8 +174,7 @@
         ^js container (gobj/get refs "container")
         alerts    (.querySelectorAll container model/alert-tag)]
     (doseq [^js alert (array-seq alerts)]
-      (.remove alert)))
-  nil)
+      (.remove alert))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -222,18 +215,15 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (apply-position! el)
-  nil)
+  (apply-position! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el n _old-val _new-val]
   (cond
   (= n model/attr-position) (apply-position! el)
-  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max))))
-  nil)
+  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max)))))
 
 (defn- install-methods! [^js proto]
   (set! (.-push proto)

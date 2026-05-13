@@ -1,9 +1,8 @@
 (ns baredom.components.x-pagination.x-pagination
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-pagination.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-pagination.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xPaginationRefs")
@@ -157,8 +156,7 @@
                          :prev-li  (:li prev)
                          :prev-btn (:btn prev)
                          :next-li  (:li nxt)
-                         :next-btn (:btn nxt)}))
-  nil)
+                         :next-btn (:btn nxt)})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -236,8 +234,7 @@
       (if (= :ellipsis (:type item))
         (.appendChild ol (make-ellipsis-li!))
         (.appendChild ol (make-page-button! (:n item) (= (:n item) page) (:disabled m)))))
-    (.appendChild ol next-li))
-  nil)
+    (.appendChild ol next-li)))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────
 (defn- dispatch-page-change! [^js el page]
@@ -293,8 +290,7 @@
         ^js ol  (:ol refs)
         handler (fn [^js ev] (on-click! el ev))]
     (.addEventListener ol "click" handler)
-    (gobj/set el k-handlers #js {:click handler}))
-  nil)
+    (gobj/set el k-handlers #js {:click handler})))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
@@ -303,8 +299,7 @@
             on-click (gobj/get hs "click")]
         (when (and ol on-click)
           (.removeEventListener ol "click" on-click)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; Integer props use model/parse-pos-int — kept as inline custom accessor
@@ -335,17 +330,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-  (render! el))
-  nil)
+    (render! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 
