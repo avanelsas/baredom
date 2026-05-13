@@ -352,82 +352,34 @@
     (schedule-cache-and-update! el)))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
+;; parse-positive-number takes a 2-arg `(raw default)` signature; wrap each
+;; numeric prop in a single-arg adapter so it fits define-parsed-prop!.
+(defn- parse-peek-attr            [s] (model/parse-positive-number s 6))
+(defn- parse-rotation-attr        [s] (model/parse-positive-number s 3))
+(defn- parse-scroll-distance-attr [s] (model/parse-positive-number s 150))
+
 (defn- install-property-accessors! [^js proto]
-  ;; peek (number)
-  (.defineProperty js/Object proto model/attr-peek
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-positive-number
-                                         (.getAttribute this model/attr-peek) 6)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-peek (str v))
-                                          (.removeAttribute this model/attr-peek))))
-                        :enumerable true :configurable true})
+  (du/define-parsed-prop! proto model/attr-peek      model/attr-peek            parse-peek-attr)
+  (du/define-parsed-prop! proto model/attr-rotation  model/attr-rotation        parse-rotation-attr)
+  (du/define-parsed-prop! proto "scrollDistance"     model/attr-scroll-distance parse-scroll-distance-attr)
+  (du/define-parsed-prop! proto model/attr-align     model/attr-align           model/parse-align)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled)
 
-  ;; rotation (number)
-  (.defineProperty js/Object proto model/attr-rotation
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-positive-number
-                                         (.getAttribute this model/attr-rotation) 3)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-rotation (str v))
-                                          (.removeAttribute this model/attr-rotation))))
-                        :enumerable true :configurable true})
-
-  ;; scrollDistance (number, camelCase)
-  (.defineProperty js/Object proto "scrollDistance"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-positive-number
-                                         (.getAttribute this model/attr-scroll-distance) 150)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-scroll-distance (str v))
-                                          (.removeAttribute this model/attr-scroll-distance))))
-                        :enumerable true :configurable true})
-
-  ;; align (string)
-  (.defineProperty js/Object proto model/attr-align
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-align
-                                         (.getAttribute this model/attr-align))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-align (str v))
-                                          (.removeAttribute this model/attr-align))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
-
-  ;; stackedCount (read-only)
+  ;; stackedCount / progress — read-only, no shared helper applies.
   (.defineProperty js/Object proto "stackedCount"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (gobj/get this k-stacked-count) 0)))
-                        :enumerable true :configurable true})
-
-  ;; progress (read-only)
+    #js {:get (fn xss-get-stacked-count []
+                (this-as ^js this (or (gobj/get this k-stacked-count) 0)))
+         :enumerable true :configurable true})
   (.defineProperty js/Object proto "progress"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (gobj/get this k-last-prog) 0)))
-                        :enumerable true :configurable true})
+    #js {:get (fn xss-get-progress []
+                (this-as ^js this (or (gobj/get this k-last-prog) 0)))
+         :enumerable true :configurable true})
 
   ;; refresh() method
   (.defineProperty js/Object proto "refresh"
-                   #js {:value (fn []
-                                 (this-as ^js this
-                                          (refresh! this)))
-                        :enumerable true :configurable true}))
+    #js {:value (fn xss-refresh []
+                  (this-as ^js this (refresh! this)))
+         :writable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]

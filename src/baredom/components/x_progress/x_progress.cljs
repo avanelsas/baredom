@@ -222,56 +222,13 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; value — string, reflects to attr
-  (.defineProperty js/Object proto model/attr-value
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-value) "0")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-value (str v))))
-                        :enumerable true :configurable true})
-  ;; max — string, reflects to attr
-  (.defineProperty js/Object proto model/attr-max
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-max) "100")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-max (str v))))
-                        :enumerable true :configurable true})
-  ;; indeterminate / showValue — booleans
-  (du/define-bool-prop! proto "indeterminate" model/attr-indeterminate)
-  (du/define-bool-prop! proto "showValue"     model/attr-show-value)
-  ;; variant — string, reflects to attr
-  (.defineProperty js/Object proto model/attr-variant
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-variant) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-variant (str v))))
-                        :enumerable true :configurable true})
-  ;; size — string, reflects to attr
-  (.defineProperty js/Object proto model/attr-size
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-size) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (.setAttribute this model/attr-size (str v))))
-                        :enumerable true :configurable true})
-  ;; label — string, reflects to attr
-  (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.getAttribute this model/attr-label)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true}))
+  (du/define-string-prop! proto model/attr-value   model/attr-value   "0")
+  (du/define-string-prop! proto model/attr-max     model/attr-max     "100")
+  (du/define-bool-prop!   proto "indeterminate"    model/attr-indeterminate)
+  (du/define-bool-prop!   proto "showValue"        model/attr-show-value)
+  (du/define-string-prop! proto model/attr-variant model/attr-variant "")
+  (du/define-string-prop! proto model/attr-size    model/attr-size    "")
+  (du/define-string-prop! proto model/attr-label   model/attr-label))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

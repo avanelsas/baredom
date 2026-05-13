@@ -335,63 +335,31 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; direction (string)
-  (.defineProperty js/Object proto model/attr-direction
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-direction) "vertical")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-direction (str v))
-                                          (.removeAttribute this model/attr-direction))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-direction model/attr-direction "vertical")
+  (du/define-string-prop! proto model/attr-source    model/attr-source    "document")
+  (du/define-string-prop! proto model/attr-easing    model/attr-easing    "none")
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled)
 
-  ;; source (string)
-  (.defineProperty js/Object proto model/attr-source
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-source) "document")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-source (str v))
-                                          (.removeAttribute this model/attr-source))))
-                        :enumerable true :configurable true})
-
-  ;; easing (string)
-  (.defineProperty js/Object proto model/attr-easing
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-easing) "none")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-easing (str v))
-                                          (.removeAttribute this model/attr-easing))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
-
-  ;; label (string)
+  ;; label uses strict-empty setter semantics: setting "" removes the
+  ;; attribute so the empty-default applies. define-string-prop! would
+  ;; keep "" as an explicit empty attribute.
   (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true})
+    #js {:get (fn xspx-get-label []
+                (this-as ^js this
+                  (or (.getAttribute this model/attr-label) "")))
+         :set (fn xspx-set-label [v]
+                (this-as ^js this
+                  (if (and v (not= v ""))
+                    (.setAttribute this model/attr-label (str v))
+                    (.removeAttribute this model/attr-label))))
+         :enumerable true :configurable true})
 
-  ;; progress (read-only number)
+  ;; progress is read-only — no setter, so no shared helper applies.
   (.defineProperty js/Object proto "progress"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (gobj/get this k-last-prog) 0)))
-                        :enumerable true :configurable true}))
+    #js {:get (fn xspx-get-progress []
+                (this-as ^js this
+                  (or (gobj/get this k-last-prog) 0)))
+         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]

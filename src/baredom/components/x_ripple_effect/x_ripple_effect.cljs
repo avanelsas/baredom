@@ -203,43 +203,10 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (.defineProperty js/Object proto model/attr-intensity
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-intensity
-                                         (.getAttribute this model/attr-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-intensity)
-                                          (.setAttribute this model/attr-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-duration
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-duration
-                                         (.getAttribute this model/attr-duration))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-duration)
-                                          (.setAttribute this model/attr-duration (str (int v))))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-frequency
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-frequency
-                                         (.getAttribute this model/attr-frequency))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-frequency)
-                                          (.setAttribute this model/attr-frequency (str v)))))
-                        :enumerable true :configurable true})
-
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled))
+  (du/define-parsed-prop! proto model/attr-intensity model/attr-intensity model/parse-intensity)
+  (du/define-parsed-prop! proto model/attr-duration  model/attr-duration  model/parse-duration)
+  (du/define-parsed-prop! proto model/attr-frequency model/attr-frequency model/parse-frequency)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
