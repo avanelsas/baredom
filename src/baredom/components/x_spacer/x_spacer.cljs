@@ -5,7 +5,8 @@
             [baredom.components.x-spacer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs "__xSpacerRefs")
+(def ^:private k-refs  "__xSpacerRefs")
+(def ^:private k-model "__xSpacerModel")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -37,32 +38,41 @@
     (.appendChild root style)
     (gobj/set el k-refs #js {:root root})))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [size axis grow?]}
-        (model/normalize
-         {:size-raw (du/get-attr el model/attr-size)
-          :axis-raw (du/get-attr el model/attr-axis)
-          :grow-raw (du/get-attr el model/attr-grow)})
-        ^js style (.-style el)]
+;; ── Read model ────────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/normalize
+   {:size-raw (du/get-attr el model/attr-size)
+    :axis-raw (du/get-attr el model/attr-axis)
+    :grow-raw (du/get-attr el model/attr-grow)}))
+
+;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
+(defn- apply-model! [^js el {:keys [size axis grow?] :as m}]
+  (let [^js style (.-style el)]
     (du/set-attr! el "data-axis" axis)
     (du/set-attr! el "data-grow" (if grow? "true" "false"))
     (.setProperty style "--x-spacer-size" size)
     (du/set-attr! el "role" "none")
-    (du/set-attr! el "aria-hidden" "true")))
+    (du/set-attr! el "aria-hidden" "true")
+    (gobj/set el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-refs)
     (make-shadow! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js _el])
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val)
              (gobj/get el k-refs))
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; grow uses model/parse-grow getter — kept inline

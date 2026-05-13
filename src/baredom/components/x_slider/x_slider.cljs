@@ -8,6 +8,7 @@
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xSliderRefs")
+(def ^:private k-model     "__xSliderModel")
 (def ^:private k-internals "__xSliderInternals")
 (def ^:private k-handlers  "__xSliderHandlers")
 
@@ -225,85 +226,92 @@
 ;; ---------------------------------------------------------------------------
 ;; Render
 ;; ---------------------------------------------------------------------------
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
+(defn- apply-host-data! [^js el ^js base-el {:keys [size disabled? readonly?]}]
+  (du/set-attr! base-el "data-size" size)
+  (du/set-bool-attr! el "data-disabled" disabled?)
+  (du/set-bool-attr! el "data-readonly" readonly?))
+
+(defn- apply-header! [^js header-el ^js label-el ^js value-el
+                      {:keys [label value show-value?]}]
+  (let [show-header? (or (some? label) show-value?)]
+    (set! (.-display (.-style header-el)) (if show-header? "flex" "none"))
+    (set! (.-textContent label-el) (or label ""))
+    (set! (.-display (.-style label-el)) (if (some? label) "" "none"))
+    (set! (.-textContent value-el) (if show-value? (str value) ""))
+    (set! (.-display (.-style value-el)) (if show-value? "" "none"))))
+
+(defn- apply-fill! [^js el {:keys [fill-percent]}]
+  ;; Fill CSS custom property on host — cascades into shadow DOM
+  (.setProperty (.-style el) "--_x-slider-fill"
+                (str (.toFixed fill-percent 2) "%")))
+
+(defn- apply-input-value! [^js input-el {:keys [value min max step]}]
+  (du/set-attr! input-el "min"  (str min))
+  (du/set-attr! input-el "max"  (str max))
+  (du/set-attr! input-el "step" step)
+  ;; Anti-drag-interruption guard: only update .value when it differs.
+  ;; Avoids snapping the thumb back during an active pointer drag.
+  (when (not= (.-value input-el) (str value))
+    (set! (.-value input-el) (str value))))
+
+(defn- apply-input-aria! [^js input-el {:keys [value min max readonly? disabled?
+                                              label aria-label aria-labelledby aria-describedby]}]
+  (du/set-attr! input-el "aria-valuemin" (str min))
+  (du/set-attr! input-el "aria-valuemax" (str max))
+  (du/set-attr! input-el "aria-valuenow" (str value))
+  (du/set-attr! input-el "aria-readonly" (if readonly? "true" "false"))
+
+  (if-let [v aria-label]
+    (du/set-attr! input-el "aria-label" v)
+    ;; Fall back to label text as aria-label when no explicit aria-label
+    (if (some? label)
+      (du/set-attr! input-el "aria-label" label)
+      (du/remove-attr! input-el "aria-label")))
+
+  (if-let [v aria-labelledby]
+    (du/set-attr! input-el "aria-labelledby" v)
+    (du/remove-attr! input-el "aria-labelledby"))
+
+  (if-let [v aria-describedby]
+    (du/set-attr! input-el "aria-describedby" v)
+    (du/remove-attr! input-el "aria-describedby"))
+
+  (if disabled?
+    (du/set-attr! input-el "disabled" "")
+    (du/remove-attr! input-el "disabled")))
+
+(defn- apply-form-value! [^js el {:keys [value]}]
+  (when-let [^js internals (gobj/get el k-internals)]
+    (.setFormValue internals (str value))))
+
+(defn- apply-model! [^js el ^js refs m]
+  (let [^js base-el   (gobj/get refs "base")
+        ^js header-el (gobj/get refs "header")
+        ^js label-el  (gobj/get refs "label")
+        ^js value-el  (gobj/get refs "value")
+        ^js input-el  (gobj/get refs "input")]
+    (apply-host-data!   el base-el m)
+    (apply-header!      header-el label-el value-el m)
+    (apply-fill!        el m)
+    (apply-input-value! input-el m)
+    (apply-input-aria!  input-el m)
+    (apply-form-value!  el m)
+    (gobj/set el k-model m)))
+
+;; render! is the direct-write entry — form-disabled!/form-reset! mutate
+;; attributes synchronously and want the apply to run unconditionally.
+;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js base-el    (gobj/get refs "base")
-          ^js header-el  (gobj/get refs "header")
-          ^js label-el   (gobj/get refs "label")
-          ^js value-el   (gobj/get refs "value")
-          ^js input-el   (gobj/get refs "input")
-          m              (read-model el)
-          {:keys [value min max step size
-                  disabled? readonly?
-                  label show-value? fill-percent
-                  aria-label aria-labelledby aria-describedby]} m
-          show-header?   (or (some? label) show-value?)]
+    (apply-model! el refs (read-model el))))
 
-      ;; Data attributes on base for CSS size hooks
-      (du/set-attr! base-el "data-size" size)
-
-      ;; Data attributes on host for CSS state hooks
-      (du/set-bool-attr! el "data-disabled" disabled?)
-      (du/set-bool-attr! el "data-readonly" readonly?)
-
-      ;; Header visibility
-      (set! (.-display (.-style header-el))
-            (if show-header? "flex" "none"))
-
-      ;; Label text
-      (set! (.-textContent label-el) (or label ""))
-      (set! (.-display (.-style label-el))
-            (if (some? label) "" "none"))
-
-      ;; Value text
-      (set! (.-textContent value-el)
-            (if show-value? (str value) ""))
-      (set! (.-display (.-style value-el))
-            (if show-value? "" "none"))
-
-      ;; Fill CSS custom property on host — cascades into shadow DOM
-      (.setProperty (.-style el) "--_x-slider-fill"
-                    (str (.toFixed fill-percent 2) "%"))
-
-      ;; Sync native input attributes (always safe to set these)
-      (du/set-attr! input-el "min"  (str min))
-      (du/set-attr! input-el "max"  (str max))
-      (du/set-attr! input-el "step" step)
-
-      ;; Anti-drag-interruption guard: only update .value when it differs.
-      ;; Avoids snapping the thumb back during an active pointer drag.
-      (when (not= (.-value input-el) (str value))
-        (set! (.-value input-el) (str value)))
-
-      ;; ARIA lives on [part=input], not the host (host has no role)
-      (du/set-attr! input-el "aria-valuemin" (str min))
-      (du/set-attr! input-el "aria-valuemax" (str max))
-      (du/set-attr! input-el "aria-valuenow" (str value))
-      (du/set-attr! input-el "aria-readonly" (if readonly? "true" "false"))
-
-      (if-let [v aria-label]
-        (du/set-attr! input-el "aria-label" v)
-        ;; Fall back to label text as aria-label when no explicit aria-label
-        (if (some? label)
-          (du/set-attr! input-el "aria-label" label)
-          (du/remove-attr! input-el "aria-label")))
-
-      (if-let [v aria-labelledby]
-        (du/set-attr! input-el "aria-labelledby" v)
-        (du/remove-attr! input-el "aria-labelledby"))
-
-      (if-let [v aria-describedby]
-        (du/set-attr! input-el "aria-describedby" v)
-        (du/remove-attr! input-el "aria-describedby"))
-
-      ;; Disabled on native input
-      (if disabled?
-        (du/set-attr! input-el "disabled" "")
-        (du/remove-attr! input-el "disabled"))
-
-      ;; Form value via ElementInternals
-      (when-let [^js internals (gobj/get el k-internals)]
-        (.setFormValue internals (str value))))))
+(defn- update-from-attrs! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= new-m old-m)
+        (apply-model! el refs new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
@@ -405,13 +413,14 @@
       (gobj/set el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
