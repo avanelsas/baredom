@@ -346,10 +346,13 @@
     (if (= mode :single)
       (let [{:keys [ok? date]} (model/parse-display->single val)]
         (when ok?
-          (let [iso    (model/date->iso date)
-                ^js ev (du/dispatch-cancelable! el model/event-change-request
-                                  #js {:value iso :mode mode-s :reason reason})]
-            (when-not (.-defaultPrevented ev)
+          (let [iso (model/date->iso date)]
+            ;; du/dispatch-cancelable! returns a boolean (true = proceed,
+            ;; false = preventDefault'd). The previous code bound the return
+            ;; to ^js ev and read (.-defaultPrevented ev), which is undefined
+            ;; on a boolean — so the cancel path never blocked the commit.
+            (when (du/dispatch-cancelable! el model/event-change-request
+                                           #js {:value iso :mode mode-s :reason reason})
               (set-single-value! el date)
               (read-state! el)
               (render! el)
@@ -357,12 +360,11 @@
                          #js {:value iso :mode mode-s :reason reason})))))
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
         (when ok?
-          (let [s-iso  (model/date->iso start)
-                e-iso  (model/date->iso end)
-                ^js ev (du/dispatch-cancelable! el model/event-change-request
-                                  #js {:start s-iso :end e-iso
-                                       :mode mode-s :reason reason})]
-            (when-not (.-defaultPrevented ev)
+          (let [s-iso (model/date->iso start)
+                e-iso (model/date->iso end)]
+            (when (du/dispatch-cancelable! el model/event-change-request
+                                           #js {:start s-iso :end e-iso
+                                                :mode mode-s :reason reason})
               (du/set-attr! el model/attr-start s-iso)
               (du/set-attr! el model/attr-end   e-iso)
               (gobj/set el k-range-step 0)
