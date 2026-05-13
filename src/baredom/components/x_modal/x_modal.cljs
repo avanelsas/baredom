@@ -1,9 +1,8 @@
 (ns baredom.components.x-modal.x-modal
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-modal.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-modal.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────────
 (def ^:private k-refs       "__xModalRefs")

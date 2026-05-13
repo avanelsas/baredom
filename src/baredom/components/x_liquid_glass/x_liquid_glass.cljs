@@ -1,9 +1,8 @@
 (ns baredom.components.x-liquid-glass.x-liquid-glass
-  (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-liquid-glass.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-liquid-glass.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs           "__xLiquidGlassRefs")
@@ -899,37 +898,34 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-time 0.0)
-  (gobj/set el k-pointer-active false)
-  (gobj/set el k-pointer-x 0.0)
-  (gobj/set el k-pointer-y 0.0)
-  (gobj/set el k-grad-time 0.0)
-  (ensure-refs! el)
-  (apply-model! el)
-  ;; Set up ResizeObserver
-  (let [ro (js/ResizeObserver.
-  (fn [^js entries] (on-resize! el entries)))]
-  (gobj/set el k-ro ro)
-  (.observe ro el))
-  ;; Add pointer event listeners
-  (remove-listeners! el)
-  (add-listeners! el))
-  nil)
+    (gobj/set el k-model m)
+    (gobj/set el k-time 0.0)
+    (gobj/set el k-pointer-active false)
+    (gobj/set el k-pointer-x 0.0)
+    (gobj/set el k-pointer-y 0.0)
+    (gobj/set el k-grad-time 0.0)
+    (ensure-refs! el)
+    (apply-model! el)
+    ;; Set up ResizeObserver
+    (let [ro (js/ResizeObserver.
+              (fn [^js entries] (on-resize! el entries)))]
+      (gobj/set el k-ro ro)
+      (.observe ro el))
+    ;; Add pointer event listeners
+    (remove-listeners! el)
+    (add-listeners! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
   (when-let [^js ro (gobj/get el k-ro)]
-  (.disconnect ro)
-  (gobj/set el k-ro nil))
-  nil)
+    (.disconnect ro)
+    (gobj/set el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (when (gobj/get el k-refs)
-  (update-from-attrs! el)))
-  nil)
+    (when (gobj/get el k-refs)
+      (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

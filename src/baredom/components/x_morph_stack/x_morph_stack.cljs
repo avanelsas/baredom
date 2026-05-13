@@ -1,9 +1,8 @@
 (ns baredom.components.x-morph-stack.x-morph-stack
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-morph-stack.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-morph-stack.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs          "__xMorphStackRefs")
@@ -33,7 +32,7 @@
     n))
 
 ;; ── Styles ──────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -923,19 +922,16 @@
   (update-from-attrs! el)
   ;; Initial slot may have already populated before connect — ensure visibility.
   (when (nil? (gobj/get el k-current-state))
-  (on-slot-change el))
-  nil)
+    (on-slot-change el)))
 
 (defn- disconnected! [^js el]
   (cancel-current! el)
   (destroy-light-layer! el)
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public registration ─────────────────────────────────────────────────────
 

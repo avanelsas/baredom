@@ -40,4 +40,4 @@
    :variant (normalize-variant variant)
    :type (normalize-type type)})
 
-(def method-api nil)
+(def method-api {})

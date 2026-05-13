@@ -266,4 +266,4 @@
    "item"   item
    "source" source})
 
-(def method-api nil)
+(def method-api {})

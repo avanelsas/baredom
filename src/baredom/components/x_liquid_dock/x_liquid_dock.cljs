@@ -1,9 +1,8 @@
 (ns baredom.components.x-liquid-dock.x-liquid-dock
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-liquid-dock.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-liquid-dock.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs         "__xLiquidDockRefs")
@@ -860,46 +859,43 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-mouse #js {:x 0 :y 0 :active false})
-  (gobj/set el k-blobs #js [])
-  (gobj/set el k-blob-state #js [])
-  (gobj/set el k-items-rect #js [])
-  (gobj/set el k-focus-idx -1)
-  (gobj/set el k-ripple-burst 0)
-  (ensure-refs! el)
-  (apply-host-style! el m)
-  (set-a11y! el)
-  (remove-listeners! el)
-  (add-listeners! el)
-  ;; ResizeObserver (clean up any prior observer on reconnect)
-  (when-let [^js old-ro (gobj/get el k-ro)]
-  (.disconnect old-ro))
-  (let [ro (js/ResizeObserver.
-  (fn [_] (on-resize! el)))]
-  (gobj/set el k-ro ro)
-  (.observe ro el))
-  ;; Defer blob/rect setup to after slot assignment
-  (js/requestAnimationFrame
-  (fn [_]
-  (reconcile-blobs! el)
-  (cache-item-rects! el)
-  (start-animation! el))))
-  nil)
+    (gobj/set el k-model m)
+    (gobj/set el k-mouse #js {:x 0 :y 0 :active false})
+    (gobj/set el k-blobs #js [])
+    (gobj/set el k-blob-state #js [])
+    (gobj/set el k-items-rect #js [])
+    (gobj/set el k-focus-idx -1)
+    (gobj/set el k-ripple-burst 0)
+    (ensure-refs! el)
+    (apply-host-style! el m)
+    (set-a11y! el)
+    (remove-listeners! el)
+    (add-listeners! el)
+    ;; ResizeObserver (clean up any prior observer on reconnect)
+    (when-let [^js old-ro (gobj/get el k-ro)]
+      (.disconnect old-ro))
+    (let [ro (js/ResizeObserver.
+              (fn [_] (on-resize! el)))]
+      (gobj/set el k-ro ro)
+      (.observe ro el))
+    ;; Defer blob/rect setup to after slot assignment
+    (js/requestAnimationFrame
+     (fn [_]
+       (reconcile-blobs! el)
+       (cache-item-rects! el)
+       (start-animation! el)))))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
   (reset-item-transforms! el)
   (when-let [^js ro (gobj/get el k-ro)]
-  (.disconnect ro)
-  (gobj/set el k-ro nil))
-  nil)
+    (.disconnect ro)
+    (gobj/set el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

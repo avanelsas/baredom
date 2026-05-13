@@ -238,4 +238,4 @@
      :echo-opacity  (parse-echo-opacity echo-opacity)
      :echo-scale    (parse-echo-scale echo-scale)}))
 
-(def method-api nil)
+(def method-api {})

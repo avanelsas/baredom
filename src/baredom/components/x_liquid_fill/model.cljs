@@ -299,4 +299,4 @@
   [progress velocity]
   {:progress progress :velocity velocity})
 
-(def method-api nil)
+(def method-api {})
