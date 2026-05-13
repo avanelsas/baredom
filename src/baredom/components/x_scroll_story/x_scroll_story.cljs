@@ -1,9 +1,8 @@
 (ns baredom.components.x-scroll-story.x-scroll-story
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-scroll-story.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-scroll-story.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs         "__xScrollStoryRefs")
@@ -137,8 +136,7 @@
                :media     media-el
                :steps     steps-el
                :slot      steps-slot
-               :live      live}))
-  nil)
+               :live      live})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -379,8 +377,7 @@
   (du/remove-attr! el "data-autoplay-paused")
   (du/remove-attr! el "tabindex")
   (gobj/set el k-autoplay-paused false)
-  (gobj/set el k-autoplay-last nil)
-  nil)
+  (gobj/set el k-autoplay-last nil))
 
 (defn- start-autoplay! [^js el]
   (when-not (autoplay-running? el)
@@ -419,8 +416,7 @@
         ;; Start rAF loop
         (let [tick (autoplay-tick el)]
           (gobj/set el k-autoplay-raf
-                    (js/requestAnimationFrame tick))))))
-  nil)
+                    (js/requestAnimationFrame tick)))))))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- disabled? [^js el]
@@ -499,8 +495,7 @@
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
-                   :scrollAttached false}))
-  nil)
+                   :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -517,8 +512,7 @@
   (when-let [raf (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf)
     (gobj/set el k-raf nil))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
 (defn- setup-observer! [^js el]
@@ -528,14 +522,12 @@
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs))
-  nil)
+    (gobj/set el k-io obs)))
 
 (defn- teardown-observer! [^js el]
   (when-let [obs (gobj/get el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil))
-  nil)
+    (gobj/set el k-io nil)))
 
 ;; ── Clean up child attributes ───────────────────────────────────────────────
 (defn- clean-step-attrs! [^js el]
@@ -581,15 +573,13 @@
     ;; Autoplay management
     (if (and (:autoplay? m) (not disabled?) (gobj/get el k-visible))
       (start-autoplay! el)
-      (stop-autoplay! el)))
-  nil)
+      (stop-autoplay! el))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -692,8 +682,7 @@
   (remove-listeners! el)
   (add-listeners! el)
   (setup-observer! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   ;; Stop autoplay
@@ -702,20 +691,18 @@
   (clean-step-attrs! el)
   ;; Dispatch leave event if visible
   (when (gobj/get el k-visible)
-  (du/dispatch! el model/event-leave
-  (clj->js (model/leave-detail (or (gobj/get el k-last-prog) 0)))))
+    (du/dispatch! el model/event-leave
+                  (clj->js (model/leave-detail (or (gobj/get el k-last-prog) 0)))))
   (remove-listeners! el)
   (teardown-observer! el)
   (gobj/set el k-visible false)
   (gobj/set el k-active-index -1)
   (gobj/set el k-last-prog nil)
-  (gobj/set el k-step-states nil)
-  nil)
+  (gobj/set el k-step-states nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

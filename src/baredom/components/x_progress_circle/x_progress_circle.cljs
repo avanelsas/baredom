@@ -1,9 +1,8 @@
 (ns baredom.components.x-progress-circle.x-progress-circle
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-progress-circle.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-progress-circle.model :as model]))
 
 ;; ── Constants ─────────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
@@ -138,8 +137,7 @@
     (gobj/set el k-base       base)
     (gobj/set el k-fill       fill)
     (gobj/set el k-value-node value-node)
-    (gobj/set el k-initialized true))
-  nil)
+    (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -203,21 +201,18 @@
     ;; x-progress-circle-complete event
     (when (and now-complete (not was-completed))
       (du/dispatch! el model/event-complete #js {:value value :max max}))
-    (gobj/set el k-completed (boolean now-complete)))
-  nil)
+    (gobj/set el k-completed (boolean now-complete))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

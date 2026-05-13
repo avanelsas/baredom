@@ -1,9 +1,8 @@
 (ns baredom.components.x-scroll.x-scroll
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-scroll.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-scroll.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs         "__xScrollRefs")
@@ -194,8 +193,7 @@
                :prev-btn   prev-btn
                :next-btn   next-btn
                :indicators indicators
-               :live       live}))
-  nil)
+               :live       live})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -393,8 +391,7 @@
 (defn- stop-autoplay! [^js el]
   (when-let [tid (gobj/get el k-autoplay-tid)]
     (js/clearInterval tid)
-    (gobj/set el k-autoplay-tid nil))
-  nil)
+    (gobj/set el k-autoplay-tid nil)))
 
 (defn- start-autoplay! [^js el]
   (stop-autoplay! el)
@@ -411,8 +408,7 @@
                                nxt (model/resolve-target-index cur 1 cnt (:loop? m2))]
                            (when (not= cur nxt)
                              (go-to! el nxt 1)))))))
-                 (:interval m)))))
-  nil)
+                 (:interval m))))))
 
 (defn- restart-autoplay! [^js el]
   (stop-autoplay! el)
@@ -694,8 +690,7 @@
                    :enter     enter-h
                    :leave     leave-h
                    :focusin   focusin-h
-                   :focusout  focusout-h}))
-  nil)
+                   :focusout  focusout-h})))
 
 (defn- remove-listeners! [^js el]
   (stop-autoplay! el)
@@ -721,8 +716,7 @@
         (when-let [h (gobj/get hs "leave")]   (.removeEventListener el "pointerleave" h))
         (when-let [h (gobj/get hs "focusin")] (.removeEventListener el "focusin" h))
         (when-let [h (gobj/get hs "focusout")] (.removeEventListener el "focusout" h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Resize observer ─────────────────────────────────────────────────────────
 (defn- setup-resize-observer! [^js el]
@@ -736,14 +730,12 @@
                  (let [m (or (gobj/get el k-model) (read-model el))]
                    (position-slides! el m)))))]
     (.observe obs viewport)
-    (gobj/set el k-resize-obs obs))
-  nil)
+    (gobj/set el k-resize-obs obs)))
 
 (defn- teardown-resize-observer! [^js el]
   (when-let [obs (gobj/get el k-resize-obs)]
     (.disconnect ^js obs)
-    (gobj/set el k-resize-obs nil))
-  nil)
+    (gobj/set el k-resize-obs nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [mode show-controls? show-indicators?
@@ -787,15 +779,13 @@
     (position-slides! el m)
 
     ;; Cache
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -913,28 +903,25 @@
   (add-listeners! el)
   (setup-resize-observer! el)
   (update-from-attrs! el)
-  (start-autoplay! el)
-  nil)
+  (start-autoplay! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
   (teardown-resize-observer! el)
   ;; Clean up order styles on slotted children
   (let [children (get-children el)]
-  (dotimes [i (.-length children)]
-  (set! (.. ^js (aget children i) -style -order) "")))
-  nil)
+    (dotimes [i (.-length children)]
+      (set! (.. ^js (aget children i) -style -order) ""))))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el)
-  ;; Restart autoplay on relevant attribute changes
-  (when (and (.-isConnected el)
-  (or (= _name model/attr-auto-play)
-  (= _name model/attr-interval)
-  (= _name model/attr-disabled)))
-  (restart-autoplay! el)))
-  nil)
+    (update-from-attrs! el)
+    ;; Restart autoplay on relevant attribute changes
+    (when (and (.-isConnected el)
+               (or (= _name model/attr-auto-play)
+                   (= _name model/attr-interval)
+                   (= _name model/attr-disabled)))
+      (restart-autoplay! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

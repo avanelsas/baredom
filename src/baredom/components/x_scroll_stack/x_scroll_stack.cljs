@@ -1,9 +1,8 @@
 (ns baredom.components.x-scroll-stack.x-scroll-stack
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-scroll-stack.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-scroll-stack.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs            "__xScrollStackRefs")
@@ -63,8 +62,7 @@
     (.appendChild root style)
     (.appendChild root container)
 
-    (gobj/set el k-refs {:root root :container container :slot slot-el}))
-  nil)
+    (gobj/set el k-refs {:root root :container container :slot slot-el})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -113,8 +111,7 @@
               (aset offsets i (- (.-top r) (.-top c-rect)))
               (aset heights i (.-height r)))))
         (gobj/set el k-natural-offsets offsets)
-        (gobj/set el k-child-heights heights))))
-  nil)
+        (gobj/set el k-child-heights heights)))))
 
 ;; ── Height management ───────────────────────────────────────────────────────
 (defn- update-height!
@@ -125,8 +122,7 @@
         n        (.-length children)
         vh       (.-innerHeight js/window)
         total-h  (+ vh (* n (:scroll-distance m)))]
-    (set! (.. el -style -height) (str total-h "px")))
-  nil)
+    (set! (.. el -style -height) (str total-h "px"))))
 
 ;; ── Core scroll update ──────────────────────────────────────────────────────
 
@@ -269,14 +265,12 @@
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs))
-  nil)
+    (gobj/set el k-io obs)))
 
 (defn- teardown-observer! [^js el]
   (when-let [obs (gobj/get el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil))
-  nil)
+    (gobj/set el k-io nil)))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
@@ -310,8 +304,7 @@
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
-                   :scrollAttached false}))
-  nil)
+                   :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -331,8 +324,7 @@
   (when-let [raf (gobj/get el k-cache-raf)]
     (js/cancelAnimationFrame raf)
     (gobj/set el k-cache-raf nil))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [disabled?] :as m}]
@@ -345,15 +337,13 @@
       (detach-scroll-listener! el))
     (when (gobj/get el k-visible)
       (attach-scroll-listener! el)
-      (schedule-cache-and-update! el)))
-  nil)
+      (schedule-cache-and-update! el))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Public method: refresh ──────────────────────────────────────────────────
 (defn- refresh! [^js el]
@@ -446,8 +436,7 @@
   (add-listeners! el)
   (setup-observer! el)
   (update-from-attrs! el)
-  (update-height! el)
-  nil)
+  (update-height! el))
 
 (defn- disconnected! [^js el]
   (clean-child-styles! el)
@@ -457,16 +446,14 @@
   (gobj/set el k-stacked-count 0)
   (gobj/set el k-last-prog nil)
   (gobj/set el k-natural-offsets nil)
-  (gobj/set el k-child-heights nil)
-  nil)
+  (gobj/set el k-child-heights nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el)
-  (update-height! el)
-  (when (gobj/get el k-visible)
-  (schedule-cache-and-update! el)))
-  nil)
+    (update-from-attrs! el)
+    (update-height! el)
+    (when (gobj/get el k-visible)
+      (schedule-cache-and-update! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 
