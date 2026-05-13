@@ -198,4 +198,4 @@
    :rowSpan row-span
    :align   align})
 
-(def method-api nil)
+(def method-api {})

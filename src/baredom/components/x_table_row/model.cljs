@@ -98,4 +98,4 @@
    :selected selected?
    :disabled disabled?})
 
-(def method-api nil)
+(def method-api {})

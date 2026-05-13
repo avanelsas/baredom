@@ -1,14 +1,13 @@
 (ns baredom.components.x-tab.x-tab
-  (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
-   [baredom.components.x-tab.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [baredom.components.x-tab.model :as model]))
 
-(def key-root "__xTabRoot")
-(def key-base "__xTabBase")
-(def key-initialized "__xTabInitialized")
+(def ^:private key-root "__xTabRoot")
+(def ^:private key-base "__xTabBase")
+(def ^:private key-initialized "__xTabInitialized")
 
-(defn read-inputs [^js el]
+(defn- read-inputs [^js el]
   {:value (du/get-attr el model/attr-value)
    :selected (du/has-attr? el model/attr-selected)
    :disabled (du/has-attr? el model/attr-disabled)
@@ -18,7 +17,7 @@
    :label (du/get-attr el model/attr-label)
    :controls (du/get-attr el model/attr-controls)})
 
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-block;color-scheme:light dark;outline:none;"
@@ -55,7 +54,7 @@
    ":host(:focus-visible) .base{box-shadow:0 0 0 3px var(--x-tab-focus-ring,rgba(59,130,246,0.4));}"
    "@media (prefers-reduced-motion: reduce){.base{transition:none;}}"))
 
-(defn apply-host-a11y! [^js el state]
+(defn- apply-host-a11y! [^js el state]
   (du/set-attr! el "role" "tab")
   (du/set-attr! el "aria-selected" (if (:selected state) "true" "false"))
 
@@ -75,14 +74,14 @@
       (du/set-attr! el "aria-label" label)
       (du/remove-attr! el "aria-label"))))
 
-(defn apply-state! [^js base state]
+(defn- apply-state! [^js base state]
   (.setAttribute base "data-selected" (if (:selected state) "true" "false"))
   (.setAttribute base "data-disabled" (if (:disabled state) "true" "false"))
   (.setAttribute base "data-size" (:size state))
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-orientation" (:orientation state)))
 
-(defn render! [^js el]
+(defn- render! [^js el]
 
   (let [state (model/derive-state (read-inputs el))
         base (du/getv el key-base)]
@@ -91,13 +90,13 @@
       (apply-host-a11y! el state)
       (apply-state! base state))))
 
-(defn dispatch-select! [^js el]
+(defn- dispatch-select! [^js el]
 
   (let [value (du/get-attr el model/attr-value)]
 
     (du/dispatch! el model/event-tab-select #js {:value (or value "")})))
 
-(defn activate! [^js el]
+(defn- activate! [^js el]
 
   (let [{:keys [selected disabled]}
         (model/derive-state (read-inputs el))]
@@ -105,10 +104,10 @@
     (when (and (not disabled) (not selected))
       (dispatch-select! el))))
 
-(defn on-click [^js el _]
+(defn- on-click [^js el _]
   (activate! el))
 
-(defn on-keydown [^js el ^js e]
+(defn- on-keydown [^js el ^js e]
 
   (let [k (.-key e)]
 
@@ -116,7 +115,7 @@
       (.preventDefault e)
       (activate! el))))
 
-(defn install-listeners! [^js el]
+(defn- install-listeners! [^js el]
 
   (.addEventListener el "click"
                      (fn [e] (on-click el e)))
@@ -124,7 +123,7 @@
   (.addEventListener el "keydown"
                      (fn [e] (on-keydown el e))))
 
-(defn init-dom! [^js el]
+(defn- init-dom! [^js el]
 
   (let [root (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
@@ -143,7 +142,7 @@
     (du/setv! el key-root root)
     (du/setv! el key-base base)))
 
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
 
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)
@@ -161,7 +160,7 @@
     (render! el)
     (init-element! el)))
 
-(defn install-property-accessors! [^js proto]
+(defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
 (defn init! []

@@ -150,4 +150,4 @@
   [from to]
   {:from from :to to})
 
-(def method-api nil)
+(def method-api {})

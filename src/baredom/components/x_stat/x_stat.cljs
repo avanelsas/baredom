@@ -1,17 +1,16 @@
 (ns baredom.components.x-stat.x-stat
-  (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
-   [baredom.components.x-stat.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [baredom.components.x-stat.model :as model]))
 
-(def key-root "__xStatRoot")
-(def key-base "__xStatBase")
-(def key-label "__xStatLabel")
-(def key-value "__xStatValue")
-(def key-hint "__xStatHint")
-(def key-initialized "__xStatInitialized")
+(def ^:private key-root "__xStatRoot")
+(def ^:private key-base "__xStatBase")
+(def ^:private key-label "__xStatLabel")
+(def ^:private key-value "__xStatValue")
+(def ^:private key-hint "__xStatHint")
+(def ^:private key-initialized "__xStatInitialized")
 
-(defn read-inputs [^js el]
+(defn- read-inputs [^js el]
   {:variant (du/get-attr el model/attr-variant)
    :align (du/get-attr el model/attr-align)
    :size (du/get-attr el model/attr-size)
@@ -22,18 +21,18 @@
    :value (du/get-attr el model/attr-value)
    :hint (du/get-attr el model/attr-hint)})
 
-(defn set-or-remove!
+(defn- set-or-remove!
   [^js el attr value]
   (if value
     (du/set-attr! el attr value)
     (du/remove-attr! el attr)))
 
-(defn apply-host-a11y! [^js el state]
+(defn- apply-host-a11y! [^js el state]
   (du/set-attr! el "role" "figure")
   (set-or-remove! el "aria-busy" (:aria-busy state))
   (set-or-remove! el "aria-label" (:label state)))
 
-(defn apply-state! [^js base state]
+(defn- apply-state! [^js base state]
 
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-align" (:align state))
@@ -45,7 +44,7 @@
     (.setAttribute base "data-loading" "true")
     (.removeAttribute base "data-loading")))
 
-(defn render! [^js el]
+(defn- render! [^js el]
   (let [state (model/derive-state (read-inputs el))
         ^js base (du/getv el key-base)
         ^js label-node (du/getv el key-label)
@@ -58,7 +57,7 @@
       (set! (.-textContent value-node) (or (:value state) ""))
       (set! (.-textContent hint-node) (or (:hint state) "")))))
 
-(def css-text
+(def ^:private css-text
   (str
    ":host{"
    "display:block;color-scheme:light dark;"
@@ -129,7 +128,7 @@
    "@media (prefers-reduced-motion:reduce){"
    "[part=base]{transition:none;}}"))
 
-(defn init-dom! [^js el]
+(defn- init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style-el (.createElement js/document "style")
         base (.createElement js/document "div")
@@ -186,7 +185,7 @@
     (du/setv! el key-value value-span)
     (du/setv! el key-hint hint-span)))
 
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
 
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)

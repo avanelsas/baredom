@@ -45,4 +45,4 @@
    :label label
    :loop (boolean loop)})
 
-(def method-api nil)
+(def method-api {})
