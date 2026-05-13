@@ -156,4 +156,6 @@
   [{:keys [show-progress? timeout-ms]}]
   (boolean (and show-progress? (some? timeout-ms) (pos? timeout-ms))))
 
-(def method-api nil)
+(def method-api
+  {:dismiss {:args [{:name "reason" :type 'string}]
+             :returns 'void}})

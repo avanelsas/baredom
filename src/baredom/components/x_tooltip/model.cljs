@@ -57,4 +57,6 @@
    :disabled? (boolean disabled-present?)
    :open?     (boolean open-present?)})
 
-(def method-api nil)
+(def method-api
+  {:show {:args [] :returns 'void}
+   :hide {:args [] :returns 'void}})

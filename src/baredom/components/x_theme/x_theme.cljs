@@ -5,35 +5,47 @@
             [baredom.components.x-theme.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
-(def ^:private k-refs "__xThemeRefs")
+(def ^:private k-refs  "__xThemeRefs")
+(def ^:private k-model "__xThemeModel")
+
+;; ── Attribute reader ────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  {:preset (du/get-attr el model/attr-preset)})
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         slot  (.createElement js/document "slot")]
-    (set! (.-textContent style) (model/preset->css (du/get-attr el model/attr-preset)))
     (.appendChild root style)
     (.appendChild root slot)
     (gobj/set el k-refs #js {:style style})))
 
-;; ── Render ──────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
+;; ── DOM patching ────────────────────────────────────────────────────────────
+(defn- apply-model! [^js el {:keys [preset] :as m}]
   (let [^js refs (gobj/get el k-refs)]
     (when refs
       (let [^js style-el (.-style refs)]
-        (set! (.-textContent style-el)
-              (model/preset->css (du/get-attr el model/attr-preset)))))))
+        (set! (.-textContent style-el) (model/preset->css preset))
+        (gobj/set el k-model m)))))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ───────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-refs)
-    (init-dom! el)))
+    (init-dom! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js _el])
 
-(defn- attribute-changed! [^js el _name _old-val _new-val]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ── Property accessor ───────────────────────────────────────────────────────
 (defn- install-preset-property! [^js proto]

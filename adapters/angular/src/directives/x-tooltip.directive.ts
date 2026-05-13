@@ -41,4 +41,6 @@ export class BaredomTooltip implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  showMethod(): void { return this.el.show(); }
+  hideMethod(): void { return this.el.hide(); }
 }

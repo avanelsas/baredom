@@ -42,4 +42,5 @@ export class BaredomToast implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  dismissMethod(reason: string): void { return this.el.dismiss(reason); }
 }
