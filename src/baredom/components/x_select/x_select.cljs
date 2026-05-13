@@ -261,8 +261,8 @@
     (let [m     (read-model el)
           old-m (gobj/get el k-model)]
       (when (not= m old-m)
-        (gobj/set el k-model m)
-        (apply-model! el refs m)))))
+        (apply-model! el refs m)
+        (gobj/set el k-model m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Option sync from slot

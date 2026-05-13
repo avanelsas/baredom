@@ -60,4 +60,6 @@
    :required?    (boolean required-present?)
    :autocomplete (normalize-autocomplete autocomplete-raw)})
 
-(def method-api nil)
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

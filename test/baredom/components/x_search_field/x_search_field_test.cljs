@@ -237,3 +237,16 @@
     (set! (.-value el) "something")
     (is (= true (.reportValidity el))
         "reportValidity should return true when required and filled")))
+
+;; Regression: model used to declare `(def method-api nil)` while the runtime
+;; installed checkValidity/reportValidity via bare `(aset proto ...)`. After
+;; the PR #185 fix both must agree — model declares them, runtime installs
+;; them via `.defineProperty :value`.
+(deftest method-api-matches-prototype-test
+  (let [el (append! (make-el))]
+    (is (= #{:checkValidity :reportValidity} (set (keys model/method-api)))
+        "method-api must declare checkValidity / reportValidity")
+    (is (fn? (.-checkValidity el))
+        "checkValidity must be a function on the instance")
+    (is (fn? (.-reportValidity el))
+        "reportValidity must be a function on the instance")))

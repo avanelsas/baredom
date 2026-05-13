@@ -391,16 +391,21 @@
   (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "required" model/attr-required)
-  (aset proto "checkValidity"
-        (fn [] (this-as ^js this
-                        (if-let [^js internals (gobj/get this k-internals)]
-                          (.checkValidity internals)
-                          true))))
-  (aset proto "reportValidity"
-        (fn [] (this-as ^js this
-                        (if-let [^js internals (gobj/get this k-internals)]
-                          (.reportValidity internals)
-                          true)))))
+  ;; Methods (Tier-2 .defineProperty :value descriptors)
+  (.defineProperty js/Object proto "checkValidity"
+    #js {:value (fn xsf-check-validity []
+                  (this-as ^js this
+                    (if-let [^js internals (gobj/get this k-internals)]
+                      (.checkValidity internals)
+                      true)))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "reportValidity"
+    #js {:value (fn xsf-report-validity []
+                  (this-as ^js this
+                    (if-let [^js internals (gobj/get this k-internals)]
+                      (.reportValidity internals)
+                      true)))
+         :writable true :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name
