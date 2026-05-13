@@ -70,9 +70,7 @@
   [{:keys [variant-raw size-raw pill-raw dot-raw count-raw max-raw
            text-raw aria-label-raw aria-describedby-raw has-slot?]}]
   (let [max-val   (parse-int-attr max-raw default-max)
-        count-val (when count-raw
-                    (let [n (parse-int-attr count-raw nil)]
-                      (when (some? n) n)))]
+        count-val (parse-int-attr count-raw nil)]
     {:variant          (parse-variant variant-raw)
      :size             (parse-size size-raw)
      :pill             (mu/parse-bool-attr pill-raw)

@@ -10,6 +10,25 @@
 (def ^:private k-model    "__xBadgeModel")
 (def ^:private k-handlers "__xBadgeHandlers")
 
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part             "part")
+(def ^:private attr-role             "role")
+(def ^:private attr-data-variant     "data-variant")
+(def ^:private attr-data-size        "data-size")
+(def ^:private attr-data-mode        "data-mode")
+(def ^:private attr-data-pill        "data-pill")
+(def ^:private attr-data-dot         "data-dot")
+(def ^:private attr-aria-label       "aria-label")
+(def ^:private attr-aria-describedby "aria-describedby")
+
+(def ^:private part-base  "base")
+(def ^:private part-label "label")
+
+(def ^:private role-status "status")
+
+(def ^:private ev-slotchange "slotchange")
+(def ^:private hk-slot       "slot")
+
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def style-text
   (str
@@ -124,9 +143,9 @@
         slot-el  (.createElement js/document "slot")
         label-el (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (.setAttribute base     "part" "base")
-    (.setAttribute base     "role" "status")
-    (.setAttribute label-el "part" "label")
+    (.setAttribute base     attr-part part-base)
+    (.setAttribute base     attr-role role-status)
+    (.setAttribute label-el attr-part part-label)
     (.appendChild base slot-el)
     (.appendChild base label-el)
     (.appendChild root style)
@@ -167,21 +186,18 @@
         ^js label-el label-el
         mode (model/compute-mode m)
         txt  (model/display-text m)]
-    ;; Data attributes drive CSS selectors
-    (du/set-attr! el "data-variant" variant)
-    (du/set-attr! el "data-size"    size)
-    (du/set-attr! el "data-mode"    (name mode))
-    (if pill (du/set-attr! el "data-pill" "") (du/remove-attr! el "data-pill"))
-    (if dot  (du/set-attr! el "data-dot"  "") (du/remove-attr! el "data-dot"))
-    ;; Label text
+    (du/set-attr! el attr-data-variant variant)
+    (du/set-attr! el attr-data-size    size)
+    (du/set-attr! el attr-data-mode    (name mode))
+    (if pill (du/set-attr! el attr-data-pill "") (du/remove-attr! el attr-data-pill))
+    (if dot  (du/set-attr! el attr-data-dot  "") (du/remove-attr! el attr-data-dot))
     (set! (.-textContent label-el) (or txt ""))
-    ;; ARIA on base
     (if aria-label
-      (.setAttribute base "aria-label" aria-label)
-      (.removeAttribute base "aria-label"))
+      (.setAttribute base attr-aria-label aria-label)
+      (.removeAttribute base attr-aria-label))
     (if aria-describedby
-      (.setAttribute base "aria-describedby" aria-describedby)
-      (.removeAttribute base "aria-describedby"))
+      (.setAttribute base attr-aria-describedby aria-describedby)
+      (.removeAttribute base attr-aria-describedby))
     (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -194,17 +210,19 @@
 (defn- add-listeners! [^js el]
   (let [{:keys [slot-el]} (ensure-refs! el)
         ^js slot-el slot-el
-        on-slot (fn [_] (update-from-attrs! el))]
-    (when slot-el (.addEventListener slot-el "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:slot on-slot})))
+        on-slot  (fn handle-slotchange [_] (update-from-attrs! el))
+        handlers #js {}]
+    (when slot-el (.addEventListener slot-el ev-slotchange on-slot))
+    (gobj/set handlers hk-slot on-slot)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
     (when-let [refs (gobj/get el k-refs)]
       (let [^js slot-el (:slot-el refs)
-            on-slot (gobj/get hs "slot")]
+            on-slot     (gobj/get hs hk-slot)]
         (when (and slot-el on-slot)
-          (.removeEventListener slot-el "slotchange" on-slot)))))
+          (.removeEventListener slot-el ev-slotchange on-slot)))))
   (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
