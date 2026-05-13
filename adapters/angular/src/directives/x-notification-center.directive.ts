@@ -40,4 +40,6 @@ export class BaredomNotificationCenter implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  pushMethod(: any): string { return this.el.push(); }
+  clear(): void { return this.el.clear(); }
 }

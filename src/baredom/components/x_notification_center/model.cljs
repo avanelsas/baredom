@@ -55,4 +55,8 @@
    event-dismiss {:detail {:id 'string :type 'string :reason 'string :text 'string :count 'number} :cancelable false}
    event-empty   {:detail {} :cancelable false}})
 
-(def method-api nil)
+(def method-api
+  {:push  {:args [:opts] :returns 'string
+           :doc "Push a new notification. Returns the assigned id."}
+   :clear {:args [] :returns 'void
+           :doc "Remove all currently displayed notifications."}})

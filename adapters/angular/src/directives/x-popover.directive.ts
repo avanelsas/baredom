@@ -43,4 +43,7 @@ export class BaredomPopover implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  show(): void { return this.el.show(); }
+  hide(): void { return this.el.hide(); }
+  toggleMethod(): void { return this.el.toggle(); }
 }
