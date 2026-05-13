@@ -1,5 +1,6 @@
 (ns baredom.components.x-organic-shape.x-organic-shape-test
   (:require [cljs.test :refer-macros [deftest is use-fixtures]]
+            [goog.object]
             [baredom.components.x-organic-shape.x-organic-shape :as x-organic-shape]
             [baredom.components.x-organic-shape.model :as model]))
 
@@ -253,3 +254,25 @@
          (is (not (.hasAttribute el "aria-hidden")))
          (done))
        0))))
+
+;; Regression: reconnecting the element used to stack a new slotchange
+;; listener every time (k-slotchange handler was written but never removed).
+;; After the fix, only one handler should be stored at any moment, and
+;; disconnect cleans it up so a fresh connect installs exactly one again.
+(deftest reconnect-replaces-slotchange-listener-test
+  (let [^js el (append! (make-el))
+        host   (.-body js/document)
+        handler-key "__xOrganicShapeSlotHandler"
+        first-handler (goog.object/get el handler-key)]
+    (is (some? first-handler)
+        "connected! should install a slotchange handler")
+    ;; Detach and reattach — disconnected! must clear the handler
+    (.removeChild host el)
+    (is (nil? (goog.object/get el handler-key))
+        "disconnected! should clear k-slotchange")
+    (.appendChild host el)
+    (let [second-handler (goog.object/get el handler-key)]
+      (is (some? second-handler)
+          "reconnect should install a fresh slotchange handler")
+      (is (not (identical? first-handler second-handler))
+          "the second handler should be a new function, not the leaked first one"))))

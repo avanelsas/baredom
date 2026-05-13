@@ -222,16 +222,18 @@
 
 (defn- attribute-changed! [^js el n _old-val _new-val]
   (cond
-  (= n model/attr-position) (apply-position! el)
-  (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max)))))
+    (= n model/attr-position) (apply-position! el)
+    (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max)))))
 
 (defn- install-methods! [^js proto]
-  (set! (.-push proto)
-        (fn [opts]
-          (this-as ^js this (push! this opts))))
-  (set! (.-clear proto)
-        (fn []
-          (this-as ^js this (clear! this)))))
+  (.defineProperty js/Object proto "push"
+    #js {:value (fn xnc-push [opts]
+                  (this-as ^js this (push! this opts)))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "clear"
+    #js {:value (fn xnc-clear []
+                  (this-as ^js this (clear! this)))
+         :writable true :configurable true}))
 
 ;; ── Public API ────────────────────────────────────────────────────────────────
 

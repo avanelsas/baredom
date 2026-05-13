@@ -823,13 +823,19 @@
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
-  ;; Methods
-  (aset proto "show"
-        (fn [] (this-as ^js this (do-open! this "programmatic"))))
-  (aset proto "hide"
-        (fn [] (this-as ^js this (do-close! this "programmatic"))))
-  (aset proto "toggle"
-        (fn [] (this-as ^js this (toggle! this "programmatic")))))
+  ;; Methods (Tier-2 .defineProperty :value descriptors)
+  (.defineProperty js/Object proto "show"
+    #js {:value (fn xpo-show []
+                  (this-as ^js this (do-open! this "programmatic")))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "hide"
+    #js {:value (fn xpo-hide []
+                  (this-as ^js this (do-close! this "programmatic")))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "toggle"
+    #js {:value (fn xpo-toggle []
+                  (this-as ^js this (toggle! this "programmatic")))
+         :writable true :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name

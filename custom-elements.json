@@ -3528,6 +3528,30 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-popover-toggle",
@@ -5746,6 +5770,28 @@
           "text" : "number"
         },
         "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "push",
+        "return" : {
+          "type" : {
+            "text" : "string"
+          }
+        },
+        "parameters" : [ {
+          "name" : "opts",
+          "type" : {
+            "text" : "Record<string, any>"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "clear",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-notification-center-push",

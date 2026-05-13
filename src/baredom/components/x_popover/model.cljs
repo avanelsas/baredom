@@ -111,4 +111,7 @@
       primary
       flipped)))
 
-(def method-api nil)
+(def method-api
+  {:show   {:args [] :returns 'void}
+   :hide   {:args [] :returns 'void}
+   :toggle {:args [] :returns 'void}})

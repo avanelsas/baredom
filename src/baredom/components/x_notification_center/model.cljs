@@ -55,4 +55,6 @@
    event-dismiss {:detail {:id 'string :type 'string :reason 'string :text 'string :count 'number} :cancelable false}
    event-empty   {:detail {} :cancelable false}})
 
-(def method-api nil)
+(def method-api
+  {:push  {:args [{:name "opts" :type 'object}] :returns 'string}
+   :clear {:args [] :returns 'void}})

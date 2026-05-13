@@ -172,15 +172,27 @@
     (update-a11y! el slot-el)))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
+(defn- remove-slotchange-listener! [^js el]
+  (let [^js slot-el (gobj/get el k-slot)
+        prior      (gobj/get el k-slotchange)]
+    (when (and slot-el prior)
+      (.removeEventListener slot-el "slotchange" prior)
+      (gobj/set el k-slotchange nil))))
+
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  ;; Listen for slot changes to update a11y
+  ;; Listen for slot changes to update a11y. Remove any prior handler first
+  ;; so reconnects do not stack duplicate listeners.
+  (remove-slotchange-listener! el)
   (let [^js slot-el (gobj/get el k-slot)
-        handler (fn [] (update-a11y! el slot-el))]
+        handler (fn handle-slotchange [] (update-a11y! el slot-el))]
     (gobj/set el k-slotchange handler)
     (.addEventListener slot-el "slotchange" handler))
   (render! el))
+
+(defn- disconnected! [^js el]
+  (remove-slotchange-listener! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
@@ -271,5 +283,6 @@
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
      :connected-fn           connected!
+     :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
      :setup-prototype-fn     install-property-accessors!}))
