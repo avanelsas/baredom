@@ -1,15 +1,14 @@
 (ns baredom.components.x-menu.x-menu
-  (:require
-[baredom.utils.component :as component]
-               [goog.object :as gobj]
-   [baredom.utils.dom :as du]
-   [baredom.components.x-menu.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-menu.model :as model]))
 
-(def key-refs "__xMenuRefs")
-(def key-handlers "__xMenuHandlers")
-(def key-init "__xMenuInit")
+(def ^:private key-refs "__xMenuRefs")
+(def ^:private key-handlers "__xMenuHandlers")
+(def ^:private key-init "__xMenuInit")
 
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-block;position:relative;color-scheme:light dark;"
@@ -43,12 +42,12 @@
    ".popup[data-placement='top-start']{bottom:100%;left:0;margin-bottom:4px;}"
    ".popup[data-placement='top-end']{bottom:100%;right:0;margin-bottom:4px;}"))
 
-(defn read-inputs [^js el]
+(defn- read-inputs [^js el]
   {:open (du/has-attr? el model/attr-open)
    :placement (du/get-attr el model/attr-placement)
    :label (du/get-attr el model/attr-label)})
 
-(defn get-focusable-items [^js el]
+(defn- get-focusable-items [^js el]
   (let [all (.querySelectorAll el "x-menu-item")
         result #js []]
     (dotimes [i (alength all)]
@@ -58,17 +57,17 @@
           (.push result item))))
     result))
 
-(defn focus-item! [^js item]
+(defn- focus-item! [^js item]
   (.focus item))
 
-(defn get-trigger [^js el]
+(defn- get-trigger [^js el]
   (let [refs (du/getv el key-refs)
         trigger-slot (when refs (gobj/get refs "trigger-slot"))
         assigned (when trigger-slot (.assignedElements trigger-slot))]
     (when (and assigned (> (alength assigned) 0))
       (aget assigned 0))))
 
-(defn open-menu! [^js el focus-target]
+(defn- open-menu! [^js el focus-target]
   (when-not (du/has-attr? el model/attr-open)
     (du/set-attr! el model/attr-open "")
     (du/dispatch! el model/event-open #js {}))
@@ -80,7 +79,7 @@
           (= focus-target :first) (focus-item! (aget items 0))
           (= focus-target :last)  (focus-item! (aget items (dec n))))))))
 
-(defn close-menu! [^js el return-focus?]
+(defn- close-menu! [^js el return-focus?]
   (when (du/has-attr? el model/attr-open)
     (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-close #js {}))
@@ -88,12 +87,12 @@
     (when-let [trigger (get-trigger el)]
       (.focus trigger))))
 
-(defn trigger-clicked? [^js trigger-slot ^js evt]
+(defn- trigger-clicked? [^js trigger-slot ^js evt]
   (let [path (.composedPath evt)
         assigned (array-seq (.assignedElements trigger-slot))]
     (boolean (some (fn [node] (> (.indexOf path node) -1)) assigned))))
 
-(defn handle-el-click! [^js el ^js evt]
+(defn- handle-el-click! [^js el ^js evt]
   (let [refs (du/getv el key-refs)
         trigger-slot (when refs (gobj/get refs "trigger-slot"))]
     (when (and trigger-slot (trigger-clicked? trigger-slot evt))
@@ -101,13 +100,13 @@
         (close-menu! el true)
         (open-menu! el nil)))))
 
-(defn handle-doc-click! [^js el ^js evt]
+(defn- handle-doc-click! [^js el ^js evt]
   (when (du/has-attr? el model/attr-open)
     (let [path (.composedPath evt)]
       (when (= -1 (.indexOf path el))
         (close-menu! el false)))))
 
-(defn handle-keydown! [^js el ^js evt]
+(defn- handle-keydown! [^js el ^js evt]
   (let [k (.-key evt)
         is-open? (du/has-attr? el model/attr-open)]
     (cond
@@ -150,13 +149,13 @@
             (.preventDefault evt)
             (focus-item! (aget items (dec (alength items))))))))))
 
-(defn handle-item-select! [^js el ^js evt]
+(defn- handle-item-select! [^js el ^js evt]
   (.stopPropagation evt)
   (let [value (.. evt -detail -value)]
     (close-menu! el false)
     (du/dispatch! el model/event-select #js {:value (or value "")})))
 
-(defn render! [^js el]
+(defn- render! [^js el]
   (let [refs (du/getv el key-refs)
         popup (when refs (gobj/get refs "popup"))
         state (model/derive-state (read-inputs el))]
@@ -167,7 +166,7 @@
           (.setAttribute popup "aria-label" label)
           (.removeAttribute popup "aria-label"))))))
 
-(defn init-dom! [^js el]
+(defn- init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base (.createElement js/document "div")
@@ -193,7 +192,7 @@
       (gobj/set refs "item-slot" item-slot)
       (du/setv! el key-refs refs))))
 
-(defn install-listeners! [^js el]
+(defn- install-listeners! [^js el]
   (let [on-click (fn [^js e] (handle-el-click! el e))
         on-doc-click (fn [^js e] (handle-doc-click! el e))
         on-keydown (fn [^js e] (handle-keydown! el e))
@@ -209,7 +208,7 @@
     (gobj/set handlers "item-select" on-item-select)
     (du/setv! el key-handlers handlers)))
 
-(defn remove-listeners! [^js el]
+(defn- remove-listeners! [^js el]
   (let [handlers (du/getv el key-handlers)]
     (when handlers
       (let [on-click (gobj/get handlers "click")
@@ -221,7 +220,7 @@
         (.removeEventListener el "keydown" on-keydown)
         (.removeEventListener el model/event-item-select on-item-select)))))
 
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
   (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
@@ -241,7 +240,7 @@
   (when (du/initialized? el key-init)
     (render! el)))
 
-(defn install-property-accessors! [^js proto]
+(defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
 (defn init! []

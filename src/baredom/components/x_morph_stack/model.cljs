@@ -339,4 +339,4 @@
   [from to]
   {:from (or from "") :to (or to "")})
 
-(def method-api nil)
+(def method-api {})

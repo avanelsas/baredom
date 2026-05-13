@@ -1,9 +1,8 @@
 (ns baredom.components.x-liquid-fill.x-liquid-fill
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-liquid-fill.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-liquid-fill.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs            "__xLiquidFillRefs")
@@ -810,37 +809,34 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-progress 0.0)
-  (gobj/set el k-target-progress 0.0)
-  (gobj/set el k-scroll-vel 0.0)
-  (gobj/set el k-time 0.0)
-  (gobj/set el k-last-dispatch -1.0)
-  (gobj/set el k-visible true)
-  (ensure-refs! el)
-  ;; Apply theme and init wave state
-  (apply-theme! el (:theme m))
-  (init-wave-state! el (:layers m))
-  (update-path-visibility! el (:layers m))
-  ;; Listeners and observers
-  (remove-listeners! el)
-  (add-listeners! el)
-  (setup-observers! el)
-  (setup-scroll-target! el))
-  nil)
+    (gobj/set el k-model m)
+    (gobj/set el k-progress 0.0)
+    (gobj/set el k-target-progress 0.0)
+    (gobj/set el k-scroll-vel 0.0)
+    (gobj/set el k-time 0.0)
+    (gobj/set el k-last-dispatch -1.0)
+    (gobj/set el k-visible true)
+    (ensure-refs! el)
+    ;; Apply theme and init wave state
+    (apply-theme! el (:theme m))
+    (init-wave-state! el (:layers m))
+    (update-path-visibility! el (:layers m))
+    ;; Listeners and observers
+    (remove-listeners! el)
+    (add-listeners! el)
+    (setup-observers! el)
+    (setup-scroll-target! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
   (teardown-observers! el)
-  (gobj/set el k-visible false)
-  nil)
+  (gobj/set el k-visible false))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (when (gobj/get el k-refs)
-  (update-from-attrs! el)))
-  nil)
+    (when (gobj/get el k-refs)
+      (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

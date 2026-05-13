@@ -238,4 +238,4 @@
   [current target speed]
   (+ current (* (- target current) speed)))
 
-(def method-api nil)
+(def method-api {})

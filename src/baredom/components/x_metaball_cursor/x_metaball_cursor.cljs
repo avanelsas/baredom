@@ -1,9 +1,8 @@
 (ns baredom.components.x-metaball-cursor.x-metaball-cursor
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-metaball-cursor.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-metaball-cursor.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs       "__xMetaballRefs")
@@ -471,31 +470,29 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-mouse #js {:x 0 :y 0})
-  (ensure-refs! el)
-  (remove-all-blobs! el)
-  (create-blobs! el m)
-  (apply-host-style! el m)
-  (set-a11y! el)
-  (remove-listeners! el)
-  (add-listeners! el)
-  (start-animation! el))
-  nil)
+    (gobj/set el k-model m)
+    (gobj/set el k-mouse #js {:x 0 :y 0})
+    (ensure-refs! el)
+    (remove-all-blobs! el)
+    (create-blobs! el m)
+    (apply-host-style! el m)
+    (set-a11y! el)
+    (remove-listeners! el)
+    (add-listeners! el)
+    (start-animation! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (when (gobj/get el k-refs)
-  (reconcile-blobs! el m)
-  (update-filter! el m)
-  (apply-host-style! el m)))))
+    (let [m (read-model el)]
+      (gobj/set el k-model m)
+      (when (gobj/get el k-refs)
+        (reconcile-blobs! el m)
+        (update-filter! el m)
+        (apply-host-style! el m)))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

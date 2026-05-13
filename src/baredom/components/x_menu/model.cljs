@@ -39,4 +39,4 @@
    :placement (normalize-placement placement)
    :label (or label "")})
 
-(def method-api nil)
+(def method-api {})

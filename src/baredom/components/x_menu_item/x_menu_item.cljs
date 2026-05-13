@@ -1,15 +1,14 @@
 (ns baredom.components.x-menu-item.x-menu-item
-  (:require
-[baredom.utils.component :as component]
-               [goog.object :as gobj]
-   [baredom.utils.dom :as du]
-   [baredom.components.x-menu-item.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-menu-item.model :as model]))
 
-(def key-refs "__xMenuItemRefs")
-(def key-handlers "__xMenuItemHandlers")
-(def key-init "__xMenuItemInit")
+(def ^:private key-refs "__xMenuItemRefs")
+(def ^:private key-handlers "__xMenuItemHandlers")
+(def ^:private key-init "__xMenuItemInit")
 
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;outline:none;color-scheme:light dark;"
@@ -59,24 +58,24 @@
    "border-top:1px solid var(--x-menu-item-divider-color);margin:4px 0;}"
    "@media (prefers-reduced-motion:reduce){.base{transition:none;}}"))
 
-(defn read-inputs [^js el]
+(defn- read-inputs [^js el]
   {:value (du/get-attr el model/attr-value)
    :disabled (du/has-attr? el model/attr-disabled)
    :variant (du/get-attr el model/attr-variant)
    :type (du/get-attr el model/attr-type)})
 
-(defn dispatch-item-select! [^js el]
+(defn- dispatch-item-select! [^js el]
   (let [value (du/get-attr el model/attr-value)]
     (du/dispatch! el model/event-item-select #js {:value (or value "")})))
 
-(defn handle-click! [^js el ^js evt]
+(defn- handle-click! [^js el ^js evt]
   (let [state (model/derive-state (read-inputs el))]
     (when (or (:disabled state) (= (:type state) "divider"))
       (.preventDefault evt))
     (when (and (not (:disabled state)) (not= (:type state) "divider"))
       (dispatch-item-select! el))))
 
-(defn handle-keydown! [^js el ^js evt]
+(defn- handle-keydown! [^js el ^js evt]
   (let [k (.-key evt)
         state (model/derive-state (read-inputs el))]
     (when (and (or (= k "Enter") (= k " "))
@@ -85,13 +84,13 @@
       (.preventDefault evt)
       (dispatch-item-select! el))))
 
-(defn handle-icon-slotchange! [^js el ^js slot]
+(defn- handle-icon-slotchange! [^js el ^js slot]
   (let [nodes (.assignedNodes slot)]
     (if (> (alength nodes) 0)
       (du/set-attr! el "has-icon" "")
       (du/remove-attr! el "has-icon"))))
 
-(defn render! [^js el]
+(defn- render! [^js el]
   (let [refs (du/getv el key-refs)
         base (when refs (gobj/get refs "base"))
         state (model/derive-state (read-inputs el))]
@@ -114,7 +113,7 @@
             (du/set-attr! el "aria-disabled" "true")
             (du/remove-attr! el "aria-disabled")))))))
 
-(defn init-dom! [^js el]
+(defn- init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base (.createElement js/document "div")
@@ -144,7 +143,7 @@
       (gobj/set refs "icon-slot" icon-slot)
       (du/setv! el key-refs refs))))
 
-(defn install-listeners! [^js el]
+(defn- install-listeners! [^js el]
   (let [refs (du/getv el key-refs)
         icon-slot (gobj/get refs "icon-slot")
         on-click (fn [^js e] (handle-click! el e))
@@ -159,7 +158,7 @@
     (gobj/set handlers "icon-slotchange" on-slotchange)
     (du/setv! el key-handlers handlers)))
 
-(defn remove-listeners! [^js el]
+(defn- remove-listeners! [^js el]
   (let [handlers (du/getv el key-handlers)
         refs (du/getv el key-refs)]
     (when handlers
@@ -172,7 +171,7 @@
         (when icon-slot
           (.removeEventListener icon-slot "slotchange" on-slotchange))))))
 
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
   (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
@@ -192,7 +191,7 @@
   (when (du/initialized? el key-init)
     (render! el)))
 
-(defn install-property-accessors! [^js proto]
+(defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
 (defn init! []
