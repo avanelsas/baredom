@@ -383,4 +383,4 @@
   [{:keys [disabled? readonly?]}]
   (and (not disabled?) (not readonly?)))
 
-(def method-api nil)
+(def method-api {})

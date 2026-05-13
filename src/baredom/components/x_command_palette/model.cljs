@@ -164,4 +164,4 @@
      :placeholder      (or (normalize-str placeholder-raw) default-placeholder)
      :empty-text       (or (normalize-str empty-text-raw) default-empty-text)}))
 
-(def method-api nil)
+(def method-api {})

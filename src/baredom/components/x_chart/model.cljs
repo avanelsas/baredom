@@ -308,4 +308,4 @@
    event-hover  {:cancelable false
                  :detail     {:seriesId 'string :index 'number :x 'number :y 'number :value 'number}}})
 
-(def method-api nil)
+(def method-api {})

@@ -99,4 +99,4 @@
                        checked?       "true"
                        :else          "false")}))
 
-(def method-api nil)
+(def method-api {})

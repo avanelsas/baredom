@@ -38,7 +38,7 @@
 (def ^:private frame-ref-ms 16.6667)
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -120,8 +120,7 @@
                :ctx    ctx})
     (du/setv! el k-particles #js [])
     (du/setv! el k-canvas-w 0)
-    (du/setv! el k-canvas-h 0))
-  nil)
+    (du/setv! el k-canvas-h 0)))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -147,8 +146,7 @@
       (.setTransform ctx 1 0 0 1 0 0)
       (.scale ctx dpr dpr)
       (du/setv! el k-canvas-w w)
-      (du/setv! el k-canvas-h h)))
-  nil)
+      (du/setv! el k-canvas-h h))))
 
 (defn- setup-resize-observer! [^js el]
   (let [ro (js/ResizeObserver.
@@ -161,14 +159,12 @@
                   (when (and (pos? w) (pos? h))
                     (resize-canvas! el w h))))))]
     (.observe ro el)
-    (du/setv! el k-resize-obs ro))
-  nil)
+    (du/setv! el k-resize-obs ro)))
 
 (defn- teardown-resize-observer! [^js el]
   (when-let [^js ro (du/getv el k-resize-obs)]
     (.disconnect ro)
-    (du/setv! el k-resize-obs nil))
-  nil)
+    (du/setv! el k-resize-obs nil)))
 
 ;; ── Model read/apply ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -189,21 +185,18 @@
   ;; data-mode drives host position/z-index via shadow CSS.
   (du/set-attr! el "data-mode" (:mode m))
   (du/set-attr! el "aria-hidden" "true")
-  (du/set-attr! el "tabindex" "-1")
-  nil)
+  (du/set-attr! el "tabindex" "-1"))
 
 (defn- apply-model! [^js el m]
   (ensure-refs! el)
   (apply-host-attrs! el m)
-  (du/setv! el k-model m)
-  nil)
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 (defn- current-model [^js el]
   (or (du/getv el k-model)
@@ -254,8 +247,7 @@
   [^js el count origin ox oy spread velocity gravity duration colors shapes]
   (let [^js arr (du/getv el k-particles)]
     (dotimes [_ count]
-      (.push arr (spawn-particle! el origin ox oy spread velocity gravity duration colors shapes))))
-  nil)
+      (.push arr (spawn-particle! el origin ox oy spread velocity gravity duration colors shapes)))))
 
 ;; ── RAF loop ─────────────────────────────────────────────────────────────────
 (declare animate!)
@@ -263,16 +255,14 @@
 (defn- stop-animation! [^js el]
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
-  nil)
+    (du/setv! el k-raf nil)))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
     (du/setv! el k-last-time (js/performance.now))
     (du/setv! el k-burst-start (js/performance.now))
     (du/setv! el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
 (defn- step-particles! [^js el dt-frames]
   (let [^js arr (du/getv el k-particles)
@@ -298,8 +288,7 @@
               (aset p p-life life)
               (when (or (<= life 0) (> y (+ h despawn-margin)))
                 (aset p p-alive false)))))
-        (recur (inc i)))))
-  nil)
+        (recur (inc i))))))
 
 (defn- compact-particles! [^js el]
   (let [^js arr  (du/getv el k-particles)
@@ -376,8 +365,7 @@
                   (draw-shape! ctx (aget p p-shape) (aget p p-size))
                   (.restore ctx))))
             (recur (inc i))))
-        (set! (.-globalAlpha ctx) 1.0))))
-  nil)
+        (set! (.-globalAlpha ctx) 1.0)))))
 
 (defn- animate! [^js el]
   (du/setv! el k-raf nil)
@@ -392,12 +380,11 @@
         (draw-particles! el)
         (if (pos? alive)
           (du/setv! el k-raf
-                    (js/requestAnimationFrame (fn [_] (animate! el))))
+                    (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el))))
           (let [start    (or (du/getv el k-burst-start) now)
                 duration (js/Math.round (- now start))]
             (du/setv! el k-burst-start nil)
-            (du/dispatch! el model/event-end #js {:duration duration}))))))
-  nil)
+            (du/dispatch! el model/event-end #js {:duration duration})))))))
 
 ;; ── fire() ──────────────────────────────────────────────────────────────────
 (defn- opt-num [^js opts key fallback]
@@ -480,8 +467,7 @@
                           (:duration cfg)
                           resolved-colors
                           (:shapes cfg))
-            (start-animation! el))))))
-  nil)
+            (start-animation! el)))))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -500,8 +486,7 @@
              (not (du/has-attr? el model/attr-disabled))
              (not (du/getv el k-auto-fired)))
     (du/setv! el k-auto-fired true)
-    (do-fire! el nil))
-  nil)
+    (do-fire! el nil)))
 
 (defn- measure-and-size! [^js el]
   ;; Synchronously prime the canvas size before any imperative fire() can run.
@@ -511,28 +496,24 @@
         w        (.-width rect)
         h        (.-height rect)]
     (when (and (pos? w) (pos? h))
-      (resize-canvas! el w h)))
-  nil)
+      (resize-canvas! el w h))))
 
 (defn- connected! [^js el]
   (ensure-refs! el)
   (update-from-attrs! el)
   (measure-and-size! el)
   (setup-resize-observer! el)
-  (maybe-auto-fire! el)
-  nil)
+  (maybe-auto-fire! el))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (teardown-resize-observer! el)
   ;; Drop in-flight particles — coordinates would be stale on reconnect.
-  (du/setv! el k-particles #js [])
-  nil)
+  (du/setv! el k-particles #js []))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 (defn init! []
