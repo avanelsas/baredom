@@ -1,9 +1,8 @@
 (ns baredom.components.x-neural-glow.x-neural-glow
-  (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-neural-glow.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-neural-glow.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs        "__xNeuralRefs")
@@ -171,8 +170,7 @@
     (.appendChild root style)
     (.appendChild root canvas)
     (let [^js gl (init-webgl! el canvas)]
-      (gobj/set el k-refs {:root root :canvas canvas :gl gl})))
-  nil)
+      (gobj/set el k-refs {:root root :canvas canvas :gl gl}))))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -204,8 +202,7 @@
         (.push pos #js [(aget bp 0) (aget bp 1)])))
     (gobj/set el k-orb-base base)
     (gobj/set el k-orb-phases phases)
-    (gobj/set el k-orb-pos pos))
-  nil)
+    (gobj/set el k-orb-pos pos)))
 
 (defn- reconcile-orbs!
   "Adjust orb arrays when orb-count changes."
@@ -228,8 +225,7 @@
         (do
           (set! (.-length base) new-count)
           (set! (.-length pos) new-count)
-          (set! (.-length phases) new-count)))))
-  nil)
+          (set! (.-length phases) new-count))))))
 
 ;; ── Pseudo-noise for orb drift (sum-of-sines) ──────────────────────────────
 (defn- pseudo-noise
@@ -283,8 +279,7 @@
         (.uniform2f gl (gobj/get uniforms (str "u_orb_positions[" i "]"))
                     (aget p 0) (aget p 1)))
       (.uniform1f gl (gobj/get uniforms (str "u_orb_phases[" i "]"))
-                  (aget phases i))))
-  nil)
+                  (aget phases i)))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -360,8 +355,7 @@
 
       ;; Schedule next frame
       (gobj/set el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (gobj/set el k-time 0.0)
@@ -369,14 +363,12 @@
   (gobj/set el k-activity 0.0)
   (gobj/set el k-impulse 0.0)
   (gobj/set el k-raf
-            (js/requestAnimationFrame (fn [_] (animate! el))))
-  nil)
+            (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Activity event handlers ─────────────────────────────────────────────────
 (defn- on-scroll [^js el _e]
@@ -387,8 +379,7 @@
       (let [delta (js/Math.abs (- scroll-y last-y))
             impulse (js/Math.min 1.0 (/ delta 100.0))]
         (gobj/set el k-impulse
-                  (js/Math.min 1.0 (+ (gobj/get el k-impulse) impulse))))))
-  nil)
+                  (js/Math.min 1.0 (+ (gobj/get el k-impulse) impulse)))))))
 
 (defn- on-pointermove [^js el ^js e]
   (let [^js last-ptr (gobj/get el k-last-ptr)
@@ -405,13 +396,11 @@
         (gobj/set last-ptr "x" cx)
         (gobj/set last-ptr "y" cy))
       ;; First event: store position, skip velocity calculation
-      (gobj/set el k-last-ptr #js {"x" cx "y" cy})))
-  nil)
+      (gobj/set el k-last-ptr #js {"x" cx "y" cy}))))
 
 (defn- on-keydown [^js el _e]
   (gobj/set el k-impulse
-            (js/Math.min 1.0 (+ (gobj/get el k-impulse) 0.3)))
-  nil)
+            (js/Math.min 1.0 (+ (gobj/get el k-impulse) 0.3))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -424,8 +413,7 @@
         (.addEventListener js/window "scroll" scroll-fn #js {:passive true})
         (.addEventListener js/window "pointermove" pointer-fn #js {:passive true})
         (.addEventListener js/window "keydown" key-fn #js {:passive true})
-        (gobj/set el k-handlers handlers))))
-  nil)
+        (gobj/set el k-handlers handlers)))))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js handlers (gobj/get el k-handlers)]
@@ -435,14 +423,12 @@
       (.removeEventListener js/window "pointermove" f))
     (when-let [f (gobj/get handlers "key")]
       (.removeEventListener js/window "keydown" f))
-    (gobj/set el k-handlers nil))
-  nil)
+    (gobj/set el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
   (du/set-attr! el "aria-hidden" "true")
-  (du/set-attr! el "role" "presentation")
-  nil)
+  (du/set-attr! el "role" "presentation"))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -579,35 +565,33 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-color-cache #js {})
-  (gobj/set el k-drift-time 0.0)
-  (gobj/set el k-last-ptr nil)
-  (gobj/set el k-last-scroll nil)
-  (ensure-refs! el)
-  (init-orbs! el (:orb-count m))
-  (set-a11y! el)
-  (remove-listeners! el)
-  (add-listeners! el)
-  (start-animation! el))
-  nil)
+    (gobj/set el k-model m)
+    (gobj/set el k-color-cache #js {})
+    (gobj/set el k-drift-time 0.0)
+    (gobj/set el k-last-ptr nil)
+    (gobj/set el k-last-scroll nil)
+    (ensure-refs! el)
+    (init-orbs! el (:orb-count m))
+    (set-a11y! el)
+    (remove-listeners! el)
+    (add-listeners! el)
+    (start-animation! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (gobj/set el k-color-cache #js {})
-  (when (gobj/get el k-refs)
-  (reconcile-orbs! el (:orb-count m))
-  ;; Re-evaluate listeners if interactive changed
-  (remove-listeners! el)
-  (when (.-isConnected el)
-  (add-listeners! el))))))
+    (let [m (read-model el)]
+      (gobj/set el k-model m)
+      (gobj/set el k-color-cache #js {})
+      (when (gobj/get el k-refs)
+        (reconcile-orbs! el (:orb-count m))
+        ;; Re-evaluate listeners if interactive changed
+        (remove-listeners! el)
+        (when (.-isConnected el)
+          (add-listeners! el))))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

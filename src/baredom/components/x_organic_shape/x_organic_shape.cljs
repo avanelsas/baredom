@@ -113,8 +113,7 @@
     (.appendChild root base)
     (gobj/set el k-base        base)
     (gobj/set el k-slot        slot-el)
-    (gobj/set el k-initialized true))
-  nil)
+    (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -170,8 +169,7 @@
       (du/remove-attr! el "data-animation"))
 
     ;; Accessibility
-    (update-a11y! el slot-el))
-  nil)
+    (update-a11y! el slot-el)))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -182,14 +180,12 @@
         handler (fn [] (update-a11y! el slot-el))]
     (gobj/set el k-slotchange handler)
     (.addEventListener slot-el "slotchange" handler))
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

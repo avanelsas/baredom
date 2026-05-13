@@ -116,8 +116,7 @@
     (gobj/set el k-base        base)
     (gobj/set el k-svg         svg)
     (gobj/set el k-paths       #js [])
-    (gobj/set el k-initialized true))
-  nil)
+    (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -208,21 +207,18 @@
     ;; Animation data attribute
     (if (not= animation "none")
       (du/set-attr! el "data-animation" animation)
-      (du/remove-attr! el "data-animation")))
-  nil)
+      (du/remove-attr! el "data-animation"))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
