@@ -381,16 +381,14 @@
       (.setAttribute r "width" (str width))
       (.setAttribute r "height" (str height))
       (.setAttribute r "rx" (str rx))
-      (.setAttribute r "ry" (str ry))))
-  nil)
+      (.setAttribute r "ry" (str ry)))))
 
 ;; ── Update popover position ─────────────────────────────────────────────────
 (defn- update-popover-position!
   "Position the popover at the given coordinates."
   [^js popover x y]
   (set! (.. popover -style -left) (str x "px"))
-  (set! (.. popover -style -top) (str y "px"))
-  nil)
+  (set! (.. popover -style -top) (str y "px")))
 
 ;; ── Update arrow ────────────────────────────────────────────────────────────
 (defn- update-arrow!
@@ -423,8 +421,7 @@
       (when-let [v (:border-bottom-color styles)] (set! (.. arrow-el -style -borderBottomColor) v))
       (when-let [v (:border-left-color styles)]   (set! (.. arrow-el -style -borderLeftColor) v))
       (when-let [v (:border-right-color styles)]  (set! (.. arrow-el -style -borderRightColor) v)))
-    (set! (.. arrow-el -style -display) "none"))
-  nil)
+    (set! (.. arrow-el -style -display) "none")))
 
 ;; ── Update connector SVG ────────────────────────────────────────────────────
 (defn- update-connector!
@@ -437,8 +434,7 @@
           d (model/connector-path-d connector-type target-point popover-point final-placement)]
       (set! (.. conn-svg -style -display) "block")
       (.setAttribute conn-path "d" (or d "")))
-    (set! (.. conn-svg -style -display) "none"))
-  nil)
+    (set! (.. conn-svg -style -display) "none")))
 
 ;; ── Update dots ─────────────────────────────────────────────────────────────
 (defn- update-dots!
@@ -455,8 +451,7 @@
           (when (= i step)
             (.setAttribute dot "data-active" ""))
           (.appendChild dots-el dot))))
-    (set! (.. dots-el -style -display) "none"))
-  nil)
+    (set! (.. dots-el -style -display) "none")))
 
 ;; ── Inject step content into popover body ───────────────────────────────────
 (defn- inject-step-content!
@@ -469,8 +464,7 @@
       (when (< i len)
         (let [^js child (aget children i)]
           (.appendChild body-el (.cloneNode child true)))
-        (recur (inc i)))))
-  nil)
+        (recur (inc i))))))
 
 ;; ── Focus trap ──────────────────────────────────────────────────────────────
 (defn- collect-tabbables
@@ -489,8 +483,7 @@
         tabbables (collect-tabbables popover)]
     (if (seq tabbables)
       (.focus (first tabbables))
-      (.focus next-btn)))
-  nil)
+      (.focus next-btn))))
 
 (defn- deactivate-focus-trap!
   "Restore focus to the element that was focused before the tour opened."
@@ -498,8 +491,7 @@
   (let [^js restore (du/getv el k-restore)]
     (when (and restore (.-isConnected restore))
       (.focus restore)))
-  (du/setv! el k-restore nil)
-  nil)
+  (du/setv! el k-restore nil))
 
 (defn- cycle-focus!
   "Handle Tab key cycling within the popover."
@@ -521,8 +513,7 @@
           (do (.preventDefault e) (.focus last-el))
 
           (and (not shift?) (= act last-el))
-          (do (.preventDefault e) (.focus first-el))))))
-  nil)
+          (do (.preventDefault e) (.focus first-el)))))))
 
 ;; ── Event dispatching ───────────────────────────────────────────────────────
 ;; ── Scroll target into view ─────────────────────────────────────────────────
@@ -535,8 +526,7 @@
       (when (or (< (.-top rect) 0) (> (.-bottom rect) vh))
         (.scrollIntoView target-el #js {:behavior "smooth"
                                         :block    "center"
-                                        :inline   "center"}))))
-  nil)
+                                        :inline   "center"})))))
 
 ;; ── Read host model ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -553,11 +543,12 @@
 
 ;; ── Core render ─────────────────────────────────────────────────────────────
 (defn- render!
-  "Main render function. Reads current state and updates the overlay layer."
+  "Main render function. Reads current state and updates the overlay layer.
+   Caches `k-model` at the tail so a throw in any effect leaves the cache
+   pointing at the last successfully applied state (epochal-time rule)."
   [^js el]
   (let [m          (read-model el)
         layer-refs (du/getv el k-layer)]
-    (du/setv! el k-model m)
     (if-not (:open? m)
       ;; --- Tour closed ---
       (when layer-refs
@@ -642,8 +633,8 @@
 
             ;; Close button label
             (.setAttribute (:close-btn refs) "aria-label"
-                          (str (:skip-label m) " tour")))))))
-  nil)
+                          (str (:skip-label m) " tour"))))))
+    (du/setv! el k-model m)))
 
 ;; ── Forward declarations ────────────────────────────────────────────────────
 (declare add-listeners!)
@@ -659,8 +650,7 @@
                (fn []
                  (du/setv! el k-raf nil)
                  (when (and (.-isConnected el) (du/getv el k-layer))
-                   (render! el))))))
-  nil)
+                   (render! el)))))))
 
 ;; ── Open / close orchestration ──────────────────────────────────────────────
 (defn- open-tour! [^js el]
@@ -677,13 +667,11 @@
             (when (:scroll-to? step-m)
               (scroll-target-into-view! (resolve-target (:target step-m)))))))
       ;; Focus trap after a tick to allow scroll
-      (js/setTimeout (fn [] (activate-focus-trap! el layer-refs)) 50)))
-  nil)
+      (js/setTimeout (fn [] (activate-focus-trap! el layer-refs)) 50))))
 
 (defn- close-tour! [^js el]
   (remove-listeners! el)
-  (render! el)
-  nil)
+  (render! el))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────
 (defn- do-complete! [^js el]
@@ -691,24 +679,19 @@
         m     (or (du/getv el k-model) (read-model el))]
     (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-complete
-                 (clj->js (model/complete-detail (inc (model/clamp-step (:step m) total))))))
-
-  nil)
+                 (clj->js (model/complete-detail (inc (model/clamp-step (:step m) total)))))))
 
 (defn- do-skip! [^js el]
   (let [m     (or (du/getv el k-model) (read-model el))
         total (.-length (get-step-els el))]
     (du/remove-attr! el model/attr-open)
     (du/dispatch! el model/event-skip
-                 (clj->js (model/skip-detail (model/clamp-step (:step m) total)))))
-
-  nil)
+                 (clj->js (model/skip-detail (model/clamp-step (:step m) total))))))
 
 (defn- do-start! [^js el]
   (du/set-attr! el model/attr-step "0")
   (du/set-attr! el model/attr-open "")
-  (du/dispatch! el model/event-start (clj->js {}))
-  nil)
+  (du/dispatch! el model/event-start (clj->js {})))
 
 (defn- do-next! [^js el]
   (let [m     (or (du/getv el k-model) (read-model el))
@@ -724,8 +707,7 @@
           (let [step-els (get-step-els el)
                 step-m   (read-step-model (aget step-els new-step))]
             (when (:scroll-to? step-m)
-              (scroll-target-into-view! (resolve-target (:target step-m)))))))))
-  nil)
+              (scroll-target-into-view! (resolve-target (:target step-m))))))))))
 
 (defn- do-prev! [^js el]
   (let [m     (or (du/getv el k-model) (read-model el))
@@ -739,8 +721,7 @@
           (let [step-els (get-step-els el)
                 step-m   (read-step-model (aget step-els new-step))]
             (when (:scroll-to? step-m)
-              (scroll-target-into-view! (resolve-target (:target step-m)))))))))
-  nil)
+              (scroll-target-into-view! (resolve-target (:target step-m))))))))))
 
 (defn- do-go-to! [^js el n]
   (let [m     (or (du/getv el k-model) (read-model el))
@@ -750,8 +731,7 @@
     (when (and (not= old new-s)
                (du/dispatch-cancelable! el model/event-step-change
                                         (clj->js (model/step-change-detail new-s old))))
-      (du/set-attr! el model/attr-step (str new-s))))
-  nil)
+      (du/set-attr! el model/attr-step (str new-s)))))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-keydown [^js el ^js e]
@@ -767,15 +747,13 @@
       (do (.preventDefault e) (do-prev! el))
 
       (= key "Tab")
-      (cycle-focus! el e)))
-  nil)
+      (cycle-focus! el e))))
 
 (defn- on-backdrop-click [^js el ^js e]
   ;; Only trigger skip when clicking the backdrop SVG itself
   (let [layer-refs (du/getv el k-layer)]
     (when (and layer-refs (= (.-target e) (:svg layer-refs)))
-      (do-skip! el)))
-  nil)
+      (do-skip! el))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -809,8 +787,7 @@
                   {:key key-h :click click-h :scroll scroll-h
                    :prev prev-h :next next-h :close close-h
                    :shadow shadow})
-        (du/setv! el k-resize-obs resize-obs))))
-  nil)
+        (du/setv! el k-resize-obs resize-obs)))))
 
 (defn- remove-listeners! [^js el]
   (let [hs (du/getv el k-handlers)]
@@ -832,8 +809,7 @@
     (when raf (js/cancelAnimationFrame raf)))
   (du/setv! el k-handlers nil)
   (du/setv! el k-resize-obs nil)
-  (du/setv! el k-raf nil)
-  nil)
+  (du/setv! el k-raf nil))
 
 ;; ── MutationObserver for child steps ────────────────────────────────────────
 (defn- install-mutation-observer! [^js el]
@@ -842,14 +818,12 @@
                     (when (du/getv el k-layer)
                       (render! el))))]
     (.observe observer el #js {:childList true})
-    (du/setv! el k-observer observer))
-  nil)
+    (du/setv! el k-observer observer)))
 
 (defn- remove-mutation-observer! [^js el]
   (let [^js obs (du/getv el k-observer)]
     (when obs (.disconnect obs)))
-  (du/setv! el k-observer nil)
-  nil)
+  (du/setv! el k-observer nil))
 
 ;; ── Host shadow DOM (minimal) ───────────────────────────────────────────────
 (defn- init-host-dom! [^js el]
@@ -859,8 +833,7 @@
     (set! (.-textContent style) host-style-text)
     (.appendChild root style)
     (.appendChild root slot)
-    (du/setv! el k-refs {:root root}))
-  nil)
+    (du/setv! el k-refs {:root root})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -875,8 +848,7 @@
     (du/setv! el k-model m)
     (du/setv! el k-prev-open (:open? m))
     (when (:open? m)
-      (open-tour! el)))
-  nil)
+      (open-tour! el))))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
@@ -885,8 +857,7 @@
     (when layer-refs
       (overlay/remove-layer! (:layer layer-refs))
       (du/setv! el k-layer nil)))
-  (deactivate-focus-trap! el)
-  nil)
+  (deactivate-focus-trap! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (and (not= old-val new-val) (.-isConnected el))
@@ -898,8 +869,7 @@
       (cond
         (and (not was-open) now-open) (open-tour! el)
         (and was-open (not now-open)) (close-tour! el)
-        now-open                      (render! el))))
-  nil)
+        now-open                      (render! el)))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

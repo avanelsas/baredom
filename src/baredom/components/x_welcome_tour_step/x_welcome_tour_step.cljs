@@ -23,8 +23,7 @@
     (set! (.-textContent style) style-text)
     (.appendChild root style)
     (.appendChild root slot)
-    (du/setv! el k-refs {:root root :slot slot}))
-  nil)
+    (du/setv! el k-refs {:root root :slot slot})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -46,8 +45,7 @@
 
 (defn- update-model! [^js el]
   (let [new-m (read-model el)]
-    (du/setv! el k-model new-m))
-  nil)
+    (du/setv! el k-model new-m)))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -78,29 +76,10 @@
   (du/define-string-prop! proto "placement" model/attr-placement "bottom")
   (du/define-string-prop! proto "connector" model/attr-connector)
 
-  (.defineProperty js/Object proto "cutoutPadding"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-cutout-padding
-                                         (du/get-attr this model/attr-cutout-padding))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-cutout-padding (str v))
-                                          (.removeAttribute this model/attr-cutout-padding))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto "cutoutRadius"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-cutout-radius
-                                         (du/get-attr this model/attr-cutout-radius))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this model/attr-cutout-radius (str v))
-                                          (.removeAttribute this model/attr-cutout-radius))))
-                        :enumerable true :configurable true})
+  (du/define-parsed-prop! proto "cutoutPadding" model/attr-cutout-padding
+                          model/parse-cutout-padding)
+  (du/define-parsed-prop! proto "cutoutRadius"  model/attr-cutout-radius
+                          model/parse-cutout-radius)
 
   (.defineProperty js/Object proto "scrollTo"
                    #js {:get (fn []
@@ -120,17 +99,14 @@
 (defn- connected! [^js el]
   (ensure-refs! el)
   (update-model! el)
-  (du/dispatch! el model/event-connected #js {})
-  nil)
+  (du/dispatch! el model/event-connected #js {}))
 
 (defn- disconnected! [^js _el]
-  (du/dispatch-document! model/event-disconnected)
-  nil)
+  (du/dispatch-document! model/event-disconnected))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-model! el))
-  nil)
+    (update-model! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 
