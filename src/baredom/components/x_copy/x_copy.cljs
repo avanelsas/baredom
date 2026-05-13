@@ -7,9 +7,28 @@
 
 ;; ── Instance-field keys (always use gobj/get, gobj/set) ─────────────────────
 (def ^:private k-refs      "__xCopyRefs")
+(def ^:private k-model     "__xCopyModel")
 (def ^:private k-handlers  "__xCopyHandlers")
 (def ^:private k-tid       "__xCopyTid")
 (def ^:private k-text-val  "__xCopyTextValue")
+
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private attr-aria-disabled      "aria-disabled")
+(def ^:private attr-data-tooltip-open  "data-tooltip-open")
+(def ^:private attr-data-tooltip-kind  "data-tooltip-kind")
+
+(def ^:private rk-tooltip-text "tooltipText")
+(def ^:private rk-trigger      "trigger")
+
+(def ^:private val-true     "true")
+(def ^:private mode-html    "html")
+(def ^:private mode-text    "text")
+(def ^:private kind-success "success")
+(def ^:private kind-error   "error")
+
+(def ^:private mime-text-html  "text/html")
+(def ^:private mime-text-plain "text/plain")
+(def ^:private cmd-copy        "copy")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -175,59 +194,76 @@
               "")))))))
 
 ;; ── Clipboard logic ───────────────────────────────────────────────────────────
+(defn- copy-via-textarea!
+  "Fallback path: write to a transient textarea + document.execCommand('copy').
+  Used when navigator.clipboard isn't available, or when ClipboardItem
+  isn't supported but the user requested HTML mode."
+  [text]
+  (let [^js ta (make-el js/document "textarea")]
+    (set! (.-value ta) text)
+    (set! (.. ta -style -position) "fixed")
+    (set! (.. ta -style -opacity) "0")
+    (.appendChild (.-body js/document) ta)
+    (.select ta)
+    (.execCommand js/document cmd-copy)
+    (.remove ta)))
+
+(defn- make-clipboard-item-payload
+  "Build the {mime-type -> Blob} JS object passed to new ClipboardItem.
+  Built via gobj/set rather than a `#js {}` literal because the mime-type
+  keys are runtime symbols, not read-time literals."
+  [text]
+  (let [payload #js {}]
+    (gobj/set payload mime-text-html  (js/Blob. #js [text] #js {:type mime-text-html}))
+    (gobj/set payload mime-text-plain (js/Blob. #js [text] #js {:type mime-text-plain}))
+    payload))
+
+(defn- copy-html!
+  "Copy `text` as both text/html and text/plain via navigator.clipboard.write
+  when available; otherwise fall back to the textarea path. Resolves with
+  `text` so callers can chain .then to read it back."
+  [text]
+  (if (and (.-clipboard js/navigator) (.-ClipboardItem js/window))
+    (.then (.write (.-clipboard js/navigator)
+                   (clj->js [(js/ClipboardItem. (make-clipboard-item-payload text))]))
+           (fn html-write-resolved [_] text))
+    (js/Promise.
+     (fn handle-html-fallback [resolve reject]
+       (try (copy-via-textarea! text) (resolve text)
+            (catch js/Error e (reject e)))))))
+
+(defn- copy-text!
+  "Copy `text` as text/plain via navigator.clipboard.writeText when available;
+  on failure (or when unavailable) fall back to the textarea path. Resolves
+  with `text`."
+  [text]
+  (if (.-clipboard js/navigator)
+    (-> (.writeText (.-clipboard js/navigator) text)
+        (.then (fn text-write-resolved [_] text))
+        (.catch (fn handle-write-fail [e]
+                  (js/Promise.
+                   (fn handle-text-retry [resolve reject]
+                     (try (copy-via-textarea! text) (resolve text)
+                          (catch js/Error _ (reject e))))))))
+    (js/Promise.
+     (fn handle-text-fallback [resolve reject]
+       (try (copy-via-textarea! text) (resolve text)
+            (catch js/Error e (reject e)))))))
+
 (defn- do-copy! [^js el]
   (let [text (resolve-text el)
-        mode (or (du/get-attr el model/attr-mode) "text")]
-    (js/Promise.
-     (fn [resolve reject]
-       (cond
-         (= mode "html")
-         (if (and (.-clipboard js/navigator)
-                  (.-ClipboardItem js/window))
-           (-> (.write (.-clipboard js/navigator)
-                       (clj->js [(js/ClipboardItem.
-                                  #js {"text/html"  (js/Blob. #js [text] #js {:type "text/html"})
-                                       "text/plain" (js/Blob. #js [text] #js {:type "text/plain"})})]))
-               (.then (fn [] (resolve text)))
-               (.catch (fn [e] (reject e))))
-           (try
-             (let [^js ta (make-el js/document "textarea")]
-               (set! (.-value ta) text)
-               (.appendChild (.-body js/document) ta)
-               (.select ta)
-               (.execCommand js/document "copy")
-               (.remove ta)
-               (resolve text))
-             (catch js/Error e (reject e))))
-
-         :else
-         (if (.-clipboard js/navigator)
-           (-> (.writeText (.-clipboard js/navigator) text)
-               (.then (fn [] (resolve text)))
-               (.catch (fn [e]
-                         (try
-                           (.execCommand js/document "copy")
-                           (resolve text)
-                           (catch js/Error _ (reject e))))))
-           (try
-             (let [^js ta (make-el js/document "textarea")]
-               (set! (.-value ta) text)
-               (set! (.. ta -style -position) "fixed")
-               (set! (.. ta -style -opacity) "0")
-               (.appendChild (.-body js/document) ta)
-               (.select ta)
-               (.execCommand js/document "copy")
-               (.remove ta)
-               (resolve text))
-             (catch js/Error e (reject e)))))))))
+        mode (or (du/get-attr el model/attr-mode) mode-text)]
+    (if (= mode mode-html)
+      (copy-html! text)
+      (copy-text! text))))
 
 ;; ── Tooltip ───────────────────────────────────────────────────────────────────
 (defn- hide-tooltip! [^js el]
-  (du/remove-attr! el "data-tooltip-open")
-  (du/remove-attr! el "data-tooltip-kind")
+  (du/remove-attr! el attr-data-tooltip-open)
+  (du/remove-attr! el attr-data-tooltip-kind)
   (let [refs (gobj/get el k-refs)]
     (when refs
-      (set! (.-textContent (gobj/get refs "tooltipText")) ""))))
+      (set! (.-textContent (gobj/get refs rk-tooltip-text)) ""))))
 
 (defn- show-tooltip! [^js el kind message tooltip-ms]
   (let [refs (gobj/get el k-refs)]
@@ -235,9 +271,9 @@
       (when-let [tid (gobj/get el k-tid)]
         (js/clearTimeout tid)
         (gobj/set el k-tid nil))
-      (du/set-attr! el "data-tooltip-open" "")
-      (du/set-attr! el "data-tooltip-kind" kind)
-      (set! (.-textContent (gobj/get refs "tooltipText")) message)
+      (du/set-attr! el attr-data-tooltip-open "")
+      (du/set-attr! el attr-data-tooltip-kind kind)
+      (set! (.-textContent (gobj/get refs rk-tooltip-text)) message)
       (gobj/set el k-tid
                 (js/setTimeout
                  (fn on-tooltip-timeout []
@@ -259,13 +295,13 @@
              (fn [text]
                (du/dispatch! el model/event-copy-success (model/success-detail text))
                (when (:show-tooltip? m)
-                 (show-tooltip! el "success" (:success-message m) (:tooltip-ms m)))
+                 (show-tooltip! el kind-success (:success-message m) (:tooltip-ms m)))
                text))
             (.catch
              (fn [err]
                (du/dispatch! el model/event-copy-error (model/error-detail err))
                (when (:show-tooltip? m)
-                 (show-tooltip! el "error" (:error-message m) (:tooltip-ms m)))
+                 (show-tooltip! el kind-error (:error-message m) (:tooltip-ms m)))
                (js/Promise.reject err))))))))
 
 ;; ── Hotkey parsing ────────────────────────────────────────────────────────────
@@ -314,28 +350,39 @@
   (gobj/set el k-handlers nil))
 
 ;; ── Render ────────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [refs    (ensure-refs! el)
-        ^js trigger (gobj/get refs "trigger")
-        disabled? (du/has-attr? el model/attr-disabled)]
+;; The model drives only the disabled state on the trigger + aria-disabled on
+;; the host. Other model fields (text, success-message, etc.) are consumed by
+;; the click/hotkey handlers via read-model and don't need to project to DOM.
+(defn- apply-model! [^js el m]
+  (let [refs        (ensure-refs! el)
+        ^js trigger (gobj/get refs rk-trigger)
+        disabled?   (:disabled? m)]
     (set! (.-disabled trigger) (boolean disabled?))
     (if disabled?
-      (du/set-attr! el "aria-disabled" "true")
-      (du/remove-attr! el "aria-disabled"))))
+      (du/set-attr!    el attr-aria-disabled val-true)
+      (du/remove-attr! el attr-aria-disabled))
+    (gobj/set el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]

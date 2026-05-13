@@ -8,7 +8,28 @@
 ;; Instance field keys (always use gobj/get, gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs     "__xFileDownloadRefs")
+(def ^:private k-model    "__xFileDownloadModel")
 (def ^:private k-handlers "__xFileDownloadHandlers")
+
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part          "part")
+(def ^:private attr-download      "download")
+(def ^:private attr-aria-label    "aria-label")
+(def ^:private attr-aria-disabled "aria-disabled")
+(def ^:private attr-data-disabled "data-disabled")
+
+(def ^:private part-anchor  "anchor")
+(def ^:private part-icon    "icon")
+(def ^:private part-content "content")
+
+(def ^:private val-true "true")
+
+(def ^:private rk-anchor  "anchor-el")
+(def ^:private rk-icon    "icon-el")
+(def ^:private rk-content "content-el")
+
+(def ^:private ev-click "click")
+(def ^:private hk-click "click")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -113,11 +134,10 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! anchor-el  "part" "anchor")
-    (du/set-attr! icon-el    "part" "icon")
-    (du/set-attr! content-el "part" "content")
+    (du/set-attr! anchor-el  attr-part part-anchor)
+    (du/set-attr! icon-el    attr-part part-icon)
+    (du/set-attr! content-el attr-part part-content)
 
-    ;; Set static download icon
     (set! (.-innerHTML icon-el) download-icon-svg)
 
     (.appendChild content-el slot-el)
@@ -126,9 +146,15 @@
     (.appendChild root style-el)
     (.appendChild root anchor-el)
 
-    (let [refs #js {:anchor-el anchor-el :icon-el icon-el :content-el content-el}]
+    (let [refs #js {}]
+      (gobj/set refs rk-anchor  anchor-el)
+      (gobj/set refs rk-icon    icon-el)
+      (gobj/set refs rk-content content-el)
       (gobj/set el k-refs refs)
       refs)))
+
+(defn- ensure-refs! [^js el]
+  (or (gobj/get el k-refs) (make-shadow! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes
@@ -141,93 +167,102 @@
     :aria-label-raw    (du/get-attr el model/attr-aria-label)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; DOM patching (render-orchestrator: phase list of named helpers)
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-href! [^js anchor-el {:keys [href]}]
+  (set! (.-href anchor-el) href))
+
+(defn- apply-download-attr! [^js anchor-el {:keys [href filename]}]
+  ;; data: URLs must always carry the download attribute — browsers block
+  ;; top-frame navigation to data URLs, so without it clicking fails.
+  (cond
+    (and (string? filename) (not= filename ""))
+    (du/set-attr! anchor-el attr-download filename)
+
+    (model/data-url? href)
+    (du/set-attr! anchor-el attr-download "")
+
+    :else
+    (du/remove-attr! anchor-el attr-download)))
+
+(defn- apply-anchor-aria! [^js anchor-el {:keys [disabled? aria-label]}]
+  (if disabled?
+    (du/set-attr!    anchor-el attr-aria-disabled val-true)
+    (du/remove-attr! anchor-el attr-aria-disabled))
+  (if aria-label
+    (du/set-attr!    anchor-el attr-aria-label aria-label)
+    (du/remove-attr! anchor-el attr-aria-label)))
+
+(defn- apply-host-data! [^js el {:keys [disabled?]}]
+  (du/set-bool-attr! el attr-data-disabled disabled?))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js anchor-el (gobj/get refs "anchor-el")
-          m             (read-model el)
-          href          (:href m)
-          filename      (:filename m)
-          disabled?     (:disabled? m)
-          aria-label    (:aria-label m)]
+    (let [^js anchor-el (gobj/get refs rk-anchor)]
+      (apply-href!          anchor-el m)
+      (apply-download-attr! anchor-el m)
+      (apply-anchor-aria!   anchor-el m)
+      (apply-host-data!     el        m)
+      (gobj/set el k-model m))))
 
-      ;; Set href on anchor
-      (set! (.-href anchor-el) href)
-
-      ;; Set or remove download attribute.
-      ;; data: URLs must always carry the download attribute — browsers block
-      ;; top-frame navigation to data URLs, so without it clicking fails.
-      (cond
-        (and (string? filename) (not= filename ""))
-        (du/set-attr! anchor-el "download" filename)
-
-        (model/data-url? href)
-        (du/set-attr! anchor-el "download" "")
-
-        :else
-        (du/remove-attr! anchor-el "download"))
-
-      ;; aria-disabled on anchor
-      (if disabled?
-        (du/set-attr! anchor-el "aria-disabled" "true")
-        (du/remove-attr! anchor-el "aria-disabled"))
-
-      ;; aria-label forwarded to anchor
-      (if aria-label
-        (du/set-attr! anchor-el "aria-label" aria-label)
-        (du/remove-attr! anchor-el "aria-label"))
-
-      ;; data-disabled on host for CSS hooks
-      (du/set-bool-attr! el "data-disabled" disabled?))))
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
-;; Click handler
+;; Event handlers
 ;; ---------------------------------------------------------------------------
-(defn- make-click-handler [^js el]
-  (fn [^js evt]
-    (let [disabled? (du/has-attr? el model/attr-disabled)]
-      (if disabled?
-        (.preventDefault evt)
-        (let [m      (read-model el)
-              detail #js {:href (:href m) :filename (:filename m)}]
-          (when-not (du/dispatch-cancelable! el model/event-click detail)
-            (.preventDefault evt)))))))
+(defn- on-anchor-click [^js el ^js evt]
+  (let [disabled? (du/has-attr? el model/attr-disabled)]
+    (if disabled?
+      (.preventDefault evt)
+      ;; current-model isn't worth the bookkeeping for one read site; a fresh
+      ;; read is fine here because clicks are user-driven and rare relative
+      ;; to attribute mutations.
+      (let [m      (read-model el)
+            detail #js {:href (:href m) :filename (:filename m)}]
+        (when-not (du/dispatch-cancelable! el model/event-click detail)
+          (.preventDefault evt))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (let [refs      (gobj/get el k-refs)
-        ^js anchor (gobj/get refs "anchor-el")
-        click-h   (make-click-handler el)]
-    (.addEventListener anchor "click" click-h)
-    (gobj/set el k-handlers #js {:click click-h})))
+  (let [refs       (gobj/get el k-refs)
+        ^js anchor (gobj/get refs rk-anchor)
+        click-h    (fn handle-anchor-click [evt] (on-anchor-click el evt))
+        handlers   #js {}]
+    (.addEventListener anchor ev-click click-h)
+    (gobj/set handlers hk-click click-h)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
         refs (gobj/get el k-refs)]
     (when (and hs refs)
-      (let [^js anchor  (gobj/get refs "anchor-el")
-            click-h     (gobj/get hs "click")]
-        (when click-h (.removeEventListener anchor "click" click-h)))))
+      (let [^js anchor (gobj/get refs rk-anchor)
+            click-h    (gobj/get hs hk-click)]
+        (when click-h (.removeEventListener anchor ev-click click-h)))))
   (gobj/set el k-handlers nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
-    (make-shadow! el))
+  (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
