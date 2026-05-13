@@ -224,6 +224,29 @@
                           (set-attr! this attr-name (str v))
                           (remove-attr! this attr-name))))}))
 
+(defn define-parsed-prop!
+  "Install a JS property whose getter runs `parse-fn` on the raw HTML
+   attribute value — so authors who write un-normalised attribute values
+   still see the *parsed* value through the property.
+
+   Setter coerces v to its string form via `(str v)` and writes the
+   attribute, or removes the attribute when v is nil/undefined.
+
+   This replaces ~12 lines of hand-rolled `.defineProperty` boilerplate
+   per property in components whose getters need to run a parse-fn
+   (Tier-2 components like x-liquid-dock / x-liquid-fill /
+   x-liquid-glass / x-metaball-cursor)."
+  [^js proto prop-name attr-name parse-fn]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this (parse-fn (get-attr this attr-name))))
+        :set (fn [v] (this-as ^js this
+                       (if-let [s (normalize-prop-val v)]
+                         (set-attr! this attr-name s)
+                         (remove-attr! this attr-name))))}))
+
 (defn install-properties!
   "Install JS property accessors on a prototype, driven by a property-api map.
    Each entry is {prop-key {:type 'boolean|'string|'number

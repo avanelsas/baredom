@@ -347,125 +347,28 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; blobCount → blob-count
-  (.defineProperty js/Object proto "blobCount"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blob-count
-                                         (.getAttribute this model/attr-blob-count))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blob-count)
-                                          (.setAttribute this model/attr-blob-count (str (int v))))))
-                        :enumerable true :configurable true})
-
-  ;; blobSize → blob-size
-  (.defineProperty js/Object proto "blobSize"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blob-size
-                                         (.getAttribute this model/attr-blob-size))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blob-size)
-                                          (.setAttribute this model/attr-blob-size (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; color
-  (.defineProperty js/Object proto "color"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color
-                                         (.getAttribute this model/attr-color))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color)
-                                          (.setAttribute this model/attr-color (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; noise (boolean)
-  (du/define-bool-prop! proto "noise" model/attr-noise)
-
-  ;; noiseScale → noise-scale
-  (.defineProperty js/Object proto "noiseScale"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-noise-scale
-                                         (.getAttribute this model/attr-noise-scale))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-noise-scale)
-                                          (.setAttribute this model/attr-noise-scale (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; noiseSpeed → noise-speed
-  (.defineProperty js/Object proto "noiseSpeed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-noise-speed
-                                         (.getAttribute this model/attr-noise-speed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-noise-speed)
-                                          (.setAttribute this model/attr-noise-speed (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; noiseIntensity → noise-intensity
-  (.defineProperty js/Object proto "noiseIntensity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-noise-intensity
-                                         (.getAttribute this model/attr-noise-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-noise-intensity)
-                                          (.setAttribute this model/attr-noise-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; blur
-  (.defineProperty js/Object proto "blur"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-blur
-                                         (.getAttribute this model/attr-blur))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-blur)
-                                          (.setAttribute this model/attr-blur (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; threshold
-  (.defineProperty js/Object proto "threshold"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-threshold
-                                         (.getAttribute this model/attr-threshold))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-threshold)
-                                          (.setAttribute this model/attr-threshold (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; palette
+  (du/define-parsed-prop! proto "blobCount"      model/attr-blob-count      model/parse-blob-count)
+  (du/define-parsed-prop! proto "blobSize"       model/attr-blob-size       model/parse-blob-size)
+  (du/define-parsed-prop! proto "color"          model/attr-color           model/parse-color)
+  (du/define-bool-prop!   proto "noise"          model/attr-noise)
+  (du/define-parsed-prop! proto "noiseScale"     model/attr-noise-scale     model/parse-noise-scale)
+  (du/define-parsed-prop! proto "noiseSpeed"     model/attr-noise-speed     model/parse-noise-speed)
+  (du/define-parsed-prop! proto "noiseIntensity" model/attr-noise-intensity model/parse-noise-intensity)
+  (du/define-parsed-prop! proto "blur"           model/attr-blur            model/parse-blur)
+  (du/define-parsed-prop! proto "threshold"      model/attr-threshold       model/parse-threshold)
+  ;; palette has strict-empty setter semantics: setting "" removes the attr
+  ;; (so the palette falls back to its default), unlike define-parsed-prop!
+  ;; which would store "" as an explicit empty attribute.
   (.defineProperty js/Object proto "palette"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-palette
-                                         (.getAttribute this model/attr-palette))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (or (nil? v) (= "" v))
-                                          (.removeAttribute this model/attr-palette)
-                                          (.setAttribute this model/attr-palette (str v)))))
-                        :enumerable true :configurable true}))
+    #js {:get (fn []
+                (this-as ^js this
+                  (model/parse-palette (.getAttribute this model/attr-palette))))
+         :set (fn [v]
+                (this-as ^js this
+                  (if (or (nil? v) (= "" v))
+                    (.removeAttribute this model/attr-palette)
+                    (.setAttribute this model/attr-palette (str v)))))
+         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
