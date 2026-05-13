@@ -1,49 +1,45 @@
 (ns baredom.components.x-container.x-container
-  (:require [baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-            [baredom.components.x-container.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-container.model :as model]))
 
-(def ^:private state-key "__xContainerState")
+;; ── Instance-field keys ────────────────────────────────────────────────────
+(def ^:private k-refs  "__xContainerRefs")
+(def ^:private k-model "__xContainerModel")
 
-(defn- get-prop [^js obj k] (aget obj k))
-(defn- set-prop! [^js obj k v] (aset obj k v))
+;; ── Refs-object keys ───────────────────────────────────────────────────────
+(def ^:private rk-root "root")
+(def ^:private rk-base "base")
+(def ^:private rk-slot "slot")
 
-(defn- get-el-state [^js el]
-  (get-prop el state-key))
+;; ── String-literal constants ───────────────────────────────────────────────
+(def ^:private attr-part         "part")
+(def ^:private attr-aria-label   "aria-label")
+(def ^:private attr-data-size    "data-size")
+(def ^:private attr-data-padding "data-padding")
+(def ^:private attr-data-center  "data-center")
+(def ^:private attr-data-fluid   "data-fluid")
 
-(defn- set-el-state! [^js el state]
-  (set-prop! el state-key state))
+(def ^:private part-base "base")
+(def ^:private val-true  "true")
+(def ^:private val-false "false")
 
-(defn- get-default-true-bool
-  [^js el attr-name]
-  (not= "false" (du/get-attr el attr-name)))
+;; ── Helpers ────────────────────────────────────────────────────────────────
+(defn- get-default-true-bool [^js el attr-name]
+  (not= val-false (du/get-attr el attr-name)))
 
-(defn- read-public-state [^js el]
+(defn- read-model [^js el]
   (model/public-state
-   {:as (du/get-attr el model/attr-as)
-    :size (du/get-attr el model/attr-size)
+   {:as      (du/get-attr el model/attr-as)
+    :size    (du/get-attr el model/attr-size)
     :padding (du/get-attr el model/attr-padding)
-    :center (get-default-true-bool el model/attr-center)
-    :fluid (du/has-attr? el model/attr-fluid)
-    :label (du/get-attr el model/attr-label)}))
+    :center  (get-default-true-bool el model/attr-center)
+    :fluid   (du/has-attr? el model/attr-fluid)
+    :label   (du/get-attr el model/attr-label)}))
 
-(defn- define-default-true-bool-prop!
-  [^js proto prop attr]
-  (.defineProperty
-   js/Object
-   proto
-   prop
-   #js {:configurable true
-        :enumerable true
-        :get (fn []
-               (this-as ^js this
-                        (get-default-true-bool this attr)))
-        :set (fn [v]
-               (this-as ^js this
-                        (if (boolean v)
-                          (.removeAttribute this attr)
-                          (.setAttribute this attr "false"))))}))
-
+;; ── Styles ─────────────────────────────────────────────────────────────────
 (def ^:private style-text
   "
   :host{
@@ -122,72 +118,114 @@
 
   ")
 
-(defn- create-shadow! [^js el]
-  (let [root (.attachShadow el #js {:mode "open"})
+;; ── DOM initialisation ─────────────────────────────────────────────────────
+(defn- create-base! [tag]
+  (let [base (.createElement js/document tag)]
+    (.setAttribute base attr-part part-base)
+    base))
+
+(defn- init-dom! [^js el initial-tag]
+  (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
-        base (.createElement js/document "div")
-        slot (.createElement js/document "slot")]
-
+        base  (create-base! initial-tag)
+        slot  (.createElement js/document "slot")
+        refs  #js {}]
     (set! (.-textContent style) style-text)
-
-    (.setAttribute base "part" "base")
-
     (.appendChild base slot)
-
     (.appendChild root style)
     (.appendChild root base)
+    (gobj/set refs rk-root root)
+    (gobj/set refs rk-base base)
+    (gobj/set refs rk-slot slot)
+    (du/setv! el k-refs refs)
+    refs))
 
-    #js {:root root
-         :base base
-         :slot slot}))
+;; ── DOM patching ───────────────────────────────────────────────────────────
+(defn- swap-base!
+  "Replace the [part=base] element with a fresh one of `tag`. Re-parents
+  the persistent slot into the new base and updates refs.base. Used when
+  the host's `:as` attribute changes the desired root tag."
+  [^js refs tag]
+  (let [^js root     (gobj/get refs rk-root)
+        ^js old-base (gobj/get refs rk-base)
+        ^js slot     (gobj/get refs rk-slot)
+        ^js new-base (create-base! tag)]
+    (.appendChild new-base slot)
+    (.replaceChild root new-base old-base)
+    (gobj/set refs rk-base new-base)))
 
-(defn- ensure-root-tag!
-  [^js state tag]
-  (let [base (aget state "base")
-        current (.-tagName base)]
-    (when (not= (.toLowerCase current) tag)
-      (let [root (aget state "root")
-            slot (aget state "slot")
-            new-el (.createElement js/document tag)]
-        (.setAttribute new-el "part" "base")
-        (.appendChild new-el slot)
-        (.replaceChild root new-el base)
-        (aset state "base" new-el)))))
+(defn- apply-tag!
+  "Swap the base element when the cached tag differs from the model's :as."
+  [^js refs {:keys [as]}]
+  (let [^js base    (gobj/get refs rk-base)
+        current-tag (.toLowerCase (.-tagName base))]
+    (when (not= current-tag as)
+      (swap-base! refs as))))
 
-(defn- render!
-  [^js el ^js state]
-  (let [public (read-public-state el)]
+(defn- apply-base-data! [^js base {:keys [size padding center fluid]}]
+  (.setAttribute base attr-data-size    size)
+  (.setAttribute base attr-data-padding padding)
+  (.setAttribute base attr-data-center  (if center val-true val-false))
+  (.setAttribute base attr-data-fluid   (if fluid  val-true val-false)))
 
-    (ensure-root-tag! state (:as public))
+(defn- apply-base-aria! [^js base {:keys [label]}]
+  (if label
+    (.setAttribute base attr-aria-label label)
+    (.removeAttribute base attr-aria-label)))
 
-    (let [base (aget state "base")]
+(defn- apply-model! [^js el m]
+  (when-let [refs (du/getv el k-refs)]
+    (apply-tag! refs m)
+    ;; Re-read base after apply-tag! — it may have been swapped.
+    (let [^js base (gobj/get refs rk-base)]
+      (apply-base-data! base m)
+      (apply-base-aria! base m))
+    (du/setv! el k-model m)))
 
-      (.setAttribute base "data-size" (:size public))
-      (.setAttribute base "data-padding" (:padding public))
-      (.setAttribute base "data-center" (if (:center public) "true" "false"))
-      (.setAttribute base "data-fluid" (if (:fluid public) "true" "false"))
+(defn- update-from-attrs! [^js el]
+  (when (du/getv el k-refs)
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
-      (if-let [label (:label public)]
-        (.setAttribute base "aria-label" label)
-        (.removeAttribute base "aria-label")))))
-
-(defn- connected! [^js el]
-  (when-not (get-el-state el)
-    (let [state (create-shadow! el)]
-      (set-el-state! el state)))
-  (render! el (get-el-state el)))
-
-(defn- attribute-changed! [^js el _ _ _]
-  (when-let [state (get-el-state el)]
-    (render! el state)))
+;; ── Property accessors ─────────────────────────────────────────────────────
+(defn- define-default-true-bool-prop! [^js proto prop attr]
+  ;; Tier 2: the absent attribute resolves to `true`, so du/define-bool-prop!
+  ;; (which treats absence as `false`) would invert the default. Setting v=true
+  ;; removes the attribute; setting v=false writes the literal "false" string.
+  (.defineProperty js/Object proto prop
+                   #js {:configurable true
+                        :enumerable   true
+                        :get (fn []
+                               (this-as ^js this
+                                 (get-default-true-bool this attr)))
+                        :set (fn [v]
+                               (this-as ^js this
+                                 (if (boolean v)
+                                   (.removeAttribute this attr)
+                                   (.setAttribute this attr val-false))))}))
 
 (defn- install-property-accessors! [^js proto]
   (define-default-true-bool-prop! proto "center" model/attr-center)
   (du/define-bool-prop! proto "fluid" model/attr-fluid))
 
+;; ── Lifecycle ──────────────────────────────────────────────────────────────
+(defn- connected! [^js el]
+  (when-not (du/getv el k-refs)
+    ;; Initial tag comes from a fresh read so the shadow's [part=base] is
+    ;; created with the right element type from the start.
+    (init-dom! el (:as (read-model el))))
+  (update-from-attrs! el))
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
+
+;; ── Public API ─────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))

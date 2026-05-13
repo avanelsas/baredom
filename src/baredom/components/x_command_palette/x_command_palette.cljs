@@ -1,30 +1,100 @@
 (ns baredom.components.x-command-palette.x-command-palette
-  (:require [baredom.utils.component :as component]
-            [goog.object :as gobj]
-            [baredom.utils.dom :as du]
-            [baredom.components.x-command-palette.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-command-palette.model :as model]))
 
-;; ---------------------------------------------------------------------------
-;; Instance-field keys (gobj-safe)
-;; ---------------------------------------------------------------------------
-
-(def ^:private k-refs     "__xCommandPaletteRefs")
-(def ^:private k-handlers "__xCommandPaletteHandlers")
-(def ^:private k-items    "__xCommandPaletteItems")
-(def ^:private k-query    "__xCommandPaletteQuery")
+;; ── Instance-field keys ─────────────────────────────────────────────────────
+(def ^:private k-refs       "__xCommandPaletteRefs")
+(def ^:private k-model      "__xCommandPaletteModel")
+(def ^:private k-handlers   "__xCommandPaletteHandlers")
+(def ^:private k-items      "__xCommandPaletteItems")
+(def ^:private k-query      "__xCommandPaletteQuery")
 (def ^:private k-active-idx "__xCommandPaletteActiveIdx")
 
-;; ---------------------------------------------------------------------------
-;; Helpers
-;; ---------------------------------------------------------------------------
+;; ── Refs-object keys ────────────────────────────────────────────────────────
+(def ^:private rk-overlay   "overlay")
+(def ^:private rk-panel     "panel")
+(def ^:private rk-input     "input")
+(def ^:private rk-clear-btn "clear-btn")
+(def ^:private rk-list      "list")
+(def ^:private rk-empty     "empty")
 
-(defn- make-el
-  [^js tag]
-  (.createElement js/document tag))
+;; ── Handler-object keys ─────────────────────────────────────────────────────
+(def ^:private hk-input   "input")
+(def ^:private hk-keydown "keydown")
+(def ^:private hk-scrim   "scrim")
+(def ^:private hk-list    "list")
+(def ^:private hk-clear   "clear")
 
-(defn- read-model
-  "Read all observed attrs from the element and normalize."
-  [^js el]
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private attr-part            "part")
+(def ^:private attr-type            "type")
+(def ^:private attr-role            "role")
+(def ^:private attr-id              "id")
+(def ^:private attr-hidden          "hidden")
+(def ^:private attr-disabled        "disabled")
+(def ^:private attr-placeholder     "placeholder")
+(def ^:private attr-autocomplete    "autocomplete")
+(def ^:private attr-autocorrect     "autocorrect")
+(def ^:private attr-spellcheck      "spellcheck")
+(def ^:private attr-aria-modal      "aria-modal")
+(def ^:private attr-aria-label      "aria-label")
+(def ^:private attr-aria-hidden     "aria-hidden")
+(def ^:private attr-aria-expanded   "aria-expanded")
+(def ^:private attr-aria-disabled   "aria-disabled")
+(def ^:private attr-aria-selected   "aria-selected")
+(def ^:private attr-aria-controls   "aria-controls")
+(def ^:private attr-aria-autocomplete "aria-autocomplete")
+(def ^:private attr-aria-activedescendant "aria-activedescendant")
+(def ^:private attr-tabindex        "tabindex")
+(def ^:private attr-data-id         "data-id")
+(def ^:private attr-data-idx        "data-idx")
+
+(def ^:private part-overlay      "overlay")
+(def ^:private part-panel        "panel")
+(def ^:private part-search-wrap  "search-wrap")
+(def ^:private part-search-icon  "search-icon")
+(def ^:private part-input        "input")
+(def ^:private part-clear-btn    "clear-btn")
+(def ^:private part-list-wrap    "list-wrap")
+(def ^:private part-list         "list")
+(def ^:private part-item         "item")
+(def ^:private part-group-header "group-header")
+(def ^:private part-empty        "empty")
+
+(def ^:private val-true   "true")
+(def ^:private val-false  "false")
+(def ^:private val-button "button")
+(def ^:private val-search "search")
+(def ^:private val-dialog "dialog")
+(def ^:private val-combobox "combobox")
+(def ^:private val-list   "list")
+(def ^:private val-listbox "listbox")
+(def ^:private val-option "option")
+(def ^:private val-off    "off")
+(def ^:private val-default-label "Command palette")
+(def ^:private val-results "Results")
+(def ^:private val-clear   "Clear")
+(def ^:private val-search-glyph "🔍")
+
+(def ^:private list-id      "x-cp-list")
+(def ^:private item-id-pref "x-cp-item-")
+
+(def ^:private ev-click   "click")
+(def ^:private ev-input   "input")
+(def ^:private ev-keydown "keydown")
+
+(def ^:private key-arrow-down "ArrowDown")
+(def ^:private key-arrow-up   "ArrowUp")
+(def ^:private key-enter      "Enter")
+(def ^:private key-escape     "Escape")
+
+;; ── Helpers ────────────────────────────────────────────────────────────────
+(defn- make-el [tag] (.createElement js/document tag))
+
+(defn- read-model [^js el]
   (model/normalize
    {:open-present?       (du/has-attr? el model/attr-open)
     :modal-raw           (du/get-attr el model/attr-modal)
@@ -37,10 +107,7 @@
     :placeholder-raw     (du/get-attr el model/attr-placeholder)
     :empty-text-raw      (du/get-attr el model/attr-empty-text)}))
 
-;; ---------------------------------------------------------------------------
-;; Style
-;; ---------------------------------------------------------------------------
-
+;; ── Style ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
    ":host{display:contents;}"
@@ -130,458 +197,407 @@
    "[part=panel],[part=overlay]{transition:none;}"
    "}"))
 
-;; ---------------------------------------------------------------------------
-;; Shadow DOM construction
-;; ---------------------------------------------------------------------------
+;; ── Shadow builders ────────────────────────────────────────────────────────
+(defn- make-overlay! []
+  (let [overlay (make-el "div")]
+    (.setAttribute overlay attr-part part-overlay)
+    overlay))
 
-(defn- make-shadow!
-  "Attach shadow root, build DOM, store refs. Returns refs map."
-  [^js el]
-  (let [^js root  (.attachShadow el #js {:mode "open"})
-        ^js style (make-el "style")
+(defn- make-search-section! []
+  (let [search-wrap (make-el "div")
+        search-icon (make-el "span")
+        input-el    (make-el "input")
+        clear-btn   (make-el "button")]
+    (.setAttribute search-wrap attr-part part-search-wrap)
 
-        ;; Overlay / scrim
-        ^js overlay (make-el "div")
+    (.setAttribute search-icon attr-part        part-search-icon)
+    (.setAttribute search-icon attr-aria-hidden val-true)
+    (set! (.-textContent search-icon) val-search-glyph)
 
-        ;; Panel (dialog)
-        ^js panel (make-el "div")
+    (.setAttribute input-el attr-part              part-input)
+    (.setAttribute input-el attr-type              val-search)
+    (.setAttribute input-el attr-role              val-combobox)
+    (.setAttribute input-el attr-autocomplete      val-off)
+    (.setAttribute input-el attr-autocorrect       val-off)
+    (.setAttribute input-el attr-spellcheck        val-false)
+    (.setAttribute input-el attr-aria-autocomplete val-list)
+    (.setAttribute input-el attr-aria-expanded     val-false)
+    (.setAttribute input-el attr-aria-controls     list-id)
 
-        ;; Search area
-        ^js search-wrap  (make-el "div")
-        ^js search-icon  (make-el "span")
-        ^js input-el     (make-el "input")
-        ^js clear-btn    (make-el "button")
-
-        ;; List
-        ^js list-wrap (make-el "div")
-        ^js list-el   (make-el "div")
-        ^js empty-el  (make-el "div")]
-
-    (set! (.-textContent style) style-text)
-
-    (.setAttribute overlay "part" "overlay")
-
-    (.setAttribute panel "part" "panel")
-    (.setAttribute panel "role" "dialog")
-    (.setAttribute panel "aria-modal" "true")
-
-    (.setAttribute search-wrap "part" "search-wrap")
-
-    (.setAttribute search-icon "part" "search-icon")
-    (.setAttribute search-icon "aria-hidden" "true")
-    (set! (.-textContent search-icon) "\uD83D\uDD0D")
-
-    (.setAttribute input-el "part" "input")
-    (.setAttribute input-el "type" "search")
-    (.setAttribute input-el "role" "combobox")
-    (.setAttribute input-el "autocomplete" "off")
-    (.setAttribute input-el "autocorrect" "off")
-    (.setAttribute input-el "spellcheck" "false")
-    (.setAttribute input-el "aria-autocomplete" "list")
-    (.setAttribute input-el "aria-expanded" "false")
-    (.setAttribute input-el "aria-controls" "x-cp-list")
-
-    (.setAttribute clear-btn "part" "clear-btn")
-    (.setAttribute clear-btn "type" "button")
-    (.setAttribute clear-btn "aria-label" "Clear")
-    (.setAttribute clear-btn "hidden" "")
-
-    (.setAttribute list-wrap "part" "list-wrap")
-
-    (.setAttribute list-el "part" "list")
-    (.setAttribute list-el "id" "x-cp-list")
-    (.setAttribute list-el "role" "listbox")
-    (.setAttribute list-el "aria-label" "Results")
-
-    (.setAttribute empty-el "part" "empty")
-    (.setAttribute empty-el "hidden" "")
+    (.setAttribute clear-btn attr-part       part-clear-btn)
+    (.setAttribute clear-btn attr-type       val-button)
+    (.setAttribute clear-btn attr-aria-label val-clear)
+    (.setAttribute clear-btn attr-hidden     "")
 
     (.appendChild search-wrap search-icon)
     (.appendChild search-wrap input-el)
     (.appendChild search-wrap clear-btn)
+    {:search-wrap search-wrap :input input-el :clear-btn clear-btn}))
+
+(defn- make-list-section! []
+  (let [list-wrap (make-el "div")
+        list-el   (make-el "div")
+        empty-el  (make-el "div")]
+    (.setAttribute list-wrap attr-part part-list-wrap)
+
+    (.setAttribute list-el attr-part       part-list)
+    (.setAttribute list-el attr-id         list-id)
+    (.setAttribute list-el attr-role       val-listbox)
+    (.setAttribute list-el attr-aria-label val-results)
+
+    (.setAttribute empty-el attr-part   part-empty)
+    (.setAttribute empty-el attr-hidden "")
 
     (.appendChild list-wrap list-el)
     (.appendChild list-wrap empty-el)
+    {:list-wrap list-wrap :list list-el :empty empty-el}))
 
-    (.appendChild panel search-wrap)
-    (.appendChild panel list-wrap)
+(defn- make-panel! [search-parts list-parts]
+  (let [panel (make-el "div")]
+    (.setAttribute panel attr-part       part-panel)
+    (.setAttribute panel attr-role       val-dialog)
+    (.setAttribute panel attr-aria-modal val-true)
+    (.appendChild panel (:search-wrap search-parts))
+    (.appendChild panel (:list-wrap   list-parts))
+    panel))
+
+(defn- make-shadow! [^js el]
+  (let [^js root      (.attachShadow el #js {:mode "open"})
+        ^js style     (make-el "style")
+        ^js overlay   (make-overlay!)
+        search-parts  (make-search-section!)
+        list-parts    (make-list-section!)
+        ^js panel     (make-panel! search-parts list-parts)
+        refs          #js {}]
+
+    (set! (.-textContent style) style-text)
 
     (.appendChild root style)
     (.appendChild root overlay)
     (.appendChild root panel)
 
-    (let [refs #js {:overlay    overlay
-                    :panel      panel
-                    :input      input-el
-                    :clear-btn  clear-btn
-                    :list       list-el
-                    :empty      empty-el}]
-      (gobj/set el k-refs refs)
-      refs)))
+    (gobj/set refs rk-overlay   overlay)
+    (gobj/set refs rk-panel     panel)
+    (gobj/set refs rk-input     (:input search-parts))
+    (gobj/set refs rk-clear-btn (:clear-btn search-parts))
+    (gobj/set refs rk-list      (:list list-parts))
+    (gobj/set refs rk-empty     (:empty list-parts))
+    (gobj/set el k-refs refs)
+    refs))
 
-;; ---------------------------------------------------------------------------
-;; Item rendering
-;; ---------------------------------------------------------------------------
+(defn- ensure-refs! [^js el]
+  (or (gobj/get el k-refs) (make-shadow! el)))
 
-(defn- render-items!
-  "Clear list and re-render items filtered by current query."
-  [^js el]
-  (let [refs      (gobj/get el k-refs)]
-    (when refs
-      (let [^js list-el  (gobj/get refs "list")
-            ^js empty-el (gobj/get refs "empty")
-            ^js input-el (gobj/get refs "input")
-            items-js     (gobj/get el k-items)
-            query        (or (gobj/get el k-query) "")
-            items        (model/normalize-items items-js)
-            {:keys [visible]} (model/filter-items items query)
-            active-idx   (or (gobj/get el k-active-idx) 0)]
+;; ── Item rendering ─────────────────────────────────────────────────────────
+(defn- append-group-header! [^js list-el group]
+  (let [^js header (make-el "div")]
+    (.setAttribute header attr-part        part-group-header)
+    (.setAttribute header attr-aria-hidden val-true)
+    (set! (.-textContent header) group)
+    (.appendChild list-el header)))
 
-        (set! (.-textContent list-el) "")
+(defn- append-item! [^js list-el idx item active-idx]
+  (let [^js div (make-el "div")]
+    (.setAttribute div attr-part     part-item)
+    (.setAttribute div attr-role     val-option)
+    (.setAttribute div attr-id       (str item-id-pref idx))
+    (.setAttribute div attr-data-id  (str (:id item)))
+    (.setAttribute div attr-data-idx (str idx))
+    (.setAttribute div attr-tabindex "-1")
+    (when (:disabled? item)
+      (.setAttribute div attr-aria-disabled val-true))
+    (set! (.-textContent div) (:label item))
+    (when (= idx active-idx)
+      (.setAttribute div attr-aria-selected val-true))
+    (.appendChild list-el div)))
 
-        (if (empty? visible)
-          (do
-            (.removeAttribute empty-el "hidden")
-            (when input-el (.removeAttribute input-el "aria-activedescendant")))
-          (do
-            (.setAttribute empty-el "hidden" "")
-            (loop [remaining (map-indexed vector visible)
-                   last-group nil]
-              (when-let [[idx item] (first remaining)]
-                (let [g (:group item)]
-                  (when (and g (not= g last-group))
-                    (let [^js header (make-el "div")]
-                      (.setAttribute header "part" "group-header")
-                      (.setAttribute header "aria-hidden" "true")
-                      (set! (.-textContent header) g)
-                      (.appendChild list-el header)))
-                  (let [^js div (make-el "div")]
-                    (.setAttribute div "part" "item")
-                    (.setAttribute div "role" "option")
-                    (.setAttribute div "id" (str "x-cp-item-" idx))
-                    (.setAttribute div "data-id" (str (:id item)))
-                    (.setAttribute div "data-idx" (str idx))
-                    (.setAttribute div "tabindex" "-1")
-                    (when (:disabled? item)
-                      (.setAttribute div "aria-disabled" "true"))
-                    (set! (.-textContent div) (:label item))
-                    (when (= idx active-idx)
-                      (.setAttribute div "aria-selected" "true"))
-                    (.appendChild list-el div))
-                  (recur (rest remaining) (or g last-group)))))
-            (when input-el
-              (.setAttribute input-el "aria-activedescendant"
-                             (str "x-cp-item-" active-idx)))))))))
+(defn- render-empty! [^js empty-el ^js input-el]
+  (.removeAttribute empty-el attr-hidden)
+  (when input-el (.removeAttribute input-el attr-aria-activedescendant)))
 
-;; ---------------------------------------------------------------------------
-;; Full render (attrs + items)
-;; ---------------------------------------------------------------------------
+(defn- render-item-list! [^js empty-el ^js list-el ^js input-el visible active-idx]
+  (.setAttribute empty-el attr-hidden "")
+  (loop [remaining (map-indexed vector visible)
+         last-group nil]
+    (when-let [[idx item] (first remaining)]
+      (let [g (:group item)]
+        (when (and g (not= g last-group))
+          (append-group-header! list-el g))
+        (append-item! list-el idx item active-idx)
+        (recur (rest remaining) (or g last-group)))))
+  (when input-el
+    (.setAttribute input-el attr-aria-activedescendant (str item-id-pref active-idx))))
 
-(defn- render!
-  "Sync all shadow DOM parts with current element state."
-  [^js el]
-  (let [refs (gobj/get el k-refs)]
-    (when refs
-      (let [m           (read-model el)
-            ^js panel   (gobj/get refs "panel")
-            ^js input   (gobj/get refs "input")
-            ^js overlay (gobj/get refs "overlay")
-            ^js empty-el (gobj/get refs "empty")
-            _query      (or (gobj/get el k-query) "")
-            label       (:label m)
-            placeholder (:placeholder m)
-            empty-text  (:empty-text m)]
+(defn- render-items! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js list-el  (gobj/get refs rk-list)
+          ^js empty-el (gobj/get refs rk-empty)
+          ^js input-el (gobj/get refs rk-input)
+          items-js     (gobj/get el k-items)
+          query        (or (gobj/get el k-query) "")
+          items        (model/normalize-items items-js)
+          {:keys [visible]} (model/filter-items items query)
+          active-idx   (or (gobj/get el k-active-idx) 0)]
+      (set! (.-textContent list-el) "")
+      (if (empty? visible)
+        (render-empty! empty-el input-el)
+        (render-item-list! empty-el list-el input-el visible active-idx)))))
 
-        ;; Panel aria-label
-        (if label
-          (.setAttribute panel "aria-label" label)
-          (.setAttribute panel "aria-label" "Command palette"))
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ────────
+(defn- apply-panel-aria! [^js panel {:keys [label]}]
+  (.setAttribute panel attr-aria-label (or label val-default-label)))
 
-        ;; Scrim pointer-events
-        (if (:scrim? m)
-          (.removeAttribute overlay "hidden")
-          (.setAttribute overlay "hidden" ""))
+(defn- apply-scrim! [^js overlay {:keys [scrim?]}]
+  (if scrim?
+    (.removeAttribute overlay attr-hidden)
+    (.setAttribute overlay attr-hidden "")))
 
-        ;; Input sync
-        (.setAttribute input "placeholder" placeholder)
-        (.setAttribute input "aria-expanded" (if (:open? m) "true" "false"))
-        (when (:disabled? m)
-          (.setAttribute input "disabled" "")
-          (.setAttribute input "aria-disabled" "true"))
-        (when-not (:disabled? m)
-          (.removeAttribute input "disabled")
-          (.removeAttribute input "aria-disabled"))
+(defn- apply-input-state! [^js input {:keys [placeholder open? disabled?]}]
+  (.setAttribute input attr-placeholder    placeholder)
+  (.setAttribute input attr-aria-expanded  (if open? val-true val-false))
+  (if disabled?
+    (do (.setAttribute input attr-disabled       "")
+        (.setAttribute input attr-aria-disabled  val-true))
+    (do (.removeAttribute input attr-disabled)
+        (.removeAttribute input attr-aria-disabled))))
 
-        ;; Empty text
-        (set! (.-textContent empty-el) empty-text)
+(defn- apply-empty-text! [^js empty-el {:keys [empty-text]}]
+  (set! (.-textContent empty-el) empty-text))
 
-        (render-items! el)))))
+(defn- apply-model! [^js el m]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js panel    (gobj/get refs rk-panel)
+          ^js overlay  (gobj/get refs rk-overlay)
+          ^js input    (gobj/get refs rk-input)
+          ^js empty-el (gobj/get refs rk-empty)]
+      (apply-panel-aria!   panel m)
+      (apply-scrim!        overlay m)
+      (apply-input-state!  input m)
+      (apply-empty-text!   empty-el m)
+      (render-items! el)
+      (gobj/set el k-model m))))
 
-;; ---------------------------------------------------------------------------
-;; Open / close
-;; ---------------------------------------------------------------------------
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
-(defn- do-open!
-  "Actually open: set attr, focus input, dispatch open event."
-  [^js el]
+;; ── Open / close ───────────────────────────────────────────────────────────
+(defn- do-open! [^js el]
   (du/set-attr! el model/attr-open "")
-  (let [refs  (gobj/get el k-refs)
-        ^js input (when refs (gobj/get refs "input"))]
+  (let [refs      (gobj/get el k-refs)
+        ^js input (when refs (gobj/get refs rk-input))]
     (when input (.focus input)))
-  (render! el)
+  (update-from-attrs! el)
   (du/dispatch! el model/event-open #js {}))
 
-(defn- do-close!
-  "Actually close: remove attr, dispatch close event."
-  [^js el]
+(defn- do-close! [^js el]
   (du/remove-attr! el model/attr-open)
-  (let [refs (gobj/get el k-refs)
-        ^js input (when refs (gobj/get refs "input"))]
-    (when input (.removeAttribute input "aria-activedescendant")))
-  (render! el)
+  (let [refs      (gobj/get el k-refs)
+        ^js input (when refs (gobj/get refs rk-input))]
+    (when input (.removeAttribute input attr-aria-activedescendant)))
+  (update-from-attrs! el)
   (du/dispatch! el model/event-close #js {}))
 
-(defn- request-open!
-  [^js el]
+(defn- request-open! [^js el]
   (when-not (du/has-attr? el model/attr-open)
     (when (du/dispatch-cancelable! el model/event-open-request #js {})
       (do-open! el))))
 
-(defn- request-close!
-  [^js el]
+(defn- request-close! [^js el]
   (when (du/has-attr? el model/attr-open)
     (when (du/dispatch-cancelable! el model/event-close-request #js {})
       (do-close! el))))
 
-;; ---------------------------------------------------------------------------
-;; Keyboard navigation
-;; ---------------------------------------------------------------------------
-
-(defn- active-visible
-  [^js el]
+;; ── Keyboard navigation ────────────────────────────────────────────────────
+(defn- active-visible [^js el]
   (let [items-js (gobj/get el k-items)
         query    (or (gobj/get el k-query) "")
         items    (model/normalize-items items-js)
         {:keys [visible]} (model/filter-items items query)]
     visible))
 
-(defn- move-active!
-  [^js el direction]
-  (let [visible   (active-visible el)
-        cur-idx   (or (gobj/get el k-active-idx) 0)
-        new-idx   (if (= direction :down)
-                    (model/next-active-idx visible cur-idx)
-                    (model/prev-active-idx visible cur-idx))]
+(defn- move-active! [^js el direction]
+  (let [visible (active-visible el)
+        cur-idx (or (gobj/get el k-active-idx) 0)
+        new-idx (if (= direction :down)
+                  (model/next-active-idx visible cur-idx)
+                  (model/prev-active-idx visible cur-idx))]
     (gobj/set el k-active-idx new-idx)
     (render-items! el)
-    ;; Scroll active item into view
-    (let [refs    (gobj/get el k-refs)
-          ^js list-el (when refs (gobj/get refs "list"))
+    (let [refs        (gobj/get el k-refs)
+          ^js list-el (when refs (gobj/get refs rk-list))
           ^js item-el (when list-el
-                        (.querySelector list-el (str "[data-idx='" new-idx "']")))]
+                        (.querySelector list-el (str "[" attr-data-idx "='" new-idx "']")))]
       (when item-el
         (.scrollIntoView item-el #js {:block "nearest"})))))
 
-(defn- select-active!
-  [^js el]
-  (let [visible  (active-visible el)
-        cur-idx  (or (gobj/get el k-active-idx) 0)
-        item     (nth visible cur-idx nil)]
-    (when (and item (not (:disabled? item)))
-      (when (du/dispatch-cancelable! el model/event-select-request
-                                     #js {:item (clj->js item)})
-        (du/dispatch! el model/event-select #js {:item (clj->js item)})
-        (request-close! el)))))
+(defn- select-item! [^js el item]
+  (when (and item (not (:disabled? item)))
+    (when (du/dispatch-cancelable! el model/event-select-request
+                                   #js {:item (clj->js item)})
+      (du/dispatch! el model/event-select #js {:item (clj->js item)})
+      (request-close! el))))
 
-;; ---------------------------------------------------------------------------
-;; Event listeners
-;; ---------------------------------------------------------------------------
+(defn- select-active! [^js el]
+  (let [visible (active-visible el)
+        cur-idx (or (gobj/get el k-active-idx) 0)]
+    (select-item! el (nth visible cur-idx nil))))
 
-(defn- on-input-input!
-  [^js el ^js _e]
+;; ── Event handlers ─────────────────────────────────────────────────────────
+(defn- on-input-input [^js el ^js _e]
   (let [refs    (gobj/get el k-refs)
-        ^js inp (when refs (gobj/get refs "input"))
-        ^js clr (when refs (gobj/get refs "clear-btn"))
+        ^js inp (when refs (gobj/get refs rk-input))
+        ^js clr (when refs (gobj/get refs rk-clear-btn))
         q       (when inp (.-value inp))]
     (gobj/set el k-query (or q ""))
     (gobj/set el k-active-idx 0)
     (when clr
       (if (and q (not= q ""))
-        (.removeAttribute clr "hidden")
-        (.setAttribute clr "hidden" "")))
+        (.removeAttribute clr attr-hidden)
+        (.setAttribute clr attr-hidden "")))
     (du/dispatch! el model/event-query-change #js {:query (or q "")})
     (render-items! el)))
 
-(defn- on-input-keydown!
-  [^js el ^js e]
-  (let [key (.-key e)]
+(defn- on-input-keydown [^js el ^js e]
+  (let [k (.-key e)]
     (cond
-      (= key "ArrowDown")
-      (do (.preventDefault e) (move-active! el :down))
+      (= k key-arrow-down) (do (.preventDefault e) (move-active! el :down))
+      (= k key-arrow-up)   (do (.preventDefault e) (move-active! el :up))
+      (= k key-enter)      (do (.preventDefault e) (select-active! el))
+      (= k key-escape)     (let [m (read-model el)]
+                             (when (:close-on-escape? m)
+                               (request-close! el))))))
 
-      (= key "ArrowUp")
-      (do (.preventDefault e) (move-active! el :up))
-
-      (= key "Enter")
-      (do (.preventDefault e) (select-active! el))
-
-      (= key "Escape")
-      (let [m (read-model el)]
-        (when (:close-on-escape? m)
-          (request-close! el))))))
-
-(defn- on-scrim-click!
-  [^js el ^js _e]
+(defn- on-scrim-click [^js el ^js _e]
   (let [m (read-model el)]
     (when (:close-on-scrim? m)
       (request-close! el))))
 
-(defn- on-list-click!
-  [^js el ^js e]
-  (let [^js target (.-target e)
-        ^js item-el (.closest target "[part=item]")]
+(defn- on-list-click [^js el ^js e]
+  (let [^js target  (.-target e)
+        ^js item-el (.closest target (str "[" attr-part "=" part-item "]"))]
     (when item-el
-      (let [idx (js/parseInt (du/get-attr item-el "data-idx") 10)
-            visible (active-visible el)
-            item (nth visible idx nil)]
-        (when (and item (not (:disabled? item)))
-          (when (du/dispatch-cancelable! el model/event-select-request
-                                         #js {:item (clj->js item)})
-            (du/dispatch! el model/event-select #js {:item (clj->js item)})
-            (request-close! el)))))))
+      (let [idx     (js/parseInt (du/get-attr item-el attr-data-idx) 10)
+            visible (active-visible el)]
+        (select-item! el (nth visible idx nil))))))
 
-(defn- on-clear-click!
-  [^js el ^js _e]
+(defn- on-clear-click [^js el ^js _e]
   (let [refs    (gobj/get el k-refs)
-        ^js inp (when refs (gobj/get refs "input"))
-        ^js clr (when refs (gobj/get refs "clear-btn"))]
+        ^js inp (when refs (gobj/get refs rk-input))
+        ^js clr (when refs (gobj/get refs rk-clear-btn))]
     (when inp (set! (.-value inp) ""))
-    (when clr (.setAttribute clr "hidden" ""))
+    (when clr (.setAttribute clr attr-hidden ""))
     (gobj/set el k-query "")
     (gobj/set el k-active-idx 0)
     (du/dispatch! el model/event-query-change #js {:query ""})
     (render-items! el)
     (when inp (.focus inp))))
 
-(defn- add-listeners!
-  [^js el]
-  (let [refs       (gobj/get el k-refs)
-        ^js input  (gobj/get refs "input")
-        ^js overlay (gobj/get refs "overlay")
-        ^js list-el (gobj/get refs "list")
-        ^js clr    (gobj/get refs "clear-btn")
+(defn- add-listeners! [^js el]
+  (let [refs        (gobj/get el k-refs)
+        ^js input   (gobj/get refs rk-input)
+        ^js overlay (gobj/get refs rk-overlay)
+        ^js list-el (gobj/get refs rk-list)
+        ^js clr     (gobj/get refs rk-clear-btn)
+        h-input     (fn handle-input-input  [e] (on-input-input  el e))
+        h-keydown   (fn handle-input-key    [e] (on-input-keydown el e))
+        h-scrim     (fn handle-scrim-click  [e] (on-scrim-click  el e))
+        h-list      (fn handle-list-click   [e] (on-list-click   el e))
+        h-clear     (fn handle-clear-click  [e] (on-clear-click  el e))
+        handlers    #js {}]
+    (.addEventListener input   ev-input   h-input)
+    (.addEventListener input   ev-keydown h-keydown)
+    (.addEventListener overlay ev-click   h-scrim)
+    (.addEventListener list-el ev-click   h-list)
+    (.addEventListener clr     ev-click   h-clear)
+    (gobj/set handlers hk-input   h-input)
+    (gobj/set handlers hk-keydown h-keydown)
+    (gobj/set handlers hk-scrim   h-scrim)
+    (gobj/set handlers hk-list    h-list)
+    (gobj/set handlers hk-clear   h-clear)
+    (gobj/set el k-handlers handlers)))
 
-        h-input    (fn [^js e] (on-input-input! el e))
-        h-keydown  (fn [^js e] (on-input-keydown! el e))
-        h-scrim    (fn [^js e] (on-scrim-click! el e))
-        h-list     (fn [^js e] (on-list-click! el e))
-        h-clear    (fn [^js e] (on-clear-click! el e))]
-
-    (.addEventListener input "input" h-input)
-    (.addEventListener input "keydown" h-keydown)
-    (.addEventListener overlay "click" h-scrim)
-    (.addEventListener list-el "click" h-list)
-    (.addEventListener clr "click" h-clear)
-
-    (gobj/set el k-handlers
-              #js {:input   h-input
-                   :keydown h-keydown
-                   :scrim   h-scrim
-                   :list    h-list
-                   :clear   h-clear})))
-
-(defn- remove-listeners!
-  [^js el]
+(defn- remove-listeners! [^js el]
   (let [refs     (gobj/get el k-refs)
         handlers (gobj/get el k-handlers)]
     (when (and refs handlers)
-      (let [^js input   (gobj/get refs "input")
-            ^js overlay (gobj/get refs "overlay")
-            ^js list-el (gobj/get refs "list")
-            ^js clr     (gobj/get refs "clear-btn")]
-        (.removeEventListener input "input" (gobj/get handlers "input"))
-        (.removeEventListener input "keydown" (gobj/get handlers "keydown"))
-        (.removeEventListener overlay "click" (gobj/get handlers "scrim"))
-        (.removeEventListener list-el "click" (gobj/get handlers "list"))
-        (.removeEventListener clr "click" (gobj/get handlers "clear"))))))
+      (let [^js input   (gobj/get refs rk-input)
+            ^js overlay (gobj/get refs rk-overlay)
+            ^js list-el (gobj/get refs rk-list)
+            ^js clr     (gobj/get refs rk-clear-btn)]
+        (.removeEventListener input   ev-input   (gobj/get handlers hk-input))
+        (.removeEventListener input   ev-keydown (gobj/get handlers hk-keydown))
+        (.removeEventListener overlay ev-click   (gobj/get handlers hk-scrim))
+        (.removeEventListener list-el ev-click   (gobj/get handlers hk-list))
+        (.removeEventListener clr     ev-click   (gobj/get handlers hk-clear))))))
 
-;; ---------------------------------------------------------------------------
-;; Lifecycle
-;; ---------------------------------------------------------------------------
-
-(defn- connected!
-  [^js el]
-  (when-not (gobj/get el k-refs)
-    (make-shadow! el))
+;; ── Lifecycle ──────────────────────────────────────────────────────────────
+(defn- connected! [^js el]
+  (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
-(defn- disconnected!
-  [^js el]
+(defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed!
-  [^js el name _old new-val]
-  (render! el)
-  ;; Focus input when opened (whether via property, method, or setAttribute)
-  (when (and (= name model/attr-open) (some? new-val))
-    (let [refs (gobj/get el k-refs)
-          ^js input (when refs (gobj/get refs "input"))]
-      (when input
-        (js/requestAnimationFrame (fn [] (.focus input)))))))
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)
+    ;; Focus the input on every transition into "open" (whether via property,
+    ;; method, or setAttribute).
+    (when (and (= attr-name model/attr-open) (some? new-val))
+      (let [refs      (gobj/get el k-refs)
+            ^js input (when refs (gobj/get refs rk-input))]
+        (when input
+          (js/requestAnimationFrame (fn focus-input-after-raf [] (.focus input))))))))
 
-;; ---------------------------------------------------------------------------
-;; Public element API helpers
-;; ---------------------------------------------------------------------------
-
-(defn- define-items-prop!
-  [^js proto]
+;; ── Property API ───────────────────────────────────────────────────────────
+(defn- define-items-prop! [^js proto]
   (.defineProperty js/Object proto "items"
                    #js {:configurable true
                         :enumerable   true
                         :get (fn []
                                (this-as ^js this
-                                        (or (gobj/get this k-items) #js [])))
+                                 (or (gobj/get this k-items) #js [])))
                         :set (fn [v]
                                (this-as ^js this
-                                        (gobj/set this k-items v)
-                                        (gobj/set this k-active-idx 0)
-                                        (render-items! this)))}))
+                                 (gobj/set this k-items v)
+                                 (gobj/set this k-active-idx 0)
+                                 (render-items! this)))}))
 
-(defn- define-methods!
-  [^js proto]
+(defn- define-methods! [^js proto]
   (.defineProperty js/Object proto "open"
                    #js {:configurable true
                         :writable     true
-                        :value        (fn [] (this-as ^js this (request-open! this)))})
+                        :value        (fn cp-open [] (this-as ^js this (request-open! this)))})
   (.defineProperty js/Object proto "close"
                    #js {:configurable true
                         :writable     true
-                        :value        (fn [] (this-as ^js this (request-close! this)))})
+                        :value        (fn cp-close [] (this-as ^js this (request-close! this)))})
   (.defineProperty js/Object proto "toggle"
                    #js {:configurable true
                         :writable     true
-                        :value        (fn []
+                        :value        (fn cp-toggle []
                                         (this-as ^js this
-                                                 (if (.hasAttribute this model/attr-open)
-                                                   (request-close! this)
-                                                   (request-open! this))))}))
-
-;; ---------------------------------------------------------------------------
-;; Registration
-;; ---------------------------------------------------------------------------
+                                          (if (.hasAttribute this model/attr-open)
+                                            (request-close! this)
+                                            (request-open!  this))))}))
 
 (defn- install-property-accessors! [^js proto]
-  (du/define-bool-prop!  proto "open"     model/attr-open)
-  (du/define-bool-prop!  proto "disabled" model/attr-disabled)
+  (du/define-bool-prop! proto "open"     model/attr-open)
+  (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (define-items-prop! proto)
   (define-methods!    proto))
 
+;; ── Public API ─────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
