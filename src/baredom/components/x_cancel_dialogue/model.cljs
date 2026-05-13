@@ -23,7 +23,8 @@
 (def default-cancel-text   "Keep editing")
 
 (def observed-attributes
-  #js ["open" "disabled" "headline" "message" "confirm-text" "cancel-text" "danger"])
+  #js [attr-open attr-disabled attr-headline attr-message
+       attr-confirm-text attr-cancel-text attr-danger])
 
 (defn normalize
   "Produce a normalized view-model map from raw attribute values."
