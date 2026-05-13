@@ -1,17 +1,37 @@
 (ns baredom.components.x-fieldset.x-fieldset
-  (:require [baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-            [goog.object :as gobj]
-            [baredom.components.x-fieldset.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-fieldset.model :as model]))
 
-;; ---------------------------------------------------------------------------
-;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
-;; ---------------------------------------------------------------------------
-(def ^:private k-refs "__xFieldsetRefs")
+;; ── Instance-field keys ───────────────────────────────────────────────────
+(def ^:private k-refs  "__xFieldsetRefs")
+(def ^:private k-model "__xFieldsetModel")
 
-;; ---------------------------------------------------------------------------
-;; Style
-;; ---------------------------------------------------------------------------
+;; ── Refs / string-literal constants ───────────────────────────────────────
+(def ^:private rk-root-el    "root-el")
+(def ^:private rk-legend-el  "legend-el")
+(def ^:private rk-content-el "content-el")
+
+(def ^:private attr-part            "part")
+(def ^:private attr-role            "role")
+(def ^:private attr-id              "id")
+(def ^:private attr-hidden          "hidden")
+(def ^:private attr-inert           "inert")
+(def ^:private attr-aria-label      "aria-label")
+(def ^:private attr-aria-labelledby "aria-labelledby")
+(def ^:private attr-aria-describedby "aria-describedby")
+(def ^:private attr-data-disabled   "data-disabled")
+
+(def ^:private part-root    "root")
+(def ^:private part-legend  "legend")
+(def ^:private part-content "content")
+
+(def ^:private val-role-group "group")
+(def ^:private id-legend      "x-fieldset-legend")
+
+;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
    ":host{"
@@ -75,8 +95,7 @@
    "display:flex;"
    "flex-direction:column;"
    "gap:var(--x-fieldset-gap);"
-   "}"
-   ))
+   "}"))
 
 (def ^:private light-dom-style-text
   (str
@@ -101,29 +120,38 @@
 
 (def ^:private light-style-id "x-fieldset-input-styles")
 
-;; ---------------------------------------------------------------------------
-;; DOM helpers
-;; ---------------------------------------------------------------------------
-(defn- make-el [^js tag] (.createElement js/document tag))
+;; ── DOM helpers ───────────────────────────────────────────────────────────
+(defn- make-el [tag] (.createElement js/document tag))
 
-;; ---------------------------------------------------------------------------
-;; Shadow DOM construction
-;; ---------------------------------------------------------------------------
+(defn- ensure-light-dom-styles!
+  "Inject the shared light-DOM <style> into document.head exactly once.
+  Idempotent — safe to call from every instance's connected!. Hoisted out
+  of make-shadow! so the per-instance shadow build doesn't conflate the
+  one-document-wide effect with the per-instance setup."
+  []
+  (when-not (.getElementById js/document light-style-id)
+    (let [ls (make-el "style")]
+      (du/set-attr! ls attr-id light-style-id)
+      (set! (.-textContent ls) light-dom-style-text)
+      (.appendChild (.-head js/document) ls))))
+
+;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
         style-el   (make-el "style")
         root-el    (make-el "div")
         legend-el  (make-el "div")
         content-el (make-el "div")
-        slot-el    (make-el "slot")]
+        slot-el    (make-el "slot")
+        refs       #js {}]
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! root-el    "part" "root")
-    (du/set-attr! root-el    "role" "group")
-    (du/set-attr! legend-el  "part" "legend")
-    (du/set-attr! legend-el  "id"   "x-fieldset-legend")
-    (du/set-attr! content-el "part" "content")
+    (du/set-attr! root-el    attr-part part-root)
+    (du/set-attr! root-el    attr-role val-role-group)
+    (du/set-attr! legend-el  attr-part part-legend)
+    (du/set-attr! legend-el  attr-id   id-legend)
+    (du/set-attr! content-el attr-part part-content)
 
     (.appendChild content-el slot-el)
     (.appendChild root-el legend-el)
@@ -131,94 +159,83 @@
     (.appendChild root style-el)
     (.appendChild root root-el)
 
-    ;; Inject shared light-DOM style for native inputs (once per document)
-    (when-not (.getElementById js/document light-style-id)
-      (let [ls (make-el "style")]
-        (du/set-attr! ls "id" light-style-id)
-        (set! (.-textContent ls) light-dom-style-text)
-        (.appendChild (.-head js/document) ls)))
+    (gobj/set refs "root"        root)
+    (gobj/set refs rk-root-el    root-el)
+    (gobj/set refs rk-legend-el  legend-el)
+    (gobj/set refs rk-content-el content-el)
+    (gobj/set el k-refs refs)
+    refs))
 
-    (let [refs #js {:root root :root-el root-el :legend-el legend-el :content-el content-el}]
-      (gobj/set el k-refs refs)
-      refs)))
+(defn- ensure-refs! [^js el]
+  (or (gobj/get el k-refs) (make-shadow! el)))
 
-;; ---------------------------------------------------------------------------
-;; Read element state from attributes
-;; ---------------------------------------------------------------------------
+;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:legend-raw          (du/get-attr el model/attr-legend)
-    :disabled-present?   (du/has-attr? el model/attr-disabled)
-    :aria-label-raw      (du/get-attr el model/attr-aria-label)
+   {:legend-raw           (du/get-attr el model/attr-legend)
+    :disabled-present?    (du/has-attr? el model/attr-disabled)
+    :aria-label-raw       (du/get-attr el model/attr-aria-label)
     :aria-describedby-raw (du/get-attr el model/attr-aria-describedby)}))
 
-;; ---------------------------------------------------------------------------
-;; Render
-;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ──────
+(defn- apply-legend! [^js legend-el {:keys [legend legend-visible?]}]
+  (set! (.-textContent legend-el) legend)
+  (if legend-visible?
+    (du/remove-attr! legend-el attr-hidden)
+    (du/set-attr!    legend-el attr-hidden "")))
+
+(defn- apply-host-aria! [^js root-el {:keys [aria-label aria-describedby legend-visible?]}]
+  (if aria-label
+    (do (du/set-attr!    root-el attr-aria-label      aria-label)
+        (du/remove-attr! root-el attr-aria-labelledby))
+    (do (du/remove-attr! root-el attr-aria-label)
+        (if legend-visible?
+          (du/set-attr!    root-el attr-aria-labelledby id-legend)
+          (du/remove-attr! root-el attr-aria-labelledby))))
+  (if aria-describedby
+    (du/set-attr!    root-el attr-aria-describedby aria-describedby)
+    (du/remove-attr! root-el attr-aria-describedby)))
+
+(defn- apply-disabled-state! [^js el ^js content-el {:keys [disabled?]}]
+  (du/set-bool-attr! el         attr-data-disabled disabled?)
+  ;; inert on content-el blocks all interaction with slotted children.
+  (du/set-bool-attr! content-el attr-inert         disabled?))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js root-el    (gobj/get refs "root-el")
-          ^js legend-el  (gobj/get refs "legend-el")
-          ^js content-el (gobj/get refs "content-el")
-          m              (read-model el)
-          legend        (:legend m)
-          visible?      (:legend-visible? m)
-          disabled?     (:disabled? m)]
+    (let [^js root-el    (gobj/get refs rk-root-el)
+          ^js legend-el  (gobj/get refs rk-legend-el)
+          ^js content-el (gobj/get refs rk-content-el)]
+      (apply-legend!         legend-el m)
+      (apply-host-aria!      root-el   m)
+      (apply-disabled-state! el        content-el m)
+      (gobj/set el k-model m))))
 
-      ;; Legend text and visibility
-      (set! (.-textContent legend-el) legend)
-      (if visible?
-        (du/remove-attr! legend-el "hidden")
-        (du/set-attr! legend-el "hidden" ""))
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
-      ;; aria-labelledby vs aria-label on root[part=root]
-      (if-let [aria-lbl (:aria-label m)]
-        (do
-          (du/set-attr! root-el "aria-label" aria-lbl)
-          (du/remove-attr! root-el "aria-labelledby"))
-        (do
-          (du/remove-attr! root-el "aria-label")
-          (if visible?
-            (du/set-attr! root-el "aria-labelledby" "x-fieldset-legend")
-            (du/remove-attr! root-el "aria-labelledby"))))
-
-      ;; aria-describedby
-      (if-let [v (:aria-describedby m)]
-        (du/set-attr! root-el "aria-describedby" v)
-        (du/remove-attr! root-el "aria-describedby"))
-
-      ;; data-disabled on host for CSS hooks
-      (du/set-bool-attr! el "data-disabled" disabled?)
-      ;; inert on content-el blocks all interaction with slotted children
-      (du/set-bool-attr! content-el "inert" disabled?))))
-
-;; ---------------------------------------------------------------------------
-;; Lifecycle
-;; ---------------------------------------------------------------------------
+;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
-    (make-shadow! el))
-  (render! el))
+  (ensure-light-dom-styles!)
+  (ensure-refs! el)
+  (update-from-attrs! el))
 
-(defn- disconnected! [^js _el])
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
-
-;; ---------------------------------------------------------------------------
-;; Property helpers
-;; ---------------------------------------------------------------------------
-;; ---------------------------------------------------------------------------
-;; Element class and registration
-;; ---------------------------------------------------------------------------
-
+;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
+;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
