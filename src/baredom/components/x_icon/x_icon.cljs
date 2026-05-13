@@ -1,12 +1,26 @@
 (ns baredom.components.x-icon.x-icon
   (:require
-[baredom.utils.component :as component]
-               [baredom.components.x-icon.model :as model]
+   [baredom.utils.component :as component]
+   [baredom.components.x-icon.model :as model]
    [baredom.utils.dom :as du]))
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
 (def ^:private k-refs  "__xIconRefs")
 (def ^:private k-model "__xIconModel")
+
+;; ── String-literal constants (no duplication; Closure-Advanced safe) ─────────
+(def ^:private css-var-size  "--x-icon-size")
+(def ^:private css-var-color "--x-icon-color")
+
+(def ^:private attr-role        "role")
+(def ^:private attr-aria-label  "aria-label")
+(def ^:private attr-aria-hidden "aria-hidden")
+
+(def ^:private attr-part "part")
+(def ^:private part-box  "box")
+
+(def ^:private role-img         "img")
+(def ^:private aria-hidden-true "true")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def style-text
@@ -17,15 +31,15 @@
    "justify-content:center;"
    "line-height:0;"
    "vertical-align:middle;"
-   "color:var(--x-icon-color,currentColor);"
-   "--x-icon-size:20px;}"
+   "color:var(" css-var-color ",currentColor);"
+   css-var-size ":20px;}"
 
    "[part=box]{"
    "display:inline-flex;"
    "align-items:center;"
    "justify-content:center;"
-   "width:var(--x-icon-size);"
-   "height:var(--x-icon-size);}"
+   "width:var(" css-var-size ");"
+   "height:var(" css-var-size ");}"
 
    "::slotted(svg){"
    "display:block;"
@@ -40,25 +54,22 @@
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         box   (.createElement js/document "span")
-        slot  (.createElement js/document "slot")]
+        slot  (.createElement js/document "slot")
+        refs  {:root root :box box}]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute box "part" "box")
+    (.setAttribute box attr-part part-box)
     (.appendChild box slot)
 
     (.appendChild root style)
     (.appendChild root box)
 
-    (du/setv! el k-refs
-              {:root root
-               :box  box}))
-  nil)
+    (du/setv! el k-refs refs)
+    refs))
 
 (defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs)
-      (do (init-dom! el)
-          (du/getv el k-refs))))
+  (or (du/getv el k-refs) (init-dom! el)))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -72,28 +83,26 @@
 (defn- apply-model! [^js el {:keys [size-css color-css label labelled?] :as m}]
   (ensure-refs! el)
   (let [^js style (.-style el)]
-    (.setProperty style "--x-icon-size"  size-css)
-    (.setProperty style "--x-icon-color" color-css))
+    (.setProperty style css-var-size  size-css)
+    (.setProperty style css-var-color color-css))
 
   (if labelled?
     (do
-      (du/set-attr! el "role" "img")
-      (du/set-attr! el "aria-label" label)
-      (du/remove-attr! el "aria-hidden"))
+      (du/set-attr!    el attr-role       role-img)
+      (du/set-attr!    el attr-aria-label label)
+      (du/remove-attr! el attr-aria-hidden))
     (do
-      (du/set-attr! el "aria-hidden" "true")
-      (du/remove-attr! el "role")
-      (du/remove-attr! el "aria-label")))
+      (du/set-attr!    el attr-aria-hidden aria-hidden-true)
+      (du/remove-attr! el attr-role)
+      (du/remove-attr! el attr-aria-label)))
 
-  (du/setv! el k-model m)
-  nil)
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -102,19 +111,17 @@
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
