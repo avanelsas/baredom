@@ -7,6 +7,7 @@
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-initialized "__xSkeletonInit")
 (def ^:private k-base        "__xSkeletonBase")
+(def ^:private k-model       "__xSkeletonModel")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -99,18 +100,17 @@
     (gobj/set el k-base        base)
     (gobj/set el k-initialized true)))
 
-;; ── Read inputs ───────────────────────────────────────────────────────────
-(defn- read-inputs [^js el]
-  {:variant   (du/get-attr el model/attr-variant)
-   :animation (du/get-attr el model/attr-animation)
-   :width     (du/get-attr el model/attr-width)
-   :height    (du/get-attr el model/attr-height)})
+;; ── Read model ────────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/derive-state
+   {:variant   (du/get-attr el model/attr-variant)
+    :animation (du/get-attr el model/attr-animation)
+    :width     (du/get-attr el model/attr-width)
+    :height    (du/get-attr el model/attr-height)}))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [variant animation width height]}
-        (model/derive-state (read-inputs el))
-        ^js base (gobj/get el k-base)]
+;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
+(defn- apply-model! [^js el {:keys [variant animation width height] :as m}]
+  (let [^js base (gobj/get el k-base)]
     (.setAttribute base "data-variant"   variant)
     (.setAttribute base "data-animation" animation)
     ;; Size overrides — applied as inline styles on base so they take
@@ -122,18 +122,25 @@
       (.setProperty  (.-style base) "height" height)
       (.removeProperty (.-style base) "height"))
     ;; Hide from assistive technology — skeletons carry no semantic content
-    (du/set-attr! el "aria-hidden" "true")))
+    (du/set-attr! el "aria-hidden" "true")
+    (gobj/set el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el))))
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

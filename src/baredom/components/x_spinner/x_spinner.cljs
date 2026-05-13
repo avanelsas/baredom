@@ -7,6 +7,7 @@
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-initialized "__xSpinnerInit")
 (def ^:private k-ring        "__xSpinnerRing")
+(def ^:private k-model       "__xSpinnerModel")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -72,28 +73,35 @@
     (gobj/set el k-ring ring)
     (gobj/set el k-initialized true)))
 
-;; ── Attribute readers ─────────────────────────────────────────────────────
-(defn- read-attrs [^js el]
-  {:size    (du/get-attr el model/attr-size)
-   :variant (du/get-attr el model/attr-variant)
-   :label   (du/get-attr el model/attr-label)})
+;; ── Read model ────────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/derive-state
+   {:size    (du/get-attr el model/attr-size)
+    :variant (du/get-attr el model/attr-variant)
+    :label   (du/get-attr el model/attr-label)}))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [size variant label]} (model/derive-state (read-attrs el))]
-    (du/set-attr! el "data-size"    size)
-    (du/set-attr! el "data-variant" variant)
-    (du/set-attr! el "aria-label"   label)))
+;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
+(defn- apply-model! [^js el {:keys [size variant label] :as m}]
+  (du/set-attr! el "data-size"    size)
+  (du/set-attr! el "data-variant" variant)
+  (du/set-attr! el "aria-label"   label)
+  (gobj/set el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val) (gobj/get el k-initialized))
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
