@@ -165,6 +165,6 @@
      :empty-text       (or (normalize-str empty-text-raw) default-empty-text)}))
 
 (def method-api
-  {:open   {:args [] :returns 'void}
+  {:show   {:args [] :returns 'void}
    :close  {:args [] :returns 'void}
    :toggle {:args [] :returns 'void}})

@@ -49,7 +49,7 @@ export class BaredomCommandPalette implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
-  open(): void { return this.el.open(); }
+  show(): void { return this.el.show(); }
   closeMethod(): void { return this.el.close(); }
   toggle(): void { return this.el.toggle(); }
 }

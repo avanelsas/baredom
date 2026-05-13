@@ -8386,7 +8386,7 @@
         }
       }, {
         "kind" : "method",
-        "name" : "open",
+        "name" : "show",
         "return" : {
           "type" : {
             "text" : "void"

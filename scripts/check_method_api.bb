@@ -36,6 +36,62 @@
        (filter #(str/starts-with? % "x_"))
        sort))
 
+;; ── Extract property-api keys for collision detection ───────────────────────
+
+(defn- extract-property-api-keys
+  "Return the set of property key-names (as strings) declared in
+   property-api. We only need the keys for collision detection."
+  [source]
+  (when source
+    (let [;; Find `(def property-api` and the opening `{`
+          start (str/index-of source "(def property-api")]
+      (when start
+        (let [brace-start (str/index-of source \{ start)]
+          (when brace-start
+            ;; Walk for matching `}` to extract the map text
+            (let [map-text (loop [i brace-start depth 0 in-str? false]
+                             (if (>= i (count source))
+                               nil
+                               (let [c (.charAt source i)]
+                                 (cond
+                                   in-str? (if (= c \") (recur (inc i) depth false)
+                                                       (recur (inc i) depth true))
+                                   (= c \") (recur (inc i) depth true)
+                                   (= c \{) (recur (inc i) (inc depth) false)
+                                   (= c \}) (if (= depth 1)
+                                              (subs source brace-start (inc i))
+                                              (recur (inc i) (dec depth) false))
+                                   :else (recur (inc i) depth false)))))]
+              (when map-text
+                ;; Top-level keys are `:foo` tokens that appear at depth 1
+                ;; (depth 0 is outside the map, depth 1 is direct children).
+                (let [out (atom #{})]
+                  (loop [i 0 depth 0 in-str? false]
+                    (when (< i (count map-text))
+                      (let [c (.charAt map-text i)]
+                        (cond
+                          in-str? (recur (inc i) depth (not (= c \")))
+                          (= c \") (recur (inc i) depth true)
+                          (= c \{) (recur (inc i) (inc depth) false)
+                          (= c \}) (recur (inc i) (dec depth) false)
+                          (and (= c \:)
+                               (= depth 1)
+                               ;; Make sure we're not inside :a/:b style key
+                               (< (inc i) (count map-text)))
+                          (let [end (loop [j (inc i)]
+                                      (if (>= j (count map-text))
+                                        j
+                                        (let [k (.charAt map-text j)]
+                                          (if (re-matches #"[A-Za-z0-9_\-?]"
+                                                          (str k))
+                                            (recur (inc j))
+                                            j))))]
+                            (when (> end (inc i))
+                              (swap! out conj (subs map-text (inc i) end)))
+                            (recur end depth false))
+                          :else (recur (inc i) depth false)))))
+                  @out)))))))))
+
 ;; ── Extract method-api from model.cljs ───────────────────────────────────────
 
 (defn- extract-method-api-text
@@ -159,7 +215,14 @@
       (let [api-text  (extract-method-api-text model-src)
             api       (parse-method-api api-text)
             declared  (method-api-method-names api)
-            installed (extract-installed-methods comp-src)]
+            installed (extract-installed-methods comp-src)
+            prop-keys (or (extract-property-api-keys model-src) #{})
+            ;; A method that shares its name with a property key would
+            ;; produce a name collision in the generated d.ts/adapters
+            ;; (input setter vs method wrapper), and at runtime the
+            ;; .defineProperty :value descriptor shadows the property
+            ;; accessor — see x_command_palette pre-fix.
+            collisions (clojure.set/intersection declared prop-keys)]
         (cond
           (= declared ::parse-error)
           {:status :error
@@ -181,7 +244,11 @@
                                   (sort missing-decl)))
                        (seq missing-impl)
                        (conj (str "declared in method-api but not installed: "
-                                  (sort missing-impl))))]
+                                  (sort missing-impl)))
+                       (seq collisions)
+                       (conj (str "method names collide with property-api: "
+                                  (sort collisions)
+                                  " — rename the method (see x_command_palette `show`)")))]
             (if (seq msgs)
               {:status :error :messages msgs}
               {:status :ok})))))))
