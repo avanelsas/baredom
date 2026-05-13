@@ -12,13 +12,47 @@
 (def ^:private k-img-ok   "__xAvatarImgOk")
 (def ^:private k-last-src "__xAvatarLastSrc")
 
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part         "part")
+(def ^:private attr-alt          "alt")
+(def ^:private attr-name         "name")
+(def ^:private attr-role         "role")
+(def ^:private attr-aria-label   "aria-label")
+(def ^:private attr-aria-hidden  "aria-hidden")
+(def ^:private attr-aria-disabled "aria-disabled")
+(def ^:private attr-data-size    "data-size")
+(def ^:private attr-data-shape   "data-shape")
+(def ^:private attr-data-variant "data-variant")
+
+(def ^:private part-root     "root")
+(def ^:private part-image    "image")
+(def ^:private part-initials "initials")
+(def ^:private part-fallback "fallback")
+(def ^:private part-status   "status")
+(def ^:private part-badge    "badge")
+
+(def ^:private role-img         "img")
+(def ^:private val-true         "true")
+(def ^:private val-fallback     "?")
+(def ^:private slot-name-badge  "badge")
+
+(def ^:private css-var-status-color "--x-avatar-status-color")
+
+(def ^:private ev-load       "load")
+(def ^:private ev-error      "error")
+(def ^:private ev-slotchange "slotchange")
+
+(def ^:private hk-load  "load")
+(def ^:private hk-error "error")
+(def ^:private hk-slot  "slot")
+
 ;; ── Styles ────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-block;"
    "vertical-align:middle;"
-   "position:relative;"           ; positioning context for status & badge
+   "position:relative;"
    "color-scheme:light dark;"
    "--x-avatar-size-xs:20px;"
    "--x-avatar-size-sm:24px;"
@@ -51,14 +85,12 @@
    "--x-avatar-status-busy:rgba(255,90,110,0.95);"
    "--x-avatar-status-away:rgba(255,190,90,0.95);}}"
 
-   ;; Size tokens
    ":host([data-size='xs']){--x-avatar-size:var(--x-avatar-size-xs);--x-avatar-font-size:0.625rem;}"
    ":host([data-size='sm']){--x-avatar-size:var(--x-avatar-size-sm);--x-avatar-font-size:0.75rem;}"
    ":host([data-size='md']){--x-avatar-size:var(--x-avatar-size-md);}"
    ":host([data-size='lg']){--x-avatar-size:var(--x-avatar-size-lg);--x-avatar-font-size:1rem;}"
    ":host([data-size='xl']){--x-avatar-size:var(--x-avatar-size-xl);--x-avatar-font-size:1.125rem;}"
 
-   ;; Variant overrides — neutral is the :host default
    ":host([data-variant='brand']){"
    "--x-avatar-bg:rgba(0,102,204,0.10);"
    "--x-avatar-border:rgba(0,102,204,0.30);"
@@ -79,7 +111,6 @@
    "--x-avatar-border:rgba(255,255,255,0.08);"
    "--x-avatar-color:rgba(255,255,255,0.50);}}"
 
-   ;; Avatar circle — overflow:hidden clips the image; status & badge are siblings
    "[part=root]{"
    "width:var(--x-avatar-size);"
    "height:var(--x-avatar-size);"
@@ -95,7 +126,7 @@
    "font-weight:600;"
    "line-height:1;"
    "user-select:none;"
-   "border-radius:999px;}"   ; default: circle
+   "border-radius:999px;}"
 
    ":host([data-shape='square']) [part=root]{border-radius:0;}"
    ":host([data-shape='rounded']) [part=root]{border-radius:var(--x-avatar-radius);}"
@@ -106,7 +137,6 @@
 
    "[part=initials],[part=fallback]{display:none;padding:0 0.25em;}"
 
-   ;; Status dot — absolute on host (outside [part=root]'s overflow:hidden)
    "[part=status]{"
    "position:absolute;"
    "right:-1px;"
@@ -120,7 +150,6 @@
    "background:var(--x-avatar-status-color);"
    "display:none;}"
 
-   ;; Badge — absolute top-right corner of host
    "[part=badge]{"
    "position:absolute;"
    "top:-4px;"
@@ -142,51 +171,43 @@
         fallback   (.createElement js/document "span")
         status     (.createElement js/document "span")
         badge      (.createElement js/document "span")
-        badge-slot (.createElement js/document "slot")]
+        badge-slot (.createElement js/document "slot")
+        refs       {:root-el     root-el
+                    :img         img
+                    :initials-el initials
+                    :fallback-el fallback
+                    :status-el   status
+                    :badge-el    badge
+                    :badge-slot  badge-slot}]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute root-el "part" "root")
-
-    (.setAttribute img "part" "image")
-    (.setAttribute img "alt" "")          ; host carries the accessible label
-
-    (.setAttribute initials "part" "initials")
-
-    (.setAttribute fallback "part" "fallback")
-    (set! (.-textContent fallback) "?")
-
-    (.setAttribute status "part" "status")
-    (.setAttribute status "aria-hidden" "true")
-
-    (.setAttribute badge "part" "badge")
-    (.setAttribute badge-slot "name" "badge")
+    (.setAttribute root-el  attr-part part-root)
+    (.setAttribute img      attr-part part-image)
+    (.setAttribute img      attr-alt  "")
+    (.setAttribute initials attr-part part-initials)
+    (.setAttribute fallback attr-part part-fallback)
+    (set! (.-textContent fallback) val-fallback)
+    (.setAttribute status   attr-part        part-status)
+    (.setAttribute status   attr-aria-hidden val-true)
+    (.setAttribute badge      attr-part part-badge)
+    (.setAttribute badge-slot attr-name slot-name-badge)
     (.appendChild badge badge-slot)
 
-    ;; [part=root] contains image / initials / fallback — all clipped
     (.appendChild root-el img)
     (.appendChild root-el initials)
     (.appendChild root-el fallback)
 
-    ;; status and badge are siblings of root-el, positioned on the host
     (.appendChild root style)
     (.appendChild root root-el)
     (.appendChild root status)
     (.appendChild root badge)
 
-    (gobj/set el k-refs
-              {:root-el    root-el
-               :img        img
-               :initials-el initials
-               :fallback-el fallback
-               :status-el   status
-               :badge-el    badge
-               :badge-slot  badge-slot})))
+    (gobj/set el k-refs refs)
+    refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
-      (do (init-dom! el)
-          (gobj/get el k-refs))))
+  (or (gobj/get el k-refs) (init-dom! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -201,79 +222,86 @@
     :status-raw        (du/get-attr el model/attr-status)
     :disabled-present? (du/has-attr? el model/attr-disabled)}))
 
-;; ── DOM patching ──────────────────────────────────────────────────────────
+;; ── Slot probing ──────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
-  ;; No flatten — we only want externally slotted nodes, not fallback content
   (when slot-el
     (pos? (.-length (.assignedNodes slot-el)))))
 
 (defn- set-display! [^js node v]
   (set! (.. node -style -display) v))
 
-(defn- apply-model! [^js el {:keys [src size shape variant status disabled] :as m}]
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────
+(defn- apply-host-data! [^js el {:keys [size shape variant]}]
+  (du/set-attr! el attr-data-size    size)
+  (du/set-attr! el attr-data-shape   shape)
+  (du/set-attr! el attr-data-variant variant))
+
+(defn- apply-host-aria! [^js el m]
+  (let [lbl (model/label m)]
+    (if lbl
+      (do (du/set-attr! el attr-role       role-img)
+          (du/set-attr! el attr-aria-label lbl)
+          (du/remove-attr! el attr-aria-hidden))
+      (do (du/remove-attr! el attr-role)
+          (du/remove-attr! el attr-aria-label)
+          (du/set-attr! el attr-aria-hidden val-true))))
+  (if (:disabled m)
+    (du/set-attr! el attr-aria-disabled val-true)
+    (du/remove-attr! el attr-aria-disabled)))
+
+(defn- apply-image! [^js el ^js img {:keys [src]} show-img?]
+  (let [next (or src "")
+        prev (or (gobj/get el k-last-src) "")]
+    (when (not= prev next)
+      (gobj/set el k-last-src next)
+      (set! (.-src img) next)))
+  (set-display! img (if show-img? "block" "none")))
+
+(defn- apply-text-layers!
+  [^js initials-el ^js fallback-el text show-initials? show-fallback?]
+  (when show-initials?
+    (set! (.-textContent initials-el) text))
+  (set-display! initials-el (if show-initials? "inline" "none"))
+  (set-display! fallback-el (if show-fallback? "inline" "none")))
+
+(defn- status-css-value [status]
+  (case status
+    "online" "var(--x-avatar-status-online)"
+    "busy"   "var(--x-avatar-status-busy)"
+    "away"   "var(--x-avatar-status-away)"
+    "var(--x-avatar-status-offline)"))
+
+(defn- apply-status! [^js el ^js status-el {:keys [status]}]
+  (if status
+    (do (.setProperty (.-style el) css-var-status-color (status-css-value status))
+        (set-display! status-el "block"))
+    (set-display! status-el "none")))
+
+(defn- apply-badge! [^js badge-el has-badge?]
+  (set-display! badge-el (if has-badge? "block" "none")))
+
+(defn- apply-model! [^js el m]
   (let [{:keys [img initials-el fallback-el status-el badge-el badge-slot]}
         (ensure-refs! el)
-        ^js img          img
-        ^js initials-el  initials-el
-        ^js fallback-el  fallback-el
-        ^js status-el    status-el
-        ^js badge-el     badge-el
-        ^js badge-slot   badge-slot
-        img-ok?       (boolean (gobj/get el k-img-ok))
-        has-src?      (some? src)
-        text          (model/display-text m)
-        lbl           (model/label m)
-        show-img?      (and has-src? img-ok?)
-        show-initials? (and (not show-img?) (some? text))
-        show-fallback? (and (not show-img?) (not show-initials?))
-        has-badge?    (slot-has-content? badge-slot)]
-
-    ;; Data attributes drive CSS selectors
-    (du/set-attr! el "data-size"    size)
-    (du/set-attr! el "data-shape"   shape)
-    (du/set-attr! el "data-variant" variant)
-
-    ;; ARIA on host
-    (if lbl
-      (do (du/set-attr! el "role" "img")
-          (du/set-attr! el "aria-label" lbl)
-          (du/remove-attr! el "aria-hidden"))
-      (do (du/remove-attr! el "role")
-          (du/remove-attr! el "aria-label")
-          (du/set-attr! el "aria-hidden" "true")))
-
-    (if disabled
-      (du/set-attr! el "aria-disabled" "true")
-      (du/remove-attr! el "aria-disabled"))
-
-    ;; Image src — compare against last-assigned to avoid re-triggering load
-    (let [next (or src "")
-          prev (or (gobj/get el k-last-src) "")]
-      (when (not= prev next)
-        (gobj/set el k-last-src next)
-        (set! (.-src img) next)))
-
-    (set-display! img (if show-img? "block" "none"))
-
-    ;; Initials / fallback
-    (when show-initials? (set! (.-textContent initials-el) text))
-    (set-display! initials-el (if show-initials? "inline" "none"))
-    (set-display! fallback-el (if show-fallback? "inline" "none"))
-
-    ;; Status dot — set CSS var then show/hide
-    (if status
-      (do (.setProperty (.-style el) "--x-avatar-status-color"
-                        (case status
-                          "online"  "var(--x-avatar-status-online)"
-                          "busy"    "var(--x-avatar-status-busy)"
-                          "away"    "var(--x-avatar-status-away)"
-                          "var(--x-avatar-status-offline)"))
-          (set-display! status-el "block"))
-      (set-display! status-el "none"))
-
-    ;; Badge wrapper
-    (set-display! badge-el (if has-badge? "block" "none"))
-
+        ^js img         img
+        ^js initials-el initials-el
+        ^js fallback-el fallback-el
+        ^js status-el   status-el
+        ^js badge-el    badge-el
+        ^js badge-slot  badge-slot
+        img-ok?         (boolean (gobj/get el k-img-ok))
+        has-src?        (some? (:src m))
+        text            (model/display-text m)
+        show-img?       (and has-src? img-ok?)
+        show-initials?  (and (not show-img?) (some? text))
+        show-fallback?  (and (not show-img?) (not show-initials?))
+        has-badge?      (slot-has-content? badge-slot)]
+    (apply-host-data!    el m)
+    (apply-host-aria!    el m)
+    (apply-image!        el img m show-img?)
+    (apply-text-layers!  initials-el fallback-el text show-initials? show-fallback?)
+    (apply-status!       el status-el m)
+    (apply-badge!        badge-el has-badge?)
     (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -287,26 +315,30 @@
   (let [{:keys [img badge-slot]} (ensure-refs! el)
         ^js img        img
         ^js badge-slot badge-slot
-        on-load  (fn [_] (gobj/set el k-img-ok true)  (update-from-attrs! el))
-        on-error (fn [_] (gobj/set el k-img-ok false) (update-from-attrs! el))
-        on-slot  (fn [_] (update-from-attrs! el))]
-    (.addEventListener img "load"  on-load)
-    (.addEventListener img "error" on-error)
-    (when badge-slot (.addEventListener badge-slot "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:load on-load :error on-error :slot on-slot})))
+        on-load  (fn handle-img-load  [_] (gobj/set el k-img-ok true)  (update-from-attrs! el))
+        on-error (fn handle-img-error [_] (gobj/set el k-img-ok false) (update-from-attrs! el))
+        on-slot  (fn handle-slotchange [_] (update-from-attrs! el))
+        handlers #js {}]
+    (.addEventListener img ev-load  on-load)
+    (.addEventListener img ev-error on-error)
+    (when badge-slot (.addEventListener badge-slot ev-slotchange on-slot))
+    (gobj/set handlers hk-load  on-load)
+    (gobj/set handlers hk-error on-error)
+    (gobj/set handlers hk-slot  on-slot)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
     (when-let [refs (gobj/get el k-refs)]
       (let [^js img        (:img refs)
             ^js badge-slot (:badge-slot refs)
-            on-load  (gobj/get hs "load")
-            on-error (gobj/get hs "error")
-            on-slot  (gobj/get hs "slot")]
-        (when on-load  (.removeEventListener img "load"  on-load))
-        (when on-error (.removeEventListener img "error" on-error))
+            on-load        (gobj/get hs hk-load)
+            on-error       (gobj/get hs hk-error)
+            on-slot        (gobj/get hs hk-slot)]
+        (when on-load  (.removeEventListener img ev-load  on-load))
+        (when on-error (.removeEventListener img ev-error on-error))
         (when (and badge-slot on-slot)
-          (.removeEventListener badge-slot "slotchange" on-slot)))))
+          (.removeEventListener badge-slot ev-slotchange on-slot)))))
   (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
@@ -330,11 +362,10 @@
     (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
-
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
