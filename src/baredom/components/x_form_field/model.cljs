@@ -78,4 +78,4 @@
      :has-hint?    (and (string? hint-raw)  (not= hint-raw "")  (some? hint-raw))
      :has-label?   (and (string? label-raw) (not= label-raw "") (some? label-raw))}))
 
-(def method-api nil)
+(def method-api {})

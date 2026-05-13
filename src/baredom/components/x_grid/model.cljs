@@ -95,4 +95,4 @@
      :auto-flow flow*
      :inline (boolean inline)}))
 
-(def method-api nil)
+(def method-api {})

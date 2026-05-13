@@ -183,4 +183,4 @@
      :paused    (parse-paused paused)
      :blobs     (blob-layout parsed-colors parsed-count parsed-size)}))
 
-(def method-api nil)
+(def method-api {})

@@ -114,4 +114,4 @@
    event-close         {:cancelable false :detail {:reason 'string}}
    event-select        {:cancelable false :detail {:item 'object}}})
 
-(def method-api nil)
+(def method-api {})

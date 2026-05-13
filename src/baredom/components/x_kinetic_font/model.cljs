@@ -242,4 +242,4 @@
        ", 'slnt' " (.toFixed (aget axes 2) 1)
        ", 'opsz' " (.toFixed (aget axes 3) 1)))
 
-(def method-api nil)
+(def method-api {})

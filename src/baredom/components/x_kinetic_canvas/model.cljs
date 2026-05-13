@@ -35,7 +35,7 @@
 (def event-schema {})
 
 ;; ── Method API ──────────────────────────────────────────────────────────────
-(def method-api nil)
+(def method-api {})
 
 ;; ── Allowed enum values ─────────────────────────────────────────────────────
 (def ^:private allowed-types #{"starfield" "bubbles" "matrix"})
