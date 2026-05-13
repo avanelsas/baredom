@@ -11,6 +11,18 @@
 (def ^:private k-model             "__xKbdModel")
 (def ^:private k-detected-platform "__xKbdDetectedPlatform")
 
+;; ── String-literal constants ─────────────────────────────────────────────────
+(def ^:private attr-part       "part")
+(def ^:private attr-aria-label "aria-label")
+(def ^:private attr-data-size  "data-size")
+(def ^:private part-base       "base")
+(def ^:private part-key        "key")
+(def ^:private part-separator  "separator")
+(def ^:private tag-kbd         "kbd")
+(def ^:private tag-span        "span")
+(def ^:private tag-slot        "slot")
+(def ^:private rk-base         "base")
+
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
@@ -103,12 +115,14 @@
 (defn- init-dom! [^js el]
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
-        base  (.createElement js/document "span")]
+        base  (.createElement js/document tag-span)
+        refs  #js {}]
     (set! (.-textContent style) style-text)
-    (.setAttribute base "part" "base")
+    (.setAttribute base attr-part part-base)
     (.appendChild root style)
     (.appendChild root base)
-    (gobj/set el k-refs #js {:base base})))
+    (gobj/set refs rk-base base)
+    (gobj/set el k-refs refs)))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -134,21 +148,21 @@
     (.removeChild node (.-firstChild node))))
 
 (defn- build-key-cap! [visible]
-  (let [k (.createElement js/document "kbd")]
-    (.setAttribute k "part" "key")
+  (let [k (.createElement js/document tag-kbd)]
+    (.setAttribute k attr-part part-key)
     (set! (.-textContent k) visible)
     k))
 
 (defn- build-separator! [sep]
-  (let [s (.createElement js/document "span")]
-    (.setAttribute s "part" "separator")
+  (let [s (.createElement js/document tag-span)]
+    (.setAttribute s attr-part part-separator)
     (set! (.-textContent s) sep)
     s))
 
 (defn- build-slot-cap! []
-  (let [k    (.createElement js/document "kbd")
-        slot (.createElement js/document "slot")]
-    (.setAttribute k "part" "key")
+  (let [k    (.createElement js/document tag-kbd)
+        slot (.createElement js/document tag-slot)]
+    (.setAttribute k attr-part part-key)
     (.appendChild k slot)
     k))
 
@@ -165,13 +179,13 @@
 
 (defn- apply-host-aria! [^js el label]
   (if (= "" label)
-    (du/remove-attr! el "aria-label")
-    (du/set-attr! el "aria-label" label)))
+    (du/remove-attr! el attr-aria-label)
+    (du/set-attr! el attr-aria-label label)))
 
 (defn- apply-model! [^js el {:keys [size label] :as m}]
   (let [refs (ensure-refs! el)
-        ^js base (gobj/get refs "base")]
-    (du/set-attr! el "data-size" size)
+        ^js base (gobj/get refs rk-base)]
+    (du/set-attr! el attr-data-size size)
     (apply-host-aria! el label)
     (render-base! base m)
     (gobj/set el k-model m)))
