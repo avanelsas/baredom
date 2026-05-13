@@ -5,17 +5,60 @@
    [goog.object :as gobj]
    [baredom.components.x-alert.model :as model]))
 
-;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
-(def ^:private k-refs        "__xAlertRefs")
-(def ^:private k-model       "__xAlertModel")
-(def ^:private k-handlers    "__xAlertHandlers")
-(def ^:private k-timeout     "__xAlertTimeout")
-(def ^:private k-exit-timer  "__xAlertExitTimer")
-(def ^:private k-exiting     "__xAlertExiting")
-(def ^:private k-entered     "__xAlertEntered")
+;; ── Instance-field keys ─────────────────────────────────────────────────────
+(def ^:private k-refs       "__xAlertRefs")
+(def ^:private k-model      "__xAlertModel")
+(def ^:private k-handlers   "__xAlertHandlers")
+(def ^:private k-timeout    "__xAlertTimeout")
+(def ^:private k-exit-timer "__xAlertExitTimer")
+(def ^:private k-exiting    "__xAlertExiting")
+(def ^:private k-entered    "__xAlertEntered")
 
-;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private attr-part              "part")
+(def ^:private attr-name              "name")
+(def ^:private attr-type              "type")
+(def ^:private attr-role              "role")
+(def ^:private attr-aria-hidden       "aria-hidden")
+(def ^:private attr-aria-label        "aria-label")
+(def ^:private attr-aria-disabled     "aria-disabled")
+(def ^:private attr-aria-keyshortcuts "aria-keyshortcuts")
+(def ^:private attr-data-type         "data-type")
+(def ^:private attr-data-entering     "data-entering")
+(def ^:private attr-data-exiting      "data-exiting")
+
+(def ^:private part-container    "container")
+(def ^:private part-icon         "icon")
+(def ^:private part-default-icon "default-icon")
+(def ^:private part-text         "text")
+(def ^:private part-dismiss      "dismiss")
+(def ^:private slot-name-icon    "icon")
+
+(def ^:private val-true             "true")
+(def ^:private val-false            "false")
+(def ^:private val-dismiss-label    "Dismiss alert")
+(def ^:private val-dismiss-glyph    "×")
+(def ^:private val-escape-shortcut  "Escape")
+(def ^:private val-button-type      "button")
+
+(def ^:private css-var-exit-duration   "--x-alert-exit-duration")
+(def ^:private css-var-motion-exit-dur "--x-motion-exit-duration")
+
+(def ^:private ev-click        "click")
+(def ^:private ev-keydown      "keydown")
+(def ^:private ev-animationend "animationend")
+
+(def ^:private hk-click   "click")
+(def ^:private hk-keydown "keydown")
+
+(def ^:private reason-button   "button")
+(def ^:private reason-keyboard "keyboard")
+(def ^:private reason-timeout  "timeout")
+
+(def ^:private key-escape "Escape")
+
+;; ── Styles ──────────────────────────────────────────────────────────────────
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -147,35 +190,42 @@
    ":host([data-entering]) [part=container],:host([data-exiting]) [part=container]{"
    "animation:none !important;}}"))
 
-;; ── DOM initialisation ───────────────────────────────────────────────────────
+;; ── DOM initialisation ──────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
-  (let [root        (.attachShadow el #js {:mode "open"})
-        style       (.createElement js/document "style")
-        container   (.createElement js/document "div")
-        icon-wrap   (.createElement js/document "span")
-        icon-slot   (.createElement js/document "slot")
+  (let [root         (.attachShadow el #js {:mode "open"})
+        style        (.createElement js/document "style")
+        container    (.createElement js/document "div")
+        icon-wrap    (.createElement js/document "span")
+        icon-slot    (.createElement js/document "slot")
         default-icon (.createElement js/document "span")
-        text-el     (.createElement js/document "span")
-        dismiss-btn (.createElement js/document "button")
-        dismiss-x   (.createElement js/document "span")]
+        text-el      (.createElement js/document "span")
+        dismiss-btn  (.createElement js/document "button")
+        dismiss-x    (.createElement js/document "span")
+        refs         {:root         root
+                      :container    container
+                      :icon-wrap    icon-wrap
+                      :icon-slot    icon-slot
+                      :default-icon default-icon
+                      :text-el      text-el
+                      :dismiss-btn  dismiss-btn}]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
+    (.setAttribute container attr-part part-container)
 
-    (.setAttribute icon-wrap "part" "icon")
-    (.setAttribute icon-wrap "aria-hidden" "true")
-    (.setAttribute icon-slot "name" "icon")
-    (.setAttribute default-icon "part" "default-icon")
+    (.setAttribute icon-wrap    attr-part        part-icon)
+    (.setAttribute icon-wrap    attr-aria-hidden val-true)
+    (.setAttribute icon-slot    attr-name        slot-name-icon)
+    (.setAttribute default-icon attr-part        part-default-icon)
     (.appendChild icon-slot default-icon)
     (.appendChild icon-wrap icon-slot)
 
-    (.setAttribute text-el "part" "text")
+    (.setAttribute text-el attr-part part-text)
 
-    (.setAttribute dismiss-btn "part" "dismiss")
-    (.setAttribute dismiss-btn "type" "button")
-    (.setAttribute dismiss-x "aria-hidden" "true")
-    (set! (.-textContent dismiss-x) "×")
+    (.setAttribute dismiss-btn attr-part part-dismiss)
+    (.setAttribute dismiss-btn attr-type val-button-type)
+    (.setAttribute dismiss-x   attr-aria-hidden val-true)
+    (set! (.-textContent dismiss-x) val-dismiss-glyph)
     (.appendChild dismiss-btn dismiss-x)
 
     (.appendChild container icon-wrap)
@@ -184,21 +234,13 @@
     (.appendChild root style)
     (.appendChild root container)
 
-    (gobj/set el k-refs
-              {:root        root
-               :container   container
-               :icon-wrap   icon-wrap
-               :icon-slot   icon-slot
-               :default-icon default-icon
-               :text-el     text-el
-               :dismiss-btn dismiss-btn})))
+    (gobj/set el k-refs refs)
+    refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
-      (do (init-dom! el)
-          (gobj/get el k-refs))))
+  (or (gobj/get el k-refs) (init-dom! el)))
 
-;; ── Attribute readers ────────────────────────────────────────────────────────
+;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
    {:type-raw          (du/get-attr el model/attr-type)
@@ -209,56 +251,66 @@
     :disabled-present? (du/has-attr? el model/attr-disabled)
     :timeout-ms-raw    (du/get-attr el model/attr-timeout-ms)}))
 
-;; ── DOM patching ─────────────────────────────────────────────────────────────
-(defn- slot-has-content? [^js slot-el]
-  ;; Use assignedNodes WITHOUT flatten:true — flatten includes fallback content
-  ;; (the default-icon span), which would make this always return true.
-  ;; Without flatten, only externally slotted nodes are counted.
+;; ── Slot probing ────────────────────────────────────────────────────────────
+(defn- slot-has-content?
+  "Returns true when the slot has externally assigned nodes.
+  Deliberately omits `:flatten true` — flatten would include the fallback
+  default-icon span and always return true."
+  [^js slot-el]
   (when slot-el
     (pos? (.-length (.assignedNodes slot-el)))))
 
-(defn- set-host-a11y! [^js el dismissible? disabled?]
-  (let [interactive? (and dismissible? (not disabled?))]
-    (set! (.-tabIndex el) (if interactive? 0 -1))
-    (if disabled?
-      (du/set-attr! el "aria-disabled" "true")
-      (du/remove-attr! el "aria-disabled"))
-    (if interactive?
-      (du/set-attr! el "aria-keyshortcuts" "Escape")
-      (du/remove-attr! el "aria-keyshortcuts"))))
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
+(defn- apply-host-type! [^js el ^js container {:keys [type]}]
+  (du/set-attr! el attr-data-type (model/type->attr type))
+  (.setAttribute container attr-role (model/role-for-type type)))
 
-(defn- apply-model! [^js el {:keys [type text icon-mode icon dismissible? disabled?] :as m}]
-  (let [{:keys [container icon-wrap icon-slot default-icon text-el dismiss-btn]}
-        (ensure-refs! el)
-        ^js container   container
-        ^js icon-wrap   icon-wrap
-        ^js icon-slot   icon-slot
-        ^js default-icon default-icon
-        ^js text-el     text-el
-        ^js dismiss-btn dismiss-btn
-        has-slot?    (slot-has-content? icon-slot)
-        fallback     (if (= icon-mode :custom) icon (model/default-icon-for-type type))
-        hide-icon?   (and (not has-slot?) (= icon-mode :hidden))]
+(defn- apply-text! [^js text-el {:keys [text]}]
+  (set! (.-textContent text-el) text))
 
-    (du/set-attr! el "data-type" (model/type->attr type))
-    (.setAttribute container "role" (model/role-for-type type))
-
-    (set! (.-textContent text-el) text)
-
+(defn- apply-icon! [^js icon-wrap ^js icon-slot ^js default-icon
+                    {:keys [type icon-mode icon]}]
+  (let [has-slot?  (slot-has-content? icon-slot)
+        fallback   (if (= icon-mode :custom) icon (model/default-icon-for-type type))
+        hide-icon? (and (not has-slot?) (= icon-mode :hidden))]
     (if hide-icon?
       (do (set! (.-textContent default-icon) "")
           (set! (.. icon-wrap -style -display) "none"))
       (do (set! (.-textContent default-icon) fallback)
-          (set! (.. icon-wrap -style -display) "inline")))
+          (set! (.. icon-wrap -style -display) "inline")))))
 
-    (if dismissible?
-      (do (set! (.-disabled dismiss-btn) (boolean disabled?))
-          (set! (.. dismiss-btn -style -display) "inline-flex"))
-      (do (set! (.-disabled dismiss-btn) true)
-          (set! (.. dismiss-btn -style -display) "none")))
+(defn- apply-dismiss-button! [^js dismiss-btn {:keys [dismissible? disabled?]}]
+  (if dismissible?
+    (do (set! (.-disabled dismiss-btn) (boolean disabled?))
+        (set! (.. dismiss-btn -style -display) "inline-flex"))
+    (do (set! (.-disabled dismiss-btn) true)
+        (set! (.. dismiss-btn -style -display) "none")))
+  (.setAttribute dismiss-btn attr-aria-label val-dismiss-label))
 
-    (.setAttribute dismiss-btn "aria-label" "Dismiss alert")
-    (set-host-a11y! el dismissible? disabled?)
+(defn- apply-host-a11y! [^js el {:keys [dismissible? disabled?]}]
+  (let [interactive? (and dismissible? (not disabled?))]
+    (set! (.-tabIndex el) (if interactive? 0 -1))
+    (if disabled?
+      (du/set-attr! el attr-aria-disabled val-true)
+      (du/remove-attr! el attr-aria-disabled))
+    (if interactive?
+      (du/set-attr! el attr-aria-keyshortcuts val-escape-shortcut)
+      (du/remove-attr! el attr-aria-keyshortcuts))))
+
+(defn- apply-model! [^js el m]
+  (let [{:keys [container icon-wrap icon-slot default-icon text-el dismiss-btn]}
+        (ensure-refs! el)
+        ^js container    container
+        ^js icon-wrap    icon-wrap
+        ^js icon-slot    icon-slot
+        ^js default-icon default-icon
+        ^js text-el      text-el
+        ^js dismiss-btn  dismiss-btn]
+    (apply-host-type!      el container m)
+    (apply-text!           text-el m)
+    (apply-icon!           icon-wrap icon-slot default-icon m)
+    (apply-dismiss-button! dismiss-btn m)
+    (apply-host-a11y!      el m)
     (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -267,7 +319,7 @@
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
-;; ── Motion helpers ───────────────────────────────────────────────────────────
+;; ── Motion helpers ──────────────────────────────────────────────────────────
 (defn- prefers-reduced-motion? []
   (boolean (.-matches (.matchMedia js/window "(prefers-reduced-motion:reduce)"))))
 
@@ -285,11 +337,11 @@
 
 (defn- exit-duration-ms [^js el]
   (let [^js cs (.getComputedStyle js/window el)
-        v1 (parse-duration-ms (.getPropertyValue cs "--x-alert-exit-duration"))
-        v2 (parse-duration-ms (.getPropertyValue cs "--x-motion-exit-duration"))]
+        v1 (parse-duration-ms (.getPropertyValue cs css-var-exit-duration))
+        v2 (parse-duration-ms (.getPropertyValue cs css-var-motion-exit-dur))]
     (cond (pos? v1) v1 (pos? v2) v2 :else 160)))
 
-;; ── Timer management ─────────────────────────────────────────────────────────
+;; ── Timer management ────────────────────────────────────────────────────────
 (defn- clear-timeout! [^js el]
   (when-let [tid (gobj/get el k-timeout)]
     (js/clearTimeout tid)
@@ -305,34 +357,34 @@
                (not (gobj/get el k-exiting)))
       (gobj/set el k-timeout
                 (js/setTimeout
-                 (fn []
+                 (fn on-timeout-fire []
                    (gobj/set el k-timeout nil)
                    (when (and (.-isConnected el) (not (gobj/get el k-exiting)))
                      (let [m2 (or (gobj/get el k-model) (read-model el))]
                        (when (model/dismiss-eligible? m2)
-                         (let [detail (clj->js (model/dismiss-detail m2 "timeout"))
+                         (let [detail (clj->js (model/dismiss-detail m2 reason-timeout))
                                ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
                            (when ok? (start-exit-and-remove! el)))))))
                  (:timeout-ms m))))))
 
-;; ── Animation ────────────────────────────────────────────────────────────────
+;; ── Animation ───────────────────────────────────────────────────────────────
 (defn- start-enter! [^js el]
   (when-not (gobj/get el k-entered)
     (gobj/set el k-entered true)
-    (du/set-attr! el "data-entering" "")
+    (du/set-attr! el attr-data-entering "")
     (let [{:keys [container]} (ensure-refs! el)
           ^js container container]
       (letfn [(on-end [^js e]
                 (when (= (.-target e) container)
-                  (.removeEventListener container "animationend" on-end)
-                  (du/remove-attr! el "data-entering")))]
-        (.addEventListener container "animationend" on-end)))))
+                  (.removeEventListener container ev-animationend on-end)
+                  (du/remove-attr! el attr-data-entering)))]
+        (.addEventListener container ev-animationend on-end)))))
 
 (defn- start-exit-and-remove! [^js el]
   (when-not (gobj/get el k-exiting)
     (gobj/set el k-exiting true)
     (clear-timeout! el)
-    (du/remove-attr! el "data-entering")
+    (du/remove-attr! el attr-data-entering)
     (let [dur (exit-duration-ms el)]
       (if (or (zero? dur) (prefers-reduced-motion?))
         (.remove el)
@@ -340,23 +392,23 @@
               ^js container container]
           (letfn [(on-end [^js e]
                     (when (= (.-target e) container)
-                      (.removeEventListener container "animationend" on-end)
+                      (.removeEventListener container ev-animationend on-end)
                       (when-let [tid (gobj/get el k-exit-timer)]
                         (js/clearTimeout tid)
                         (gobj/set el k-exit-timer nil))
                       (when (.-isConnected el) (.remove el))))]
-            (du/set-attr! el "data-exiting" "")
-            (.addEventListener container "animationend" on-end)
+            (du/set-attr! el attr-data-exiting "")
+            (.addEventListener container ev-animationend on-end)
             (gobj/set el k-exit-timer
                       (js/setTimeout
-                       (fn []
+                       (fn on-exit-fallback []
                          (when (and (.-isConnected el) (gobj/get el k-exiting))
-                           (.removeEventListener container "animationend" on-end)
+                           (.removeEventListener container ev-animationend on-end)
                            (gobj/set el k-exit-timer nil)
                            (.remove el)))
                        (+ dur 60)))))))))
 
-;; ── Event dispatch ───────────────────────────────────────────────────────────
+;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch-dismiss! [^js el reason]
   (let [m      (or (gobj/get el k-model) (read-model el))
         detail (clj->js (model/dismiss-detail m reason))
@@ -364,29 +416,32 @@
     (when ok? (start-exit-and-remove! el))
     ok?))
 
-;; ── Event handlers ───────────────────────────────────────────────────────────
+;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-dismiss-click [^js el ^js e]
   (let [m (or (gobj/get el k-model) (read-model el))]
     (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
       (.preventDefault e)
-      (dispatch-dismiss! el "button"))))
+      (dispatch-dismiss! el reason-button))))
 
 (defn- on-keydown [^js el ^js e]
-  (when (= (.-key e) "Escape")
+  (when (= (.-key e) key-escape)
     (let [m (or (gobj/get el k-model) (read-model el))]
       (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
         (.preventDefault e)
-        (dispatch-dismiss! el "keyboard")))))
+        (dispatch-dismiss! el reason-keyboard)))))
 
-;; ── Listener management ──────────────────────────────────────────────────────
+;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [{:keys [dismiss-btn]} (ensure-refs! el)
         ^js dismiss-btn dismiss-btn
-        click-h (fn [e] (on-dismiss-click el e))
-        key-h   (fn [e] (on-keydown el e))]
-    (.addEventListener dismiss-btn "click" click-h)
-    (.addEventListener el "keydown" key-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown key-h})))
+        click-h  (fn handle-dismiss-click [e] (on-dismiss-click el e))
+        key-h    (fn handle-host-keydown  [e] (on-keydown el e))
+        handlers #js {}]
+    (.addEventListener dismiss-btn ev-click   click-h)
+    (.addEventListener el          ev-keydown key-h)
+    (gobj/set handlers hk-click   click-h)
+    (gobj/set handlers hk-keydown key-h)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (clear-timeout! el)
@@ -396,46 +451,61 @@
   (let [hs   (gobj/get el k-handlers)
         refs (gobj/get el k-refs)]
     (when (and hs refs)
-      (let [^js btn     (:dismiss-btn refs)
-            click-h (gobj/get hs "click")
-            key-h   (gobj/get hs "keydown")]
-        (when click-h (.removeEventListener btn "click" click-h))
-        (when key-h   (.removeEventListener el "keydown" key-h)))))
+      (let [^js btn (:dismiss-btn refs)
+            click-h (gobj/get hs hk-click)
+            key-h   (gobj/get hs hk-keydown)]
+        (when click-h (.removeEventListener btn ev-click   click-h))
+        (when key-h   (.removeEventListener el  ev-keydown key-h)))))
   (gobj/set el k-handlers nil))
 
-;; ── Property accessors ───────────────────────────────────────────────────────
+;; ── Property accessors ──────────────────────────────────────────────────────
+;; Four simple reflectors are Tier 1 (du/define-{string,bool}-prop!).
+;; Two properties need Tier 2 hand-written .defineProperty — documented below.
 (defn- install-property-accessors! [^js proto]
   (du/define-string-prop! proto model/attr-type model/attr-type "info")
   (du/define-string-prop! proto model/attr-text model/attr-text "")
   (du/define-string-prop! proto model/attr-icon model/attr-icon)
   (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
 
+  ;; Tier 2 — `dismissible` is a 3-state boolean with `true` as the *absent*
+  ;; default. Tier-1 du/define-bool-prop! treats attribute-absence as `false`,
+  ;; which would invert the default. We need:
+  ;;   - getter: route through model/parse-bool-default-true so the absent
+  ;;     attribute returns `true`, "false" returns `false`, anything else `true`.
+  ;;   - setter: writing `true` sets the attribute to "" (boolean-attribute
+  ;;     convention), writing `false` sets it to the literal "false" string
+  ;;     (rather than removing the attribute) so the resolved value is
+  ;;     explicitly false rather than the absent-default true.
   (.defineProperty js/Object proto model/attr-dismissible
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-bool-default-true
-                                         (.getAttribute this model/attr-dismissible))))
+                                 (model/parse-bool-default-true
+                                  (.getAttribute this model/attr-dismissible))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-dismissible "")
-                                          (.setAttribute this model/attr-dismissible "false"))))
+                                 (if v
+                                   (.setAttribute this model/attr-dismissible "")
+                                   (.setAttribute this model/attr-dismissible val-false))))
                         :enumerable true :configurable true})
 
-  ;; camelCase JS property mapping to kebab-case attribute
+  ;; Tier 2 — `timeoutMs` is the camelCase JS property reflecting the
+  ;; kebab-case `timeout-ms` HTML attribute. du/define-number-prop! always
+  ;; uses the same name on both sides, so a kebab→camel rename needs hand
+  ;; wiring. The setter also serialises through (int v) so floats round
+  ;; rather than producing decimal-string attributes.
   (.defineProperty js/Object proto "timeoutMs"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-timeout-ms
-                                         (.getAttribute this model/attr-timeout-ms))))
+                                 (model/parse-timeout-ms
+                                  (.getAttribute this model/attr-timeout-ms))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-timeout-ms)
-                                          (.setAttribute this model/attr-timeout-ms (str (int v))))))
+                                 (if (nil? v)
+                                   (.removeAttribute this model/attr-timeout-ms)
+                                   (.setAttribute this model/attr-timeout-ms (str (int v))))))
                         :enumerable true :configurable true}))
 
-;; ── Element class ────────────────────────────────────────────────────────────
+;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
@@ -453,12 +523,11 @@
     (when (.-isConnected el)
       (schedule-timeout! el))))
 
-;; ── Public API ───────────────────────────────────────────────────────────────
-
+;; ── Public API ──────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
