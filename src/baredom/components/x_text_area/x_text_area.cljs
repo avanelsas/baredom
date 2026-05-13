@@ -8,6 +8,7 @@
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xTextAreaRefs")
+(def ^:private k-model     "__xTextAreaModel")
 (def ^:private k-internals "__xTextAreaInternals")
 (def ^:private k-handlers  "__xTextAreaHandlers")
 
@@ -202,77 +203,90 @@
     :resize-raw        (du/get-attr el model/attr-resize)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; DOM patching (render-orchestrator: phase list of named helpers)
 ;; ---------------------------------------------------------------------------
+(defn- apply-textarea-props! [^js el ^js textarea-el {:keys [name placeholder disabled? readonly?
+                                                            required? rows autocomplete
+                                                            maxlength minlength resize]}]
+  (set! (.-name textarea-el)         name)
+  (set! (.-placeholder textarea-el)  placeholder)
+  (set! (.-disabled textarea-el)     disabled?)
+  (set! (.-readOnly textarea-el)     readonly?)
+  (set! (.-required textarea-el)     required?)
+  (set! (.-rows textarea-el)         rows)
+  (set! (.-autocomplete textarea-el) autocomplete)
+  (if maxlength
+    (du/set-attr! textarea-el "maxlength" (str maxlength))
+    (du/remove-attr! textarea-el "maxlength"))
+  (if minlength
+    (du/set-attr! textarea-el "minlength" (str minlength))
+    (du/remove-attr! textarea-el "minlength"))
+  ;; Resize: set CSS custom property on host
+  (.setProperty (.-style el) "--x-text-area-resize" resize))
+
+(defn- apply-textarea-aria! [^js textarea-el {:keys [required? has-error? has-hint?]}]
+  (du/set-attr! textarea-el "aria-required" (if required?  "true" "false"))
+  (du/set-attr! textarea-el "aria-invalid"  (if has-error? "true" "false"))
+  (let [describedby (cond
+                      (and has-hint? has-error?) "hint error"
+                      has-hint?                  "hint"
+                      has-error?                 "error"
+                      :else                      nil)]
+    (if describedby
+      (du/set-attr! textarea-el "aria-describedby" describedby)
+      (du/remove-attr! textarea-el "aria-describedby"))))
+
+(defn- apply-vis-block!
+  "Set textContent and toggle a visibility class on a label/hint/error node."
+  [^js node text visible? hidden-class]
+  (set! (.-textContent node) text)
+  (if visible?
+    (.remove (.-classList node) hidden-class)
+    (.add (.-classList node) hidden-class)))
+
+(defn- apply-label-vis! [^js label-el {:keys [label has-label?]}]
+  (apply-vis-block! label-el label has-label? "label-hidden"))
+
+(defn- apply-hint-vis! [^js hint-el {:keys [hint has-hint?]}]
+  (apply-vis-block! hint-el hint has-hint? "hint-hidden"))
+
+(defn- apply-error-vis! [^js error-el {:keys [error has-error?]}]
+  (apply-vis-block! error-el error has-error? "error-hidden"))
+
+(defn- apply-host-data! [^js el {:keys [has-error?]}]
+  (du/set-bool-attr! el "data-invalid" has-error?))
+
+(defn- apply-validity! [^js el ^js textarea-el]
+  (when-let [^js internals (gobj/get el k-internals)]
+    (sync-validity! el internals textarea-el)))
+
+(defn- apply-model! [^js el ^js refs m]
+  (let [^js textarea-el (gobj/get refs "textarea")
+        ^js label-el    (gobj/get refs "label")
+        ^js hint-el     (gobj/get refs "hint")
+        ^js error-el    (gobj/get refs "error")]
+    (apply-textarea-props! el textarea-el m)
+    (apply-textarea-aria!  textarea-el m)
+    (apply-label-vis!      label-el m)
+    (apply-hint-vis!       hint-el m)
+    (apply-error-vis!      error-el m)
+    (apply-host-data!      el m)
+    (apply-validity!       el textarea-el)
+    (gobj/set el k-model m)))
+
+;; render! is the direct-write entry — form-disabled!/form-reset! mutate
+;; attributes synchronously and want the apply to run unconditionally.
+;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js textarea-el (gobj/get refs "textarea")
-          ^js label-el    (gobj/get refs "label")
-          ^js hint-el     (gobj/get refs "hint")
-          ^js error-el    (gobj/get refs "error")
-          m               (read-model el)
-          has-error?      (:has-error? m)
-          has-hint?       (:has-hint? m)
-          has-label?      (:has-label? m)]
+    (apply-model! el refs (read-model el))))
 
-      ;; Textarea native properties
-      (set! (.-name textarea-el)         (:name m))
-      (set! (.-placeholder textarea-el)  (:placeholder m))
-      (set! (.-disabled textarea-el)     (:disabled? m))
-      (set! (.-readOnly textarea-el)     (:readonly? m))
-      (set! (.-required textarea-el)     (:required? m))
-      (set! (.-rows textarea-el)         (:rows m))
-      (set! (.-autocomplete textarea-el) (:autocomplete m))
-
-      ;; Optional integer attributes: maxlength / minlength
-      (if-let [maxlen (:maxlength m)]
-        (du/set-attr! textarea-el "maxlength" (str maxlen))
-        (du/remove-attr! textarea-el "maxlength"))
-      (if-let [minlen (:minlength m)]
-        (du/set-attr! textarea-el "minlength" (str minlen))
-        (du/remove-attr! textarea-el "minlength"))
-
-      ;; Resize: set CSS custom property on host
-      (.setProperty (.-style el) "--x-text-area-resize" (:resize m))
-
-      ;; ARIA on textarea
-      (du/set-attr! textarea-el "aria-required" (if (:required? m) "true" "false"))
-      (du/set-attr! textarea-el "aria-invalid"  (if has-error? "true" "false"))
-
-      ;; aria-describedby conditionally includes hint and/or error ids
-      (let [describedby (cond
-                          (and has-hint? has-error?) "hint error"
-                          has-hint?                  "hint"
-                          has-error?                 "error"
-                          :else                      nil)]
-        (if describedby
-          (du/set-attr! textarea-el "aria-describedby" describedby)
-          (du/remove-attr! textarea-el "aria-describedby")))
-
-      ;; Label
-      (set! (.-textContent label-el) (:label m))
-      (if has-label?
-        (.remove (.-classList label-el) "label-hidden")
-        (.add (.-classList label-el) "label-hidden"))
-
-      ;; Hint
-      (set! (.-textContent hint-el) (:hint m))
-      (if has-hint?
-        (.remove (.-classList hint-el) "hint-hidden")
-        (.add (.-classList hint-el) "hint-hidden"))
-
-      ;; Error
-      (set! (.-textContent error-el) (:error m))
-      (if has-error?
-        (.remove (.-classList error-el) "error-hidden")
-        (.add (.-classList error-el) "error-hidden"))
-
-      ;; Data attribute on host for CSS hook
-      (du/set-bool-attr! el "data-invalid" has-error?)
-
-      ;; ElementInternals validity
-      (when-let [^js internals (gobj/get el k-internals)]
-        (sync-validity! el internals textarea-el)))))
+(defn- update-from-attrs! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= new-m old-m)
+        (apply-model! el refs new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Event dispatch
@@ -280,34 +294,32 @@
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
-(defn- make-input-handler [^js el]
-  (fn [^js _evt]
-    (when-let [refs (gobj/get el k-refs)]
-      (let [^js textarea-el (gobj/get refs "textarea")
-            value            (.-value textarea-el)
-            prev-value       (or (du/get-attr el model/attr-value) "")
-            name             (or (du/get-attr el model/attr-name) "")
-            allowed?         (du/dispatch-cancelable!
-                              el model/event-change-request
-                              #js {:name name :value value :previousValue prev-value})]
-        (if allowed?
-          (do
-            (when-let [^js internals (gobj/get el k-internals)]
-              (.setFormValue internals value)
-              (sync-validity! el internals textarea-el))
-            (du/dispatch! el model/event-input #js {:name name :value value}))
-          (set! (.-value textarea-el) prev-value))))))
+(defn- on-input [^js el ^js _evt]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js textarea-el (gobj/get refs "textarea")
+          value            (.-value textarea-el)
+          prev-value       (or (du/get-attr el model/attr-value) "")
+          name             (or (du/get-attr el model/attr-name) "")
+          allowed?         (du/dispatch-cancelable!
+                            el model/event-change-request
+                            #js {:name name :value value :previousValue prev-value})]
+      (if allowed?
+        (do
+          (when-let [^js internals (gobj/get el k-internals)]
+            (.setFormValue internals value)
+            (sync-validity! el internals textarea-el))
+          (du/dispatch! el model/event-input #js {:name name :value value}))
+        (set! (.-value textarea-el) prev-value)))))
 
-(defn- make-change-handler [^js el]
-  (fn [^js _evt]
-    (when-let [refs (gobj/get el k-refs)]
-      (let [^js textarea-el (gobj/get refs "textarea")
-            value            (.-value textarea-el)
-            name             (or (du/get-attr el model/attr-name) "")]
-        (when-let [^js internals (gobj/get el k-internals)]
-          (.setFormValue internals value)
-          (sync-validity! el internals textarea-el))
-        (du/dispatch! el model/event-change #js {:name name :value value})))))
+(defn- on-change [^js el ^js _evt]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [^js textarea-el (gobj/get refs "textarea")
+          value            (.-value textarea-el)
+          name             (or (du/get-attr el model/attr-name) "")]
+      (when-let [^js internals (gobj/get el k-internals)]
+        (.setFormValue internals value)
+        (sync-validity! el internals textarea-el))
+      (du/dispatch! el model/event-change #js {:name name :value value}))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -315,8 +327,8 @@
 (defn- add-listeners! [^js el]
   (when-let [refs (gobj/get el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
-          input-h          (make-input-handler el)
-          change-h         (make-change-handler el)]
+          input-h  (fn handle-textarea-input  [e] (on-input  el e))
+          change-h (fn handle-textarea-change [e] (on-change el e))]
       (.addEventListener textarea-el "input"  input-h)
       (.addEventListener textarea-el "change" change-h)
       (gobj/set el k-handlers #js {:input input-h :change change-h}))))
@@ -369,14 +381,15 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el name _old new-val]
-  ;; For value attr: sync to textarea.value only if it differs (avoids cursor jump on typing)
-  (when (= name model/attr-value)
-    (when-let [refs (gobj/get el k-refs)]
-      (let [^js textarea-el (gobj/get refs "textarea")]
-        (when (not= (.-value textarea-el) new-val)
-          (set! (.-value textarea-el) (or new-val ""))))))
-  (render! el))
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+    ;; For value attr: sync to textarea.value only if it differs (avoids cursor jump on typing)
+    (when (= attr-name model/attr-value)
+      (when-let [refs (gobj/get el k-refs)]
+        (let [^js textarea-el (gobj/get refs "textarea")]
+          (when (not= (.-value textarea-el) new-val)
+            (set! (.-value textarea-el) (or new-val ""))))))
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
