@@ -540,96 +540,26 @@
 ;; ── Property accessors ──────────────────────────────────────────────────────
 
 (defn- install-property-accessors! [^js proto]
-  ;; progress
-  (.defineProperty js/Object proto "progress"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-progress
-                                         (.getAttribute this model/attr-progress))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-progress)
-                                          (.setAttribute this model/attr-progress (str v)))))
-                        :enumerable true :configurable true})
+  (du/define-parsed-prop! proto "progress" model/attr-progress model/parse-progress)
+  (du/define-parsed-prop! proto "variant"  model/attr-variant  model/parse-variant)
+  (du/define-parsed-prop! proto "color"    model/attr-color    model/parse-color)
+  (du/define-parsed-prop! proto "density"  model/attr-density  model/parse-density)
+  (du/define-parsed-prop! proto "seed"     model/attr-seed     model/parse-seed)
+  (du/define-parsed-prop! proto "label"    model/attr-label    model/parse-label)
 
-  ;; variant
-  (.defineProperty js/Object proto "variant"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-variant
-                                         (.getAttribute this model/attr-variant))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-variant)
-                                          (.setAttribute this model/attr-variant (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; color
-  (.defineProperty js/Object proto "color"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color
-                                         (.getAttribute this model/attr-color))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color)
-                                          (.setAttribute this model/attr-color (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; bloom (boolean, default true)
+  ;; bloom is an opt-out boolean: absent attribute = true (default).
+  ;; Setter writes "false" to disable, removes to re-enable.
+  ;; define-parsed-prop! doesn't fit this inverted semantics.
   (.defineProperty js/Object proto "bloom"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-bloom
-                                         (.getAttribute this model/attr-bloom))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.removeAttribute this model/attr-bloom)
-                                          (.setAttribute this model/attr-bloom "false"))))
-                        :enumerable true :configurable true})
-
-  ;; density
-  (.defineProperty js/Object proto "density"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-density
-                                         (.getAttribute this model/attr-density))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-density)
-                                          (.setAttribute this model/attr-density (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; seed
-  (.defineProperty js/Object proto "seed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-seed
-                                         (.getAttribute this model/attr-seed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-seed)
-                                          (.setAttribute this model/attr-seed (str (int v))))))
-                        :enumerable true :configurable true})
-
-  ;; label
-  (.defineProperty js/Object proto "label"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-label
-                                         (.getAttribute this model/attr-label))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-label)
-                                          (.setAttribute this model/attr-label (str v)))))
-                        :enumerable true :configurable true}))
+    #js {:get (fn xop-get-bloom []
+                (this-as ^js this
+                  (model/parse-bloom (.getAttribute this model/attr-bloom))))
+         :set (fn xop-set-bloom [v]
+                (this-as ^js this
+                  (if v
+                    (.removeAttribute this model/attr-bloom)
+                    (.setAttribute this model/attr-bloom "false"))))
+         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 

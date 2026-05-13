@@ -302,28 +302,19 @@
   (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-;; Integer props use model/parse-pos-int — kept as inline custom accessor
-(defn- def-int-prop! [^js proto prop-name attr default]
-  (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-pos-int
-                                         (.getAttribute this attr) default)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
-                        :enumerable true :configurable true}))
+;; `page` is the only int prop without a 1-arg parse fn in the model
+;; (model/parse-page also takes total-pages), so wrap parse-pos-int inline.
+(defn- parse-page-attr [s]
+  (model/parse-pos-int s model/default-page))
 
 (defn- install-property-accessors! [^js proto]
-  (def-int-prop! proto model/attr-page           model/attr-page           model/default-page)
-  (def-int-prop! proto model/attr-total-pages    model/attr-total-pages    model/default-total-pages)
-  (def-int-prop! proto model/attr-sibling-count  model/attr-sibling-count  model/default-sibling-count)
-  (def-int-prop! proto model/attr-boundary-count model/attr-boundary-count model/default-boundary-count)
-  (du/define-string-prop! proto model/attr-size  model/attr-size           model/default-size)
-  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
-  (du/define-string-prop! proto model/attr-label model/attr-label          model/default-label))
+  (du/define-parsed-prop! proto model/attr-page           model/attr-page           parse-page-attr)
+  (du/define-parsed-prop! proto model/attr-total-pages    model/attr-total-pages    model/parse-total-pages)
+  (du/define-parsed-prop! proto model/attr-sibling-count  model/attr-sibling-count  model/parse-sibling-count)
+  (du/define-parsed-prop! proto model/attr-boundary-count model/attr-boundary-count model/parse-boundary-count)
+  (du/define-string-prop! proto model/attr-size           model/attr-size           model/default-size)
+  (du/define-bool-prop!   proto model/attr-disabled       model/attr-disabled)
+  (du/define-string-prop! proto model/attr-label          model/attr-label          model/default-label))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]

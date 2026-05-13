@@ -432,135 +432,29 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; orbCount → orb-count
-  (.defineProperty js/Object proto "orbCount"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-orb-count
-                                         (.getAttribute this model/attr-orb-count))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-orb-count)
-                                          (.setAttribute this model/attr-orb-count (str (int v))))))
-                        :enumerable true :configurable true})
+  (du/define-parsed-prop! proto "orbCount"           model/attr-orb-count            model/parse-orb-count)
+  (du/define-parsed-prop! proto "colorPrimary"       model/attr-color-primary        model/parse-color-primary)
+  (du/define-parsed-prop! proto "colorSecondary"     model/attr-color-secondary      model/parse-color-secondary)
+  (du/define-parsed-prop! proto "colorBackground"    model/attr-color-background     model/parse-color-background)
+  (du/define-parsed-prop! proto "pulseSpeed"         model/attr-pulse-speed          model/parse-pulse-speed)
+  (du/define-parsed-prop! proto "restRate"           model/attr-rest-rate            model/parse-rest-rate)
+  (du/define-parsed-prop! proto "connectionDistance" model/attr-connection-distance  model/parse-connection-distance)
+  (du/define-parsed-prop! proto "orbSize"            model/attr-orb-size             model/parse-orb-size)
+  (du/define-parsed-prop! proto "opacity"            model/attr-opacity              model/parse-opacity)
 
-  ;; colorPrimary → color-primary
-  (.defineProperty js/Object proto "colorPrimary"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color-primary
-                                         (.getAttribute this model/attr-color-primary))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color-primary)
-                                          (.setAttribute this model/attr-color-primary (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; colorSecondary → color-secondary
-  (.defineProperty js/Object proto "colorSecondary"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color-secondary
-                                         (.getAttribute this model/attr-color-secondary))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color-secondary)
-                                          (.setAttribute this model/attr-color-secondary (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; colorBackground → color-background
-  (.defineProperty js/Object proto "colorBackground"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-color-background
-                                         (.getAttribute this model/attr-color-background))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-color-background)
-                                          (.setAttribute this model/attr-color-background (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; pulseSpeed → pulse-speed
-  (.defineProperty js/Object proto "pulseSpeed"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-pulse-speed
-                                         (.getAttribute this model/attr-pulse-speed))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-pulse-speed)
-                                          (.setAttribute this model/attr-pulse-speed (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; restRate → rest-rate
-  (.defineProperty js/Object proto "restRate"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-rest-rate
-                                         (.getAttribute this model/attr-rest-rate))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-rest-rate)
-                                          (.setAttribute this model/attr-rest-rate (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; connectionDistance → connection-distance
-  (.defineProperty js/Object proto "connectionDistance"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-connection-distance
-                                         (.getAttribute this model/attr-connection-distance))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-connection-distance)
-                                          (.setAttribute this model/attr-connection-distance (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; orbSize → orb-size
-  (.defineProperty js/Object proto "orbSize"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-orb-size
-                                         (.getAttribute this model/attr-orb-size))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-orb-size)
-                                          (.setAttribute this model/attr-orb-size (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; opacity
-  (.defineProperty js/Object proto "opacity"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-opacity
-                                         (.getAttribute this model/attr-opacity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-opacity)
-                                          (.setAttribute this model/attr-opacity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; interactive (boolean, default true)
+  ;; interactive is an opt-out boolean: absent attribute = true (default).
+  ;; Setter writes "false" to disable, removes attribute to re-enable.
+  ;; define-parsed-prop! doesn't fit this inverted semantics.
   (.defineProperty js/Object proto "interactive"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-interactive
-                                         (.getAttribute this model/attr-interactive))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.removeAttribute this model/attr-interactive)
-                                          (.setAttribute this model/attr-interactive "false"))))
-                        :enumerable true :configurable true}))
+    #js {:get (fn xng-get-interactive []
+                (this-as ^js this
+                  (model/parse-interactive (.getAttribute this model/attr-interactive))))
+         :set (fn xng-set-interactive [v]
+                (this-as ^js this
+                  (if v
+                    (.removeAttribute this model/attr-interactive)
+                    (.setAttribute this model/attr-interactive "false"))))
+         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
