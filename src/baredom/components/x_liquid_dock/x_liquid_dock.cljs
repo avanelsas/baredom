@@ -842,19 +842,24 @@
                                           (.removeAttribute this model/attr-disabled))))
                         :enumerable true :configurable true}))
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ────────
+(defn- apply-model! [^js el m]
+  (when (gobj/get el k-refs)
+    (update-filter! el m)
+    (apply-host-style! el m)
+    (cache-item-rects! el)
+    (if (:disabled? m)
+      (do (stop-animation! el)
+          (reset-item-transforms! el))
+      (when-not (gobj/get el k-raf)
+        (start-animation! el))))
+  (gobj/set el k-model m))
+
 (defn- update-from-attrs! [^js el]
-  (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (when (gobj/get el k-refs)
-      (update-filter! el m)
-      (apply-host-style! el m)
-      (cache-item-rects! el)
-      (if (:disabled? m)
-        (do (stop-animation! el)
-            (reset-item-transforms! el))
-        (when-not (gobj/get el k-raf)
-          (start-animation! el))))))
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
