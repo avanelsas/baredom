@@ -7,6 +7,7 @@
 (def ^:private key-base "__xTabsBase")
 (def ^:private key-slot "__xTabsSlot")
 (def ^:private key-init "__xTabsInitialized")
+(def ^:private key-model "__xTabsModel")
 (def ^:private key-on-tab-select "__xTabsOnTabSelect")
 (def ^:private key-on-keydown "__xTabsOnKeydown")
 (def ^:private key-observer "__xTabsObserver")
@@ -190,9 +191,10 @@
             (when (= activation "auto")
               (activate-tab-by-value! el (tab-value tab)))))))))
 
-(defn- render! [^js el]
-  (let [base (du/getv el key-base)
-        state (model/derive-state (read-inputs el))]
+;; ── Apply attribute-derived state (role / aria-orientation / aria-label) ──
+;; Gateable via the model diff; slot-driven coordinate-tabs! runs separately.
+(defn- apply-model! [^js el state]
+  (let [base (du/getv el key-base)]
     (when base
       (.setAttribute base "role" "tablist")
       (.setAttribute base "aria-orientation" (:orientation state))
@@ -200,11 +202,23 @@
         (if (and label (not= label ""))
           (.setAttribute base "aria-label" label)
           (.removeAttribute base "aria-label"))))
-    (coordinate-tabs! el)))
+    (du/setv! el key-model state)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (model/derive-state (read-inputs el))
+        old-m (du/getv el key-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
+
+(defn- render! [^js el]
+  (update-from-attrs! el)
+  ;; Slot/state coordination — runs unconditionally because the slot's
+  ;; child set isn't part of the cached attribute model.
+  (coordinate-tabs! el))
 
 (defn- install-mutation-observer! [^js el]
   (let [observer (js/MutationObserver.
-                  (fn [_records _observer]
+                  (fn on-tabs-mutation [_records _observer]
                     (render! el)))]
     (.observe observer el #js {:childList true
                                :subtree true
@@ -217,8 +231,8 @@
     (.disconnect observer)))
 
 (defn- install-listeners! [^js el]
-  (let [on-tab-select* (fn [e] (on-tab-select el e))
-        on-keydown* (fn [e] (handle-arrow el e))]
+  (let [on-tab-select* (fn handle-tab-select [e] (on-tab-select el e))
+        on-keydown*    (fn handle-tabs-keydown [e] (handle-arrow el e))]
     (.addEventListener el "tab-select" on-tab-select*)
     (.addEventListener el "keydown" on-keydown*)
     (du/setv! el key-on-tab-select on-tab-select*)
@@ -263,8 +277,8 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/initialized? el key-init)
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (and (not= old-val new-val) (du/initialized? el key-init))
     (render! el)))
 
 (defn- install-property-accessors! [^js proto]
