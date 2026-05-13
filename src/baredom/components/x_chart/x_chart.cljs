@@ -7,6 +7,7 @@
 ;; ---- Instance field keys ----
 
 (def ^:private k-refs     "__xChartRefs")
+(def ^:private k-model    "__xChartModel")
 (def ^:private k-data     "__xChartData")
 
 ;; ---- SVG namespace ----
@@ -138,26 +139,32 @@
 
 ;; ---- Read model from element ----
 
+(declare chart-width)
+
 (defn- read-model [^js el]
-  (model/normalize
-   {:type-raw         (du/get-attr el model/attr-type)
-    :data-raw         (du/get-attr el model/attr-data)
-    :height-raw       (du/get-attr el model/attr-height)
-    :padding-raw      (du/get-attr el model/attr-padding)
-    :grid-present?    (when (du/has-attr? el model/attr-grid)
-                        (du/get-attr el model/attr-grid))
-    :axes-raw         (when (du/has-attr? el model/attr-axes)
-                        (du/get-attr el model/attr-axes))
-    :tooltip-present? (when (du/has-attr? el model/attr-tooltip)
-                        (du/get-attr el model/attr-tooltip))
-    :cursor-raw       (du/get-attr el model/attr-cursor)
-    :disabled-present? (when (du/has-attr? el model/attr-disabled)
-                         (du/get-attr el model/attr-disabled))
-    :loading-present?  (when (du/has-attr? el model/attr-loading)
-                         (du/get-attr el model/attr-loading))
-    :selected-raw      (du/get-attr el model/attr-selected)
-    :x-format-raw      (du/get-attr el model/attr-x-format)
-    :y-format-raw      (du/get-attr el model/attr-y-format)}))
+  (let [^js refs (gobj/get el k-refs)
+        m       (model/normalize
+                 {:type-raw         (du/get-attr el model/attr-type)
+                  :data-raw         (du/get-attr el model/attr-data)
+                  :height-raw       (du/get-attr el model/attr-height)
+                  :padding-raw      (du/get-attr el model/attr-padding)
+                  :grid-present?    (when (du/has-attr? el model/attr-grid)
+                                      (du/get-attr el model/attr-grid))
+                  :axes-raw         (when (du/has-attr? el model/attr-axes)
+                                      (du/get-attr el model/attr-axes))
+                  :tooltip-present? (when (du/has-attr? el model/attr-tooltip)
+                                      (du/get-attr el model/attr-tooltip))
+                  :cursor-raw       (du/get-attr el model/attr-cursor)
+                  :disabled-present? (when (du/has-attr? el model/attr-disabled)
+                                       (du/get-attr el model/attr-disabled))
+                  :loading-present?  (when (du/has-attr? el model/attr-loading)
+                                       (du/get-attr el model/attr-loading))
+                  :selected-raw      (du/get-attr el model/attr-selected)
+                  :x-format-raw      (du/get-attr el model/attr-x-format)
+                  :y-format-raw      (du/get-attr el model/attr-y-format)})]
+    ;; Include the live container width so a ResizeObserver tick produces
+    ;; a different model and the change-guard lets the rerender through.
+    (assoc m :viewport-width (when refs (chart-width el refs)))))
 
 ;; ---- Event dispatch ----
 
@@ -623,14 +630,13 @@
 (defn- apply-sr-text! [^js sr-el m]
   (set! (.-textContent sr-el) (sr-announce-text m)))
 
-(defn- render! [^js el]
+(defn- apply-model! [^js el m]
   (when-let [^js refs (gobj/get el k-refs)]
-    (let [^js svg    (gobj/get refs "svg")
-          ^js sr-el  (gobj/get refs "sr")
-          m          (read-model el)
+    (let [^js svg   (gobj/get refs "svg")
+          ^js sr-el (gobj/get refs "sr")
           {:keys [type height padding series x-kind y-domain
                   grid? axes? loading?]} m
-          W          (chart-width el refs)
+          W          (or (:viewport-width m) (chart-width el refs))
           H          height
           bounds     (plot-bounds W H padding)
           x-dom      (model/domain-x series)
@@ -646,7 +652,19 @@
           (build-dot-indicators! svg refs)
           (build-hit-area! el svg refs bounds m W H all-pts))
         (apply-sr-text! sr-el m))
-      (when loading? (hide-tooltip! refs)))))
+      (when loading? (hide-tooltip! refs))
+      ;; Cache write at the tail — partial DOM writes don't leave a lying cache.
+      (gobj/set el k-model m))))
+
+(defn- update-from-attrs!
+  "Read → diff → apply. Skips when the normalised model (including
+  viewport-width) is unchanged from the cached value."
+  [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---- Shadow DOM creation ----
 
@@ -726,10 +744,11 @@
       (gobj/set refs "dots"           nil)
       (gobj/set el k-refs refs))
 
-    ;; ResizeObserver
+    ;; ResizeObserver — viewport-width is in the model, so the change-guard
+    ;; correctly fires a rerender on every resize.
     (let [^js ro (js/ResizeObserver.
-                  (fn [_]
-                    (render! el)))]
+                  (fn on-resize [_]
+                    (update-from-attrs! el)))]
       (.observe ro container)
       (gobj/set (gobj/get el k-refs) "ro" ro))
 
@@ -741,7 +760,7 @@
 (defn- connected! [^js el]
   (when-not (gobj/get el k-refs)
     (make-shadow! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (let [^js refs (gobj/get el k-refs)]
@@ -749,9 +768,9 @@
       (let [^js ro (gobj/get refs "ro")]
         (when ro (.disconnect ro))))))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (gobj/get el k-refs)
-    (render! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---- Property descriptors ----
 
