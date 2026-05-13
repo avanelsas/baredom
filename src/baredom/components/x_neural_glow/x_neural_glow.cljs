@@ -475,17 +475,26 @@
   (stop-animation! el)
   (remove-listeners! el))
 
+;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ────────
+(defn- apply-model! [^js el m]
+  (gobj/set el k-color-cache #js {})
+  (when (gobj/get el k-refs)
+    (reconcile-orbs! el (:orb-count m))
+    ;; Re-evaluate listeners if interactive changed
+    (remove-listeners! el)
+    (when (.-isConnected el)
+      (add-listeners! el)))
+  (gobj/set el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
+
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (let [m (read-model el)]
-      (gobj/set el k-model m)
-      (gobj/set el k-color-cache #js {})
-      (when (gobj/get el k-refs)
-        (reconcile-orbs! el (:orb-count m))
-        ;; Re-evaluate listeners if interactive changed
-        (remove-listeners! el)
-        (when (.-isConnected el)
-          (add-listeners! el))))))
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 
