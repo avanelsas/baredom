@@ -9,8 +9,48 @@
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xCheckboxRefs")
+(def ^:private k-model     "__xCheckboxModel")
 (def ^:private k-internals "__xCheckboxInternals")
 (def ^:private k-handlers  "__xCheckboxHandlers")
+
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part              "part")
+(def ^:private attr-type              "type")
+(def ^:private attr-role              "role")
+(def ^:private attr-id                "id")
+(def ^:private attr-disabled          "disabled")
+(def ^:private attr-aria-label        "aria-label")
+(def ^:private attr-aria-labelledby   "aria-labelledby")
+(def ^:private attr-aria-describedby  "aria-describedby")
+(def ^:private attr-aria-checked      "aria-checked")
+(def ^:private attr-aria-disabled     "aria-disabled")
+(def ^:private attr-aria-required     "aria-required")
+(def ^:private attr-aria-readonly     "aria-readonly")
+(def ^:private attr-data-checked      "data-checked")
+(def ^:private attr-data-indeterminate "data-indeterminate")
+(def ^:private attr-data-disabled     "data-disabled")
+
+(def ^:private part-control "control")
+(def ^:private part-box     "box")
+(def ^:private part-check   "check")
+
+(def ^:private val-button   "button")
+(def ^:private val-checkbox "checkbox")
+(def ^:private val-true     "true")
+(def ^:private val-false    "false")
+
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
+
+(def ^:private hk-click   "click")
+(def ^:private hk-keydown "keydown")
+
+(def ^:private key-space  " ")
+(def ^:private key-enter  "Enter")
+
+(def ^:private rk-control "control")
+(def ^:private rk-box     "box")
+(def ^:private rk-check   "check")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -129,7 +169,7 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [^js tag] (.createElement js/document tag))
+(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
@@ -143,18 +183,22 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! control-el "part"  "control")
-    (du/set-attr! control-el "type"  "button")
-    (du/set-attr! control-el "role"  "checkbox")
-    (du/set-attr! box-el     "part" "box")
-    (du/set-attr! check-el   "part" "check")
+    (du/set-attr! control-el attr-part part-control)
+    (du/set-attr! control-el attr-type val-button)
+    (du/set-attr! control-el attr-role val-checkbox)
+    (du/set-attr! box-el     attr-part part-box)
+    (du/set-attr! check-el   attr-part part-check)
 
     (.appendChild box-el check-el)
     (.appendChild control-el box-el)
     (.appendChild root style-el)
     (.appendChild root control-el)
 
-    (let [refs #js {:root root :control control-el :box box-el :check check-el}]
+    (let [refs #js {}]
+      (gobj/set refs "root"    root)
+      (gobj/set refs rk-control control-el)
+      (gobj/set refs rk-box     box-el)
+      (gobj/set refs rk-check   check-el)
       (gobj/set el k-refs refs)
       refs)))
 
@@ -175,49 +219,58 @@
     :aria-labelledby-raw    (du/get-attr el model/attr-aria-labelledby)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; DOM patching (render-orchestrator: phase list of named helpers)
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-control-aria! [^js control-el m]
+  (let [{:keys [disabled? required? readonly?
+                aria-label aria-labelledby aria-describedby
+                aria-checked]} m]
+    (du/set-attr! control-el attr-aria-checked  aria-checked)
+    (du/set-attr! control-el attr-aria-disabled (if disabled? val-true val-false))
+    (du/set-attr! control-el attr-aria-required (if required? val-true val-false))
+    (du/set-attr! control-el attr-aria-readonly (if readonly? val-true val-false))
+    (if aria-label
+      (du/set-attr! control-el attr-aria-label aria-label)
+      (du/remove-attr! control-el attr-aria-label))
+    (if aria-labelledby
+      (du/set-attr! control-el attr-aria-labelledby aria-labelledby)
+      (du/remove-attr! control-el attr-aria-labelledby))
+    (if aria-describedby
+      (du/set-attr! control-el attr-aria-describedby aria-describedby)
+      (du/remove-attr! control-el attr-aria-describedby))))
+
+(defn- apply-control-disabled! [^js control-el {:keys [disabled?]}]
+  (set! (.-tabIndex control-el) (if disabled? -1 0))
+  (if disabled?
+    (du/set-attr! control-el attr-disabled "")
+    (du/remove-attr! control-el attr-disabled)))
+
+(defn- apply-host-data! [^js el {:keys [checked? indeterminate? disabled?]}]
+  (du/set-bool-attr! el attr-data-checked       checked?)
+  (du/set-bool-attr! el attr-data-indeterminate indeterminate?)
+  (du/set-bool-attr! el attr-data-disabled      disabled?))
+
+(defn- apply-form-value! [^js el {:keys [checked? value]}]
+  (when-let [^js internals (gobj/get el k-internals)]
+    (let [form-value (when checked? value)]
+      (.setFormValue internals (or form-value nil)))))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js control-el (gobj/get refs "control")
-          m              (read-model el)
-          disabled?      (:disabled? m)
-          checked?       (:checked? m)
-          indeterminate? (:indeterminate? m)]
+    (let [^js control-el (gobj/get refs rk-control)]
+      (apply-control-aria!     control-el m)
+      (apply-control-disabled! control-el m)
+      (apply-host-data!        el m)
+      (apply-form-value!       el m)
+      ;; Cache write at the tail.
+      (gobj/set el k-model m))))
 
-      ;; ARIA on button[part=control]
-      (du/set-attr! control-el "aria-checked" (:aria-checked m))
-      (du/set-attr! control-el "aria-disabled"  (if disabled? "true" "false"))
-      (du/set-attr! control-el "aria-required"  (if (:required? m) "true" "false"))
-      (du/set-attr! control-el "aria-readonly"  (if (:readonly? m) "true" "false"))
-
-      (if-let [v (:aria-label m)]
-        (du/set-attr! control-el "aria-label" v)
-        (du/remove-attr! control-el "aria-label"))
-
-      (if-let [v (:aria-labelledby m)]
-        (du/set-attr! control-el "aria-labelledby" v)
-        (du/remove-attr! control-el "aria-labelledby"))
-
-      (if-let [v (:aria-describedby m)]
-        (du/set-attr! control-el "aria-describedby" v)
-        (du/remove-attr! control-el "aria-describedby"))
-
-      (set! (.-tabIndex control-el) (if disabled? -1 0))
-
-      (if disabled?
-        (du/set-attr! control-el "disabled" "")
-        (du/remove-attr! control-el "disabled"))
-
-      ;; Data attributes on host for CSS hooks
-      (du/set-bool-attr! el "data-checked"       checked?)
-      (du/set-bool-attr! el "data-indeterminate"  indeterminate?)
-      (du/set-bool-attr! el "data-disabled"       disabled?)
-
-      ;; Form value via ElementInternals
-      (when-let [^js internals (gobj/get el k-internals)]
-        (let [form-value (when checked? (:value m))]
-          (.setFormValue internals (or form-value nil)))))))
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Toggle logic
@@ -241,7 +294,7 @@
         (when allowed?
           (du/set-bool-attr! el model/attr-checked       next-checked)
           (du/set-bool-attr! el model/attr-indeterminate (:indeterminate? next-state))
-          (render! el)
+          (update-from-attrs! el)
           (du/dispatch! el model/event-change
                      #js {:value   value
                           :checked next-checked}))))))
@@ -250,50 +303,49 @@
 ;; External label association
 ;; ---------------------------------------------------------------------------
 (defn- wire-external-label! [^js el]
-  (let [id (du/get-attr el "id")]
+  (let [id (du/get-attr el attr-id)]
     (when id
       (let [^js lbl (.querySelector js/document (str "label[for='" id "']"))]
         (when lbl
-          (let [lid (or (du/get-attr lbl "id")
+          (let [lid (or (du/get-attr lbl attr-id)
                         (let [gen-id (str "x-cb-lbl-" id)]
-                          (du/set-attr! lbl "id" gen-id)
+                          (du/set-attr! lbl attr-id gen-id)
                           gen-id))]
             (when-let [refs (gobj/get el k-refs)]
-              (let [^js control (gobj/get refs "control")]
-                ;; Only set if the user hasn't already provided aria-labelledby
+              (let [^js control (gobj/get refs rk-control)]
                 (when-not (du/has-attr? el model/attr-aria-labelledby)
-                  (du/set-attr! control "aria-labelledby" lid))))))))))
+                  (du/set-attr! control attr-aria-labelledby lid))))))))))
 
 ;; ---------------------------------------------------------------------------
-;; Listener management
+;; Event handlers (named — listener-spec style)
 ;; ---------------------------------------------------------------------------
-(defn- make-click-handler [^js el]
-  (fn [^js _evt]
-    (try-toggle! el)))
+(defn- on-control-click [^js el ^js _evt]
+  (try-toggle! el))
 
-(defn- make-keydown-handler [^js el]
-  (fn [^js evt]
-    (let [key (.-key evt)]
-      (when (or (= key " ") (= key "Enter"))
-        (.preventDefault evt)
-        (try-toggle! el)))))
+(defn- on-control-keydown [^js el ^js evt]
+  (let [k (.-key evt)]
+    (when (or (= k key-space) (= k key-enter))
+      (.preventDefault evt)
+      (try-toggle! el))))
 
 (defn- add-listeners! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js control-el  (gobj/get refs "control")
-          click-h          (make-click-handler el)
-          keydown-h        (make-keydown-handler el)
-          handlers         #js {:click click-h :keydown keydown-h}]
-      (.addEventListener control-el "click"   click-h)
-      (.addEventListener control-el "keydown" keydown-h)
+    (let [^js control-el (gobj/get refs rk-control)
+          click-h        (fn handle-control-click   [evt] (on-control-click   el evt))
+          keydown-h      (fn handle-control-keydown [evt] (on-control-keydown el evt))
+          handlers       #js {}]
+      (.addEventListener control-el ev-click   click-h)
+      (.addEventListener control-el ev-keydown keydown-h)
+      (gobj/set handlers hk-click   click-h)
+      (gobj/set handlers hk-keydown keydown-h)
       (gobj/set el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
+  (when-let [refs (gobj/get el k-refs)]
     (when-let [handlers (gobj/get el k-handlers)]
-      (let [^js control-el (gobj/get refs "control")]
-        (.removeEventListener control-el "click"   (gobj/get handlers "click"))
-        (.removeEventListener control-el "keydown" (gobj/get handlers "keydown")))
+      (let [^js control-el (gobj/get refs rk-control)]
+        (.removeEventListener control-el ev-click   (gobj/get handlers hk-click))
+        (.removeEventListener control-el ev-keydown (gobj/get handlers hk-keydown)))
       (gobj/set el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
@@ -301,12 +353,12 @@
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
   (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-checked)
   (du/remove-attr! el model/attr-indeterminate)
-  (render! el))
+  (update-from-attrs! el))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
@@ -319,13 +371,14 @@
   (remove-listeners! el)
   (add-listeners! el)
   (wire-external-label! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers

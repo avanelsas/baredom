@@ -8,7 +8,55 @@
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs     "__xCollapseRefs")
+(def ^:private k-model    "__xCollapseModel")
 (def ^:private k-handlers "__xCollapseHandlers")
+
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part            "part")
+(def ^:private attr-type            "type")
+(def ^:private attr-id              "id")
+(def ^:private attr-name            "name")
+(def ^:private attr-role            "role")
+(def ^:private attr-disabled        "disabled")
+(def ^:private attr-aria-controls   "aria-controls")
+(def ^:private attr-aria-labelledby "aria-labelledby")
+(def ^:private attr-aria-expanded   "aria-expanded")
+(def ^:private attr-aria-hidden     "aria-hidden")
+(def ^:private attr-aria-disabled   "aria-disabled")
+
+(def ^:private part-container     "container")
+(def ^:private part-trigger       "trigger")
+(def ^:private part-header-text   "header-text")
+(def ^:private part-chevron       "chevron")
+(def ^:private part-content       "content")
+(def ^:private part-content-inner "content-inner")
+
+(def ^:private id-trigger "trigger")
+(def ^:private id-panel   "panel")
+(def ^:private val-button "button")
+(def ^:private val-region "region")
+(def ^:private val-true   "true")
+(def ^:private val-false  "false")
+(def ^:private val-chevron-glyph "▼")
+
+(def ^:private ev-click         "click")
+(def ^:private ev-keydown       "keydown")
+(def ^:private ev-transitionend "transitionend")
+
+(def ^:private hk-click   "click")
+(def ^:private hk-keydown "keydown")
+
+(def ^:private rk-trigger     "trigger")
+(def ^:private rk-header-text "header-text")
+(def ^:private rk-content     "content")
+
+(def ^:private src-pointer      "pointer")
+(def ^:private src-keyboard     "keyboard")
+(def ^:private src-programmatic "programmatic")
+
+(def ^:private key-space "Space")
+(def ^:private key-spc   " ")
+(def ^:private key-enter "Enter")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -125,22 +173,22 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! container-el    "part" "container")
-    (du/set-attr! trigger-el      "part" "trigger")
-    (du/set-attr! trigger-el      "type" "button")
-    (du/set-attr! trigger-el      "id"   "trigger")
-    (du/set-attr! trigger-el      "aria-controls" "panel")
-    (du/set-attr! header-text-el  "part" "header-text")
-    (du/set-attr! chevron-el      "part" "chevron")
-    (du/set-attr! chevron-el      "aria-hidden" "true")
-    (du/set-attr! content-el      "part" "content")
-    (du/set-attr! content-el      "id"   "panel")
-    (du/set-attr! content-el      "role" "region")
-    (du/set-attr! content-el      "aria-labelledby" "trigger")
-    (du/set-attr! content-inner-el "part" "content-inner")
-    (du/set-attr! slot-el         "name" model/slot-content)
+    (du/set-attr! container-el     attr-part          part-container)
+    (du/set-attr! trigger-el       attr-part          part-trigger)
+    (du/set-attr! trigger-el       attr-type          val-button)
+    (du/set-attr! trigger-el       attr-id            id-trigger)
+    (du/set-attr! trigger-el       attr-aria-controls id-panel)
+    (du/set-attr! header-text-el   attr-part          part-header-text)
+    (du/set-attr! chevron-el       attr-part          part-chevron)
+    (du/set-attr! chevron-el       attr-aria-hidden   val-true)
+    (du/set-attr! content-el       attr-part          part-content)
+    (du/set-attr! content-el       attr-id            id-panel)
+    (du/set-attr! content-el       attr-role          val-region)
+    (du/set-attr! content-el       attr-aria-labelledby id-trigger)
+    (du/set-attr! content-inner-el attr-part          part-content-inner)
+    (du/set-attr! slot-el          attr-name          model/slot-content)
 
-    (set! (.-textContent chevron-el) "\u25BC")
+    (set! (.-textContent chevron-el) val-chevron-glyph)
 
     (.appendChild trigger-el header-text-el)
     (.appendChild trigger-el chevron-el)
@@ -154,10 +202,11 @@
     (.appendChild root style-el)
     (.appendChild root container-el)
 
-    (let [refs #js {:root        root
-                    :trigger     trigger-el
-                    :header-text header-text-el
-                    :content     content-el}]
+    (let [refs #js {}]
+      (gobj/set refs "root"        root)
+      (gobj/set refs rk-trigger     trigger-el)
+      (gobj/set refs rk-header-text header-text-el)
+      (gobj/set refs rk-content     content-el)
       (gobj/set el k-refs refs)
       refs)))
 
@@ -181,84 +230,80 @@
 ;; ---------------------------------------------------------------------------
 ;; Height animation
 ;; ---------------------------------------------------------------------------
+(defn- clear-anim-styles! [^js content]
+  (set! (.-style.height content) "")
+  (set! (.-style.transition content) ""))
+
+(defn- animate-height!
+  "Animate `content` height from `from-h` to `to-h` over `dur` ms.
+  Cleans up inline height/transition on transitionend (or after a
+  duration+80ms safety timeout, whichever fires first)."
+  [^js content from-h to-h dur]
+  (set! (.-style.height content) from-h)
+  ;; Force reflow so the height we just set becomes the transition start.
+  (.-offsetHeight content)
+  (set! (.-style.transition content) (str "height " dur "ms ease"))
+  (set! (.-style.height content) to-h)
+  (let [tid (js/setTimeout
+             (fn on-animate-timeout [] (clear-anim-styles! content))
+             (+ dur 80))]
+    (letfn [(on-end []
+              (js/clearTimeout tid)
+              (clear-anim-styles! content)
+              (.removeEventListener content ev-transitionend on-end))]
+      (.addEventListener content ev-transitionend on-end))))
+
 (defn- start-open! [^js el ^js content]
   (if (prefers-reduced-motion?)
-    (do
-      (set! (.-style.height content) "")
-      (set! (.-style.transition content) ""))
-    (let [dur (get-duration-ms el)]
-      (set! (.-style.height content) "0px")
-      ;; Force reflow
-      (.-offsetHeight content)
-      (let [target-h (str (.-scrollHeight content) "px")]
-        (set! (.-style.transition content)
-              (str "height " dur "ms " "ease"))
-        (set! (.-style.height content) target-h)
-        (let [tid (js/setTimeout
-                   (fn []
-                     (set! (.-style.height content) "")
-                     (set! (.-style.transition content) ""))
-                   (+ dur 80))
-              handler-ref #js {:fn nil}
-              handler (fn []
-                        (js/clearTimeout tid)
-                        (set! (.-style.height content) "")
-                        (set! (.-style.transition content) "")
-                        (.removeEventListener
-                         content "transitionend"
-                         (gobj/get handler-ref "fn")))]
-          (gobj/set handler-ref "fn" handler)
-          (.addEventListener content "transitionend" handler))))))
+    (clear-anim-styles! content)
+    (let [target-h (do (set! (.-style.height content) "0px")
+                       (.-offsetHeight content)
+                       (str (.-scrollHeight content) "px"))]
+      (animate-height! content "0px" target-h (get-duration-ms el)))))
 
 (defn- start-close! [^js el ^js content]
   (if (prefers-reduced-motion?)
-    (do
-      (set! (.-style.height content) "0px")
-      (set! (.-style.transition content) ""))
-    (let [current-h (str (.-offsetHeight content) "px")
-          dur       (get-duration-ms el)]
-      (set! (.-style.height content) current-h)
-      ;; Force reflow
-      (.-offsetHeight content)
-      (set! (.-style.transition content)
-            (str "height " dur "ms " "ease"))
-      (set! (.-style.height content) "0px")
-      (let [tid (js/setTimeout
-                 (fn []
-                   (set! (.-style.height content) "")
-                   (set! (.-style.transition content) ""))
-                 (+ dur 80))
-            handler-ref #js {:fn nil}
-            handler (fn []
-                      (js/clearTimeout tid)
-                      (set! (.-style.height content) "")
-                      (set! (.-style.transition content) "")
-                      (.removeEventListener
-                       content "transitionend"
-                       (gobj/get handler-ref "fn")))]
-        (gobj/set handler-ref "fn" handler)
-        (.addEventListener content "transitionend" handler)))))
+    (do (set! (.-style.height content) "0px")
+        (set! (.-style.transition content) ""))
+    (let [current-h (str (.-offsetHeight content) "px")]
+      (animate-height! content current-h "0px" (get-duration-ms el)))))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Model reading
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- read-model [^js el]
+  {:open?     (du/has-attr? el model/attr-open)
+   :disabled? (du/has-attr? el model/attr-disabled)
+   :header    (or (du/get-attr el model/attr-header) "")})
+
+;; ---------------------------------------------------------------------------
+;; DOM patching
+;; ---------------------------------------------------------------------------
+(defn- apply-trigger-state! [^js trigger-el {:keys [open? disabled?]}]
+  (du/set-attr! trigger-el attr-aria-expanded (if open? val-true val-false))
+  (if disabled?
+    (do (du/set-attr! trigger-el attr-disabled "")
+        (du/set-attr! trigger-el attr-aria-disabled val-true))
+    (do (du/remove-attr! trigger-el attr-disabled)
+        (du/remove-attr! trigger-el attr-aria-disabled))))
+
+(defn- apply-header-text! [^js header-text-el {:keys [header]}]
+  (set! (.-textContent header-text-el) header))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js trigger-el     (gobj/get refs "trigger")
-          ^js header-text-el (gobj/get refs "header-text")
-          open?              (du/has-attr? el model/attr-open)
-          disabled?          (du/has-attr? el model/attr-disabled)
-          header             (or (du/get-attr el model/attr-header) "")]
+    (let [^js trigger-el     (gobj/get refs rk-trigger)
+          ^js header-text-el (gobj/get refs rk-header-text)]
+      (apply-header-text!    header-text-el m)
+      (apply-trigger-state!  trigger-el m)
+      (gobj/set el k-model m))))
 
-      (set! (.-textContent header-text-el) header)
-
-      (du/set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
-
-      (if disabled?
-        (do (du/set-attr! trigger-el "disabled" "")
-            (du/set-attr! trigger-el "aria-disabled" "true"))
-        (do (du/remove-attr! trigger-el "disabled")
-            (du/remove-attr! trigger-el "aria-disabled"))))))
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
@@ -279,35 +324,35 @@
         (du/dispatch! el model/event-change #js {:open next-open?})))))
 
 ;; ---------------------------------------------------------------------------
-;; Listener management
+;; Event handlers (named)
 ;; ---------------------------------------------------------------------------
-(defn- make-trigger-handler [^js el]
-  (fn [^js _evt]
-    (toggle! el "pointer")))
+(defn- on-trigger-click [^js el ^js _evt]
+  (toggle! el src-pointer))
 
-(defn- make-keydown-handler [^js el]
-  (fn [^js evt]
-    (let [key (.-key evt)]
-      (when (or (= key " ") (= key "Enter"))
-        (.preventDefault evt)
-        (toggle! el "keyboard")))))
+(defn- on-trigger-keydown [^js el ^js evt]
+  (let [k (.-key evt)]
+    (when (or (= k key-spc) (= k key-enter) (= k key-space))
+      (.preventDefault evt)
+      (toggle! el src-keyboard))))
 
 (defn- add-listeners! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js trigger-el (gobj/get refs "trigger")
-          click-h        (make-trigger-handler el)
-          keydown-h      (make-keydown-handler el)
-          handlers       #js {:click click-h :keydown keydown-h}]
-      (.addEventListener trigger-el "click"   click-h)
-      (.addEventListener trigger-el "keydown" keydown-h)
+    (let [^js trigger-el (gobj/get refs rk-trigger)
+          click-h        (fn handle-trigger-click   [evt] (on-trigger-click   el evt))
+          keydown-h      (fn handle-trigger-keydown [evt] (on-trigger-keydown el evt))
+          handlers       #js {}]
+      (.addEventListener trigger-el ev-click   click-h)
+      (.addEventListener trigger-el ev-keydown keydown-h)
+      (gobj/set handlers hk-click   click-h)
+      (gobj/set handlers hk-keydown keydown-h)
       (gobj/set el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
+  (when-let [refs (gobj/get el k-refs)]
     (when-let [handlers (gobj/get el k-handlers)]
-      (let [^js trigger-el (gobj/get refs "trigger")]
-        (.removeEventListener trigger-el "click"   (gobj/get handlers "click"))
-        (.removeEventListener trigger-el "keydown" (gobj/get handlers "keydown")))
+      (let [^js trigger-el (gobj/get refs rk-trigger)]
+        (.removeEventListener trigger-el ev-click   (gobj/get handlers hk-click))
+        (.removeEventListener trigger-el ev-keydown (gobj/get handlers hk-keydown)))
       (gobj/set el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
@@ -318,23 +363,23 @@
     (make-shadow! el))
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el name _old _new]
-  (when (gobj/get el k-refs)
-    (render! el)
-    ;; Animate content when [open] attribute changes
-    (when (= name model/attr-open)
-      (let [refs       (gobj/get el k-refs)
-            ^js content-el (when refs (gobj/get refs "content"))
-            open?      (du/has-attr? el model/attr-open)]
-        (when content-el
-          (if open?
-            (start-open! el content-el)
-            (start-close! el content-el)))))))
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)
+    ;; Animate content when [open] attribute toggles.
+    (when (= attr-name model/attr-open)
+      (when-let [refs (gobj/get el k-refs)]
+        (let [^js content-el (gobj/get refs rk-content)
+              open?          (du/has-attr? el model/attr-open)]
+          (when content-el
+            (if open?
+              (start-open! el content-el)
+              (start-close! el content-el))))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
@@ -345,8 +390,15 @@
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
-  (aset proto "toggle"
-        (fn [] (this-as ^js this (toggle! this "programmatic")))))
+  ;; toggle() — public method. .defineProperty with a value descriptor is
+  ;; the shared idiom for adding prototype methods (matches x-cancel-dialogue
+  ;; and x-alert); bare aset on the prototype is the bespoke pattern audited
+  ;; out of x-button (PR #155).
+  (.defineProperty js/Object proto "toggle"
+                   #js {:value (fn carousel-toggle []
+                                 (this-as ^js this (toggle! this src-programmatic)))
+                        :writable true
+                        :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name
