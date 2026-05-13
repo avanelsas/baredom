@@ -219,6 +219,33 @@
       (is (nil? (.getAttribute el model/attr-value))
           "value should not be set when change-request is cancelled"))))
 
+(deftest input-commit-respects-change-request-cancel-test
+  ;; Regression for the commit-display! bug: dispatch-cancelable! returns a
+  ;; boolean, but the previous code read (.-defaultPrevented ev) off that
+  ;; boolean (= undefined), so the cancel path never blocked the input-commit.
+  ;; Verifies both single and range modes.
+  (testing "single mode — preventDefault on change-request blocks attr-value"
+    (let [el (append! (make-el))]
+      (.addEventListener el model/event-change-request
+                         (fn [^js e] (.preventDefault e)))
+      (let [^js inp (shadow-part el "[part=input]")]
+        (set! (.-value inp) "2024-06-15")
+        (.dispatchEvent inp (js/Event. "change"))
+        (is (nil? (.getAttribute el model/attr-value))
+            "value should not be set when change-request is cancelled"))))
+  (testing "range mode — preventDefault on change-request blocks attr-start/attr-end"
+    (let [el (append! (make-el))]
+      (.setAttribute el "mode" "range")
+      (.addEventListener el model/event-change-request
+                         (fn [^js e] (.preventDefault e)))
+      (let [^js inp (shadow-part el "[part=input]")]
+        (set! (.-value inp) "2024-06-15 – 2024-06-20")
+        (.dispatchEvent inp (js/Event. "change"))
+        (is (nil? (.getAttribute el model/attr-start))
+            "start should not be set when change-request is cancelled")
+        (is (nil? (.getAttribute el model/attr-end))
+            "end should not be set when change-request is cancelled")))))
+
 ;; ---------------------------------------------------------------------------
 ;; ARIA tests
 ;; ---------------------------------------------------------------------------
