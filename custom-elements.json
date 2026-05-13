@@ -371,6 +371,30 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "method",
+        "name" : "focus",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "commit",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "clear",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-date-picker-input",
@@ -970,6 +994,22 @@
           "text" : "any"
         },
         "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-file-upload-select",
@@ -1056,6 +1096,44 @@
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "goTo",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "name",
+          "type" : {
+            "text" : "string"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "next",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "prev",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "states",
+        "return" : {
+          "type" : {
+            "text" : "any"
+          }
         }
       } ],
       "events" : [ {
@@ -2076,6 +2154,22 @@
         "name" : "placement",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
         }
       } ],
       "events" : [ {
@@ -3803,6 +3897,66 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "method",
+        "name" : "openAt",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "x",
+          "type" : {
+            "text" : "number"
+          }
+        }, {
+          "name" : "y",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "toggleAt",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "x",
+          "type" : {
+            "text" : "number"
+          }
+        }, {
+          "name" : "y",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "openForElement",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "anchor",
+          "type" : {
+            "text" : "Record<string, any>"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "close",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-context-menu-open-request",
@@ -4782,6 +4936,20 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "method",
+        "name" : "dismiss",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "reason",
+          "type" : {
+            "text" : "string"
+          }
+        } ]
       } ],
       "events" : [ {
         "name" : "x-toast-dismiss",
@@ -5728,6 +5896,30 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-dropdown-toggle",
@@ -6538,6 +6730,14 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-collapse-toggle",
@@ -6845,6 +7045,22 @@
         "name" : "required",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -7588,6 +7804,49 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "method",
+        "name" : "submit",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reset",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "setFieldError",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "name",
+          "type" : {
+            "text" : "string"
+          }
+        }, {
+          "name" : "message",
+          "type" : {
+            "text" : "string"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "clearErrors",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-form-submit",
@@ -7834,6 +8093,22 @@
         "name" : "open",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
         }
       } ],
       "events" : [ {
@@ -8108,6 +8383,30 @@
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "open",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "close",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
         }
       } ],
       "events" : [ {

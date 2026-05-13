@@ -339,4 +339,8 @@
   [from to]
   {:from (or from "") :to (or to "")})
 
-(def method-api {})
+(def method-api
+  {:goTo   {:args [{:name "name" :type 'string}] :returns 'void}
+   :next   {:args [] :returns 'void}
+   :prev   {:args [] :returns 'void}
+   :states {:args [] :returns 'array}})

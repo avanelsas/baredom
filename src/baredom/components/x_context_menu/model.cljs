@@ -114,4 +114,11 @@
    event-close         {:cancelable false :detail {:reason 'string}}
    event-select        {:cancelable false :detail {:item 'object}}})
 
-(def method-api {})
+(def method-api
+  {:openAt         {:args [{:name "x" :type 'number} {:name "y" :type 'number}]
+                    :returns 'void}
+   :toggleAt       {:args [{:name "x" :type 'number} {:name "y" :type 'number}]
+                    :returns 'void}
+   :openForElement {:args [{:name "anchor" :type 'object}]
+                    :returns 'void}
+   :close          {:args [] :returns 'void}})

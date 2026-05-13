@@ -164,4 +164,7 @@
      :placeholder      (or (normalize-str placeholder-raw) default-placeholder)
      :empty-text       (or (normalize-str empty-text-raw) default-empty-text)}))
 
-(def method-api {})
+(def method-api
+  {:open   {:args [] :returns 'void}
+   :close  {:args [] :returns 'void}
+   :toggle {:args [] :returns 'void}})

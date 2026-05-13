@@ -44,4 +44,8 @@ export class BaredomMorphStack implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  goTo(name: string): void { return this.el.goTo(name); }
+  next(): void { return this.el.next(); }
+  prev(): void { return this.el.prev(); }
+  states(): any { return this.el.states(); }
 }

@@ -42,4 +42,10 @@
   {event-submit {:cancelable true  :detail {:values 'object}}
    event-reset  {:cancelable false :detail {}}})
 
-(def method-api {})
+(def method-api
+  {:submit        {:args [] :returns 'void}
+   :reset         {:args [] :returns 'void}
+   :setFieldError {:args [{:name "name"    :type 'string}
+                          {:name "message" :type 'string}]
+                   :returns 'void}
+   :clearErrors   {:args [] :returns 'void}})

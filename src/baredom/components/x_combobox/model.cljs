@@ -118,4 +118,6 @@
            :match  (.substring label idx end)
            :after  (.substring label end)})))))
 
-(def method-api {})
+(def method-api
+  {:show {:args [] :returns 'void}
+   :hide {:args [] :returns 'void}})

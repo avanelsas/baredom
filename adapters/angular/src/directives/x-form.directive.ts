@@ -39,4 +39,8 @@ export class BaredomForm implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  submitMethod(): void { return this.el.submit(); }
+  resetMethod(): void { return this.el.reset(); }
+  setFieldError(name: string, message: string): void { return this.el.setFieldError(name, message); }
+  clearErrors(): void { return this.el.clearErrors(); }
 }

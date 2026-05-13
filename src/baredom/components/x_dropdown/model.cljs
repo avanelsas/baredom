@@ -50,4 +50,7 @@
   [open? source]
   #js {:open open? :source source})
 
-(def method-api {})
+(def method-api
+  {:show   {:args [] :returns 'void}
+   :hide   {:args [] :returns 'void}
+   :toggle {:args [] :returns 'void}})

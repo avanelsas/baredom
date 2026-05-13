@@ -50,6 +50,12 @@ jobs:
       - name: Lint with clj-kondo
         run: clj-kondo --lint src test --config '{:output {:pattern "::warning file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
 
+      - name: Check method-api drift
+        run: bb scripts/check_method_api.bb
+
+      - name: Check :require indent drift
+        run: bb scripts/check_require_style.bb
+
       - name: Build ESM library
         run: npm run build
 

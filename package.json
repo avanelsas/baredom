@@ -560,6 +560,8 @@
     "pack:local": "npm pack",
     "test": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run",
     "test:types": "npx tsc -p test/types/tsconfig.json",
-    "build:react": "bb scripts/generate_react.bb && cd adapters/react && npx tsc"
+    "build:react": "bb scripts/generate_react.bb && cd adapters/react && npx tsc",
+    "lint:method-api": "bb scripts/check_method_api.bb",
+    "lint:require-style": "bb scripts/check_require_style.bb"
   }
 }

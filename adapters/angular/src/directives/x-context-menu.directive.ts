@@ -47,4 +47,8 @@ export class BaredomContextMenu implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  openAt(x: number, y: number): void { return this.el.openAt(x, y); }
+  toggleAt(x: number, y: number): void { return this.el.toggleAt(x, y); }
+  openForElement(anchor: Record<string, any>): void { return this.el.openForElement(anchor); }
+  closeMethod(): void { return this.el.close(); }
 }
