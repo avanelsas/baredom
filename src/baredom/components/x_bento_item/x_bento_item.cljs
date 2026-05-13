@@ -4,75 +4,82 @@
    [baredom.utils.dom :as du]
    [baredom.components.x-bento-item.model :as model]))
 
-(def ^:private key-root        "__xBentoItemRoot")
-(def ^:private key-base        "__xBentoItemBase")
-(def ^:private key-initialized "__xBentoItemInit")
+;; ── Instance-field keys ───────────────────────────────────────────────────
+(def ^:private k-refs  "__xBentoItemRefs")
+(def ^:private k-model "__xBentoItemModel")
 
-(defn- read-inputs [^js el]
-  {:col-span (du/get-attr el model/attr-col-span)
-   :row-span (du/get-attr el model/attr-row-span)
-   :order    (du/get-attr el model/attr-order)})
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part "part")
+(def ^:private part-base "base")
+(def ^:private cls-base  "base")
 
+(def ^:private css-grid-column "grid-column")
+(def ^:private css-grid-row    "grid-row")
+(def ^:private css-order       "order")
+
+;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
-  "
-  :host {
-  display:block;
-  min-width:0;
-  min-height:0;
-  }
+  (str
+   ":host{display:block;min-width:0;min-height:0;}"
+   ".base{width:100%;height:100%;box-sizing:border-box;}"))
 
-  .base {
-  width:100%;
-  height:100%;
-  box-sizing:border-box;
-  }
-  ")
-
-(defn- apply-state! [^js el state]
-  (let [^js style (.-style el)]
-    (.setProperty style "grid-column" (:col-span-css state))
-    (.setProperty style "grid-row" (:row-span-css state))
-    (if-let [ord (:order state)]
-      (.setProperty style "order" (str ord))
-      (.removeProperty style "order"))))
-
-(defn- render! [^js el]
-  (let [state (model/derive-state (read-inputs el))]
-    (apply-state! el state)))
-
+;; ── DOM initialisation ────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base  (.createElement js/document "div")
-        slot  (.createElement js/document "slot")]
+        slot  (.createElement js/document "slot")
+        refs  {:root root :base base}]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute base "part" "base")
-    (set! (.-className base) "base")
+    (.setAttribute base attr-part part-base)
+    (set! (.-className base) cls-base)
     (.appendChild base slot)
 
     (.appendChild root style)
     (.appendChild root base)
 
-    (du/setv! el key-root root)
-    (du/setv! el key-base base)))
+    (du/setv! el k-refs refs)
+    refs))
 
-(defn- init-element! [^js el]
-  (when-not (du/initialized? el key-initialized)
-    (init-dom! el)
-    (du/mark-initialized! el key-initialized))
-  (render! el)
-  el)
+(defn- ensure-refs! [^js el]
+  (or (du/getv el k-refs) (init-dom! el)))
 
+;; ── Model reading ─────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/derive-state
+   {:col-span (du/get-attr el model/attr-col-span)
+    :row-span (du/get-attr el model/attr-row-span)
+    :order    (du/get-attr el model/attr-order)}))
+
+;; ── DOM patching ──────────────────────────────────────────────────────────
+(defn- apply-model! [^js el {:keys [col-span-css row-span-css order] :as m}]
+  (ensure-refs! el)
+  (let [^js style (.-style el)]
+    (.setProperty style css-grid-column col-span-css)
+    (.setProperty style css-grid-row    row-span-css)
+    (if-let [ord order]
+      (.setProperty    style css-order (str ord))
+      (.removeProperty style css-order)))
+  (du/setv! el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
+
+;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (init-element! el))
+  (ensure-refs! el)
+  (update-from-attrs! el))
 
-(defn- attribute-changed! [^js el _ _ _]
-  (if (du/initialized? el key-initialized)
-    (render! el)
-    (init-element! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
+;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
                        {:observed-attributes  model/observed-attributes
