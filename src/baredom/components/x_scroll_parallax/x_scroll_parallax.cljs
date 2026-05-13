@@ -1,9 +1,8 @@
 (ns baredom.components.x-scroll-parallax.x-scroll-parallax
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-scroll-parallax.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-scroll-parallax.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs        "__xScrollParallaxRefs")
@@ -77,8 +76,7 @@
               {:root     root
                :viewport viewport
                :slot     slot
-               :live     live}))
-  nil)
+               :live     live})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -268,8 +266,7 @@
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
-                   :scrollAttached false}))
-  nil)
+                   :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -286,8 +283,7 @@
   (when-let [raf (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf)
     (gobj/set el k-raf nil))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
 (defn- setup-observer! [^js el]
@@ -297,14 +293,12 @@
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs))
-  nil)
+    (gobj/set el k-io obs)))
 
 (defn- teardown-observer! [^js el]
   (when-let [obs (gobj/get el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil))
-  nil)
+    (gobj/set el k-io nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [direction disabled? label] :as m}]
@@ -323,15 +317,13 @@
 
     ;; Re-apply transforms if visible and not disabled
     (when (and (gobj/get el k-visible) (not disabled?))
-      (update-transforms! el)))
-  nil)
+      (update-transforms! el))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Clean up child styles ───────────────────────────────────────────────────
 (defn- clean-child-styles! [^js el]
@@ -407,27 +399,24 @@
   (remove-listeners! el)
   (add-listeners! el)
   (setup-observer! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   ;; Clean child styles before teardown (slot still has assigned elements)
   (clean-child-styles! el)
   ;; Dispatch leave event if the element was visible
   (when (gobj/get el k-visible)
-  (du/dispatch! el model/event-leave
-  (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0)))))
+    (du/dispatch! el model/event-leave
+                  (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0)))))
   (remove-listeners! el)
   (teardown-observer! el)
   (invalidate-child-cache! el)
   (gobj/set el k-visible false)
-  (gobj/set el k-last-prog nil)
-  nil)
+  (gobj/set el k-last-prog nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

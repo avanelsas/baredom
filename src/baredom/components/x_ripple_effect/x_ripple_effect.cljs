@@ -1,9 +1,8 @@
 (ns baredom.components.x-ripple-effect.x-ripple-effect
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-ripple-effect.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-ripple-effect.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs      "__xRippleRefs")
@@ -62,8 +61,7 @@
 
     (gobj/set el k-refs {:root root :container container :svg svg})
     (gobj/set el k-counter 0)
-    (gobj/set el k-frames #js []))
-  nil)
+    (gobj/set el k-frames #js [])))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -175,15 +173,13 @@
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-pointerdown [^js el ^js e]
   (when (zero? (.-button e))
-    (create-ripple! el e))
-  nil)
+    (create-ripple! el e)))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [handler (fn [e] (on-pointerdown el e))]
     (.addEventListener el "pointerdown" handler)
-    (gobj/set el k-handler handler))
-  nil)
+    (gobj/set el k-handler handler)))
 
 (defn- remove-listeners! [^js el]
   ;; Cancel all active rAF
@@ -203,8 +199,7 @@
   ;; Remove pointer listener
   (when-let [handler (gobj/get el k-handler)]
     (.removeEventListener el "pointerdown" handler)
-    (gobj/set el k-handler nil))
-  nil)
+    (gobj/set el k-handler nil)))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -250,12 +245,10 @@
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
-  (add-listeners! el)
-  nil)
+  (add-listeners! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js _el _name _old-val _new-val]
   ;; Attributes are read at click time, no render needed

@@ -1,9 +1,8 @@
 (ns baredom.components.x-scroll-timeline.x-scroll-timeline
-  (:require
-[baredom.utils.component :as component]
+  (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-scroll-timeline.model :as model]))
+            [goog.object :as gobj]
+            [baredom.components.x-scroll-timeline.model :as model]))
 
 ;; ── Constants ───────────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
@@ -338,8 +337,7 @@
                :entries    (:entries ent)
                :slot       (:slot ent)
                :indicator  indicator
-               :live       live}))
-  nil)
+               :live       live})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -473,8 +471,7 @@
         ;; Position and side date label
         (when-let [^js date-el (and dates (aget dates i))]
           (set! (.. date-el -style -top) (str center-y "px"))
-          (.setAttribute date-el model/data-side side)))))
-  nil)
+          (.setAttribute date-el model/data-side side))))))
 
 ;; ── Track rendering ─────────────────────────────────────────────────────────
 (defn- update-straight-track! [^js el progress no-progress?]
@@ -528,8 +525,7 @@
         (.setAttribute ^js fill-path "d" d)
         ;; Initialize dasharray for progress
         (.setAttribute ^js fill-path "stroke-dasharray" "1")
-        (.setAttribute ^js fill-path "stroke-dashoffset" "1"))))
-  nil)
+        (.setAttribute ^js fill-path "stroke-dashoffset" "1")))))
 
 (defn- update-curved-track! [^js el progress no-progress?]
   (let [{:keys [fill-path]} (gobj/get el k-refs)
@@ -761,8 +757,7 @@
   (du/remove-attr! el "data-autoplay-paused")
   (du/remove-attr! el "tabindex")
   (gobj/set el k-autoplay-paused false)
-  (gobj/set el k-autoplay-last nil)
-  nil)
+  (gobj/set el k-autoplay-last nil))
 
 (defn- start-autoplay! [^js el]
   (when-not (autoplay-running? el)
@@ -801,8 +796,7 @@
         ;; Start rAF loop
         (let [tick (autoplay-tick el)]
           (gobj/set el k-autoplay-raf
-                    (js/requestAnimationFrame tick))))))
-  nil)
+                    (js/requestAnimationFrame tick)))))))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- disabled? [^js el]
@@ -900,8 +894,7 @@
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
-                   :scrollAttached false}))
-  nil)
+                   :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -918,8 +911,7 @@
   (when-let [raf (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf)
     (gobj/set el k-raf nil))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
 (defn- setup-observer! [^js el]
@@ -929,14 +921,12 @@
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs))
-  nil)
+    (gobj/set el k-io obs)))
 
 (defn- teardown-observer! [^js el]
   (when-let [obs (gobj/get el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil))
-  nil)
+    (gobj/set el k-io nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-host-attrs!
@@ -1002,15 +992,13 @@
     (cond
       disabled?  (enter-disabled-state! el)
       old-m      (handle-model-changes! el old-m m))
-    (sync-autoplay! el m))
-  nil)
+    (sync-autoplay! el m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessor helpers ───────────────────────────────────────────────
 
@@ -1071,8 +1059,7 @@
   (remove-listeners! el)
   (add-listeners! el)
   (setup-observer! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   ;; Stop autoplay first
@@ -1081,20 +1068,18 @@
   (clean-entry-attrs! el)
   ;; Dispatch leave event if visible
   (when (gobj/get el k-visible)
-  (du/dispatch! el model/event-leave
-  #js {:progress (or (gobj/get el k-last-prog) 0)}))
+    (du/dispatch! el model/event-leave
+                  #js {:progress (or (gobj/get el k-last-prog) 0)}))
   (remove-listeners! el)
   (teardown-observer! el)
   (gobj/set el k-visible false)
   (gobj/set el k-active-index -1)
   (gobj/set el k-last-prog nil)
-  (gobj/set el k-entry-states nil)
-  nil)
+  (gobj/set el k-entry-states nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

@@ -93,8 +93,7 @@
     (.appendChild track slot)
     (.appendChild root style)
     (.appendChild root track)
-    (du/setv! el k-refs {:root root :track track :slot slot}))
-  nil)
+    (du/setv! el k-refs {:root root :track track :slot slot})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -138,8 +137,7 @@
                 cx       (- (+ (.-left r) (/ (.-width r) 2)) t-left)
                 cy       (- (+ (.-top r)  (/ (.-height r) 2)) t-top)]
             (.push rects #js {:cx cx :cy cy})))))
-    (du/setv! el k-rects rects))
-  nil)
+    (du/setv! el k-rects rects)))
 
 ;; ── Item style writes ───────────────────────────────────────────────────────
 
@@ -170,8 +168,7 @@
     (.removeProperty sty model/css-item-influence)
     (.removeProperty sty model/css-item-scale)
     (.removeProperty sty model/css-item-lift)
-    (set! (.-transform sty) ""))
-  nil)
+    (set! (.-transform sty) "")))
 
 (defn- reset-item-styles!
   "Clear inline state on every slotted item AND the cached displayed values
@@ -184,8 +181,7 @@
         (gobj/set d "lift"  0.0))))
   (when-let [^js items (assigned-elements el)]
     (dotimes [i (.-length items)]
-      (clear-item-inline-style! (aget items i))))
-  nil)
+      (clear-item-inline-style! (aget items i)))))
 
 (defn- approach
   "One lerp step toward `target` from `current`. Snaps to target when within
@@ -206,8 +202,7 @@
     (.setProperty sty model/css-item-influence (str influence))
     (.setProperty sty model/css-item-scale     (str scale))
     (.setProperty sty model/css-item-lift      (str lift "px"))
-    (set! (.-transform sty) tx))
-  nil)
+    (set! (.-transform sty) tx)))
 
 (defn- apply-item-styles!
   "Walk every slotted item, lerp its displayed state toward the target
@@ -260,29 +255,25 @@
             ;; the user's CSS can take over cleanly.
             (clear-item-inline-style! item)
             (write-item-style! item d inf vertical?))
-          (recur (inc i) (or more? settling?))))))
-  nil)
+          (recur (inc i) (or more? settling?)))))))
 
 ;; ── RAF coalescing ──────────────────────────────────────────────────────────
 (defn- raf-tick! [^js el]
   (du/setv! el k-raf-pend? false)
   (when (.-isConnected el)
-    (apply-item-styles! el))
-  nil)
+    (apply-item-styles! el)))
 
 (defn- schedule-raf! [^js el]
   (when-not (du/getv el k-raf-pend?)
     (du/setv! el k-raf-pend? true)
     (let [id (js/requestAnimationFrame (fn [_] (raf-tick! el)))]
-      (du/setv! el k-raf id)))
-  nil)
+      (du/setv! el k-raf id))))
 
 (defn- cancel-raf! [^js el]
   (when-let [id (du/getv el k-raf)]
     (js/cancelAnimationFrame id)
     (du/setv! el k-raf nil))
-  (du/setv! el k-raf-pend? false)
-  nil)
+  (du/setv! el k-raf-pend? false))
 
 ;; ── Pointer handlers ────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
@@ -300,14 +291,12 @@
             (gobj/set ptr "x" (- (.-clientX e) (.-left trect)))
             (gobj/set ptr "y" (- (.-clientY e) (.-top trect)))
             (gobj/set ptr "active" true)
-            (schedule-raf! el))))))
-  nil)
+            (schedule-raf! el)))))))
 
 (defn- on-pointerleave [^js el ^js _e]
   (when-let [^js ptr (du/getv el k-pointer)]
     (gobj/set ptr "active" false)
-    (schedule-raf! el))
-  nil)
+    (schedule-raf! el)))
 
 ;; ── Click / keyboard select ─────────────────────────────────────────────────
 (defn- find-item-index [^js target ^js items]
@@ -329,8 +318,7 @@
         (let [^js target (.-target e)]
           (when-let [idx (find-item-index target items)]
             (du/setv! el k-focus-idx idx)
-            (dispatch-select! el idx (aget items idx) "pointer"))))))
-  nil)
+            (dispatch-select! el idx (aget items idx) "pointer")))))))
 
 (defn- on-keydown [^js el ^js e]
   (let [m (du/getv el k-model)]
@@ -359,8 +347,7 @@
             (or (= key "Enter") (= key " "))
             (when (>= focus-idx 0)
               (.preventDefault e)
-              (dispatch-select! el focus-idx (aget items focus-idx) "keyboard")))))))
-  nil)
+              (dispatch-select! el focus-idx (aget items focus-idx) "keyboard"))))))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- ensure-tabindex! [^js item]
@@ -375,14 +362,12 @@
   (js/requestAnimationFrame
    (fn [_]
      (cache-rects! el)
-     (schedule-raf! el)))
-  nil)
+     (schedule-raf! el))))
 
 ;; ── Resize ──────────────────────────────────────────────────────────────────
 (defn- on-resize! [^js el]
   (cache-rects! el)
-  (schedule-raf! el)
-  nil)
+  (schedule-raf! el))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -401,8 +386,7 @@
       (.addEventListener slot evt-slotchange h-slot))
     (du/setv! el k-handlers
               {:move h-move :leave h-leave :click h-click
-               :key  h-key  :slot  h-slot}))
-  nil)
+               :key  h-key  :slot  h-slot})))
 
 (defn- remove-listeners! [^js el]
   (when-let [handlers (du/getv el k-handlers)]
@@ -414,14 +398,12 @@
           ^js slot (:slot refs)]
       (when slot
         (.removeEventListener slot evt-slotchange (:slot handlers))))
-    (du/setv! el k-handlers nil))
-  nil)
+    (du/setv! el k-handlers nil)))
 
 ;; ── A11y ────────────────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
   (when-not (du/has-attr? el "role")
-    (du/set-attr! el "role" "list"))
-  nil)
+    (du/set-attr! el "role" "list")))
 
 ;; ── Apply model ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [gap disabled?] :as m}]
@@ -435,15 +417,13 @@
           (gobj/set ptr "active" false))
         (reset-item-styles! el))
     (schedule-raf! el))
-  (du/setv! el k-model m)
-  nil)
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors (Tier 0) ─────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -472,8 +452,7 @@
      (when-let [^js items (assigned-elements el)]
        (dotimes [i (.-length items)]
          (ensure-tabindex! (aget items i))))
-     (cache-rects! el)))
-  nil)
+     (cache-rects! el))))
 
 (defn- disconnected! [^js el]
   (cancel-raf! el)
@@ -481,13 +460,11 @@
   (reset-item-styles! el)
   (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (du/setv! el k-ro nil))
-  nil)
+    (du/setv! el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 (defn init! []
