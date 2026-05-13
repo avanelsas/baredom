@@ -1,9 +1,8 @@
 (ns baredom.components.x-splash.x-splash
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-splash.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-splash.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs       "__xSplashRefs")
@@ -12,7 +11,7 @@
 (def ^:private k-fading-out "__xSplashFadingOut")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -160,8 +159,7 @@
                :content-el  content-el
                :spinner-el  spinner-el
                :progress-el progress-el
-               :bar-el      bar-el}))
-  nil)
+               :bar-el      bar-el})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -202,12 +200,10 @@
 (defn- clear-fade-timer! [^js el]
   (when-let [tid (gobj/get el k-fade-timer)]
     (js/clearTimeout tid)
-    (gobj/set el k-fade-timer nil))
-  nil)
+    (gobj/set el k-fade-timer nil)))
 
 (defn- fire-hidden-event! [^js el]
-  (du/dispatch! el model/event-hidden #js {})
-  nil)
+  (du/dispatch! el model/event-hidden #js {}))
 
 (defn- finish-fade-out! [^js el]
   (clear-fade-timer! el)
@@ -217,8 +213,7 @@
         ^js overlay-el overlay-el]
     (set! (.. overlay-el -style -display) "none"))
   (du/remove-attr! el "aria-busy")
-  (fire-hidden-event! el)
-  nil)
+  (fire-hidden-event! el))
 
 (defn- start-fade-out! [^js el]
   (when-not (gobj/get el k-fading-out)
@@ -253,8 +248,7 @@
                      (when (gobj/get el k-fading-out)
                        (.removeEventListener overlay-el "transitionend" on-end)
                        (finish-fade-out! el)))
-                   (+ (fade-duration-ms el) 60))))))
-  nil)
+                   (+ (fade-duration-ms el) 60)))))))
 
 (defn- cancel-fade-out! [^js el]
   (when (gobj/get el k-fading-out)
@@ -264,8 +258,7 @@
     (let [{:keys [overlay-el]} (ensure-refs! el)
           ^js overlay-el overlay-el]
       (set! (.. overlay-el -style -display) "")
-      (set! (.. overlay-el -style -opacity) "")))
-  nil)
+      (set! (.. overlay-el -style -opacity) ""))))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [active? variant progress spinner? overlay] :as m}]
@@ -319,24 +312,21 @@
     (when-not (du/has-attr? el "aria-label")
       (du/set-attr! el "aria-label" "Loading"))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js _el]
-  ;; No interactive listeners needed — splash screen is purely attribute-driven
+  ;; No interactive listeners needed — splash screen is purely attribute-driven.
   nil)
 
 (defn- remove-listeners! [^js el]
-  (clear-fade-timer! el)
-  nil)
+  (clear-fade-timer! el))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -374,17 +364,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

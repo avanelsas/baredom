@@ -80,4 +80,4 @@
    :spinner? (parse-bool-default-true spinner-attr)
    :overlay  (normalize-overlay overlay-raw)})
 
-(def method-api nil)
+(def method-api {})

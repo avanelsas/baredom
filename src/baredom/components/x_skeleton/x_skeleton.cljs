@@ -97,8 +97,7 @@
     (.appendChild root style-el)
     (.appendChild root base)
     (gobj/set el k-base        base)
-    (gobj/set el k-initialized true))
-  nil)
+    (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -123,21 +122,18 @@
       (.setProperty  (.-style base) "height" height)
       (.removeProperty (.-style base) "height"))
     ;; Hide from assistive technology — skeletons carry no semantic content
-    (du/set-attr! el "aria-hidden" "true"))
-  nil)
+    (du/set-attr! el "aria-hidden" "true")))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

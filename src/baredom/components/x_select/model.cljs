@@ -54,4 +54,4 @@
    :value       value-raw
    :name        name-raw})
 
-(def method-api nil)
+(def method-api {})

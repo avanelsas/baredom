@@ -1,15 +1,14 @@
 (ns baredom.components.x-spacer.x-spacer
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-spacer.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-spacer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs "__xSpacerRefs")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -36,8 +35,7 @@
         ^js style (make-el "style")]
     (set! (.-textContent style) style-text)
     (.appendChild root style)
-    (gobj/set el k-refs #js {:root root}))
-  nil)
+    (gobj/set el k-refs #js {:root root})))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -51,8 +49,7 @@
     (du/set-attr! el "data-grow" (if grow? "true" "false"))
     (.setProperty style "--x-spacer-size" size)
     (du/set-attr! el "role" "none")
-    (du/set-attr! el "aria-hidden" "true"))
-  nil)
+    (du/set-attr! el "aria-hidden" "true")))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -60,8 +57,7 @@
     (make-shadow! el))
   (render! el))
 
-(defn- disconnected! [^js _el]
-  nil)
+(defn- disconnected! [^js _el])
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val)

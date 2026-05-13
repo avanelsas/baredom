@@ -1,9 +1,8 @@
 (ns baredom.components.x-soft-body.x-soft-body
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-soft-body.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-soft-body.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs           "__xSoftBodyRefs")
@@ -120,14 +119,12 @@
               {:root    root
                :svg     svg
                :path    path
-               :content content}))
-  nil)
+               :content content})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs)))
-  nil)
+          (gobj/get el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -162,8 +159,7 @@
     (gobj/set el k-cur-x cx)
     (gobj/set el k-cur-y cy)
     (gobj/set el k-vel-x vx)
-    (gobj/set el k-vel-y vy))
-  nil)
+    (gobj/set el k-vel-y vy)))
 
 ;; ── Render path ─────────────────────────────────────────────────────────────
 (defn- render-path! [^js el]
@@ -172,8 +168,7 @@
         ^js cx   (gobj/get el k-cur-x)
         ^js cy   (gobj/get el k-cur-y)
         d        (model/points->path-d cx cy model/point-count)]
-    (.setAttribute path "d" d))
-  nil)
+    (.setAttribute path "d" d)))
 
 (defn- render-static! [^js el]
   (let [{:keys [path]} (gobj/get el k-refs)
@@ -183,8 +178,7 @@
         m (gobj/get el k-model)
         r (:radius m)
         d (model/static-rounded-rect-d w h r)]
-    (.setAttribute path "d" d))
-  nil)
+    (.setAttribute path "d" d)))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -244,21 +238,18 @@
             (aset cx i (aget rx i))
             (aset cy i (aget ry i)))
           (render-path! el)
-          (gobj/set el k-raf nil)))))
-  nil)
+          (gobj/set el k-raf nil))))))
 
 (defn- start-animation! [^js el]
   (when-not (gobj/get el k-raf)
     (gobj/set el k-last-frame (js/performance.now))
     (gobj/set el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -281,8 +272,7 @@
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-path! el)
-                (start-animation! el)))))))
-  nil)
+                (start-animation! el))))))))
 
 ;; ── Pointer event handlers ──────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
@@ -290,32 +280,27 @@
         ^js svg svg
         ^js rect (.getBoundingClientRect svg)]
     (gobj/set el k-pointer-x (- (.-clientX e) (.-left rect)))
-    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect))))
-  nil)
+    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect)))))
 
 (defn- on-pointerenter [^js el]
   (gobj/set el k-pointer-active true)
   (let [m (gobj/get el k-model)]
     (when-not (or (:disabled? m) (prefers-reduced-motion?))
-      (start-animation! el)))
-  nil)
+      (start-animation! el))))
 
 (defn- on-pointerleave [^js el]
   (gobj/set el k-pointer-active false)
-  (gobj/set el k-grabbed false)
-  nil)
+  (gobj/set el k-grabbed false))
 
 (defn- on-pointerdown [^js el ^js e]
   (gobj/set el k-grabbed true)
   ;; Update pointer position from the down event
   (on-pointermove el e)
-  (du/dispatch! el model/event-grab #js {})
-  nil)
+  (du/dispatch! el model/event-grab #js {}))
 
 (defn- on-pointerup [^js el]
   (gobj/set el k-grabbed false)
-  (du/dispatch! el model/event-release #js {})
-  nil)
+  (du/dispatch! el model/event-release #js {}))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -331,8 +316,7 @@
     (.addEventListener el "pointerenter" enter-fn)
     (.addEventListener el "pointerleave" leave-fn)
     (.addEventListener el "pointerdown" down-fn)
-    (.addEventListener el "pointerup" up-fn))
-  nil)
+    (.addEventListener el "pointerup" up-fn)))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js hdl (gobj/get el k-handlers)]
@@ -341,8 +325,7 @@
     (.removeEventListener el "pointerleave" (gobj/get hdl "leave"))
     (.removeEventListener el "pointerdown" (gobj/get hdl "down"))
     (.removeEventListener el "pointerup" (gobj/get hdl "up"))
-    (gobj/set el k-handlers nil))
-  nil)
+    (gobj/set el k-handlers nil)))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 (defn- update-from-attrs! [^js el]
@@ -357,8 +340,7 @@
           (do (stop-animation! el)
               (render-static! el))
           (do (render-path! el)
-              (start-animation! el))))))
-  nil)
+              (start-animation! el)))))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -441,35 +423,32 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-  (gobj/set el k-model m)
-  (ensure-refs! el)
-  (gobj/set el k-pointer-active false)
-  (gobj/set el k-grabbed false)
-  (gobj/set el k-pointer-x 0.0)
-  (gobj/set el k-pointer-y 0.0)
-  ;; Set up ResizeObserver
-  (let [ro (js/ResizeObserver.
-  (fn [^js entries] (on-resize! el entries)))]
-  (gobj/set el k-ro ro)
-  (.observe ro el))
-  ;; Add pointer event listeners
-  (remove-listeners! el)
-  (add-listeners! el))
-  nil)
+    (gobj/set el k-model m)
+    (ensure-refs! el)
+    (gobj/set el k-pointer-active false)
+    (gobj/set el k-grabbed false)
+    (gobj/set el k-pointer-x 0.0)
+    (gobj/set el k-pointer-y 0.0)
+    ;; Set up ResizeObserver
+    (let [ro (js/ResizeObserver.
+              (fn [^js entries] (on-resize! el entries)))]
+      (gobj/set el k-ro ro)
+      (.observe ro el))
+    ;; Add pointer event listeners
+    (remove-listeners! el)
+    (add-listeners! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
   (when-let [^js ro (gobj/get el k-ro)]
-  (.disconnect ro)
-  (gobj/set el k-ro nil))
-  nil)
+    (.disconnect ro)
+    (gobj/set el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (when (gobj/get el k-refs)
-  (update-from-attrs! el)))
-  nil)
+    (when (gobj/get el k-refs)
+      (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

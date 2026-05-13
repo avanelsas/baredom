@@ -278,4 +278,4 @@
             ny        (/ dy dist)]
         #js [(* nx mag) (* ny mag)]))))
 
-(def method-api nil)
+(def method-api {})
