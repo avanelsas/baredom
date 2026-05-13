@@ -136,8 +136,7 @@
     (.appendChild container slot)
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs {:root root :container container}))
-  nil)
+    (gobj/set el k-refs {:root root :container container})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -180,15 +179,13 @@
         (.removeProperty s "overflow")
         (.removeProperty s "-webkit-line-clamp")))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -212,13 +209,11 @@
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

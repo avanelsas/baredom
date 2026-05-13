@@ -278,8 +278,7 @@
                :body-el      body-el
                :default-slot default-slot
                :actions-el   actions-el
-               :actions-slot actions-slot}))
-  nil)
+               :actions-slot actions-slot})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -356,8 +355,7 @@
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Enter animation ───────────────────────────────────────────────────────────
 (defn- start-enter! [^js el]
@@ -368,30 +366,25 @@
               (when (= (.-target e) el)
                 (.removeEventListener el "animationend" on-end)
                 (du/remove-attr! el "data-entering")))]
-      (.addEventListener el "animationend" on-end)))
-  nil)
+      (.addEventListener el "animationend" on-end))))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-click! [^js el]
   (let [m (or (gobj/get el k-model) (read-model el))]
-    (du/dispatch-cancelable! el model/event-click (clj->js (model/click-detail m))))
-  nil)
+    (du/dispatch-cancelable! el model/event-click (clj->js (model/click-detail m)))))
 
 (defn- dispatch-connected! [^js el m]
-  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m)))
-  nil)
+  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m))))
 
 (defn- dispatch-disconnected! [^js _el m]
   (du/dispatch-document! model/event-disconnected
-                         (clj->js (model/disconnected-detail m)))
-  nil)
+                         (clj->js (model/disconnected-detail m))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────────
 (defn- on-click [^js el ^js _e]
   (let [m (or (gobj/get el k-model) (read-model el))]
     (when (model/interactive-eligible? m)
-      (dispatch-click! el)))
-  nil)
+      (dispatch-click! el))))
 
 (defn- on-keydown [^js el ^js e]
   (let [key (.-key e)]
@@ -399,8 +392,7 @@
       (let [m (or (gobj/get el k-model) (read-model el))]
         (when (model/interactive-eligible? m)
           (.preventDefault e)
-          (dispatch-click! el)))))
-  nil)
+          (dispatch-click! el))))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -408,8 +400,7 @@
         keydown-h (fn [e] (on-keydown el e))]
     (.addEventListener el "click" click-h)
     (.addEventListener el "keydown" keydown-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown keydown-h}))
-  nil)
+    (gobj/set el k-handlers #js {:click click-h :keydown keydown-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -418,8 +409,7 @@
             keydown-h (gobj/get hs "keydown")]
         (when click-h   (.removeEventListener el "click" click-h))
         (when keydown-h (.removeEventListener el "keydown" keydown-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -465,15 +455,13 @@
   (update-from-attrs! el)
   (start-enter! el)
   (let [m (or (gobj/get el k-model) (read-model el))]
-    (dispatch-connected! el m))
-  nil)
+    (dispatch-connected! el m)))
 
 (defn- disconnected! [^js el]
   (let [m (or (gobj/get el k-model) (read-model el))]
     (remove-listeners! el)
     (gobj/set el k-entered nil)
-    (dispatch-disconnected! el m))
-  nil)
+    (dispatch-disconnected! el m)))
 
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
@@ -483,8 +471,7 @@
       (do
         (when (= attr-name model/data-attr-position)
           (gobj/set el k-parent-pos new-val))
-        (update-from-attrs! el))))
-  nil)
+        (update-from-attrs! el)))))
 
 ;; ── Public API ────────────────────────────────────────────────────────────────
 

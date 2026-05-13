@@ -102,8 +102,7 @@
     (gobj/set el k-refs
               {:root        root
                :viewport    viewport
-               :slot        slot-el}))
-  nil)
+               :slot        slot-el})))
 
 (defn- ensure-light-layer!
   "Lazily creates the per-element ghost-layer and goo SVG in document.body
@@ -150,8 +149,7 @@
   (gobj/set el k-filter-blur nil)
   (gobj/set el k-filter-matrix nil)
   (gobj/set el k-goo-base-blur nil)
-  (gobj/set el k-goo-base-threshold nil)
-  nil)
+  (gobj/set el k-goo-base-threshold nil))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -227,8 +225,7 @@
   (if active-name
     (du/set-attr! el model/attr-data-active-state active-name)
     (du/remove-attr! el model/attr-data-active-state))
-  (gobj/set el k-current-state active-name)
-  nil)
+  (gobj/set el k-current-state active-name))
 
 (defn- prefers-reduced-motion? []
   (boolean (.-matches (.matchMedia js/window "(prefers-reduced-motion:reduce)"))))
@@ -295,8 +292,7 @@
   (let [^js blur   (gobj/get el k-filter-blur)
         ^js matrix (gobj/get el k-filter-matrix)]
     (when blur   (.setAttribute blur   "stdDeviation" (str blur-px)))
-    (when matrix (.setAttribute matrix "values"       (model/goo-matrix-values threshold))))
-  nil)
+    (when matrix (.setAttribute matrix "values"       (model/goo-matrix-values threshold)))))
 
 ;; The gooey filter follows a trapezoidal envelope across the spring's
 ;; progress: identity at the start (so text and crisp edges are readable in
@@ -348,8 +344,7 @@
             ;; Blur → 0; threshold → 1 (identity alpha row).
             new-blur   (* base-b inv)
             new-thresh (model/lerp base-t 1.0 f)]
-        (apply-goo-filter-values! el new-blur new-thresh))))
-  nil)
+        (apply-goo-filter-values! el new-blur new-thresh)))))
 
 (defn- start-goo! [^js el]
   (let [filter-id (ensure-goo-filter! el)
@@ -362,16 +357,14 @@
     (gobj/set el k-goo-base-threshold t)
     (apply-goo-filter-values! el b t)
     (set! (.. ghost-layer -style -filter)        (str "url(#" filter-id ")"))
-    (set! (.. ghost-layer -style -webkitFilter)  (str "url(#" filter-id ")")))
-  nil)
+    (set! (.. ghost-layer -style -webkitFilter)  (str "url(#" filter-id ")"))))
 
 (defn- stop-goo! [^js el]
   (let [refs (gobj/get el k-refs)
         ^js layer (when refs (:ghost-layer refs))]
     (when layer
       (set! (.. layer -style -filter) "")
-      (set! (.. layer -style -webkitFilter) "")))
-  nil)
+      (set! (.. layer -style -webkitFilter) ""))))
 
 ;; ── Ghost building ──────────────────────────────────────────────────────────
 (defn- prep-ghost-base-style!
@@ -521,8 +514,7 @@
     (.appendChild layer ghost)
     (let [update (fn [t]
                    (set! (.. ghost -style -opacity)
-                         (str (max 0.0 (- 1.0 t))))
-                   nil)
+                         (str (max 0.0 (- 1.0 t)))))
           finalize (fn []
                      (when (.-parentNode ghost)
                        (.removeChild (.-parentNode ghost) ghost)))]
@@ -535,8 +527,7 @@
     (set! (.. new-node -style -opacity) "0")
     (let [update (fn [t]
                    (set! (.. new-node -style -opacity)
-                         (str (max 0.0 (min 1.0 t))))
-                   nil)
+                         (str (max 0.0 (min 1.0 t)))))
           finalize (fn []
                      (set! (.. new-node -style -opacity) ""))]
       #js {:t 0 :v 0 :update update :finalize finalize})))
@@ -622,8 +613,7 @@
                                               ;; Token may have changed mid-flight; check before continuing.
                                               (when (= token (gobj/get el k-token))
                                                 (tick! el now2))))]
-            (gobj/set el k-raf raf))))))
-  nil)
+            (gobj/set el k-raf raf)))))))
 
 ;; ── Finalize ────────────────────────────────────────────────────────────────
 (defn- run-finalizers! [^js entries]
@@ -649,8 +639,7 @@
               detail (clj->js (model/changed-detail from to))]
           (du/dispatch! el model/event-changed detail)
           (gobj/set el k-from nil)
-          (gobj/set el k-to nil)))))
-  nil)
+          (gobj/set el k-to nil))))))
 
 (defn- cancel-current!
   "Stop any in-flight transition without firing the changed event."
@@ -661,8 +650,7 @@
   (run-finalizers! ^js (gobj/get el k-entries))
   (gobj/set el k-entries nil)
   (gobj/set el k-last-time nil)
-  (stop-goo! el)
-  nil)
+  (stop-goo! el))
 
 ;; ── Transition orchestrator ─────────────────────────────────────────────────
 (defn- start-transition!
@@ -824,16 +812,14 @@
 
       ;; Otherwise just re-apply display in case styles drifted.
       :else
-      (apply-active-display! el current)))
-  nil)
+      (apply-active-display! el current))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [{:keys [^js slot]} (ensure-refs! el)
         slot-h (fn [_e] (on-slot-change el))]
     (.addEventListener slot "slotchange" slot-h)
-    (gobj/set el k-handlers #js {:slot slot-h}))
-  nil)
+    (gobj/set el k-handlers #js {:slot slot-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)
@@ -842,8 +828,7 @@
       (let [^js slot (:slot refs)
             slot-h (gobj/get hs "slot")]
         (when slot-h (.removeEventListener slot "slotchange" slot-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors & methods ────────────────────────────────────────────
 ;; number-attr-prop! returns nil for absent attribute and parses any string with

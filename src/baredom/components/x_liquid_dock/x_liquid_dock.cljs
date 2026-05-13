@@ -279,14 +279,12 @@
                         :svg       svg
                         :liquid    liquid
                         :items-div items-div
-                        :slot      slot-el}))))
-  nil)
+                        :slot      slot-el})))))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs)))
-  nil)
+          (gobj/get el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -357,8 +355,7 @@
         (recur (dec i))))
 
     (gobj/set el k-blobs blob-arr)
-    (gobj/set el k-blob-state state-arr))
-  nil)
+    (gobj/set el k-blob-state state-arr)))
 
 ;; ── Item position caching ───────────────────────────────────────────────────
 (defn- cache-item-rects!
@@ -379,8 +376,7 @@
                 cy            (- (+ (.-top item-rect) (/ (.-height item-rect) 2))
                                  (.-top dock-rect))]
             (.push rects #js {:cx cx :cy cy})))))
-    (gobj/set el k-items-rect rects))
-  nil)
+    (gobj/set el k-items-rect rects)))
 
 ;; ── Filter updates ──────────────────────────────────────────────────────────
 (defn- update-filter!
@@ -392,8 +388,7 @@
     (when-let [^js matrix-el (:matrix-el refs)]
       (.setAttribute matrix-el "values" threshold))
     (when-let [^js disp-el (:disp-el refs)]
-      (.setAttribute disp-el "scale" (str ripple-scale))))
-  nil)
+      (.setAttribute disp-el "scale" (str ripple-scale)))))
 
 ;; ── Host style sync ─────────────────────────────────────────────────────────
 (defn- apply-host-style!
@@ -545,8 +540,7 @@
 
       ;; Schedule next frame
       (gobj/set el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (prefers-reduced-motion?)
@@ -554,22 +548,19 @@
       (when-not (:disabled? m)
         (gobj/set el k-noise-seed 0)
         (gobj/set el k-raf
-                  (js/requestAnimationFrame (fn [_] (animate! el)))))))
-  nil)
+                  (js/requestAnimationFrame (fn [_] (animate! el))))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Reset item transforms ──────────────────────────────────────────────────
 (defn- reset-item-transforms! [^js el]
   (when-let [^js assigned (get-assigned-elements el)]
     (dotimes [i (.-length assigned)]
       (let [^js item (aget assigned i)]
-        (set! (.. item -style -transform) ""))))
-  nil)
+        (set! (.. item -style -transform) "")))))
 
 ;; ── Event dispatching ───────────────────────────────────────────────────────
 (defn- dispatch-select! [^js el index ^js item source]
@@ -587,13 +578,11 @@
             ^js mouse (gobj/get el k-mouse)]
         (gobj/set mouse "x" (- (.-clientX e) (.-left rect)))
         (gobj/set mouse "y" (- (.-clientY e) (.-top rect)))
-        (gobj/set mouse "active" true))))
-  nil)
+        (gobj/set mouse "active" true)))))
 
 (defn- on-pointerleave [^js el]
   (let [^js mouse (gobj/get el k-mouse)]
-    (gobj/set mouse "active" false))
-  nil)
+    (gobj/set mouse "active" false)))
 
 (defn- find-item-index
   "Find the index of a clicked element among assigned slot elements."
@@ -611,8 +600,7 @@
       (when-let [^js assigned (get-assigned-elements el)]
         (let [^js target (.-target e)]
           (when-let [idx (find-item-index target assigned)]
-            (dispatch-select! el idx (aget assigned idx) "pointer"))))))
-  nil)
+            (dispatch-select! el idx (aget assigned idx) "pointer")))))))
 
 (defn- on-keydown [^js el ^js e]
   (let [m (gobj/get el k-model)]
@@ -641,8 +629,7 @@
             (or (= key "Enter") (= key " "))
             (when (>= focus-idx 0)
               (.preventDefault e)
-              (dispatch-select! el focus-idx (aget assigned focus-idx) "keyboard")))))))
-  nil)
+              (dispatch-select! el focus-idx (aget assigned focus-idx) "keyboard"))))))))
 
 (defn- on-slotchange [^js el]
   ;; Reconcile blobs to match new slotted children
@@ -654,12 +641,10 @@
         (when (nil? (.getAttribute item "tabindex"))
           (.setAttribute item "tabindex" "0")))))
   ;; Defer position caching until layout is stable
-  (js/requestAnimationFrame (fn [_] (cache-item-rects! el)))
-  nil)
+  (js/requestAnimationFrame (fn [_] (cache-item-rects! el))))
 
 (defn- on-resize! [^js el]
-  (cache-item-rects! el)
-  nil)
+  (cache-item-rects! el))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -678,8 +663,7 @@
       (.addEventListener slot "slotchange" h-slot))
     (gobj/set el k-handlers
               {:move h-move :leave h-leave :click h-click
-               :key h-key :slot h-slot}))
-  nil)
+               :key h-key :slot h-slot})))
 
 (defn- remove-listeners! [^js el]
   (when-let [handlers (gobj/get el k-handlers)]
@@ -690,14 +674,12 @@
     (when-let [{:keys [slot]} (gobj/get el k-refs)]
       (when slot
         (.removeEventListener ^js slot "slotchange" (:slot handlers))))
-    (gobj/set el k-handlers nil))
-  nil)
+    (gobj/set el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
   (when-not (du/has-attr? el "role")
-    (du/set-attr! el "role" "navigation"))
-  nil)
+    (du/set-attr! el "role" "navigation")))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

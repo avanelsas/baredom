@@ -148,8 +148,7 @@
 
       (gobj/set el k-refs
                 (merge filter-refs
-                       {:root root :viewport viewport :svg svg}))))
-  nil)
+                       {:root root :viewport viewport :svg svg})))))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -192,8 +191,7 @@
         (.push pos #js {:x 0 :y 0})))
     (gobj/set el k-blobs arr)
     (gobj/set el k-positions pos)
-    (gobj/set el k-speeds (model/blob-speeds blob-count)))
-  nil)
+    (gobj/set el k-speeds (model/blob-speeds blob-count))))
 
 (defn- remove-all-blobs! [^js el]
   (when-let [^js arr (gobj/get el k-blobs)]
@@ -202,8 +200,7 @@
         (when (.-parentNode div)
           (.removeChild (.-parentNode div) div))))
     (gobj/set el k-blobs #js [])
-    (gobj/set el k-positions #js []))
-  nil)
+    (gobj/set el k-positions #js [])))
 
 (defn- reconcile-blobs!
   "Adds/removes blob divs to match the model, then updates sizes and colors."
@@ -239,8 +236,7 @@
         (set! (.. div -style -height) (str size "px"))
         (set! (.. div -style -background) (aget colors i))))
     ;; Recompute speeds
-    (gobj/set el k-speeds (model/blob-speeds blob-count)))
-  nil)
+    (gobj/set el k-speeds (model/blob-speeds blob-count))))
 
 ;; ── Host style sync ─────────────────────────────────────────────────────────
 (defn- apply-host-style!
@@ -261,8 +257,7 @@
     (when-let [^js turb-el (:turb-el refs)]
       (.setAttribute turb-el "baseFrequency" (str (* 0.01 noise-scale))))
     (when-let [^js disp-el (:disp-el refs)]
-      (.setAttribute disp-el "scale" (if noise? (str noise-intensity) "0"))))
-  nil)
+      (.setAttribute disp-el "scale" (if noise? (str noise-intensity) "0")))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -300,21 +295,18 @@
 
       ;; Schedule next frame
       (gobj/set el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (prefers-reduced-motion?)
     (gobj/set el k-noise-seed 0)
     (gobj/set el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Mouse tracking ──────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
@@ -323,27 +315,23 @@
       (let [^js rect (.getBoundingClientRect viewport)
             ^js mouse (gobj/get el k-mouse)]
         (gobj/set mouse "x" (- (.-clientX e) (.-left rect)))
-        (gobj/set mouse "y" (- (.-clientY e) (.-top rect))))))
-  nil)
+        (gobj/set mouse "y" (- (.-clientY e) (.-top rect)))))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [handler (fn [e] (on-pointermove el e))]
     (.addEventListener js/window "pointermove" handler)
-    (gobj/set el k-handler handler))
-  nil)
+    (gobj/set el k-handler handler)))
 
 (defn- remove-listeners! [^js el]
   (when-let [handler (gobj/get el k-handler)]
     (.removeEventListener js/window "pointermove" handler)
-    (gobj/set el k-handler nil))
-  nil)
+    (gobj/set el k-handler nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
   (du/set-attr! el "aria-hidden" "true")
-  (du/set-attr! el "role" "presentation")
-  nil)
+  (du/set-attr! el "role" "presentation"))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

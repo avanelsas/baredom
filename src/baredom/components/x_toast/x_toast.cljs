@@ -288,8 +288,7 @@
                :message-el   message-el
                :dismiss-btn  dismiss-btn
                :progress-el  progress-el
-               :progress-bar progress-bar}))
-  nil)
+               :progress-bar progress-bar})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -369,15 +368,13 @@
       (set! (.. progress-el -style -display) "none"))
 
     (set-host-a11y! el dismissible? disabled?)
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Motion helpers ───────────────────────────────────────────────────────────
 (defn- prefers-reduced-motion? []
@@ -405,8 +402,7 @@
 (defn- clear-timeout! [^js el]
   (when-let [tid (gobj/get el k-timeout)]
     (js/clearTimeout tid)
-    (gobj/set el k-timeout nil))
-  nil)
+    (gobj/set el k-timeout nil)))
 
 (declare start-exit-and-remove!)
 
@@ -426,8 +422,7 @@
                          (let [detail (clj->js (model/dismiss-detail m2 "timeout"))
                                ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
                            (when ok? (start-exit-and-remove! el)))))))
-                 (:timeout-ms m)))))
-  nil)
+                 (:timeout-ms m))))))
 
 ;; ── Animation ────────────────────────────────────────────────────────────────
 (defn- after-enter! [^js el]
@@ -450,8 +445,7 @@
                     (.removeEventListener container "animationend" on-end)
                     (du/remove-attr! el "data-entering")
                     (after-enter! el)))]
-          (.addEventListener container "animationend" on-end)))))
-  nil)
+          (.addEventListener container "animationend" on-end))))))
 
 (defn- start-exit-and-remove! [^js el]
   (when-not (gobj/get el k-exiting)
@@ -480,8 +474,7 @@
                            (.removeEventListener container "animationend" on-end)
                            (gobj/set el k-exit-timer nil)
                            (.remove el)))
-                       (+ dur 60))))))))
-  nil)
+                       (+ dur 60)))))))))
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-dismiss! [^js el reason]
@@ -496,16 +489,14 @@
   (let [m (or (gobj/get el k-model) (read-model el))]
     (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
       (.preventDefault e)
-      (dispatch-dismiss! el "button")))
-  nil)
+      (dispatch-dismiss! el "button"))))
 
 (defn- on-keydown [^js el ^js e]
   (when (= (.-key e) "Escape")
     (let [m (or (gobj/get el k-model) (read-model el))]
       (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
         (.preventDefault e)
-        (dispatch-dismiss! el "keyboard"))))
-  nil)
+        (dispatch-dismiss! el "keyboard")))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -515,8 +506,7 @@
         key-h   (fn [e] (on-keydown el e))]
     (.addEventListener dismiss-btn "click" click-h)
     (.addEventListener el "keydown" key-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown key-h}))
-  nil)
+    (gobj/set el k-handlers #js {:click click-h :keydown key-h})))
 
 (defn- remove-listeners! [^js el]
   (clear-timeout! el)
@@ -531,8 +521,7 @@
             key-h   (gobj/get hs "keydown")]
         (when click-h (.removeEventListener btn "click" click-h))
         (when key-h   (.removeEventListener el "keydown" key-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -597,19 +586,16 @@
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el)
-  (start-enter! el)
-  nil)
+  (start-enter! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (update-from-attrs! el)
     (when (.-isConnected el)
-      (schedule-timeout! el)))
-  nil)
+      (schedule-timeout! el))))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 

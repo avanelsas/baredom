@@ -278,14 +278,12 @@
                :feLight feLight
                :grad    grad
                :filt-id filt-id
-               :grad-id grad-id}))
-  nil)
+               :grad-id grad-id})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs)))
-  nil)
+          (gobj/get el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -303,8 +301,7 @@
 (defn- init-wave-state! [^js el n]
   (gobj/set el k-wave-amps   (js/Float64Array. n))
   (gobj/set el k-wave-vels   (js/Float64Array. n))
-  (gobj/set el k-wave-phases (js/Float64Array. n))
-  nil)
+  (gobj/set el k-wave-phases (js/Float64Array. n)))
 
 ;; ── Path visibility ─────────────────────────────────────────────────────────
 (defn- update-path-visibility! [^js el n-active]
@@ -319,8 +316,7 @@
             (if front?
               (.setAttribute p "filter" (str "url(#" filt-id ")"))
               (.removeAttribute p "filter")))
-          (set! (.. p -style -display) "none")))))
-  nil)
+          (set! (.. p -style -display) "none"))))))
 
 ;; ── Effective fill direction ─────────────────────────────────────────────────
 (defn- vertical-fill? [m]
@@ -350,8 +346,7 @@
               (.setAttribute p "d" d))
             (let [fill-x (model/progress->fill-x prog w)
                   d      (model/horizontal-wave-path-d fill-x w h t amp phase)]
-              (.setAttribute p "d" d)))))))
-  nil)
+              (.setAttribute p "d" d))))))))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
@@ -377,13 +372,11 @@
                              (str "M" (.toFixed fill-x 2) ",0"
                                   "L" (.toFixed fill-x 2) "," (.toFixed h 2)
                                   "L0," (.toFixed h 2)
-                                  "L0,0Z"))))))))
-  nil)
+                                  "L0,0Z")))))))))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch-progress! [^js el progress velocity]
-  (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress velocity)))
-  nil)
+  (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress velocity))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -465,21 +458,18 @@
             (gobj/set el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el))))
             ;; Settled
-            (gobj/set el k-raf nil))))))
-  nil)
+            (gobj/set el k-raf nil)))))))
 
 (defn- start-animation! [^js el]
   (when-not (gobj/get el k-raf)
     (gobj/set el k-last-frame (js/performance.now))
     (gobj/set el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
@@ -520,8 +510,7 @@
       (when (or (:disabled? m) (prefers-reduced-motion?))
         (gobj/set el k-progress progress)
         (render-static! el)
-        (dispatch-progress! el progress velocity))))
-  nil)
+        (dispatch-progress! el progress velocity)))))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -553,8 +542,7 @@
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-waves! el)
-                (start-animation! el)))))))
-  nil)
+                (start-animation! el))))))))
 
 ;; ── IntersectionObserver ────────────────────────────────────────────────────
 (defn- on-intersection [^js el ^js entries]
@@ -567,8 +555,7 @@
         (when-not (or (:disabled? m) (prefers-reduced-motion?))
           (start-animation! el)))
       ;; Stop when not visible
-      (stop-animation! el)))
-  nil)
+      (stop-animation! el))))
 
 ;; ── Scroll target management ────────────────────────────────────────────────
 (defn- attach-scroll-listener! [^js el]
@@ -600,8 +587,7 @@
           (detach-scroll-listener! el)
           (gobj/set el k-scroll-target resolved)
           (attach-scroll-listener! el)
-          (on-scroll el)))))
-  nil)
+          (on-scroll el))))))
 
 (defn- setup-scroll-target! [^js el]
   (let [m          (gobj/get el k-model)
@@ -613,21 +599,18 @@
     ;; If target selector specified but not found, retry next frame
     ;; (target element may appear later in DOM parse order)
     (when (and (some? target-sel) (nil? scroll-tgt))
-      (js/requestAnimationFrame (fn [_] (retry-scroll-target! el)))))
-  nil)
+      (js/requestAnimationFrame (fn [_] (retry-scroll-target! el))))))
 
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [scroll-h (fn [_e] (on-scroll el))]
     (gobj/set el k-handlers
               #js {"scroll"         scroll-h
-                   "scrollAttached" false}))
-  nil)
+                   "scrollAttached" false})))
 
 (defn- remove-listeners! [^js el]
   (detach-scroll-listener! el)
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Observer setup/teardown ─────────────────────────────────────────────────
 (defn- setup-observers! [^js el]
@@ -641,8 +624,7 @@
   (let [ro (js/ResizeObserver.
             (fn [^js entries] (on-resize! el entries)))]
     (.observe ro el)
-    (gobj/set el k-ro ro))
-  nil)
+    (gobj/set el k-ro ro)))
 
 (defn- teardown-observers! [^js el]
   (when-let [^js io (gobj/get el k-io)]
@@ -650,8 +632,7 @@
     (gobj/set el k-io nil))
   (when-let [^js ro (gobj/get el k-ro)]
     (.disconnect ro)
-    (gobj/set el k-ro nil))
-  nil)
+    (gobj/set el k-ro nil)))
 
 ;; ── Theme application ───────────────────────────────────────────────────────
 (defn- apply-theme! [^js el theme]
@@ -666,8 +647,7 @@
       (.removeProperty s model/css-color-1)
       (.removeProperty s model/css-color-2)
       (.removeProperty s model/css-color-3)
-      (.removeProperty s model/css-specular)))
-  nil)
+      (.removeProperty s model/css-specular))))
 
 ;; ── Apply model + update-from-attrs! (render-pipeline) ─────────────────────
 ;; Note: k-model is written early here because several effect helpers
