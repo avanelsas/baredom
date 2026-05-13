@@ -549,6 +549,18 @@
          (done))
        50))))
 
+;; Regression: model used to declare `(def method-api nil)` while the runtime
+;; installed goTo/next/prev via bare `(set! (.-method proto) fn)`. After the
+;; PR #181 fix both must agree — model declares them, runtime installs them
+;; via `.defineProperty :value` so they show up as own-enumerable functions.
+(deftest method-api-matches-prototype-test
+  (let [^js el (make-scroll-with-slides 1)]
+    (is (= #{:goTo :next :prev} (set (keys model/method-api)))
+        "method-api must declare goTo / next / prev")
+    (is (fn? (.-goTo el)) "goTo must be a function on the instance")
+    (is (fn? (.-next el)) "next must be a function on the instance")
+    (is (fn? (.-prev el)) "prev must be a function on the instance")))
+
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
 (deftest autoplay-advances-slides-test

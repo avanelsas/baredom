@@ -51,4 +51,7 @@ export class BaredomScroll implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  goTo(index: number): void { return this.el.goTo(index); }
+  next(): void { return this.el.next(); }
+  prev(): void { return this.el.prev(); }
 }

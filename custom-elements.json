@@ -5902,6 +5902,36 @@
         "type" : {
           "text" : "number"
         }
+      }, {
+        "kind" : "method",
+        "name" : "goTo",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "index",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "next",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "prev",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
       } ],
       "events" : [ {
         "name" : "x-scroll-change",
