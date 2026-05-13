@@ -4,47 +4,35 @@
    [baredom.utils.dom :as du]
    [baredom.components.x-card.model :as model]))
 
-(def ^:private key-root        "__xCardRoot")
-(def ^:private key-style       "__xCardStyle")
-(def ^:private key-base        "__xCardBase")
-(def ^:private key-slot        "__xCardSlot")
-(def ^:private key-initialized "__xCardInitialized")
+;; ── Instance-field keys ───────────────────────────────────────────────────
+(def ^:private k-refs  "__xCardRefs")
+(def ^:private k-model "__xCardModel")
 
-(defn- base-node-of [^js el]
-  (du/getv el key-base))
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part         "part")
+(def ^:private attr-role         "role")
+(def ^:private attr-tabindex     "tabindex")
+(def ^:private attr-aria-label   "aria-label")
+(def ^:private attr-aria-disabled "aria-disabled")
+(def ^:private attr-data-variant "data-variant")
+(def ^:private attr-data-padding "data-padding")
+(def ^:private attr-data-radius  "data-radius")
+(def ^:private attr-data-interactive "data-interactive")
+(def ^:private attr-data-disabled    "data-disabled")
 
-(defn- read-inputs [^js el]
-  {:variant     (du/get-attr el model/attr-variant)
-   :padding     (du/get-attr el model/attr-padding)
-   :radius      (du/get-attr el model/attr-radius)
-   :interactive (du/has-attr? el model/attr-interactive)
-   :disabled    (du/has-attr? el model/attr-disabled)
-   :label       (du/get-attr el model/attr-label)})
+(def ^:private part-base "base")
+(def ^:private cls-base  "base")
+(def ^:private val-true  "true")
 
-(defn- interactive-active? [state]
-  (and (:interactive state) (not (:disabled state))))
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
 
-(defn- dispatch-press! [^js el]
-  (du/dispatch! el model/event-press #js {}))
+(def ^:private key-enter    "Enter")
+(def ^:private key-space    " ")
+(def ^:private key-spacebar "Spacebar")
+(def ^:private activation-keys #{key-space key-spacebar})
 
-(defn- set-or-remove-attr! [^js el name value]
-  (if (some? value)
-    (du/set-attr! el name value)
-    (du/remove-attr! el name)))
-
-(defn- reflect-host-a11y! [^js el state]
-  (set-or-remove-attr! el "role" (:role state))
-  (set-or-remove-attr! el "tabindex" (:tabindex state))
-  (set-or-remove-attr! el "aria-label" (:aria-label state))
-  (set-or-remove-attr! el "aria-disabled" (:aria-disabled state)))
-
-(defn- reflect-base-state! [^js base state]
-  (.setAttribute base "data-variant" (:variant state))
-  (.setAttribute base "data-padding" (:padding state))
-  (.setAttribute base "data-radius" (:radius state))
-  (set-or-remove-attr! base "data-interactive" (when (:interactive state) "true"))
-  (set-or-remove-attr! base "data-disabled" (when (:disabled state) "true")))
-
+;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
   "
   :host {
@@ -175,85 +163,122 @@
   }
   ")
 
-(defn- create-style-node! []
-  (let [node (.createElement js/document "style")]
-    (set! (.-textContent node) style-text)
-    node))
+;; ── DOM initialisation ────────────────────────────────────────────────────
+(defn- init-dom! [^js el]
+  (let [root  (.attachShadow el #js {:mode "open"})
+        style (.createElement js/document "style")
+        base  (.createElement js/document "div")
+        slot  (.createElement js/document "slot")
+        refs  {:root root :base base}]
 
-(defn- create-base-node! []
-  (let [node (.createElement js/document "div")]
-    (.setAttribute node "part" "base")
-    (set! (.-className node) "base")
-    node))
+    (set! (.-textContent style) style-text)
 
-(defn- create-slot-node! []
-  (.createElement js/document "slot"))
+    (.setAttribute base attr-part part-base)
+    (set! (.-className base) cls-base)
+    (.appendChild base slot)
 
-(defn- init-shadow-dom! [^js el]
-  (let [root (.attachShadow el #js {:mode "open"})
-        style-node (create-style-node!)
-        base-node  (create-base-node!)
-        slot-node  (create-slot-node!)]
-    (.appendChild base-node slot-node)
-    (.appendChild root style-node)
-    (.appendChild root base-node)
-    (du/setv! el key-root root)
-    (du/setv! el key-style style-node)
-    (du/setv! el key-base base-node)
-    (du/setv! el key-slot slot-node)
-    root))
+    (.appendChild root style)
+    (.appendChild root base)
 
-(defn- render! [^js el]
-  (let [state (model/derive-state (read-inputs el))
-        base  (base-node-of el)]
-    (reflect-host-a11y! el state)
-    (reflect-base-state! base state)))
+    (du/setv! el k-refs refs)
+    refs))
+
+(defn- ensure-refs! [^js el]
+  (or (du/getv el k-refs) (init-dom! el)))
+
+;; ── Model reading ─────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/derive-state
+   {:variant     (du/get-attr el model/attr-variant)
+    :padding     (du/get-attr el model/attr-padding)
+    :radius      (du/get-attr el model/attr-radius)
+    :interactive (du/has-attr? el model/attr-interactive)
+    :disabled    (du/has-attr? el model/attr-disabled)
+    :label       (du/get-attr el model/attr-label)}))
+
+(defn- current-model
+  "Return the cached model, falling back to a fresh read.
+  Used by event handlers that must reflect the latest attribute state
+  even before the next attribute-changed callback has cached it."
+  [^js el]
+  (or (du/getv el k-model) (read-model el)))
+
+(defn- interactive-active? [m]
+  (and (:interactive m) (not (:disabled m))))
+
+;; ── DOM patching ──────────────────────────────────────────────────────────
+(defn- set-or-remove-attr! [^js el name value]
+  (if (some? value)
+    (du/set-attr! el name value)
+    (du/remove-attr! el name)))
+
+(defn- apply-host-a11y! [^js el m]
+  (set-or-remove-attr! el attr-role          (:role m))
+  (set-or-remove-attr! el attr-tabindex      (:tabindex m))
+  (set-or-remove-attr! el attr-aria-label    (:aria-label m))
+  (set-or-remove-attr! el attr-aria-disabled (:aria-disabled m)))
+
+(defn- apply-base-state! [^js base m]
+  (.setAttribute base attr-data-variant (:variant m))
+  (.setAttribute base attr-data-padding (:padding m))
+  (.setAttribute base attr-data-radius  (:radius m))
+  (set-or-remove-attr! base attr-data-interactive (when (:interactive m) val-true))
+  (set-or-remove-attr! base attr-data-disabled    (when (:disabled m)    val-true)))
+
+(defn- apply-model! [^js el m]
+  (let [{:keys [base]} (ensure-refs! el)]
+    (apply-host-a11y! el m)
+    (apply-base-state! base m)
+    (du/setv! el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
+
+;; ── Event handlers ────────────────────────────────────────────────────────
+(defn- dispatch-press! [^js el]
+  (du/dispatch! el model/event-press #js {}))
 
 (defn- on-click [^js el ^js _event]
-  (let [state (model/derive-state (read-inputs el))]
-    (when (interactive-active? state)
-      (dispatch-press! el))))
+  (when (interactive-active? (current-model el))
+    (dispatch-press! el)))
 
 (defn- on-keydown [^js el ^js event]
-  (let [state (model/derive-state (read-inputs el))
-        key   (.-key event)]
-    (when (interactive-active? state)
+  (when (interactive-active? (current-model el))
+    (let [k (.-key event)]
       (cond
-        (= key "Enter")
+        (= k key-enter)
         (dispatch-press! el)
 
-        (contains? #{" " "Spacebar"} key)
+        (contains? activation-keys k)
         (do (.preventDefault event)
             (dispatch-press! el))))))
 
 (defn- install-listeners! [^js el]
-  (.addEventListener el "click"   (fn handle-click   [event] (on-click   el event)))
-  (.addEventListener el "keydown" (fn handle-keydown [event] (on-keydown el event))))
+  (.addEventListener el ev-click   (fn handle-click   [event] (on-click   el event)))
+  (.addEventListener el ev-keydown (fn handle-keydown [event] (on-keydown el event))))
 
-(defn- init-element! [^js el]
-  (when-not (du/initialized? el key-initialized)
-    (init-shadow-dom! el)
-    (install-listeners! el)
-    (du/mark-initialized! el key-initialized))
-  (render! el)
-  el)
-
-(defn- connected! [^js el]
-  (init-element! el))
-
-(defn- disconnected! [^js _el])
-
-(defn- attribute-changed! [^js el _name _old-value _new-value]
-  (when (du/initialized? el key-initialized)
-    (render! el)))
-
+;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
+;; ── Element class ─────────────────────────────────────────────────────────
+(defn- connected! [^js el]
+  (when-not (du/getv el k-refs)
+    (ensure-refs! el)
+    (install-listeners! el))
+  (update-from-attrs! el))
+
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
+
+;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
-                        :disconnected-fn      disconnected!
                         :attribute-changed-fn attribute-changed!
                         :setup-prototype-fn   install-property-accessors!}))
