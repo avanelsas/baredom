@@ -137,9 +137,12 @@
     :disabled-attr   (du/get-attr el model/attr-disabled)}))
 
 ;; ── Physics initialisation ──────────────────────────────────────────────────
-(defn- init-physics! [^js el w h]
-  (let [m      (gobj/get el k-model)
-        r      (:radius m)
+(defn- init-physics!
+  "Generate fresh rest-point arrays for a (w,h,radius) configuration.
+   Takes the radius from `m` rather than the cached `k-model` so callers
+   can pass the freshly-read model before the cache write."
+  [^js el w h m]
+  (let [r      (:radius m)
         result (model/generate-rest-points w h r)
         ^js rx (aget result 0)
         ^js ry (aget result 1)
@@ -231,7 +234,7 @@
       ;; Continue loop if still active or not settled
       (if (or ptr-active (not (settled? vx vy n)))
         (gobj/set el k-raf
-                  (js/requestAnimationFrame (fn [_] (animate! el))))
+                  (js/requestAnimationFrame (fn animate-tick [_] (animate! el))))
         ;; Settled — stop loop, snap to rest
         (do
           (dotimes [i n]
@@ -244,7 +247,7 @@
   (when-not (gobj/get el k-raf)
     (gobj/set el k-last-frame (js/performance.now))
     (gobj/set el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el))))))
+              (js/requestAnimationFrame (fn animate-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
@@ -266,9 +269,9 @@
               ^js svg svg]
           (.setAttribute svg "viewBox" (str "0 0 " w " " h)))
         ;; Reinitialise physics with new dimensions
-        (init-physics! el w h)
-        ;; Render immediately
         (let [m (gobj/get el k-model)]
+          (init-physics! el w h m)
+          ;; Render immediately
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-path! el)
@@ -328,97 +331,34 @@
     (gobj/set el k-handlers nil)))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
+(defn- apply-model! [^js el m]
+  ;; Re-init physics if we have dimensions (radius may have changed)
+  (let [w (gobj/get el k-width)
+        h (gobj/get el k-height)]
+    (when (and w h (> w 0) (> h 0))
+      (init-physics! el w h m)
+      (if (or (:disabled? m) (prefers-reduced-motion?))
+        (do (stop-animation! el)
+            (render-static! el))
+        (do (render-path! el)
+            (start-animation! el)))))
+  (gobj/set el k-model m))
+
 (defn- update-from-attrs! [^js el]
-  (let [m (read-model el)]
-    (gobj/set el k-model m)
-    ;; Re-init physics if we have dimensions (radius may have changed)
-    (let [w (gobj/get el k-width)
-          h (gobj/get el k-height)]
-      (when (and w h (> w 0) (> h 0))
-        (init-physics! el w h)
-        (if (or (:disabled? m) (prefers-reduced-motion?))
-          (do (stop-animation! el)
-              (render-static! el))
-          (do (render-path! el)
-              (start-animation! el)))))))
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; stiffness
-  (.defineProperty js/Object proto model/attr-stiffness
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-stiffness
-                                         (.getAttribute this model/attr-stiffness))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-stiffness)
-                                          (.setAttribute this model/attr-stiffness (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; damping
-  (.defineProperty js/Object proto model/attr-damping
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-damping
-                                         (.getAttribute this model/attr-damping))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-damping)
-                                          (.setAttribute this model/attr-damping (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; radius
-  (.defineProperty js/Object proto model/attr-radius
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-radius
-                                         (.getAttribute this model/attr-radius))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-radius)
-                                          (.setAttribute this model/attr-radius (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; intensity
-  (.defineProperty js/Object proto model/attr-intensity
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-intensity
-                                         (.getAttribute this model/attr-intensity))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-intensity)
-                                          (.setAttribute this model/attr-intensity (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; grabRadius (camelCase for kebab-case attribute)
-  (.defineProperty js/Object proto "grabRadius"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-grab-radius
-                                         (.getAttribute this model/attr-grab-radius))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-grab-radius)
-                                          (.setAttribute this model/attr-grab-radius (str v)))))
-                        :enumerable true :configurable true})
-
-  ;; disabled (boolean)
-  (.defineProperty js/Object proto model/attr-disabled
-                   #js {:get (fn []
-                               (this-as ^js this (.hasAttribute this model/attr-disabled)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-disabled "")
-                                          (.removeAttribute this model/attr-disabled))))
-                        :enumerable true :configurable true}))
+  (du/define-parsed-prop! proto model/attr-stiffness model/attr-stiffness   model/parse-stiffness)
+  (du/define-parsed-prop! proto model/attr-damping   model/attr-damping     model/parse-damping)
+  (du/define-parsed-prop! proto model/attr-radius    model/attr-radius      model/parse-radius)
+  (du/define-parsed-prop! proto model/attr-intensity model/attr-intensity   model/parse-intensity)
+  (du/define-parsed-prop! proto "grabRadius"         model/attr-grab-radius model/parse-grab-radius)
+  (du/define-bool-prop!   proto model/attr-disabled  model/attr-disabled))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
