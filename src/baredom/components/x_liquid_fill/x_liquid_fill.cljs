@@ -669,32 +669,39 @@
       (.removeProperty s model/css-specular)))
   nil)
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── Apply model + update-from-attrs! (render-pipeline) ─────────────────────
+;; Note: k-model is written early here because several effect helpers
+;; (render-waves!, render-static!, animate!, on-scroll) read the cached model
+;; directly. Per-field diffs against the captured old-m gate the side effects
+;; that should only re-run when their relevant fields changed.
+(defn- apply-model! [^js el new-m old-m]
+  ;; Re-init wave state if layers changed
+  (when (or (nil? old-m) (not= (:layers new-m) (:layers old-m)))
+    (init-wave-state! el (:layers new-m))
+    (update-path-visibility! el (:layers new-m)))
+  ;; Apply theme colors when theme changes
+  (when (or (nil? old-m) (not= (:theme new-m) (:theme old-m)))
+    (apply-theme! el (:theme new-m)))
+  ;; Re-resolve scroll target if target attribute changed
+  (when (or (nil? old-m) (not= (:target new-m) (:target old-m)))
+    (detach-scroll-listener! el)
+    (setup-scroll-target! el))
+  ;; Re-render
+  (let [w (gobj/get el k-width)
+        h (gobj/get el k-height)]
+    (when (and w h (> w 0) (> h 0))
+      (if (or (:disabled? new-m) (prefers-reduced-motion?))
+        (do (stop-animation! el)
+            (render-static! el))
+        (do (render-waves! el)
+            (start-animation! el))))))
+
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
-    (gobj/set el k-model new-m)
-    ;; Re-init wave state if layers changed
-    (when (or (nil? old-m) (not= (:layers new-m) (:layers old-m)))
-      (init-wave-state! el (:layers new-m))
-      (update-path-visibility! el (:layers new-m)))
-    ;; Apply theme colors when theme changes
-    (when (or (nil? old-m) (not= (:theme new-m) (:theme old-m)))
-      (apply-theme! el (:theme new-m)))
-    ;; Re-resolve scroll target if target attribute changed
-    (when (or (nil? old-m) (not= (:target new-m) (:target old-m)))
-      (detach-scroll-listener! el)
-      (setup-scroll-target! el))
-    ;; Re-render
-    (let [w (gobj/get el k-width)
-          h (gobj/get el k-height)]
-      (when (and w h (> w 0) (> h 0))
-        (if (or (:disabled? new-m) (prefers-reduced-motion?))
-          (do (stop-animation! el)
-              (render-static! el))
-          (do (render-waves! el)
-              (start-animation! el))))))
-  nil)
+    (when (not= new-m old-m)
+      (gobj/set el k-model new-m)
+      (apply-model! el new-m old-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

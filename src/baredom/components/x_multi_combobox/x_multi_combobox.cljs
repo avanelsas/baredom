@@ -807,11 +807,15 @@
   (du/define-bool-prop!   proto "required"    model/attr-required)
   (du/define-bool-prop!   proto "open"        model/attr-open)
   (du/define-number-prop! proto "max"         model/attr-max nil)
-  ;; Methods
-  (aset proto "show"
-        (fn [] (this-as ^js this (open-panel! this "programmatic"))))
-  (aset proto "hide"
-        (fn [] (this-as ^js this (close-panel! this "programmatic")))))
+  ;; Methods (Tier-2 .defineProperty :value descriptors)
+  (.defineProperty js/Object proto "show"
+    #js {:value (fn xmc-show []
+                  (this-as ^js this (open-panel! this "programmatic")))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "hide"
+    #js {:value (fn xmc-hide []
+                  (this-as ^js this (close-panel! this "programmatic")))
+         :writable true :configurable true}))
 
 ;; ---------------------------------------------------------------------------
 ;; Registration

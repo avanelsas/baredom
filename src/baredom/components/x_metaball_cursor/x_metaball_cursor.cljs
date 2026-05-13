@@ -485,14 +485,23 @@
   (stop-animation! el)
   (remove-listeners! el))
 
+;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ──────
+(defn- apply-model! [^js el m]
+  (when (gobj/get el k-refs)
+    (reconcile-blobs! el m)
+    (update-filter! el m)
+    (apply-host-style! el m))
+  (gobj/set el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
+
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (let [m (read-model el)]
-      (gobj/set el k-model m)
-      (when (gobj/get el k-refs)
-        (reconcile-blobs! el m)
-        (update-filter! el m)
-        (apply-host-style! el m)))))
+    (update-from-attrs! el)))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

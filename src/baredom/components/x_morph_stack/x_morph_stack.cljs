@@ -769,31 +769,38 @@
             prv (aget names (mod (+ (dec idx) len) len))]
         (start-transition! el prv reason)))))
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── Apply model + update-from-attrs! (render-pipeline) ─────────────────────
+;; Note: k-model is written before the apply work here because start-transition!
+;; (called below and from method bindings / on-slot-change) reads the cached
+;; model. The early write is required for those reads to see the new value.
+(defn- apply-model! [^js el m]
+  ;; Mirror the (normalised) variant to a data attribute so :host([data-variant=…])
+  ;; CSS rules apply, even when the author wrote an unknown / mis-cased value.
+  (du/set-attr! el model/attr-data-variant (:variant m))
+  (let [names (state-names el)
+        target (model/resolve-active (vec (array-seq names)) m)
+        current (gobj/get el k-current-state)]
+    (cond
+      ;; First-time mount: no current state → instantly show target, no events.
+      (nil? current)
+      (when target (apply-active-display! el target))
+
+      ;; Active changed → animate.
+      (and target (not= target current))
+      (start-transition! el target "attribute")
+
+      ;; No target (states removed entirely) → clear.
+      (and (nil? target) current)
+      (do (cancel-current! el)
+          (apply-active-display! el nil)))))
+
 (defn- update-from-attrs! [^js el]
   (ensure-refs! el)
-  (let [new-m (read-model el)]
-    (gobj/set el k-model new-m)
-    ;; Mirror the (normalised) variant to a data attribute so :host([data-variant=…])
-    ;; CSS rules apply, even when the author wrote an unknown / mis-cased value.
-    (du/set-attr! el model/attr-data-variant (:variant new-m))
-    (let [names (state-names el)
-          target (model/resolve-active (vec (array-seq names)) new-m)
-          current (gobj/get el k-current-state)]
-      (cond
-        ;; First-time mount: no current state → instantly show target, no events.
-        (nil? current)
-        (when target (apply-active-display! el target))
-
-        ;; Active changed → animate.
-        (and target (not= target current))
-        (start-transition! el target "attribute")
-
-        ;; No target (states removed entirely) → clear.
-        (and (nil? target) current)
-        (do (cancel-current! el)
-            (apply-active-display! el nil)))))
-  nil)
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (gobj/set el k-model new-m)
+      (apply-model! el new-m))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slot-change [^js el]
@@ -892,27 +899,31 @@
 
   (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
-  ;; Methods
-  (set! (.-goTo proto)
-        (fn [name]
-          (this-as ^js this
-                   (let [n (when (some? name) (str name))]
-                     (start-transition! this n "method")))))
+  ;; Methods (Tier-2 .defineProperty :value descriptors)
+  (.defineProperty js/Object proto "goTo"
+    #js {:value (fn xms-go-to [name]
+                  (this-as ^js this
+                    (let [n (when (some? name) (str name))]
+                      (start-transition! this n "method"))))
+         :writable true :configurable true})
 
-  (set! (.-next proto)
-        (fn []
-          (this-as ^js this
-                   (next-state! this "method"))))
+  (.defineProperty js/Object proto "next"
+    #js {:value (fn xms-next []
+                  (this-as ^js this
+                    (next-state! this "method")))
+         :writable true :configurable true})
 
-  (set! (.-prev proto)
-        (fn []
-          (this-as ^js this
-                   (prev-state! this "method"))))
+  (.defineProperty js/Object proto "prev"
+    #js {:value (fn xms-prev []
+                  (this-as ^js this
+                    (prev-state! this "method")))
+         :writable true :configurable true})
 
-  (set! (.-states proto)
-        (fn []
-          (this-as ^js this
-                   (state-names this)))))
+  (.defineProperty js/Object proto "states"
+    #js {:value (fn xms-states []
+                  (this-as ^js this
+                    (state-names this)))
+         :writable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]

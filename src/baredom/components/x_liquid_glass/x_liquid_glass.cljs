@@ -422,9 +422,8 @@
     (gobj/set el k-rest-y (aget result 1))))
 
 ;; ── Apply model to DOM ─────────────────────────────────────────────────────
-(defn- apply-model! [^js el]
-  (let [m    (gobj/get el k-model)
-        refs (gobj/get el k-refs)
+(defn- apply-model! [^js el m]
+  (let [refs (gobj/get el k-refs)
         ^js blur-el (:blur refs)
         ^js glass   (:glass refs)
         ^js spec    (:specular refs)
@@ -640,9 +639,9 @@
             (.setAttribute mask-el "height" (str h))))
         ;; Reinitialise geometry with new dimensions
         (init-geometry! el w h)
-        (apply-model! el)
-        ;; Render
         (let [m (gobj/get el k-model)]
+          (apply-model! el m)
+          ;; Render
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-satellites! el (or (gobj/get el k-time) 0.0))
@@ -702,21 +701,22 @@
     :color-1-raw            (du/get-attr el model/attr-color-1)
     :color-2-raw            (du/get-attr el model/attr-color-2)}))
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── Update from attributes (render-pipeline with cache-at-tail) ───────────
 (defn- update-from-attrs! [^js el]
-  (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (let [w (gobj/get el k-width)
-          h (gobj/get el k-height)]
-      (when (and w h (> w 0) (> h 0))
-        (init-geometry! el w h)
-        (apply-model! el)
-        (if (or (:disabled? m) (prefers-reduced-motion?))
-          (do (stop-animation! el)
-              (render-static! el))
-          (do (render-satellites! el (or (gobj/get el k-time) 0.0))
-              (start-animation! el))))))
-  nil)
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (let [w (gobj/get el k-width)
+            h (gobj/get el k-height)]
+        (when (and w h (> w 0) (> h 0))
+          (init-geometry! el w h)
+          (apply-model! el new-m)
+          (if (or (:disabled? new-m) (prefers-reduced-motion?))
+            (do (stop-animation! el)
+                (render-static! el))
+            (do (render-satellites! el (or (gobj/get el k-time) 0.0))
+                (start-animation! el)))))
+      (gobj/set el k-model new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -905,7 +905,7 @@
     (gobj/set el k-pointer-y 0.0)
     (gobj/set el k-grad-time 0.0)
     (ensure-refs! el)
-    (apply-model! el)
+    (apply-model! el m)
     ;; Set up ResizeObserver
     (let [ro (js/ResizeObserver.
               (fn [^js entries] (on-resize! el entries)))]
