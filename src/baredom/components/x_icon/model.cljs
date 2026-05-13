@@ -51,7 +51,7 @@
 
 (def ^:private default-px (get size-token-px default-size))
 
-(defn- default-size-map []
+(def ^:private default-size-map
   {:css   (str default-px "px")
    :token default-size
    :px    default-px})
@@ -67,7 +67,7 @@
           lower   (.toLowerCase trimmed)]
       (cond
         (= "" trimmed)
-        (default-size-map)
+        default-size-map
 
         (contains? size-token-px lower)
         (let [px (get size-token-px lower)]
@@ -82,8 +82,8 @@
                    ;; reject strings like "48abc" by requiring full-numeric form
                    (= (str n) trimmed))
             {:css (str n "px") :token nil :px n}
-            (default-size-map)))))
-    (default-size-map)))
+            default-size-map))))
+    default-size-map))
 
 (defn parse-color
   "Parse the `color` attribute. Unknown / nil fall back to \"inherit\"."
@@ -126,4 +126,4 @@
      :labelled? (and (boolean label-present?)
                      (not= "" label))}))
 
-(def method-api nil)
+(def method-api {})
