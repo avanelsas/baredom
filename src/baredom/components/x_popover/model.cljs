@@ -112,9 +112,6 @@
       flipped)))
 
 (def method-api
-  {:show   {:args [] :returns 'void
-            :doc "Open the popover (no-op if already open)."}
-   :hide   {:args [] :returns 'void
-            :doc "Close the popover (no-op if already closed)."}
-   :toggle {:args [] :returns 'void
-            :doc "Toggle the popover's open state."}})
+  {:show   {:args [] :returns 'void}
+   :hide   {:args [] :returns 'void}
+   :toggle {:args [] :returns 'void}})

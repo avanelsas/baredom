@@ -56,7 +56,5 @@
    event-empty   {:detail {} :cancelable false}})
 
 (def method-api
-  {:push  {:args [:opts] :returns 'string
-           :doc "Push a new notification. Returns the assigned id."}
-   :clear {:args [] :returns 'void
-           :doc "Remove all currently displayed notifications."}})
+  {:push  {:args [{:name "opts" :type 'object}] :returns 'string}
+   :clear {:args [] :returns 'void}})
