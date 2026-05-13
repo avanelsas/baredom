@@ -1,9 +1,8 @@
 (ns baredom.components.x-theme.x-theme
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-theme.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-theme.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs "__xThemeRefs")

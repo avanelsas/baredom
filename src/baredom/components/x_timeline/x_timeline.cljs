@@ -1,9 +1,8 @@
 (ns baredom.components.x-timeline.x-timeline
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-timeline.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-timeline.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs     "__xTimelineRefs")
@@ -212,8 +211,8 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el)
-  (update-items! el))
+    (update-from-attrs! el)
+    (update-items! el))
   nil)
 
 ;; ── Public API ────────────────────────────────────────────────────────────────

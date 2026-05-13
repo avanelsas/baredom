@@ -1,9 +1,8 @@
 (ns baredom.components.x-toast.x-toast
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-toast.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-toast.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs        "__xToastRefs")
@@ -15,7 +14,7 @@
 (def ^:private k-entered     "__xToastEntered")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -606,9 +605,9 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el)
-  (when (.-isConnected el)
-  (schedule-timeout! el)))
+    (update-from-attrs! el)
+    (when (.-isConnected el)
+      (schedule-timeout! el)))
   nil)
 
 ;; ── Public API ───────────────────────────────────────────────────────────────

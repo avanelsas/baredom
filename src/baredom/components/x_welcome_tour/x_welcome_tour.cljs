@@ -4,12 +4,11 @@
    navigation, connector rendering, focus trap, and keyboard/scroll/resize
    handling. The host element is invisible — all visible UI lives in a
    portal layer created via the shared overlay utility."
-  (:require
-[baredom.utils.component :as component]
-               [baredom.components.x-welcome-tour.model :as model]
-   [baredom.components.x-welcome-tour-step.model :as step-model]
-   [baredom.utils.dom :as du]
-   [baredom.utils.overlay :as overlay]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [baredom.utils.overlay :as overlay]
+            [baredom.components.x-welcome-tour.model :as model]
+            [baredom.components.x-welcome-tour-step.model :as step-model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs       "__xWelcomeTourRefs")

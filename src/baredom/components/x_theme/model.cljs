@@ -599,4 +599,4 @@
          (tokens->css dark-tokens)
          "}}")))
 
-(def method-api nil)
+(def method-api {})
