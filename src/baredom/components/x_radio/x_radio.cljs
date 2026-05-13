@@ -8,6 +8,7 @@
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xRadioRefs")
+(def ^:private k-model     "__xRadioModel")
 (def ^:private k-internals "__xRadioInternals")
 (def ^:private k-handlers  "__xRadioHandlers")
 
@@ -127,12 +128,11 @@
     :aria-labelledby-raw  (du/get-attr el model/attr-aria-labelledby)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Apply model + render-pipeline
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
     (let [^js control-el (gobj/get refs "control")
-          m              (read-model el)
           disabled?      (:disabled? m)
           checked?       (:checked? m)]
 
@@ -164,7 +164,20 @@
 
       ;; Form value via ElementInternals
       (when-let [^js internals (gobj/get el k-internals)]
-        (.setFormValue internals (when checked? (:value m)))))))
+        (.setFormValue internals (when checked? (:value m))))
+      (gobj/set el k-model m))))
+
+;; render! is the direct-write entry — try-select! / form-* call it after
+;; mutating attributes synchronously and want the apply to run unconditionally.
+;; attribute-changed! uses update-from-attrs! which gates on a model diff.
+(defn- render! [^js el]
+  (apply-model! el (read-model el)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Group utilities
@@ -313,8 +326,9 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers

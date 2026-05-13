@@ -10,6 +10,7 @@
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-initialized "__xProgressCircleInit")
+(def ^:private k-model       "__xProgressCircleModel")
 (def ^:private k-base        "__xProgressCircleBase")
 (def ^:private k-fill        "__xProgressCircleFill")
 (def ^:private k-value-node  "__xProgressCircleValueNode")
@@ -140,21 +141,21 @@
     (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
-(defn- read-inputs [^js el]
-  {:value         (du/get-attr el model/attr-value)
-   :max           (du/get-attr el model/attr-max)
-   :variant       (du/get-attr el model/attr-variant)
-   :size          (du/get-attr el model/attr-size)
-   :label         (du/get-attr el model/attr-label)
-   :show-value    (du/has-attr? el model/attr-show-value)
-   :indeterminate (du/has-attr? el model/attr-indeterminate)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:value         (du/get-attr el model/attr-value)
+    :max           (du/get-attr el model/attr-max)
+    :variant       (du/get-attr el model/attr-variant)
+    :size          (du/get-attr el model/attr-size)
+    :label         (du/get-attr el model/attr-label)
+    :show-value    (du/has-attr? el model/attr-show-value)
+    :indeterminate (du/has-attr? el model/attr-indeterminate)}))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [value max percent variant size label
-                show-value indeterminate aria-valuetext]}
-        (model/derive-state (read-inputs el))
-        ^js base       (gobj/get el k-base)
+;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
+(defn- apply-model! [^js el {:keys [value max percent variant size label
+                                    show-value indeterminate aria-valuetext]
+                             :as m}]
+  (let [^js base       (gobj/get el k-base)
         ^js fill       (gobj/get el k-fill)
         ^js value-node (gobj/get el k-value-node)
         was-completed  (gobj/get el k-completed)
@@ -201,18 +202,25 @@
     ;; x-progress-circle-complete event
     (when (and now-complete (not was-completed))
       (du/dispatch! el model/event-complete #js {:value value :max max}))
-    (gobj/set el k-completed (boolean now-complete))))
+    (gobj/set el k-completed (boolean now-complete))
+    (gobj/set el k-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el))))
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
