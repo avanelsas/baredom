@@ -320,4 +320,4 @@
    event-change-request {:cancelable true  :detail {:value 'string :mode 'string :reason 'string}}
    event-change         {:cancelable false :detail {:value 'string :mode 'string :reason 'string}}})
 
-(def method-api nil)
+(def method-api {})

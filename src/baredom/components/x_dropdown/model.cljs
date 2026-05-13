@@ -50,4 +50,4 @@
   [open? source]
   #js {:open open? :source source})
 
-(def method-api nil)
+(def method-api {})

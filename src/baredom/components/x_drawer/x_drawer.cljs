@@ -1,8 +1,8 @@
 (ns baredom.components.x-drawer.x-drawer
   (:require
-[baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
    [baredom.components.x-drawer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────────
@@ -165,8 +165,7 @@
                    :panel    panel
                    :header   header
                    :body     body
-                   :footer   footer}))
-  nil)
+                   :footer   footer})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -210,8 +209,7 @@
         (when-not (.hasAttribute panel "tabindex")
           (.setAttribute panel "tabindex" "-1")
           (gobj/set el k-panel-tab true))
-        (.focus panel))))
-  nil)
+        (.focus panel)))))
 
 (defn- deactivate-focus-trap! [^js el]
   (let [refs           (gobj/get el k-refs)
@@ -224,8 +222,7 @@
       (.removeAttribute panel "tabindex")
       (gobj/set el k-panel-tab false))
     (when (and restore (.-isConnected restore))
-      (.focus restore)))
-  nil)
+      (.focus restore))))
 
 (defn- cycle-focus! [^js el ^js e]
   (let [tabbables-js (gobj/get el k-tabbables)
@@ -244,32 +241,25 @@
           (do (.preventDefault e) (.focus last-el))
 
           (and (not shift?) (= active last-el))
-          (do (.preventDefault e) (.focus first-el))
-
-          :else nil))))
-  nil)
+          (do (.preventDefault e) (.focus first-el)))))))
 
 ;; ── Dismiss (user-initiated close) ───────────────────────────────────────────
 (defn- do-dismiss! [^js el reason]
   (du/dispatch! el model/event-dismiss (model/dismiss-event-detail reason))
-  (du/remove-attr! el model/attr-open)
-  nil)
+  (du/remove-attr! el model/attr-open))
 
 ;; ── Show / hide / toggle ─────────────────────────────────────────────────────
 (defn- do-show! [^js el]
   (when-not (du/has-attr? el model/attr-open)
-    (du/set-attr! el model/attr-open ""))
-  nil)
+    (du/set-attr! el model/attr-open "")))
 
 (defn- do-hide! [^js el]
-  (du/remove-attr! el model/attr-open)
-  nil)
+  (du/remove-attr! el model/attr-open))
 
 (defn- do-toggle! [^js el]
   (if (du/has-attr? el model/attr-open)
     (do-hide! el)
-    (do-show! el))
-  nil)
+    (do-show! el)))
 
 ;; ── Render ────────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -297,9 +287,8 @@
       (gobj/set el k-prev-open open?)
       (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
       (if open?
-        (js/setTimeout (fn [] (activate-focus-trap! el)) 0)
-        (deactivate-focus-trap! el))))
-  nil)
+        (js/setTimeout (fn defer-activate-trap [] (activate-focus-trap! el)) 0)
+        (deactivate-focus-trap! el)))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- on-keydown! [^js el ^js e]
@@ -310,21 +299,19 @@
           (do-dismiss! el model/reason-escape))
 
       (= key "Tab")
-      (cycle-focus! el e)))
-  nil)
+      (cycle-focus! el e))))
 
 (defn- add-listeners! [^js el]
   (let [refs         (ensure-refs! el)
         ^js backdrop (gobj/get refs "backdrop")
         ^js panel    (gobj/get refs "panel")
-        backdrop-h   (fn [_] (do-dismiss! el model/reason-backdrop))
-        keydown-h    (fn [^js e] (on-keydown! el e))]
+        backdrop-h   (fn handle-backdrop-click [_] (do-dismiss! el model/reason-backdrop))
+        keydown-h    (fn handle-panel-keydown  [^js e] (on-keydown! el e))]
     (.addEventListener backdrop "click" backdrop-h)
     (.addEventListener panel "keydown" keydown-h)
     (gobj/set el k-handlers
               #js {:backdrop backdrop-h
-                   :keydown  keydown-h}))
-  nil)
+                   :keydown  keydown-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
@@ -336,26 +323,22 @@
             keydown-h    (gobj/get hs "keydown")]
         (when backdrop-h (.removeEventListener backdrop "click" backdrop-h))
         (when keydown-h  (.removeEventListener panel "keydown" keydown-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
-  (deactivate-focus-trap! el)
-  nil)
+  (deactivate-focus-trap! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (render! el))
-  nil)
+    (render! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]

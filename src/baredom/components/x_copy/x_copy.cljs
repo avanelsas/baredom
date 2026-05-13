@@ -1,8 +1,8 @@
 (ns baredom.components.x-copy.x-copy
   (:require
-[baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
    [baredom.components.x-copy.model :as model]))
 
 ;; ── Instance-field keys (always use gobj/get, gobj/set) ─────────────────────
@@ -12,7 +12,7 @@
 (def ^:private k-text-val  "__xCopyTextValue")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-block;"
@@ -134,8 +134,7 @@
                    :trigger     trigger
                    :tooltip     tooltip
                    :tooltipSlot tooltip-slot
-                   :tooltipText tooltip-text}))
-  nil)
+                   :tooltipText tooltip-text})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -228,8 +227,7 @@
   (du/remove-attr! el "data-tooltip-kind")
   (let [refs (gobj/get el k-refs)]
     (when refs
-      (set! (.-textContent (gobj/get refs "tooltipText")) "")))
-  nil)
+      (set! (.-textContent (gobj/get refs "tooltipText")) ""))))
 
 (defn- show-tooltip! [^js el kind message tooltip-ms]
   (let [refs (gobj/get el k-refs)]
@@ -242,11 +240,10 @@
       (set! (.-textContent (gobj/get refs "tooltipText")) message)
       (gobj/set el k-tid
                 (js/setTimeout
-                 (fn []
+                 (fn on-tooltip-timeout []
                    (gobj/set el k-tid nil)
                    (hide-tooltip! el))
-                 tooltip-ms))))
-  nil)
+                 tooltip-ms)))))
 
 ;; ── Copy handler ──────────────────────────────────────────────────────────────
 (defn- copy! [^js el]
@@ -300,8 +297,7 @@
                         (copy! el))))]
     (.addEventListener trigger "click" click-h)
     (.addEventListener js/document "keydown" key-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown key-h}))
-  nil)
+    (gobj/set el k-handlers #js {:click click-h :keydown key-h})))
 
 (defn- remove-listeners! [^js el]
   (when-let [tid (gobj/get el k-tid)]
@@ -315,8 +311,7 @@
             key-h      (gobj/get hs "keydown")]
         (when click-h (.removeEventListener trigger "click" click-h))
         (when key-h   (.removeEventListener js/document "keydown" key-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Render ────────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -326,25 +321,21 @@
     (set! (.-disabled trigger) (boolean disabled?))
     (if disabled?
       (du/set-attr! el "aria-disabled" "true")
-      (du/remove-attr! el "aria-disabled")))
-  nil)
+      (du/remove-attr! el "aria-disabled"))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el)
-  nil)
+  (render! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (render! el))
-  nil)
+    (render! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]

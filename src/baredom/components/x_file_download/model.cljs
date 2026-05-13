@@ -38,4 +38,4 @@
 (defn data-url? [href]
   (and (string? href) (.startsWith ^string href "data:")))
 
-(def method-api nil)
+(def method-api {})
