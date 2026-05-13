@@ -7,12 +7,15 @@
 
 ;; ── Constants ────────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
+(def ^:private xlink-ns "http://www.w3.org/1999/xlink")
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────
 (def ^:private k-initialized      "__xKineticTypographyInit")
+(def ^:private k-model            "__xKineticTypographyModel")
 (def ^:private k-container        "__xKineticTypographyContainer")
 (def ^:private k-svg              "__xKineticTypographySvg")
 (def ^:private k-path-el          "__xKineticTypographyPath")
+(def ^:private k-path-line        "__xKineticTypographyPathLine")
 (def ^:private k-text-el          "__xKineticTypographyText")
 (def ^:private k-text-path        "__xKineticTypographyTextPath")
 (def ^:private k-animate-el       "__xKineticTypographyAnimate")
@@ -21,6 +24,25 @@
 (def ^:private k-echo-els         "__xKineticTypographyEchoEls")
 (def ^:private k-crawl-viewport   "__xKineticTypographyCrawlViewport")
 (def ^:private k-crawl-text       "__xKineticTypographyCrawlText")
+
+;; ── String-literal constants ─────────────────────────────────────────────
+(def ^:private attr-part            "part")
+(def ^:private attr-role            "role")
+(def ^:private attr-aria-hidden     "aria-hidden")
+(def ^:private attr-aria-label      "aria-label")
+(def ^:private attr-data-preset     "data-preset")
+(def ^:private attr-data-animation  "data-animation")
+(def ^:private attr-data-effect     "data-effect")
+(def ^:private attr-data-direction  "data-direction")
+(def ^:private val-true             "true")
+(def ^:private val-crawl            "crawl")
+(def ^:private val-reverse          "reverse")
+(def ^:private val-none             "none")
+(def ^:private val-color-shift      "color-shift")
+(def ^:private effect-size-gradient "size-gradient")
+(def ^:private effect-color-wave    "color-wave")
+(def ^:private role-img             "img")
+(def ^:private role-presentation    "presentation")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -216,21 +238,21 @@
         path-id         (str "xkt-" (random-uuid))]
 
     (set! (.-textContent style-el) style-text)
-    (.setAttribute container "part" "container")
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "aria-hidden" "true")
-    (.setAttribute svg "focusable" "false")
+    (.setAttribute container attr-part "container")
+    (.setAttribute svg       attr-part "svg")
+    (.setAttribute svg       attr-aria-hidden val-true)
+    (.setAttribute svg       "focusable" "false")
 
     ;; Path definition in <defs>
     (.setAttribute path-el "id" path-id)
     (.appendChild defs path-el)
 
     ;; Decorative path line (for optional visible path)
-    (.setAttribute path-line "part" "path-line")
+    (.setAttribute path-line attr-part "path-line")
     (.appendChild svg path-line)
 
     ;; Text on path
-    (.setAttribute text-el "part" "text")
+    (.setAttribute text-el   attr-part "text")
     (.setAttribute text-path "href" (str "#" path-id))
     (.appendChild text-el text-path)
 
@@ -238,13 +260,13 @@
     (.appendChild svg text-el)
 
     ;; Crawl mode elements
-    (.setAttribute crawl-viewport "part" "crawl-viewport")
-    (.setAttribute crawl-text "part" "crawl-text")
+    (.setAttribute crawl-viewport attr-part "crawl-viewport")
+    (.setAttribute crawl-text     attr-part "crawl-text")
     (.appendChild crawl-viewport crawl-text)
 
     ;; SR-only text
     (.add (.-classList sr-only) "sr-only")
-    (.setAttribute sr-only "part" "sr-only")
+    (.setAttribute sr-only attr-part "sr-only")
 
     (.appendChild container svg)
     (.appendChild container crawl-viewport)
@@ -256,6 +278,7 @@
     (gobj/set el k-container      container)
     (gobj/set el k-svg            svg)
     (gobj/set el k-path-el        path-el)
+    (gobj/set el k-path-line      path-line)
     (gobj/set el k-text-el        text-el)
     (gobj/set el k-text-path      text-path)
     (gobj/set el k-sr-only        sr-only)
@@ -263,32 +286,32 @@
     (gobj/set el k-crawl-viewport crawl-viewport)
     (gobj/set el k-crawl-text     crawl-text)
     (gobj/set el k-echo-els       #js [])
-    (gobj/set el k-initialized    true))
-  nil)
+    (gobj/set el k-initialized    true)))
 
-;; ── Read inputs ──────────────────────────────────────────────────────────
-(defn- read-inputs [^js el]
-  {:text         (du/get-attr el model/attr-text)
-   :path         (du/get-attr el model/attr-path)
-   :preset       (du/get-attr el model/attr-preset)
-   :animation    (du/get-attr el model/attr-animation)
-   :speed        (du/get-attr el model/attr-speed)
-   :direction    (du/get-attr el model/attr-direction)
-   :effect       (du/get-attr el model/attr-effect)
-   :font-size    (du/get-attr el model/attr-font-size)
-   :start-size   (du/get-attr el model/attr-start-size)
-   :end-size     (du/get-attr el model/attr-end-size)
-   :repeat       (du/get-attr el model/attr-repeat)
-   :echo-count   (du/get-attr el model/attr-echo-count)
-   :echo-delay   (du/get-attr el model/attr-echo-delay)
-   :echo-opacity (du/get-attr el model/attr-echo-opacity)
-   :echo-scale   (du/get-attr el model/attr-echo-scale)})
+;; ── Read model ───────────────────────────────────────────────────────────
+(defn- read-model [^js el]
+  (model/derive-state
+   {:text         (du/get-attr el model/attr-text)
+    :path         (du/get-attr el model/attr-path)
+    :preset       (du/get-attr el model/attr-preset)
+    :animation    (du/get-attr el model/attr-animation)
+    :speed        (du/get-attr el model/attr-speed)
+    :direction    (du/get-attr el model/attr-direction)
+    :effect       (du/get-attr el model/attr-effect)
+    :font-size    (du/get-attr el model/attr-font-size)
+    :start-size   (du/get-attr el model/attr-start-size)
+    :end-size     (du/get-attr el model/attr-end-size)
+    :repeat       (du/get-attr el model/attr-repeat)
+    :echo-count   (du/get-attr el model/attr-echo-count)
+    :echo-delay   (du/get-attr el model/attr-echo-delay)
+    :echo-opacity (du/get-attr el model/attr-echo-opacity)
+    :echo-scale   (du/get-attr el model/attr-echo-scale)}))
 
 ;; ── Build repeated text ──────────────────────────────────────────────────
 (defn- build-text-content [text repeat-count]
   (if (<= repeat-count 1)
     text
-    (apply str (interpose " \u00B7 " (cljs.core/repeat repeat-count text)))))
+    (apply str (interpose " · " (cljs.core/repeat repeat-count text)))))
 
 ;; ── Per-character tspan rendering ────────────────────────────────────────
 (defn- apply-tspans!
@@ -297,8 +320,8 @@
   (set! (.-textContent text-path-el) "")
   (let [chars          (vec text)
         n              (count chars)
-        has-gradient   (contains? effects "size-gradient")
-        has-color-wave (contains? effects "color-wave")
+        has-gradient   (contains? effects effect-size-gradient)
+        has-color-wave (contains? effects effect-color-wave)
         grad-start     (when has-gradient (js/parseFloat start-size))
         grad-end       (when has-gradient (js/parseFloat end-size))
         grad-unit      (when has-gradient
@@ -332,19 +355,19 @@
   [animation direction duration-s begin-delay-s]
   (let [anim (svg-el "animate")
         dur  (str duration-s "s")
-        dir  (if (= direction "reverse") "reverse" "normal")]
+        dir  (if (= direction val-reverse) val-reverse "normal")]
     (.setAttribute anim "attributeName" "startOffset")
     (.setAttribute anim "repeatCount" "indefinite")
     (.setAttribute anim "dur" dur)
     (when (pos? begin-delay-s)
       (.setAttribute anim "begin" (str begin-delay-s "s")))
     (case animation
-      "scroll"    (do (.setAttribute anim "from" (if (= dir "reverse") "100%" "0%"))
-                      (.setAttribute anim "to"   (if (= dir "reverse") "0%" "100%")))
-      "bounce"    (do (.setAttribute anim "values" (if (= dir "reverse") "100%;0%;100%" "0%;100%;0%"))
+      "scroll"    (do (.setAttribute anim "from" (if (= dir val-reverse) "100%" "0%"))
+                      (.setAttribute anim "to"   (if (= dir val-reverse) "0%" "100%")))
+      "bounce"    (do (.setAttribute anim "values" (if (= dir val-reverse) "100%;0%;100%" "0%;100%;0%"))
                       (.setAttribute anim "calcMode" "spline")
                       (.setAttribute anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
-      "oscillate" (do (.setAttribute anim "values" (if (= dir "reverse") "120%;-20%;120%" "-20%;120%;-20%"))
+      "oscillate" (do (.setAttribute anim "values" (if (= dir val-reverse) "120%;-20%;120%" "-20%;120%;-20%"))
                       (.setAttribute anim "calcMode" "spline")
                       (.setAttribute anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
       nil)
@@ -352,13 +375,13 @@
 
 (defn- create-animate! [^js el ^js text-path-el animation direction duration-s]
   (remove-animate! el)
-  (when (and (not= animation "none") (not (prefers-reduced-motion?)))
+  (when (and (not= animation val-none) (not (prefers-reduced-motion?)))
     (let [anim (build-animate-el animation direction duration-s 0)]
       (.appendChild text-path-el anim)
       (gobj/set el k-animate-el anim))))
 
 ;; ── Echo management ──────────────────────────────────────────────────────
-(defn- clear-echoes! [^js el ^js _svg]
+(defn- clear-echoes! [^js el]
   (let [^js echo-els (gobj/get el k-echo-els)]
     (when echo-els
       (dotimes [i (.-length echo-els)]
@@ -368,12 +391,12 @@
 
 (defn- render-echoes!
   [^js el ^js svg display-text echo-count echo-delay echo-opacity echo-scale
-   animation direction duration-s _font-size]
-  (clear-echoes! el svg)
+   animation direction duration-s]
+  (clear-echoes! el)
   (when (pos? echo-count)
     (let [path-id     (gobj/get el k-path-id)
           echo-els    #js []
-          add-animate (and (not= animation "none") (not (prefers-reduced-motion?)))
+          add-animate (and (not= animation val-none) (not (prefers-reduced-motion?)))
           ;; Convert echo-delay (seconds) to a percentage offset along the path.
           ;; Each echo is displaced by delay/duration * 100 percent per index.
           offset-pct  (if (pos? duration-s)
@@ -382,17 +405,17 @@
       (loop [i 0]
         (when (< i echo-count)
           (let [idx       (inc i)
-                tel       (.createElementNS js/document svg-ns "text")
-                tp        (.createElementNS js/document svg-ns "textPath")
+                tel       (svg-el "text")
+                tp        (svg-el "textPath")
                 opacity   (.pow js/Math echo-opacity idx)
                 scale-val (.pow js/Math echo-scale idx)
                 ;; Displace each echo further along the path
                 start-off (str "-" (* offset-pct idx) "%")]
-            (.setAttribute tel "part" "text-echo")
+            (.setAttribute tel attr-part "text-echo")
             (.setAttribute tel "opacity" (str opacity))
             (.setAttribute tel "font-size"
                            (str "calc(var(--x-kinetic-typography-font-size) * " scale-val ")"))
-            (.setAttributeNS tp "http://www.w3.org/1999/xlink" "href" (str "#" path-id))
+            (.setAttributeNS tp xlink-ns "href" (str "#" path-id))
             (.setAttribute tp "href" (str "#" path-id))
             (.setAttribute tp "startOffset" start-off)
             (set! (.-textContent tp) display-text)
@@ -406,120 +429,124 @@
           (recur (inc i))))
       (gobj/set el k-echo-els echo-els))))
 
-;; ── Render ───────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [text path-d view-box crawl? animation direction duration-s
-                repeat effects font-size start-size end-size
-                echo-count echo-delay echo-opacity echo-scale]}
-        (model/derive-state (read-inputs el))
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
+(defn- apply-crawl-mode!
+  "Crawl mode: hide the SVG, write the text into the crawl div, and set
+  data-* attributes for the CSS selectors that drive the marquee."
+  [^js el ^js crawl-text-el {:keys [text animation direction effects]}]
+  (du/set-attr! el attr-data-preset val-crawl)
+  (set! (.-textContent crawl-text-el) text)
+  ;; Remove SVG animation and echoes
+  (remove-animate! el)
+  (clear-echoes! el)
+  ;; Animation data attribute for CSS selectors
+  (if (not= animation val-none)
+    (du/set-attr! el attr-data-animation animation)
+    (du/remove-attr! el attr-data-animation))
+  ;; Direction data attribute for crawl CSS
+  (if (= direction val-reverse)
+    (du/set-attr! el attr-data-direction val-reverse)
+    (du/remove-attr! el attr-data-direction))
+  ;; Only color-shift effect applies in crawl mode
+  (if (contains? effects val-color-shift)
+    (du/set-attr! el attr-data-effect val-color-shift)
+    (du/remove-attr! el attr-data-effect)))
 
-        ^js svg           (gobj/get el k-svg)
+(defn- apply-svg-path!
+  "Update the SVG viewBox, the textPath path, and the decorative path-line."
+  [^js svg ^js path-el ^js path-line {:keys [view-box path-d]}]
+  (when view-box (.setAttribute svg "viewBox" view-box))
+  (when path-d (.setAttribute path-el "d" path-d))
+  (when (and path-line path-d)
+    (.setAttribute path-line "d" path-d)))
+
+(defn- apply-text-content!
+  "Render the display text — either flat textContent or per-character tspans
+  for size-gradient / color-wave — then render the echo chain."
+  [^js el ^js svg ^js text-path
+   {:keys [text repeat effects duration-s start-size end-size
+           echo-count echo-delay echo-opacity echo-scale animation direction]}]
+  (let [display-text   (build-text-content text repeat)
+        has-gradient   (contains? effects effect-size-gradient)
+        has-color-wave (contains? effects effect-color-wave)
+        needs-tspans   (or (and has-gradient start-size end-size (not= text ""))
+                           (and has-color-wave (not= text "")))]
+    (if needs-tspans
+      (apply-tspans! text-path display-text effects duration-s start-size end-size)
+      (set! (.-textContent text-path) display-text))
+    (render-echoes! el svg display-text echo-count echo-delay echo-opacity
+                    echo-scale animation direction duration-s)))
+
+(defn- apply-text-font-size! [^js text-el {:keys [font-size]}]
+  (if font-size
+    (.setProperty (.-style text-el) "font-size" font-size)
+    (.removeProperty (.-style text-el) "font-size")))
+
+(defn- apply-svg-data-attrs!
+  "Set data-effect / data-animation host attributes for path-mode CSS selectors."
+  [^js el {:keys [effects animation]}]
+  (let [css-effects (disj effects effect-size-gradient effect-color-wave)]
+    (if (seq css-effects)
+      (du/set-attr!    el attr-data-effect (str/join " " (sort css-effects)))
+      (du/remove-attr! el attr-data-effect)))
+  (if (not= animation val-none)
+    (du/set-attr!    el attr-data-animation animation)
+    (du/remove-attr! el attr-data-animation)))
+
+(defn- apply-path-mode!
+  "Path mode: SVG with text-on-path, tspans, echoes, and SMIL animation."
+  [^js el ^js svg ^js path-el ^js path-line ^js text-el ^js text-path
+   {:keys [animation direction duration-s] :as m}]
+  (du/remove-attr! el attr-data-preset)
+  (du/remove-attr! el attr-data-direction)
+  (apply-svg-path!        svg path-el path-line m)
+  (apply-text-content!    el svg text-path m)
+  (apply-text-font-size!  text-el m)
+  (create-animate!        el text-path animation direction duration-s)
+  (apply-svg-data-attrs!  el m))
+
+(defn- apply-a11y! [^js el ^js sr-only {:keys [text]}]
+  (set! (.-textContent sr-only) text)
+  (if (= text "")
+    (do (du/set-attr! el attr-role        role-presentation)
+        (du/set-attr! el attr-aria-hidden val-true))
+    (do (du/set-attr! el attr-role        role-img)
+        (du/set-attr! el attr-aria-label  text))))
+
+(defn- apply-model! [^js el m]
+  (let [^js svg           (gobj/get el k-svg)
         ^js path-el       (gobj/get el k-path-el)
+        ^js path-line     (gobj/get el k-path-line)
         ^js text-el       (gobj/get el k-text-el)
         ^js text-path     (gobj/get el k-text-path)
         ^js sr-only       (gobj/get el k-sr-only)
-        ^js crawl-text-el (gobj/get el k-crawl-text)
-        ^js path-line     (.querySelector (.-shadowRoot el) "[part=path-line]")]
+        ^js crawl-text-el (gobj/get el k-crawl-text)]
+    (if (:crawl? m)
+      (apply-crawl-mode! el crawl-text-el m)
+      (apply-path-mode!  el svg path-el path-line text-el text-path m))
+    (apply-a11y! el sr-only m)
+    (gobj/set el k-model m)))
 
-    (if crawl?
-      ;; ── Crawl mode ──────────────────────────────────────────────────
-      (do
-        (du/set-attr! el "data-preset" "crawl")
-        (set! (.-textContent crawl-text-el) text)
-        ;; Remove SVG animation and echoes
-        (remove-animate! el)
-        (clear-echoes! el svg)
-        ;; Animation data attribute for CSS selectors
-        (if (not= animation "none")
-          (du/set-attr! el "data-animation" animation)
-          (du/remove-attr! el "data-animation"))
-        ;; Direction data attribute for crawl CSS
-        (if (= direction "reverse")
-          (du/set-attr! el "data-direction" "reverse")
-          (du/remove-attr! el "data-direction"))
-        ;; Only color-shift effect applies in crawl mode
-        (if (contains? effects "color-shift")
-          (du/set-attr! el "data-effect" "color-shift")
-          (du/remove-attr! el "data-effect")))
-
-      ;; ── Path mode (SVG) ─────────────────────────────────────────────
-      (do
-        (du/remove-attr! el "data-preset")
-        (du/remove-attr! el "data-direction")
-
-        ;; Update SVG viewBox and path
-        (when view-box (.setAttribute svg "viewBox" view-box))
-        (when path-d (.setAttribute path-el "d" path-d))
-
-        ;; Update decorative path line
-        (when (and path-line path-d)
-          (.setAttribute path-line "d" path-d))
-
-        ;; Update text content
-        (let [display-text    (build-text-content text repeat)
-              has-gradient    (contains? effects "size-gradient")
-              has-color-wave  (contains? effects "color-wave")
-              needs-tspans    (or (and has-gradient start-size end-size (not= text ""))
-                                  (and has-color-wave (not= text "")))]
-          (if needs-tspans
-            (apply-tspans! text-path display-text effects duration-s start-size end-size)
-            (set! (.-textContent text-path) display-text))
-
-          ;; Echo rendering
-          (render-echoes! el svg display-text echo-count echo-delay echo-opacity
-                          echo-scale animation direction duration-s font-size))
-
-        ;; Font size override
-        (if font-size
-          (.setProperty (.-style text-el) "font-size" font-size)
-          (.removeProperty (.-style text-el) "font-size"))
-
-        ;; SMIL animation
-        (create-animate! el text-path animation direction duration-s)
-
-        ;; Effect data attribute for CSS selectors
-        ;; (color-wave is applied per-tspan, not via host selector, but we still set it
-        ;; on data-effect so it can be detected; CSS won't target it though)
-        (let [css-effects (disj effects "size-gradient" "color-wave")]
-          (if (seq css-effects)
-            (du/set-attr! el "data-effect" (str/join " " (sort css-effects)))
-            (du/remove-attr! el "data-effect")))
-
-        ;; Animation data attribute
-        (if (not= animation "none")
-          (du/set-attr! el "data-animation" animation)
-          (du/remove-attr! el "data-animation"))))
-
-    ;; ── Common (both modes) ───────────────────────────────────────────
-    ;; Screen reader text
-    (set! (.-textContent sr-only) text)
-
-    ;; Accessibility
-    (if (= text "")
-      (do (du/set-attr! el "role" "presentation")
-          (du/set-attr! el "aria-hidden" "true"))
-      (do (du/set-attr! el "role" "img")
-          (du/set-attr! el "aria-label" text))))
-  nil)
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-animate! el)
-  (let [^js svg (gobj/get el k-svg)]
-    (when svg (clear-echoes! el svg)))
-  nil)
+  (clear-echoes! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el)))
-  nil)
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ───────────────────────────────────────────────────
 (defn- install-string-accessor! [^js proto attr-name prop-name default-val]
@@ -541,7 +568,7 @@
   (install-string-accessor! proto model/attr-animation    "animation"   model/default-animation)
   (install-string-accessor! proto model/attr-speed        "speed"       (str model/default-speed))
   (install-string-accessor! proto model/attr-direction    "direction"   model/default-direction)
-  (install-string-accessor! proto model/attr-effect       "effect"      "none")
+  (install-string-accessor! proto model/attr-effect       "effect"      val-none)
   (install-string-accessor! proto model/attr-font-size    "fontSize"    nil)
   (install-string-accessor! proto model/attr-start-size   "startSize"   nil)
   (install-string-accessor! proto model/attr-end-size     "endSize"     nil)
@@ -551,9 +578,7 @@
   (install-string-accessor! proto model/attr-echo-opacity "echoOpacity" (str model/default-echo-opacity))
   (install-string-accessor! proto model/attr-echo-scale   "echoScale"   (str model/default-echo-scale)))
 
-;; ── Element class ────────────────────────────────────────────────────────
 ;; ── Public API ───────────────────────────────────────────────────────────
-
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes

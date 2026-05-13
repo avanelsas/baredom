@@ -6,11 +6,35 @@
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────────
 (def ^:private k-refs       "__xModalRefs")
+(def ^:private k-model      "__xModalModel")
 (def ^:private k-handlers   "__xModalHandlers")
 (def ^:private k-prev-open  "__xModalPrevOpen")
 (def ^:private k-restore    "__xModalRestore")
 (def ^:private k-tabbables  "__xModalTabbables")
 (def ^:private k-dialog-tab "__xModalDialogTab")
+
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private rk-root     "root")
+(def ^:private rk-backdrop "backdrop")
+(def ^:private rk-dialog   "dialog")
+(def ^:private rk-header   "header")
+(def ^:private rk-body     "body")
+(def ^:private rk-footer   "footer")
+(def ^:private hk-backdrop "backdrop")
+(def ^:private hk-keydown  "keydown")
+(def ^:private attr-part        "part")
+(def ^:private attr-name        "name")
+(def ^:private attr-role        "role")
+(def ^:private attr-tabindex    "tabindex")
+(def ^:private attr-data-open   "data-open")
+(def ^:private attr-data-size   "data-size")
+(def ^:private val-true   "true")
+(def ^:private val-false  "false")
+(def ^:private tab-stop   "-1")
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
+(def ^:private slot-header "header")
+(def ^:private slot-footer "footer")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -145,23 +169,24 @@
         body     (make-el "div")
         bslot    (make-el "slot")
         footer   (make-el "div")
-        fslot    (make-el "slot")]
+        fslot    (make-el "slot")
+        refs     #js {}]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute backdrop "part" model/part-backdrop)
+    (.setAttribute backdrop attr-part model/part-backdrop)
 
-    (.setAttribute dialog "part" model/part-dialog)
-    (.setAttribute dialog "role" model/role-dialog)
-    (.setAttribute dialog model/aria-modal "true")
+    (.setAttribute dialog attr-part model/part-dialog)
+    (.setAttribute dialog attr-role model/role-dialog)
+    (.setAttribute dialog model/aria-modal val-true)
 
-    (.setAttribute header "part" model/part-header)
-    (.setAttribute hslot "name" "header")
+    (.setAttribute header attr-part model/part-header)
+    (.setAttribute hslot  attr-name slot-header)
 
-    (.setAttribute body "part" model/part-body)
+    (.setAttribute body attr-part model/part-body)
 
-    (.setAttribute footer "part" model/part-footer)
-    (.setAttribute fslot "name" "footer")
+    (.setAttribute footer attr-part model/part-footer)
+    (.setAttribute fslot  attr-name slot-footer)
 
     (.appendChild header hslot)
     (.appendChild body bslot)
@@ -174,14 +199,13 @@
     (.appendChild root backdrop)
     (.appendChild root dialog)
 
-    (gobj/set el k-refs
-              #js {:root     root
-                   :backdrop backdrop
-                   :dialog   dialog
-                   :header   header
-                   :body     body
-                   :footer   footer}))
-  nil)
+    (gobj/set refs rk-root     root)
+    (gobj/set refs rk-backdrop backdrop)
+    (gobj/set refs rk-dialog   dialog)
+    (gobj/set refs rk-header   header)
+    (gobj/set refs rk-body     body)
+    (gobj/set refs rk-footer   footer)
+    (gobj/set el k-refs refs)))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -201,8 +225,8 @@
   (let [sel      (str "a[href],button:not([disabled]),input:not([disabled]),"
                       "select:not([disabled]),textarea:not([disabled]),"
                       "[tabindex]:not([tabindex='-1'])")
-        ^js root   (gobj/get refs "root")
-        ^js dialog (gobj/get refs "dialog")
+        ^js root   (gobj/get refs rk-root)
+        ^js dialog (gobj/get refs rk-dialog)
         visible?   (fn [^js node]
                      (let [^js s (.getComputedStyle js/window node)]
                        (and (not= "none" (.-display s))
@@ -224,38 +248,36 @@
 
 (defn- activate-focus-trap! [^js el]
   (let [refs       (gobj/get el k-refs)
-        ^js dialog (when refs (gobj/get refs "dialog"))
+        ^js dialog (when refs (gobj/get refs rk-dialog))
         tabbables  (when refs (collect-tabbables refs))]
     (gobj/set el k-restore (.-activeElement js/document))
     (gobj/set el k-tabbables (when tabbables (clj->js tabbables)))
     (if (seq tabbables)
       (.focus (first tabbables))
       (when dialog
-        (when-not (.hasAttribute dialog "tabindex")
-          (.setAttribute dialog "tabindex" "-1")
+        (when-not (.hasAttribute dialog attr-tabindex)
+          (.setAttribute dialog attr-tabindex tab-stop)
           (gobj/set el k-dialog-tab true))
-        (.focus dialog))))
-  nil)
+        (.focus dialog)))))
 
 (defn- deactivate-focus-trap! [^js el]
   (let [refs              (gobj/get el k-refs)
-        ^js dialog        (when refs (gobj/get refs "dialog"))
+        ^js dialog        (when refs (gobj/get refs rk-dialog))
         restore           (gobj/get el k-restore)
         dialog-tab-added  (true? (gobj/get el k-dialog-tab))]
     (gobj/set el k-tabbables nil)
     (gobj/set el k-restore nil)
     (when (and dialog dialog-tab-added)
-      (.removeAttribute dialog "tabindex")
+      (.removeAttribute dialog attr-tabindex)
       (gobj/set el k-dialog-tab false))
     (when (and restore (.-isConnected restore))
-      (.focus restore)))
-  nil)
+      (.focus restore))))
 
 (defn- cycle-focus! [^js el ^js e]
   (let [tabbables-js (gobj/get el k-tabbables)
         tabbables    (if tabbables-js (vec (array-seq tabbables-js)) [])
         refs         (gobj/get el k-refs)
-        ^js dialog   (when refs (gobj/get refs "dialog"))]
+        ^js dialog   (when refs (gobj/get refs rk-dialog))]
     (if (empty? tabbables)
       (do (.preventDefault e)
           (when dialog (.focus dialog)))
@@ -270,30 +292,25 @@
           (and (not shift?) (= active last-el))
           (do (.preventDefault e) (.focus first-el))
 
-          :else nil))))
-  nil)
+          :else nil)))))
 
 ;; ── Dismiss (user-initiated close) ───────────────────────────────────────────
 (defn- do-dismiss! [^js el reason]
   (du/dispatch! el model/event-dismiss (model/dismiss-event-detail reason))
-  (du/remove-attr! el model/attr-open)
-  nil)
+  (du/remove-attr! el model/attr-open))
 
 ;; ── Show / hide / toggle ─────────────────────────────────────────────────────
 (defn- do-show! [^js el]
   (when-not (du/has-attr? el model/attr-open)
-    (du/set-attr! el model/attr-open ""))
-  nil)
+    (du/set-attr! el model/attr-open "")))
 
 (defn- do-hide! [^js el]
-  (du/remove-attr! el model/attr-open)
-  nil)
+  (du/remove-attr! el model/attr-open))
 
 (defn- do-toggle! [^js el]
   (if (du/has-attr? el model/attr-open)
     (do-hide! el)
-    (do-show! el))
-  nil)
+    (do-show! el)))
 
 ;; ── Transition detection ──────────────────────────────────────────────────────
 (defn- handle-open-transition! [^js el open?]
@@ -302,27 +319,30 @@
       (gobj/set el k-prev-open open?)
       (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
       (if open?
-        (js/setTimeout (fn [] (activate-focus-trap! el)) 0)
-        (deactivate-focus-trap! el))))
-  nil)
+        (js/setTimeout (fn delayed-focus-trap [] (activate-focus-trap! el)) 0)
+        (deactivate-focus-trap! el)))))
 
-;; ── Render ────────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
+;; ── DOM patching (cache-at-tail render-pipeline) ────────────────────────────
+(defn- apply-host-data! [^js el {:keys [open? size]}]
+  (du/set-attr! el attr-data-open (if open? val-true val-false))
+  (du/set-attr! el attr-data-size size))
+
+(defn- apply-dialog-aria! [^js dialog {:keys [label]}]
+  (.setAttribute dialog model/aria-label label))
+
+(defn- apply-model! [^js el m]
   (let [refs       (ensure-refs! el)
-        ^js dialog (gobj/get refs "dialog")
-        m          (read-model el)
-        open?      (:open? m)]
+        ^js dialog (gobj/get refs rk-dialog)]
+    (apply-host-data!   el m)
+    (apply-dialog-aria! dialog m)
+    (handle-open-transition! el (:open? m))
+    (gobj/set el k-model m)))
 
-    ;; Apply data attributes to host for CSS selectors
-    (du/set-attr! el "data-open" (if open? "true" "false"))
-    (du/set-attr! el "data-size" (:size m))
-
-    ;; aria-label on dialog
-    (.setAttribute dialog model/aria-label (:label m))
-
-    ;; Handle open state transition (events + focus)
-    (handle-open-transition! el open?))
-  nil)
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- on-keydown! [^js el ^js e]
@@ -333,52 +353,47 @@
           (do-dismiss! el model/reason-escape))
 
       (= key "Tab")
-      (cycle-focus! el e)))
-  nil)
+      (cycle-focus! el e))))
 
 (defn- add-listeners! [^js el]
   (let [refs         (ensure-refs! el)
-        ^js backdrop (gobj/get refs "backdrop")
-        ^js dialog   (gobj/get refs "dialog")
-        backdrop-h   (fn [_] (do-dismiss! el model/reason-backdrop))
-        keydown-h    (fn [^js e] (on-keydown! el e))]
-    (.addEventListener backdrop "click" backdrop-h)
-    (.addEventListener dialog "keydown" keydown-h)
-    (gobj/set el k-handlers
-              #js {:backdrop backdrop-h
-                   :keydown  keydown-h}))
-  nil)
+        ^js backdrop (gobj/get refs rk-backdrop)
+        ^js dialog   (gobj/get refs rk-dialog)
+        backdrop-h   (fn handle-backdrop-click [_] (do-dismiss! el model/reason-backdrop))
+        keydown-h    (fn handle-dialog-keydown [^js e] (on-keydown! el e))
+        handlers     #js {}]
+    (.addEventListener backdrop ev-click   backdrop-h)
+    (.addEventListener dialog   ev-keydown keydown-h)
+    (gobj/set handlers hk-backdrop backdrop-h)
+    (gobj/set handlers hk-keydown  keydown-h)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
         refs (gobj/get el k-refs)]
     (when (and hs refs)
-      (let [^js backdrop (gobj/get refs "backdrop")
-            ^js dialog   (gobj/get refs "dialog")
-            backdrop-h   (gobj/get hs "backdrop")
-            keydown-h    (gobj/get hs "keydown")]
-        (when backdrop-h (.removeEventListener backdrop "click" backdrop-h))
-        (when keydown-h  (.removeEventListener dialog "keydown" keydown-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+      (let [^js backdrop (gobj/get refs rk-backdrop)
+            ^js dialog   (gobj/get refs rk-dialog)
+            backdrop-h   (gobj/get hs hk-backdrop)
+            keydown-h    (gobj/get hs hk-keydown)]
+        (when backdrop-h (.removeEventListener backdrop ev-click   backdrop-h))
+        (when keydown-h  (.removeEventListener dialog   ev-keydown keydown-h)))))
+  (gobj/set el k-handlers nil))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
-  (deactivate-focus-trap! el)
-  nil)
+  (deactivate-focus-trap! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (render! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-properties! [^js proto]

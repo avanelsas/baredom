@@ -7,6 +7,36 @@
 (def ^:private key-refs "__xMenuItemRefs")
 (def ^:private key-handlers "__xMenuItemHandlers")
 (def ^:private key-init "__xMenuItemInit")
+(def ^:private key-model "__xMenuItemModel")
+
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private rk-base       "base")
+(def ^:private rk-icon-span  "icon-span")
+(def ^:private rk-icon-slot  "icon-slot")
+(def ^:private hk-click      "click")
+(def ^:private hk-keydown    "keydown")
+(def ^:private hk-slotchange "icon-slotchange")
+(def ^:private attr-part           "part")
+(def ^:private attr-name           "name")
+(def ^:private attr-role           "role")
+(def ^:private attr-tabindex       "tabindex")
+(def ^:private attr-aria-disabled  "aria-disabled")
+(def ^:private attr-data-type      "data-type")
+(def ^:private attr-data-variant   "data-variant")
+(def ^:private attr-data-disabled  "data-disabled")
+(def ^:private attr-has-icon       "has-icon")
+(def ^:private part-base       "base")
+(def ^:private part-icon       "icon")
+(def ^:private slot-icon       "icon")
+(def ^:private role-separator  "separator")
+(def ^:private role-menuitem   "menuitem")
+(def ^:private type-divider    "divider")
+(def ^:private val-true        "true")
+(def ^:private val-false       "false")
+(def ^:private tab-stop        "-1")
+(def ^:private ev-click        "click")
+(def ^:private ev-keydown      "keydown")
+(def ^:private ev-slotchange   "slotchange")
 
 (def ^:private style-text
   (str
@@ -58,60 +88,71 @@
    "border-top:1px solid var(--x-menu-item-divider-color);margin:4px 0;}"
    "@media (prefers-reduced-motion:reduce){.base{transition:none;}}"))
 
-(defn- read-inputs [^js el]
-  {:value (du/get-attr el model/attr-value)
-   :disabled (du/has-attr? el model/attr-disabled)
-   :variant (du/get-attr el model/attr-variant)
-   :type (du/get-attr el model/attr-type)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:value (du/get-attr el model/attr-value)
+    :disabled (du/has-attr? el model/attr-disabled)
+    :variant (du/get-attr el model/attr-variant)
+    :type (du/get-attr el model/attr-type)}))
 
 (defn- dispatch-item-select! [^js el]
   (let [value (du/get-attr el model/attr-value)]
     (du/dispatch! el model/event-item-select #js {:value (or value "")})))
 
 (defn- handle-click! [^js el ^js evt]
-  (let [state (model/derive-state (read-inputs el))]
-    (when (or (:disabled state) (= (:type state) "divider"))
+  (let [state (read-model el)]
+    (when (or (:disabled state) (= (:type state) type-divider))
       (.preventDefault evt))
-    (when (and (not (:disabled state)) (not= (:type state) "divider"))
+    (when (and (not (:disabled state)) (not= (:type state) type-divider))
       (dispatch-item-select! el))))
 
 (defn- handle-keydown! [^js el ^js evt]
   (let [k (.-key evt)
-        state (model/derive-state (read-inputs el))]
+        state (read-model el)]
     (when (and (or (= k "Enter") (= k " "))
                (not (:disabled state))
-               (not= (:type state) "divider"))
+               (not= (:type state) type-divider))
       (.preventDefault evt)
       (dispatch-item-select! el))))
 
 (defn- handle-icon-slotchange! [^js el ^js slot]
   (let [nodes (.assignedNodes slot)]
     (if (> (alength nodes) 0)
-      (du/set-attr! el "has-icon" "")
-      (du/remove-attr! el "has-icon"))))
+      (du/set-attr! el attr-has-icon "")
+      (du/remove-attr! el attr-has-icon))))
 
-(defn- render! [^js el]
+(defn- apply-divider! [^js el ^js base]
+  (du/set-attr! el attr-role role-separator)
+  (du/remove-attr! el attr-tabindex)
+  (du/remove-attr! el attr-aria-disabled)
+  (.setAttribute base attr-data-type     type-divider)
+  (.setAttribute base attr-data-variant  "")
+  (.setAttribute base attr-data-disabled val-false))
+
+(defn- apply-menuitem! [^js el ^js base {:keys [variant disabled]}]
+  (du/set-attr! el attr-role     role-menuitem)
+  (du/set-attr! el attr-tabindex tab-stop)
+  (.setAttribute base attr-data-type     "")
+  (.setAttribute base attr-data-variant  variant)
+  (.setAttribute base attr-data-disabled (if disabled val-true val-false))
+  (if disabled
+    (du/set-attr! el attr-aria-disabled val-true)
+    (du/remove-attr! el attr-aria-disabled)))
+
+(defn- apply-model! [^js el m]
   (let [refs (du/getv el key-refs)
-        base (when refs (gobj/get refs "base"))
-        state (model/derive-state (read-inputs el))]
+        ^js base (when refs (gobj/get refs rk-base))]
     (when base
-      (if (= (:type state) "divider")
-        (do
-          (du/set-attr! el "role" "separator")
-          (du/remove-attr! el "tabindex")
-          (du/remove-attr! el "aria-disabled")
-          (.setAttribute base "data-type" "divider")
-          (.setAttribute base "data-variant" "")
-          (.setAttribute base "data-disabled" "false"))
-        (do
-          (du/set-attr! el "role" "menuitem")
-          (du/set-attr! el "tabindex" "-1")
-          (.setAttribute base "data-type" "")
-          (.setAttribute base "data-variant" (:variant state))
-          (.setAttribute base "data-disabled" (if (:disabled state) "true" "false"))
-          (if (:disabled state)
-            (du/set-attr! el "aria-disabled" "true")
-            (du/remove-attr! el "aria-disabled")))))))
+      (if (= (:type m) type-divider)
+        (apply-divider!  el base)
+        (apply-menuitem! el base m)))
+    (du/setv! el key-model m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el key-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 (defn- init-dom! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
@@ -121,13 +162,14 @@
         icon-slot (.createElement js/document "slot")
         label-span (.createElement js/document "span")
         label-slot (.createElement js/document "slot")
-        divider-hr (.createElement js/document "hr")]
+        divider-hr (.createElement js/document "hr")
+        refs #js {}]
     (set! (.-textContent style) style-text)
-    (.setAttribute base "part" "base")
-    (set! (.-className base) "base")
-    (.setAttribute icon-span "part" "icon")
+    (.setAttribute base attr-part part-base)
+    (set! (.-className base) part-base)
+    (.setAttribute icon-span attr-part part-icon)
     (set! (.-className icon-span) "icon-span")
-    (.setAttribute icon-slot "name" "icon")
+    (.setAttribute icon-slot attr-name slot-icon)
     (.appendChild icon-span icon-slot)
     (set! (.-className label-span) "label-span")
     (.appendChild label-span label-slot)
@@ -137,59 +179,58 @@
     (.appendChild base divider-hr)
     (.appendChild root style)
     (.appendChild root base)
-    (let [refs #js {}]
-      (gobj/set refs "base" base)
-      (gobj/set refs "icon-span" icon-span)
-      (gobj/set refs "icon-slot" icon-slot)
-      (du/setv! el key-refs refs))))
+    (gobj/set refs rk-base base)
+    (gobj/set refs rk-icon-span icon-span)
+    (gobj/set refs rk-icon-slot icon-slot)
+    (du/setv! el key-refs refs)))
 
 (defn- install-listeners! [^js el]
   (let [refs (du/getv el key-refs)
-        icon-slot (gobj/get refs "icon-slot")
-        on-click (fn [^js e] (handle-click! el e))
-        on-keydown (fn [^js e] (handle-keydown! el e))
-        on-slotchange (fn [_] (handle-icon-slotchange! el icon-slot))
+        ^js icon-slot (gobj/get refs rk-icon-slot)
+        on-click      (fn handle-item-click   [^js e] (handle-click! el e))
+        on-keydown    (fn handle-item-keydown [^js e] (handle-keydown! el e))
+        on-slotchange (fn handle-icon-slot    [_]     (handle-icon-slotchange! el icon-slot))
         handlers #js {}]
-    (.addEventListener el "click" on-click)
-    (.addEventListener el "keydown" on-keydown)
-    (.addEventListener icon-slot "slotchange" on-slotchange)
-    (gobj/set handlers "click" on-click)
-    (gobj/set handlers "keydown" on-keydown)
-    (gobj/set handlers "icon-slotchange" on-slotchange)
+    (.addEventListener el ev-click   on-click)
+    (.addEventListener el ev-keydown on-keydown)
+    (.addEventListener icon-slot ev-slotchange on-slotchange)
+    (gobj/set handlers hk-click      on-click)
+    (gobj/set handlers hk-keydown    on-keydown)
+    (gobj/set handlers hk-slotchange on-slotchange)
     (du/setv! el key-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (let [handlers (du/getv el key-handlers)
-        refs (du/getv el key-refs)]
+        refs     (du/getv el key-refs)]
     (when handlers
-      (let [on-click (gobj/get handlers "click")
-            on-keydown (gobj/get handlers "keydown")
-            on-slotchange (gobj/get handlers "icon-slotchange")
-            icon-slot (when refs (gobj/get refs "icon-slot"))]
-        (.removeEventListener el "click" on-click)
-        (.removeEventListener el "keydown" on-keydown)
+      (let [on-click      (gobj/get handlers hk-click)
+            on-keydown    (gobj/get handlers hk-keydown)
+            on-slotchange (gobj/get handlers hk-slotchange)
+            icon-slot     (when refs (gobj/get refs rk-icon-slot))]
+        (.removeEventListener el ev-click   on-click)
+        (.removeEventListener el ev-keydown on-keydown)
         (when icon-slot
-          (.removeEventListener icon-slot "slotchange" on-slotchange))))))
+          (.removeEventListener icon-slot ev-slotchange on-slotchange))))))
 
 (defn- init-element! [^js el]
   (when-not (du/initialized? el key-init)
     (init-dom! el)
     (install-listeners! el)
     (du/mark-initialized! el key-init))
-  (render! el)
+  (update-from-attrs! el)
   el)
 
 (defn- connected! [^js el]
   (if (du/initialized? el key-init)
-    (do (install-listeners! el) (render! el))
+    (do (install-listeners! el) (update-from-attrs! el))
     (init-element! el)))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/initialized? el key-init)
-    (render! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (and (not= old-val new-val) (du/initialized? el key-init))
+    (update-from-attrs! el)))
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
