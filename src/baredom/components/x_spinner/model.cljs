@@ -64,4 +64,4 @@
 
 (def event-schema {})
 
-(def method-api nil)
+(def method-api {})
