@@ -1,91 +1,83 @@
 (ns baredom.components.x-button.x-button
-  (:require [baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-            [baredom.components.x-button.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-button.model :as model]))
 
-(def ^:private state-key                  "__xButtonState")
-(def ^:private hover-key                  "__xButtonHover")
-(def ^:private focus-visible-key          "__xButtonFocusVisible")
-(def ^:private active-source-key          "__xButtonActiveSource")
-(def ^:private last-activation-source-key "__xButtonLastActivationSource")
+;; ── Instance-field keys (shared `du/setv!` / `du/getv`) ─────────────────────
+(def ^:private k-refs                  "__xButtonRefs")
+(def ^:private k-model                 "__xButtonModel")
+(def ^:private k-hover                 "__xButtonHover")
+(def ^:private k-focus-visible         "__xButtonFocusVisible")
+(def ^:private k-active-source         "__xButtonActiveSource")
+(def ^:private k-last-activation-src   "__xButtonLastActivationSource")
 
-(defn- get-prop [obj k] (aget obj k))
+;; ── Refs-object keys (set on the JS refs map) ───────────────────────────────
+(def ^:private rk-root            "root")
+(def ^:private rk-button          "button")
+(def ^:private rk-label-slot      "label-slot")
+(def ^:private rk-icon-start-slot "icon-start-slot")
+(def ^:private rk-icon-end-slot   "icon-end-slot")
+(def ^:private rk-spinner-slot    "spinner-slot")
 
-(defn- set-prop! [obj k v] (aset obj k v))
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private attr-form         "form")
+(def ^:private attr-name         "name")
+(def ^:private attr-part         "part")
+(def ^:private attr-type         "type")
+(def ^:private attr-aria-hidden  "aria-hidden")
+(def ^:private attr-aria-label   "aria-label")
+(def ^:private attr-aria-busy    "aria-busy")
+(def ^:private attr-aria-pressed "aria-pressed")
+(def ^:private attr-data-variant         "data-variant")
+(def ^:private attr-data-size            "data-size")
+(def ^:private attr-data-loading         "data-loading")
+(def ^:private attr-data-disabled        "data-disabled")
+(def ^:private attr-data-hover           "data-hover")
+(def ^:private attr-data-active          "data-active")
+(def ^:private attr-data-focus-visible   "data-focus-visible")
+(def ^:private attr-data-has-icon-start  "data-has-icon-start")
+(def ^:private attr-data-has-icon-end    "data-has-icon-end")
+(def ^:private attr-data-has-spinner     "data-has-spinner")
 
-(defn- get-el-state [^js el]
-  (get-prop el state-key))
+(def ^:private part-button           "button")
+(def ^:private part-inner            "inner")
+(def ^:private part-icon-start       "icon-start")
+(def ^:private part-icon-end         "icon-end")
+(def ^:private part-label            "label")
+(def ^:private part-spinner          "spinner")
+(def ^:private part-spinner-slot     "spinner-slot")
+(def ^:private part-spinner-fallback "spinner-fallback")
 
-(defn- set-el-state! [^js el state]
-  (set-prop! el state-key state))
+(def ^:private val-true        "true")
+(def ^:private val-false       "false")
+(def ^:private val-programmatic "programmatic")
 
-(defn- get-hover [^js el]
-  (= true (get-prop el hover-key)))
+(def ^:private src-pointer  "pointer")
+(def ^:private src-keyboard "keyboard")
 
-(defn- set-hover! [^js el value]
-  (set-prop! el hover-key (boolean value)))
+(def ^:private btn-type-submit "submit")
+(def ^:private btn-type-reset  "reset")
 
-(defn- get-focus-visible [^js el]
-  (= true (get-prop el focus-visible-key)))
+(def ^:private key-enter "Enter")
+(def ^:private key-space " ")
 
-(defn- set-focus-visible! [^js el value]
-  (set-prop! el focus-visible-key (boolean value)))
+(def ^:private ev-pointerenter "pointerenter")
+(def ^:private ev-pointerleave "pointerleave")
+(def ^:private ev-pointerdown  "pointerdown")
+(def ^:private ev-pointerup    "pointerup")
+(def ^:private ev-pointercancel "pointercancel")
+(def ^:private ev-keydown      "keydown")
+(def ^:private ev-keyup        "keyup")
+(def ^:private ev-blur         "blur")
+(def ^:private ev-focus        "focus")
+(def ^:private ev-click        "click")
+(def ^:private ev-slotchange   "slotchange")
 
-(defn- get-active-source [^js el]
-  (get-prop el active-source-key))
+(def ^:private selector-focus-visible ":focus-visible")
 
-(defn- set-active-source! [^js el value]
-  (set-prop! el active-source-key value))
-
-(defn- get-last-activation-source [^js el]
-  (get-prop el last-activation-source-key))
-
-(defn- set-last-activation-source! [^js el value]
-  (set-prop! el last-activation-source-key value))
-
-(defn- find-owner-form [^js el]
-  (or (when-let [form-id (du/get-attr el "form")]
-        (.getElementById js/document form-id))
-      (.closest el "form")))
-
-(defn- read-public-state [^js el]
-  (model/public-state
-   {:disabled (du/has-attr? el model/attr-disabled)
-    :loading  (du/has-attr? el model/attr-loading)
-    :pressed  (du/has-attr? el model/attr-pressed)
-    :type     (du/get-attr el model/attr-type)
-    :variant  (du/get-attr el model/attr-variant)
-    :size     (du/get-attr el model/attr-size)
-    :label    (du/get-attr el model/attr-label)}))
-
-(defn- interactive-el? [^js el]
-  (model/interactive? (read-public-state el)))
-
-(defn- assigned-nodes [^js slot-el]
-  (.assignedNodes slot-el #js {:flatten true}))
-
-(defn- slot-has-content? [^js slot-el]
-  (> (alength (assigned-nodes slot-el)) 0))
-
-(defn- meaningful-text-node? [^js node]
-  (and (= (.-nodeType node) js/Node.TEXT_NODE)
-       (not= "" (.trim (or (.-textContent node) "")))))
-
-(defn- meaningful-element-node? [^js node]
-  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
-       (not= "" (.trim (or (.-textContent node) "")))))
-
-(defn- slot-has-meaningful-text? [^js slot-el]
-  (let [nodes (assigned-nodes slot-el)]
-    (loop [idx 0]
-      (if (< idx (alength nodes))
-        (let [node (aget nodes idx)]
-          (if (or (meaningful-text-node? node)
-                  (meaningful-element-node? node))
-            true
-            (recur (inc idx))))
-        false))))
-
+;; ── Styles ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
    ":host{"
@@ -319,55 +311,48 @@
    "@media (prefers-reduced-motion: reduce){"
    "button{transition:none;}"
    "[part='spinner-fallback']{animation:none;}"
-   "}"
-   ))
+   "}"))
 
-(defn- create-el [tag]
+;; ── Shadow DOM builders ─────────────────────────────────────────────────────
+(defn- make-el [tag]
   (.createElement js/document tag))
 
-(defn- make-shadow-state
-  [root style-el button-el inner-el label-slot-el icon-start-slot-el icon-end-slot-el spinner-slot-el]
-  #js {:root root
-       :style style-el
-       :button button-el
-       :inner inner-el
-       :label-slot label-slot-el
-       :icon-start-slot icon-start-slot-el
-       :icon-end-slot icon-end-slot-el
-       :spinner-slot spinner-slot-el})
-
-(defn- create-shadow! [^js el]
-  (let [root (.attachShadow el #js {:mode "open"})
-        style-el (create-el "style")
-        button-el (create-el "button")
-        inner-el (create-el "span")
-        icon-start-el (create-el "span")
-        label-el (create-el "span")
-        spinner-el (create-el "span")
-        spinner-fallback-el (create-el "span")
-        icon-end-el (create-el "span")
-        default-slot-el (create-el "slot")
-        icon-start-slot-el (create-el "slot")
-        icon-end-slot-el (create-el "slot")
-        spinner-slot-el (create-el "slot")]
+(defn- build-refs!
+  "Build the shadow DOM and return the refs JS object. Stores nothing on
+  the host — caller does that via `du/setv!`."
+  [^js el]
+  (let [root                (.attachShadow el #js {:mode "open"})
+        style-el            (make-el "style")
+        button-el           (make-el "button")
+        inner-el            (make-el "span")
+        icon-start-el       (make-el "span")
+        label-el            (make-el "span")
+        spinner-el          (make-el "span")
+        spinner-fallback-el (make-el "span")
+        icon-end-el         (make-el "span")
+        default-slot-el     (make-el "slot")
+        icon-start-slot-el  (make-el "slot")
+        icon-end-slot-el    (make-el "slot")
+        spinner-slot-el     (make-el "slot")
+        refs                #js {}]
 
     (set! (.-textContent style-el) style-text)
 
-    (.setAttribute button-el "part" "button")
-    (.setAttribute inner-el "part" "inner")
-    (.setAttribute icon-start-el "part" "icon-start")
-    (.setAttribute label-el "part" "label")
-    (.setAttribute spinner-el "part" "spinner")
-    (.setAttribute spinner-slot-el "part" "spinner-slot")
-    (.setAttribute spinner-fallback-el "part" "spinner-fallback")
-    (.setAttribute icon-end-el "part" "icon-end")
+    (.setAttribute button-el           attr-part part-button)
+    (.setAttribute inner-el            attr-part part-inner)
+    (.setAttribute icon-start-el       attr-part part-icon-start)
+    (.setAttribute label-el            attr-part part-label)
+    (.setAttribute spinner-el          attr-part part-spinner)
+    (.setAttribute spinner-slot-el     attr-part part-spinner-slot)
+    (.setAttribute spinner-fallback-el attr-part part-spinner-fallback)
+    (.setAttribute icon-end-el         attr-part part-icon-end)
 
-    (.setAttribute icon-start-slot-el "name" model/slot-icon-start)
-    (.setAttribute icon-end-slot-el "name" model/slot-icon-end)
-    (.setAttribute spinner-slot-el "name" model/slot-spinner)
+    (.setAttribute icon-start-slot-el attr-name model/slot-icon-start)
+    (.setAttribute icon-end-slot-el   attr-name model/slot-icon-end)
+    (.setAttribute spinner-slot-el    attr-name model/slot-spinner)
 
-    (.setAttribute spinner-el "aria-hidden" "true")
-    (.setAttribute spinner-fallback-el "aria-hidden" "true")
+    (.setAttribute spinner-el          attr-aria-hidden val-true)
+    (.setAttribute spinner-fallback-el attr-aria-hidden val-true)
 
     (.appendChild icon-start-el icon-start-slot-el)
     (.appendChild label-el default-slot-el)
@@ -385,258 +370,305 @@
     (.appendChild root style-el)
     (.appendChild root button-el)
 
-    (make-shadow-state root
-                       style-el
-                       button-el
-                       inner-el
-                       default-slot-el
-                       icon-start-slot-el
-                       icon-end-slot-el
-                       spinner-slot-el)))
+    (gobj/set refs rk-root            root)
+    (gobj/set refs rk-button          button-el)
+    (gobj/set refs rk-label-slot      default-slot-el)
+    (gobj/set refs rk-icon-start-slot icon-start-slot-el)
+    (gobj/set refs rk-icon-end-slot   icon-end-slot-el)
+    (gobj/set refs rk-spinner-slot    spinner-slot-el)
+    refs))
 
+;; ── Slot probing ────────────────────────────────────────────────────────────
+(defn- assigned-nodes [^js slot-el]
+  (.assignedNodes slot-el #js {:flatten true}))
+
+(defn- slot-has-content? [^js slot-el]
+  (> (alength (assigned-nodes slot-el)) 0))
+
+(defn- meaningful-text-node? [^js node]
+  (and (= (.-nodeType node) js/Node.TEXT_NODE)
+       (not= "" (.trim (or (.-textContent node) "")))))
+
+(defn- meaningful-element-node? [^js node]
+  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
+       (not= "" (.trim (or (.-textContent node) "")))))
+
+(defn- slot-has-meaningful-text? [^js slot-el]
+  (let [nodes (assigned-nodes slot-el)]
+    (loop [idx 0]
+      (if (< idx (alength nodes))
+        (let [node (aget nodes idx)]
+          (if (or (meaningful-text-node? node)
+                  (meaningful-element-node? node))
+            true
+            (recur (inc idx))))
+        false))))
+
+;; ── Model reading ───────────────────────────────────────────────────────────
+(defn- read-public-state [^js el]
+  (model/public-state
+   {:disabled (du/has-attr? el model/attr-disabled)
+    :loading  (du/has-attr? el model/attr-loading)
+    :pressed  (du/has-attr? el model/attr-pressed)
+    :type     (du/get-attr el model/attr-type)
+    :variant  (du/get-attr el model/attr-variant)
+    :size     (du/get-attr el model/attr-size)
+    :label    (du/get-attr el model/attr-label)}))
+
+(defn- read-model
+  "Compose the cached model from attributes + UI state + slot-content
+  flags. When the button isn't interactive, UI hover/active flags are
+  forced to their idle values so a non-interactive button never appears
+  hovered or pressed in the DOM."
+  [^js el]
+  (let [^js refs            (du/getv el k-refs)
+        ^js label-slot      (gobj/get refs rk-label-slot)
+        ^js icon-start-slot (gobj/get refs rk-icon-start-slot)
+        ^js icon-end-slot   (gobj/get refs rk-icon-end-slot)
+        ^js spinner-slot    (gobj/get refs rk-spinner-slot)
+        public              (read-public-state el)
+        interactive?        (model/interactive? public)
+        active-source       (when interactive? (du/getv el k-active-source))
+        has-default-text?   (slot-has-meaningful-text? label-slot)]
+    {:public           public
+     :hover?           (boolean (and interactive? (du/getv el k-hover)))
+     :active?          (some? active-source)
+     :focus-visible?   (boolean (du/getv el k-focus-visible))
+     :has-icon-start?  (slot-has-content? icon-start-slot)
+     :has-icon-end?    (slot-has-content? icon-end-slot)
+     :has-spinner?     (slot-has-content? spinner-slot)
+     :aria-label-value (model/aria-label
+                        (assoc public :has-default-text? has-default-text?))}))
+
+(defn- interactive-el? [^js el]
+  (model/interactive? (read-public-state el)))
+
+(defn- find-owner-form [^js el]
+  (or (when-let [form-id (du/get-attr el attr-form)]
+        (.getElementById js/document form-id))
+      (.closest el attr-form)))
+
+;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- bool-attr
-  "Render a boolean as the literal string \"true\" or \"false\" for a
-   data-* attribute (CSS selector convention used by the host styles)."
+  "Render a boolean as the literal string \"true\"/\"false\" for a
+  data-* attribute (CSS selector convention used by the host styles)."
   [v]
-  (if v "true" "false"))
+  (if v val-true val-false))
 
 (defn- toggle-attr!
-  "Set or remove an attribute depending on whether `v` is truthy.
-   When truthy and a non-string, `v` is coerced via `str`."
+  "Set or remove an attribute depending on whether `v` is truthy."
   [^js node attr v]
   (if v
     (.setAttribute node attr (if (string? v) v (str v)))
     (.removeAttribute node attr)))
 
-(defn- apply-button-aria!
-  "Set the standard ARIA attributes on the inner button element."
-  [^js button-el public-state aria-label-value]
-  (toggle-attr! button-el "aria-busy"    (model/aria-busy public-state))
-  (toggle-attr! button-el "aria-pressed" (when (:pressed public-state) "true"))
-  (toggle-attr! button-el "aria-label"   aria-label-value))
+(defn- apply-button-aria! [^js button-el public-state aria-label-value]
+  (toggle-attr! button-el attr-aria-busy    (model/aria-busy public-state))
+  (toggle-attr! button-el attr-aria-pressed (when (:pressed public-state) val-true))
+  (toggle-attr! button-el attr-aria-label   aria-label-value))
 
-(defn- apply-button-data-state!
-  "Project the merged public-state + UI flags onto the inner button's
-   data-* attributes; the host stylesheet keys off these."
-  [^js button-el {:keys [variant size loading disabled]}
-   {:keys [hover? active? focus-visible?
-           has-icon-start? has-icon-end? has-spinner?]}]
-  (.setAttribute button-el "data-variant"        variant)
-  (.setAttribute button-el "data-size"           size)
-  (.setAttribute button-el "data-loading"        (bool-attr loading))
-  (.setAttribute button-el "data-disabled"       (bool-attr disabled))
-  (.setAttribute button-el "data-hover"          (bool-attr hover?))
-  (.setAttribute button-el "data-active"         (bool-attr active?))
-  (.setAttribute button-el "data-focus-visible"  (bool-attr focus-visible?))
-  (.setAttribute button-el "data-has-icon-start" (bool-attr has-icon-start?))
-  (.setAttribute button-el "data-has-icon-end"   (bool-attr has-icon-end?))
-  (.setAttribute button-el "data-has-spinner"    (bool-attr has-spinner?)))
+(defn- apply-button-data-state! [^js button-el public-state m]
+  (.setAttribute button-el attr-data-variant        (:variant public-state))
+  (.setAttribute button-el attr-data-size           (:size    public-state))
+  (.setAttribute button-el attr-data-loading        (bool-attr (:loading  public-state)))
+  (.setAttribute button-el attr-data-disabled       (bool-attr (:disabled public-state)))
+  (.setAttribute button-el attr-data-hover          (bool-attr (:hover?          m)))
+  (.setAttribute button-el attr-data-active         (bool-attr (:active?         m)))
+  (.setAttribute button-el attr-data-focus-visible  (bool-attr (:focus-visible?  m)))
+  (.setAttribute button-el attr-data-has-icon-start (bool-attr (:has-icon-start? m)))
+  (.setAttribute button-el attr-data-has-icon-end   (bool-attr (:has-icon-end?   m)))
+  (.setAttribute button-el attr-data-has-spinner    (bool-attr (:has-spinner?    m))))
 
-(defn- apply-host-data!
-  "Mirror variant/size onto the host element so external selectors can
-   target the unstyled custom element."
-  [^js el {:keys [variant size]}]
-  (du/set-attr! el "data-variant" variant)
-  (du/set-attr! el "data-size"    size))
+(defn- apply-host-data! [^js el public-state]
+  (du/set-attr! el attr-data-variant (:variant public-state))
+  (du/set-attr! el attr-data-size    (:size    public-state)))
 
-(defn- render!
-  [^js el state]
-  (let [button-el          (aget state "button")
-        label-slot-el      (aget state "label-slot")
-        icon-start-slot-el (aget state "icon-start-slot")
-        icon-end-slot-el   (aget state "icon-end-slot")
-        spinner-slot-el    (aget state "spinner-slot")
-        public-state       (read-public-state el)
-        ui {:hover?          (get-hover el)
-            :active?         (some? (get-active-source el))
-            :focus-visible?  (get-focus-visible el)
-            :has-icon-start? (slot-has-content? icon-start-slot-el)
-            :has-icon-end?   (slot-has-content? icon-end-slot-el)
-            :has-spinner?    (slot-has-content? spinner-slot-el)}
-        aria-label-value (model/aria-label
-                          (assoc public-state
-                                 :has-default-text?
-                                 (slot-has-meaningful-text? label-slot-el)))]
-    (.setAttribute button-el "type" (:type public-state))
-    (set! (.-disabled button-el) (or (:disabled public-state)
-                                     (:loading public-state)))
-    (apply-button-aria!        button-el public-state aria-label-value)
-    (apply-button-data-state!  button-el public-state ui)
-    (apply-host-data!          el        public-state)))
+(defn- apply-model! [^js el m]
+  (let [^js refs   (du/getv el k-refs)
+        ^js button (gobj/get refs rk-button)
+        public     (:public m)]
+    (.setAttribute button attr-type (:type public))
+    (set! (.-disabled button) (or (:disabled public) (:loading public)))
+    (apply-button-aria!       button public (:aria-label-value m))
+    (apply-button-data-state! button public m)
+    (apply-host-data!         el     public)
+    (du/setv! el k-model m)))
 
-(defn- end-active-press!
+(defn- update!
+  "Read → guard → apply. Safe to call after refs exist; no-op before
+  the shadow DOM is set up."
   [^js el]
-  (let [source (get-active-source el)]
-    (when source
-      (set-active-source! el nil)
-      (du/dispatch! el model/event-press-end #js {:source source})
-      (when-let [state (get-el-state el)]
-        (render! el state)))))
+  (when (du/getv el k-refs)
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
-(defn- sync-noninteractive-state!
-  [^js el]
-  (when-not (interactive-el? el)
-    (set-hover! el false)
-    (set-active-source! el nil)))
-
-(defn- setup-hover!
-  [^js el ^js button-el]
-  (.addEventListener
-   button-el
-   "pointerenter"
-   (fn [_]
-     (when (interactive-el? el)
-       (when-not (get-hover el)
-         (set-hover! el true)
-         (render! el (get-el-state el))
-         (du/dispatch! el model/event-hover-start #js {})))))
-
-  (.addEventListener
-   button-el
-   "pointerleave"
-   (fn [_]
-     (when (get-hover el)
-       (set-hover! el false)
-       (render! el (get-el-state el))
-       (when (interactive-el? el)
-         (du/dispatch! el model/event-hover-end #js {})))
-     (when (= "pointer" (get-active-source el))
-       (end-active-press! el)))))
+;; ── Press lifecycle ─────────────────────────────────────────────────────────
+(defn- end-active-press! [^js el]
+  (when-let [source (du/getv el k-active-source)]
+    (du/setv! el k-active-source nil)
+    (du/dispatch! el model/event-press-end #js {:source source})
+    (update! el)))
 
 (defn- activation-key?
   "Enter and Space activate buttons per ARIA convention."
   [^js event]
   (let [k (.-key event)]
-    (or (= k "Enter") (= k " "))))
+    (or (= k key-enter) (= k key-space))))
 
 (defn- can-start-press?
   "A press from `source` may begin only when:
-   - pointer: nothing else is currently active (keyboard always wins),
-   - keyboard: a keyboard press isn't already in flight (filters key
-     auto-repeat, but a keyboard press DOES override an in-progress
-     pointer press to match the existing behaviour)."
+  - pointer: nothing else is currently active (keyboard always wins),
+  - keyboard: a keyboard press isn't already in flight (filters key
+    auto-repeat, but a keyboard press DOES override an in-progress
+    pointer press to match the existing behaviour)."
   [^js el source]
   (case source
-    "pointer"  (not (get-active-source el))
-    "keyboard" (not= "keyboard" (get-active-source el))))
+    "pointer"  (not (du/getv el k-active-source))
+    "keyboard" (not= src-keyboard (du/getv el k-active-source))))
 
 (defn- start-press!
   "Begin a press from `source` (\"pointer\" | \"keyboard\") if the
-   button is interactive and the source-specific guard passes."
+  button is interactive and the source-specific guard passes."
   [^js el source]
   (when (and (interactive-el? el) (can-start-press? el source))
-    (set-last-activation-source! el source)
-    (set-active-source! el source)
-    (render! el (get-el-state el))
+    (du/setv! el k-last-activation-src source)
+    (du/setv! el k-active-source       source)
+    (update! el)
     (du/dispatch! el model/event-press-start #js {:source source})))
 
 (defn- end-press-if-source!
   "End the active press only when the active source matches `source`."
   [^js el source]
-  (when (= source (get-active-source el))
+  (when (= source (du/getv el k-active-source))
     (end-active-press! el)))
 
 (defn- maybe-submit-or-reset!
   "Dispatch the form's submit/reset behaviour for type=submit/reset
-   buttons that live inside a form."
+  buttons that live inside a form."
   [^js el btn-type]
   (when-let [form (find-owner-form el)]
     (cond
-      (= btn-type "submit") (.requestSubmit form)
-      (= btn-type "reset")  (.reset form))))
+      (= btn-type btn-type-submit) (.requestSubmit form)
+      (= btn-type btn-type-reset)  (.reset form))))
 
-(defn- on-click!
-  "Click handler: dispatch the press event then run any form effects."
-  [^js el]
+;; ── Event handlers (named — listener-spec style) ────────────────────────────
+(defn- on-pointer-enter [^js el _e]
+  (when (and (interactive-el? el) (not (du/getv el k-hover)))
+    (du/setv! el k-hover true)
+    (update! el)
+    (du/dispatch! el model/event-hover-start #js {})))
+
+(defn- on-pointer-leave [^js el _e]
+  (when (du/getv el k-hover)
+    (du/setv! el k-hover false)
+    (update! el)
+    (when (interactive-el? el)
+      (du/dispatch! el model/event-hover-end #js {})))
+  (when (= src-pointer (du/getv el k-active-source))
+    (end-active-press! el)))
+
+(defn- on-pointer-down [^js el _e]
+  (start-press! el src-pointer))
+
+(defn- on-pointer-up [^js el _e]
+  (end-press-if-source! el src-pointer))
+
+(defn- on-pointer-cancel [^js el _e]
+  (end-press-if-source! el src-pointer))
+
+(defn- on-keydown [^js el ^js event]
+  (when (activation-key? event)
+    (start-press! el src-keyboard)))
+
+(defn- on-keyup [^js el ^js event]
+  (when (activation-key? event)
+    (end-press-if-source! el src-keyboard)))
+
+(defn- on-focus [^js el ^js _e]
+  (let [^js refs   (du/getv el k-refs)
+        ^js button (gobj/get refs rk-button)
+        visible    (.matches button selector-focus-visible)]
+    (du/setv! el k-focus-visible visible)
+    (update! el)
+    (when visible
+      (du/dispatch! el model/event-focus-visible #js {}))))
+
+(defn- on-blur
+  "Combined blur handler: end any keyboard press and clear focus-visible."
+  [^js el _e]
+  (when (du/getv el k-active-source)
+    (end-active-press! el))
+  (du/setv! el k-focus-visible false)
+  (update! el))
+
+(defn- on-click [^js el _e]
   (when (interactive-el? el)
-    (let [source (or (get-last-activation-source el) "programmatic")]
+    (let [source (or (du/getv el k-last-activation-src) val-programmatic)]
       (du/dispatch! el model/event-press #js {:source source})
-      (set-last-activation-source! el nil)
+      (du/setv! el k-last-activation-src nil)
       (maybe-submit-or-reset! el (:type (read-public-state el))))))
 
-(defn- setup-press!
-  [^js el ^js button-el]
-  (.addEventListener button-el "pointerdown"
-                     (fn [_] (start-press! el "pointer")))
-  (.addEventListener button-el "pointerup"
-                     (fn [_] (end-press-if-source! el "pointer")))
-  (.addEventListener button-el "pointercancel"
-                     (fn [_] (end-press-if-source! el "pointer")))
-  (.addEventListener button-el "keydown"
-                     (fn [event] (when (activation-key? event)
-                                   (start-press! el "keyboard"))))
-  (.addEventListener button-el "keyup"
-                     (fn [event] (when (activation-key? event)
-                                   (end-press-if-source! el "keyboard"))))
-  (.addEventListener button-el "blur"
-                     (fn [_] (when (get-active-source el)
-                               (end-active-press! el))))
-  (.addEventListener button-el "click"
-                     (fn [_] (on-click! el))))
+(defn- on-slotchange [^js el _e]
+  (update! el))
 
-(defn- setup-focus!
-  [^js el ^js button-el]
-  (.addEventListener
-   button-el
-   "focus"
-   (fn [_]
-     (let [visible (.matches button-el ":focus-visible")]
-       (set-focus-visible! el visible)
-       (render! el (get-el-state el))
-       (when visible
-         (du/dispatch! el model/event-focus-visible #js {})))))
+;; ── Listener installation (listener-spec named pattern) ─────────────────────
+;; Each entry: [refs-key event-name handler-fn].
+;; add-listeners! iterates this once at connect-time. Listeners are bound to
+;; shadow-DOM nodes that persist with the element, so no explicit remove path
+;; is needed across disconnect/reconnect cycles.
+(def ^:private listener-spec
+  [[rk-button          ev-pointerenter  on-pointer-enter]
+   [rk-button          ev-pointerleave  on-pointer-leave]
+   [rk-button          ev-pointerdown   on-pointer-down]
+   [rk-button          ev-pointerup     on-pointer-up]
+   [rk-button          ev-pointercancel on-pointer-cancel]
+   [rk-button          ev-keydown       on-keydown]
+   [rk-button          ev-keyup         on-keyup]
+   [rk-button          ev-focus         on-focus]
+   [rk-button          ev-blur          on-blur]
+   [rk-button          ev-click         on-click]
+   [rk-label-slot      ev-slotchange    on-slotchange]
+   [rk-icon-start-slot ev-slotchange    on-slotchange]
+   [rk-icon-end-slot   ev-slotchange    on-slotchange]
+   [rk-spinner-slot    ev-slotchange    on-slotchange]])
 
-  (.addEventListener
-   button-el
-   "blur"
-   (fn [_]
-     (set-focus-visible! el false)
-     (render! el (get-el-state el)))))
+(defn- install-listeners! [^js el]
+  (let [^js refs (du/getv el k-refs)]
+    (doseq [[refs-key event-name handler] listener-spec]
+      (let [^js target (gobj/get refs refs-key)]
+        (.addEventListener target event-name (fn [event] (handler el event)))))))
 
-(defn- setup-slots!
-  [^js el state]
-  (let [rerender (fn [_]
-                   (render! el state))]
-    (.addEventListener (aget state "label-slot") "slotchange" rerender)
-    (.addEventListener (aget state "icon-start-slot") "slotchange" rerender)
-    (.addEventListener (aget state "icon-end-slot") "slotchange" rerender)
-    (.addEventListener (aget state "spinner-slot") "slotchange" rerender)))
+;; ── Element class ───────────────────────────────────────────────────────────
+(defn- connected! [^js el]
+  (when-not (du/getv el k-refs)
+    (du/setv! el k-refs (build-refs! el))
+    (du/setv! el k-hover               false)
+    (du/setv! el k-focus-visible       false)
+    (du/setv! el k-active-source       nil)
+    (du/setv! el k-last-activation-src nil)
+    (install-listeners! el))
+  (update! el))
 
-(defn- connected!
-  [^js el]
-  (when-not (get-el-state el)
-    (let [state (create-shadow! el)
-          button-el (aget state "button")]
-      (set-hover! el false)
-      (set-focus-visible! el false)
-      (set-active-source! el nil)
-      (set-last-activation-source! el nil)
-      (setup-hover! el button-el)
-      (setup-press! el button-el)
-      (setup-focus! el button-el)
-      (setup-slots! el state)
-      (set-el-state! el state)))
-  (sync-noninteractive-state! el)
-  (render! el (get-el-state el)))
+(defn- disconnected! [^js el]
+  ;; Reset transient UI state so a reconnect starts clean.
+  (du/setv! el k-hover               false)
+  (du/setv! el k-focus-visible       false)
+  (du/setv! el k-active-source       nil)
+  (du/setv! el k-last-activation-src nil))
 
-(defn- disconnected!
-  [^js el]
-  (set-hover! el false)
-  (set-focus-visible! el false)
-  (set-active-source! el nil)
-  (set-last-activation-source! el nil))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update! el)))
 
-(defn- attribute-changed!
-  [^js el _name _old-value _new-value]
-  (when-let [state (get-el-state el)]
-    (sync-noninteractive-state! el)
-    (render! el state)))
-
+;; ── Public API ──────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :form-associated?       true
-     :setup-prototype-fn     (fn [proto] (du/install-properties! proto model/property-api))}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :form-associated?     true
+                        :setup-prototype-fn   (fn install-props [proto]
+                                                (du/install-properties! proto model/property-api))}))
