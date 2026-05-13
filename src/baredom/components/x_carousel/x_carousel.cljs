@@ -1,12 +1,14 @@
 (ns baredom.components.x-carousel.x-carousel
-  (:require [baredom.utils.component :as component]
-            [goog.object :as gobj]
-            [baredom.utils.dom :as du]
-            [baredom.components.x-carousel.model :as model]))
+  (:require
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
+   [baredom.components.x-carousel.model :as model]))
 
-;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
+;; ── Instance-field keys ────────────────────────────────────────────────────
 (def ^:private k-refs           "__xCarouselRefs")
 (def ^:private k-handlers       "__xCarouselHandlers")
+(def ^:private k-model          "__xCarouselModel")
 (def ^:private k-init           "__xCarouselInit")
 (def ^:private k-dragging       "__xCarouselDragging")
 (def ^:private k-drag-start     "__xCarouselDragStart")
@@ -16,19 +18,107 @@
 (def ^:private k-autoplay-timer "__xCarouselAutoTimer")
 (def ^:private k-paused         "__xCarouselPaused")
 (def ^:private k-dot-count      "__xCarouselDotCount")
-(def ^:private k-model          "__xCarouselModel")
 
-;; ── SVG arrows ──────────────────────────────────────────────────────────────
+;; ── Refs-object keys ───────────────────────────────────────────────────────
+(def ^:private rk-root     "root")
+(def ^:private rk-viewport "viewport")
+(def ^:private rk-track    "track")
+(def ^:private rk-slot     "slot")
+(def ^:private rk-prev     "prev")
+(def ^:private rk-next     "next")
+(def ^:private rk-dots     "dots")
+(def ^:private rk-live     "live")
+
+;; ── Handler-object keys ────────────────────────────────────────────────────
+(def ^:private hk-down     "down")
+(def ^:private hk-move     "move")
+(def ^:private hk-up       "up")
+(def ^:private hk-key      "key")
+(def ^:private hk-dot      "dot")
+(def ^:private hk-prev     "prev")
+(def ^:private hk-next     "next")
+(def ^:private hk-slot     "slot")
+(def ^:private hk-enter    "enter")
+(def ^:private hk-leave    "leave")
+(def ^:private hk-focusin  "focusin")
+(def ^:private hk-focusout "focusout")
+
+;; ── String-literal constants ───────────────────────────────────────────────
+(def ^:private attr-part                "part")
+(def ^:private attr-type                "type")
+(def ^:private attr-role                "role")
+(def ^:private attr-tabindex            "tabindex")
+(def ^:private attr-aria-label          "aria-label")
+(def ^:private attr-aria-current        "aria-current")
+(def ^:private attr-aria-selected       "aria-selected")
+(def ^:private attr-aria-live           "aria-live")
+(def ^:private attr-aria-atomic         "aria-atomic")
+(def ^:private attr-aria-orientation    "aria-orientation")
+(def ^:private attr-aria-roledescription "aria-roledescription")
+(def ^:private attr-data-direction      "data-direction")
+(def ^:private attr-data-transition     "data-transition")
+(def ^:private attr-data-index          "data-index")
+
+(def ^:private part-viewport "viewport")
+(def ^:private part-track    "track")
+(def ^:private part-prev-btn "prev-btn")
+(def ^:private part-next-btn "next-btn")
+(def ^:private part-dots     "dots")
+(def ^:private part-dot      "dot")
+
+(def ^:private cls-dragging "dragging")
+(def ^:private cls-sr-only  "sr-only")
+
+(def ^:private css-var-peek "--_peek")
+
+(def ^:private val-true                "true")
+(def ^:private val-false               "false")
+(def ^:private val-zero-peek           "0px")
+(def ^:private val-button              "button")
+(def ^:private val-region              "region")
+(def ^:private val-carousel            "carousel")
+(def ^:private val-tablist             "tablist")
+(def ^:private val-tab                 "tab")
+(def ^:private val-polite              "polite")
+(def ^:private val-off                 "off")
+(def ^:private val-vertical            "vertical")
+(def ^:private val-slide               "slide")
+(def ^:private val-default-label       "Carousel")
+(def ^:private val-slide-indicators    "Slide indicators")
+(def ^:private val-prev-label          "Previous slide")
+(def ^:private val-next-label          "Next slide")
+
+(def ^:private reason-autoplay "autoplay")
+(def ^:private reason-drag     "drag")
+(def ^:private reason-keyboard "keyboard")
+(def ^:private reason-dot      "dot")
+(def ^:private reason-arrow    "arrow")
+(def ^:private reason-api      "api")
+
+(def ^:private ev-pointerdown  "pointerdown")
+(def ^:private ev-pointermove  "pointermove")
+(def ^:private ev-pointerup    "pointerup")
+(def ^:private ev-pointerenter "pointerenter")
+(def ^:private ev-pointerleave "pointerleave")
+(def ^:private ev-keydown      "keydown")
+(def ^:private ev-click        "click")
+(def ^:private ev-slotchange   "slotchange")
+(def ^:private ev-focusin      "focusin")
+(def ^:private ev-focusout     "focusout")
+
+(def ^:private key-home "Home")
+(def ^:private key-end  "End")
+
+;; ── SVG arrows ─────────────────────────────────────────────────────────────
 (def ^:private svg-prev
   "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"15 18 9 12 15 6\"></polyline></svg>")
 
 (def ^:private svg-next
   "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"9 6 15 12 9 18\"></polyline></svg>")
 
-;; ── Styles ──────────────────────────────────────────────────────────────────
+;; ── Styles ─────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
-   ;; ── Host ──────────────────────────────────────────────────────────────
    ":host{"
    "display:block;"
    "color-scheme:light dark;"
@@ -58,7 +148,6 @@
    "--x-carousel-focus-ring:var(--x-color-focus-ring,#93c5fd);"
    "}}"
 
-   ;; ── Viewport ──────────────────────────────────────────────────────────
    "[part=viewport]{"
    "position:relative;"
    "overflow:hidden;"
@@ -70,7 +159,6 @@
    "outline:2px solid var(--x-carousel-focus-ring);"
    "outline-offset:2px;}"
 
-   ;; ── Track (slide mode, horizontal) ────────────────────────────────────
    "[part=track]{"
    "display:flex;"
    "flex-direction:row;"
@@ -83,15 +171,10 @@
    "transition:none !important;"
    "cursor:grabbing;}"
 
-   ;; ── Vertical direction ────────────────────────────────────────────────
    ":host([data-direction=vertical]) [part=track]{"
    "flex-direction:column;"
    "touch-action:pan-x pinch-zoom;}"
 
-   ;; ── Slotted slides (horizontal) ──────────────────────────────────────
-   ;; min-width + max-width together force the exact width we need.
-   ;; max-width is critical: it caps slides even when their own styles
-   ;; set width:100% (which resolves to the full viewport width).
    "::slotted(*){"
    "min-width:calc(100% - var(--_peek,0px) * 2);"
    "max-width:calc(100% - var(--_peek,0px) * 2);"
@@ -99,14 +182,12 @@
    "box-sizing:border-box;"
    "overflow:hidden;}"
 
-   ;; ── Slotted slides (vertical) ────────────────────────────────────────
    ":host([data-direction=vertical]) ::slotted(*){"
    "min-width:auto;max-width:none;"
    "min-height:calc(100% - var(--_peek,0px) * 2);"
    "max-height:calc(100% - var(--_peek,0px) * 2);"
    "}"
 
-   ;; ── Fade mode ─────────────────────────────────────────────────────────
    ":host([data-transition=fade]) [part=track]{"
    "display:grid;"
    "grid-template-columns:1fr;"
@@ -118,7 +199,6 @@
    "min-width:100%;max-width:100%;"
    "transition:opacity var(--x-carousel-transition-duration) ease;}"
 
-   ;; ── Arrow buttons ─────────────────────────────────────────────────────
    "[part=prev-btn],[part=next-btn]{"
    "position:absolute;"
    "top:50%;transform:translateY(-50%);"
@@ -147,7 +227,6 @@
    "[part=prev-btn] svg,[part=next-btn] svg{"
    "width:60%;height:60%;pointer-events:none;}"
 
-   ;; ── Vertical arrow positioning ────────────────────────────────────────
    ":host([data-direction=vertical]) [part=prev-btn],"
    ":host([data-direction=vertical]) [part=next-btn]{"
    "top:auto;left:50%;right:auto;"
@@ -159,7 +238,6 @@
    ":host([data-direction=vertical]) [part=next-btn]:active{"
    "transform:translateX(-50%) rotate(90deg) scale(0.95);}"
 
-   ;; ── Dots ──────────────────────────────────────────────────────────────
    "[part=dots]{"
    "display:flex;justify-content:center;align-items:center;"
    "gap:8px;padding:12px 0;}"
@@ -177,24 +255,20 @@
    "[part=dot][aria-current=true]{"
    "background:var(--x-carousel-dot-active-color);}"
 
-   ;; ── Screen-reader only ────────────────────────────────────────────────
    ".sr-only{"
    "position:absolute;width:1px;height:1px;"
    "padding:0;margin:-1px;overflow:hidden;"
    "clip:rect(0,0,0,0);white-space:nowrap;border:0;}"
 
-   ;; ── Disabled ──────────────────────────────────────────────────────────
    ":host([disabled]){"
    "opacity:var(--x-carousel-disabled-opacity);"
    "pointer-events:none;}"
 
-   ;; ── Reduced motion ────────────────────────────────────────────────────
    "@media(prefers-reduced-motion:reduce){"
    "[part=track]{transition-duration:0ms !important;}"
    ":host([data-transition=fade]) ::slotted(*){transition-duration:0ms !important;}"
    "[part=prev-btn],[part=next-btn],[part=dot]{transition:none !important;}}"
 
-   ;; ── Touch targets ────────────────────────────────────────────────────
    "@media(pointer:coarse){"
    "[part=prev-btn],[part=next-btn]{"
    "width:max(var(--x-carousel-arrow-size),44px);"
@@ -207,65 +281,69 @@
    "box-sizing:content-box;}"
    "}"))
 
-;; ── DOM initialisation ──────────────────────────────────────────────────────
+;; ── DOM initialisation ─────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
-  (let [root      (.attachShadow el #js {:mode "open"})
-        style-el  (.createElement js/document "style")
-        viewport  (.createElement js/document "div")
-        track     (.createElement js/document "div")
-        slot-el   (.createElement js/document "slot")
-        prev-btn  (.createElement js/document "button")
-        next-btn  (.createElement js/document "button")
-        dots-el   (.createElement js/document "div")
-        live-el   (.createElement js/document "div")]
+  (let [root     (.attachShadow el #js {:mode "open"})
+        style-el (.createElement js/document "style")
+        viewport (.createElement js/document "div")
+        track    (.createElement js/document "div")
+        slot-el  (.createElement js/document "slot")
+        prev-btn (.createElement js/document "button")
+        next-btn (.createElement js/document "button")
+        dots-el  (.createElement js/document "div")
+        live-el  (.createElement js/document "div")
+        refs     #js {}]
 
     (set! (.-textContent style-el) style-text)
 
-    (.setAttribute viewport "part" "viewport")
-    (.setAttribute viewport "tabindex" "0")
+    (.setAttribute viewport attr-part     part-viewport)
+    (.setAttribute viewport attr-tabindex "0")
 
-    (.setAttribute track "part" "track")
-
+    (.setAttribute track attr-part part-track)
     (.appendChild track slot-el)
 
-    (.setAttribute prev-btn "part" "prev-btn")
-    (.setAttribute prev-btn "type" "button")
-    (.setAttribute prev-btn "aria-label" "Previous slide")
+    (.setAttribute prev-btn attr-part       part-prev-btn)
+    (.setAttribute prev-btn attr-type       val-button)
+    (.setAttribute prev-btn attr-aria-label val-prev-label)
     (set! (.-innerHTML prev-btn) svg-prev)
 
-    (.setAttribute next-btn "part" "next-btn")
-    (.setAttribute next-btn "type" "button")
-    (.setAttribute next-btn "aria-label" "Next slide")
+    (.setAttribute next-btn attr-part       part-next-btn)
+    (.setAttribute next-btn attr-type       val-button)
+    (.setAttribute next-btn attr-aria-label val-next-label)
     (set! (.-innerHTML next-btn) svg-next)
 
     (.appendChild viewport track)
     (.appendChild viewport prev-btn)
     (.appendChild viewport next-btn)
 
-    (.setAttribute dots-el "part" "dots")
-    (.setAttribute dots-el "role" "tablist")
-    (.setAttribute dots-el "aria-label" "Slide indicators")
+    (.setAttribute dots-el attr-part       part-dots)
+    (.setAttribute dots-el attr-role       val-tablist)
+    (.setAttribute dots-el attr-aria-label val-slide-indicators)
 
-    (.setAttribute live-el "aria-live" "polite")
-    (.setAttribute live-el "aria-atomic" "true")
-    (set! (.-className live-el) "sr-only")
+    (.setAttribute live-el attr-aria-live   val-polite)
+    (.setAttribute live-el attr-aria-atomic val-true)
+    (set! (.-className live-el) cls-sr-only)
 
     (.appendChild root style-el)
     (.appendChild root viewport)
     (.appendChild root dots-el)
     (.appendChild root live-el)
 
-    (du/setv! el k-refs
-              #js {"root"     root
-                   "viewport" viewport
-                   "track"    track
-                   "slot"     slot-el
-                   "prev"     prev-btn
-                   "next"     next-btn
-                   "dots"     dots-el
-                   "live"     live-el})))
+    (gobj/set refs rk-root     root)
+    (gobj/set refs rk-viewport viewport)
+    (gobj/set refs rk-track    track)
+    (gobj/set refs rk-slot     slot-el)
+    (gobj/set refs rk-prev     prev-btn)
+    (gobj/set refs rk-next     next-btn)
+    (gobj/set refs rk-dots     dots-el)
+    (gobj/set refs rk-live     live-el)
+    (du/setv! el k-refs refs)
+    refs))
 
-;; ── Attribute readers ───────────────────────────────────────────────────────
+(defn- ensure-refs! [^js el]
+  (or (du/getv el k-refs) (init-dom! el)))
+
+;; ── Model reading ──────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
    {:autoplay-present? (du/has-attr? el model/attr-autoplay)
@@ -281,7 +359,7 @@
     :aria-label-raw    (du/get-attr el model/attr-aria-label)
     :slide-count       (or (du/getv el k-slide-count) 0)}))
 
-;; ── Autoplay ────────────────────────────────────────────────────────────────
+;; ── Autoplay ───────────────────────────────────────────────────────────────
 (declare go-to!)
 
 (defn- stop-autoplay! [^js el]
@@ -302,134 +380,122 @@
                  (fn on-autoplay-tick []
                    (when (.-isConnected el)
                      (let [m2 (read-model el)]
-                       (go-to! el (model/next-index m2) "autoplay"))))
+                       (go-to! el (model/next-index m2) reason-autoplay))))
                  (:interval m))))))
 
-;; ── Dots rebuild ────────────────────────────────────────────────────────────
+;; ── Dots rebuild ───────────────────────────────────────────────────────────
 (defn- rebuild-dots! [^js el ^js dots-el slide-count current]
   (let [prev-count (or (du/getv el k-dot-count) -1)]
-    ;; Only rebuild DOM if count changed
     (when (not= prev-count slide-count)
       (set! (.-innerHTML dots-el) "")
       (dotimes [i slide-count]
         (let [^js dot (.createElement js/document "button")]
-          (.setAttribute dot "part" "dot")
-          (.setAttribute dot "type" "button")
-          (.setAttribute dot "role" "tab")
-          (.setAttribute dot "aria-label" (str "Go to slide " (inc i)))
-          (.setAttribute dot "data-index" (str i))
+          (.setAttribute dot attr-part       part-dot)
+          (.setAttribute dot attr-type       val-button)
+          (.setAttribute dot attr-role       val-tab)
+          (.setAttribute dot attr-aria-label (str "Go to slide " (inc i)))
+          (.setAttribute dot attr-data-index (str i))
           (.appendChild dots-el dot)))
       (du/setv! el k-dot-count slide-count))
-    ;; Update active state
     (let [children (.-children dots-el)]
       (dotimes [i (.-length children)]
         (let [^js dot (aget children i)]
-          (.setAttribute dot "aria-current" (str (= i current)))
-          (.setAttribute dot "aria-selected" (str (= i current))))))))
+          (.setAttribute dot attr-aria-current  (str (= i current)))
+          (.setAttribute dot attr-aria-selected (str (= i current))))))))
 
-;; ── Fade mode helpers ───────────────────────────────────────────────────────
+;; ── Fade-mode helpers ──────────────────────────────────────────────────────
 (defn- update-fade-active! [^js el current]
-  (let [refs (du/getv el k-refs)
-        ^js slot-el (gobj/get refs "slot")
-        children (.assignedElements slot-el)]
+  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
+        children    (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
         (set! (.. child -style -opacity) (if (= i current) "1" "0"))))))
 
 (defn- clear-fade-styles! [^js el]
-  (let [refs (du/getv el k-refs)
-        ^js slot-el (gobj/get refs "slot")
-        children (.assignedElements slot-el)]
+  (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
+        children    (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
         (set! (.. child -style -opacity) "")))))
 
-;; ── Render ──────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────
+(defn- apply-host-data! [^js el {:keys [direction transition peek]}]
+  (du/set-attr! el attr-data-direction  direction)
+  (du/set-attr! el attr-data-transition transition)
+  (.setProperty (.-style el) css-var-peek peek))
+
+(defn- apply-host-aria! [^js el {:keys [aria-label]}]
+  (du/set-attr! el attr-role               val-region)
+  (du/set-attr! el attr-aria-roledescription val-carousel)
+  (if aria-label
+    (du/set-attr! el attr-aria-label aria-label)
+    (when-not (du/has-attr? el attr-aria-label)
+      (du/set-attr! el attr-aria-label val-default-label))))
+
+(defn- track-transform-str [vertical? peek-val current]
+  (let [axis (if vertical? "Y" "X")]
+    (if (= peek-val val-zero-peek)
+      (str "translate" axis "(" (* current -100) "%)")
+      (str "translate" axis "(calc("
+           (* current -1) " * (100% - " peek-val " * 2) + "
+           peek-val "))"))))
+
+(defn- apply-track! [^js el ^js track {:keys [current transition direction peek] :as _m}]
+  (let [vertical? (= direction val-vertical)]
+    (if (= transition val-slide)
+      (do
+        (set! (.. track -style -transform) (track-transform-str vertical? peek current))
+        (clear-fade-styles! el))
+      (do
+        (set! (.. track -style -transform) "")
+        (update-fade-active! el current)))))
+
+(defn- apply-arrows! [^js prev-btn ^js next-btn m]
+  (if (model/show-arrows? m)
+    (do (set! (.. prev-btn -style -display) "flex")
+        (set! (.. next-btn -style -display) "flex")
+        (set! (.-disabled prev-btn) (not (model/can-go-prev? m)))
+        (set! (.-disabled next-btn) (not (model/can-go-next? m))))
+    (do (set! (.. prev-btn -style -display) "none")
+        (set! (.. next-btn -style -display) "none"))))
+
+(defn- apply-dots! [^js el ^js dots-el {:keys [current slide-count direction] :as m}]
+  (.setAttribute dots-el attr-aria-orientation direction)
+  (if (model/show-dots? m)
+    (do (set! (.. dots-el -style -display) "flex")
+        (rebuild-dots! el dots-el slide-count current))
+    (set! (.. dots-el -style -display) "none")))
+
+(defn- apply-live! [^js live-el {:keys [autoplay? current slide-count]}]
+  (when (> slide-count 0)
+    (set! (.-textContent live-el)
+          (str "Slide " (inc current) " of " slide-count)))
+  (.setAttribute live-el attr-aria-live (if autoplay? val-off val-polite)))
+
+(defn- apply-model! [^js el m]
+  (let [^js refs     (ensure-refs! el)
+        ^js track    (gobj/get refs rk-track)
+        ^js prev-btn (gobj/get refs rk-prev)
+        ^js next-btn (gobj/get refs rk-next)
+        ^js dots-el  (gobj/get refs rk-dots)
+        ^js live-el  (gobj/get refs rk-live)]
+    (apply-host-data! el m)
+    (apply-host-aria! el m)
+    (apply-track!     el track m)
+    (apply-arrows!    prev-btn next-btn m)
+    (apply-dots!      el dots-el m)
+    (apply-live!      live-el m)
+    ;; Cache write at the END so partial DOM writes don't leave a lying cache.
+    (du/setv! el k-model m)))
+
+(defn- update-from-attrs! [^js el]
   (when (du/initialized? el k-init)
-    (let [m          (read-model el)
-          old-m      (du/getv el k-model)]
-      (when (not= m old-m)
-        (du/setv! el k-model m)
-        (let [refs       (du/getv el k-refs)
-          ^js track  (gobj/get refs "track")
-          ^js prev   (gobj/get refs "prev")
-          ^js nxt    (gobj/get refs "next")
-          ^js dots   (gobj/get refs "dots")
-          ^js live   (gobj/get refs "live")
-          ^js _vp    (gobj/get refs "viewport")
-          current    (:current m)
-          sc         (:slide-count m)
-          transition (:transition m)
-          direction  (:direction m)
-          peek-val   (:peek m)
-          vertical?  (= direction "vertical")]
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
-      ;; Host data attributes for CSS
-      (du/set-attr! el "data-direction" direction)
-      (du/set-attr! el "data-transition" transition)
-
-      ;; ARIA on host
-      (du/set-attr! el "role" "region")
-      (du/set-attr! el "aria-roledescription" "carousel")
-      (if-let [label (:aria-label m)]
-        (du/set-attr! el "aria-label" label)
-        (when-not (du/has-attr? el "aria-label")
-          (du/set-attr! el "aria-label" "Carousel")))
-
-      ;; ARIA orientation on dots
-      (.setAttribute dots "aria-orientation" direction)
-
-      ;; Set --_peek CSS variable on host (drives ::slotted(*) sizing)
-      (.setProperty (.-style el) "--_peek" peek-val)
-
-      ;; Track transform (slide mode only)
-      ;; Formula: translate{axis}(calc(-current * (100% - peek*2) + peek))
-      ;; When peek=0px this simplifies to translate{axis}(-current * 100%)
-      ;; 100% in transform = track width = viewport width (track is block child)
-      (if (= transition "slide")
-        (do
-          (let [axis (if vertical? "Y" "X")]
-            (if (= peek-val "0px")
-              (set! (.. track -style -transform)
-                    (str "translate" axis "(" (* current -100) "%)"))
-              (set! (.. track -style -transform)
-                    (str "translate" axis "(calc("
-                         (* current -1) " * (100% - " peek-val " * 2) + "
-                         peek-val "))"))))
-          ;; Clear fade inline styles if switching from fade to slide
-          (clear-fade-styles! el))
-        ;; Fade mode — set opacity inline on slides
-        (do
-          (set! (.. track -style -transform) "")
-          (update-fade-active! el current)))
-
-      ;; Arrow visibility
-      (if (model/show-arrows? m)
-        (do (set! (.. prev -style -display) "flex")
-            (set! (.. nxt -style -display) "flex")
-            (set! (.-disabled prev) (not (model/can-go-prev? m)))
-            (set! (.-disabled nxt) (not (model/can-go-next? m))))
-        (do (set! (.. prev -style -display) "none")
-            (set! (.. nxt -style -display) "none")))
-
-      ;; Dots
-      (if (model/show-dots? m)
-        (do (set! (.. dots -style -display) "flex")
-            (rebuild-dots! el dots sc current))
-        (set! (.. dots -style -display) "none"))
-
-      ;; Live region
-      (when (> sc 0)
-        (set! (.-textContent live)
-              (str "Slide " (inc current) " of " sc)))
-
-      ;; Autoplay live region adjustment
-      (if (:autoplay? m)
-        (.setAttribute live "aria-live" "off")
-        (.setAttribute live "aria-live" "polite")))))))
-
-;; ── Navigation ──────────────────────────────────────────────────────────────
+;; ── Navigation ─────────────────────────────────────────────────────────────
 (defn- go-to! [^js el index reason]
   (let [m       (read-model el)
         sc      (:slide-count m)
@@ -442,42 +508,38 @@
                    :reason        reason})
         (du/set-attr! el model/attr-current (str target))))))
 
-;; ── Pointer drag ────────────────────────────────────────────────────────────
-(defn- on-pointerdown! [^js el ^js evt]
+;; ── Event handlers ─────────────────────────────────────────────────────────
+(defn- on-pointerdown [^js el ^js evt]
   (let [m (read-model el)]
     (when (and (not (:disabled? m))
-               (= (:transition m) "slide")
+               (= (:transition m) val-slide)
                (> (:slide-count m) 1))
       (.preventDefault evt)
-      (let [refs  (du/getv el k-refs)
-            ^js track (gobj/get refs "track")
-            vertical? (= (:direction m) "vertical")
-            coord (if vertical? (.-clientY evt) (.-clientX evt))]
+      (let [^js track (gobj/get (du/getv el k-refs) rk-track)
+            vertical? (= (:direction m) val-vertical)
+            coord     (if vertical? (.-clientY evt) (.-clientX evt))]
         (.setPointerCapture track (.-pointerId evt))
-        (.add (.-classList track) "dragging")
+        (.add (.-classList track) cls-dragging)
         (du/setv! el k-dragging true)
         (du/setv! el k-drag-start coord)
         (du/setv! el k-drag-start-t (js/Date.now))
         (du/setv! el k-drag-current coord)
-        ;; Pause autoplay during drag
         (du/setv! el k-paused true)
         (stop-autoplay! el)))))
 
-(defn- on-pointermove! [^js el ^js evt]
+(defn- on-pointermove [^js el ^js evt]
   (when (du/getv el k-dragging)
     (let [m         (read-model el)
-          vertical? (= (:direction m) "vertical")
+          vertical? (= (:direction m) val-vertical)
           coord     (if vertical? (.-clientY evt) (.-clientX evt))
           start     (du/getv el k-drag-start)
           delta     (- coord start)
-          refs      (du/getv el k-refs)
-          ^js track (gobj/get refs "track")
+          ^js track (gobj/get (du/getv el k-refs) rk-track)
           current   (:current m)
           axis      (if vertical? "Y" "X")
           peek-val  (:peek m)]
       (du/setv! el k-drag-current coord)
-      ;; Use same formula as render but add pixel drag offset
-      (if (= peek-val "0px")
+      (if (= peek-val val-zero-peek)
         (set! (.. track -style -transform)
               (str "translate" axis "(calc(" (* current -100) "% + " delta "px))"))
         (set! (.. track -style -transform)
@@ -485,11 +547,10 @@
                    (* current -1) " * (100% - " peek-val " * 2) + "
                    peek-val " + " delta "px))"))))))
 
-(defn- on-pointerup! [^js el ^js _evt]
+(defn- on-pointerup [^js el ^js _evt]
   (when (du/getv el k-dragging)
     (du/setv! el k-dragging false)
-    (let [refs      (du/getv el k-refs)
-          ^js track (gobj/get refs "track")
+    (let [^js track (gobj/get (du/getv el k-refs) rk-track)
           start     (du/getv el k-drag-start)
           current   (du/getv el k-drag-current)
           delta     (- current start)
@@ -497,304 +558,265 @@
           velocity  (if (pos? elapsed) (/ delta elapsed) 0)
           snap      (model/snap-direction delta velocity)
           m         (read-model el)]
-      (.remove (.-classList track) "dragging")
+      (.remove (.-classList track) cls-dragging)
       (case snap
-        :prev (go-to! el (model/prev-index m) "drag")
-        :next (go-to! el (model/next-index m) "drag")
-        (render! el))
-      ;; Resume autoplay
+        :prev (go-to! el (model/prev-index m) reason-drag)
+        :next (go-to! el (model/next-index m) reason-drag)
+        ;; No snap — reapply the current model to undo the drag translation.
+        (apply-model! el m))
       (du/setv! el k-paused false)
       (start-autoplay! el))))
 
-;; ── Keyboard ────────────────────────────────────────────────────────────────
-(defn- on-keydown! [^js el ^js evt]
+(defn- on-keydown [^js el ^js evt]
   (let [m   (read-model el)
-        key (.-key evt)
+        k   (.-key evt)
         dir (:direction m)]
     (when (and (not (:disabled? m)) (> (:slide-count m) 1))
       (cond
-        (model/prev-key? dir key)
+        (model/prev-key? dir k)
         (do (.preventDefault evt)
-            (go-to! el (model/prev-index m) "keyboard"))
+            (go-to! el (model/prev-index m) reason-keyboard))
 
-        (model/next-key? dir key)
+        (model/next-key? dir k)
         (do (.preventDefault evt)
-            (go-to! el (model/next-index m) "keyboard"))
+            (go-to! el (model/next-index m) reason-keyboard))
 
-        (= key "Home")
+        (= k key-home)
         (do (.preventDefault evt)
-            (go-to! el 0 "keyboard"))
+            (go-to! el 0 reason-keyboard))
 
-        (= key "End")
+        (= k key-end)
         (do (.preventDefault evt)
-            (go-to! el (dec (:slide-count m)) "keyboard"))))))
+            (go-to! el (dec (:slide-count m)) reason-keyboard))))))
 
-;; ── Dot click (event delegation) ────────────────────────────────────────────
-(defn- on-dot-click! [^js el ^js evt]
+(defn- on-dot-click [^js el ^js evt]
   (let [^js target (.-target evt)]
-    (when-let [idx-str (.getAttribute target "data-index")]
+    (when-let [idx-str (.getAttribute target attr-data-index)]
       (let [idx (js/parseInt idx-str 10)]
         (when-not (js/isNaN idx)
-          (go-to! el idx "dot"))))))
+          (go-to! el idx reason-dot))))))
 
-;; ── Arrow clicks ────────────────────────────────────────────────────────────
-(defn- on-prev-click! [^js el ^js _evt]
+(defn- on-prev-click [^js el ^js _evt]
   (let [m (read-model el)]
-    (go-to! el (model/prev-index m) "arrow")))
+    (go-to! el (model/prev-index m) reason-arrow)))
 
-(defn- on-next-click! [^js el ^js _evt]
+(defn- on-next-click [^js el ^js _evt]
   (let [m (read-model el)]
-    (go-to! el (model/next-index m) "arrow")))
+    (go-to! el (model/next-index m) reason-arrow)))
 
-;; ── Autoplay pause/resume on hover & focus ──────────────────────────────────
-(defn- on-pointerenter! [^js el ^js _evt]
+(defn- on-pointerenter [^js el ^js _evt]
   (du/setv! el k-paused true)
   (stop-autoplay! el))
 
-(defn- on-pointerleave! [^js el ^js _evt]
+(defn- on-pointerleave [^js el ^js _evt]
   (du/setv! el k-paused false)
   (start-autoplay! el))
 
-(defn- on-focusin! [^js el ^js _evt]
+(defn- on-focusin [^js el ^js _evt]
   (du/setv! el k-paused true)
   (stop-autoplay! el))
 
-(defn- on-focusout! [^js el ^js evt]
-  ;; Only resume if focus left the component entirely
+(defn- on-focusout [^js el ^js evt]
   (when-not (.contains el (.-relatedTarget evt))
     (du/setv! el k-paused false)
     (start-autoplay! el)))
 
-;; ── Slotchange ──────────────────────────────────────────────────────────────
-(defn- on-slotchange! [^js el]
-  (let [refs      (du/getv el k-refs)
-        ^js slot  (gobj/get refs "slot")
-        children  (.assignedElements slot)
-        cnt       (.-length children)]
+(defn- on-slotchange [^js el ^js _evt]
+  (let [^js slot (gobj/get (du/getv el k-refs) rk-slot)
+        cnt      (.-length (.assignedElements slot))]
     (du/setv! el k-slide-count cnt)
-    ;; Clamp current index
     (let [m       (read-model el)
           clamped (model/clamp-index (:current m) cnt)]
       (when (not= clamped (:current m))
         (du/set-attr! el model/attr-current (str clamped))))
-    (render! el)
+    (update-from-attrs! el)
     (start-autoplay! el)))
 
-;; ── Listener management ────────────────────────────────────────────────────
+;; ── Listener-spec named pattern ────────────────────────────────────────────
+;; [refs-key handler-key event-name handler-fn]
+(def ^:private listener-spec
+  [[rk-track    hk-down     ev-pointerdown  on-pointerdown]
+   [rk-track    hk-move     ev-pointermove  on-pointermove]
+   [rk-track    hk-up       ev-pointerup    on-pointerup]
+   [rk-viewport hk-key      ev-keydown      on-keydown]
+   [rk-dots     hk-dot      ev-click        on-dot-click]
+   [rk-prev     hk-prev     ev-click        on-prev-click]
+   [rk-next     hk-next     ev-click        on-next-click]
+   [rk-slot     hk-slot     ev-slotchange   on-slotchange]])
+
+;; Host listeners — attached to the host element rather than a shadow ref.
+;; Kept separate so the same spec iteration works for both kinds of target.
+(def ^:private host-listener-spec
+  [[hk-enter    ev-pointerenter on-pointerenter]
+   [hk-leave    ev-pointerleave on-pointerleave]
+   [hk-focusin  ev-focusin      on-focusin]
+   [hk-focusout ev-focusout     on-focusout]])
+
 (defn- add-listeners! [^js el]
-  (let [refs      (du/getv el k-refs)
-        ^js track (gobj/get refs "track")
-        ^js slot  (gobj/get refs "slot")
-        ^js prev  (gobj/get refs "prev")
-        ^js nxt   (gobj/get refs "next")
-        ^js dots  (gobj/get refs "dots")
-        ^js vp    (gobj/get refs "viewport")
-
-        h-down    (fn [e] (on-pointerdown! el e))
-        h-move    (fn [e] (on-pointermove! el e))
-        h-up      (fn [e] (on-pointerup! el e))
-        h-key     (fn [e] (on-keydown! el e))
-        h-dot     (fn [e] (on-dot-click! el e))
-        h-prev    (fn [e] (on-prev-click! el e))
-        h-next    (fn [e] (on-next-click! el e))
-        h-slot    (fn [_] (on-slotchange! el))
-        h-enter   (fn [e] (on-pointerenter! el e))
-        h-leave   (fn [e] (on-pointerleave! el e))
-        h-focusin (fn [e] (on-focusin! el e))
-        h-focusout (fn [e] (on-focusout! el e))]
-
-    (.addEventListener track "pointerdown" h-down)
-    (.addEventListener track "pointermove" h-move)
-    (.addEventListener track "pointerup"   h-up)
-    (.addEventListener vp    "keydown"     h-key)
-    (.addEventListener dots  "click"       h-dot)
-    (.addEventListener prev  "click"       h-prev)
-    (.addEventListener nxt   "click"       h-next)
-    (.addEventListener slot  "slotchange"  h-slot)
-    (.addEventListener el    "pointerenter" h-enter)
-    (.addEventListener el    "pointerleave" h-leave)
-    (.addEventListener el    "focusin"      h-focusin)
-    (.addEventListener el    "focusout"     h-focusout)
-
-    (du/setv! el k-handlers
-              #js {"down"     h-down
-                   "move"     h-move
-                   "up"       h-up
-                   "key"      h-key
-                   "dot"      h-dot
-                   "prev"     h-prev
-                   "next"     h-next
-                   "slot"     h-slot
-                   "enter"    h-enter
-                   "leave"    h-leave
-                   "focusin"  h-focusin
-                   "focusout" h-focusout})))
+  (let [^js refs (du/getv el k-refs)
+        handlers #js {}]
+    (doseq [[refs-key handler-key event-name handler-fn] listener-spec]
+      (let [^js target (gobj/get refs refs-key)
+            wrapped    (fn [e] (handler-fn el e))]
+        (.addEventListener target event-name wrapped)
+        (gobj/set handlers handler-key wrapped)))
+    (doseq [[handler-key event-name handler-fn] host-listener-spec]
+      (let [wrapped (fn [e] (handler-fn el e))]
+        (.addEventListener el event-name wrapped)
+        (gobj/set handlers handler-key wrapped)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (stop-autoplay! el)
-  (let [hs   (du/getv el k-handlers)
-        refs (du/getv el k-refs)]
-    (when (and hs refs)
-      (let [^js track (gobj/get refs "track")
-            ^js slot  (gobj/get refs "slot")
-            ^js prev  (gobj/get refs "prev")
-            ^js nxt   (gobj/get refs "next")
-            ^js dots  (gobj/get refs "dots")
-            ^js vp    (gobj/get refs "viewport")]
-        (.removeEventListener track "pointerdown"  (gobj/get hs "down"))
-        (.removeEventListener track "pointermove"  (gobj/get hs "move"))
-        (.removeEventListener track "pointerup"    (gobj/get hs "up"))
-        (.removeEventListener vp    "keydown"      (gobj/get hs "key"))
-        (.removeEventListener dots  "click"        (gobj/get hs "dot"))
-        (.removeEventListener prev  "click"        (gobj/get hs "prev"))
-        (.removeEventListener nxt   "click"        (gobj/get hs "next"))
-        (.removeEventListener slot  "slotchange"   (gobj/get hs "slot"))
-        (.removeEventListener el    "pointerenter" (gobj/get hs "enter"))
-        (.removeEventListener el    "pointerleave" (gobj/get hs "leave"))
-        (.removeEventListener el    "focusin"      (gobj/get hs "focusin"))
-        (.removeEventListener el    "focusout"     (gobj/get hs "focusout")))))
+  (when-let [^js hs (du/getv el k-handlers)]
+    (when-let [^js refs (du/getv el k-refs)]
+      (doseq [[refs-key handler-key event-name _] listener-spec]
+        (let [^js target (gobj/get refs refs-key)
+              wrapped    (gobj/get hs handler-key)]
+          (when (and target wrapped)
+            (.removeEventListener target event-name wrapped))))
+      (doseq [[handler-key event-name _] host-listener-spec]
+        (when-let [wrapped (gobj/get hs handler-key)]
+          (.removeEventListener el event-name wrapped)))))
   (du/setv! el k-handlers nil))
 
-;; ── Property accessors ──────────────────────────────────────────────────────
+;; ── Property accessors ─────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   ;; Boolean properties (presence = true)
   (doseq [attr [model/attr-autoplay model/attr-loop model/attr-disabled]]
     (du/define-bool-prop! proto attr attr))
 
-  ;; Default-true boolean properties (arrows, dots)
+  ;; Default-true boolean properties: arrows, dots — Tier 2 because the
+  ;; absent attribute reads as true, and writing false stores the literal
+  ;; "false" string rather than removing the attribute. du/define-bool-prop!
+  ;; would treat the missing attribute as false (the opposite of the
+  ;; intended default).
   (doseq [attr [model/attr-arrows model/attr-dots]]
     (.defineProperty js/Object proto attr
                      #js {:get (fn []
                                  (this-as ^js this
-                                          (model/parse-bool-default-true
-                                           (.getAttribute this attr))))
+                                   (model/parse-bool-default-true
+                                    (.getAttribute this attr))))
                           :set (fn [v]
                                  (this-as ^js this
-                                          (if v
-                                            (.removeAttribute this attr)
-                                            (.setAttribute this attr "false"))))
+                                   (if v
+                                     (.removeAttribute this attr)
+                                     (.setAttribute this attr val-false))))
                           :enumerable true :configurable true}))
 
-  ;; currentSlide -> current attribute
   (.defineProperty js/Object proto "currentSlide"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-non-neg-int
-                                         (.getAttribute this model/attr-current)
-                                         model/default-current)))
+                                 (model/parse-non-neg-int
+                                  (.getAttribute this model/attr-current)
+                                  model/default-current)))
                         :set (fn [v]
                                (this-as ^js this
-                                        (.setAttribute this model/attr-current
-                                                       (str (int v)))))
+                                 (.setAttribute this model/attr-current
+                                                (str (int v)))))
                         :enumerable true :configurable true})
 
-  ;; interval
   (.defineProperty js/Object proto model/attr-interval
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-pos-int
-                                         (.getAttribute this model/attr-interval)
-                                         model/default-interval 100)))
+                                 (model/parse-pos-int
+                                  (.getAttribute this model/attr-interval)
+                                  model/default-interval 100)))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-interval)
-                                          (.setAttribute this model/attr-interval
-                                                         (str (int v))))))
+                                 (if (nil? v)
+                                   (.removeAttribute this model/attr-interval)
+                                   (.setAttribute this model/attr-interval
+                                                  (str (int v))))))
                         :enumerable true :configurable true})
 
-  ;; transition
   (.defineProperty js/Object proto model/attr-transition
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-transition
-                                         (.getAttribute this model/attr-transition))))
+                                 (model/parse-transition
+                                  (.getAttribute this model/attr-transition))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-transition (str v))
-                                          (.removeAttribute this model/attr-transition))))
+                                 (if v
+                                   (.setAttribute this model/attr-transition (str v))
+                                   (.removeAttribute this model/attr-transition))))
                         :enumerable true :configurable true})
 
-  ;; direction
   (.defineProperty js/Object proto model/attr-direction
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-direction
-                                         (.getAttribute this model/attr-direction))))
+                                 (model/parse-direction
+                                  (.getAttribute this model/attr-direction))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-direction (str v))
-                                          (.removeAttribute this model/attr-direction))))
+                                 (if v
+                                   (.setAttribute this model/attr-direction (str v))
+                                   (.removeAttribute this model/attr-direction))))
                         :enumerable true :configurable true})
 
-  ;; peek
   (.defineProperty js/Object proto model/attr-peek
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-peek
-                                         (.getAttribute this model/attr-peek))))
+                                 (model/parse-peek
+                                  (.getAttribute this model/attr-peek))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-peek (str v))
-                                          (.removeAttribute this model/attr-peek))))
+                                 (if v
+                                   (.setAttribute this model/attr-peek (str v))
+                                   (.removeAttribute this model/attr-peek))))
                         :enumerable true :configurable true})
 
-  ;; slideCount (read-only)
   (.defineProperty js/Object proto "slideCount"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (or (du/getv this k-slide-count) 0)))
+                                 (or (du/getv this k-slide-count) 0)))
                         :enumerable true :configurable true})
 
-  ;; Public methods
   (gobj/set proto "next"
-            (fn [] (this-as ^js this
-                            (let [m (read-model this)]
-                              (go-to! this (model/next-index m) "api")))))
+            (fn carousel-next []
+              (this-as ^js this
+                (let [m (read-model this)]
+                  (go-to! this (model/next-index m) reason-api)))))
 
   (gobj/set proto "previous"
-            (fn [] (this-as ^js this
-                            (let [m (read-model this)]
-                              (go-to! this (model/prev-index m) "api")))))
+            (fn carousel-previous []
+              (this-as ^js this
+                (let [m (read-model this)]
+                  (go-to! this (model/prev-index m) reason-api)))))
 
   (gobj/set proto "goTo"
-            (fn [idx] (this-as ^js this
-                               (go-to! this idx "api")))))
+            (fn carousel-go-to [idx]
+              (this-as ^js this
+                (go-to! this idx reason-api)))))
 
-;; ── Lifecycle ───────────────────────────────────────────────────────────────
+;; ── Lifecycle ──────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (du/initialized? el k-init)
     (init-dom! el)
     (du/mark-initialized! el k-init))
   (remove-listeners! el)
   (add-listeners! el)
-  ;; Trigger initial slotchange read
-  (let [refs (du/getv el k-refs)
-        ^js slot (gobj/get refs "slot")
-        children (.assignedElements slot)]
-    (du/setv! el k-slide-count (.-length children)))
-  (render! el)
+  ;; Prime slide-count before the first render so apply-arrows!/apply-dots!
+  ;; see the right number on the first pass.
+  (let [^js slot (gobj/get (du/getv el k-refs) rk-slot)]
+    (du/setv! el k-slide-count (.-length (.assignedElements slot))))
+  (update-from-attrs! el)
   (start-autoplay! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (when (du/initialized? el k-init)
-    (render! el)
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)
     (when (.-isConnected el)
       (start-autoplay! el))))
 
-;; ── Element class ───────────────────────────────────────────────────────────
-;; ── Public API ──────────────────────────────────────────────────────────────
-
+;; ── Public API ─────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))
