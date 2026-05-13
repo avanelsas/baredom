@@ -4,7 +4,7 @@
    [baredom.components.x-image.model :as model]
    [baredom.utils.dom :as du]))
 
-;; ── Instance-field keys (gobj/get, gobj/set via du) ──────────────────────────
+;; ── Instance-field keys ──────────────────────────────────────────────────
 (def ^:private k-refs        "__xImageRefs")
 (def ^:private k-model       "__xImageModel")
 (def ^:private k-state       "__xImageState")
@@ -13,9 +13,40 @@
 (def ^:private k-warned-alt  "__xImageWarnedAlt")
 (def ^:private k-warned-rat  "__xImageWarnedRatio")
 
-(def ^:private data-state-attr "data-state")
+;; ── String-literal constants ─────────────────────────────────────────────
+(def ^:private attr-part        "part")
+(def ^:private attr-role        "role")
+(def ^:private attr-aria-hidden "aria-hidden")
+(def ^:private attr-aria-label  "aria-label")
+(def ^:private attr-name        "name")
+(def ^:private attr-src         "src")
+(def ^:private attr-data-state  "data-state")
 
-;; ── Styles ───────────────────────────────────────────────────────────────────
+(def ^:private part-frame         "frame")
+(def ^:private part-image         "image")
+(def ^:private part-shimmer       "shimmer")
+(def ^:private part-error         "error")
+(def ^:private part-error-default "error-default")
+(def ^:private part-error-glyph   "error-glyph")
+(def ^:private part-error-text    "error-text")
+
+(def ^:private val-true     "true")
+(def ^:private val-img      "img")
+(def ^:private val-async    "async")
+(def ^:private slot-error   "error")
+(def ^:private fallback-error-label "Image failed to load")
+(def ^:private glyph-error  "⚠")
+(def ^:private default-error-text "Image unavailable")
+
+(def ^:private ev-load  "load")
+(def ^:private ev-error "error")
+
+(def ^:private msg-invalid-ratio
+  "[x-image] Invalid ratio attribute; expected \"W:H\" (e.g. \"16:9\").")
+(def ^:private msg-missing-alt
+  "[x-image] Missing alt attribute. Set alt=\"…\" or add the `decorative` attribute.")
+
+;; ── Styles ───────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
    ":host{"
@@ -103,43 +134,43 @@
    "[part=shimmer]{animation:none;}"
    "[part=image]{transition:none;}}"))
 
-;; ── DOM initialisation ───────────────────────────────────────────────────────
+;; ── DOM initialisation ───────────────────────────────────────────────────
 (defn- init-dom! [^js el]
-  (let [root         (.attachShadow el #js {:mode "open"})
-        style        (.createElement js/document "style")
-        frame        (.createElement js/document "div")
-        shimmer      (.createElement js/document "div")
-        img          (.createElement js/document "img")
-        error-box    (.createElement js/document "div")
-        error-slot   (.createElement js/document "slot")
+  (let [root          (.attachShadow el #js {:mode "open"})
+        style         (.createElement js/document "style")
+        frame         (.createElement js/document "div")
+        shimmer       (.createElement js/document "div")
+        img           (.createElement js/document "img")
+        error-box     (.createElement js/document "div")
+        error-slot    (.createElement js/document "slot")
         error-default (.createElement js/document "div")
-        error-glyph  (.createElement js/document "span")
-        error-text   (.createElement js/document "span")]
+        error-glyph   (.createElement js/document "span")
+        error-text    (.createElement js/document "span")]
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute frame "part" "frame")
+    (.setAttribute frame attr-part part-frame)
 
-    (.setAttribute shimmer "part" "shimmer")
-    (.setAttribute shimmer "aria-hidden" "true")
+    (.setAttribute shimmer attr-part        part-shimmer)
+    (.setAttribute shimmer attr-aria-hidden val-true)
 
-    (.setAttribute img "part" "image")
+    (.setAttribute img attr-part part-image)
     (set! (.-alt img) "")
-    (set! (.-decoding img) "async")
+    (set! (.-decoding img) val-async)
     (set! (.-loading img) model/default-loading)
 
-    (.setAttribute error-box "part" "error")
-    (.setAttribute error-box "role" "img")
-    (.setAttribute error-box "aria-label" "Image failed to load")
+    (.setAttribute error-box attr-part       part-error)
+    (.setAttribute error-box attr-role       val-img)
+    (.setAttribute error-box attr-aria-label fallback-error-label)
 
-    (.setAttribute error-slot "name" "error")
+    (.setAttribute error-slot attr-name slot-error)
 
-    (.setAttribute error-default "part" "error-default")
-    (.setAttribute error-glyph "part" "error-glyph")
-    (.setAttribute error-glyph "aria-hidden" "true")
-    (set! (.-textContent error-glyph) "⚠")
-    (.setAttribute error-text "part" "error-text")
-    (set! (.-textContent error-text) "Image unavailable")
+    (.setAttribute error-default attr-part part-error-default)
+    (.setAttribute error-glyph attr-part        part-error-glyph)
+    (.setAttribute error-glyph attr-aria-hidden val-true)
+    (set! (.-textContent error-glyph) glyph-error)
+    (.setAttribute error-text attr-part part-error-text)
+    (set! (.-textContent error-text) default-error-text)
 
     (.appendChild error-default error-glyph)
     (.appendChild error-default error-text)
@@ -166,12 +197,12 @@
       (do (init-dom! el)
           (du/getv el k-refs))))
 
-;; ── Host state helpers ───────────────────────────────────────────────────────
+;; ── Host state helpers ───────────────────────────────────────────────────
 (defn- set-host-state! [^js el state-str]
   (du/setv! el k-state state-str)
-  (du/set-attr! el data-state-attr state-str))
+  (du/set-attr! el attr-data-state state-str))
 
-;; ── Attribute readers ────────────────────────────────────────────────────────
+;; ── Attribute readers ────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
    {:src-raw             (du/get-attr el model/attr-src)
@@ -183,14 +214,14 @@
     :position-raw        (du/get-attr el model/attr-position)
     :loading-raw         (du/get-attr el model/attr-loading)}))
 
-;; ── Event dispatch ───────────────────────────────────────────────────────────
+;; ── Event dispatch ───────────────────────────────────────────────────────
 (defn- dispatch-load! [^js el src natural-w natural-h]
   (du/dispatch! el model/event-load (clj->js (model/load-detail src natural-w natural-h))))
 
 (defn- dispatch-error! [^js el src]
   (du/dispatch! el model/event-error (clj->js (model/error-detail src))))
 
-;; ── Image load / error handling ──────────────────────────────────────────────
+;; ── Image load / error handling ──────────────────────────────────────────
 (defn- on-img-load [^js el]
   (let [{:keys [img]} (du/getv el k-refs)
         ^js img img
@@ -199,8 +230,8 @@
       ;; Only act if this load corresponds to the src we most recently set.
       ;; Compare against the attribute we set (not the resolved IDL), since
       ;; relative URLs resolve differently.
-      (let [attr-src (.getAttribute img "src")]
-        (when (= attr-src expected)
+      (let [attr-src-val (.getAttribute img attr-src)]
+        (when (= attr-src-val expected)
           (set-host-state! el model/state-loaded)
           (dispatch-load! el expected (.-naturalWidth img) (.-naturalHeight img)))))))
 
@@ -209,8 +240,8 @@
         ^js img img
         expected (du/getv el k-current-src)]
     (when (and img (string? expected) (not= "" expected))
-      (let [attr-src (.getAttribute img "src")]
-        (when (= attr-src expected)
+      (let [attr-src-val (.getAttribute img attr-src)]
+        (when (= attr-src-val expected)
           (set-host-state! el model/state-error)
           (dispatch-error! el expected))))))
 
@@ -225,63 +256,65 @@
           ;; Reset to loading state BEFORE assignment so sync load events
           ;; (data URLs) see the correct pending state.
           (set-host-state! el model/state-loading)
-          (.setAttribute img "src" new-src))
+          (.setAttribute img attr-src new-src))
         (do
-          (.removeAttribute img "src")
+          (.removeAttribute img attr-src)
           (set-host-state! el model/state-loading))))))
 
-;; ── DOM patching ─────────────────────────────────────────────────────────────
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
 (defn- warn-once! [^js el key msg]
   (when-not (du/getv el key)
     (du/setv! el key true)
     (js/console.warn msg)))
+
+(defn- apply-ratio! [^js el ^js frame {:keys [ratio-css ratio-valid?]}]
+  (if ratio-css
+    (set! (.. frame -style -aspectRatio) ratio-css)
+    (set! (.. frame -style -aspectRatio) ""))
+  (when-not ratio-valid?
+    (warn-once! el k-warned-rat msg-invalid-ratio)))
+
+(defn- apply-image-style! [^js img {:keys [fit position loading]}]
+  (set! (.. img -style -objectFit) fit)
+  (set! (.. img -style -objectPosition) position)
+  (set! (.-loading img) loading)
+  (set! (.-decoding img) val-async))
+
+(defn- apply-accessibility! [^js el ^js img {:keys [decorative? alt warn-alt?]}]
+  (if decorative?
+    (do
+      (set! (.-alt img) "")
+      (du/set-attr!    el attr-aria-hidden val-true)
+      (du/remove-attr! el attr-role))
+    (do
+      (set! (.-alt img) alt)
+      (du/remove-attr! el attr-aria-hidden)
+      (du/set-attr!    el attr-role val-img)
+      (when warn-alt?
+        (warn-once! el k-warned-alt msg-missing-alt)))))
+
+(defn- apply-error-label! [^js error-box {:keys [decorative? alt]}]
+  (.setAttribute error-box attr-aria-label
+                 (if (and (not decorative?) (not= "" alt))
+                   alt
+                   fallback-error-label)))
+
+(defn- apply-src! [^js el {:keys [src]} prev-model]
+  (let [src-changed? (or (nil? prev-model) (not= (when prev-model (:src prev-model)) src))]
+    (when src-changed?
+      (set-img-src! el src))))
 
 (defn- apply-model! [^js el m]
   (let [{:keys [frame img error-box]} (ensure-refs! el)
         ^js frame     frame
         ^js img       img
         ^js error-box error-box
-        prev-model    (du/getv el k-model)
-        prev-src      (when prev-model (:src prev-model))
-        src-changed?  (or (nil? prev-model) (not= prev-src (:src m)))]
-
-    ;; Aspect ratio
-    (if (:ratio-css m)
-      (set! (.. frame -style -aspectRatio) (:ratio-css m))
-      (set! (.. frame -style -aspectRatio) ""))
-    (when-not (:ratio-valid? m)
-      (warn-once! el k-warned-rat
-                  "[x-image] Invalid ratio attribute; expected \"W:H\" (e.g. \"16:9\")."))
-
-    ;; Image styling
-    (set! (.. img -style -objectFit) (:fit m))
-    (set! (.. img -style -objectPosition) (:position m))
-    (set! (.-loading img) (:loading m))
-    (set! (.-decoding img) "async")
-
-    ;; Accessibility
-    (if (:decorative? m)
-      (do
-        (set! (.-alt img) "")
-        (du/set-attr! el "aria-hidden" "true")
-        (du/remove-attr! el "role"))
-      (do
-        (set! (.-alt img) (:alt m))
-        (du/remove-attr! el "aria-hidden")
-        (du/set-attr! el "role" "img")
-        (when (:warn-alt? m)
-          (warn-once! el k-warned-alt
-                      "[x-image] Missing alt attribute. Set alt=\"…\" or add the `decorative` attribute."))))
-
-    (.setAttribute error-box "aria-label"
-                   (if (and (not (:decorative? m)) (not= "" (:alt m)))
-                     (:alt m)
-                     "Image failed to load"))
-
-    ;; Src (reload if changed)
-    (when src-changed?
-      (set-img-src! el (:src m)))
-
+        prev-model    (du/getv el k-model)]
+    (apply-ratio!         el frame m)
+    (apply-image-style!   img m)
+    (apply-accessibility! el img m)
+    (apply-error-label!   error-box m)
+    (apply-src!           el m prev-model)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -290,14 +323,14 @@
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
-;; ── Listener management ──────────────────────────────────────────────────────
+;; ── Listener management ──────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [{:keys [img]} (ensure-refs! el)
         ^js img img
-        load-h  (fn [_e] (on-img-load el))
-        err-h   (fn [_e] (on-img-error el))]
-    (.addEventListener img "load" load-h)
-    (.addEventListener img "error" err-h)
+        load-h  (fn handle-img-load  [_e] (on-img-load  el))
+        err-h   (fn handle-img-error [_e] (on-img-error el))]
+    (.addEventListener img ev-load  load-h)
+    (.addEventListener img ev-error err-h)
     (du/setv! el k-handlers {:load load-h :error err-h})))
 
 (defn- remove-listeners! [^js el]
@@ -307,25 +340,25 @@
       (let [^js img (:img refs)
             load-h  (:load hs)
             err-h   (:error hs)]
-        (when load-h (.removeEventListener img "load" load-h))
-        (when err-h  (.removeEventListener img "error" err-h)))))
+        (when load-h (.removeEventListener img ev-load  load-h))
+        (when err-h  (.removeEventListener img ev-error err-h)))))
   (du/setv! el k-handlers nil))
 
-;; ── Property accessors ──────────────────────────────────────────────────────
+;; ── Property accessors ───────────────────────────────────────────────────
 ;; Strings here use stricter empty-string semantics: setting to "" removes the
 ;; attribute (du/define-string-prop! would keep "" as the attribute value).
-(defn- define-string-attr-prop! [^js proto prop-name attr-name]
+(defn- define-string-attr-prop! [^js proto prop-name attr-name-str]
   (.defineProperty js/Object proto prop-name
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this attr-name) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (or (nil? v) (= v ""))
-                                          (.removeAttribute this attr-name)
-                                          (.setAttribute this attr-name (str v)))))
-                        :enumerable  true
-                        :configurable true}))
+    #js {:get (fn xi-get-string-attr []
+                (this-as ^js this
+                  (or (.getAttribute this attr-name-str) "")))
+         :set (fn xi-set-string-attr [v]
+                (this-as ^js this
+                  (if (or (nil? v) (= v ""))
+                    (.removeAttribute this attr-name-str)
+                    (.setAttribute this attr-name-str (str v)))))
+         :enumerable  true
+         :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
   (define-string-attr-prop! proto "src"      model/attr-src)
@@ -337,31 +370,31 @@
   (du/define-bool-prop!     proto "decorative" model/attr-decorative)
 
   (.defineProperty js/Object proto "naturalWidth"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (if-let [refs (du/getv this k-refs)]
-                                          (.-naturalWidth ^js (:img refs))
-                                          0)))
-                        :enumerable  true
-                        :configurable true})
+    #js {:get (fn xi-get-natural-width []
+                (this-as ^js this
+                  (if-let [refs (du/getv this k-refs)]
+                    (.-naturalWidth ^js (:img refs))
+                    0)))
+         :enumerable  true
+         :configurable true})
 
   (.defineProperty js/Object proto "naturalHeight"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (if-let [refs (du/getv this k-refs)]
-                                          (.-naturalHeight ^js (:img refs))
-                                          0)))
-                        :enumerable  true
-                        :configurable true})
+    #js {:get (fn xi-get-natural-height []
+                (this-as ^js this
+                  (if-let [refs (du/getv this k-refs)]
+                    (.-naturalHeight ^js (:img refs))
+                    0)))
+         :enumerable  true
+         :configurable true})
 
   (.defineProperty js/Object proto "state"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (du/getv this k-state) model/state-loading)))
-                        :enumerable  true
-                        :configurable true}))
+    #js {:get (fn xi-get-state []
+                (this-as ^js this
+                  (or (du/getv this k-state) model/state-loading)))
+         :enumerable  true
+         :configurable true}))
 
-;; ── Element class ────────────────────────────────────────────────────────────
+;; ── Lifecycle ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
@@ -377,8 +410,7 @@
   (when (not= old-val new-val)
     (update-from-attrs! el)))
 
-;; ── Public API ───────────────────────────────────────────────────────────────
-
+;; ── Public API ───────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes

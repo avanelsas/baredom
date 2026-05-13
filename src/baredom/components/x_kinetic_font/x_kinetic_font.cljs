@@ -20,6 +20,23 @@
 (def ^:private k-active       "__xKineticFontAct")
 (def ^:private k-css-vars     "__xKineticFontCV")
 
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private trigger-cursor "cursor")
+(def ^:private trigger-scroll "scroll")
+(def ^:private trigger-both   "both")
+(def ^:private mode-lean      "lean")
+
+(def ^:private ev-pointermove "pointermove")
+(def ^:private ev-scroll      "scroll")
+(def ^:private hk-move        "move")
+(def ^:private hk-scroll      "scroll")
+
+(def ^:private attr-aria-hidden "aria-hidden")
+(def ^:private attr-aria-label  "aria-label")
+(def ^:private attr-role        "role")
+(def ^:private role-text        "text")
+(def ^:private val-true         "true")
+
 ;; ── Styles ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
@@ -164,7 +181,88 @@
       (.removeProperty st "transform")
       (.setProperty st "transform" (str "skewX(" (.toFixed skew-deg 1) "deg)")))))
 
-;; ── Animation loop ──────────────────────────────────────────────────────────
+;; ── Animation loop (decomposed into compute / step / apply / tick) ─────────
+(defn- cursor-force-from-rect
+  "Compute the cursor force for a given element's bounding rect."
+  [^js rect mouse-x mouse-y radius]
+  (let [cx       (+ (.-left rect) (* 0.5 (.-width rect)))
+        cy       (+ (.-top rect)  (* 0.5 (.-height rect)))
+        dx       (- mouse-x cx)
+        dy       (- mouse-y cy)
+        dist     (js/Math.sqrt (+ (* dx dx) (* dy dy)))]
+    (model/compute-cursor-force dist radius)))
+
+(defn- compute-force-for-spring
+  "Combine per-spring cursor force (if applicable) with the global scroll force."
+  [^js el ^js spans i per-char? trigger mouse-x mouse-y radius scroll-force]
+  (let [cursor-trigger? (or (= trigger trigger-cursor) (= trigger trigger-both))]
+    (cond
+      (and per-char? cursor-trigger?)
+      (let [^js span (aget spans i)
+            ^js rect (.getBoundingClientRect span)
+            cf       (cursor-force-from-rect rect mouse-x mouse-y radius)]
+        (js/Math.max cf scroll-force))
+
+      (and per-char? (= trigger trigger-scroll))
+      scroll-force
+
+      (and (not per-char?) cursor-trigger?)
+      (let [{:keys [container]} (gobj/get el k-refs)
+            ^js container container
+            ^js rect (.getBoundingClientRect container)
+            cf       (cursor-force-from-rect rect mouse-x mouse-y radius)]
+        (js/Math.max cf scroll-force))
+
+      (= trigger trigger-scroll)
+      scroll-force
+
+      :else 0.0)))
+
+(defn- step-spring!
+  "Integrate one spring step. Mutates the spring array and returns the new
+   [disp vel] pair as a JS array."
+  [^js spring target dt mass tension friction]
+  (let [cur-disp (aget spring 0)
+        cur-vel  (aget spring 1)
+        result   (model/spring-step cur-disp target cur-vel dt mass tension friction)
+        new-disp (aget result 0)
+        new-vel  (aget result 1)]
+    (aset spring 0 new-disp)
+    (aset spring 1 new-vel)
+    result))
+
+(defn- apply-spring-output!
+  "Map displacement to font axes and apply to the per-char span or whole-text
+   container."
+  [^js el ^js spans i per-char? new-disp
+   {:keys [modes intensity wght-min wght-max wdth-min wdth-max
+           slnt-min slnt-max opsz-min opsz-max skew-max has-lean?]}]
+  (let [axes     (model/map-force-to-axes new-disp modes intensity
+                   wght-min wght-max wdth-min wdth-max
+                   slnt-min slnt-max opsz-min opsz-max)
+        skew-deg (if has-lean? (* new-disp intensity skew-max) 0.0)]
+    (if per-char?
+      (apply-font-variation! (aget spans i) axes skew-deg)
+      (let [{:keys [container]} (gobj/get el k-refs)]
+        (apply-font-variation! container axes skew-deg)))))
+
+(declare animate!)
+
+(defn- tick-or-stop!
+  "After processing all springs, either schedule the next frame or settle the
+   animation if all springs are at rest and scroll delta has decayed."
+  [^js el all-settled]
+  (let [still-scrolling? (> (or (gobj/get el k-scroll-delta) 0.0) 0.5)]
+    (if (and (aget all-settled 0) (not still-scrolling?))
+      (do
+        (gobj/set el k-raf nil)
+        (gobj/set el k-scroll-delta 0.0)
+        (when (gobj/get el k-active)
+          (gobj/set el k-active false)
+          (du/dispatch! el model/event-spring-settle #js {})))
+      (gobj/set el k-raf
+                (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el)))))))
+
 (defn- animate! [^js el]
   (when (.-isConnected el)
     (let [m          (gobj/get el k-model)
@@ -179,112 +277,37 @@
           radius     (:radius m)
           trigger    (:trigger m)
           modes      (:modes m)
-          wght-min   (:wght-min cv)
-          wght-max   (:wght-max cv)
-          wdth-min   (:wdth-min cv)
-          wdth-max   (:wdth-max cv)
-          slnt-min   (:slnt-min cv)
-          slnt-max   (:slnt-max cv)
-          opsz-min   (:opsz-min cv)
-          opsz-max   (:opsz-max cv)
-          skew-max   (:skew-max cv)
-          has-lean?  (contains? modes "lean")
+          axis-ctx   (assoc cv :modes modes :intensity intensity
+                            :has-lean? (contains? modes mode-lean))
           mouse-x    (gobj/get el k-mouse-x)
           mouse-y    (gobj/get el k-mouse-y)
-          scroll-d    (or (gobj/get el k-scroll-delta) 0.0)
+          scroll-d   (or (gobj/get el k-scroll-delta) 0.0)
           scroll-force (model/compute-scroll-force scroll-d)
           ^js springs (gobj/get el k-springs)
           ^js spans  (gobj/get el k-char-spans)
           per-char?  (some? spans)
-          n          (.-length springs)]
+          n          (.-length springs)
+          all-settled #js [true]]
 
       (gobj/set el k-last-frame now)
       ;; Decay scroll delta instead of resetting — keeps force warm over
-      ;; multiple frames so the spring has time to respond
+      ;; multiple frames so the spring has time to respond.
       (gobj/set el k-scroll-delta (* scroll-d 0.85))
 
       ;; 1-slot JS array avoids volatile! while letting the dotimes body mutate.
-      (let [all-settled #js [true]]
-        (dotimes [i n]
-          (let [;; Compute force for this spring
-                force
-                (cond
-                  ;; Per-char mode: compute per-character cursor distance
-                  ;; Read span rects fresh each frame (trivial for <50 chars)
-                  (and per-char? (or (= trigger "cursor") (= trigger "both")))
-                  (let [^js span (aget spans i)
-                        ^js r    (.getBoundingClientRect span)
-                        cx       (+ (.-left r) (* 0.5 (.-width r)))
-                        cy       (+ (.-top r) (* 0.5 (.-height r)))
-                        dx       (- mouse-x cx)
-                        dy       (- mouse-y cy)
-                        dist     (js/Math.sqrt (+ (* dx dx) (* dy dy)))
-                        cursor-f (model/compute-cursor-force dist radius)]
-                    (js/Math.max cursor-f scroll-force))
+      (dotimes [i n]
+        (let [^js spring (aget springs i)
+              target     (compute-force-for-spring el spans i per-char?
+                                                   trigger mouse-x mouse-y
+                                                   radius scroll-force)
+              result     (step-spring! spring target dt mass tension friction)
+              new-disp   (aget result 0)
+              new-vel    (aget result 1)]
+          (when-not (model/spring-settled? (- new-disp target) new-vel)
+            (aset all-settled 0 false))
+          (apply-spring-output! el spans i per-char? new-disp axis-ctx)))
 
-                  ;; Per-char mode with scroll-only trigger (uniform force)
-                  (and per-char? (= trigger "scroll"))
-                  scroll-force
-
-                  ;; Whole-text mode with cursor trigger
-                  (and (not per-char?) (or (= trigger "cursor") (= trigger "both")))
-                  (let [{:keys [container]} (gobj/get el k-refs)
-                        ^js container container
-                        ^js r (.getBoundingClientRect container)
-                        cx (+ (.-left r) (* 0.5 (.-width r)))
-                        cy (+ (.-top r) (* 0.5 (.-height r)))
-                        dx (- mouse-x cx)
-                        dy (- mouse-y cy)
-                        dist (js/Math.sqrt (+ (* dx dx) (* dy dy)))
-                        cursor-f (model/compute-cursor-force dist radius)]
-                    (js/Math.max cursor-f scroll-force))
-
-                  ;; Scroll-only trigger
-                  (= trigger "scroll")
-                  scroll-force
-
-                  :else 0.0)
-
-                ;; Spring target is the force value
-                target force
-                ^js spring (aget springs i)
-                cur-disp (aget spring 0)
-                cur-vel  (aget spring 1)
-                result   (model/spring-step cur-disp target cur-vel dt mass tension friction)
-                new-disp (aget result 0)
-                new-vel  (aget result 1)]
-
-            ;; Update spring state
-            (aset spring 0 new-disp)
-            (aset spring 1 new-vel)
-
-            ;; Check if settled
-            (when-not (model/spring-settled? (- new-disp target) new-vel)
-              (aset all-settled 0 false))
-
-            ;; Map displacement to font axes and apply
-            (let [axes    (model/map-force-to-axes new-disp modes intensity
-                            wght-min wght-max wdth-min wdth-max
-                            slnt-min slnt-max opsz-min opsz-max)
-                  skew-deg (if has-lean?
-                             (* new-disp intensity skew-max)
-                             0.0)]
-              (if per-char?
-                (apply-font-variation! (aget spans i) axes skew-deg)
-                (let [{:keys [container]} (gobj/get el k-refs)]
-                  (apply-font-variation! container axes skew-deg))))))
-
-        ;; Continue or stop — keep running while scroll delta is still decaying
-        (let [still-scrolling (> (or (gobj/get el k-scroll-delta) 0.0) 0.5)]
-          (if (and (aget all-settled 0) (not still-scrolling))
-            (do
-              (gobj/set el k-raf nil)
-              (gobj/set el k-scroll-delta 0.0)
-              (when (gobj/get el k-active)
-                (gobj/set el k-active false)
-                (du/dispatch! el model/event-spring-settle #js {})))
-            (gobj/set el k-raf
-                      (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el))))))))))
+      (tick-or-stop! el all-settled))))
 
 (defn- start-animation! [^js el]
   (when-not (gobj/get el k-raf)
@@ -318,29 +341,28 @@
       (start-animation! el))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
-(defn- add-listeners! [^js el]
-  (let [m       (gobj/get el k-model)
-        trigger (:trigger m)
+(defn- add-listeners! [^js el m]
+  (let [trigger (:trigger m)
         hdl     #js {}]
     ;; Cursor tracking (document-level for proximity detection outside element)
-    (when (or (= trigger "cursor") (= trigger "both"))
-      (let [move-fn (fn [^js e] (on-mousemove el e))]
-        (gobj/set hdl "move" move-fn)
-        (.addEventListener js/document "pointermove" move-fn #js {:passive true})))
+    (when (or (= trigger trigger-cursor) (= trigger trigger-both))
+      (let [move-fn (fn handle-pointermove [^js e] (on-mousemove el e))]
+        (gobj/set hdl hk-move move-fn)
+        (.addEventListener js/document ev-pointermove move-fn #js {:passive true})))
     ;; Scroll tracking
-    (when (or (= trigger "scroll") (= trigger "both"))
-      (let [scroll-fn (fn [] (on-scroll el))]
-        (gobj/set hdl "scroll" scroll-fn)
+    (when (or (= trigger trigger-scroll) (= trigger trigger-both))
+      (let [scroll-fn (fn handle-scroll [] (on-scroll el))]
+        (gobj/set hdl hk-scroll scroll-fn)
         (gobj/set el k-last-scroll-y (.-scrollY js/window))
-        (.addEventListener js/window "scroll" scroll-fn #js {:passive true})))
+        (.addEventListener js/window ev-scroll scroll-fn #js {:passive true})))
     (gobj/set el k-handlers hdl)))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js hdl (gobj/get el k-handlers)]
-    (when-let [move-fn (gobj/get hdl "move")]
-      (.removeEventListener js/document "pointermove" move-fn))
-    (when-let [scroll-fn (gobj/get hdl "scroll")]
-      (.removeEventListener js/window "scroll" scroll-fn))
+    (when-let [move-fn (gobj/get hdl hk-move)]
+      (.removeEventListener js/document ev-pointermove move-fn))
+    (when-let [scroll-fn (gobj/get hdl hk-scroll)]
+      (.removeEventListener js/window ev-scroll scroll-fn))
     (gobj/set el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
@@ -349,17 +371,15 @@
         ^js sr-only sr-only]
     (set! (.-textContent sr-only) text)
     (if (= text "")
-      (do (du/set-attr! el "aria-hidden" "true")
-          (du/remove-attr! el "role"))
-      (do (du/remove-attr! el "aria-hidden")
-          (du/set-attr! el "role" "text")
-          (du/set-attr! el "aria-label" text)))))
+      (do (du/set-attr!    el attr-aria-hidden val-true)
+          (du/remove-attr! el attr-role))
+      (do (du/remove-attr! el attr-aria-hidden)
+          (du/set-attr!    el attr-role       role-text)
+          (du/set-attr!    el attr-aria-label text)))))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 (defn- apply-model! [^js el m]
   (let [old-m (gobj/get el k-model)]
-    (gobj/set el k-model m)
-
     ;; Rebuild text DOM if text or per-char changed
     (when (or (not= (:text m) (:text old-m))
               (not= (:per-char? m) (:per-char? old-m)))
@@ -370,7 +390,7 @@
     ;; Rebuild listeners if trigger changed
     (when (not= (:trigger m) (:trigger old-m))
       (remove-listeners! el)
-      (add-listeners! el))
+      (add-listeners! el m))
 
     ;; Update font-family override
     (let [{:keys [container]} (gobj/get el k-refs)
@@ -397,7 +417,9 @@
             (dotimes [i (.-length spans)]
               (apply-font-variation! (aget spans i) rest-axes 0.0)))
           (let [{:keys [container]} (gobj/get el k-refs)]
-            (apply-font-variation! container rest-axes 0.0)))))))
+            (apply-font-variation! container rest-axes 0.0)))))
+
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)

@@ -23,20 +23,42 @@
 (def ^:private k-reduced  "__xKineticCanvasReduced")
 (def ^:private k-mql      "__xKineticCanvasMQL")
 
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private mk-mql      "mql")
+(def ^:private mk-handler  "handler")
+(def ^:private ev-change   "change")
+(def ^:private ctx-2d      "2d")
+(def ^:private cls-wrap    "kc-canvas-wrap")
+(def ^:private cls-content "kc-content")
+(def ^:private attr-aria-hidden "aria-hidden")
+(def ^:private val-true    "true")
+
+(def ^:private type-starfield "starfield")
+(def ^:private type-bubbles   "bubbles")
+(def ^:private type-matrix    "matrix")
+
+(def ^:private mq-reduced-motion "(prefers-reduced-motion:reduce)")
+(def ^:private color-transparent "transparent")
+
+(def ^:private default-bg      "#f0f0f5")
+(def ^:private default-color-1 "#1a1a2e")
+(def ^:private default-color-2 "#2563eb")
+(def ^:private default-color-3 "#7c3aed")
+
 ;; ── Type dispatch map ───────────────────────────────────────────────────────
 (def ^:private type-fns
-  {"starfield" {:create starfield/create-entities
-                :update starfield/update-entities!
-                :draw   starfield/draw!
-                :static starfield/draw-static!}
-   "bubbles"   {:create bubbles/create-entities
-                :update bubbles/update-entities!
-                :draw   bubbles/draw!
-                :static bubbles/draw-static!}
-   "matrix"    {:create matrix/create-entities
-                :update matrix/update-entities!
-                :draw   matrix/draw!
-                :static matrix/draw-static!}})
+  {type-starfield {:create starfield/create-entities
+                   :update starfield/update-entities!
+                   :draw   starfield/draw!
+                   :static starfield/draw-static!}
+   type-bubbles   {:create bubbles/create-entities
+                   :update bubbles/update-entities!
+                   :draw   bubbles/draw!
+                   :static bubbles/draw-static!}
+   type-matrix    {:create matrix/create-entities
+                   :update matrix/update-entities!
+                   :draw   matrix/draw!
+                   :static matrix/draw-static!}})
 
 ;; ── Styles ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -100,11 +122,11 @@
           c1 (.trim (.getPropertyValue cs model/css-color-1))
           c2 (.trim (.getPropertyValue cs model/css-color-2))
           c3 (.trim (.getPropertyValue cs model/css-color-3))
-          bg-val (if (= bg "") "#f0f0f5" bg)
+          bg-val (if (= bg "") default-bg bg)
           colors #js [bg-val
-                      (if (= c1 "") "#1a1a2e" c1)
-                      (if (= c2 "") "#2563eb" c2)
-                      (if (= c3 "") "#7c3aed" c3)]]
+                      (if (= c1 "") default-color-1 c1)
+                      (if (= c2 "") default-color-2 c2)
+                      (if (= c3 "") default-color-3 c3)]]
       (du/setv! el k-colors colors)
       bg-val)))
 
@@ -120,11 +142,11 @@
 
     (set! (.-textContent style) style-text)
 
-    (set! (.-className wrap) "kc-canvas-wrap")
-    (.setAttribute canvas "aria-hidden" "true")
+    (set! (.-className wrap) cls-wrap)
+    (.setAttribute canvas attr-aria-hidden val-true)
     (.appendChild wrap canvas)
 
-    (set! (.-className content) "kc-content")
+    (set! (.-className content) cls-content)
     (.appendChild content slot)
 
     (.appendChild root style)
@@ -134,7 +156,7 @@
     (du/setv! el k-refs
               {:root   root
                :canvas canvas
-               :ctx    (.getContext canvas "2d")})))
+               :ctx    (.getContext canvas ctx-2d)})))
 
 (defn- ensure-refs! [^js el]
   (or (du/getv el k-refs)
@@ -151,13 +173,16 @@
       (let [n (js/parseInt raw 10)]
         (if (or (js/isNaN n) (<= n 0)) matrix/default-char-size n)))))
 
-(defn- create-entities! [^js el]
-  (let [m  (du/getv el k-model)
-        w  (du/getv el k-width)
+(defn- create-entities!
+  "Build the entity list for the given model + cached canvas size.
+   Caller passes m explicitly so this works regardless of whether k-model has
+   been updated yet."
+  [^js el m]
+  (let [w  (du/getv el k-width)
         h  (du/getv el k-height)
         tp (:type m)]
     (when (and w h (> w 0) (> h 0))
-      (let [mfs   (when (= tp "matrix") (read-matrix-font-size el))
+      (let [mfs   (when (= tp type-matrix) (read-matrix-font-size el))
             fns   (get type-fns tp)
             count (model/entity-count tp (:density m) w h
                                       (or mfs matrix/default-char-size))]
@@ -172,7 +197,7 @@
     (set! (.-width canvas) (* w dpr))
     (set! (.-height canvas) (* h dpr))
     ;; Scale context for DPR
-    (let [^js ctx (.getContext canvas "2d")]
+    (let [^js ctx (.getContext canvas ctx-2d)]
       (.setTransform ctx dpr 0 0 dpr 0 0))))
 
 ;; ── Render ──────────────────────────────────────────────────────────────────
@@ -194,7 +219,7 @@
             fns    (get type-fns tp)]
         ;; Clear and fill background
         (.clearRect ctx 0 0 w h)
-        (when (and (some? bg) (not= bg "transparent"))
+        (when (and (some? bg) (not= bg color-transparent))
           (set! (.-fillStyle ctx) bg)
           (.fillRect ctx 0 0 w h))
         ;; Draw entities
@@ -261,7 +286,7 @@
         (du/setv! el k-height h)
         (size-canvas! el w h)
         (invalidate-colors! el)
-        (create-entities! el)
+        (create-entities! el (du/getv el k-model))
         (if (or (:paused? (du/getv el k-model)) (reduced-motion? el))
           (render-frame! el)
           (start-animation! el))))))
@@ -289,26 +314,26 @@
 
 (defn- setup-observers! [^js el]
   ;; Motion media query listener
-  (let [^js mql (.matchMedia js/window "(prefers-reduced-motion:reduce)")]
+  (let [^js mql (.matchMedia js/window mq-reduced-motion)
+        handler (fn handle-motion-change [^js e] (on-motion-change! el e))]
     (du/setv! el k-reduced (.-matches mql))
-    (let [handler (fn [^js e] (on-motion-change! el e))]
-      (.addEventListener mql "change" handler)
-      (du/setv! el k-mql #js {:mql mql :handler handler})))
+    (.addEventListener mql ev-change handler)
+    (du/setv! el k-mql #js {:mql mql :handler handler}))
   (let [io (js/IntersectionObserver.
-            (fn [^js entries] (on-intersection el entries))
+            (fn handle-intersection [^js entries] (on-intersection el entries))
             #js {:threshold #js [0]})]
     (.observe io el)
     (du/setv! el k-io io))
   (let [ro (js/ResizeObserver.
-            (fn [^js entries] (on-resize! el entries)))]
+            (fn handle-resize [^js entries] (on-resize! el entries)))]
     (.observe ro el)
     (du/setv! el k-ro ro)))
 
 (defn- teardown-observers! [^js el]
   (when-let [^js mql-obj (du/getv el k-mql)]
-    (let [^js mql     (aget mql-obj "mql")
-          handler (aget mql-obj "handler")]
-      (.removeEventListener mql "change" handler))
+    (let [^js mql (aget mql-obj mk-mql)
+          handler (aget mql-obj mk-handler)]
+      (.removeEventListener mql ev-change handler))
     (du/setv! el k-mql nil))
   (when-let [^js io (du/getv el k-io)]
     (.disconnect io)
@@ -317,28 +342,32 @@
     (.disconnect ro)
     (du/setv! el k-ro nil)))
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── DOM patching ────────────────────────────────────────────────────────────
+
+(defn- apply-model! [^js el new-m old-m]
+  (invalidate-colors! el)
+  ;; Recreate entities when type, density, or variant changes
+  (when (or (nil? old-m)
+            (not= (:type new-m) (:type old-m))
+            (not= (:density new-m) (:density old-m))
+            (not= (:variant new-m) (:variant old-m)))
+    (create-entities! el new-m))
+  ;; Handle animation state
+  (let [w (du/getv el k-width)
+        h (du/getv el k-height)]
+    (when (and w h (> w 0) (> h 0))
+      (if (or (:paused? new-m) (reduced-motion? el))
+        (do (stop-animation! el)
+            (render-frame! el))
+        (do (render-frame! el)
+            (start-animation! el)))))
+  (du/setv! el k-model new-m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
-    (du/setv! el k-model new-m)
-    (invalidate-colors! el)
-    ;; Recreate entities when type, density, or variant changes
-    (when (or (nil? old-m)
-              (not= (:type new-m) (:type old-m))
-              (not= (:density new-m) (:density old-m))
-              (not= (:variant new-m) (:variant old-m)))
-      (create-entities! el))
-    ;; Handle animation state
-    (let [w (du/getv el k-width)
-          h (du/getv el k-height)]
-      (when (and w h (> w 0) (> h 0))
-        (if (or (:paused? new-m) (reduced-motion? el))
-          (do (stop-animation! el)
-              (render-frame! el))
-          (do (render-frame! el)
-              (start-animation! el)))))))
+    (when (not= old-m new-m)
+      (apply-model! el new-m old-m))))
 
 ;; ── Lifecycle callbacks ─────────────────────────────────────────────────────
 

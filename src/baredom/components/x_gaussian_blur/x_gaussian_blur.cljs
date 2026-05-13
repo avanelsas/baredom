@@ -10,6 +10,20 @@
 (def ^:private k-blobs       "__xGaussianBlurBlobs")
 (def ^:private k-slot        "__xGaussianBlurSlot")
 (def ^:private k-slotchange  "__xGaussianBlurSlotHandler")
+(def ^:private k-model       "__xGaussianBlurModel")
+
+;; ── String-literal constants ──────────────────────────────────────────────
+(def ^:private attr-part           "part")
+(def ^:private attr-role           "role")
+(def ^:private attr-aria-hidden    "aria-hidden")
+(def ^:private attr-data-paused    "data-paused")
+(def ^:private attr-data-animation "data-animation")
+(def ^:private part-backdrop "backdrop")
+(def ^:private part-content  "content")
+(def ^:private cls-blob      "blob")
+(def ^:private role-presentation "presentation")
+(def ^:private val-true      "true")
+(def ^:private ev-slotchange "slotchange")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -106,9 +120,9 @@
         content    (.createElement js/document "div")
         slot-el    (.createElement js/document "slot")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute backdrop "part" "backdrop")
-    (.setAttribute backdrop "aria-hidden" "true")
-    (.setAttribute content "part" "content")
+    (.setAttribute backdrop attr-part        part-backdrop)
+    (.setAttribute backdrop attr-aria-hidden val-true)
+    (.setAttribute content  attr-part        part-content)
     (.appendChild content slot-el)
     (.appendChild root style-el)
     (.appendChild root backdrop)
@@ -119,16 +133,17 @@
     (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
-(defn- read-inputs [^js el]
-  {:colors    (du/get-attr el model/attr-colors)
-   :blur      (du/get-attr el model/attr-blur)
-   :speed     (du/get-attr el model/attr-speed)
-   :count     (du/get-attr el model/attr-count)
-   :size      (du/get-attr el model/attr-size)
-   :opacity   (du/get-attr el model/attr-opacity)
-   :animation (du/get-attr el model/attr-animation)
-   :blend     (du/get-attr el model/attr-blend)
-   :paused    (du/get-attr el model/attr-paused)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:colors    (du/get-attr el model/attr-colors)
+    :blur      (du/get-attr el model/attr-blur)
+    :speed     (du/get-attr el model/attr-speed)
+    :count     (du/get-attr el model/attr-count)
+    :size      (du/get-attr el model/attr-size)
+    :opacity   (du/get-attr el model/attr-opacity)
+    :animation (du/get-attr el model/attr-animation)
+    :blend     (du/get-attr el model/attr-blend)
+    :paused    (du/get-attr el model/attr-paused)}))
 
 ;; ── Accessibility ─────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -137,13 +152,12 @@
 
 (defn- update-a11y! [^js el ^js slot-el]
   (if (slot-has-content? slot-el)
-    (do (du/remove-attr! el "role")
-        (du/remove-attr! el "aria-hidden"))
-    (do (du/set-attr! el "role" "presentation")
-        (du/set-attr! el "aria-hidden" "true"))))
+    (do (du/remove-attr! el attr-role)
+        (du/remove-attr! el attr-aria-hidden))
+    (do (du/set-attr! el attr-role        role-presentation)
+        (du/set-attr! el attr-aria-hidden val-true))))
 
 ;; ── Blob reconciliation ──────────────────────────────────────────────────
-
 (defn- anim-name [animation-type anim-index]
   (case animation-type
     "float" (str "x-gb-float-" anim-index)
@@ -179,7 +193,7 @@
     (loop [i current]
       (when (< i target)
         (let [div (.createElement js/document "div")]
-          (set! (.-className div) "blob")
+          (set! (.-className div) cls-blob)
           (.appendChild backdrop div)
           (.push arr div))
         (recur (inc i))))
@@ -193,30 +207,33 @@
     (dotimes [i target]
       (apply-blob-style! (aget arr i) (nth blobs i) animation speed-s blur))))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [state (model/derive-state (read-inputs el))
-        {:keys [blur opacity blend animation paused]} state
-        ^js backdrop (gobj/get el k-backdrop)
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
+(defn- apply-backdrop-style! [^js backdrop {:keys [blur opacity blend]}]
+  (let [^js s (.-style backdrop)]
+    (.setProperty s "filter"         (str "blur(" blur "px)"))
+    (.setProperty s "opacity"        (str opacity))
+    (.setProperty s "mix-blend-mode" blend)))
+
+(defn- apply-host-data! [^js el {:keys [paused animation]}]
+  (if paused
+    (du/set-attr! el attr-data-paused "")
+    (du/remove-attr! el attr-data-paused))
+  (du/set-attr! el attr-data-animation animation))
+
+(defn- apply-model! [^js el m]
+  (let [^js backdrop (gobj/get el k-backdrop)
         ^js slot-el  (gobj/get el k-slot)]
+    (apply-backdrop-style! backdrop m)
+    (apply-host-data!      el m)
+    (reconcile-blobs!      el m)
+    (update-a11y!          el slot-el)
+    (gobj/set el k-model m)))
 
-    ;; Backdrop filter + opacity + blend
-    (.setProperty (.-style backdrop) "filter" (str "blur(" blur "px)"))
-    (.setProperty (.-style backdrop) "opacity" (str opacity))
-    (.setProperty (.-style backdrop) "mix-blend-mode" blend)
-
-    ;; Data attributes for CSS selectors
-    (if paused
-      (du/set-attr! el "data-paused" "")
-      (du/remove-attr! el "data-paused"))
-
-    (du/set-attr! el "data-animation" animation)
-
-    ;; Reconcile blob divs
-    (reconcile-blobs! el state)
-
-    ;; Accessibility
-    (update-a11y! el slot-el)))
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -225,27 +242,25 @@
   (let [^js slot-el (gobj/get el k-slot)
         handler     (fn handle-slotchange [] (update-a11y! el slot-el))]
     (gobj/set el k-slotchange handler)
-    (.addEventListener slot-el "slotchange" handler))
-  (render! el))
+    (.addEventListener slot-el ev-slotchange handler))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (let [^js slot-el (gobj/get el k-slot)
         handler     (gobj/get el k-slotchange)]
     (when (and slot-el handler)
-      (.removeEventListener slot-el "slotchange" handler))))
+      (.removeEventListener slot-el ev-slotchange handler))))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el))))
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
-;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────
-
 (defn init! []
   (component/register! model/tag-name
     {:observed-attributes    model/observed-attributes
