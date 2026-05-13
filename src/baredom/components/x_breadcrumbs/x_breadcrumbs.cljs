@@ -1,14 +1,44 @@
 (ns baredom.components.x-breadcrumbs.x-breadcrumbs
   (:require
-[baredom.utils.component :as component]
+   [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [goog.object :as gobj]
    [baredom.components.x-breadcrumbs.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xBreadcrumbsRefs")
 (def ^:private k-model    "__xBreadcrumbsModel")
 (def ^:private k-handlers "__xBreadcrumbsHandlers")
+
+;; ── String-literal constants (no duplication; Closure-Advanced safe) ──────
+(def ^:private attr-class            "class")
+(def ^:private attr-part             "part")
+(def ^:private attr-aria-hidden      "aria-hidden")
+(def ^:private attr-aria-label       "aria-label")
+(def ^:private attr-aria-current     "aria-current")
+(def ^:private attr-aria-describedby "aria-describedby")
+(def ^:private attr-data-size        "data-size")
+(def ^:private attr-data-variant     "data-variant")
+(def ^:private attr-data-wrap        "data-wrap")
+(def ^:private attr-data-current     "data-current")
+
+(def ^:private cls-separator     "separator")
+(def ^:private cls-ellipsis      "ellipsis")
+(def ^:private cls-ellipsis-btn  "ellipsis-btn")
+(def ^:private cls-crumb         "crumb")
+(def ^:private cls-crumb-content "crumb-content")
+
+(def ^:private part-root "root")
+(def ^:private part-list "list")
+
+(def ^:private val-true                  "true")
+(def ^:private val-aria-current-page     "page")
+(def ^:private val-default-aria-label    "Breadcrumb")
+(def ^:private val-ellipsis-aria-label   "Show hidden breadcrumbs")
+(def ^:private val-ellipsis-glyph        "…")
+
+(def ^:private ev-slotchange "slotchange")
+(def ^:private handler-slot  "slot")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def style-text
@@ -68,11 +98,9 @@
    "color:var(--x-breadcrumbs-color-current);"
    "font-weight:500;}"
 
-   ;; Variant: subtle
    ":host([data-variant='subtle']) .crumb-content{"
    "opacity:0.75;}"
 
-   ;; Variant: text (no underline affordance)
    ":host([data-variant='text']) .crumb-content{"
    "text-decoration:none;"
    "border-bottom:none;}"
@@ -80,7 +108,6 @@
    ".separator{"
    "color:var(--x-breadcrumbs-separator-color);"
    "user-select:none;"
-   "aria-hidden:true;"
    "flex-shrink:0;}"
 
    ".ellipsis{"
@@ -100,7 +127,6 @@
    ".ellipsis-btn:hover{"
    "color:var(--x-breadcrumbs-color-hover);}"
 
-   ;; Hidden slot — only for change detection
    "slot{display:none;}"
 
    "@media (prefers-reduced-motion:reduce){"
@@ -112,171 +138,162 @@
         style   (.createElement js/document "style")
         nav     (.createElement js/document "nav")
         ol      (.createElement js/document "ol")
-        slot-el (.createElement js/document "slot")]
+        slot-el (.createElement js/document "slot")
+        refs    {:nav nav :ol ol :slot-el slot-el}]
     (set! (.-textContent style) style-text)
-    (.setAttribute nav "part" "root")
-    (.setAttribute ol  "part" "list")
+    (.setAttribute nav attr-part part-root)
+    (.setAttribute ol  attr-part part-list)
     (.appendChild nav ol)
     (.appendChild root style)
     (.appendChild root nav)
     (.appendChild root slot-el)
-    (gobj/set el k-refs {:nav     nav
-                         :ol      ol
-                         :slot-el slot-el}))
-  nil)
+    (gobj/set el k-refs refs)
+    refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
-      (do (init-dom! el)
-          (gobj/get el k-refs))))
+  (or (gobj/get el k-refs) (init-dom! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:separator-raw                (du/get-attr el model/attr-separator)
-    :size-raw                     (du/get-attr el model/attr-size)
-    :variant-raw                  (du/get-attr el model/attr-variant)
-    :wrap-raw                     (du/get-attr el model/attr-wrap)
-    :max-items-raw                (du/get-attr el model/attr-max-items)
-    :items-before-raw             (du/get-attr el model/attr-items-before)
-    :items-after-raw              (du/get-attr el model/attr-items-after)
-    :disabled-present?            (du/has-attr? el model/attr-disabled)
+   {:separator-raw                  (du/get-attr el model/attr-separator)
+    :size-raw                       (du/get-attr el model/attr-size)
+    :variant-raw                    (du/get-attr el model/attr-variant)
+    :wrap-raw                       (du/get-attr el model/attr-wrap)
+    :max-items-raw                  (du/get-attr el model/attr-max-items)
+    :items-before-raw               (du/get-attr el model/attr-items-before)
+    :items-after-raw                (du/get-attr el model/attr-items-after)
+    :disabled-present?              (du/has-attr? el model/attr-disabled)
     :preserve-aria-current-present? (du/has-attr? el model/attr-preserve-aria-current)
-    :aria-label-raw               (du/get-attr el model/attr-aria-label)
-    :aria-describedby-raw         (du/get-attr el model/attr-aria-describedby)}))
+    :aria-label-raw                 (du/get-attr el model/attr-aria-label)
+    :aria-describedby-raw           (du/get-attr el model/attr-aria-describedby)}))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
-(defn- make-separator-el [^js _el sep-text]
+(defn- make-separator-el [sep-text]
   (let [span (.createElement js/document "span")]
-    (.setAttribute span "class"      "separator")
-    (.setAttribute span "aria-hidden" "true")
+    (.setAttribute span attr-class       cls-separator)
+    (.setAttribute span attr-aria-hidden val-true)
     (set! (.-textContent span) sep-text)
     span))
 
-(defn- make-ellipsis-el [^js _el sep-text]
-  (let [li   (.createElement js/document "li")
-        sep  (.createElement js/document "span")
-        btn  (.createElement js/document "button")]
-    (.setAttribute li  "class" "ellipsis")
-    (.setAttribute sep "class"      "separator")
-    (.setAttribute sep "aria-hidden" "true")
+(defn- make-ellipsis-el [sep-text]
+  (let [li  (.createElement js/document "li")
+        sep (.createElement js/document "span")
+        btn (.createElement js/document "button")]
+    (.setAttribute li  attr-class       cls-ellipsis)
+    (.setAttribute sep attr-class       cls-separator)
+    (.setAttribute sep attr-aria-hidden val-true)
     (set! (.-textContent sep) sep-text)
-    (.setAttribute btn "class"      "ellipsis-btn")
-    (.setAttribute btn "aria-label" "Show hidden breadcrumbs")
-    (set! (.-textContent btn) "…")
+    (.setAttribute btn attr-class      cls-ellipsis-btn)
+    (.setAttribute btn attr-aria-label val-ellipsis-aria-label)
+    (set! (.-textContent btn) val-ellipsis-glyph)
     (.appendChild li sep)
     (.appendChild li btn)
     li))
 
-(defn- make-crumb-el [^js _el ^js source-child current?]
+(defn- make-crumb-el [^js source-child current?]
   (let [li      (.createElement js/document "li")
         wrapper (.createElement js/document "span")
         clone   (.cloneNode source-child true)]
-    (.setAttribute li "class" "crumb")
-    (.setAttribute wrapper "class" "crumb-content")
+    (.setAttribute li      attr-class cls-crumb)
+    (.setAttribute wrapper attr-class cls-crumb-content)
     (.appendChild wrapper clone)
     (.appendChild li wrapper)
     (when current?
-      (.setAttribute li "data-current" "")
-      (.setAttribute wrapper "aria-current" "page"))
+      (.setAttribute li      attr-data-current "")
+      (.setAttribute wrapper attr-aria-current val-aria-current-page))
     li))
 
 (defn- rebuild-list! [^js el {:keys [separator max-items items-before items-after
-                                      preserve-aria-current] :as _m}]
+                                     preserve-aria-current]}]
   (let [{:keys [slot-el ol]} (ensure-refs! el)
-        ^js slot-el  slot-el
-        ^js ol       ol
-        children     (array-seq (.assignedElements slot-el))
-        total        (count children)
-        plan         (model/build-plan total max-items items-before items-after)
-        visible      (:visible plan)
-        ellipsis-at  (:ellipsis-at plan)]
+        ^js slot-el slot-el
+        ^js ol      ol
+        children    (array-seq (.assignedElements slot-el))
+        total       (count children)
+        plan        (model/build-plan total max-items items-before items-after)
+        visible     (:visible plan)
+        ellipsis-at (:ellipsis-at plan)]
 
-    ;; Clear existing shadow crumbs
     (set! (.-innerHTML ol) "")
 
-    ;; Build visible items with separators and ellipsis
     (doseq [[pos idx] (map-indexed vector visible)]
       (let [child    (nth children idx nil)
             last?    (= pos (dec (count visible)))
             current? (and last? (not preserve-aria-current))]
-        ;; Insert ellipsis before this position if needed
         (when (= pos ellipsis-at)
-          (.appendChild ol (make-ellipsis-el el separator)))
-        ;; Insert separator before non-first items
+          (.appendChild ol (make-ellipsis-el separator)))
         (when (and (pos? pos)
                    (not (= pos ellipsis-at)))
-          (.appendChild ol (make-separator-el el separator)))
-        ;; Separator after ellipsis position
+          (.appendChild ol (make-separator-el separator)))
         (when (= pos ellipsis-at)
-          (.appendChild ol (make-separator-el el separator)))
+          (.appendChild ol (make-separator-el separator)))
         (when child
-          (.appendChild ol (make-crumb-el el child current?)))))
+          (.appendChild ol (make-crumb-el child current?)))))
 
-    ;; Edge case: ellipsis at the very end (shouldn't normally happen)
     (when (= ellipsis-at (count visible))
-      (.appendChild ol (make-ellipsis-el el separator))))
-  nil)
+      (.appendChild ol (make-ellipsis-el separator)))))
 
 (defn- apply-model! [^js el {:keys [size variant wrap aria-label aria-describedby] :as m}]
   (let [{:keys [nav]} (ensure-refs! el)
         ^js nav nav]
-    ;; Data attributes drive CSS selectors
-    (du/set-attr! el "data-size"    size)
-    (du/set-attr! el "data-variant" variant)
-    (du/set-attr! el "data-wrap"    (str (boolean wrap)))
+    (du/set-attr! el attr-data-size    size)
+    (du/set-attr! el attr-data-variant variant)
+    (du/set-attr! el attr-data-wrap    (str (boolean wrap)))
 
-    ;; ARIA on nav
     (if aria-label
-      (.setAttribute nav "aria-label" aria-label)
-      (.setAttribute nav "aria-label" "Breadcrumb"))
+      (.setAttribute nav attr-aria-label aria-label)
+      (.setAttribute nav attr-aria-label val-default-aria-label))
     (if aria-describedby
-      (.setAttribute nav "aria-describedby" aria-describedby)
-      (.removeAttribute nav "aria-describedby"))
+      (.setAttribute nav attr-aria-describedby aria-describedby)
+      (.removeAttribute nav attr-aria-describedby))
 
-    ;; Rebuild the crumb list
     (rebuild-list! el m)
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
-  (let [new-m (read-model el)]
-    (apply-model! el new-m))
-  nil)
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────
+(defn- on-slot-change!
+  "Slot children changed — always rebuild (children aren't in the model)."
+  [^js el]
+  (apply-model! el (read-model el)))
+
 (defn- add-listeners! [^js el]
   (let [{:keys [slot-el]} (ensure-refs! el)
         ^js slot-el slot-el
-        on-slot (fn [_] (update-from-attrs! el))]
-    (when slot-el (.addEventListener slot-el "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:slot on-slot}))
-  nil)
+        on-slot  (fn handle-slotchange [_] (on-slot-change! el))
+        handlers #js {}]
+    (when slot-el (.addEventListener slot-el ev-slotchange on-slot))
+    (gobj/set handlers handler-slot on-slot)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
     (when-let [refs (gobj/get el k-refs)]
       (let [^js slot-el (:slot-el refs)
-            on-slot (gobj/get hs "slot")]
+            on-slot     (gobj/get hs handler-slot)]
         (when (and slot-el on-slot)
-          (.removeEventListener slot-el "slotchange" on-slot)))))
-  (gobj/set el k-handlers nil)
-  nil)
+          (.removeEventListener slot-el ev-slotchange on-slot)))))
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
-;; max-items / items-before / items-after use model/parse-pos-int — keep as inline custom accessor
 (defn- def-int-prop! [^js proto attr default]
   (.defineProperty js/Object proto attr
                    #js {:get (fn []
                                (this-as ^js this
-                                        (model/parse-pos-int
-                                         (.getAttribute this attr) default)))
+                                 (model/parse-pos-int
+                                  (.getAttribute this attr) default)))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
+                                 (if (some? v)
+                                   (.setAttribute this attr (str v))
+                                   (.removeAttribute this attr))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
@@ -295,27 +312,23 @@
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
-  (remove-listeners! el)   ; reconnect guard
+  (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-  ;; disabled is managed inside apply-model!, no special case needed
-  (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))

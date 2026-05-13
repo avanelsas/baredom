@@ -1,22 +1,60 @@
 (ns baredom.components.x-cancel-dialogue.x-cancel-dialogue
   (:require
-[baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
    [baredom.components.x-cancel-dialogue.model :as model]))
 
-;; ── Instance-field keys (always use gobj/get, gobj/set) ─────────────────────
+;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs     "__xCancelDialogueRefs")
+(def ^:private k-model    "__xCancelDialogueModel")
 (def ^:private k-handlers "__xCancelDialogueHandlers")
 
-;; Unique ID counter for aria labelling — stored as a plain JS object field,
-;; never as an atom, to comply with no-mutable-state conventions.
-(def ^:private id-state #js {:n 0})
+;; ── String-literal constants ────────────────────────────────────────────────
+(def ^:private attr-part            "part")
+(def ^:private attr-role            "role")
+(def ^:private attr-aria-modal      "aria-modal")
+(def ^:private attr-aria-labelledby "aria-labelledby")
+(def ^:private attr-id              "id")
+(def ^:private attr-type            "type")
+(def ^:private attr-name            "name")
+(def ^:private attr-data-danger     "data-danger")
 
-(defn- next-id! []
-  (let [n (inc (gobj/get id-state "n"))]
-    (gobj/set id-state "n" n)
-    (str "x-cd-headline-" n)))
+(def ^:private part-backdrop    "backdrop")
+(def ^:private part-dialog      "dialog")
+(def ^:private part-panel       "panel")
+(def ^:private part-header      "header")
+(def ^:private part-headline    "headline")
+(def ^:private part-body        "body")
+(def ^:private part-message     "message")
+(def ^:private part-actions     "actions")
+(def ^:private part-cancel-btn  "cancel-btn")
+(def ^:private part-confirm-btn "confirm-btn")
+
+(def ^:private role-dialog "dialog")
+(def ^:private val-true    "true")
+
+(def ^:private ev-click   "click")
+(def ^:private ev-keydown "keydown")
+
+(def ^:private hk-backdrop "backdrop")
+(def ^:private hk-cancel   "cancel")
+(def ^:private hk-confirm  "confirm")
+(def ^:private hk-keydown  "keydown")
+
+(def ^:private rk-backdrop    "backdrop")
+(def ^:private rk-dialog      "dialog")
+(def ^:private rk-headline    "headline")
+(def ^:private rk-message     "message")
+(def ^:private rk-cancel-btn  "cancelBtn")
+(def ^:private rk-confirm-btn "confirmBtn")
+
+(def ^:private reason-backdrop      "backdrop")
+(def ^:private reason-cancel-button "cancel-button")
+(def ^:private reason-escape        "escape")
+
+(def ^:private key-escape "Escape")
+(def ^:private key-tab    "Tab")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────────
 (def style-text
@@ -169,83 +207,95 @@
    "}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────────
-(defn- make-el [tag]
-  (.createElement js/document tag))
+(defn- make-el [tag] (.createElement js/document tag))
 
-;; ── Shadow DOM initialisation ─────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [headline-id  (next-id!)
-        root         (.attachShadow el #js {:mode "open"})
-        style        (make-el "style")
-        backdrop     (make-el "div")
-        dialog       (make-el "div")
-        panel        (make-el "div")
-        header       (make-el "div")
-        headline     (make-el "h2")
-        body         (make-el "div")
-        body-slot    (make-el "slot")
-        message-el   (make-el "p")
-        actions      (make-el "div")
-        cancel-btn   (make-el "button")
-        confirm-btn  (make-el "button")]
+(defn- new-headline-id []
+  (str "x-cd-headline-" (.. js/crypto (randomUUID))))
 
-    (set! (.-textContent style) style-text)
+;; ── Shadow DOM initialisation (shadow-builders pattern) ───────────────────────
+(defn- make-backdrop! []
+  (let [backdrop (make-el "div")]
+    (.setAttribute backdrop attr-part part-backdrop)
+    backdrop))
 
-    (.setAttribute backdrop "part" "backdrop")
+(defn- make-dialog! [headline-id]
+  (let [dialog (make-el "div")]
+    (.setAttribute dialog attr-part            part-dialog)
+    (.setAttribute dialog attr-role            role-dialog)
+    (.setAttribute dialog attr-aria-modal      val-true)
+    (.setAttribute dialog attr-aria-labelledby headline-id)
+    dialog))
 
-    (.setAttribute dialog "part" "dialog")
-    (.setAttribute dialog "role" "dialog")
-    (.setAttribute dialog "aria-modal" "true")
-    (.setAttribute dialog "aria-labelledby" headline-id)
-
-    (.setAttribute panel "part" "panel")
-
-    (.setAttribute header "part" "header")
-    (.setAttribute headline "part" "headline")
-    (.setAttribute headline "id" headline-id)
-
-    (.setAttribute body "part" "body")
-    (.setAttribute body-slot "name" "body")
-    (.setAttribute message-el "part" "message")
-
-    (.setAttribute actions "part" "actions")
-
-    (.setAttribute cancel-btn "part" "cancel-btn")
-    (.setAttribute cancel-btn "type" "button")
-
-    (.setAttribute confirm-btn "part" "confirm-btn")
-    (.setAttribute confirm-btn "type" "button")
-
+(defn- make-header! [headline-id]
+  (let [header   (make-el "div")
+        headline (make-el "h2")]
+    (.setAttribute header   attr-part part-header)
+    (.setAttribute headline attr-part part-headline)
+    (.setAttribute headline attr-id   headline-id)
     (.appendChild header headline)
+    {:header header :headline headline}))
+
+(defn- make-body! []
+  (let [body       (make-el "div")
+        body-slot  (make-el "slot")
+        message-el (make-el "p")]
+    (.setAttribute body       attr-part part-body)
+    (.setAttribute body-slot  attr-name part-body)
+    (.setAttribute message-el attr-part part-message)
     (.appendChild body body-slot)
     (.appendChild body message-el)
+    {:body body :body-slot body-slot :message message-el}))
+
+(defn- make-actions! []
+  (let [actions     (make-el "div")
+        cancel-btn  (make-el "button")
+        confirm-btn (make-el "button")]
+    (.setAttribute actions     attr-part part-actions)
+    (.setAttribute cancel-btn  attr-part part-cancel-btn)
+    (.setAttribute cancel-btn  attr-type "button")
+    (.setAttribute confirm-btn attr-part part-confirm-btn)
+    (.setAttribute confirm-btn attr-type "button")
     (.appendChild actions cancel-btn)
     (.appendChild actions confirm-btn)
-    (.appendChild panel header)
-    (.appendChild panel body)
-    (.appendChild panel actions)
-    (.appendChild dialog panel)
+    {:actions actions :cancel-btn cancel-btn :confirm-btn confirm-btn}))
 
+(defn- assemble-panel! [header-parts body-parts action-parts]
+  (let [panel (make-el "div")]
+    (.setAttribute panel attr-part part-panel)
+    (.appendChild panel (:header  header-parts))
+    (.appendChild panel (:body    body-parts))
+    (.appendChild panel (:actions action-parts))
+    panel))
+
+(defn- init-dom! [^js el]
+  (let [headline-id  (new-headline-id)
+        root         (.attachShadow el #js {:mode "open"})
+        style        (make-el "style")
+        backdrop     (make-backdrop!)
+        dialog       (make-dialog! headline-id)
+        header-parts (make-header! headline-id)
+        body-parts   (make-body!)
+        action-parts (make-actions!)
+        panel        (assemble-panel! header-parts body-parts action-parts)
+        refs         #js {}]
+
+    (set! (.-textContent style) style-text)
+    (.appendChild dialog panel)
     (.appendChild root style)
     (.appendChild root backdrop)
     (.appendChild root dialog)
 
-    (gobj/set el k-refs
-              #js {:root       root
-                   :backdrop   backdrop
-                   :dialog     dialog
-                   :panel      panel
-                   :headline   headline
-                   :bodySlot   body-slot
-                   :message    message-el
-                   :cancelBtn  cancel-btn
-                   :confirmBtn confirm-btn}))
-  nil)
+    (gobj/set refs rk-backdrop    backdrop)
+    (gobj/set refs rk-dialog      dialog)
+    (gobj/set refs rk-headline    (:headline header-parts))
+    (gobj/set refs rk-message     (:message  body-parts))
+    (gobj/set refs rk-cancel-btn  (:cancel-btn  action-parts))
+    (gobj/set refs rk-confirm-btn (:confirm-btn action-parts))
+    (gobj/set el k-refs refs)
+    refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
-      (do (init-dom! el)
-          (gobj/get el k-refs))))
+  (or (gobj/get el k-refs) (init-dom! el)))
 
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -258,211 +308,203 @@
     :cancel-text-raw   (du/get-attr el model/attr-cancel-text)
     :danger-present?   (du/has-attr? el model/attr-danger)}))
 
-;; ── Event dispatch ────────────────────────────────────────────────────────────
-;; ── Open / close ──────────────────────────────────────────────────────────────
+;; ── Open / close (attribute mutation only — effects flow via apply-model!) ───
 (defn- do-open! [^js el]
   (when-not (du/has-attr? el model/attr-open)
-    (du/set-attr! el model/attr-open ""))
-  ;; Focus confirm button after next paint
-  (let [refs       (ensure-refs! el)
-        ^js confirm (gobj/get refs "confirmBtn")]
-    (js/setTimeout (fn [] (.focus confirm)) 0))
-  nil)
+    (du/set-attr! el model/attr-open "")))
 
 (defn- do-close! [^js el]
-  (du/remove-attr! el model/attr-open)
-  nil)
+  (du/remove-attr! el model/attr-open))
 
-;; ── Cancel flow ───────────────────────────────────────────────────────────────
+;; ── Cancel / confirm flows ───────────────────────────────────────────────────
 (defn- do-cancel! [^js el reason]
   (when-not (du/has-attr? el model/attr-disabled)
     (when (du/dispatch-cancelable! el model/event-cancel-request
                                    (model/cancel-request-detail reason))
       (do-close! el)
-      (du/dispatch! el model/event-cancel #js {})))
-  nil)
+      (du/dispatch! el model/event-cancel #js {}))))
 
-;; ── Confirm flow ──────────────────────────────────────────────────────────────
 (defn- do-confirm! [^js el]
   (when-not (du/has-attr? el model/attr-disabled)
     (when (du/dispatch-cancelable! el model/event-confirm-request
                                    (model/confirm-request-detail))
       (do-close! el)
-      (du/dispatch! el model/event-confirm #js {})))
-  nil)
+      (du/dispatch! el model/event-confirm #js {}))))
 
-;; ── Focus trap ────────────────────────────────────────────────────────────────
+;; ── Focus trap ──────────────────────────────────────────────────────────────
 (defn- on-keydown [^js el ^js e]
-  (let [key (.-key e)]
+  (let [k (.-key e)]
     (cond
-      (= key "Escape")
+      (= k key-escape)
       (do (.preventDefault e)
-          (do-cancel! el "escape"))
+          (do-cancel! el reason-escape))
 
-      (= key "Tab")
-      (let [refs         (ensure-refs! el)
-            ^js cancel   (gobj/get refs "cancelBtn")
-            ^js confirm  (gobj/get refs "confirmBtn")
-            shift?       (.-shiftKey e)
-            active       (.-activeElement (.-shadowRoot el))]
+      (= k key-tab)
+      (let [refs        (ensure-refs! el)
+            ^js cancel  (gobj/get refs rk-cancel-btn)
+            ^js confirm (gobj/get refs rk-confirm-btn)
+            shift?      (.-shiftKey e)
+            active      (.-activeElement (.-shadowRoot el))]
         (cond
           (and shift? (= active cancel))
-          (do (.preventDefault e)
-              (.focus confirm))
+          (do (.preventDefault e) (.focus confirm))
 
           (and (not shift?) (= active confirm))
-          (do (.preventDefault e)
-              (.focus cancel))))))
-  nil)
+          (do (.preventDefault e) (.focus cancel)))))))
 
-;; ── Render ────────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [refs         (ensure-refs! el)
-        ^js headline  (gobj/get refs "headline")
-        ^js message   (gobj/get refs "message")
-        ^js cancel    (gobj/get refs "cancelBtn")
-        ^js confirm   (gobj/get refs "confirmBtn")
-        m            (read-model el)]
+;; ── DOM patching ─────────────────────────────────────────────────────────────
+(defn- apply-text-content! [refs {:keys [headline cancel-text confirm-text]}]
+  (let [^js headline-el (gobj/get refs rk-headline)
+        ^js cancel      (gobj/get refs rk-cancel-btn)
+        ^js confirm     (gobj/get refs rk-confirm-btn)]
+    (set! (.-textContent headline-el) headline)
+    (set! (.-textContent cancel)      cancel-text)
+    (set! (.-textContent confirm)     confirm-text)))
 
-    (set! (.-textContent headline) (:headline m))
-    (set! (.-textContent cancel) (:cancel-text m))
-    (set! (.-textContent confirm) (:confirm-text m))
+(defn- apply-message! [refs {:keys [message]}]
+  (let [^js message-el (gobj/get refs rk-message)]
+    (if message
+      (do (set! (.-textContent message-el) message)
+          (set! (.. message-el -style -display) "block"))
+      (do (set! (.-textContent message-el) "")
+          (set! (.. message-el -style -display) "none")))))
 
-    (if (:message m)
-      (do (set! (.-textContent message) (:message m))
-          (set! (.. message -style -display) "block"))
-      (do (set! (.-textContent message) "")
-          (set! (.. message -style -display) "none")))
+(defn- apply-danger! [refs {:keys [danger?]}]
+  (let [^js confirm (gobj/get refs rk-confirm-btn)]
+    (if danger?
+      (.setAttribute confirm attr-data-danger "")
+      (.removeAttribute confirm attr-data-danger))))
 
-    (if (:danger? m)
-      (.setAttribute confirm "data-danger" "")
-      (.removeAttribute confirm "data-danger"))
+(defn- apply-disabled! [refs {:keys [disabled?]}]
+  (let [^js cancel  (gobj/get refs rk-cancel-btn)
+        ^js confirm (gobj/get refs rk-confirm-btn)
+        d?          (boolean disabled?)]
+    (set! (.-disabled cancel)  d?)
+    (set! (.-disabled confirm) d?)))
 
-    (set! (.-disabled cancel) (boolean (:disabled? m)))
-    (set! (.-disabled confirm) (boolean (:disabled? m)))
+(defn- focus-confirm-soon! [refs]
+  (let [^js confirm (gobj/get refs rk-confirm-btn)]
+    (js/setTimeout (fn focus-confirm [] (.focus confirm)) 0)))
 
-    ;; aria-modal on dialog
-    (let [^js dialog (gobj/get refs "dialog")]
-      (.setAttribute dialog "aria-modal" "true")))
-  nil)
+(defn- apply-open-transition! [refs old-m new-m]
+  ;; Focus the confirm button only when transitioning closed → open.
+  ;; Single focus point — neither the property setter nor attribute-changed
+  ;; should schedule focus independently, otherwise it double-fires.
+  (when (and (:open? new-m) (not (:open? old-m)))
+    (focus-confirm-soon! refs)))
+
+(defn- apply-model! [^js el old-m new-m]
+  (let [refs (ensure-refs! el)]
+    (apply-text-content!     refs new-m)
+    (apply-message!          refs new-m)
+    (apply-danger!           refs new-m)
+    (apply-disabled!         refs new-m)
+    (apply-open-transition!  refs old-m new-m)
+    (gobj/set el k-model new-m)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el old-m new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [refs         (ensure-refs! el)
-        ^js backdrop (gobj/get refs "backdrop")
-        ^js cancel   (gobj/get refs "cancelBtn")
-        ^js confirm  (gobj/get refs "confirmBtn")
-        ^js dialog   (gobj/get refs "dialog")
-        backdrop-h   (fn [_] (do-cancel! el "backdrop"))
-        cancel-h     (fn [_] (do-cancel! el "cancel-button"))
-        confirm-h    (fn [_] (do-confirm! el))
-        keydown-h    (fn [^js e] (on-keydown el e))]
-    (.addEventListener backdrop "click" backdrop-h)
-    (.addEventListener cancel "click" cancel-h)
-    (.addEventListener confirm "click" confirm-h)
-    (.addEventListener dialog "keydown" keydown-h)
-    (gobj/set el k-handlers
-              #js {:backdrop backdrop-h
-                   :cancel   cancel-h
-                   :confirm  confirm-h
-                   :keydown  keydown-h}))
-  nil)
+        ^js backdrop (gobj/get refs rk-backdrop)
+        ^js cancel   (gobj/get refs rk-cancel-btn)
+        ^js confirm  (gobj/get refs rk-confirm-btn)
+        ^js dialog   (gobj/get refs rk-dialog)
+        backdrop-h   (fn on-backdrop-click [_] (do-cancel! el reason-backdrop))
+        cancel-h     (fn on-cancel-click   [_] (do-cancel! el reason-cancel-button))
+        confirm-h    (fn on-confirm-click  [_] (do-confirm! el))
+        keydown-h    (fn on-dialog-keydown [^js e] (on-keydown el e))
+        handlers     #js {}]
+    (.addEventListener backdrop ev-click   backdrop-h)
+    (.addEventListener cancel   ev-click   cancel-h)
+    (.addEventListener confirm  ev-click   confirm-h)
+    (.addEventListener dialog   ev-keydown keydown-h)
+    (gobj/set handlers hk-backdrop backdrop-h)
+    (gobj/set handlers hk-cancel   cancel-h)
+    (gobj/set handlers hk-confirm  confirm-h)
+    (gobj/set handlers hk-keydown  keydown-h)
+    (gobj/set el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
         refs (gobj/get el k-refs)]
     (when (and hs refs)
-      (let [^js backdrop (gobj/get refs "backdrop")
-            ^js cancel   (gobj/get refs "cancelBtn")
-            ^js confirm  (gobj/get refs "confirmBtn")
-            ^js dialog   (gobj/get refs "dialog")
-            backdrop-h  (gobj/get hs "backdrop")
-            cancel-h    (gobj/get hs "cancel")
-            confirm-h   (gobj/get hs "confirm")
-            keydown-h   (gobj/get hs "keydown")]
-        (when backdrop-h (.removeEventListener backdrop "click" backdrop-h))
-        (when cancel-h   (.removeEventListener cancel "click" cancel-h))
-        (when confirm-h  (.removeEventListener confirm "click" confirm-h))
-        (when keydown-h  (.removeEventListener dialog "keydown" keydown-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+      (let [^js backdrop (gobj/get refs rk-backdrop)
+            ^js cancel   (gobj/get refs rk-cancel-btn)
+            ^js confirm  (gobj/get refs rk-confirm-btn)
+            ^js dialog   (gobj/get refs rk-dialog)
+            backdrop-h   (gobj/get hs hk-backdrop)
+            cancel-h     (gobj/get hs hk-cancel)
+            confirm-h    (gobj/get hs hk-confirm)
+            keydown-h    (gobj/get hs hk-keydown)]
+        (when backdrop-h (.removeEventListener backdrop ev-click   backdrop-h))
+        (when cancel-h   (.removeEventListener cancel   ev-click   cancel-h))
+        (when confirm-h  (.removeEventListener confirm  ev-click   confirm-h))
+        (when keydown-h  (.removeEventListener dialog   ev-keydown keydown-h)))))
+  (gobj/set el k-handlers nil))
 
-;; ── Lifecycle ─────────────────────────────────────────────────────────────────
+;; ── Lifecycle ────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
-(defn- attribute-changed! [^js el attr-name old-val new-val]
+(defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (render! el)
-    ;; When open attr is added, focus the confirm button
-    (when (and (= attr-name model/attr-open) (some? new-val) (nil? old-val))
-      (let [refs        (gobj/get el k-refs)
-            ^js confirm (when refs (gobj/get refs "confirmBtn"))]
-        (when confirm
-          (js/setTimeout (fn [] (.focus confirm)) 0)))))
-  nil)
+    (update-from-attrs! el)))
 
-;; ── Property accessors ────────────────────────────────────────────────────────
+;; ── Property accessors ───────────────────────────────────────────────────────
+;; `open` is Tier-2: the setter routes through do-open!/do-close! so that
+;; setting open=true mutates the attribute, which fires attribute-changed!,
+;; which runs the change-guard and the single focus effect in apply-model!.
 (defn- install-properties! [^js proto]
-  ;; Boolean property: open
-  ;; Setting open=true is equivalent to calling the open() method.
-  ;; There is no separate open() method because the property getter/setter
-  ;; occupies the same name. Use close(), confirm(), cancel() for imperative API.
   (.defineProperty js/Object proto "open"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (.hasAttribute this model/attr-open)))
+                                 (.hasAttribute this model/attr-open)))
                         :set (fn [v]
                                (this-as ^js this
-                                        (if v
-                                          (do-open! this)
-                                          (do-close! this))))
+                                 (if v (do-open! this) (do-close! this))))
                         :enumerable true :configurable true})
 
-  ;; Boolean properties: disabled, danger
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "danger"   model/attr-danger)
 
-  ;; String properties
   (du/define-string-prop! proto "headline"    model/attr-headline)
   (du/define-string-prop! proto "message"     model/attr-message)
   (du/define-string-prop! proto "confirmText" model/attr-confirm-text)
   (du/define-string-prop! proto "cancelText"  model/attr-cancel-text)
 
-  ;; Public methods
   (.defineProperty js/Object proto "close"
                    #js {:value (fn []
-                                 (this-as ^js this
-                                          (do-close! this)))
+                                 (this-as ^js this (do-close! this)))
                         :enumerable true :configurable true :writable true})
 
   (.defineProperty js/Object proto "confirm"
                    #js {:value (fn []
-                                 (this-as ^js this
-                                          (do-confirm! this)))
+                                 (this-as ^js this (do-confirm! this)))
                         :enumerable true :configurable true :writable true})
 
   (.defineProperty js/Object proto "cancel"
                    #js {:value (fn [reason]
                                  (this-as ^js this
-                                          (do-cancel! this (or reason "cancel-button"))))
+                                   (do-cancel! this (or reason reason-cancel-button))))
                         :enumerable true :configurable true :writable true}))
 
-;; ── Element class ─────────────────────────────────────────────────────────────
-;; ── Public API ────────────────────────────────────────────────────────────────
-
+;; ── Public API ───────────────────────────────────────────────────────────────
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-properties!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :disconnected-fn      disconnected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-properties!}))
