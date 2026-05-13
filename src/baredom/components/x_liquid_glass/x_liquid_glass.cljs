@@ -315,14 +315,12 @@
                :gradient  grad
                :specular  spec
                :content   content
-               :satellites #js []}))
-  nil)
+               :satellites #js []})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs)))
-  nil)
+          (gobj/get el k-refs))))
 
 ;; ── Satellite management ───────────────────────────────────────────────────
 (defn- sync-satellites!
@@ -356,8 +354,7 @@
             (.setAttribute msat "fill" "white")
             (.appendChild mask-g msat)
             (.push mask-sats msat)))
-        (recur (inc i)))))
-  nil)
+        (recur (inc i))))))
 
 ;; ── Geometry initialisation ────────────────────────────────────────────────
 (defn- init-geometry! [^js el w h]
@@ -480,8 +477,7 @@
 
     ;; Specular visibility
     (when-not (:specular? m)
-      (set! (.. spec -style -opacity) "0")))
-  nil)
+      (set! (.. spec -style -opacity) "0"))))
 
 ;; ── Render satellites ──────────────────────────────────────────────────────
 (defn- render-satellites! [^js el t]
@@ -512,8 +508,7 @@
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
             (.setAttribute msat "cx" cx-str)
-            (.setAttribute msat "cy" cy-str))))))
-  nil)
+            (.setAttribute msat "cy" cy-str)))))))
 
 ;; ── Render specular ────────────────────────────────────────────────────────
 (defn- render-specular! [^js el]
@@ -535,8 +530,7 @@
                   (str "radial-gradient(ellipse " size "px " size "px at "
                        (.toFixed px 1) "px " (.toFixed py 1) "px,"
                        color " 0%,transparent 100%)")))
-          (set! (.. spec -style -opacity) "0")))))
-  nil)
+          (set! (.. spec -style -opacity) "0"))))))
 
 ;; ── Render gradient drift ──────────────────────────────────────────────────
 (defn- render-gradient! [^js el t]
@@ -554,8 +548,7 @@
           (str "radial-gradient(ellipse at " (.toFixed ox1 1) "% " (.toFixed oy1 1) "%,"
                c1 " 0%,transparent 70%),"
                "radial-gradient(ellipse at " (.toFixed ox2 1) "% " (.toFixed oy2 1) "%,"
-               c2 " 0%,transparent 70%)")))
-  nil)
+               c2 " 0%,transparent 70%)"))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -579,21 +572,18 @@
 
       ;; Always continue — noise never settles
       (gobj/set el k-raf
-                (js/requestAnimationFrame (fn [_] (animate! el))))))
-  nil)
+                (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (gobj/get el k-raf)
     (gobj/set el k-last-frame (js/performance.now))
     (gobj/set el k-raf
-              (js/requestAnimationFrame (fn [_] (animate! el)))))
-  nil)
+              (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (gobj/get el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil))
-  nil)
+    (gobj/set el k-raf nil)))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
@@ -614,8 +604,7 @@
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
             (.setAttribute msat "cx" cx-str)
-            (.setAttribute msat "cy" cy-str))))))
-  nil)
+            (.setAttribute msat "cy" cy-str)))))))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -645,23 +634,19 @@
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-satellites! el (or (gobj/get el k-time) 0.0))
-                (start-animation! el)))))))
-  nil)
+                (start-animation! el))))))))
 
 ;; ── Pointer event handlers ──────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
   (let [^js rect (.getBoundingClientRect el)]
     (gobj/set el k-pointer-x (- (.-clientX e) (.-left rect)))
-    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect))))
-  nil)
+    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect)))))
 
 (defn- on-pointerenter [^js el]
-  (gobj/set el k-pointer-active true)
-  nil)
+  (gobj/set el k-pointer-active true))
 
 (defn- on-pointerleave [^js el]
-  (gobj/set el k-pointer-active false)
-  nil)
+  (gobj/set el k-pointer-active false))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
@@ -672,16 +657,14 @@
               #js {"move" move-fn "enter" enter-fn "leave" leave-fn})
     (.addEventListener el "pointermove" move-fn #js {:passive true})
     (.addEventListener el "pointerenter" enter-fn)
-    (.addEventListener el "pointerleave" leave-fn))
-  nil)
+    (.addEventListener el "pointerleave" leave-fn)))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js hdl (gobj/get el k-handlers)]
     (.removeEventListener el "pointermove" (gobj/get hdl "move"))
     (.removeEventListener el "pointerenter" (gobj/get hdl "enter"))
     (.removeEventListener el "pointerleave" (gobj/get hdl "leave"))
-    (gobj/set el k-handlers nil))
-  nil)
+    (gobj/set el k-handlers nil)))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
