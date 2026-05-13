@@ -8,6 +8,7 @@
 ;; Instance field keys
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs     "__xDropdownRefs")
+(def ^:private k-model    "__xDropdownModel")
 (def ^:private k-handlers "__xDropdownHandlers")
 
 ;; ---------------------------------------------------------------------------
@@ -218,22 +219,43 @@
       refs)))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Model reading
 ;; ---------------------------------------------------------------------------
-(defn- render! [^js el]
+(defn- read-model [^js el]
+  {:open?     (du/has-attr? el model/attr-open)
+   :disabled? (du/has-attr? el model/attr-disabled)
+   :label     (or (du/get-attr el model/attr-label) "")
+   :placement (model/normalize-placement (du/get-attr el model/attr-placement))})
+
+;; ---------------------------------------------------------------------------
+;; DOM patching (render-orchestrator: phase list of named helpers)
+;; ---------------------------------------------------------------------------
+(defn- apply-trigger-state! [^js trigger-el {:keys [open? disabled?]}]
+  (du/set-attr!      trigger-el "aria-expanded" (if open? "true" "false"))
+  (du/set-bool-attr! trigger-el "disabled"      disabled?))
+
+(defn- apply-label! [^js label-el {:keys [label]}]
+  (set! (.-textContent label-el) label))
+
+(defn- apply-panel-placement! [^js panel-el {:keys [placement]}]
+  (du/set-attr! panel-el "data-placement" placement))
+
+(defn- apply-model! [^js el m]
   (when-let [refs (gobj/get el k-refs)]
     (let [^js trigger-el (gobj/get refs "trigger")
           ^js label-el   (gobj/get refs "label")
-          ^js panel-el   (gobj/get refs "panel")
-          open?          (du/has-attr? el model/attr-open)
-          disabled?      (du/has-attr? el model/attr-disabled)
-          label          (or (du/get-attr el model/attr-label) "")
-          placement      (model/normalize-placement (du/get-attr el model/attr-placement))]
+          ^js panel-el   (gobj/get refs "panel")]
+      (apply-label!            label-el m)
+      (apply-trigger-state!    trigger-el m)
+      (apply-panel-placement!  panel-el m)
+      (gobj/set el k-model m))))
 
-      (set! (.-textContent label-el) label)
-      (du/set-attr! trigger-el "aria-expanded" (if open? "true" "false"))
-      (du/set-bool-attr! trigger-el "disabled" disabled?)
-      (du/set-attr! panel-el "data-placement" placement))))
+(defn- update-from-attrs! [^js el]
+  (when (gobj/get el k-refs)
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers
@@ -368,16 +390,16 @@
   (add-static-listeners! el)
   (when (du/has-attr? el model/attr-open)
     (add-doc-listeners! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-static-listeners! el)
   (remove-doc-listeners! el))
 
-(defn- attribute-changed! [^js el name _old _new]
-  (when (gobj/get el k-refs)
-    (render! el)
-    (when (= name model/attr-open)
+(defn- attribute-changed! [^js el attr-name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)
+    (when (= attr-name model/attr-open)
       (if (du/has-attr? el model/attr-open)
         (add-doc-listeners! el)
         (remove-doc-listeners! el)))))
@@ -391,17 +413,26 @@
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api)
-  ;; Methods
-  (aset proto "show"
-        (fn [] (this-as ^js this
-                        (when-not (du/has-attr? this model/attr-open)
-                          (toggle! this "programmatic")))))
-  (aset proto "hide"
-        (fn [] (this-as ^js this
-                        (when (du/has-attr? this model/attr-open)
-                          (toggle! this "programmatic")))))
-  (aset proto "toggle"
-        (fn [] (this-as ^js this (toggle! this "programmatic")))))
+  ;; show/hide/toggle prototype methods. .defineProperty with a :value
+  ;; descriptor is the Tier-2 idiom adopted across the codebase; bare
+  ;; aset on the prototype was audited out in PR #155 and migrated away
+  ;; from in PRs #160-#166.
+  (.defineProperty js/Object proto "show"
+                   #js {:value (fn xd-show []
+                                 (this-as ^js this
+                                   (when-not (du/has-attr? this model/attr-open)
+                                     (toggle! this "programmatic"))))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "hide"
+                   #js {:value (fn xd-hide []
+                                 (this-as ^js this
+                                   (when (du/has-attr? this model/attr-open)
+                                     (toggle! this "programmatic"))))
+                        :writable true :configurable true})
+  (.defineProperty js/Object proto "toggle"
+                   #js {:value (fn xd-toggle []
+                                 (this-as ^js this (toggle! this "programmatic")))
+                        :writable true :configurable true}))
 
 (defn init! []
   (component/register! model/tag-name
