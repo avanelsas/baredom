@@ -1,16 +1,15 @@
 (ns baredom.components.x-typography.x-typography
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-typography.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-typography.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs  "__xTypographyRefs")
 (def ^:private k-model "__xTypographyModel")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   ;; Shorthand for the default font stacks — used in var() fallbacks
   (let [sans  "system-ui,-apple-system,sans-serif"
         mono  "ui-monospace,\"SFMono-Regular\",\"SF Mono\",Menlo,Consolas,monospace"
@@ -218,7 +217,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-from-attrs! el))
+    (update-from-attrs! el))
   nil)
 
 ;; ── Public API ───────────────────────────────────────────────────────────────

@@ -1,9 +1,8 @@
 (ns baredom.components.x-timeline-item.x-timeline-item
-  (:require
-[baredom.utils.component :as component]
-   [baredom.utils.dom :as du]
-               [goog.object :as gobj]
-   [baredom.components.x-timeline-item.model :as model]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [goog.object :as gobj]
+            [baredom.components.x-timeline-item.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ─────────────────────────────────
 (def ^:private k-refs       "__xTimelineItemRefs")
@@ -473,29 +472,29 @@
   ;; Initialise k-parent-pos from any data-position already
   ;; present on the element (e.g., set in HTML before connect)
   (let [dp (du/get-attr el model/data-attr-position)]
-  (when dp (gobj/set el k-parent-pos dp)))
+    (when dp (gobj/set el k-parent-pos dp)))
   (update-from-attrs! el)
   (start-enter! el)
   (let [m (or (gobj/get el k-model) (read-model el))]
-  (dispatch-connected! el m))
+    (dispatch-connected! el m))
   nil)
 
 (defn- disconnected! [^js el]
   (let [m (or (gobj/get el k-model) (read-model el))]
-  (remove-listeners! el)
-  (gobj/set el k-entered nil)
-  (dispatch-disconnected! el m))
+    (remove-listeners! el)
+    (gobj/set el k-entered nil)
+    (dispatch-disconnected! el m))
   nil)
 
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
-  (if (and (= attr-name model/data-attr-position)
-  (gobj/get el k-self-pos))
-  nil ;; self-write: ignore to break the feedback loop
-  (do
-  (when (= attr-name model/data-attr-position)
-  (gobj/set el k-parent-pos new-val))
-  (update-from-attrs! el))))
+    (if (and (= attr-name model/data-attr-position)
+             (gobj/get el k-self-pos))
+      nil ;; self-write: ignore to break the feedback loop
+      (do
+        (when (= attr-name model/data-attr-position)
+          (gobj/set el k-parent-pos new-val))
+        (update-from-attrs! el))))
   nil)
 
 ;; ── Public API ────────────────────────────────────────────────────────────────

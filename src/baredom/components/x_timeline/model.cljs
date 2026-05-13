@@ -82,4 +82,4 @@
    :status (or status "")
    :label  (or label "")})
 
-(def method-api nil)
+(def method-api {})

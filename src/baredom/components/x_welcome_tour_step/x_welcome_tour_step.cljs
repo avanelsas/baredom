@@ -3,10 +3,9 @@
    Holds step configuration as attributes and provides a default slot
    for rich content. The parent orchestrator reads these attributes
    and renders the tour UI — this element never renders visibly itself."
-  (:require
-[baredom.utils.component :as component]
-               [baredom.components.x-welcome-tour-step.model :as model]
-   [baredom.utils.dom :as du]))
+  (:require [baredom.utils.component :as component]
+            [baredom.utils.dom :as du]
+            [baredom.components.x-welcome-tour-step.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs  "__xWelcomeTourStepRefs")
@@ -130,7 +129,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-  (update-model! el))
+    (update-model! el))
   nil)
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
