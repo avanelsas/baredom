@@ -80,8 +80,7 @@
     (.appendChild root style)
     (.appendChild root slot-el)
     (gobj/set el k-refs {:root    root
-                         :slot-el slot-el}))
-  nil)
+                         :slot-el slot-el})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -101,15 +100,13 @@
   (du/set-attr! el "role"       "region")
   (du/set-attr! el "aria-label" label)
   (du/set-attr! el "data-position" position)
-  (gobj/set el k-model m)
-  nil)
+  (gobj/set el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
 (defn- dispatch-toaster-dismiss! [^js el ^js child-detail]
@@ -131,8 +128,7 @@
       (let [not-prevented (dispatch-toaster-dismiss! el detail)]
         (when not-prevented
           ;; Tell the toast to actually dismiss now — it will animate exit and remove itself
-          (.dismiss (.-target e) model/child-dismiss-reason-toaster)))))
-  nil)
+          (.dismiss (.-target e) model/child-dismiss-reason-toaster))))))
 
 ;; ── max-toasts enforcement ────────────────────────────────────────────────────
 (defn- evict-oldest! [^js el max-toasts]
@@ -175,8 +171,7 @@
 (defn- add-listeners! [^js el]
   (let [dismiss-h (fn [^js e] (on-toast-dismiss el e))]
     (.addEventListener el model/child-event-dismiss dismiss-h)
-    (gobj/set el k-handlers #js {"dismiss" dismiss-h}))
-  nil)
+    (gobj/set el k-handlers #js {"dismiss" dismiss-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs (gobj/get el k-handlers)]
@@ -184,24 +179,14 @@
       (let [dismiss-h (gobj/get hs "dismiss")]
         (when dismiss-h
           (.removeEventListener el model/child-event-dismiss dismiss-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
   (let [^js proto proto]
 
-    (.defineProperty js/Object proto model/attr-position
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                          (model/parse-position
-                                           (.getAttribute this model/attr-position))))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                          (if v
-                                            (.setAttribute this model/attr-position (str v))
-                                            (.removeAttribute this model/attr-position))))
-                          :enumerable true :configurable true})
+    (du/define-parsed-prop! proto model/attr-position model/attr-position
+                            model/parse-position)
 
     (.defineProperty js/Object proto model/attr-label
                      #js {:get (fn []
@@ -241,17 +226,14 @@
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (update-from-attrs! el))
-  nil)
+    (update-from-attrs! el)))
 
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
