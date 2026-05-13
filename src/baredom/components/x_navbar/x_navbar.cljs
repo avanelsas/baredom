@@ -6,6 +6,7 @@
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
 (def ^:private k-refs          "__xNavbarRefs")
+(def ^:private k-model         "__xNavbarModel")
 (def ^:private k-focus-visible "__xNavbarFocusVisible")
 
 ;; ── DOM helpers ──────────────────────────────────────────────────────────────
@@ -279,44 +280,50 @@
         (gobj/set el k-refs refs)
         refs)))
 
-;; ── Render ───────────────────────────────────────────────────────────────────
+;; ── DOM patching (render-orchestrator: cache-at-tail render-pipeline) ───────
 
-(defn- render!
-  [^js el ^js refs]
-  (let [base-el      (gobj/get refs "base")
-        bar-el       (gobj/get refs "bar")
-        brand-el     (gobj/get refs "brand")
-        start-el     (gobj/get refs "start")
-        actions-el   (gobj/get refs "actions")
-        toggle-el    (gobj/get refs "toggle")
-        end-el       (gobj/get refs "end")
-        brand-slot   (gobj/get refs "brand-slot")
-        start-slot   (gobj/get refs "start-slot")
-        actions-slot (gobj/get refs "actions-slot")
-        toggle-slot  (gobj/get refs "toggle-slot")
-        end-slot     (gobj/get refs "end-slot")
-        pub          (read-public-state el)
-        has-brand?   (slot-has-content? brand-slot)
-        has-start?   (slot-has-content? start-slot)
-        has-actions? (slot-has-content? actions-slot)
-        has-toggle?  (slot-has-content? toggle-slot)
-        has-end?     (slot-has-content? end-slot)
-        label        (model/landmark-label pub)]
-
+(defn- apply-attr-state!
+  "Apply DOM state derived from the host attributes (aria-label,
+  data-variant, data-orientation, data-breakpoint, data-alignment)."
+  [^js refs m]
+  (let [^js base-el (gobj/get refs "base")
+        ^js bar-el  (gobj/get refs "bar")
+        label       (model/landmark-label m)]
     (if label
       (.setAttribute base-el "aria-label" label)
       (.removeAttribute base-el "aria-label"))
+    (.setAttribute base-el "data-variant"     (:variant m))
+    (.setAttribute base-el "data-orientation" (:orientation m))
+    (.setAttribute base-el "data-breakpoint"  (:breakpoint m))
+    (.setAttribute bar-el  "data-alignment"   (:alignment m))))
 
-    (.setAttribute base-el "data-variant" (:variant pub))
-    (.setAttribute base-el "data-orientation" (:orientation pub))
-    (.setAttribute base-el "data-breakpoint" (:breakpoint pub))
-    (.setAttribute bar-el "data-alignment" (:alignment pub))
+(defn- apply-slot-state!
+  "Apply DOM state derived from slot content (data-has-* flags). Called
+  from apply-model! and from the slotchange handler — slot state isn't in
+  the cached model, so the diff guard cannot gate this path."
+  [^js refs]
+  (let [^js brand-el   (gobj/get refs "brand")
+        ^js start-el   (gobj/get refs "start")
+        ^js actions-el (gobj/get refs "actions")
+        ^js toggle-el  (gobj/get refs "toggle")
+        ^js end-el     (gobj/get refs "end")]
+    (.setAttribute brand-el   "data-has-brand"   (if (slot-has-content? (gobj/get refs "brand-slot"))   "true" "false"))
+    (.setAttribute start-el   "data-has-start"   (if (slot-has-content? (gobj/get refs "start-slot"))   "true" "false"))
+    (.setAttribute actions-el "data-has-actions" (if (slot-has-content? (gobj/get refs "actions-slot")) "true" "false"))
+    (.setAttribute toggle-el  "data-has-toggle"  (if (slot-has-content? (gobj/get refs "toggle-slot"))  "true" "false"))
+    (.setAttribute end-el     "data-has-end"     (if (slot-has-content? (gobj/get refs "end-slot"))     "true" "false"))))
 
-    (.setAttribute brand-el   "data-has-brand"   (if has-brand?   "true" "false"))
-    (.setAttribute start-el   "data-has-start"   (if has-start?   "true" "false"))
-    (.setAttribute actions-el "data-has-actions"  (if has-actions? "true" "false"))
-    (.setAttribute toggle-el  "data-has-toggle"   (if has-toggle?  "true" "false"))
-    (.setAttribute end-el     "data-has-end"      (if has-end?     "true" "false"))))
+(defn- apply-model! [^js el ^js refs m]
+  (apply-attr-state! refs m)
+  (apply-slot-state! refs)
+  (gobj/set el k-model m))
+
+(defn- update-from-attrs! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [new-m (read-public-state el)
+          old-m (gobj/get el k-model)]
+      (when (not= new-m old-m)
+        (apply-model! el refs new-m)))))
 
 ;; ── Event wiring ─────────────────────────────────────────────────────────────
 
@@ -363,14 +370,14 @@
 ;; ── Slot change wiring ───────────────────────────────────────────────────────
 
 (defn- setup-slots!
-  [^js el ^js refs]
-  (let [rerender (fn [_] (render! el refs))]
-    (.addEventListener (gobj/get refs "brand-slot")   "slotchange" rerender)
-    (.addEventListener (gobj/get refs "start-slot")   "slotchange" rerender)
-    (.addEventListener (gobj/get refs "default-slot") "slotchange" rerender)
-    (.addEventListener (gobj/get refs "actions-slot") "slotchange" rerender)
-    (.addEventListener (gobj/get refs "toggle-slot")  "slotchange" rerender)
-    (.addEventListener (gobj/get refs "end-slot")     "slotchange" rerender)))
+  [^js _el ^js refs]
+  (let [on-slotchange (fn handle-slotchange [_] (apply-slot-state! refs))]
+    (.addEventListener (gobj/get refs "brand-slot")   "slotchange" on-slotchange)
+    (.addEventListener (gobj/get refs "start-slot")   "slotchange" on-slotchange)
+    (.addEventListener (gobj/get refs "default-slot") "slotchange" on-slotchange)
+    (.addEventListener (gobj/get refs "actions-slot") "slotchange" on-slotchange)
+    (.addEventListener (gobj/get refs "toggle-slot")  "slotchange" on-slotchange)
+    (.addEventListener (gobj/get refs "end-slot")     "slotchange" on-slotchange)))
 
 ;; ── Lifecycle callbacks ──────────────────────────────────────────────────────
 
@@ -382,16 +389,18 @@
       (gobj/set el k-focus-visible false)
       (setup-delegated-events! el (gobj/get refs "base"))
       (setup-slots! el refs))
-    (render! el refs)))
+    ;; On initial mount k-model is nil so the diff guard fires apply-model!
+    ;; once; subsequent reconnects with unchanged attrs skip the DOM work.
+    (update-from-attrs! el)))
 
 (defn- disconnected!
   [^js el]
   (gobj/set el k-focus-visible false))
 
 (defn- attribute-changed!
-  [^js el _name _old-value _new-value]
-  (when-let [refs (gobj/get el k-refs)]
-    (render! el refs)))
+  [^js el _name old-value new-value]
+  (when (not= old-value new-value)
+    (update-from-attrs! el)))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 

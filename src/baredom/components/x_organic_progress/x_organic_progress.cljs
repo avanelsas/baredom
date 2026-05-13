@@ -519,23 +519,34 @@
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 
-(def ^:private structural-attrs
-  #{model/attr-variant model/attr-density model/attr-seed})
+(defn- structural-change?
+  "Did variant/density/seed change between two model snapshots?"
+  [old-m new-m]
+  (or (nil? old-m)
+      (not= (:variant new-m) (:variant old-m))
+      (not= (:density new-m) (:density old-m))
+      (not= (:seed    new-m) (:seed    old-m))))
 
-(defn- update-from-attrs!
-  "Re-read model, update ARIA, and optionally regenerate segments."
-  [^js el attr-name]
-  (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (set-a11y! el m)
-    ;; Regenerate segments only when structural attributes change
-    (when (or (nil? attr-name) (contains? structural-attrs attr-name))
-      (regenerate-segments! el m)
-      (apply-line-styles! el)
-      ;; Re-render current state
-      (gobj/set el k-prev-visible -1)
-      (when (prefers-reduced-motion?)
-        (render-static! el)))))
+(defn- apply-model!
+  "Apply derived state to DOM. Regenerates segments only when structural
+  fields (variant/density/seed) change; non-structural changes (progress,
+  color, bloom, label) just re-apply line styles. Caches the new model at
+  the tail."
+  [^js el new-m old-m]
+  (set-a11y! el new-m)
+  (when (structural-change? old-m new-m)
+    (regenerate-segments! el new-m)
+    (gobj/set el k-prev-visible -1)
+    (when (prefers-reduced-motion?)
+      (render-static! el)))
+  (apply-line-styles! el)
+  (gobj/set el k-model new-m))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m old-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 
@@ -564,14 +575,11 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 
 (defn- connected! [^js el]
-  (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (ensure-refs! el)
-    (update-from-attrs! el nil)
-    (apply-line-styles! el)
-    (if (prefers-reduced-motion?)
-      (render-static! el)
-      (start-animation! el))))
+  (ensure-refs! el)
+  (update-from-attrs! el)
+  (if (prefers-reduced-motion?)
+    (render-static! el)
+    (start-animation! el)))
 
 (defn- disconnected! [^js el]
   (stop-animation! el)
@@ -588,12 +596,10 @@
     (gobj/set el k-bloom-els nil)
     (gobj/set el k-bloom-active false)))
 
-(defn- attribute-changed! [^js el attr-name old-val new-val]
+(defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-refs)
-      (update-from-attrs! el attr-name)
-      (when (not (contains? structural-attrs attr-name))
-        (apply-line-styles! el)))))
+      (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
 

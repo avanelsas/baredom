@@ -9,6 +9,7 @@
 (def ^:private k-base        "__xOrganicDividerBase")
 (def ^:private k-svg         "__xOrganicDividerSvg")
 (def ^:private k-paths       "__xOrganicDividerPaths")
+(def ^:private k-model       "__xOrganicDividerModel")
 
 ;; ── Constants ─────────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
@@ -119,14 +120,15 @@
     (gobj/set el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
-(defn- read-inputs [^js el]
-  {:shape     (du/get-attr el model/attr-shape)
-   :layers    (du/get-attr el model/attr-layers)
-   :height    (du/get-attr el model/attr-height)
-   :flip      (du/get-attr el model/attr-flip)
-   :mirror    (du/get-attr el model/attr-mirror)
-   :animation (du/get-attr el model/attr-animation)
-   :path      (du/get-attr el model/attr-path)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:shape     (du/get-attr el model/attr-shape)
+    :layers    (du/get-attr el model/attr-layers)
+    :height    (du/get-attr el model/attr-height)
+    :flip      (du/get-attr el model/attr-flip)
+    :mirror    (du/get-attr el model/attr-mirror)
+    :animation (du/get-attr el model/attr-animation)
+    :path      (du/get-attr el model/attr-path)}))
 
 ;; ── Ensure paths ──────────────────────────────────────────────────────────
 (defn- ensure-paths!
@@ -147,78 +149,73 @@
         (let [p (.pop paths-arr)]
           (.removeChild svg p))))))
 
-;; ── Render ────────────────────────────────────────────────────────────────
-(defn- render! [^js el]
-  (let [{:keys [path-d path-alt drift-d layers transforms
-                height flip mirror animation]}
-        (model/derive-state (read-inputs el))
+;; ── DOM patching (cache-at-tail render-pipeline) ──────────────────────────
+(defn- apply-paths!
+  "Update every <path> element from the derived layer state."
+  [^js paths-arr layers transforms effective-path path-alt is-morph]
+  (dotimes [i layers]
+    (let [^js p     (aget paths-arr i)
+          {:keys [x-offset y-offset]} (nth transforms i)
+          layer-num (inc i)]
+      (.setAttribute p "d" effective-path)
+      (.setAttribute p "fill"
+                     (str "var(--x-organic-divider-color-" layer-num ")"))
+      (.setAttribute p "opacity" (str (layer-opacity i layers)))
+      (if (or (pos? x-offset) (pos? y-offset))
+        (.setAttribute p "transform"
+                       (str "translate(" x-offset "," y-offset ")"))
+        (.removeAttribute p "transform"))
+      (if is-morph
+        (do (.setProperty (.-style p) "--x-organic-divider-d"
+                          (str "path(\"" effective-path "\")"))
+            (when path-alt
+              (.setProperty (.-style p) "--x-organic-divider-d-alt"
+                            (str "path(\"" path-alt "\")"))))
+        (do (.removeProperty (.-style p) "--x-organic-divider-d")
+            (.removeProperty (.-style p) "--x-organic-divider-d-alt"))))))
 
-        ^js base      (gobj/get el k-base)
+(defn- apply-host-data! [^js el {:keys [flip mirror animation]}]
+  (if flip
+    (du/set-attr! el "data-flip" "")
+    (du/remove-attr! el "data-flip"))
+  (if mirror
+    (du/set-attr! el "data-mirror" "")
+    (du/remove-attr! el "data-mirror"))
+  (if (not= animation "none")
+    (du/set-attr! el "data-animation" animation)
+    (du/remove-attr! el "data-animation")))
+
+(defn- apply-model! [^js el {:keys [path-d path-alt drift-d layers transforms
+                                    height animation] :as m}]
+  (let [^js base      (gobj/get el k-base)
         ^js svg       (gobj/get el k-svg)
         ^js paths-arr (gobj/get el k-paths)
-
-        is-drift (= animation "drift")
-        is-morph (= animation "morph")
-
-        ;; Choose path source based on animation
+        is-drift       (= animation "drift")
+        is-morph       (= animation "morph")
         effective-path (if is-drift drift-d path-d)]
-
-    ;; ViewBox depends on drift animation
     (.setAttribute svg "viewBox" (if is-drift viewbox-drift viewbox-static))
-
-    ;; Ensure correct number of path elements
     (ensure-paths! svg paths-arr layers)
-
-    ;; Update each path
-    (dotimes [i layers]
-      (let [^js p     (aget paths-arr i)
-            {:keys [x-offset y-offset]} (nth transforms i)
-            layer-num (inc i)]
-        (.setAttribute p "d" effective-path)
-        (.setAttribute p "fill"
-                       (str "var(--x-organic-divider-color-" layer-num ")"))
-        (.setAttribute p "opacity" (str (layer-opacity i layers)))
-        (if (or (pos? x-offset) (pos? y-offset))
-          (.setAttribute p "transform"
-                         (str "translate(" x-offset "," y-offset ")"))
-          (.removeAttribute p "transform"))
-        ;; Set CSS custom properties for morph animation
-        (when is-morph
-          (.setProperty (.-style p) "--x-organic-divider-d"
-                        (str "path(\"" effective-path "\")"))
-          (when path-alt
-            (.setProperty (.-style p) "--x-organic-divider-d-alt"
-                          (str "path(\"" path-alt "\")"))))
-        (when (not is-morph)
-          (.removeProperty (.-style p) "--x-organic-divider-d")
-          (.removeProperty (.-style p) "--x-organic-divider-d-alt"))))
-
-    ;; Height
+    (apply-paths! paths-arr layers transforms effective-path path-alt is-morph)
     (.setProperty (.-style base) "height" height)
+    (apply-host-data! el m)
+    (gobj/set el k-model m)))
 
-    ;; Flip / Mirror data attributes
-    (if flip
-      (du/set-attr! el "data-flip" "")
-      (du/remove-attr! el "data-flip"))
-    (if mirror
-      (du/set-attr! el "data-mirror" "")
-      (du/remove-attr! el "data-mirror"))
-
-    ;; Animation data attribute
-    (if (not= animation "none")
-      (du/set-attr! el "data-animation" animation)
-      (du/remove-attr! el "data-animation"))))
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (gobj/get el k-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (gobj/get el k-initialized)
     (init-dom! el))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (when (gobj/get el k-initialized)
-      (render! el))))
+      (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
