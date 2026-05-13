@@ -8,6 +8,7 @@
 ;; Instance field keys (Closure-safe: access via du/getv / du/setv!)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs           "__xColorPickerRefs")
+(def ^:private k-model          "__xColorPickerModel")
 (def ^:private k-internals      "__xColorPickerInternals")
 (def ^:private k-handlers       "__xColorPickerHandlers")
 (def ^:private k-dragging       "__xColorPickerDragging")
@@ -604,24 +605,39 @@
   (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals hex-full)))
 
-(defn- render! [^js el]
+(defn- apply-model!
+  "Project the cached model onto the shadow DOM. Caches the model at the
+  tail so partial-write failures don't leave a lying cache. Called by
+  update-from-attrs! and by handlers that mutate UI state imperatively
+  (e.g. drag, form-reset)."
+  [^js el m]
   (when-let [refs (du/getv el k-refs)]
-    (let [m (read-model el)
-          ^js area-el        (gobj/get refs "area")
+    (let [^js area-el        (gobj/get refs "area")
           ^js hue-strip      (gobj/get refs "hue-strip")
           ^js alpha-strip    (gobj/get refs "alpha-strip")
           ^js preview-color  (gobj/get refs "preview-color")
           ^js trigger-swatch (gobj/get refs "trigger-swatch")
           ^js hex-input      (gobj/get refs "hex-input")
           ^js swatches-el    (gobj/get refs "swatches")]
-      (apply-host-css-vars!     el m)
-      (apply-area!              area-el m)
-      (apply-hue-strip!         hue-strip m)
-      (apply-alpha-strip!       el alpha-strip m)
+      (apply-host-css-vars!       el m)
+      (apply-area!                area-el m)
+      (apply-hue-strip!           hue-strip m)
+      (apply-alpha-strip!         el alpha-strip m)
       (apply-preview-and-trigger! preview-color trigger-swatch m)
-      (apply-hex-input!         el hex-input m)
-      (render-swatches!         el swatches-el (:swatches m) (:hex m))
-      (apply-form-value!        el m))))
+      (apply-hex-input!           el hex-input m)
+      (render-swatches!           el swatches-el (:swatches m) (:hex m))
+      (apply-form-value!          el m)
+      (du/setv! el k-model m))))
+
+(defn- update-from-attrs!
+  "Read → diff → apply. Skips the apply when the normalised model is
+  unchanged from the cached value."
+  [^js el]
+  (when (du/getv el k-refs)
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Pointer interaction — area
@@ -962,11 +978,11 @@
 ;; ---------------------------------------------------------------------------
 (defn- form-disabled! [^js el disabled?]
   (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- form-reset! [^js el]
   (du/set-attr! el model/attr-value model/default-value)
-  (render! el))
+  (update-from-attrs! el))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
@@ -978,13 +994,14 @@
       (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
-  (render! el))
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
