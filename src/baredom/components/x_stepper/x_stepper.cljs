@@ -236,8 +236,7 @@
     (.setAttribute container "role" "list")
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs {:root root :container container}))
-  nil)
+    (gobj/set el k-refs {:root root :container container})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -263,25 +262,11 @@
          :upcoming "upcoming")
        ")"))
 
-(defn- make-step-node! [idx {:keys [label description]} state disabled?]
-  (let [step-el    (.createElement js/document "div")
-        track-el   (.createElement js/document "div")
-        btn-el     (.createElement js/document "button")
-        num-el     (.createElement js/document "span")
-        conn-el    (.createElement js/document "div")
-        content-el (.createElement js/document "div")
-        label-el   (.createElement js/document "span")
-        desc-el    (.createElement js/document "span")
-        state-str  (model/state->attr state)
-        label-str  (or label "")]
-
-    (.setAttribute step-el "part" "step")
-    (.setAttribute step-el "role" "listitem")
-    (.setAttribute step-el "data-index" (str idx))
-    (.setAttribute step-el "data-state" state-str)
-
-    (.setAttribute track-el "part" "step-track")
-
+(defn- make-step-indicator!
+  "Build the clickable button + number badge for a single step."
+  [idx label-str state disabled?]
+  (let [btn-el (.createElement js/document "button")
+        num-el (.createElement js/document "span")]
     (.setAttribute btn-el "part" "step-indicator")
     (.setAttribute btn-el "type" "button")
     (.setAttribute btn-el "aria-label" (step-aria-label idx label-str state))
@@ -296,54 +281,73 @@
     (.setAttribute num-el "aria-hidden" "true")
     (set! (.-textContent num-el) (if (= state :complete) "✓" (str (inc idx))))
 
-    (.setAttribute conn-el "part" "step-connector")
-    (.setAttribute conn-el "aria-hidden" "true")
+    (.appendChild btn-el num-el)
+    btn-el))
 
+(defn- make-step-track!
+  "Build the track wrapper containing the indicator and the connector line."
+  [idx label-str state disabled?]
+  (let [track-el (.createElement js/document "div")
+        btn-el   (make-step-indicator! idx label-str state disabled?)
+        conn-el  (.createElement js/document "div")]
+    (.setAttribute track-el "part" "step-track")
+    (.setAttribute conn-el  "part" "step-connector")
+    (.setAttribute conn-el  "aria-hidden" "true")
+    (.appendChild track-el btn-el)
+    (.appendChild track-el conn-el)
+    track-el))
+
+(defn- make-step-content!
+  "Build the label/description column for a single step."
+  [label-str description]
+  (let [content-el (.createElement js/document "div")
+        label-el   (.createElement js/document "span")
+        desc-el    (.createElement js/document "span")]
     (.setAttribute content-el "part" "step-content")
-
-    (.setAttribute label-el "part" "step-label")
+    (.setAttribute label-el   "part" "step-label")
     (set! (.-textContent label-el) label-str)
-
     (.setAttribute desc-el "part" "step-description")
     (if (and description (not= description ""))
       (do (set! (.-textContent desc-el) description)
           (set! (.. desc-el -style -display) "block"))
       (set! (.. desc-el -style -display) "none"))
-
-    (.appendChild btn-el num-el)
-    (.appendChild track-el btn-el)
-    (.appendChild track-el conn-el)
     (.appendChild content-el label-el)
     (.appendChild content-el desc-el)
-    (.appendChild step-el track-el)
-    (.appendChild step-el content-el)
+    content-el))
 
+(defn- make-step-node!
+  "Compose a step (track + content) from its named DOM builders."
+  [idx {:keys [label description]} state disabled?]
+  (let [step-el   (.createElement js/document "div")
+        label-str (or label "")
+        state-str (model/state->attr state)]
+    (.setAttribute step-el "part" "step")
+    (.setAttribute step-el "role" "listitem")
+    (.setAttribute step-el "data-index" (str idx))
+    (.setAttribute step-el "data-state" state-str)
+    (.appendChild step-el (make-step-track! idx label-str state disabled?))
+    (.appendChild step-el (make-step-content! label-str description))
     step-el))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [steps current orientation size disabled?] :as m}]
   (let [{:keys [container]} (ensure-refs! el)
         ^js container container]
-
     ;; data-* attributes drive CSS — not in observed-attributes, safe to set here
     (du/set-attr! el "data-orientation" (model/orientation->attr orientation))
     (du/set-attr! el "data-size" (model/size->attr size))
-
     ;; Rebuild step nodes (clear + append)
     (set! (.-innerHTML container) "")
     (doseq [[idx step] (map-indexed vector steps)]
       (let [state (model/step-state idx current)]
         (.appendChild container (make-step-node! idx step state disabled?))))
-
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-container-click [^js el ^js e]
@@ -358,17 +362,15 @@
             (when (and (number? idx) (not (js/isNaN idx)) (not= idx cur))
               (let [detail (clj->js (model/change-detail cur idx))]
                 (when (du/dispatch-cancelable! el model/event-change detail)
-                  (du/set-attr! el model/attr-current (str idx))))))))))
-  nil)
+                  (du/set-attr! el model/attr-current (str idx)))))))))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [{:keys [container]} (ensure-refs! el)
         ^js container container
-        click-h (fn [e] (on-container-click el e))]
+        click-h (fn handle-container-click [e] (on-container-click el e))]
     (.addEventListener container "click" click-h)
-    (gobj/set el k-handlers #js {:click click-h}))
-  nil)
+    (gobj/set el k-handlers #js {:click click-h})))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (gobj/get el k-handlers)]
@@ -378,65 +380,35 @@
               click-h       (gobj/get hs "click")]
           (when (and container click-h)
             (.removeEventListener container "click" click-h))))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
+;; orientation/size getters compose parse + canonical-form normalisation, so
+;; the property always returns the canonical string regardless of how the
+;; attribute was written. Each one needs its own 1-arg parse fn for
+;; du/define-parsed-prop!.
+(defn- parse-orientation-prop [s]
+  (model/orientation->attr (model/parse-orientation s)))
+
+(defn- parse-size-prop [s]
+  (model/size->attr (model/parse-size s)))
+
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-steps model/attr-steps "[]")
-
-  (.defineProperty js/Object proto model/attr-current
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-current
-                                         (.getAttribute this model/attr-current))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-current)
-                                          (.setAttribute this model/attr-current
-                                                         (str (int v))))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-orientation
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/orientation->attr
-                                         (model/parse-orientation
-                                          (.getAttribute this model/attr-orientation)))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-orientation (str v))
-                                          (.removeAttribute this model/attr-orientation))))
-                        :enumerable true :configurable true})
-
-  (.defineProperty js/Object proto model/attr-size
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/size->attr
-                                         (model/parse-size
-                                          (.getAttribute this model/attr-size)))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-size (str v))
-                                          (.removeAttribute this model/attr-size))))
-                        :enumerable true :configurable true})
-
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled))
+  (du/define-string-prop! proto model/attr-steps       model/attr-steps       "[]")
+  (du/define-parsed-prop! proto model/attr-current     model/attr-current     model/parse-current)
+  (du/define-parsed-prop! proto model/attr-orientation model/attr-orientation parse-orientation-prop)
+  (du/define-parsed-prop! proto model/attr-size        model/attr-size        parse-size-prop)
+  (du/define-bool-prop!   proto model/attr-disabled    model/attr-disabled))
 
 ;; ── Element class ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-refs! el)
   (remove-listeners! el)
   (add-listeners! el)
-  (update-from-attrs! el)
-  nil)
+  (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el)
-  nil)
+  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

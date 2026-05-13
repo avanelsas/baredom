@@ -6,6 +6,7 @@
 (def ^:private key-root "__xTabRoot")
 (def ^:private key-base "__xTabBase")
 (def ^:private key-initialized "__xTabInitialized")
+(def ^:private key-model "__xTabModel")
 
 (defn- read-inputs [^js el]
   {:value (du/get-attr el model/attr-value)
@@ -81,14 +82,21 @@
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-orientation" (:orientation state)))
 
-(defn- render! [^js el]
-
-  (let [state (model/derive-state (read-inputs el))
-        base (du/getv el key-base)]
-
+(defn- apply-model! [^js el state]
+  (let [base (du/getv el key-base)]
     (when base
       (apply-host-a11y! el state)
-      (apply-state! base state))))
+      (apply-state! base state))
+    (du/setv! el key-model state)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (model/derive-state (read-inputs el))
+        old-m (du/getv el key-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
+
+(defn- render! [^js el]
+  (update-from-attrs! el))
 
 (defn- dispatch-select! [^js el]
 
@@ -116,12 +124,10 @@
       (activate! el))))
 
 (defn- install-listeners! [^js el]
-
   (.addEventListener el "click"
-                     (fn [e] (on-click el e)))
-
+                     (fn handle-tab-click [e] (on-click el e)))
   (.addEventListener el "keydown"
-                     (fn [e] (on-keydown el e))))
+                     (fn handle-tab-keydown [e] (on-keydown el e))))
 
 (defn- init-dom! [^js el]
 
@@ -155,10 +161,11 @@
 (defn- connected! [^js el]
   (init-element! el))
 
-(defn- attribute-changed! [^js el _ _ _]
-  (if (du/initialized? el key-initialized)
-    (render! el)
-    (init-element! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (if (du/initialized? el key-initialized)
+      (update-from-attrs! el)
+      (init-element! el))))
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))

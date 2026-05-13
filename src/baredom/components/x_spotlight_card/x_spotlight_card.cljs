@@ -225,15 +225,14 @@
 
 (defn- add-listeners! [^js el]
   (when-not (listening? el)
-    (let [enter-fn (fn [^js e] (on-pointerenter el e))
-          leave-fn (fn [^js e] (on-pointerleave el e))
-          move-fn  (fn [^js e] (on-pointermove  el e))
+    (let [enter-fn (fn handle-pointerenter [^js e] (on-pointerenter el e))
+          leave-fn (fn handle-pointerleave [^js e] (on-pointerleave el e))
+          move-fn  (fn handle-pointermove  [^js e] (on-pointermove  el e))
           handlers #js {:enter enter-fn :leave leave-fn :move move-fn}]
       (.addEventListener el "pointerenter" enter-fn #js {:passive true})
       (.addEventListener el "pointerleave" leave-fn #js {:passive true})
       (.addEventListener el "pointermove"  move-fn  #js {:passive true})
-      (du/setv! el k-handlers handlers)))
-  nil)
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js handlers (du/getv el k-handlers)]
@@ -292,11 +291,10 @@
 (defn- add-mq-listener! [^js el]
   (when-not (du/getv el k-mq)
     (let [^js mq  (.matchMedia js/window "(prefers-reduced-motion: reduce)")
-          handler (fn [^js _e] (update-from-attrs! el))]
+          handler (fn handle-motion-change [^js _e] (update-from-attrs! el))]
       (.addEventListener mq "change" handler)
       (du/setv! el k-mq mq)
-      (du/setv! el k-mq-listener handler)))
-  nil)
+      (du/setv! el k-mq-listener handler))))
 
 (defn- remove-mq-listener! [^js el]
   (when-let [^js mq (du/getv el k-mq)]
