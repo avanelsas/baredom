@@ -3,102 +3,79 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-button.model :as model]))
 
-(def state-key "__xButtonState")
-(def hover-key "__xButtonHover")
-(def focus-visible-key "__xButtonFocusVisible")
-(def active-source-key "__xButtonActiveSource")
-(def last-activation-source-key "__xButtonLastActivationSource")
+(def ^:private state-key                  "__xButtonState")
+(def ^:private hover-key                  "__xButtonHover")
+(def ^:private focus-visible-key          "__xButtonFocusVisible")
+(def ^:private active-source-key          "__xButtonActiveSource")
+(def ^:private last-activation-source-key "__xButtonLastActivationSource")
 
-(defn get-prop
-  [obj k]
-  (aget obj k))
+(defn- get-prop [obj k] (aget obj k))
 
-(defn set-prop!
-  [obj k v]
-  (aset obj k v))
+(defn- set-prop! [obj k v] (aset obj k v))
 
-
-(defn get-el-state
-  [^js el]
+(defn- get-el-state [^js el]
   (get-prop el state-key))
 
-(defn set-el-state!
-  [^js el state]
+(defn- set-el-state! [^js el state]
   (set-prop! el state-key state))
 
-(defn get-hover
-  [^js el]
+(defn- get-hover [^js el]
   (= true (get-prop el hover-key)))
 
-(defn set-hover!
-  [^js el value]
+(defn- set-hover! [^js el value]
   (set-prop! el hover-key (boolean value)))
 
-(defn get-focus-visible
-  [^js el]
+(defn- get-focus-visible [^js el]
   (= true (get-prop el focus-visible-key)))
 
-(defn set-focus-visible!
-  [^js el value]
+(defn- set-focus-visible! [^js el value]
   (set-prop! el focus-visible-key (boolean value)))
 
-(defn get-active-source
-  [^js el]
+(defn- get-active-source [^js el]
   (get-prop el active-source-key))
 
-(defn set-active-source!
-  [^js el value]
+(defn- set-active-source! [^js el value]
   (set-prop! el active-source-key value))
 
-(defn get-last-activation-source
-  [^js el]
+(defn- get-last-activation-source [^js el]
   (get-prop el last-activation-source-key))
 
-(defn set-last-activation-source!
-  [^js el value]
+(defn- set-last-activation-source! [^js el value]
   (set-prop! el last-activation-source-key value))
 
-(defn find-owner-form
-  [^js el]
+(defn- find-owner-form [^js el]
   (or (when-let [form-id (du/get-attr el "form")]
         (.getElementById js/document form-id))
       (.closest el "form")))
 
-(defn read-public-state
-  [^js el]
+(defn- read-public-state [^js el]
   (model/public-state
    {:disabled (du/has-attr? el model/attr-disabled)
-    :loading (du/has-attr? el model/attr-loading)
-    :pressed (du/has-attr? el model/attr-pressed)
-    :type (du/get-attr el model/attr-type)
-    :variant (du/get-attr el model/attr-variant)
-    :size (du/get-attr el model/attr-size)
-    :label (du/get-attr el model/attr-label)}))
+    :loading  (du/has-attr? el model/attr-loading)
+    :pressed  (du/has-attr? el model/attr-pressed)
+    :type     (du/get-attr el model/attr-type)
+    :variant  (du/get-attr el model/attr-variant)
+    :size     (du/get-attr el model/attr-size)
+    :label    (du/get-attr el model/attr-label)}))
 
-(defn interactive-el?
-  [^js el]
+(defn- interactive-el? [^js el]
   (model/interactive? (read-public-state el)))
 
-(defn assigned-nodes
-  [^js slot-el]
+(defn- assigned-nodes [^js slot-el]
   (.assignedNodes slot-el #js {:flatten true}))
 
-(defn slot-has-content?
-  [^js slot-el]
+(defn- slot-has-content? [^js slot-el]
   (> (alength (assigned-nodes slot-el)) 0))
 
-(defn meaningful-text-node?
-  [^js node]
+(defn- meaningful-text-node? [^js node]
   (and (= (.-nodeType node) js/Node.TEXT_NODE)
        (not= "" (.trim (or (.-textContent node) "")))))
 
-(defn meaningful-element-node?
-  [^js node]
+(defn- meaningful-element-node? [^js node]
   (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
        (not= "" (.trim (or (.-textContent node) "")))))
 
-(defn slot-has-meaningful-text?
-  [^js slot-el]
+(defn- slot-has-meaningful-text? [^js slot-el]
   (let [nodes (assigned-nodes slot-el)]
     (loop [idx 0]
       (if (< idx (alength nodes))
@@ -109,8 +86,7 @@
             (recur (inc idx))))
         false))))
 
-(defn style-text
-  []
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-block;"
@@ -346,11 +322,10 @@
    "}"
    ))
 
-(defn create-el
-  [tag]
+(defn- create-el [tag]
   (.createElement js/document tag))
 
-(defn make-shadow-state
+(defn- make-shadow-state
   [root style-el button-el inner-el label-slot-el icon-start-slot-el icon-end-slot-el spinner-slot-el]
   #js {:root root
        :style style-el
@@ -361,8 +336,7 @@
        :icon-end-slot icon-end-slot-el
        :spinner-slot spinner-slot-el})
 
-(defn create-shadow!
-  [^js el]
+(defn- create-shadow! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})
         style-el (create-el "style")
         button-el (create-el "button")
@@ -377,7 +351,7 @@
         icon-end-slot-el (create-el "slot")
         spinner-slot-el (create-el "slot")]
 
-    (set! (.-textContent style-el) (style-text))
+    (set! (.-textContent style-el) style-text)
 
     (.setAttribute button-el "part" "button")
     (.setAttribute inner-el "part" "inner")
@@ -465,7 +439,7 @@
   (du/set-attr! el "data-variant" variant)
   (du/set-attr! el "data-size"    size))
 
-(defn render!
+(defn- render!
   [^js el state]
   (let [button-el          (aget state "button")
         label-slot-el      (aget state "label-slot")
@@ -490,7 +464,7 @@
     (apply-button-data-state!  button-el public-state ui)
     (apply-host-data!          el        public-state)))
 
-(defn end-active-press!
+(defn- end-active-press!
   [^js el]
   (let [source (get-active-source el)]
     (when source
@@ -499,13 +473,13 @@
       (when-let [state (get-el-state el)]
         (render! el state)))))
 
-(defn sync-noninteractive-state!
+(defn- sync-noninteractive-state!
   [^js el]
   (when-not (interactive-el? el)
     (set-hover! el false)
     (set-active-source! el nil)))
 
-(defn setup-hover!
+(defn- setup-hover!
   [^js el ^js button-el]
   (.addEventListener
    button-el
@@ -580,7 +554,7 @@
       (set-last-activation-source! el nil)
       (maybe-submit-or-reset! el (:type (read-public-state el))))))
 
-(defn setup-press!
+(defn- setup-press!
   [^js el ^js button-el]
   (.addEventListener button-el "pointerdown"
                      (fn [_] (start-press! el "pointer")))
@@ -600,7 +574,7 @@
   (.addEventListener button-el "click"
                      (fn [_] (on-click! el))))
 
-(defn setup-focus!
+(defn- setup-focus!
   [^js el ^js button-el]
   (.addEventListener
    button-el
@@ -619,7 +593,7 @@
      (set-focus-visible! el false)
      (render! el (get-el-state el)))))
 
-(defn setup-slots!
+(defn- setup-slots!
   [^js el state]
   (let [rerender (fn [_]
                    (render! el state))]

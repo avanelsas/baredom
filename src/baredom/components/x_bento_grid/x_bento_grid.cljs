@@ -1,21 +1,21 @@
 (ns baredom.components.x-bento-grid.x-bento-grid
   (:require
-[baredom.utils.component :as component]
-               [baredom.utils.dom :as du]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
    [baredom.components.x-bento-grid.model :as model]))
 
-(def key-root "__xBentoGridRoot")
-(def key-base "__xBentoGridBase")
-(def key-initialized "__xBentoGridInit")
+(def ^:private key-root        "__xBentoGridRoot")
+(def ^:private key-base        "__xBentoGridBase")
+(def ^:private key-initialized "__xBentoGridInit")
 
-(defn read-inputs [^js el]
+(defn- read-inputs [^js el]
   {:columns    (du/get-attr el model/attr-columns)
    :gap        (du/get-attr el model/attr-gap)
    :row-gap    (du/get-attr el model/attr-row-gap)
    :column-gap (du/get-attr el model/attr-column-gap)
    :row-height (du/get-attr el model/attr-row-height)})
 
-(defn style-text []
+(def ^:private style-text
   "
   :host {
   display:block;
@@ -32,26 +32,26 @@
   }
   ")
 
-(defn apply-state! [^js base state]
+(defn- apply-state! [^js base state]
   (let [^js style (.-style base)]
     (.setProperty style "--x-bento-grid-columns" (:template state))
     (.setProperty style "--x-bento-grid-row-height" (:row-height state))
     (.setProperty style "--x-bento-grid-row-gap" (:row-gap state))
     (.setProperty style "--x-bento-grid-column-gap" (:column-gap state))))
 
-(defn render! [^js el]
+(defn- render! [^js el]
   (let [state (model/derive-state (read-inputs el))
         base  (du/getv el key-base)]
     (when base
       (apply-state! base state))))
 
-(defn init-dom! [^js el]
+(defn- init-dom! [^js el]
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base  (.createElement js/document "div")
         slot  (.createElement js/document "slot")]
 
-    (set! (.-textContent style) (style-text))
+    (set! (.-textContent style) style-text)
 
     (.setAttribute base "part" "base")
     (set! (.-className base) "base")
@@ -63,7 +63,7 @@
     (du/setv! el key-root root)
     (du/setv! el key-base base)))
 
-(defn init-element! [^js el]
+(defn- init-element! [^js el]
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)
     (du/mark-initialized! el key-initialized))
@@ -80,7 +80,6 @@
 
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :attribute-changed-fn   attribute-changed!
-     }))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :attribute-changed-fn attribute-changed!}))

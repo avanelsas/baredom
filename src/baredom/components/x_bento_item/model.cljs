@@ -43,4 +43,4 @@
      :row-span-css (str "span " rs)
      :order        ord}))
 
-(def method-api nil)
+(def method-api {})
