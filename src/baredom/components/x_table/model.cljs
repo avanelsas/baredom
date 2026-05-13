@@ -131,4 +131,4 @@
    :selected      selected?
    :selectionMode selectable})
 
-(def method-api nil)
+(def method-api {})

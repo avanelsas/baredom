@@ -89,4 +89,4 @@
      :value (normalize-text value)
      :hint (normalize-text hint)}))
 
-(def method-api nil)
+(def method-api {})

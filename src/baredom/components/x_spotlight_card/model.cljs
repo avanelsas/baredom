@@ -66,7 +66,7 @@
 
 (def event-schema {})
 
-(def method-api nil)
+(def method-api {})
 
 (defn valid-enum
   [value allowed fallback]
