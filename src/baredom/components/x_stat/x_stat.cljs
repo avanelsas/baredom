@@ -9,17 +9,19 @@
 (def ^:private key-value "__xStatValue")
 (def ^:private key-hint "__xStatHint")
 (def ^:private key-initialized "__xStatInitialized")
+(def ^:private key-model "__xStatModel")
 
-(defn- read-inputs [^js el]
-  {:variant (du/get-attr el model/attr-variant)
-   :align (du/get-attr el model/attr-align)
-   :size (du/get-attr el model/attr-size)
-   :emphasis (du/get-attr el model/attr-emphasis)
-   :trend (du/get-attr el model/attr-trend)
-   :loading (du/has-attr? el model/attr-loading)
-   :label (du/get-attr el model/attr-label)
-   :value (du/get-attr el model/attr-value)
-   :hint (du/get-attr el model/attr-hint)})
+(defn- read-model [^js el]
+  (model/derive-state
+   {:variant (du/get-attr el model/attr-variant)
+    :align (du/get-attr el model/attr-align)
+    :size (du/get-attr el model/attr-size)
+    :emphasis (du/get-attr el model/attr-emphasis)
+    :trend (du/get-attr el model/attr-trend)
+    :loading (du/has-attr? el model/attr-loading)
+    :label (du/get-attr el model/attr-label)
+    :value (du/get-attr el model/attr-value)
+    :hint (du/get-attr el model/attr-hint)}))
 
 (defn- set-or-remove!
   [^js el attr value]
@@ -33,20 +35,17 @@
   (set-or-remove! el "aria-label" (:label state)))
 
 (defn- apply-state! [^js base state]
-
   (.setAttribute base "data-variant" (:variant state))
   (.setAttribute base "data-align" (:align state))
   (.setAttribute base "data-size" (:size state))
   (.setAttribute base "data-emphasis" (:emphasis state))
   (.setAttribute base "data-trend" (:trend state))
-
   (if (:loading state)
     (.setAttribute base "data-loading" "true")
     (.removeAttribute base "data-loading")))
 
-(defn- render! [^js el]
-  (let [state (model/derive-state (read-inputs el))
-        ^js base (du/getv el key-base)
+(defn- apply-model! [^js el state]
+  (let [^js base (du/getv el key-base)
         ^js label-node (du/getv el key-label)
         ^js value-node (du/getv el key-value)
         ^js hint-node (du/getv el key-hint)]
@@ -55,7 +54,14 @@
       (apply-state! base state)
       (set! (.-textContent label-node) (or (:label state) ""))
       (set! (.-textContent value-node) (or (:value state) ""))
-      (set! (.-textContent hint-node) (or (:hint state) "")))))
+      (set! (.-textContent hint-node) (or (:hint state) "")))
+    (du/setv! el key-model state)))
+
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el key-model)]
+    (when (not= new-m old-m)
+      (apply-model! el new-m))))
 
 (def ^:private css-text
   (str
@@ -186,21 +192,20 @@
     (du/setv! el key-hint hint-span)))
 
 (defn- init-element! [^js el]
-
   (when-not (du/initialized? el key-initialized)
     (init-dom! el)
     (du/mark-initialized! el key-initialized))
-
-  (render! el)
+  (update-from-attrs! el)
   el)
 
 (defn- connected! [^js el]
   (init-element! el))
 
-(defn- attribute-changed! [^js el _ _ _]
-  (if (du/initialized? el key-initialized)
-    (render! el)
-    (init-element! el)))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (if (du/initialized? el key-initialized)
+      (update-from-attrs! el)
+      (init-element! el))))
 
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))

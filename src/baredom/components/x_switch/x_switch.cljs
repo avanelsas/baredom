@@ -6,6 +6,7 @@
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
 (def ^:private k-refs      "__xSwitchRefs")
+(def ^:private k-model     "__xSwitchModel")
 (def ^:private k-internals "__xSwitchInternals")
 (def ^:private k-handlers  "__xSwitchHandlers")
 
@@ -135,45 +136,58 @@
     :aria-describedby-raw  (du/get-attr el model/attr-aria-describedby)
     :aria-labelledby-raw   (du/get-attr el model/attr-aria-labelledby)}))
 
-;; ── Render ───────────────────────────────────────────────────────────────────
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
+(defn- apply-aria! [^js control-el {:keys [aria-checked disabled? required? readonly?
+                                          aria-label aria-labelledby aria-describedby]}]
+  (du/set-attr! control-el "aria-checked"  aria-checked)
+  (du/set-attr! control-el "aria-disabled" (if disabled? "true" "false"))
+  (du/set-attr! control-el "aria-required" (if required? "true" "false"))
+  (du/set-attr! control-el "aria-readonly" (if readonly? "true" "false"))
+  (if-let [v aria-label]
+    (du/set-attr! control-el "aria-label" v)
+    (du/remove-attr! control-el "aria-label"))
+  (if-let [v aria-labelledby]
+    (du/set-attr! control-el "aria-labelledby" v)
+    (du/remove-attr! control-el "aria-labelledby"))
+  (if-let [v aria-describedby]
+    (du/set-attr! control-el "aria-describedby" v)
+    (du/remove-attr! control-el "aria-describedby")))
+
+(defn- apply-disabled! [^js control-el {:keys [disabled?]}]
+  (set! (.-tabIndex control-el) (if disabled? -1 0))
+  (if disabled?
+    (du/set-attr! control-el "disabled" "")
+    (du/remove-attr! control-el "disabled")))
+
+(defn- apply-host-data! [^js el {:keys [checked? disabled?]}]
+  (du/set-bool-attr! el "data-checked"  checked?)
+  (du/set-bool-attr! el "data-disabled" disabled?))
+
+(defn- apply-form-value! [^js el {:keys [checked? value]}]
+  (when-let [^js internals (gobj/get el k-internals)]
+    (.setFormValue internals (when checked? value))))
+
+(defn- apply-model! [^js el ^js refs m]
+  (let [^js control-el (gobj/get refs "control")]
+    (apply-aria!       control-el m)
+    (apply-disabled!   control-el m)
+    (apply-host-data!  el m)
+    (apply-form-value! el m)
+    (gobj/set el k-model m)))
+
+;; render! is the direct-write entry — try-toggle!/form-disabled!/form-reset!
+;; mutate attributes synchronously and want the apply to run unconditionally.
+;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
   (when-let [refs (gobj/get el k-refs)]
-    (let [^js control-el (gobj/get refs "control")
-          m              (read-model el)
-          disabled?      (:disabled? m)
-          checked?       (:checked? m)]
+    (apply-model! el refs (read-model el))))
 
-      ;; ARIA on button[part=control]
-      (du/set-attr! control-el "aria-checked"  (:aria-checked m))
-      (du/set-attr! control-el "aria-disabled" (if disabled? "true" "false"))
-      (du/set-attr! control-el "aria-required" (if (:required? m) "true" "false"))
-      (du/set-attr! control-el "aria-readonly" (if (:readonly? m) "true" "false"))
-
-      (if-let [v (:aria-label m)]
-        (du/set-attr! control-el "aria-label" v)
-        (du/remove-attr! control-el "aria-label"))
-
-      (if-let [v (:aria-labelledby m)]
-        (du/set-attr! control-el "aria-labelledby" v)
-        (du/remove-attr! control-el "aria-labelledby"))
-
-      (if-let [v (:aria-describedby m)]
-        (du/set-attr! control-el "aria-describedby" v)
-        (du/remove-attr! control-el "aria-describedby"))
-
-      (set! (.-tabIndex control-el) (if disabled? -1 0))
-
-      (if disabled?
-        (du/set-attr! control-el "disabled" "")
-        (du/remove-attr! control-el "disabled"))
-
-      ;; Data attributes on host for CSS hooks
-      (du/set-bool-attr! el "data-checked"  checked?)
-      (du/set-bool-attr! el "data-disabled" disabled?)
-
-      ;; Form value via ElementInternals
-      (when-let [^js internals (gobj/get el k-internals)]
-        (.setFormValue internals (when checked? (:value m)))))))
+(defn- update-from-attrs! [^js el]
+  (when-let [refs (gobj/get el k-refs)]
+    (let [new-m (read-model el)
+          old-m (gobj/get el k-model)]
+      (when (not= new-m old-m)
+        (apply-model! el refs new-m)))))
 
 ;; ── Toggle logic ─────────────────────────────────────────────────────────────
 (defn- try-toggle! [^js el]
@@ -211,23 +225,16 @@
               (du/set-attr! (gobj/get refs "control") "aria-labelledby" lid))))))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
-(defn- make-click-handler [^js el]
-  (fn [^js _evt]
-    (try-toggle! el)))
-
-(defn- make-keydown-handler [^js el]
-  (fn [^js evt]
-    (let [key (.-key evt)]
-      (when (or (= key " ") (= key "Enter"))
-        (.preventDefault evt)
-        (try-toggle! el)))))
-
 (defn- add-listeners! [^js el]
   (when-let [refs (gobj/get el k-refs)]
     (let [^js control-el (gobj/get refs "control")
-          click-h        (make-click-handler el)
-          keydown-h      (make-keydown-handler el)
-          handlers       #js {:click click-h :keydown keydown-h}]
+          click-h   (fn handle-control-click   [^js _e] (try-toggle! el))
+          keydown-h (fn handle-control-keydown [^js e]
+                      (let [key (.-key e)]
+                        (when (or (= key " ") (= key "Enter"))
+                          (.preventDefault e)
+                          (try-toggle! el))))
+          handlers  #js {:click click-h :keydown keydown-h}]
       (.addEventListener control-el "click"   click-h)
       (.addEventListener control-el "keydown" keydown-h)
       (gobj/set el k-handlers handlers))))
@@ -263,8 +270,9 @@
 (defn- disconnected! [^js el]
   (remove-listeners! el))
 
-(defn- attribute-changed! [^js el _name _old _new]
-  (render! el))
+(defn- attribute-changed! [^js el _name old-val new-val]
+  (when (not= old-val new-val)
+    (update-from-attrs! el)))
 
 ;; ── Property helpers ──────────────────────────────────────────────────────────
 ;; ── Element class and registration ───────────────────────────────────────────
