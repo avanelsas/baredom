@@ -185,8 +185,7 @@
                :cell              cell
                :content           content
                :sort-btn          sort-btn
-               :sort-icon-default sort-icon-default}))
-  nil)
+               :sort-icon-default sort-icon-default})))
 
 (defn- ensure-refs! [^js el]
   (or (gobj/get el k-refs)
@@ -211,8 +210,7 @@
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-span! [^js el col-span row-span]
   (set! (.. el -style -gridColumn) (if (> col-span 1) (str "span " col-span) ""))
-  (set! (.. el -style -gridRow)    (if (> row-span 1) (str "span " row-span) ""))
-  nil)
+  (set! (.. el -style -gridRow)    (if (> row-span 1) (str "span " row-span) "")))
 
 (defn- apply-host-attrs! [^js el {:keys [type align valign sticky truncate?
                                           disabled?] :as m}]
@@ -237,8 +235,7 @@
 
   (if truncate?
     (du/set-attr! el "data-truncate" "")
-    (du/remove-attr! el "data-truncate"))
-  nil)
+    (du/remove-attr! el "data-truncate")))
 
 (defn- sort-icon-svg [{:keys [sort-direction]}]
   (case sort-direction
@@ -263,47 +260,40 @@
 
     (set! (.-innerHTML sort-icon-default) (sort-icon-svg m))
 
-    (gobj/set el k-model m))
-  nil)
+    (gobj/set el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (gobj/get el k-model)]
     (when (not= old-m new-m)
-      (apply-model! el new-m)))
-  nil)
+      (apply-model! el new-m))))
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-sort! [^js el]
   (let [current  (model/parse-sort-direction (du/get-attr el model/attr-sort-direction))
         next-dir (model/next-sort-direction current)]
     (du/dispatch-cancelable! el model/event-sort
-      #js {:direction next-dir :previousDirection current}))
-  nil)
+      #js {:direction next-dir :previousDirection current})))
 
 (defn- dispatch-connected! [^js el m]
-  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m)))
-  nil)
+  (du/dispatch! el model/event-connected (clj->js (model/connected-detail m))))
 
 (defn- dispatch-disconnected! [^js el]
-  (du/dispatch! el model/event-disconnected #js {})
-  nil)
+  (du/dispatch! el model/event-disconnected #js {}))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-sort-click [^js el ^js _e]
   (let [m (or (gobj/get el k-model) (read-model el))]
     (when (and (model/sort-btn-visible? m) (not (:disabled? m)))
-      (dispatch-sort! el)))
-  nil)
+      (dispatch-sort! el))))
 
 ;; ── Listener management ──────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [{:keys [sort-btn]} (ensure-refs! el)
         ^js sort-btn sort-btn
-        sort-click-h (fn [e] (on-sort-click el e))]
+        sort-click-h (fn handle-sort-click [e] (on-sort-click el e))]
     (.addEventListener sort-btn "click" sort-click-h)
-    (gobj/set el k-handlers #js {:sort-click sort-click-h}))
-  nil)
+    (gobj/set el k-handlers #js {:sort-click sort-click-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
@@ -313,8 +303,7 @@
             ^js sort-btn sort-btn
             h (gobj/get hs "sort-click")]
         (when h (.removeEventListener sort-btn "click" h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -363,13 +352,11 @@
   (add-listeners! el)
   (update-from-attrs! el)
   (let [m (or (gobj/get el k-model) (read-model el))]
-  (dispatch-connected! el m))
-  nil)
+  (dispatch-connected! el m)))
 
 (defn- disconnected! [^js el]
   (remove-listeners! el)
-  (dispatch-disconnected! el)
-  nil)
+  (dispatch-disconnected! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
