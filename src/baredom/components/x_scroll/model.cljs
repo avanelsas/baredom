@@ -238,4 +238,7 @@
 (defn loop-detail [direction]
   {:direction direction})
 
-(def method-api nil)
+(def method-api
+  {:goTo {:args [{:name "index" :type 'number}] :returns 'void}
+   :next {:args []                              :returns 'void}
+   :prev {:args []                              :returns 'void}})

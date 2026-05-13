@@ -789,112 +789,58 @@
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  ;; mode (string)
-  (.defineProperty js/Object proto model/attr-mode
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-mode) "horizontal")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-mode (str v))
-                                          (.removeAttribute this model/attr-mode))))
-                        :enumerable true :configurable true})
+  (du/define-string-prop! proto model/attr-mode     model/attr-mode     "horizontal")
+  (du/define-string-prop! proto model/attr-snap     model/attr-snap     "none")
+  (du/define-bool-prop!   proto model/attr-loop     model/attr-loop)
+  (du/define-bool-prop!   proto "autoPlay"          model/attr-auto-play)
+  (du/define-parsed-prop! proto model/attr-interval model/attr-interval model/parse-interval)
+  (du/define-bool-prop!   proto "showIndicators"    model/attr-show-indicators)
+  (du/define-parsed-prop! proto "activeIndex"       model/attr-active-index model/parse-active-index)
+  (du/define-parsed-prop! proto model/attr-gap      model/attr-gap      model/parse-gap)
+  (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
 
-  ;; snap (string)
-  (.defineProperty js/Object proto model/attr-snap
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-snap) "none")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.setAttribute this model/attr-snap (str v))
-                                          (.removeAttribute this model/attr-snap))))
-                        :enumerable true :configurable true})
-
-  ;; loop / autoPlay — booleans
-  (du/define-bool-prop! proto model/attr-loop model/attr-loop)
-  (du/define-bool-prop! proto "autoPlay"      model/attr-auto-play)
-
-  ;; interval (number)
-  (.defineProperty js/Object proto model/attr-interval
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-interval
-                                         (.getAttribute this model/attr-interval))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-interval)
-                                          (.setAttribute this model/attr-interval (str (int v))))))
-                        :enumerable true :configurable true})
-
-  ;; showControls (boolean default-true, camelCase)
+  ;; showControls is an opt-out boolean — absent attribute = true (default).
+  ;; Setter writes "false" to disable, removes to re-enable. define-parsed-prop!
+  ;; doesn't fit the inverted setter semantics.
   (.defineProperty js/Object proto "showControls"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-bool-default-true
-                                         (.getAttribute this model/attr-show-controls))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (.removeAttribute this model/attr-show-controls)
-                                          (.setAttribute this model/attr-show-controls "false"))))
-                        :enumerable true :configurable true})
+    #js {:get (fn xs-get-show-controls []
+                (this-as ^js this
+                  (model/parse-bool-default-true (.getAttribute this model/attr-show-controls))))
+         :set (fn xs-set-show-controls [v]
+                (this-as ^js this
+                  (if v
+                    (.removeAttribute this model/attr-show-controls)
+                    (.setAttribute this model/attr-show-controls "false"))))
+         :enumerable true :configurable true})
 
-  ;; showIndicators — boolean
-  (du/define-bool-prop! proto "showIndicators" model/attr-show-indicators)
-
-  ;; activeIndex (number, camelCase)
-  (.defineProperty js/Object proto "activeIndex"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-active-index
-                                         (.getAttribute this model/attr-active-index))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-active-index)
-                                          (.setAttribute this model/attr-active-index (str (int v))))))
-                        :enumerable true :configurable true})
-
-  ;; gap (number)
-  (.defineProperty js/Object proto model/attr-gap
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-gap
-                                         (.getAttribute this model/attr-gap))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (nil? v)
-                                          (.removeAttribute this model/attr-gap)
-                                          (.setAttribute this model/attr-gap (str (int v))))))
-                        :enumerable true :configurable true})
-
-  ;; disabled — boolean
-  (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
-
-  ;; label (string)
+  ;; label uses strict-empty setter semantics — setting "" removes the
+  ;; attribute (so derive-state falls back to the default landmark name).
+  ;; define-string-prop! would store "" as an explicit empty attribute.
   (.defineProperty js/Object proto model/attr-label
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (or (.getAttribute this model/attr-label) "")))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
-                        :enumerable true :configurable true})
-  (set! (.-goTo proto)
-        (fn [idx]
-          (this-as ^js this (go-to! this idx))))
-  (set! (.-next proto)
-        (fn []
-          (this-as ^js this (next! this))))
-  (set! (.-prev proto)
-        (fn []
-          (this-as ^js this (prev! this)))))
+    #js {:get (fn xs-get-label []
+                (this-as ^js this
+                  (or (.getAttribute this model/attr-label) "")))
+         :set (fn xs-set-label [v]
+                (this-as ^js this
+                  (if (and v (not= v ""))
+                    (.setAttribute this model/attr-label (str v))
+                    (.removeAttribute this model/attr-label))))
+         :enumerable true :configurable true})
+
+  ;; Methods (Tier-2 .defineProperty :value descriptors — replaces bare
+  ;; (set! (.-method proto) fn) so they show up in method-api and the d.ts).
+  (.defineProperty js/Object proto "goTo"
+    #js {:value (fn xs-go-to [idx]
+                  (this-as ^js this (go-to! this idx)))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "next"
+    #js {:value (fn xs-next []
+                  (this-as ^js this (next! this)))
+         :writable true :configurable true})
+  (.defineProperty js/Object proto "prev"
+    #js {:value (fn xs-prev []
+                  (this-as ^js this (prev! this)))
+         :writable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
