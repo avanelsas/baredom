@@ -1,15 +1,15 @@
 (ns baredom.components.x-divider.x-divider
   (:require
-[baredom.utils.component :as component]
-            [baredom.utils.dom :as du]
-               [goog.object :as gobj]
+   [baredom.utils.component :as component]
+   [baredom.utils.dom :as du]
+   [goog.object :as gobj]
    [baredom.components.x-divider.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
 (def ^:private k-refs     "__xDividerRefs")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:block;"
@@ -127,8 +127,7 @@
     (gobj/set el k-refs
               #js {:root      root
                    :container container
-                   :mode      "no-label"}))
-  nil)
+                   :mode      "no-label"})))
 
 (defn- remove-all-children! [^js parent]
   (loop []
@@ -165,8 +164,7 @@
           (gobj/set refs "label-wrap" label-wrap)
           (gobj/set refs "label-text" label-text)
           (gobj/set refs "line-right" line-right)
-          (gobj/set refs "mode"       "label"))))
-    nil))
+          (gobj/set refs "mode"       "label"))))))
 
 (defn- ensure-no-label-dom!
   "Switches the container to no-label mode if not already in that mode."
@@ -183,8 +181,7 @@
           (gobj/set refs "label-wrap" nil)
           (gobj/set refs "label-text" nil)
           (gobj/set refs "line-right" nil)
-          (gobj/set refs "mode"       "no-label"))))
-    nil))
+          (gobj/set refs "mode"       "no-label"))))))
 
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
@@ -244,26 +241,13 @@
               ^js label-text (gobj/get refs "label-text")]
           (when label-text
             (set! (.-textContent label-text) label))))
-      (ensure-no-label-dom! el)))
-  nil)
-
-;; ── Listener management ───────────────────────────────────────────────────
-(defn- add-listeners! [^js _el]
-  ;; x-divider is purely visual — no event listeners needed
-  nil)
-
-(defn- remove-listeners! [^js _el]
-  nil)
+      (ensure-no-label-dom! el))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
+;; x-divider is purely visual — no event listeners.
 (defn- connected! [^js el]
   (when-not (gobj/get el k-refs) (make-shadow! el))
-  (remove-listeners! el)
-  (add-listeners! el)
   (render! el))
-
-(defn- disconnected! [^js el]
-  (remove-listeners! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
@@ -274,13 +258,10 @@
 (defn- install-property-accessors! [^js proto]
   (du/install-properties! proto model/property-api))
 
-;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────
-
 (defn init! []
   (component/register! model/tag-name
-    {:observed-attributes    model/observed-attributes
-     :connected-fn           connected!
-     :disconnected-fn        disconnected!
-     :attribute-changed-fn   attribute-changed!
-     :setup-prototype-fn     install-property-accessors!}))
+                       {:observed-attributes  model/observed-attributes
+                        :connected-fn         connected!
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   install-property-accessors!}))

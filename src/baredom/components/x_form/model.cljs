@@ -42,4 +42,4 @@
   {event-submit {:cancelable true  :detail {:values 'object}}
    event-reset  {:cancelable false :detail {}}})
 
-(def method-api nil)
+(def method-api {})

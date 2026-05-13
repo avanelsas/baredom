@@ -202,8 +202,7 @@
         ^js anchor (gobj/get refs "anchor-el")
         click-h   (make-click-handler el)]
     (.addEventListener anchor "click" click-h)
-    (gobj/set el k-handlers #js {:click click-h}))
-  nil)
+    (gobj/set el k-handlers #js {:click click-h})))
 
 (defn- remove-listeners! [^js el]
   (let [hs   (gobj/get el k-handlers)
@@ -212,8 +211,7 @@
       (let [^js anchor  (gobj/get refs "anchor-el")
             click-h     (gobj/get hs "click")]
         (when click-h (.removeEventListener anchor "click" click-h)))))
-  (gobj/set el k-handlers nil)
-  nil)
+  (gobj/set el k-handlers nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle

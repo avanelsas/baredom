@@ -106,4 +106,4 @@
 
       :else "")))
 
-(def method-api nil)
+(def method-api {})
