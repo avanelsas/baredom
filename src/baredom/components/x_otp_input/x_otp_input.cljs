@@ -130,7 +130,7 @@
 ;; Slot reads / writes
 ;; ---------------------------------------------------------------------------
 (defn- slot-list [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js root (gobj/get refs "root")]
       (.querySelectorAll root "input"))))
 
@@ -249,7 +249,7 @@
             (du/remove-attr! slot "aria-required")))))))
 
 (defn- apply-host-aria! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js root (gobj/get refs "root")
           label    (:label m)]
       (if (and (string? label) (not= "" label))
@@ -262,7 +262,7 @@
       (du/set-attr! el model/attr-value normalized-value))))
 
 (defn- apply-model! [^js el new-m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js root (gobj/get refs "root")
           old-m    (du/getv el k-model)]
       (when (structure-changed? old-m new-m)
@@ -270,7 +270,7 @@
       (apply-slot-attrs! el new-m)
       (apply-host-aria!  el new-m)
       (write-slots! el (:value new-m))
-      (when-let [^js internals (gobj/get el k-internals)]
+      (when-let [^js internals (du/getv el k-internals)]
         (.setFormValue internals (:value new-m))
         (sync-validity! el internals new-m))
       (du/setv! el k-model new-m)
@@ -440,13 +440,13 @@
 ;; Focus / blur for change-event tracking
 ;; ---------------------------------------------------------------------------
 (defn- handle-focusin! [^js el ^js _evt]
-  (when (nil? (gobj/get el k-focus-val))
-    (gobj/set el k-focus-val (or (du/get-attr el model/attr-value) ""))))
+  (when (nil? (du/getv el k-focus-val))
+    (du/setv! el k-focus-val (or (du/get-attr el model/attr-value) ""))))
 
 (defn- emit-change-if-left! [^js el]
   (let [^js active (.-activeElement js/document)]
     (when (not= active el)
-      (let [old-val (gobj/get el k-focus-val)
+      (let [old-val (du/getv el k-focus-val)
             new-val (or (du/get-attr el model/attr-value) "")
             m       (du/getv el k-model)
             length  (:length m)]
@@ -455,7 +455,7 @@
                         #js {:name     (name-for-event el)
                              :value    new-val
                              :complete (model/complete? new-val length)}))
-        (gobj/set el k-focus-val nil)))))
+        (du/setv! el k-focus-val nil)))))
 
 (defn- handle-focusout! [^js el ^js _evt]
   (js/setTimeout (fn [] (emit-change-if-left! el)) 0))
@@ -464,7 +464,7 @@
 ;; Listener management (delegation on the root container + host)
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js root (gobj/get refs "root")
           input-h  (fn [^js e] (handle-input!    el e))
           key-h    (fn [^js e] (handle-keydown!  el e))
@@ -476,7 +476,7 @@
       (.addEventListener root "paste"    paste-h)
       (.addEventListener root "focusin"  fin-h)
       (.addEventListener root "focusout" fout-h)
-      (gobj/set el k-handlers
+      (du/setv! el k-handlers
                 #js {:input    input-h
                      :keydown  key-h
                      :paste    paste-h
@@ -484,15 +484,15 @@
                      :focusout fout-h}))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js root (gobj/get refs "root")]
         (.removeEventListener root "input"    (gobj/get handlers "input"))
         (.removeEventListener root "keydown"  (gobj/get handlers "keydown"))
         (.removeEventListener root "paste"    (gobj/get handlers "paste"))
         (.removeEventListener root "focusin"  (gobj/get handlers "focusin"))
         (.removeEventListener root "focusout" (gobj/get handlers "focusout")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
@@ -507,7 +507,7 @@
       (du/set-attr! group-el "role" "group")
       (.appendChild root style-el)
       (.appendChild root group-el)
-      (gobj/set el k-refs #js {:root group-el}))))
+      (du/setv! el k-refs #js {:root group-el}))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -524,10 +524,10 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el)
