@@ -340,13 +340,15 @@
         (let [^js p  (aget paths i)
               amp    (aget wa i)
               phase  (aget wp i)]
+          ;; Hot path: rAF-driven; use untraced variants to keep the
+          ;; trace recorder readable.
           (if vert?
             (let [fill-y (model/progress->fill-y prog h)
                   d      (model/wave-path-d fill-y w h t amp phase)]
-              (du/set-attr! p "d" d))
+              (du/set-attr-untraced! p "d" d))
             (let [fill-x (model/progress->fill-x prog w)
                   d      (model/horizontal-wave-path-d fill-x w h t amp phase)]
-              (du/set-attr! p "d" d))))))))
+              (du/set-attr-untraced! p "d" d))))))))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]

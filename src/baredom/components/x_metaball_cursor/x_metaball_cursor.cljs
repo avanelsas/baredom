@@ -291,7 +291,8 @@
               refs      (du/getv el k-refs)]
           (du/setv! el k-noise-seed new-seed)
           (when-let [^js turb-el (:turb-el refs)]
-            (du/set-attr! turb-el "seed" (str (js/Math.floor new-seed))))))
+            ;; Hot path: rAF-driven noise seed rotation.
+            (du/set-attr-untraced! turb-el "seed" (str (js/Math.floor new-seed))))))
 
       ;; Schedule next frame
       (du/setv! el k-raf

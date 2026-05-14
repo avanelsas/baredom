@@ -431,7 +431,8 @@
               base-scale     (:ripple-scale m)
               refs           (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
-            (du/set-attr! disp-el "scale" (str (+ base-scale burst-scale))))))
+            ;; Hot path: rAF-driven, ripple burst frames.
+            (du/set-attr-untraced! disp-el "scale" (str (+ base-scale burst-scale))))))
 
       ;; Update each item pair
       (dotimes [i n]
@@ -529,13 +530,15 @@
             freq      (+ 0.012 (* 0.006 (js/Math.sin new-phase)))]
         (du/setv! el k-noise-seed new-phase)
         (when-let [^js turb-el (:turb-el refs)]
-          (du/set-attr! turb-el "baseFrequency" (str freq))))
+          ;; Hot path: rAF-driven noise update.
+          (du/set-attr-untraced! turb-el "baseFrequency" (str freq))))
 
       ;; Reset burst displacement when done
       (when (and (not burst-active?) (> burst-time 0))
         (let [refs (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
-            (du/set-attr! disp-el "scale" (str (:ripple-scale m)))))
+            ;; Hot path: rAF-driven, end-of-burst reset.
+            (du/set-attr-untraced! disp-el "scale" (str (:ripple-scale m)))))
         (du/setv! el k-ripple-burst 0))
 
       ;; Schedule next frame

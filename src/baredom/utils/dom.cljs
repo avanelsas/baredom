@@ -69,6 +69,34 @@
       (catch :default _ nil)))
   nil)
 
+;; ── Untraced variants — for animation hot paths ─────────────────────────────
+;;
+;; A requestAnimationFrame-driven attribute write produces a record every
+;; 16ms (the recorder's rate-limit window). Even one (host-cid, attribute)
+;; pair → 60 records/sec; multiple distinct attributes per frame multiply
+;; that. The recorder UI then drowns in animation noise while lower-
+;; frequency events the developer actually wants to see — clicks, state
+;; changes, lifecycle — get pushed off the ring buffer.
+;;
+;; These variants do the native write WITHOUT firing the trace hook.
+;; Use them ONLY inside per-frame render helpers reachable from rAF.
+;; For one-shot mutations (setup, event handlers, attribute-changed
+;; callbacks) use the normal `set-attr!` / `remove-attr!`.
+
+(defn set-attr-untraced!
+  "Like set-attr! but skips the trace recorder. Use only in animation
+   hot paths — see comment block above."
+  [^js el attr-name value]
+  (.setAttribute el attr-name value)
+  nil)
+
+(defn remove-attr-untraced!
+  "Like remove-attr! but skips the trace recorder. Use only in animation
+   hot paths — see comment block above."
+  [^js el attr-name]
+  (.removeAttribute el attr-name)
+  nil)
+
 (defn set-bool-attr!
   "Delegates to set-attr!/remove-attr! so a single hook site fires per call."
   [^js el attr-name value]

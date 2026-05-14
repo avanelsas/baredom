@@ -502,13 +502,16 @@
             cx-str (.toFixed (aget result 0) 2)
             cy-str (.toFixed (aget result 1) 2)
             ^js sat (aget sats i)]
-        (du/set-attr! sat "cx" cx-str)
-        (du/set-attr! sat "cy" cy-str)
-        ;; Mirror to mask satellite
+        ;; Hot path: rAF-driven, ~120 writes/sec across these four lines.
+        ;; Use untraced variants to keep the trace recorder readable —
+        ;; setup attribute writes elsewhere in this file still go through
+        ;; the traced set-attr! since they fire once at connect.
+        (du/set-attr-untraced! sat "cx" cx-str)
+        (du/set-attr-untraced! sat "cy" cy-str)
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
-            (du/set-attr! msat "cx" cx-str)
-            (du/set-attr! msat "cy" cy-str)))))))
+            (du/set-attr-untraced! msat "cx" cx-str)
+            (du/set-attr-untraced! msat "cy" cy-str)))))))
 
 ;; ── Render specular ────────────────────────────────────────────────────────
 (defn- render-specular! [^js el]

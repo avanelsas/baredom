@@ -296,6 +296,30 @@
         (is (= "dom/attribute-removed" (.-type r)))
         (is (= 1 (count-records)))))))
 
+(deftest set-attr-untraced-produces-no-record-test
+  (testing "du/set-attr-untraced! mutates the attribute but does NOT fire
+            the trace hook — the dom write is real, the trace is silent.
+            Used by animation hot paths so per-frame writes don't flood
+            the recorder."
+    (let [el (make-el mutation-tag)]
+      (du/set-attr-untraced! el "data-x" "1")
+      (is (= "1" (.getAttribute el "data-x"))
+          "attribute IS set on the element")
+      (is (= 0 (count-records))
+          "no record was emitted to the trace recorder"))))
+
+(deftest remove-attr-untraced-produces-no-record-test
+  (testing "du/remove-attr-untraced! mirrors set-attr-untraced! — removes
+            the attribute, no record emitted."
+    (let [el (make-el mutation-tag)]
+      (.setAttribute el "data-x" "1")
+      (recorder/clear!)
+      (du/remove-attr-untraced! el "data-x")
+      (is (not (.hasAttribute el "data-x"))
+          "attribute IS removed from the element")
+      (is (= 0 (count-records))
+          "no record was emitted to the trace recorder"))))
+
 ;; ── lifecycle hooks ─────────────────────────────────────────────────────────
 
 (defn- with-test-el

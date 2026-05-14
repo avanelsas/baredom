@@ -315,14 +315,17 @@
     (when (not= visible-count prev-visible)
       (let [lo (js/Math.min visible-count (if (< prev-visible 0) 0 prev-visible))
             hi (js/Math.max visible-count (if (< prev-visible 0) total prev-visible))]
+        ;; Hot path: rAF-driven during spring transitions. Use untraced
+        ;; variants so the recorder isn't flooded with per-segment opacity
+        ;; toggles when the progress bar is animating.
         (loop [i lo]
           (when (< i hi)
             (let [^js line (aget lines i)]
               (when line
-                (du/set-attr! line "opacity"
-                               (if (< i visible-count) "1" "0"))))
+                (du/set-attr-untraced! line "opacity"
+                                       (if (< i visible-count) "1" "0"))))
             (recur (inc i)))))
-      ;; Vine nodes: opacity toggle
+      ;; Vine nodes: opacity toggle (also rAF-driven).
       (let [^js node-els  (du/getv el k-node-els)
             node-count    (or (du/getv el k-node-count) 0)]
         (when (and node-els (pos? node-count))
@@ -330,8 +333,8 @@
             (dotimes [i node-count]
               (let [^js c (aget node-els i)]
                 (when c
-                  (du/set-attr! c "opacity"
-                                 (if (< i visible-nodes) "1" "0"))))))))
+                  (du/set-attr-untraced! c "opacity"
+                                         (if (< i visible-nodes) "1" "0"))))))))
       (du/setv! el k-prev-visible visible-count))))
 
 ;; ── Bloom effect ────────────────────────────────────────────────────────────
@@ -401,10 +404,11 @@
           (let [^js c  (aget bloom-els i)
                 dx     (* (gobj/get c k-bloom-dx) scale 8.0)
                 dy     (* (gobj/get c k-bloom-dy) scale 8.0)]
-            (du/set-attr! c "r" (str (* scale 2.5)))
-            (du/set-attr! c "opacity" (str opacity))
-            (du/set-attr! c "transform"
-                           (str "translate(" dx "," dy ")"))))))))
+            ;; Hot path: rAF-driven bloom animation, ~1.5s burst.
+            (du/set-attr-untraced! c "r" (str (* scale 2.5)))
+            (du/set-attr-untraced! c "opacity" (str opacity))
+            (du/set-attr-untraced! c "transform"
+                                   (str "translate(" dx "," dy ")"))))))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 

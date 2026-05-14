@@ -171,7 +171,8 @@
         ^js cx   (du/getv el k-cur-x)
         ^js cy   (du/getv el k-cur-y)
         d        (model/points->path-d cx cy model/point-count)]
-    (du/set-attr! path "d" d)))
+    ;; Hot path: rAF-driven, ~60 writes/sec on the soft-body path "d".
+    (du/set-attr-untraced! path "d" d)))
 
 (defn- render-static! [^js el]
   (let [{:keys [path]} (du/getv el k-refs)

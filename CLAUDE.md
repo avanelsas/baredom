@@ -201,6 +201,7 @@ Components **must** use shared utility modules — never reimplement locally:
 
 - **`component/register!`** — element registration from declarative options map
 - **`du/setv!`** / **`du/getv`** — host-element instance-field storage (refs, model cache, handlers). The trace-recorder hook lives here; `gobj/set` / `gobj/get` on `el` is forbidden and enforced by `bb scripts/check_du_discipline.bb`. Use `gobj` only on non-host JS objects.
+- **`du/set-attr!`** / **`du/remove-attr!`** — attribute writes. Goes through the trace recorder. **Exception:** per-frame writes inside `requestAnimationFrame` loops (e.g. `animate!` → `render-*!`) use **`du/set-attr-untraced!`** / **`du/remove-attr-untraced!`** to keep the recorder readable. Even after host-attribution + rate-limiting, a high-fanout animation can emit 60+ records/sec under distinct attribute keys; the untraced variants do the native DOM write without firing the hook. Use only in hot paths, with a one-line `;; Hot path: rAF-driven` comment so the intent is greppable. References: `x_liquid_glass/render-satellites!`, `x_soft_body/render-path!`, `x_liquid_dock/animate!`.
 - **`du/has-attr?`** / **`du/get-attr`** — attribute reads in `read-model`
 - **`du/dispatch!`** / **`du/dispatch-cancelable!`** — event dispatch
 - **`du/install-properties!`** — install property accessors from `model/property-api` (Tier 0; see _Property accessor tiers_ above)
