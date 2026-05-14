@@ -1,7 +1,6 @@
 (ns baredom.components.x-organic-divider.x-organic-divider
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-organic-divider.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -114,10 +113,10 @@
     ;; Set permanent a11y attributes on host (always decorative)
     (du/set-attr! el "role" "presentation")
     (du/set-attr! el "aria-hidden" "true")
-    (gobj/set el k-base        base)
-    (gobj/set el k-svg         svg)
-    (gobj/set el k-paths       #js [])
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-base        base)
+    (du/setv! el k-svg         svg)
+    (du/setv! el k-paths       #js [])
+    (du/setv! el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -187,9 +186,9 @@
 
 (defn- apply-model! [^js el {:keys [path-d path-alt drift-d layers transforms
                                     height animation] :as m}]
-  (let [^js base      (gobj/get el k-base)
-        ^js svg       (gobj/get el k-svg)
-        ^js paths-arr (gobj/get el k-paths)
+  (let [^js base      (du/getv el k-base)
+        ^js svg       (du/getv el k-svg)
+        ^js paths-arr (du/getv el k-paths)
         is-drift       (= animation "drift")
         is-morph       (= animation "morph")
         effective-path (if is-drift drift-d path-d)]
@@ -198,23 +197,23 @@
     (apply-paths! paths-arr layers transforms effective-path path-alt is-morph)
     (.setProperty (.-style base) "height" height)
     (apply-host-data! el m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

@@ -72,16 +72,16 @@
     (.appendChild root viewport)
     (.appendChild root live)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root     root
                :viewport viewport
                :slot     slot
                :live     live})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -115,14 +115,14 @@
 (defn- ensure-child-cache!
   "Return an array of child data maps, building the cache if needed."
   [^js el]
-  (or (gobj/get el k-child-cache)
+  (or (du/getv el k-child-cache)
       (let [children (get-children el)
             cache    (into [] (map read-child-data) (array-seq children))]
-        (gobj/set el k-child-cache cache)
+        (du/setv! el k-child-cache cache)
         cache)))
 
 (defn- invalidate-child-cache! [^js el]
-  (gobj/set el k-child-cache nil))
+  (du/setv! el k-child-cache nil))
 
 ;; ── CSS custom property readers ─────────────────────────────────────────────
 (defn- read-fade-range
@@ -148,7 +148,7 @@
   "Compute and apply parallax transforms to all slotted children.
   Called from rAF callback."
   [^js el]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when-not (:disabled? m)
       (let [rect       (.getBoundingClientRect el)
             vert?      (vertical? m)
@@ -161,7 +161,7 @@
             ;; Viewport size for parallax offset magnitude follows direction
             vp-size    (if vert? vp-height (.-innerWidth js/window))
             progress   (model/compute-progress el-top el-height vp-height)
-            last-prog  (gobj/get el k-last-prog)
+            last-prog  (du/getv el k-last-prog)
             children   (get-children el)
             child-data (ensure-child-cache! el)
             fade-range (read-fade-range el)
@@ -191,31 +191,31 @@
         ;; Dispatch progress event if progress changed
         (when (or (nil? last-prog)
                   (> (js/Math.abs (- progress last-prog)) 0.001))
-          (gobj/set el k-last-prog progress)
+          (du/setv! el k-last-prog progress)
           (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress)))))))
   ;; Clear rAF handle
-  (gobj/set el k-raf nil))
+  (du/setv! el k-raf nil))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
   (when (and (.-isConnected el)
-             (gobj/get el k-visible)
+             (du/getv el k-visible)
              (not (prefers-reduced-motion?)))
-    (when-not (gobj/get el k-raf)
-      (gobj/set el k-raf
+    (when-not (du/getv el k-raf)
+      (du/setv! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-transforms! el)))))))
 
 ;; ── IntersectionObserver callback ───────────────────────────────────────────
 (defn- attach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (not (gobj/get hs "scrollAttached")))
       (let [scroll-h (gobj/get hs "scroll")]
         (.addEventListener js/window "scroll" scroll-h #js {:passive true})
         (gobj/set hs "scrollAttached" true)))))
 
 (defn- detach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (gobj/get hs "scrollAttached"))
       (let [scroll-h (gobj/get hs "scroll")]
         (.removeEventListener js/window "scroll" scroll-h)
@@ -228,8 +228,8 @@
 (defn- on-intersection [^js el ^js entries]
   (let [^js entry (aget entries 0)
         is-intersecting (.-isIntersecting entry)
-        {:keys [live]} (gobj/get el k-refs)]
-    (gobj/set el k-visible is-intersecting)
+        {:keys [live]} (du/getv el k-refs)]
+    (du/setv! el k-visible is-intersecting)
     (if is-intersecting
       (do
         (attach-scroll-listener! el)
@@ -237,18 +237,18 @@
         (update-transforms! el)
         (announce! el live "Parallax section entered viewport")
         (du/dispatch! el model/event-enter
-                   (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0)))))
+                   (clj->js (model/progress-detail (or (du/getv el k-last-prog) 0)))))
       (do
         (detach-scroll-listener! el)
         (announce! el live "Parallax section left viewport")
         (du/dispatch! el model/event-leave
-                   (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0))))))))
+                   (clj->js (model/progress-detail (or (du/getv el k-last-prog) 0))))))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
   (invalidate-child-cache! el)
   ;; Re-apply transforms immediately if visible
-  (when (gobj/get el k-visible)
+  (when (du/getv el k-visible)
     (update-transforms! el)))
 
 ;; ── Listener management ────────────────────────────────────────────────────
@@ -257,22 +257,22 @@
         ^js slot    slot
         scroll-h    (fn [_e] (on-scroll el))
         slot-h      (fn [_e] (on-slotchange el))
-        resize-h    (fn [_e] (when (gobj/get el k-visible)
+        resize-h    (fn [_e] (when (du/getv el k-visible)
                                (invalidate-child-cache! el)
                                (update-transforms! el)))]
     (.addEventListener slot "slotchange" slot-h)
     (.addEventListener js/window "resize" resize-h)
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
                    :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when hs
       (detach-scroll-listener! el)
-      (let [refs (gobj/get el k-refs)]
+      (let [refs (du/getv el k-refs)]
         (when refs
           (let [^js slot (:slot refs)]
             (when-let [h (gobj/get hs "slot")]
@@ -280,25 +280,25 @@
       (when-let [h (gobj/get hs "resize")]
         (.removeEventListener js/window "resize" h))))
   ;; Cancel pending rAF
-  (when-let [raf (gobj/get el k-raf)]
+  (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-raf nil))
-  (gobj/set el k-handlers nil))
+    (du/setv! el k-raf nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
 (defn- setup-observer! [^js el]
-  (when-let [old (gobj/get el k-io)]
+  (when-let [old (du/getv el k-io)]
     (.disconnect ^js old))
   (let [obs (js/IntersectionObserver.
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs)))
+    (du/setv! el k-io obs)))
 
 (defn- teardown-observer! [^js el]
-  (when-let [obs (gobj/get el k-io)]
+  (when-let [obs (du/getv el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil)))
+    (du/setv! el k-io nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [direction disabled? label] :as m}]
@@ -313,15 +313,15 @@
       (.removeAttribute viewport "aria-label"))
 
     ;; Cache model
-    (gobj/set el k-model m)
+    (du/setv! el k-model m)
 
     ;; Re-apply transforms if visible and not disabled
-    (when (and (gobj/get el k-visible) (not disabled?))
+    (when (and (du/getv el k-visible) (not disabled?))
       (update-transforms! el))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -373,14 +373,14 @@
   ;; Clean child styles before teardown (slot still has assigned elements)
   (clean-child-styles! el)
   ;; Dispatch leave event if the element was visible
-  (when (gobj/get el k-visible)
+  (when (du/getv el k-visible)
     (du/dispatch! el model/event-leave
-                  (clj->js (model/progress-detail (or (gobj/get el k-last-prog) 0)))))
+                  (clj->js (model/progress-detail (or (du/getv el k-last-prog) 0)))))
   (remove-listeners! el)
   (teardown-observer! el)
   (invalidate-child-cache! el)
-  (gobj/set el k-visible false)
-  (gobj/set el k-last-prog nil))
+  (du/setv! el k-visible false)
+  (du/setv! el k-last-prog nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

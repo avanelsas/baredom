@@ -1,7 +1,6 @@
 (ns baredom.components.x-organic-shape.x-organic-shape
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-organic-shape.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -111,9 +110,9 @@
     (.appendChild base slot-el)
     (.appendChild root style-el)
     (.appendChild root base)
-    (gobj/set el k-base        base)
-    (gobj/set el k-slot        slot-el)
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-base        base)
+    (du/setv! el k-slot        slot-el)
+    (du/setv! el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-inputs [^js el]
@@ -140,8 +139,8 @@
 (defn- render! [^js el]
   (let [{:keys [clip clip-alt animation ratio width height]}
         (model/derive-state (read-inputs el))
-        ^js base (gobj/get el k-base)
-        ^js slot-el (gobj/get el k-slot)]
+        ^js base (du/getv el k-base)
+        ^js slot-el (du/getv el k-slot)]
 
     ;; Set clip-path via CSS custom properties so the keyframes can reference them
     (.setProperty (.-style base) "--x-organic-shape-clip" clip)
@@ -173,21 +172,21 @@
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- remove-slotchange-listener! [^js el]
-  (let [^js slot-el (gobj/get el k-slot)
-        prior      (gobj/get el k-slotchange)]
+  (let [^js slot-el (du/getv el k-slot)
+        prior      (du/getv el k-slotchange)]
     (when (and slot-el prior)
       (.removeEventListener slot-el "slotchange" prior)
-      (gobj/set el k-slotchange nil))))
+      (du/setv! el k-slotchange nil))))
 
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   ;; Listen for slot changes to update a11y. Remove any prior handler first
   ;; so reconnects do not stack duplicate listeners.
   (remove-slotchange-listener! el)
-  (let [^js slot-el (gobj/get el k-slot)
+  (let [^js slot-el (du/getv el k-slot)
         handler (fn handle-slotchange [] (update-a11y! el slot-el))]
-    (gobj/set el k-slotchange handler)
+    (du/setv! el k-slotchange handler)
     (.addEventListener slot-el "slotchange" handler))
   (render! el))
 
@@ -196,7 +195,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (render! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
