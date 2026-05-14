@@ -1,10 +1,9 @@
 (ns baredom.components.x-typography.x-typography
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-typography.model :as model]))
 
-;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
+;; ── Instance-field keys ─────────────────────────────────────────────────────
 (def ^:private k-refs  "__xTypographyRefs")
 (def ^:private k-model "__xTypographyModel")
 
@@ -136,12 +135,12 @@
     (.appendChild container slot)
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs {:root root :container container})))
+    (du/setv! el k-refs {:root root :container container})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -179,11 +178,11 @@
         (.removeProperty s "overflow")
         (.removeProperty s "-webkit-line-clamp")))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 

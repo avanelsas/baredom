@@ -176,11 +176,11 @@
     (gobj/set refs "root"      root)
     (gobj/set refs rk-container container)
     (gobj/set refs rk-mode      mode-no-label)
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (make-shadow! el)))
+  (or (du/getv el k-refs) (make-shadow! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -283,12 +283,12 @@
     (apply-css-vars!        el m)
     (apply-host-aria!       el m)
     (apply-label-structure! refs m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
