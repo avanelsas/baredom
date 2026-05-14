@@ -112,21 +112,21 @@
         center     (.createElement js/document "div")
         value-node (.createElement js/document "span")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute base  "part" "base")
-    (.setAttribute svg   "part" "svg")
-    (.setAttribute svg   "viewBox" "0 0 36 36")
-    (.setAttribute svg   "aria-hidden" "true")
-    (.setAttribute svg   "focusable" "false")
-    (.setAttribute track "part" "track")
-    (.setAttribute track "cx" "18")
-    (.setAttribute track "cy" "18")
-    (.setAttribute track "r"  "15.9155")
-    (.setAttribute fill  "part" "fill")
-    (.setAttribute fill  "cx" "18")
-    (.setAttribute fill  "cy" "18")
-    (.setAttribute fill  "r"  "15.9155")
-    (.setAttribute center     "part" "center")
-    (.setAttribute value-node "part" "value-text")
+    (du/set-attr! base  "part" "base")
+    (du/set-attr! svg   "part" "svg")
+    (du/set-attr! svg   "viewBox" "0 0 36 36")
+    (du/set-attr! svg   "aria-hidden" "true")
+    (du/set-attr! svg   "focusable" "false")
+    (du/set-attr! track "part" "track")
+    (du/set-attr! track "cx" "18")
+    (du/set-attr! track "cy" "18")
+    (du/set-attr! track "r"  "15.9155")
+    (du/set-attr! fill  "part" "fill")
+    (du/set-attr! fill  "cx" "18")
+    (du/set-attr! fill  "cy" "18")
+    (du/set-attr! fill  "r"  "15.9155")
+    (du/set-attr! center     "part" "center")
+    (du/set-attr! value-node "part" "value-text")
     (.appendChild svg    track)
     (.appendChild svg    fill)
     (.appendChild center value-node)
@@ -164,13 +164,13 @@
                          (* circumference (- 1 (/ percent 100))))]
 
     ;; Data attributes on base — drive CSS
-    (.setAttribute base "data-variant"       variant)
-    (.setAttribute base "data-size"          size)
-    (.setAttribute base "data-indeterminate" (if indeterminate "true" "false"))
+    (du/set-attr! base "data-variant"       variant)
+    (du/set-attr! base "data-size"          size)
+    (du/set-attr! base "data-indeterminate" (if indeterminate "true" "false"))
 
     ;; SVG stroke attributes on fill circle
-    (.setAttribute fill "stroke-dasharray"  (str circumference))
-    (.setAttribute fill "stroke-dashoffset" (str offset))
+    (du/set-attr! fill "stroke-dasharray"  (str circumference))
+    (du/set-attr! fill "stroke-dashoffset" (str offset))
 
     ;; Value text
     (set! (.-textContent value-node)
@@ -186,8 +186,8 @@
     (if indeterminate
       (do
         (du/remove-attr! el "aria-valuenow")
-        (.setAttribute    el "aria-busy"      "true")
-        (.setAttribute    el "aria-valuetext" aria-valuetext))
+        (du/set-attr!    el "aria-busy"      "true")
+        (du/set-attr!    el "aria-valuetext" aria-valuetext))
       (do
         (du/set-attr! el "aria-valuenow"  (str value))
         (du/set-attr! el "aria-valuemax"  (str max))

@@ -106,25 +106,25 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
-    (.setAttribute container "role" "region")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! container "role" "region")
 
-    (.setAttribute media-el "part" "media")
-    (.setAttribute media-slot "name" "media")
+    (du/set-attr! media-el "part" "media")
+    (du/set-attr! media-slot "name" "media")
     (let [indicator (.createElement js/document "div")]
-      (.setAttribute indicator "part" "indicator")
+      (du/set-attr! indicator "part" "indicator")
       (.appendChild media-el indicator))
     (.appendChild media-el media-slot)
 
-    (.setAttribute steps-el "part" "steps")
+    (du/set-attr! steps-el "part" "steps")
     (.appendChild steps-el steps-slot)
 
     (.appendChild container media-el)
     (.appendChild container steps-el)
 
-    (.setAttribute live "part" "live")
-    (.setAttribute live "aria-live" "polite")
-    (.setAttribute live "aria-atomic" "true")
+    (du/set-attr! live "part" "live")
+    (du/set-attr! live "aria-live" "polite")
+    (du/set-attr! live "aria-atomic" "true")
 
     (.appendChild root style)
     (.appendChild root container)
@@ -186,11 +186,11 @@
       ;; Remove data-active from old step
       (when (and (>= old-index 0) (< old-index (.-length children)))
         (let [^js old-child (aget children old-index)]
-          (.removeAttribute old-child model/data-active)))
+          (du/remove-attr! old-child model/data-active)))
       ;; Set data-active on new step
       (when (and (>= new-index 0) (< new-index (.-length children)))
         (let [^js new-child (aget children new-index)]
-          (.setAttribute new-child model/data-active "")))
+          (du/set-attr! new-child model/data-active "")))
       ;; Update host data attribute
       (if (>= new-index 0)
         (du/set-attr! el "data-active-index" (str new-index))
@@ -291,7 +291,7 @@
             (du/dispatch! el model/event-progress
                        (clj->js (model/progress-detail progress active-idx active-id))))))))
   ;; Clear rAF handle
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
@@ -429,7 +429,7 @@
              (not (disabled? el))
              (not (prefers-reduced-motion?)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
@@ -511,7 +511,7 @@
   ;; Cancel pending rAF
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
@@ -534,7 +534,7 @@
   (let [children (get-step-children el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
-        (.removeAttribute child model/data-active)))))
+        (du/remove-attr! child model/data-active)))))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [layout split disabled? label] :as m}]
@@ -552,8 +552,8 @@
 
     ;; Aria
     (if (seq label)
-      (.setAttribute container "aria-label" label)
-      (.removeAttribute container "aria-label"))
+      (du/set-attr! container "aria-label" label)
+      (du/remove-attr! container "aria-label"))
 
     ;; Cache model
     (du/setv! el k-model m)
@@ -602,8 +602,8 @@
          :set (fn xss-set-label [v]
                 (this-as ^js this
                   (if (and v (not= v ""))
-                    (.setAttribute this model/attr-label (str v))
-                    (.removeAttribute this model/attr-label))))
+                    (du/set-attr! this model/attr-label (str v))
+                    (du/remove-attr! this model/attr-label))))
          :enumerable true :configurable true})
 
   ;; Read-only props — no setter, no shared helper applies.

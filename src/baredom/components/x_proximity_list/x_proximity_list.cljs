@@ -89,7 +89,7 @@
         track (.createElement js/document "div")
         slot  (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
-    (.setAttribute track "part" "track")
+    (du/set-attr! track "part" "track")
     (.appendChild track slot)
     (.appendChild root style)
     (.appendChild root track)
@@ -267,12 +267,12 @@
   (when-not (du/getv el k-raf-pend?)
     (du/setv! el k-raf-pend? true)
     (let [id (js/requestAnimationFrame (fn [_] (raf-tick! el)))]
-      (du/setv! el k-raf id))))
+      (du/setv-untraced! el k-raf id))))
 
 (defn- cancel-raf! [^js el]
   (when-let [id (du/getv el k-raf)]
     (js/cancelAnimationFrame id)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-raf-pend? false))
 
 ;; ── Pointer handlers ────────────────────────────────────────────────────────
@@ -352,7 +352,7 @@
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- ensure-tabindex! [^js item]
   (when (nil? (.getAttribute item "tabindex"))
-    (.setAttribute item "tabindex" "0")))
+    (du/set-attr! item "tabindex" "0")))
 
 (defn- on-slotchange [^js el ^js _e]
   (when-let [^js items (assigned-elements el)]

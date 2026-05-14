@@ -62,8 +62,8 @@
       (let [^js btn (aget state "button")]
         (when btn
           (if (= :idle v)
-            (.removeAttribute btn "data-phase")
-            (.setAttribute btn "data-phase" (name v)))
+            (du/remove-attr! btn "data-phase")
+            (du/set-attr! btn "data-phase" (name v)))
           ;; Clear JS-driven hover blur when leaving hover-emit
           (when (and (= :hover-emit prev) (not= :hover-emit v))
             (.removeProperty (.-style btn) "filter")))))))
@@ -508,25 +508,25 @@
 
     (set! (.-textContent style-el) (style-text))
 
-    (.setAttribute button-el "part" "button")
-    (.setAttribute overlay-el "part" "material-overlay")
-    (.setAttribute overlay-el "aria-hidden" "true")
-    (.setAttribute canvas-el "part" "canvas")
-    (.setAttribute canvas-el "aria-hidden" "true")
-    (.setAttribute inner-el "part" "inner")
-    (.setAttribute icon-start-el "part" "icon-start")
-    (.setAttribute label-el "part" "label")
-    (.setAttribute spinner-el "part" "spinner")
-    (.setAttribute spinner-slot-el "part" "spinner-slot")
-    (.setAttribute spinner-fallback-el "part" "spinner-fallback")
-    (.setAttribute icon-end-el "part" "icon-end")
+    (du/set-attr! button-el "part" "button")
+    (du/set-attr! overlay-el "part" "material-overlay")
+    (du/set-attr! overlay-el "aria-hidden" "true")
+    (du/set-attr! canvas-el "part" "canvas")
+    (du/set-attr! canvas-el "aria-hidden" "true")
+    (du/set-attr! inner-el "part" "inner")
+    (du/set-attr! icon-start-el "part" "icon-start")
+    (du/set-attr! label-el "part" "label")
+    (du/set-attr! spinner-el "part" "spinner")
+    (du/set-attr! spinner-slot-el "part" "spinner-slot")
+    (du/set-attr! spinner-fallback-el "part" "spinner-fallback")
+    (du/set-attr! icon-end-el "part" "icon-end")
 
-    (.setAttribute icon-start-slot-el "name" model/slot-icon-start)
-    (.setAttribute icon-end-slot-el "name" model/slot-icon-end)
-    (.setAttribute spinner-slot-el "name" model/slot-spinner)
+    (du/set-attr! icon-start-slot-el "name" model/slot-icon-start)
+    (du/set-attr! icon-end-slot-el "name" model/slot-icon-end)
+    (du/set-attr! spinner-slot-el "name" model/slot-spinner)
 
-    (.setAttribute spinner-el "aria-hidden" "true")
-    (.setAttribute spinner-fallback-el "aria-hidden" "true")
+    (du/set-attr! spinner-el "aria-hidden" "true")
+    (du/set-attr! spinner-fallback-el "aria-hidden" "true")
 
     (.appendChild icon-start-el icon-start-slot-el)
     (.appendChild label-el default-slot-el)
@@ -579,32 +579,32 @@
         aria-label-value (model/aria-label
                           (assoc ps :has-default-text? has-default-text?))]
 
-    (.setAttribute button-el "type" (:type ps))
+    (du/set-attr! button-el "type" (:type ps))
     (set! (.-disabled button-el) (or (:disabled ps) (:loading ps)))
 
     (if-let [v (model/aria-busy ps)]
-      (.setAttribute button-el "aria-busy" v)
-      (.removeAttribute button-el "aria-busy"))
+      (du/set-attr! button-el "aria-busy" v)
+      (du/remove-attr! button-el "aria-busy"))
 
     (if (:pressed ps)
-      (.setAttribute button-el "aria-pressed" "true")
-      (.removeAttribute button-el "aria-pressed"))
+      (du/set-attr! button-el "aria-pressed" "true")
+      (du/remove-attr! button-el "aria-pressed"))
 
     (if aria-label-value
-      (.setAttribute button-el "aria-label" aria-label-value)
-      (.removeAttribute button-el "aria-label"))
+      (du/set-attr! button-el "aria-label" aria-label-value)
+      (du/remove-attr! button-el "aria-label"))
 
-    (.setAttribute button-el "data-variant" (:variant ps))
-    (.setAttribute button-el "data-size" (:size ps))
-    (.setAttribute button-el "data-mode" (:mode ps))
-    (.setAttribute button-el "data-loading" (if (:loading ps) "true" "false"))
-    (.setAttribute button-el "data-disabled" (if (:disabled ps) "true" "false"))
-    (.setAttribute button-el "data-hover" (if hover? "true" "false"))
-    (.setAttribute button-el "data-active" (if active? "true" "false"))
-    (.setAttribute button-el "data-focus-visible" (if focus-visible? "true" "false"))
-    (.setAttribute button-el "data-has-icon-start" (if has-icon-start? "true" "false"))
-    (.setAttribute button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
-    (.setAttribute button-el "data-has-spinner" (if has-spinner? "true" "false"))
+    (du/set-attr! button-el "data-variant" (:variant ps))
+    (du/set-attr! button-el "data-size" (:size ps))
+    (du/set-attr! button-el "data-mode" (:mode ps))
+    (du/set-attr! button-el "data-loading" (if (:loading ps) "true" "false"))
+    (du/set-attr! button-el "data-disabled" (if (:disabled ps) "true" "false"))
+    (du/set-attr! button-el "data-hover" (if hover? "true" "false"))
+    (du/set-attr! button-el "data-active" (if active? "true" "false"))
+    (du/set-attr! button-el "data-focus-visible" (if focus-visible? "true" "false"))
+    (du/set-attr! button-el "data-has-icon-start" (if has-icon-start? "true" "false"))
+    (du/set-attr! button-el "data-has-icon-end" (if has-icon-end? "true" "false"))
+    (du/set-attr! button-el "data-has-spinner" (if has-spinner? "true" "false"))
 
     (du/set-attr! el "data-variant" (:variant ps))
     (du/set-attr! el "data-size" (:size ps))
@@ -1056,10 +1056,10 @@
 (defn- trigger-glow-pulse! [^js el]
   (when-let [state (get-el-state el)]
     (let [^js button-el (aget state "button")]
-      (.setAttribute button-el "data-glow-pulse" "true")
+      (du/set-attr! button-el "data-glow-pulse" "true")
       (.addEventListener button-el "animationend"
                          (fn remove-glow [_]
-                           (.removeAttribute button-el "data-glow-pulse")
+                           (du/remove-attr! button-el "data-glow-pulse")
                            (.removeEventListener button-el "animationend" remove-glow))
                          #js {:once true}))))
 

@@ -114,10 +114,10 @@
   (let [li  (.createElement js/document "li")
         btn (.createElement js/document "button")
         sl  (.createElement js/document "slot")]
-    (.setAttribute li  "part"       "item item-prev")
-    (.setAttribute btn "part"       "button button-prev")
-    (.setAttribute btn "aria-label" "Previous page")
-    (.setAttribute sl  "name"       model/slot-prev)
+    (du/set-attr! li  "part"       "item item-prev")
+    (du/set-attr! btn "part"       "button button-prev")
+    (du/set-attr! btn "aria-label" "Previous page")
+    (du/set-attr! sl  "name"       model/slot-prev)
     (set! (.-textContent sl) "Prev")
     (.appendChild btn sl)
     (.appendChild li btn)
@@ -127,10 +127,10 @@
   (let [li  (.createElement js/document "li")
         btn (.createElement js/document "button")
         sl  (.createElement js/document "slot")]
-    (.setAttribute li  "part"       "item item-next")
-    (.setAttribute btn "part"       "button button-next")
-    (.setAttribute btn "aria-label" "Next page")
-    (.setAttribute sl  "name"       model/slot-next)
+    (du/set-attr! li  "part"       "item item-next")
+    (du/set-attr! btn "part"       "button button-next")
+    (du/set-attr! btn "aria-label" "Next page")
+    (du/set-attr! sl  "name"       model/slot-next)
     (set! (.-textContent sl) "Next")
     (.appendChild btn sl)
     (.appendChild li btn)
@@ -144,8 +144,8 @@
         prev  (make-prev-li!)
         nxt   (make-next-li!)]
     (set! (.-textContent style) style-text)
-    (.setAttribute nav "part" "nav")
-    (.setAttribute ol  "part" "list")
+    (du/set-attr! nav "part" "nav")
+    (du/set-attr! ol  "part" "list")
     (.appendChild ol (:li prev))
     (.appendChild ol (:li nxt))
     (.appendChild nav ol)
@@ -167,16 +167,16 @@
 (defn- make-page-button! [n current? disabled?]
   (let [li  (.createElement js/document "li")
         btn (.createElement js/document "button")]
-    (.setAttribute li  "part"      "item item-page")
-    (.setAttribute li  "data-page" (str n))
-    (.setAttribute btn "part"      "button button-page")
-    (.setAttribute btn "aria-label" (str "Page " n))
-    (.setAttribute btn "data-page" (str n))
+    (du/set-attr! li  "part"      "item item-page")
+    (du/set-attr! li  "data-page" (str n))
+    (du/set-attr! btn "part"      "button button-page")
+    (du/set-attr! btn "aria-label" (str "Page " n))
+    (du/set-attr! btn "data-page" (str n))
     (when current?
-      (.setAttribute btn "aria-current" "page")
-      (.setAttribute btn "data-current" ""))
+      (du/set-attr! btn "aria-current" "page")
+      (du/set-attr! btn "data-current" ""))
     (when disabled?
-      (.setAttribute btn "disabled" ""))
+      (du/set-attr! btn "disabled" ""))
     (set! (.-textContent btn) (str n))
     (.appendChild li btn)
     li))
@@ -184,9 +184,9 @@
 (defn- make-ellipsis-li! []
   (let [li   (.createElement js/document "li")
         span (.createElement js/document "span")]
-    (.setAttribute li   "part"        "item item-ellipsis")
-    (.setAttribute span "part"        "ellipsis")
-    (.setAttribute span "aria-hidden" "true")
+    (du/set-attr! li   "part"        "item item-ellipsis")
+    (du/set-attr! span "part"        "ellipsis")
+    (du/set-attr! span "aria-hidden" "true")
     (set! (.-textContent span) "…")
     (.appendChild li span)
     li))
@@ -216,16 +216,16 @@
         items    (model/build-page-items page total-pages sibling-count boundary-count)]
 
     ;; Update nav aria-label and host data-size
-    (.setAttribute nav "aria-label" label)
+    (du/set-attr! nav "aria-label" label)
     (du/set-attr! el  "data-size"  size)
 
     ;; Update prev/next disabled state
     (if (model/prev-disabled? m)
-      (.setAttribute prev-btn "disabled" "")
-      (.removeAttribute prev-btn "disabled"))
+      (du/set-attr! prev-btn "disabled" "")
+      (du/remove-attr! prev-btn "disabled"))
     (if (model/next-disabled? m)
-      (.setAttribute next-btn "disabled" "")
-      (.removeAttribute next-btn "disabled"))
+      (du/set-attr! next-btn "disabled" "")
+      (du/remove-attr! next-btn "disabled"))
 
     ;; Rebuild ol: clear, re-add prev, page items, next
     (set! (.-innerHTML ol) "")

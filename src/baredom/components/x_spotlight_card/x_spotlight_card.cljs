@@ -148,20 +148,20 @@
 
 (defn- create-card-node []
   (let [node (.createElement js/document "div")]
-    (.setAttribute node "part" "card")
+    (du/set-attr! node "part" "card")
     (set! (.-className node) "card")
     node))
 
 (defn- create-spotlight-node []
   (let [node (.createElement js/document "div")]
-    (.setAttribute node "part" "spotlight")
-    (.setAttribute node "aria-hidden" "true")
+    (du/set-attr! node "part" "spotlight")
+    (du/set-attr! node "aria-hidden" "true")
     (set! (.-className node) "spotlight")
     node))
 
 (defn- create-content-node []
   (let [node (.createElement js/document "div")]
-    (.setAttribute node "part" "content")
+    (du/set-attr! node "part" "content")
     (set! (.-className node) "content")
     node))
 
@@ -198,11 +198,11 @@
 
 (defn- on-pointerenter [^js el ^js _e]
   (when-let [^js card (du/getv el k-card)]
-    (.setAttribute card "data-active" "true")))
+    (du/set-attr! card "data-active" "true")))
 
 (defn- on-pointerleave [^js el ^js _e]
   (when-let [^js card (du/getv el k-card)]
-    (.removeAttribute card "data-active")))
+    (du/remove-attr! card "data-active")))
 
 (defn- on-pointermove [^js el ^js e]
   (let [^js rect (.getBoundingClientRect el)
@@ -244,12 +244,12 @@
 ;; ── Apply model ─────────────────────────────────────────────────────────────
 
 (defn- reflect-card-state! [^js card m]
-  (.setAttribute card "data-variant" (:variant m))
-  (.setAttribute card "data-radius"  (:radius m))
-  (.setAttribute card "data-padding" (:padding m))
+  (du/set-attr! card "data-variant" (:variant m))
+  (du/set-attr! card "data-radius"  (:radius m))
+  (du/set-attr! card "data-padding" (:padding m))
   (if (:static? m)
-    (.setAttribute    card "data-static" "true")
-    (.removeAttribute card "data-static")))
+    (du/set-attr!    card "data-static" "true")
+    (du/remove-attr! card "data-static")))
 ;; data-active is owned by pointer handlers — never set/cleared here.
 
 (defn- reflect-host-style! [^js el m]
@@ -268,7 +268,7 @@
       (remove-listeners! el)
       ;; Clear any leftover active state so the static spotlight is what shows.
       (when-let [^js card (du/getv el k-card)]
-        (.removeAttribute card "data-active")))
+        (du/remove-attr! card "data-active")))
     (add-listeners! el))
   (du/setv! el k-model m))
 
@@ -312,7 +312,7 @@
   (remove-listeners! el)
   (remove-mq-listener! el)
   (when-let [^js card (du/getv el k-card)]
-    (.removeAttribute card "data-active")))
+    (du/remove-attr! card "data-active")))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (du/initialized? el k-initialized) (not= old-val new-val))

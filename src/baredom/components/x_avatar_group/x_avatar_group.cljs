@@ -72,8 +72,8 @@
         slot-el    (.createElement js/document "slot")
         overflow   (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (.setAttribute overflow "part" "overflow")
-    (.setAttribute overflow "aria-hidden" "true")
+    (du/set-attr! overflow "part" "overflow")
+    (du/set-attr! overflow "aria-hidden" "true")
     (.appendChild root style)
     (.appendChild root slot-el)
     (.appendChild root overflow)
@@ -126,11 +126,11 @@
           ;; Show child
           (set! (.. child -style -display) "")
           ;; Propagate size
-          (.setAttribute child "size" size)
+          (du/set-attr! child "size" size)
           ;; Propagate disabled
           (if disabled
-            (.setAttribute child "disabled" "")
-            (.removeAttribute child "disabled"))
+            (du/set-attr! child "disabled" "")
+            (du/remove-attr! child "disabled"))
           ;; Overlap margin (not on first child in display order)
           (set! (.. child -style -marginInlineStart)
                 (if (pos? idx) margin "0px")))
@@ -141,8 +141,8 @@
     (if (pos? hidden-count)
       (do
         (set! (.-textContent overflow) (str "+" hidden-count))
-        (.setAttribute overflow "role"       "img")
-        (.setAttribute overflow "aria-label" (str hidden-count " more"))
+        (du/set-attr! overflow "role"       "img")
+        (du/set-attr! overflow "aria-label" (str hidden-count " more"))
         (set! (.. overflow -style -display)          "inline-flex")
         (set! (.. overflow -style -marginInlineStart) margin))
       (do
@@ -189,8 +189,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
+                                          (du/set-attr! this attr (str v))
+                                          (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]

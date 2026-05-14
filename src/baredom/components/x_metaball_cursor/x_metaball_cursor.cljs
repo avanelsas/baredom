@@ -74,36 +74,36 @@
         ^js disp-el   (.createElementNS js/document svg-ns "feDisplacementMap")]
 
     ;; Filter bounds — oversized to prevent clipping
-    (.setAttribute filter-el "id" filter-id)
-    (.setAttribute filter-el "x" "-20%")
-    (.setAttribute filter-el "y" "-20%")
-    (.setAttribute filter-el "width" "140%")
-    (.setAttribute filter-el "height" "140%")
+    (du/set-attr! filter-el "id" filter-id)
+    (du/set-attr! filter-el "x" "-20%")
+    (du/set-attr! filter-el "y" "-20%")
+    (du/set-attr! filter-el "width" "140%")
+    (du/set-attr! filter-el "height" "140%")
 
     ;; Stage 1: Gaussian blur
-    (.setAttribute blur-el "in" "SourceGraphic")
-    (.setAttribute blur-el "stdDeviation" (str blur))
-    (.setAttribute blur-el "result" "blur")
+    (du/set-attr! blur-el "in" "SourceGraphic")
+    (du/set-attr! blur-el "stdDeviation" (str blur))
+    (du/set-attr! blur-el "result" "blur")
 
     ;; Stage 2: Color matrix threshold
-    (.setAttribute matrix-el "in" "blur")
-    (.setAttribute matrix-el "type" "matrix")
-    (.setAttribute matrix-el "values" threshold)
-    (.setAttribute matrix-el "result" "threshold")
+    (du/set-attr! matrix-el "in" "blur")
+    (du/set-attr! matrix-el "type" "matrix")
+    (du/set-attr! matrix-el "values" threshold)
+    (du/set-attr! matrix-el "result" "threshold")
 
     ;; Stage 3: Turbulence (for noise)
-    (.setAttribute turb-el "type" "fractalNoise")
-    (.setAttribute turb-el "baseFrequency" (str (* 0.01 noise-scale)))
-    (.setAttribute turb-el "numOctaves" "3")
-    (.setAttribute turb-el "seed" "0")
-    (.setAttribute turb-el "result" "noise")
+    (du/set-attr! turb-el "type" "fractalNoise")
+    (du/set-attr! turb-el "baseFrequency" (str (* 0.01 noise-scale)))
+    (du/set-attr! turb-el "numOctaves" "3")
+    (du/set-attr! turb-el "seed" "0")
+    (du/set-attr! turb-el "result" "noise")
 
     ;; Stage 4: Displacement map (passthrough when noise disabled)
-    (.setAttribute disp-el "in" "threshold")
-    (.setAttribute disp-el "in2" "noise")
-    (.setAttribute disp-el "scale" (if noise? (str noise-intensity) "0"))
-    (.setAttribute disp-el "xChannelSelector" "R")
-    (.setAttribute disp-el "yChannelSelector" "G")
+    (du/set-attr! disp-el "in" "threshold")
+    (du/set-attr! disp-el "in2" "noise")
+    (du/set-attr! disp-el "scale" (if noise? (str noise-intensity) "0"))
+    (du/set-attr! disp-el "xChannelSelector" "R")
+    (du/set-attr! disp-el "yChannelSelector" "G")
 
     (.appendChild filter-el blur-el)
     (.appendChild filter-el matrix-el)
@@ -132,7 +132,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute viewport "part" "viewport")
+    (du/set-attr! viewport "part" "viewport")
     (set! (.. viewport -style -filter) (str "url(#" filter-id ")"))
 
     ;; Hidden SVG for filter definitions
@@ -251,13 +251,13 @@
   [^js el {:keys [blur threshold noise? noise-scale noise-intensity]}]
   (let [refs (du/getv el k-refs)]
     (when-let [^js blur-el (:blur-el refs)]
-      (.setAttribute blur-el "stdDeviation" (str blur)))
+      (du/set-attr! blur-el "stdDeviation" (str blur)))
     (when-let [^js matrix-el (:matrix-el refs)]
-      (.setAttribute matrix-el "values" threshold))
+      (du/set-attr! matrix-el "values" threshold))
     (when-let [^js turb-el (:turb-el refs)]
-      (.setAttribute turb-el "baseFrequency" (str (* 0.01 noise-scale))))
+      (du/set-attr! turb-el "baseFrequency" (str (* 0.01 noise-scale))))
     (when-let [^js disp-el (:disp-el refs)]
-      (.setAttribute disp-el "scale" (if noise? (str noise-intensity) "0")))))
+      (du/set-attr! disp-el "scale" (if noise? (str noise-intensity) "0")))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -291,22 +291,23 @@
               refs      (du/getv el k-refs)]
           (du/setv! el k-noise-seed new-seed)
           (when-let [^js turb-el (:turb-el refs)]
-            (.setAttribute turb-el "seed" (str (js/Math.floor new-seed))))))
+            ;; Hot path: rAF-driven noise seed rotation.
+            (du/set-attr-untraced! turb-el "seed" (str (js/Math.floor new-seed))))))
 
       ;; Schedule next frame
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (prefers-reduced-motion?)
     (du/setv! el k-noise-seed 0)
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Mouse tracking ──────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
@@ -354,8 +355,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (or (nil? v) (= "" v))
-                    (.removeAttribute this model/attr-palette)
-                    (.setAttribute this model/attr-palette (str v)))))
+                    (du/remove-attr! this model/attr-palette)
+                    (du/set-attr! this model/attr-palette (str v)))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

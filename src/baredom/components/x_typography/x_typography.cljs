@@ -131,7 +131,7 @@
         container (.createElement js/document "div")
         slot      (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
-    (.setAttribute container "part" "container")
+    (du/set-attr! container "part" "container")
     (.appendChild container slot)
     (.appendChild root style)
     (.appendChild root container)
@@ -161,8 +161,8 @@
 
     ;; Truncation: data-truncate on container
     (if truncate?
-      (.setAttribute container "data-truncate" "")
-      (.removeAttribute container "data-truncate"))
+      (du/set-attr! container "data-truncate" "")
+      (du/remove-attr! container "data-truncate"))
 
     ;; Line-clamp: inline styles on container
     ;; truncate takes precedence over line-clamp
@@ -201,8 +201,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-line-clamp)
-                                          (.setAttribute this model/attr-line-clamp (str (int v))))))
+                                          (du/remove-attr! this model/attr-line-clamp)
+                                          (du/set-attr! this model/attr-line-clamp (str (int v))))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ────────────────────────────────────────────────────────────

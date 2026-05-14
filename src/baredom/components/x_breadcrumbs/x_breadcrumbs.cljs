@@ -141,8 +141,8 @@
         slot-el (.createElement js/document "slot")
         refs    {:nav nav :ol ol :slot-el slot-el}]
     (set! (.-textContent style) style-text)
-    (.setAttribute nav attr-part part-root)
-    (.setAttribute ol  attr-part part-list)
+    (du/set-attr! nav attr-part part-root)
+    (du/set-attr! ol  attr-part part-list)
     (.appendChild nav ol)
     (.appendChild root style)
     (.appendChild root nav)
@@ -171,8 +171,8 @@
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- make-separator-el [sep-text]
   (let [span (.createElement js/document "span")]
-    (.setAttribute span attr-class       cls-separator)
-    (.setAttribute span attr-aria-hidden val-true)
+    (du/set-attr! span attr-class       cls-separator)
+    (du/set-attr! span attr-aria-hidden val-true)
     (set! (.-textContent span) sep-text)
     span))
 
@@ -180,12 +180,12 @@
   (let [li  (.createElement js/document "li")
         sep (.createElement js/document "span")
         btn (.createElement js/document "button")]
-    (.setAttribute li  attr-class       cls-ellipsis)
-    (.setAttribute sep attr-class       cls-separator)
-    (.setAttribute sep attr-aria-hidden val-true)
+    (du/set-attr! li  attr-class       cls-ellipsis)
+    (du/set-attr! sep attr-class       cls-separator)
+    (du/set-attr! sep attr-aria-hidden val-true)
     (set! (.-textContent sep) sep-text)
-    (.setAttribute btn attr-class      cls-ellipsis-btn)
-    (.setAttribute btn attr-aria-label val-ellipsis-aria-label)
+    (du/set-attr! btn attr-class      cls-ellipsis-btn)
+    (du/set-attr! btn attr-aria-label val-ellipsis-aria-label)
     (set! (.-textContent btn) val-ellipsis-glyph)
     (.appendChild li sep)
     (.appendChild li btn)
@@ -195,13 +195,13 @@
   (let [li      (.createElement js/document "li")
         wrapper (.createElement js/document "span")
         clone   (.cloneNode source-child true)]
-    (.setAttribute li      attr-class cls-crumb)
-    (.setAttribute wrapper attr-class cls-crumb-content)
+    (du/set-attr! li      attr-class cls-crumb)
+    (du/set-attr! wrapper attr-class cls-crumb-content)
     (.appendChild wrapper clone)
     (.appendChild li wrapper)
     (when current?
-      (.setAttribute li      attr-data-current "")
-      (.setAttribute wrapper attr-aria-current val-aria-current-page))
+      (du/set-attr! li      attr-data-current "")
+      (du/set-attr! wrapper attr-aria-current val-aria-current-page))
     li))
 
 (defn- rebuild-list! [^js el {:keys [separator max-items items-before items-after
@@ -242,11 +242,11 @@
     (du/set-attr! el attr-data-wrap    (str (boolean wrap)))
 
     (if aria-label
-      (.setAttribute nav attr-aria-label aria-label)
-      (.setAttribute nav attr-aria-label val-default-aria-label))
+      (du/set-attr! nav attr-aria-label aria-label)
+      (du/set-attr! nav attr-aria-label val-default-aria-label))
     (if aria-describedby
-      (.setAttribute nav attr-aria-describedby aria-describedby)
-      (.removeAttribute nav attr-aria-describedby))
+      (du/set-attr! nav attr-aria-describedby aria-describedby)
+      (du/remove-attr! nav attr-aria-describedby))
 
     (rebuild-list! el m)
 
@@ -292,8 +292,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if (some? v)
-                                   (.setAttribute this attr (str v))
-                                   (.removeAttribute this attr))))
+                                   (du/set-attr! this attr (str v))
+                                   (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]

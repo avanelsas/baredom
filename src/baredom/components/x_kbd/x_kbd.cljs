@@ -118,7 +118,7 @@
         base  (.createElement js/document tag-span)
         refs  #js {}]
     (set! (.-textContent style) style-text)
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     (.appendChild root style)
     (.appendChild root base)
     (gobj/set refs rk-base base)
@@ -149,20 +149,20 @@
 
 (defn- build-key-cap! [visible]
   (let [k (.createElement js/document tag-kbd)]
-    (.setAttribute k attr-part part-key)
+    (du/set-attr! k attr-part part-key)
     (set! (.-textContent k) visible)
     k))
 
 (defn- build-separator! [sep]
   (let [s (.createElement js/document tag-span)]
-    (.setAttribute s attr-part part-separator)
+    (du/set-attr! s attr-part part-separator)
     (set! (.-textContent s) sep)
     s))
 
 (defn- build-slot-cap! []
   (let [k    (.createElement js/document tag-kbd)
         slot (.createElement js/document tag-slot)]
-    (.setAttribute k attr-part part-key)
+    (du/set-attr! k attr-part part-key)
     (.appendChild k slot)
     k))
 

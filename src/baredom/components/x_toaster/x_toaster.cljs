@@ -150,19 +150,19 @@
     (let [^js toast (.createElement js/document model/child-tag)]
       ;; Map options to x-toast attributes
       (let [t (gobj/get opts "type")]
-        (when t (.setAttribute toast "type" t)))
+        (when t (du/set-attr! toast "type" t)))
       (let [h (gobj/get opts "heading")]
-        (when h (.setAttribute toast "heading" h)))
+        (when h (du/set-attr! toast "heading" h)))
       (let [msg (gobj/get opts "message")]
-        (when msg (.setAttribute toast "message" msg)))
+        (when msg (du/set-attr! toast "message" msg)))
       (let [icon (gobj/get opts "icon")]
-        (when icon (.setAttribute toast "icon" icon)))
+        (when icon (du/set-attr! toast "icon" icon)))
       (let [d (gobj/get opts "dismissible")]
-        (when (false? d) (.setAttribute toast "dismissible" "false")))
+        (when (false? d) (du/set-attr! toast "dismissible" "false")))
       (let [tms (gobj/get opts "timeoutMs")]
-        (when tms (.setAttribute toast "timeout-ms" (str tms))))
+        (when tms (du/set-attr! toast "timeout-ms" (str tms))))
       (let [sp (gobj/get opts "showProgress")]
-        (when sp (.setAttribute toast "show-progress" "")))
+        (when sp (du/set-attr! toast "show-progress" "")))
       (.appendChild el toast)
       toast)))
 
@@ -194,8 +194,8 @@
                           :set (fn [v]
                                  (this-as ^js this
                                           (if (and v (not= v ""))
-                                            (.setAttribute this model/attr-label (str v))
-                                            (.removeAttribute this model/attr-label))))
+                                            (du/set-attr! this model/attr-label (str v))
+                                            (du/remove-attr! this model/attr-label))))
                           :enumerable true :configurable true})
 
     ;; camelCase JS property for max-toasts
@@ -208,8 +208,8 @@
                           :set (fn [v]
                                  (this-as ^js this
                                           (if (nil? v)
-                                            (.removeAttribute this model/attr-max-toasts)
-                                            (.setAttribute this model/attr-max-toasts
+                                            (du/remove-attr! this model/attr-max-toasts)
+                                            (du/set-attr! this model/attr-max-toasts
                                                            (str (js/Math.floor v))))))
                           :enumerable true :configurable true})
 

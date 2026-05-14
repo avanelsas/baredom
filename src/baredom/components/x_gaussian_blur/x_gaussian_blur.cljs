@@ -119,9 +119,9 @@
         content    (.createElement js/document "div")
         slot-el    (.createElement js/document "slot")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute backdrop attr-part        part-backdrop)
-    (.setAttribute backdrop attr-aria-hidden val-true)
-    (.setAttribute content  attr-part        part-content)
+    (du/set-attr! backdrop attr-part        part-backdrop)
+    (du/set-attr! backdrop attr-aria-hidden val-true)
+    (du/set-attr! content  attr-part        part-content)
     (.appendChild content slot-el)
     (.appendChild root style-el)
     (.appendChild root backdrop)

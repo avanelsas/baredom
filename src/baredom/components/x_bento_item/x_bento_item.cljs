@@ -33,7 +33,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     (set! (.-className base) cls-base)
     (.appendChild base slot)
 

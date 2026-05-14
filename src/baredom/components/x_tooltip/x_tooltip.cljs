@@ -319,7 +319,7 @@
           tid          (du/getv el k-tooltip-id)]
       ;; Clean up old trigger
       (when-let [^js old-trigger (du/getv el k-trigger-el)]
-        (.removeAttribute old-trigger "aria-describedby")
+        (du/remove-attr! old-trigger "aria-describedby")
         (du/setv! el k-trigger-el nil))
       ;; Set on new trigger
       (when (pos? (.-length elements))
@@ -329,7 +329,7 @@
 
 (defn- cleanup-trigger-a11y! [^js el]
   (when-let [^js old-trigger (du/getv el k-trigger-el)]
-    (.removeAttribute old-trigger "aria-describedby")
+    (du/remove-attr! old-trigger "aria-describedby")
     (du/setv! el k-trigger-el nil)))
 
 ;; ---------------------------------------------------------------------------

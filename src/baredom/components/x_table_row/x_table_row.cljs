@@ -186,8 +186,8 @@
                                (this-as ^js this
                                         (let [n (js/parseInt v 10)]
                                           (if (and (not (js/isNaN n)) (pos? n))
-                                            (.setAttribute this model/attr-row-index (str n))
-                                            (.removeAttribute this model/attr-row-index)))))
+                                            (du/set-attr! this model/attr-row-index (str n))
+                                            (du/remove-attr! this model/attr-row-index)))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ────────────────────────────────────────────────────────────

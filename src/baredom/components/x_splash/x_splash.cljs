@@ -130,19 +130,19 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute overlay-el "part" "overlay")
+    (du/set-attr! overlay-el "part" "overlay")
 
-    (.setAttribute content-el "part" "content")
+    (du/set-attr! content-el "part" "content")
 
-    (.setAttribute spinner-el "part" "spinner")
-    (.setAttribute spinner-el "aria-hidden" "true")
+    (du/set-attr! spinner-el "part" "spinner")
+    (du/set-attr! spinner-el "aria-hidden" "true")
 
-    (.setAttribute progress-el "part" "progress")
-    (.setAttribute progress-el "role" "progressbar")
-    (.setAttribute progress-el "aria-valuemin" "0")
-    (.setAttribute progress-el "aria-valuemax" "100")
+    (du/set-attr! progress-el "part" "progress")
+    (du/set-attr! progress-el "role" "progressbar")
+    (du/set-attr! progress-el "aria-valuemin" "0")
+    (du/set-attr! progress-el "aria-valuemax" "100")
 
-    (.setAttribute bar-el "part" "bar")
+    (du/set-attr! bar-el "part" "bar")
 
     (.appendChild progress-el bar-el)
     (.appendChild content-el slot-el)
@@ -282,9 +282,9 @@
     (if (some? progress)
       (do (set! (.. progress-el -style -display) "block")
           (set! (.. bar-el -style -width) (str progress "%"))
-          (.setAttribute progress-el "aria-valuenow" (str progress)))
+          (du/set-attr! progress-el "aria-valuenow" (str progress)))
       (do (set! (.. progress-el -style -display) "none")
-          (.removeAttribute progress-el "aria-valuenow")))
+          (du/remove-attr! progress-el "aria-valuenow")))
 
     ;; Active / fade handling
     (cond
@@ -340,8 +340,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-progress)
-                                          (.setAttribute this model/attr-progress (str v)))))
+                                          (du/remove-attr! this model/attr-progress)
+                                          (du/set-attr! this model/attr-progress (str v)))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto model/attr-spinner
@@ -352,8 +352,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-spinner "")
-                                          (.setAttribute this model/attr-spinner "false"))))
+                                          (du/set-attr! this model/attr-spinner "")
+                                          (du/set-attr! this model/attr-spinner "false"))))
                         :enumerable true :configurable true})
 
   (du/define-string-prop! proto model/attr-overlay model/attr-overlay "solid"))

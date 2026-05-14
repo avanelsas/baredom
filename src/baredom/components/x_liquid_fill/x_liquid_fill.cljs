@@ -190,56 +190,56 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
+    (du/set-attr! container "part" "container")
 
     ;; SVG setup
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "viewBox" default-viewbox)
-    (.setAttribute svg "preserveAspectRatio" "none")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! svg "part" "svg")
+    (du/set-attr! svg "viewBox" default-viewbox)
+    (du/set-attr! svg "preserveAspectRatio" "none")
+    (du/set-attr! svg "aria-hidden" "true")
 
     ;; Gradient (radial from bottom-center — follows circular geometry)
-    (.setAttribute grad "id" grad-id)
-    (.setAttribute grad "gradientUnits" "userSpaceOnUse")
-    (.setAttribute grad "cx" "150") (.setAttribute grad "cy" "200")
-    (.setAttribute grad "r" "200")
-    (.setAttribute grad "fx" "150") (.setAttribute grad "fy" "200")
-    (.setAttribute stop1 "offset" "0%")
-    (.setAttribute stop1 "stop-color" (str "var(" model/css-color-1 ",#B8860B)"))
-    (.setAttribute stop2 "offset" "50%")
-    (.setAttribute stop2 "stop-color" (str "var(" model/css-color-2 ",#D4AF37)"))
-    (.setAttribute stop3 "offset" "100%")
-    (.setAttribute stop3 "stop-color" (str "var(" model/css-color-3 ",#F9F295)"))
+    (du/set-attr! grad "id" grad-id)
+    (du/set-attr! grad "gradientUnits" "userSpaceOnUse")
+    (du/set-attr! grad "cx" "150") (du/set-attr! grad "cy" "200")
+    (du/set-attr! grad "r" "200")
+    (du/set-attr! grad "fx" "150") (du/set-attr! grad "fy" "200")
+    (du/set-attr! stop1 "offset" "0%")
+    (du/set-attr! stop1 "stop-color" (str "var(" model/css-color-1 ",#B8860B)"))
+    (du/set-attr! stop2 "offset" "50%")
+    (du/set-attr! stop2 "stop-color" (str "var(" model/css-color-2 ",#D4AF37)"))
+    (du/set-attr! stop3 "offset" "100%")
+    (du/set-attr! stop3 "stop-color" (str "var(" model/css-color-3 ",#F9F295)"))
     (.appendChild grad stop1)
     (.appendChild grad stop2)
     (.appendChild grad stop3)
 
     ;; Specular lighting filter
-    (.setAttribute filt "id" filt-id)
-    (.setAttribute filt "x" "-10%") (.setAttribute filt "y" "-10%")
-    (.setAttribute filt "width" "120%") (.setAttribute filt "height" "120%")
-    (.setAttribute feBlur "in" "SourceAlpha")
-    (.setAttribute feBlur "stdDeviation" "3")
-    (.setAttribute feBlur "result" "blur")
-    (.setAttribute feSpec "in" "blur")
-    (.setAttribute feSpec "surfaceScale" "5")
-    (.setAttribute feSpec "specularConstant" "0.75")
-    (.setAttribute feSpec "specularExponent" "20")
-    (.setAttribute feSpec "lighting-color"
+    (du/set-attr! filt "id" filt-id)
+    (du/set-attr! filt "x" "-10%") (du/set-attr! filt "y" "-10%")
+    (du/set-attr! filt "width" "120%") (du/set-attr! filt "height" "120%")
+    (du/set-attr! feBlur "in" "SourceAlpha")
+    (du/set-attr! feBlur "stdDeviation" "3")
+    (du/set-attr! feBlur "result" "blur")
+    (du/set-attr! feSpec "in" "blur")
+    (du/set-attr! feSpec "surfaceScale" "5")
+    (du/set-attr! feSpec "specularConstant" "0.75")
+    (du/set-attr! feSpec "specularExponent" "20")
+    (du/set-attr! feSpec "lighting-color"
                    (str "var(" model/css-specular ",rgba(255,255,240,0.6))"))
-    (.setAttribute feSpec "result" "specular")
+    (du/set-attr! feSpec "result" "specular")
     (.appendChild feSpec feLight)
-    (.setAttribute feLight "x" "90") (.setAttribute feLight "y" "-50")
-    (.setAttribute feLight "z" "200")
-    (.setAttribute feComp1 "in" "specular")
-    (.setAttribute feComp1 "in2" "SourceAlpha")
-    (.setAttribute feComp1 "operator" "in")
-    (.setAttribute feComp1 "result" "specClip")
-    (.setAttribute feComp2 "in" "SourceGraphic")
-    (.setAttribute feComp2 "in2" "specClip")
-    (.setAttribute feComp2 "operator" "arithmetic")
-    (.setAttribute feComp2 "k1" "0") (.setAttribute feComp2 "k2" "1")
-    (.setAttribute feComp2 "k3" "1") (.setAttribute feComp2 "k4" "0")
+    (du/set-attr! feLight "x" "90") (du/set-attr! feLight "y" "-50")
+    (du/set-attr! feLight "z" "200")
+    (du/set-attr! feComp1 "in" "specular")
+    (du/set-attr! feComp1 "in2" "SourceAlpha")
+    (du/set-attr! feComp1 "operator" "in")
+    (du/set-attr! feComp1 "result" "specClip")
+    (du/set-attr! feComp2 "in" "SourceGraphic")
+    (du/set-attr! feComp2 "in2" "specClip")
+    (du/set-attr! feComp2 "operator" "arithmetic")
+    (du/set-attr! feComp2 "k1" "0") (du/set-attr! feComp2 "k2" "1")
+    (du/set-attr! feComp2 "k3" "1") (du/set-attr! feComp2 "k4" "0")
     (.appendChild filt feBlur)
     (.appendChild filt feSpec)
     (.appendChild filt feComp1)
@@ -252,15 +252,15 @@
     ;; Wave paths
     (dotimes [i max-layers]
       (let [^js p (aget paths i)]
-        (.setAttribute p "class" class-wave-layer)
-        (.setAttribute p "data-layer" (str i))
-        (.setAttribute p "fill" (str "url(#" grad-id ")"))
+        (du/set-attr! p "class" class-wave-layer)
+        (du/set-attr! p "data-layer" (str i))
+        (du/set-attr! p "fill" (str "url(#" grad-id ")"))
         ;; Hide by default; active layers shown in render
         (set! (.. p -style -display) "none")
         (.appendChild svg p)))
 
     ;; Content
-    (.setAttribute content "part" "content")
+    (du/set-attr! content "part" "content")
     (.appendChild content slot)
 
     ;; Assemble
@@ -312,10 +312,10 @@
           (let [lp    (model/layer-params i n-active)
                 front? (= i (dec n-active))]
             (set! (.. p -style -display) "")
-            (.setAttribute p "opacity" (str (:opacity lp)))
+            (du/set-attr! p "opacity" (str (:opacity lp)))
             (if front?
-              (.setAttribute p "filter" (str "url(#" filt-id ")"))
-              (.removeAttribute p "filter")))
+              (du/set-attr! p "filter" (str "url(#" filt-id ")"))
+              (du/remove-attr! p "filter")))
           (set! (.. p -style -display) "none"))))))
 
 ;; ── Effective fill direction ─────────────────────────────────────────────────
@@ -340,13 +340,15 @@
         (let [^js p  (aget paths i)
               amp    (aget wa i)
               phase  (aget wp i)]
+          ;; Hot path: rAF-driven; use untraced variants to keep the
+          ;; trace recorder readable.
           (if vert?
             (let [fill-y (model/progress->fill-y prog h)
                   d      (model/wave-path-d fill-y w h t amp phase)]
-              (.setAttribute p "d" d))
+              (du/set-attr-untraced! p "d" d))
             (let [fill-x (model/progress->fill-x prog w)
                   d      (model/horizontal-wave-path-d fill-x w h t amp phase)]
-              (.setAttribute p "d" d))))))))
+              (du/set-attr-untraced! p "d" d))))))))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
@@ -362,13 +364,13 @@
         (let [^js p (aget paths i)]
           (if vert?
             (let [fill-y (model/progress->fill-y prog h)]
-              (.setAttribute p "d"
+              (du/set-attr! p "d"
                              (str "M0," (.toFixed fill-y 2)
                                   "L" (.toFixed w 2) "," (.toFixed fill-y 2)
                                   "L" (.toFixed w 2) "," (.toFixed h 2)
                                   "L0," (.toFixed h 2) "Z")))
             (let [fill-x (model/progress->fill-x prog w)]
-              (.setAttribute p "d"
+              (du/set-attr! p "d"
                              (str "M" (.toFixed fill-x 2) ",0"
                                   "L" (.toFixed fill-x 2) "," (.toFixed h 2)
                                   "L0," (.toFixed h 2)
@@ -387,7 +389,7 @@
     (or (:disabled? (du/getv el k-model)) (prefers-reduced-motion?))
     ;; Bail out without rescheduling — leaves k-raf cleared so a future
     ;; re-enable via start-animation! will kick the loop back on.
-    (du/setv! el k-raf nil)
+    (du/setv-untraced! el k-raf nil)
 
     :else
     (let [m           (du/getv el k-model)
@@ -408,10 +410,10 @@
           ^js wv      (du/getv el k-wave-vels)
           ^js wp      (du/getv el k-wave-phases)]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
 
       ;; Accumulate time
-      (du/setv! el k-time (+ (or (du/getv el k-time) 0.0) (* dt wave-speed)))
+      (du/setv-untraced! el k-time (+ (or (du/getv el k-time) 0.0) (* dt wave-speed)))
 
       ;; Smooth fill level toward target
       (let [cur-prog  (or (du/getv el k-progress) 0.0)
@@ -455,21 +457,21 @@
         (let [prog-diff (js/Math.abs (- (or (du/getv el k-progress) 0.0)
                                         (or (du/getv el k-target-progress) 0.0)))]
           (if (or (aget any-moving? 0) (> vel 0.01) (> prog-diff 0.001))
-            (du/setv! el k-raf
+            (du/setv-untraced! el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el))))
             ;; Settled
-            (du/setv! el k-raf nil)))))))
+            (du/setv-untraced! el k-raf nil)))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
@@ -528,15 +530,15 @@
               ^js feLight feLight
               ^js grad grad
               r (js/Math.max w h)]
-          (.setAttribute svg "viewBox" (str "0 0 " w " " h))
+          (du/set-attr! svg "viewBox" (str "0 0 " w " " h))
           ;; Update specular light position
-          (.setAttribute feLight "x" (str (* w 0.3)))
+          (du/set-attr! feLight "x" (str (* w 0.3)))
           ;; Update radial gradient to match new dimensions
-          (.setAttribute grad "cx" (str (* w 0.5)))
-          (.setAttribute grad "cy" (str h))
-          (.setAttribute grad "r" (str r))
-          (.setAttribute grad "fx" (str (* w 0.5)))
-          (.setAttribute grad "fy" (str h)))
+          (du/set-attr! grad "cx" (str (* w 0.5)))
+          (du/set-attr! grad "cy" (str h))
+          (du/set-attr! grad "r" (str r))
+          (du/set-attr! grad "fx" (str (* w 0.5)))
+          (du/set-attr! grad "fy" (str h)))
         ;; Re-render
         (let [m (du/getv el k-model)]
           (if (or (:disabled? m) (prefers-reduced-motion?))
@@ -708,7 +710,7 @@
     (du/setv! el k-progress 0.0)
     (du/setv! el k-target-progress 0.0)
     (du/setv! el k-scroll-vel 0.0)
-    (du/setv! el k-time 0.0)
+    (du/setv-untraced! el k-time 0.0)
     (du/setv! el k-last-dispatch -1.0)
     (du/setv! el k-visible true)
     (ensure-refs! el)

@@ -164,7 +164,7 @@
         style  (.createElement js/document "style")
         canvas (.createElement js/document "canvas")]
     (set! (.-textContent style) style-text)
-    (.setAttribute canvas "part" "canvas")
+    (du/set-attr! canvas "part" "canvas")
     (.appendChild root style)
     (.appendChild root canvas)
     (let [^js gl (init-webgl! el canvas)]
@@ -293,11 +293,11 @@
               ;; Clamp dt to prevent huge jumps
               dt         (js/Math.min dt 0.1)]
 
-          (du/setv! el k-last-frame now)
+          (du/setv-untraced! el k-last-frame now)
 
           ;; Update time
           (when-not (prefers-reduced-motion?)
-            (du/setv! el k-time (+ (du/getv el k-time) dt)))
+            (du/setv-untraced! el k-time (+ (du/getv el k-time) dt)))
 
           ;; Decay activity
           (let [activity    (du/getv el k-activity)
@@ -352,21 +352,21 @@
               (.drawArrays gl (.-TRIANGLE_STRIP gl) 0 4)))))
 
       ;; Schedule next frame
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
-  (du/setv! el k-time 0.0)
-  (du/setv! el k-last-frame (js/performance.now))
+  (du/setv-untraced! el k-time 0.0)
+  (du/setv-untraced! el k-last-frame (js/performance.now))
   (du/setv! el k-activity 0.0)
   (du/setv! el k-impulse 0.0)
-  (du/setv! el k-raf
+  (du/setv-untraced! el k-raf
             (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Activity event handlers ─────────────────────────────────────────────────
 (defn- on-scroll [^js el _e]
@@ -450,8 +450,8 @@
          :set (fn xng-set-interactive [v]
                 (this-as ^js this
                   (if v
-                    (.removeAttribute this model/attr-interactive)
-                    (.setAttribute this model/attr-interactive "false"))))
+                    (du/remove-attr! this model/attr-interactive)
+                    (du/set-attr! this model/attr-interactive "false"))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

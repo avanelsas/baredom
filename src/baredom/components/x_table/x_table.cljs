@@ -100,8 +100,8 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute caption-div "part" "caption")
-    (.setAttribute caption-div "hidden" "")
+    (du/set-attr! caption-div "part" "caption")
+    (du/set-attr! caption-div "hidden" "")
 
     (.appendChild root style)
     (.appendChild root caption-div)
@@ -135,8 +135,8 @@
   (let [rows (array-seq (.querySelectorAll el row-tag))]
     (doseq [[^js row i] (map vector rows (range))]
       (if (zero? (mod (inc i) 2))
-        (.setAttribute row stripe-attr stripe-even)
-        (.removeAttribute row stripe-attr)))))
+        (du/set-attr! row stripe-attr stripe-even)
+        (du/remove-attr! row stripe-attr)))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
 (defn- apply-grid-template! [^js el {:keys [columns]}]
@@ -161,9 +161,9 @@
 (defn- apply-caption! [^js caption-div {:keys [caption]}]
   (if (not= caption "")
     (do (set! (.-textContent caption-div) caption)
-        (.removeAttribute caption-div "hidden"))
+        (du/remove-attr! caption-div "hidden"))
     (do (set! (.-textContent caption-div) "")
-        (.setAttribute caption-div "hidden" ""))))
+        (du/set-attr! caption-div "hidden" ""))))
 
 (defn- apply-data-flags! [^js el {:keys [striped? bordered? full-width? compact?]}]
   (if striped?    (du/set-attr! el attr-data-striped    "") (du/remove-attr! el attr-data-striped))
@@ -212,15 +212,15 @@
   (let [was-selected? (.hasAttribute target-row selected-attr)
         selected-rows (array-seq (.querySelectorAll el (str row-tag "[" selected-attr "]")))]
     (doseq [^js row selected-rows]
-      (.removeAttribute row selected-attr))
+      (du/remove-attr! row selected-attr))
     (when-not was-selected?
-      (.setAttribute target-row selected-attr ""))))
+      (du/set-attr! target-row selected-attr ""))))
 
 (defn- handle-multi-select! [^js _el ^js target-row]
   ;; Toggle the target row's selected state.
   (if (.hasAttribute target-row selected-attr)
-    (.removeAttribute target-row selected-attr)
-    (.setAttribute target-row selected-attr "")))
+    (du/remove-attr! target-row selected-attr)
+    (du/set-attr! target-row selected-attr "")))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-cell-sort [^js el ^js e]
@@ -298,8 +298,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-row-count)
-                                          (.setAttribute this model/attr-row-count (str (js/Math.floor v))))))
+                                          (du/remove-attr! this model/attr-row-count)
+                                          (du/set-attr! this model/attr-row-count (str (js/Math.floor v))))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ────────────────────────────────────────────────────────────

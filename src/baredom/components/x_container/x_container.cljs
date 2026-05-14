@@ -121,7 +121,7 @@
 ;; ── DOM initialisation ─────────────────────────────────────────────────────
 (defn- create-base! [tag]
   (let [base (.createElement js/document tag)]
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     base))
 
 (defn- init-dom! [^js el initial-tag]
@@ -163,15 +163,15 @@
       (swap-base! refs as))))
 
 (defn- apply-base-data! [^js base {:keys [size padding center fluid]}]
-  (.setAttribute base attr-data-size    size)
-  (.setAttribute base attr-data-padding padding)
-  (.setAttribute base attr-data-center  (if center val-true val-false))
-  (.setAttribute base attr-data-fluid   (if fluid  val-true val-false)))
+  (du/set-attr! base attr-data-size    size)
+  (du/set-attr! base attr-data-padding padding)
+  (du/set-attr! base attr-data-center  (if center val-true val-false))
+  (du/set-attr! base attr-data-fluid   (if fluid  val-true val-false)))
 
 (defn- apply-base-aria! [^js base {:keys [label]}]
   (if label
-    (.setAttribute base attr-aria-label label)
-    (.removeAttribute base attr-aria-label)))
+    (du/set-attr! base attr-aria-label label)
+    (du/remove-attr! base attr-aria-label)))
 
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
@@ -203,8 +203,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if (boolean v)
-                                   (.removeAttribute this attr)
-                                   (.setAttribute this attr val-false))))}))
+                                   (du/remove-attr! this attr)
+                                   (du/set-attr! this attr val-false))))}))
 
 (defn- install-property-accessors! [^js proto]
   (define-default-true-bool-prop! proto "center" model/attr-center)

@@ -258,9 +258,9 @@
   (let [track      (.createElement js/document "div")
         track-line (.createElement js/document "div")
         track-fill (.createElement js/document "div")]
-    (.setAttribute track      "part" "track")
-    (.setAttribute track-line "part" "track-line")
-    (.setAttribute track-fill "part" "track-fill")
+    (du/set-attr! track      "part" "track")
+    (du/set-attr! track-line "part" "track-line")
+    (du/set-attr! track-fill "part" "track-fill")
     (.appendChild track track-line)
     (.appendChild track track-fill)
     {:track track :track-line track-line :track-fill track-fill}))
@@ -272,12 +272,12 @@
   (let [track-svg  (.createElementNS js/document svg-ns "svg")
         track-path (.createElementNS js/document svg-ns "path")
         fill-path  (.createElementNS js/document svg-ns "path")]
-    (.setAttribute track-svg  "part" "track-svg")
-    (.setAttribute track-svg  "aria-hidden" "true")
-    (.setAttribute track-svg  "focusable" "false")
-    (.setAttribute track-path "part" "track-path")
-    (.setAttribute fill-path  "part" "track-fill-path")
-    (.setAttribute fill-path  "pathLength" "1")
+    (du/set-attr! track-svg  "part" "track-svg")
+    (du/set-attr! track-svg  "aria-hidden" "true")
+    (du/set-attr! track-svg  "focusable" "false")
+    (du/set-attr! track-path "part" "track-path")
+    (du/set-attr! fill-path  "part" "track-fill-path")
+    (du/set-attr! fill-path  "pathLength" "1")
     (.appendChild track-svg track-path)
     (.appendChild track-svg fill-path)
     {:track-svg track-svg :track-path track-path :fill-path fill-path}))
@@ -287,22 +287,22 @@
   []
   (let [entries (.createElement js/document "div")
         slot    (.createElement js/document "slot")]
-    (.setAttribute entries "part" "entries")
+    (du/set-attr! entries "part" "entries")
     (.appendChild entries slot)
     {:entries entries :slot slot}))
 
 (defn- make-indicator! []
   (let [el (.createElement js/document "div")]
-    (.setAttribute el "part" "indicator")
+    (du/set-attr! el "part" "indicator")
     el))
 
 (defn- make-live-region!
   "Polite ARIA live region used to announce entry changes."
   []
   (let [live (.createElement js/document "div")]
-    (.setAttribute live "part" "live")
-    (.setAttribute live "aria-live" "polite")
-    (.setAttribute live "aria-atomic" "true")
+    (du/set-attr! live "part" "live")
+    (du/set-attr! live "aria-live" "polite")
+    (du/set-attr! live "aria-atomic" "true")
     live))
 
 (defn- init-dom! [^js el]
@@ -315,8 +315,8 @@
         indicator (make-indicator!)
         live      (make-live-region!)]
     (set! (.-textContent style) style-text)
-    (.setAttribute container "part" "container")
-    (.setAttribute container "role" "feed")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! container "role" "feed")
     (.appendChild container (:track trk))
     (.appendChild container (:entries ent))
     ;; SVG sits directly in the container (not inside the narrow track div)
@@ -388,8 +388,8 @@
   (dotimes [i (.-length children)]
     (let [^js child (aget children i)
           side (model/entry-side layout i)]
-      (.setAttribute child model/data-side side)
-      (.setAttribute child model/data-index (str i)))))
+      (du/set-attr! child model/data-side side)
+      (du/set-attr! child model/data-index (str i)))))
 
 (defn- clean-entry-attrs!
   "Remove component-managed attributes from children."
@@ -397,9 +397,9 @@
   (let [children (get-entry-children el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
-        (.removeAttribute child model/data-active)
-        (.removeAttribute child model/data-side)
-        (.removeAttribute child model/data-index)))))
+        (du/remove-attr! child model/data-active)
+        (du/remove-attr! child model/data-side)
+        (du/remove-attr! child model/data-index)))))
 
 ;; ── Marker management ───────────────────────────────────────────────────────
 (defn- rebuild-markers!
@@ -469,7 +469,7 @@
         ;; Position and side date label
         (when-let [^js date-el (and dates (aget dates i))]
           (set! (.. date-el -style -top) (str center-y "px"))
-          (.setAttribute date-el model/data-side side))))))
+          (du/set-attr! date-el model/data-side side))))))
 
 ;; ── Track rendering ─────────────────────────────────────────────────────────
 (defn- update-straight-track! [^js el progress no-progress?]
@@ -518,19 +518,19 @@
                          (recur (inc i) (conj acc {:y cy :side side})))))
             d (model/build-serpentine-path points amplitude center-x)]
         ;; Set SVG viewBox to match container
-        (.setAttribute track-svg "viewBox" (str "0 0 " cont-w " " cont-h))
-        (.setAttribute ^js track-path "d" d)
-        (.setAttribute ^js fill-path "d" d)
+        (du/set-attr! track-svg "viewBox" (str "0 0 " cont-w " " cont-h))
+        (du/set-attr! ^js track-path "d" d)
+        (du/set-attr! ^js fill-path "d" d)
         ;; Initialize dasharray for progress
-        (.setAttribute ^js fill-path "stroke-dasharray" "1")
-        (.setAttribute ^js fill-path "stroke-dashoffset" "1")))))
+        (du/set-attr! ^js fill-path "stroke-dasharray" "1")
+        (du/set-attr! ^js fill-path "stroke-dashoffset" "1")))))
 
 (defn- update-curved-track! [^js el progress no-progress?]
   (let [{:keys [fill-path]} (du/getv el k-refs)
         ^js fill-path fill-path]
     (if no-progress?
-      (.setAttribute fill-path "stroke-dashoffset" "1")
-      (.setAttribute fill-path "stroke-dashoffset" (str (- 1.0 progress))))))
+      (du/set-attr! fill-path "stroke-dashoffset" "1")
+      (du/set-attr! fill-path "stroke-dashoffset" (str (- 1.0 progress))))))
 
 ;; ── Entry activation ────────────────────────────────────────────────────────
 (defn- swap-active-attr!
@@ -542,10 +542,10 @@
   (when arr
     (when (and (>= old-idx 0) (< old-idx (.-length arr)))
       (when-let [^js old-el (aget arr old-idx)]
-        (.removeAttribute old-el attr-name)))
+        (du/remove-attr! old-el attr-name)))
     (when (and (>= new-idx 0) (< new-idx (.-length arr)))
       (when-let [^js new-el (aget arr new-idx)]
-        (.setAttribute new-el attr-name "")))))
+        (du/set-attr! new-el attr-name "")))))
 
 (defn- entry-id-at
   "Read the entry id at idx, or nil if out of bounds."
@@ -669,7 +669,7 @@
         (update-entry-states! el children entry-rects trigger-y)
         (update-track-fill! el track-prog m)
         (dispatch-progress-if-changed! el progress active-idx active-id))))
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
@@ -807,7 +807,7 @@
              (not (disabled? el))
              (not (prefers-reduced-motion?)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
@@ -908,7 +908,7 @@
   ;; Cancel pending rAF
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
@@ -938,8 +938,8 @@
   "Set or remove aria-label on the inner container based on the model."
   [^js container {:keys [label]}]
   (if (seq label)
-    (.setAttribute container "aria-label" label)
-    (.removeAttribute container "aria-label")))
+    (du/set-attr! container "aria-label" label)
+    (du/remove-attr! container "aria-label")))
 
 (defn- enter-disabled-state!
   "Tear down everything that should not be running while disabled."
@@ -1009,8 +1009,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
+                                          (du/set-attr! this attr (str v))
+                                          (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 ;; def-number-prop! takes a custom parse-fn — kept inline
@@ -1022,8 +1022,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
+                                          (du/set-attr! this attr (str v))
+                                          (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 (defn- def-readonly-prop! [^js proto prop-name field-key default]

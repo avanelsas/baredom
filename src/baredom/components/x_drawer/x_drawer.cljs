@@ -132,19 +132,19 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute backdrop "part" model/part-backdrop)
+    (du/set-attr! backdrop "part" model/part-backdrop)
 
-    (.setAttribute panel "part" model/part-panel)
-    (.setAttribute panel "role" "dialog")
-    (.setAttribute panel "aria-modal" "true")
+    (du/set-attr! panel "part" model/part-panel)
+    (du/set-attr! panel "role" "dialog")
+    (du/set-attr! panel "aria-modal" "true")
 
-    (.setAttribute header "part" model/part-header)
-    (.setAttribute hslot "name" "header")
+    (du/set-attr! header "part" model/part-header)
+    (du/set-attr! hslot "name" "header")
 
-    (.setAttribute body "part" model/part-body)
+    (du/set-attr! body "part" model/part-body)
 
-    (.setAttribute footer "part" model/part-footer)
-    (.setAttribute fslot "name" "footer")
+    (du/set-attr! footer "part" model/part-footer)
+    (du/set-attr! fslot "name" "footer")
 
     (.appendChild header hslot)
     (.appendChild body bslot)
@@ -205,7 +205,7 @@
       (.focus (first tabbables))
       (when panel
         (when-not (.hasAttribute panel "tabindex")
-          (.setAttribute panel "tabindex" "-1")
+          (du/set-attr! panel "tabindex" "-1")
           (du/setv! el k-panel-tab true))
         (.focus panel)))))
 
@@ -217,7 +217,7 @@
     (du/setv! el k-tabbables nil)
     (du/setv! el k-restore nil)
     (when (and panel panel-tab-added)
-      (.removeAttribute panel "tabindex")
+      (du/remove-attr! panel "tabindex")
       (du/setv! el k-panel-tab false))
     (when (and restore (.-isConnected restore))
       (.focus restore))))
@@ -265,11 +265,11 @@
   (du/set-attr! el "data-placement" placement))
 
 (defn- apply-panel-aria! [^js panel {:keys [open? label]}]
-  (.setAttribute panel "aria-label" label)
+  (du/set-attr! panel "aria-label" label)
   ;; Hide the panel from AT when closed — CSS transform alone is insufficient.
   (if open?
-    (.removeAttribute panel "aria-hidden")
-    (.setAttribute    panel "aria-hidden" "true")))
+    (du/remove-attr! panel "aria-hidden")
+    (du/set-attr!    panel "aria-hidden" "true")))
 
 (defn- apply-open-transition!
   "Fire the toggle event and (de)activate the focus trap when `:open?`

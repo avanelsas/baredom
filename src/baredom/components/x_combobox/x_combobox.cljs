@@ -264,34 +264,34 @@
 ;; ── Shadow builders (shadow-builders named pattern) ────────────────────────
 (defn- make-input! [lb-id]
   (let [input-el (.createElement js/document "input")]
-    (.setAttribute input-el attr-part              part-input)
-    (.setAttribute input-el attr-type              val-text)
-    (.setAttribute input-el attr-role              val-combobox)
-    (.setAttribute input-el attr-aria-expanded     val-false)
-    (.setAttribute input-el attr-aria-autocomplete val-list)
-    (.setAttribute input-el attr-aria-controls     lb-id)
-    (.setAttribute input-el attr-autocomplete      val-off)
+    (du/set-attr! input-el attr-part              part-input)
+    (du/set-attr! input-el attr-type              val-text)
+    (du/set-attr! input-el attr-role              val-combobox)
+    (du/set-attr! input-el attr-aria-expanded     val-false)
+    (du/set-attr! input-el attr-aria-autocomplete val-list)
+    (du/set-attr! input-el attr-aria-controls     lb-id)
+    (du/set-attr! input-el attr-autocomplete      val-off)
     input-el))
 
 (defn- make-clear! []
   (let [clear-el (.createElement js/document "button")]
-    (.setAttribute clear-el attr-part       part-clear)
-    (.setAttribute clear-el attr-type       val-button)
-    (.setAttribute clear-el attr-aria-label val-clear-label)
-    (.setAttribute clear-el attr-tabindex   "-1")
+    (du/set-attr! clear-el attr-part       part-clear)
+    (du/set-attr! clear-el attr-type       val-button)
+    (du/set-attr! clear-el attr-aria-label val-clear-label)
+    (du/set-attr! clear-el attr-tabindex   "-1")
     (set! (.-textContent clear-el) val-clear-glyph)
     clear-el))
 
 (defn- make-chevron! []
   (let [chevron-el (.createElement js/document "span")]
-    (.setAttribute chevron-el attr-part        part-chevron)
-    (.setAttribute chevron-el attr-aria-hidden val-true)
+    (du/set-attr! chevron-el attr-part        part-chevron)
+    (du/set-attr! chevron-el attr-aria-hidden val-true)
     (set! (.-innerHTML chevron-el) chevron-svg)
     chevron-el))
 
 (defn- make-wrapper! [^js input-el ^js clear-el ^js chevron-el]
   (let [wrapper-el (.createElement js/document "div")]
-    (.setAttribute wrapper-el attr-part part-wrapper)
+    (du/set-attr! wrapper-el attr-part part-wrapper)
     (.appendChild wrapper-el input-el)
     (.appendChild wrapper-el clear-el)
     (.appendChild wrapper-el chevron-el)
@@ -299,10 +299,10 @@
 
 (defn- make-panel! [lb-id]
   (let [panel-el (.createElement js/document "div")]
-    (.setAttribute panel-el attr-part           part-panel)
-    (.setAttribute panel-el attr-role           val-listbox)
-    (.setAttribute panel-el attr-id             lb-id)
-    (.setAttribute panel-el attr-data-placement model/default-placement)
+    (du/set-attr! panel-el attr-part           part-panel)
+    (du/set-attr! panel-el attr-role           val-listbox)
+    (du/set-attr! panel-el attr-id             lb-id)
+    (du/set-attr! panel-el attr-data-placement model/default-placement)
     panel-el))
 
 (defn- make-shadow! [^js el]
@@ -388,7 +388,7 @@
     (du/set-attr! msg attr-part part-empty-msg)
     (set! (.-textContent msg) model/empty-message)
     (.appendChild panel-el msg)
-    (.removeAttribute input-el attr-aria-activedescendant)))
+    (du/remove-attr! input-el attr-aria-activedescendant)))
 
 (defn- render-option-list! [^js panel-el ^js input-el visible active-idx selected-value]
   (doseq [[idx opt] (map-indexed vector visible)]
@@ -399,7 +399,7 @@
         (du/set-attr! div attr-aria-selected val-true))))
   (if (>= active-idx 0)
     (du/set-attr! input-el attr-aria-activedescendant (str opt-id-prefix active-idx))
-    (.removeAttribute input-el attr-aria-activedescendant)))
+    (du/remove-attr! input-el attr-aria-activedescendant)))
 
 (defn- render-panel! [^js el]
   (when-let [refs (du/getv el k-refs)]

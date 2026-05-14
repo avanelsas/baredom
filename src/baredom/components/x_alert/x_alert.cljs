@@ -211,20 +211,20 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container attr-part part-container)
+    (du/set-attr! container attr-part part-container)
 
-    (.setAttribute icon-wrap    attr-part        part-icon)
-    (.setAttribute icon-wrap    attr-aria-hidden val-true)
-    (.setAttribute icon-slot    attr-name        slot-name-icon)
-    (.setAttribute default-icon attr-part        part-default-icon)
+    (du/set-attr! icon-wrap    attr-part        part-icon)
+    (du/set-attr! icon-wrap    attr-aria-hidden val-true)
+    (du/set-attr! icon-slot    attr-name        slot-name-icon)
+    (du/set-attr! default-icon attr-part        part-default-icon)
     (.appendChild icon-slot default-icon)
     (.appendChild icon-wrap icon-slot)
 
-    (.setAttribute text-el attr-part part-text)
+    (du/set-attr! text-el attr-part part-text)
 
-    (.setAttribute dismiss-btn attr-part part-dismiss)
-    (.setAttribute dismiss-btn attr-type val-button-type)
-    (.setAttribute dismiss-x   attr-aria-hidden val-true)
+    (du/set-attr! dismiss-btn attr-part part-dismiss)
+    (du/set-attr! dismiss-btn attr-type val-button-type)
+    (du/set-attr! dismiss-x   attr-aria-hidden val-true)
     (set! (.-textContent dismiss-x) val-dismiss-glyph)
     (.appendChild dismiss-btn dismiss-x)
 
@@ -263,7 +263,7 @@
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────────
 (defn- apply-host-type! [^js el ^js container {:keys [type]}]
   (du/set-attr! el attr-data-type (model/type->attr type))
-  (.setAttribute container attr-role (model/role-for-type type)))
+  (du/set-attr! container attr-role (model/role-for-type type)))
 
 (defn- apply-text! [^js text-el {:keys [text]}]
   (set! (.-textContent text-el) text))
@@ -285,7 +285,7 @@
         (set! (.. dismiss-btn -style -display) "inline-flex"))
     (do (set! (.-disabled dismiss-btn) true)
         (set! (.. dismiss-btn -style -display) "none")))
-  (.setAttribute dismiss-btn attr-aria-label val-dismiss-label))
+  (du/set-attr! dismiss-btn attr-aria-label val-dismiss-label))
 
 (defn- apply-host-a11y! [^js el {:keys [dismissible? disabled?]}]
   (let [interactive? (and dismissible? (not disabled?))]
@@ -484,8 +484,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if v
-                                   (.setAttribute this model/attr-dismissible "")
-                                   (.setAttribute this model/attr-dismissible val-false))))
+                                   (du/set-attr! this model/attr-dismissible "")
+                                   (du/set-attr! this model/attr-dismissible val-false))))
                         :enumerable true :configurable true})
 
   ;; Tier 2 — `timeoutMs` is the camelCase JS property reflecting the
@@ -501,8 +501,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if (nil? v)
-                                   (.removeAttribute this model/attr-timeout-ms)
-                                   (.setAttribute this model/attr-timeout-ms (str (int v))))))
+                                   (du/remove-attr! this model/attr-timeout-ms)
+                                   (du/set-attr! this model/attr-timeout-ms (str (int v))))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

@@ -55,8 +55,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-target (str v))
-                                          (.removeAttribute this model/attr-target))))
+                                          (du/set-attr! this model/attr-target (str v))
+                                          (du/remove-attr! this model/attr-target))))
                         :enumerable true :configurable true})
 
   ;; Override HTMLElement.title (tooltip) — intentional, this component
@@ -68,8 +68,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-title (str v))
-                                          (.removeAttribute this model/attr-title))))
+                                          (du/set-attr! this model/attr-title (str v))
+                                          (du/remove-attr! this model/attr-title))))
                         :enumerable true :configurable true})
 
   (du/define-string-prop! proto "placement" model/attr-placement "bottom")
@@ -89,8 +89,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-scroll-to "")
-                                          (.setAttribute this model/attr-scroll-to "false"))))
+                                          (du/set-attr! this model/attr-scroll-to "")
+                                          (du/set-attr! this model/attr-scroll-to "false"))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

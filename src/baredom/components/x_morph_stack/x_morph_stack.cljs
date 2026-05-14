@@ -92,8 +92,8 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute viewport "part" "viewport")
-    (.setAttribute slot-el "name" model/slot-state)
+    (du/set-attr! viewport "part" "viewport")
+    (du/set-attr! slot-el "name" model/slot-state)
     (.appendChild viewport slot-el)
 
     (.appendChild root style)
@@ -124,14 +124,14 @@
         (set! (.. layer -style -pointerEvents) "none")
         (set! (.. layer -style -overflow)      "visible")
         (set! (.. layer -style -zIndex)        "2147483646")
-        (.setAttribute layer "aria-hidden" "true")
-        (.setAttribute layer "data-x-morph-stack-ghost-layer" "")
+        (du/set-attr! layer "aria-hidden" "true")
+        (du/set-attr! layer "data-x-morph-stack-ghost-layer" "")
         ;; Hidden SVG for goo filter definitions.
         (set! (.. svg -style -position) "absolute")
         (set! (.. svg -style -width)    "0")
         (set! (.. svg -style -height)   "0")
         (set! (.. svg -style -overflow) "hidden")
-        (.setAttribute svg "aria-hidden" "true")
+        (du/set-attr! svg "aria-hidden" "true")
         (.appendChild layer svg)
         (.appendChild (.-body js/document) layer)
         (let [new-refs (assoc refs :ghost-layer layer :svg svg)]
@@ -266,17 +266,17 @@
               filt   (.createElementNS js/document svg-ns "filter")
               blur   (.createElementNS js/document svg-ns "feGaussianBlur")
               matrix (.createElementNS js/document svg-ns "feColorMatrix")]
-          (.setAttribute filt "id" filter-id)
-          (.setAttribute filt "x" "-20%")
-          (.setAttribute filt "y" "-20%")
-          (.setAttribute filt "width" "140%")
-          (.setAttribute filt "height" "140%")
-          (.setAttribute blur "in" "SourceGraphic")
-          (.setAttribute blur "stdDeviation" (str model/default-goo-blur))
-          (.setAttribute blur "result" "blur")
-          (.setAttribute matrix "in" "blur")
-          (.setAttribute matrix "type" "matrix")
-          (.setAttribute matrix "values" (model/goo-matrix-values model/default-goo-threshold))
+          (du/set-attr! filt "id" filter-id)
+          (du/set-attr! filt "x" "-20%")
+          (du/set-attr! filt "y" "-20%")
+          (du/set-attr! filt "width" "140%")
+          (du/set-attr! filt "height" "140%")
+          (du/set-attr! blur "in" "SourceGraphic")
+          (du/set-attr! blur "stdDeviation" (str model/default-goo-blur))
+          (du/set-attr! blur "result" "blur")
+          (du/set-attr! matrix "in" "blur")
+          (du/set-attr! matrix "type" "matrix")
+          (du/set-attr! matrix "values" (model/goo-matrix-values model/default-goo-threshold))
           (.appendChild filt blur)
           (.appendChild filt matrix)
           (.appendChild defs filt)
@@ -291,8 +291,8 @@
   [^js el blur-px threshold]
   (let [^js blur   (du/getv el k-filter-blur)
         ^js matrix (du/getv el k-filter-matrix)]
-    (when blur   (.setAttribute blur   "stdDeviation" (str blur-px)))
-    (when matrix (.setAttribute matrix "values"       (model/goo-matrix-values threshold)))))
+    (when blur   (du/set-attr! blur   "stdDeviation" (str blur-px)))
+    (when matrix (du/set-attr! matrix "values"       (model/goo-matrix-values threshold)))))
 
 ;; The gooey filter follows a trapezoidal envelope across the spring's
 ;; progress: identity at the start (so text and crisp edges are readable in
@@ -611,7 +611,7 @@
                                               ;; Token may have changed mid-flight; check before continuing.
                                               (when (= token (du/getv el k-token))
                                                 (tick! el now2))))]
-            (du/setv! el k-raf raf)))))))
+            (du/setv-untraced! el k-raf raf)))))))
 
 ;; ── Finalize ────────────────────────────────────────────────────────────────
 (defn- run-finalizers! [^js entries]
@@ -626,7 +626,7 @@
     (let [entries ^js (du/getv el k-entries)]
       (when-let [raf (du/getv el k-raf)]
         (.cancelAnimationFrame js/window raf)
-        (du/setv! el k-raf nil))
+        (du/setv-untraced! el k-raf nil))
       (run-finalizers! entries)
       (du/setv! el k-entries nil)
       (du/setv! el k-last-time nil)
@@ -644,7 +644,7 @@
   [^js el]
   (when-let [raf (du/getv el k-raf)]
     (.cancelAnimationFrame js/window raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (run-finalizers! ^js (du/getv el k-entries))
   (du/setv! el k-entries nil)
   (du/setv! el k-last-time nil)
@@ -729,7 +729,7 @@
                                                       (fn [now]
                                                         (when (= token (du/getv el k-token))
                                                           (tick! el now))))]
-                      (du/setv! el k-raf raf)))
+                      (du/setv-untraced! el k-raf raf)))
                   true)))))))))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────
@@ -841,8 +841,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this attr)
-                                          (.setAttribute this attr (str v)))))
+                                          (du/remove-attr! this attr)
+                                          (du/set-attr! this attr (str v)))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
@@ -857,8 +857,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-active-index)
-                                          (.setAttribute this model/attr-active-index (str (int v))))))
+                                          (du/remove-attr! this model/attr-active-index)
+                                          (du/set-attr! this model/attr-active-index (str (int v))))))
                         :enumerable true :configurable true})
 
   (number-attr-prop! proto "stiffness" model/attr-stiffness)
@@ -876,8 +876,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-variant)
-                                          (.setAttribute this model/attr-variant (str v)))))
+                                          (du/remove-attr! this model/attr-variant)
+                                          (du/set-attr! this model/attr-variant (str v)))))
                         :enumerable true :configurable true})
 
   (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)

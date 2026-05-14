@@ -143,9 +143,9 @@
         slot-el  (.createElement js/document "slot")
         label-el (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (.setAttribute base     attr-part part-base)
-    (.setAttribute base     attr-role role-status)
-    (.setAttribute label-el attr-part part-label)
+    (du/set-attr! base     attr-part part-base)
+    (du/set-attr! base     attr-role role-status)
+    (du/set-attr! label-el attr-part part-label)
     (.appendChild base slot-el)
     (.appendChild base label-el)
     (.appendChild root style)
@@ -193,11 +193,11 @@
     (if dot  (du/set-attr! el attr-data-dot  "") (du/remove-attr! el attr-data-dot))
     (set! (.-textContent label-el) (or txt ""))
     (if aria-label
-      (.setAttribute base attr-aria-label aria-label)
-      (.removeAttribute base attr-aria-label))
+      (du/set-attr! base attr-aria-label aria-label)
+      (du/remove-attr! base attr-aria-label))
     (if aria-describedby
-      (.setAttribute base attr-aria-describedby aria-describedby)
-      (.removeAttribute base attr-aria-describedby))
+      (du/set-attr! base attr-aria-describedby aria-describedby)
+      (du/remove-attr! base attr-aria-describedby))
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -236,8 +236,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (some? v)
-                                          (.setAttribute this attr (str v))
-                                          (.removeAttribute this attr))))
+                                          (du/set-attr! this attr (str v))
+                                          (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]

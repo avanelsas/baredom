@@ -182,11 +182,11 @@
   (let [refs (du/getv el key-refs)
         ^js popup (when refs (gobj/get refs rk-popup))]
     (when popup
-      (.setAttribute popup attr-data-placement (:placement m))
+      (du/set-attr! popup attr-data-placement (:placement m))
       (let [label (:label m)]
         (if (and label (not= label ""))
-          (.setAttribute popup attr-aria-label label)
-          (.removeAttribute popup attr-aria-label))))
+          (du/set-attr! popup attr-aria-label label)
+          (du/remove-attr! popup attr-aria-label))))
     (du/setv! el key-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -204,12 +204,12 @@
         item-slot (.createElement js/document "slot")
         refs #js {}]
     (set! (.-textContent style) style-text)
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     (set! (.-className base) part-base)
-    (.setAttribute trigger-slot attr-name slot-trigger)
-    (.setAttribute popup attr-part part-popup)
+    (du/set-attr! trigger-slot attr-name slot-trigger)
+    (du/set-attr! popup attr-part part-popup)
     (set! (.-className popup) part-popup)
-    (.setAttribute popup attr-role role-menu)
+    (du/set-attr! popup attr-role role-menu)
     (.appendChild popup item-slot)
     (.appendChild base trigger-slot)
     (.appendChild base popup)

@@ -221,20 +221,20 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (.setAttribute nav-el     "part" "base")
-    (.setAttribute bar-el     "part" "bar")
-    (.setAttribute brand-el   "part" "brand")
-    (.setAttribute start-el   "part" "start")
-    (.setAttribute nav-wrap   "part" "nav")
-    (.setAttribute actions-el "part" "actions")
-    (.setAttribute toggle-el  "part" "toggle")
-    (.setAttribute end-el     "part" "end")
+    (du/set-attr! nav-el     "part" "base")
+    (du/set-attr! bar-el     "part" "bar")
+    (du/set-attr! brand-el   "part" "brand")
+    (du/set-attr! start-el   "part" "start")
+    (du/set-attr! nav-wrap   "part" "nav")
+    (du/set-attr! actions-el "part" "actions")
+    (du/set-attr! toggle-el  "part" "toggle")
+    (du/set-attr! end-el     "part" "end")
 
-    (.setAttribute brand-slot   "name" model/slot-brand)
-    (.setAttribute start-slot   "name" model/slot-start)
-    (.setAttribute actions-slot "name" model/slot-actions)
-    (.setAttribute toggle-slot  "name" model/slot-toggle)
-    (.setAttribute end-slot     "name" model/slot-end)
+    (du/set-attr! brand-slot   "name" model/slot-brand)
+    (du/set-attr! start-slot   "name" model/slot-start)
+    (du/set-attr! actions-slot "name" model/slot-actions)
+    (du/set-attr! toggle-slot  "name" model/slot-toggle)
+    (du/set-attr! end-slot     "name" model/slot-end)
 
     (.appendChild brand-el   brand-slot)
     (.appendChild start-el   start-slot)
@@ -290,12 +290,12 @@
         ^js bar-el  (gobj/get refs "bar")
         label       (model/landmark-label m)]
     (if label
-      (.setAttribute base-el "aria-label" label)
-      (.removeAttribute base-el "aria-label"))
-    (.setAttribute base-el "data-variant"     (:variant m))
-    (.setAttribute base-el "data-orientation" (:orientation m))
-    (.setAttribute base-el "data-breakpoint"  (:breakpoint m))
-    (.setAttribute bar-el  "data-alignment"   (:alignment m))))
+      (du/set-attr! base-el "aria-label" label)
+      (du/remove-attr! base-el "aria-label"))
+    (du/set-attr! base-el "data-variant"     (:variant m))
+    (du/set-attr! base-el "data-orientation" (:orientation m))
+    (du/set-attr! base-el "data-breakpoint"  (:breakpoint m))
+    (du/set-attr! bar-el  "data-alignment"   (:alignment m))))
 
 (defn- apply-slot-state!
   "Apply DOM state derived from slot content (data-has-* flags). Called
@@ -307,11 +307,11 @@
         ^js actions-el (gobj/get refs "actions")
         ^js toggle-el  (gobj/get refs "toggle")
         ^js end-el     (gobj/get refs "end")]
-    (.setAttribute brand-el   "data-has-brand"   (if (slot-has-content? (gobj/get refs "brand-slot"))   "true" "false"))
-    (.setAttribute start-el   "data-has-start"   (if (slot-has-content? (gobj/get refs "start-slot"))   "true" "false"))
-    (.setAttribute actions-el "data-has-actions" (if (slot-has-content? (gobj/get refs "actions-slot")) "true" "false"))
-    (.setAttribute toggle-el  "data-has-toggle"  (if (slot-has-content? (gobj/get refs "toggle-slot"))  "true" "false"))
-    (.setAttribute end-el     "data-has-end"     (if (slot-has-content? (gobj/get refs "end-slot"))     "true" "false"))))
+    (du/set-attr! brand-el   "data-has-brand"   (if (slot-has-content? (gobj/get refs "brand-slot"))   "true" "false"))
+    (du/set-attr! start-el   "data-has-start"   (if (slot-has-content? (gobj/get refs "start-slot"))   "true" "false"))
+    (du/set-attr! actions-el "data-has-actions" (if (slot-has-content? (gobj/get refs "actions-slot")) "true" "false"))
+    (du/set-attr! toggle-el  "data-has-toggle"  (if (slot-has-content? (gobj/get refs "toggle-slot"))  "true" "false"))
+    (du/set-attr! end-el     "data-has-end"     (if (slot-has-content? (gobj/get refs "end-slot"))     "true" "false"))))
 
 (defn- apply-model! [^js el ^js refs m]
   (apply-attr-state! refs m)

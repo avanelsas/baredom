@@ -82,8 +82,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this attr "")
-                                          (.removeAttribute this attr))))
+                                          (du/set-attr! this attr "")
+                                          (du/remove-attr! this attr))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]

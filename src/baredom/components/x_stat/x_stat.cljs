@@ -35,14 +35,14 @@
   (set-or-remove! el "aria-label" (:label state)))
 
 (defn- apply-state! [^js base state]
-  (.setAttribute base "data-variant" (:variant state))
-  (.setAttribute base "data-align" (:align state))
-  (.setAttribute base "data-size" (:size state))
-  (.setAttribute base "data-emphasis" (:emphasis state))
-  (.setAttribute base "data-trend" (:trend state))
+  (du/set-attr! base "data-variant" (:variant state))
+  (du/set-attr! base "data-align" (:align state))
+  (du/set-attr! base "data-size" (:size state))
+  (du/set-attr! base "data-emphasis" (:emphasis state))
+  (du/set-attr! base "data-trend" (:trend state))
   (if (:loading state)
-    (.setAttribute base "data-loading" "true")
-    (.removeAttribute base "data-loading")))
+    (du/set-attr! base "data-loading" "true")
+    (du/remove-attr! base "data-loading")))
 
 (defn- apply-model! [^js el state]
   (let [^js base (du/getv el key-base)
@@ -154,17 +154,17 @@
 
     (set! (.-textContent style-el) css-text)
 
-    (.setAttribute base "part" "base")
-    (.setAttribute icon "part" "icon")
-    (.setAttribute body "part" "body")
-    (.setAttribute label "part" "label")
-    (.setAttribute value "part" "value")
-    (.setAttribute hint "part" "hint")
+    (du/set-attr! base "part" "base")
+    (du/set-attr! icon "part" "icon")
+    (du/set-attr! body "part" "body")
+    (du/set-attr! label "part" "label")
+    (du/set-attr! value "part" "value")
+    (du/set-attr! hint "part" "hint")
 
-    (.setAttribute icon-slot "name" "icon")
-    (.setAttribute label-slot "name" "label")
-    (.setAttribute value-slot "name" "value")
-    (.setAttribute hint-slot "name" "hint")
+    (du/set-attr! icon-slot "name" "icon")
+    (du/set-attr! label-slot "name" "label")
+    (du/set-attr! value-slot "name" "value")
+    (du/set-attr! hint-slot "name" "hint")
 
     (.appendChild icon icon-slot)
     (.appendChild label label-slot)

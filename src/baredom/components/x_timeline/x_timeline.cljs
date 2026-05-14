@@ -43,8 +43,8 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute label-div "part" "label")
-    (.setAttribute label-div "hidden" "")
+    (du/set-attr! label-div "part" "label")
+    (du/set-attr! label-div "hidden" "")
 
     (.appendChild root style)
     (.appendChild root label-div)
@@ -80,9 +80,9 @@
     ;; Label caption
     (if (not= label "")
       (do (set! (.-textContent label-div) label)
-          (.removeAttribute label-div "hidden"))
+          (du/remove-attr! label-div "hidden"))
       (do (set! (.-textContent label-div) "")
-          (.setAttribute label-div "hidden" "")))
+          (du/set-attr! label-div "hidden" "")))
 
     (du/setv! el k-model m)))
 
@@ -101,14 +101,14 @@
       (when (< i len)
         (let [^js item (aget items i)
               last?    (= i (dec len))]
-          (.setAttribute item "data-index" (str i))
+          (du/set-attr! item "data-index" (str i))
           (if last?
-            (.setAttribute item "data-last" "")
-            (.removeAttribute item "data-last"))
-          (.setAttribute item "data-position" (model/item-position position i))
+            (du/set-attr! item "data-last" "")
+            (du/remove-attr! item "data-last"))
+          (du/set-attr! item "data-position" (model/item-position position i))
           (if striped?
-            (.setAttribute item "data-striped" "")
-            (.removeAttribute item "data-striped")))
+            (du/set-attr! item "data-striped" "")
+            (du/remove-attr! item "data-striped")))
         (recur (inc i))))))
 
 ;; ── Event dispatch ────────────────────────────────────────────────────────────
@@ -169,8 +169,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
+                                          (du/set-attr! this model/attr-label (str v))
+                                          (du/remove-attr! this model/attr-label))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto model/attr-position
@@ -180,8 +180,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-position (str v))
-                                          (.removeAttribute this model/attr-position))))
+                                          (du/set-attr! this model/attr-position (str v))
+                                          (du/remove-attr! this model/attr-position))))
                         :enumerable true :configurable true})
 
   (du/define-bool-prop! proto model/attr-striped model/attr-striped))

@@ -239,27 +239,27 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
+    (du/set-attr! container "part" "container")
 
-    (.setAttribute inner "part" "inner")
+    (du/set-attr! inner "part" "inner")
 
-    (.setAttribute icon-wrap "part" "icon")
-    (.setAttribute icon-wrap "aria-hidden" "true")
-    (.setAttribute icon-slot "name" "icon")
-    (.setAttribute default-icon "part" "default-icon")
+    (du/set-attr! icon-wrap "part" "icon")
+    (du/set-attr! icon-wrap "aria-hidden" "true")
+    (du/set-attr! icon-slot "name" "icon")
+    (du/set-attr! default-icon "part" "default-icon")
     (.appendChild icon-slot default-icon)
     (.appendChild icon-wrap icon-slot)
 
-    (.setAttribute body-el "part" "body")
-    (.setAttribute heading-el "part" "heading")
-    (.setAttribute message-el "part" "message")
+    (du/set-attr! body-el "part" "body")
+    (du/set-attr! heading-el "part" "heading")
+    (du/set-attr! message-el "part" "message")
     (.appendChild body-el heading-el)
     (.appendChild body-el message-el)
 
-    (.setAttribute dismiss-btn "part" "dismiss")
-    (.setAttribute dismiss-btn "type" "button")
-    (.setAttribute dismiss-btn "aria-label" "Dismiss toast")
-    (.setAttribute dismiss-x "aria-hidden" "true")
+    (du/set-attr! dismiss-btn "part" "dismiss")
+    (du/set-attr! dismiss-btn "type" "button")
+    (du/set-attr! dismiss-btn "aria-label" "Dismiss toast")
+    (du/set-attr! dismiss-x "aria-hidden" "true")
     (set! (.-textContent dismiss-x) "×")
     (.appendChild dismiss-btn dismiss-x)
 
@@ -267,8 +267,8 @@
     (.appendChild inner body-el)
     (.appendChild inner dismiss-btn)
 
-    (.setAttribute progress-el "part" "progress")
-    (.setAttribute progress-bar "part" "progress-bar")
+    (du/set-attr! progress-el "part" "progress")
+    (du/set-attr! progress-bar "part" "progress-bar")
     (.appendChild progress-el progress-bar)
 
     (.appendChild container inner)
@@ -343,7 +343,7 @@
         show-prog?   (model/progress-eligible? m)]
 
     (du/set-attr! el "data-type" (model/type->attr type))
-    (.setAttribute container "role" (model/role-for-type type))
+    (du/set-attr! container "role" (model/role-for-type type))
 
     (set! (.-textContent heading-el) heading)
     (set! (.. heading-el -style -display) (if (= heading "") "none" ""))
@@ -538,8 +538,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-dismissible "")
-                                          (.setAttribute this model/attr-dismissible "false"))))
+                                          (du/set-attr! this model/attr-dismissible "")
+                                          (du/set-attr! this model/attr-dismissible "false"))))
                         :enumerable true :configurable true})
 
   (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
@@ -552,8 +552,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-timeout-ms)
-                                          (.setAttribute this model/attr-timeout-ms (str (int v))))))
+                                          (du/remove-attr! this model/attr-timeout-ms)
+                                          (du/set-attr! this model/attr-timeout-ms (str (int v))))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto "showProgress"
@@ -564,8 +564,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-show-progress "")
-                                          (.removeAttribute this model/attr-show-progress))))
+                                          (du/set-attr! this model/attr-show-progress "")
+                                          (du/remove-attr! this model/attr-show-progress))))
                         :enumerable true :configurable true}))
 
 ;; ── Dismiss method ───────────────────────────────────────────────────────────

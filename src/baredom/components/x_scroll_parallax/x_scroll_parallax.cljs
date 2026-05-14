@@ -59,14 +59,14 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute viewport "part" "viewport")
-    (.setAttribute viewport "role" "region")
+    (du/set-attr! viewport "part" "viewport")
+    (du/set-attr! viewport "role" "region")
 
     (.appendChild viewport slot)
 
-    (.setAttribute live "part" "live")
-    (.setAttribute live "aria-live" "polite")
-    (.setAttribute live "aria-atomic" "true")
+    (du/set-attr! live "part" "live")
+    (du/set-attr! live "aria-live" "polite")
+    (du/set-attr! live "aria-atomic" "true")
 
     (.appendChild root style)
     (.appendChild root viewport)
@@ -194,7 +194,7 @@
           (du/setv! el k-last-prog progress)
           (du/dispatch! el model/event-progress (clj->js (model/progress-detail progress)))))))
   ;; Clear rAF handle
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
@@ -202,7 +202,7 @@
              (du/getv el k-visible)
              (not (prefers-reduced-motion?)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-transforms! el)))))))
 
@@ -282,7 +282,7 @@
   ;; Cancel pending rAF
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
@@ -309,8 +309,8 @@
 
     ;; Aria
     (if (seq label)
-      (.setAttribute viewport "aria-label" label)
-      (.removeAttribute viewport "aria-label"))
+      (du/set-attr! viewport "aria-label" label)
+      (du/remove-attr! viewport "aria-label"))
 
     ;; Cache model
     (du/setv! el k-model m)
@@ -350,8 +350,8 @@
          :set (fn xspx-set-label [v]
                 (this-as ^js this
                   (if (and v (not= v ""))
-                    (.setAttribute this model/attr-label (str v))
-                    (.removeAttribute this model/attr-label))))
+                    (du/set-attr! this model/attr-label (str v))
+                    (du/remove-attr! this model/attr-label))))
          :enumerable true :configurable true})
 
   ;; progress is read-only — no setter, so no shared helper applies.

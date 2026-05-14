@@ -124,19 +124,19 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute wrap "part" "wrap")
+    (du/set-attr! wrap "part" "wrap")
 
-    (.setAttribute trigger "part" "trigger")
-    (.setAttribute trigger "type" "button")
+    (du/set-attr! trigger "part" "trigger")
+    (du/set-attr! trigger "type" "button")
 
     (.appendChild trigger default-slot)
 
-    (.setAttribute tooltip "part" "tooltip")
-    (.setAttribute tooltip "role" "status")
-    (.setAttribute tooltip "aria-live" "polite")
+    (du/set-attr! tooltip "part" "tooltip")
+    (du/set-attr! tooltip "role" "status")
+    (du/set-attr! tooltip "aria-live" "polite")
 
-    (.setAttribute tooltip-slot "name" "tooltip")
-    (.setAttribute tooltip-text "part" "tooltip-text")
+    (du/set-attr! tooltip-slot "name" "tooltip")
+    (du/set-attr! tooltip-text "part" "tooltip-text")
 
     (.appendChild tooltip tooltip-slot)
     (.appendChild tooltip tooltip-text)
@@ -406,8 +406,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-show-tooltip "true")
-                                          (.setAttribute this model/attr-show-tooltip "false"))))
+                                          (du/set-attr! this model/attr-show-tooltip "true")
+                                          (du/set-attr! this model/attr-show-tooltip "false"))))
                         :enumerable true :configurable true})
 
   ;; Number-reflecting property
@@ -420,8 +420,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (nil? v)
-                                          (.removeAttribute this model/attr-tooltip-ms)
-                                          (.setAttribute this model/attr-tooltip-ms (str (int v))))))
+                                          (du/remove-attr! this model/attr-tooltip-ms)
+                                          (du/set-attr! this model/attr-tooltip-ms (str (int v))))))
                         :enumerable true :configurable true})
 
   ;; textValue — property-only, stored in gobj field

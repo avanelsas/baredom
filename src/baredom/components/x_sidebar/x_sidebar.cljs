@@ -176,7 +176,7 @@
   [instance]
   (let [panel (gobj/get instance "_panel")]
     (when-not (.hasAttribute panel "tabindex")
-      (.setAttribute panel "tabindex" "-1")
+      (du/set-attr! panel "tabindex" "-1")
       (gobj/set instance "_panelTabindexAdded" true))
     (.focus panel)))
 
@@ -199,7 +199,7 @@
     (gobj/set instance "_tabbables" nil)
     (gobj/set instance "_restoreFocusTarget" nil)
     (when (and panel panel-tabindex-added)
-      (.removeAttribute panel "tabindex")
+      (du/remove-attr! panel "tabindex")
       (gobj/set instance "_panelTabindexAdded" false))
     (when (and restore-target (.-isConnected restore-target))
       (.focus restore-target))))
@@ -238,9 +238,9 @@
 (defn apply-a11y!
   [instance {:keys [label aria-hidden]}]
   (when-let [sidebar (gobj/get instance "_sidebar")]
-    (.setAttribute sidebar "role" "navigation")
-    (.setAttribute sidebar "aria-label" label)
-    (.setAttribute sidebar "aria-hidden" (if aria-hidden "true" "false"))))
+    (du/set-attr! sidebar "role" "navigation")
+    (du/set-attr! sidebar "aria-label" label)
+    (du/set-attr! sidebar "aria-hidden" (if aria-hidden "true" "false"))))
 
 (defn apply-backdrop!
   [instance {:keys [show-backdrop]}]
@@ -285,12 +285,12 @@
           slot-el (.createElement js/document "slot")]
       (set! (.-textContent style-el) css-text)
       (set! (.-className backdrop-el) "backdrop")
-      (.setAttribute backdrop-el "part" model/part-backdrop)
+      (du/set-attr! backdrop-el "part" model/part-backdrop)
       (set! (.-hidden backdrop-el) true)
       (set! (.-className sidebar-el) "sidebar")
-      (.setAttribute sidebar-el "part" model/part-sidebar)
+      (du/set-attr! sidebar-el "part" model/part-sidebar)
       (set! (.-className panel-el) "panel")
-      (.setAttribute panel-el "part" model/part-panel)
+      (du/set-attr! panel-el "part" model/part-panel)
       (.appendChild panel-el slot-el)
       (.appendChild sidebar-el panel-el)
       (.appendChild root style-el)

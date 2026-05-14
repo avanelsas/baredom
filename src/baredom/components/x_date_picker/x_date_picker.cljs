@@ -105,18 +105,18 @@
             day      (.getUTCDate date)
             disabled? (day-out-of-range? date canon)
             {:keys [selected? in-range? edge?]} (compute-flags date canon)]
-        (.setAttribute btn "part" "day")
-        (.setAttribute btn "type" "button")
-        (.setAttribute btn "role" "gridcell")
-        (.setAttribute btn "data-iso" iso)
-        (.setAttribute btn "data-outside" (if in-month? "false" "true"))
-        (.setAttribute btn "data-disabled" (if disabled? "true" "false"))
-        (.setAttribute btn "data-selected" (if selected? "true" "false"))
-        (.setAttribute btn "data-in-range" (if in-range? "true" "false"))
-        (.setAttribute btn "data-range-edge" (if edge? "true" "false"))
-        (.setAttribute btn "aria-selected" (if selected? "true" "false"))
-        (.setAttribute btn "aria-disabled" (if disabled? "true" "false"))
-        (.setAttribute btn "tabindex" "-1")
+        (du/set-attr! btn "part" "day")
+        (du/set-attr! btn "type" "button")
+        (du/set-attr! btn "role" "gridcell")
+        (du/set-attr! btn "data-iso" iso)
+        (du/set-attr! btn "data-outside" (if in-month? "false" "true"))
+        (du/set-attr! btn "data-disabled" (if disabled? "true" "false"))
+        (du/set-attr! btn "data-selected" (if selected? "true" "false"))
+        (du/set-attr! btn "data-in-range" (if in-range? "true" "false"))
+        (du/set-attr! btn "data-range-edge" (if edge? "true" "false"))
+        (du/set-attr! btn "aria-selected" (if selected? "true" "false"))
+        (du/set-attr! btn "aria-disabled" (if disabled? "true" "false"))
+        (du/set-attr! btn "tabindex" "-1")
         (set! (.-textContent btn) (str day))
         (.appendChild grid btn)))))
 
@@ -128,7 +128,7 @@
         ^js grid (when refs (gobj/get refs "grid"))]
     (when (and grid iso)
       (when-let [^js btn (.querySelector grid (str "[data-iso=\"" iso "\"]"))]
-        (.setAttribute btn "tabindex" "0")))))
+        (du/set-attr! btn "tabindex" "0")))))
 
 (defn- focus-grid-date!
   "Set the focused date and move DOM focus to that cell."
@@ -139,9 +139,9 @@
     (when grid
       ;; Remove previous tabindex=0
       (when-let [^js prev (.querySelector grid "[tabindex=\"0\"]")]
-        (.setAttribute prev "tabindex" "-1"))
+        (du/set-attr! prev "tabindex" "-1"))
       (when-let [^js btn (.querySelector grid (str "[data-iso=\"" iso "\"]"))]
-        (.setAttribute btn "tabindex" "0")
+        (du/set-attr! btn "tabindex" "0")
         (.focus btn)))))
 
 ;; ---------------------------------------------------------------------------
@@ -155,8 +155,8 @@
     (let [labels #js ["Su" "Mo" "Tu" "We" "Th" "Fr" "Sa"]]
       (dotimes [i 7]
         (let [^js div (make-el "div")]
-          (.setAttribute div "part" "weekday")
-          (.setAttribute div "aria-hidden" "true")
+          (du/set-attr! div "part" "weekday")
+          (du/set-attr! div "aria-hidden" "true")
           (set! (.-textContent div) (aget labels i))
           (.appendChild weekdays-el div))))))
 
@@ -223,21 +223,21 @@
 
         (when btn
           (if disabled?
-            (.setAttribute btn "disabled" "")
-            (.removeAttribute btn "disabled")))
+            (du/set-attr! btn "disabled" "")
+            (du/remove-attr! btn "disabled")))
 
         (when inp
-          (.setAttribute inp "aria-expanded" (if open? "true" "false"))
+          (du/set-attr! inp "aria-expanded" (if open? "true" "false"))
           (if disabled?
-            (do (.setAttribute inp "disabled" "")
-                (.setAttribute inp "aria-disabled" "true"))
-            (do (.removeAttribute inp "disabled")
-                (.removeAttribute inp "aria-disabled")))
-          (when readonly?  (.setAttribute inp "readonly" ""))
-          (when-not readonly? (.removeAttribute inp "readonly"))
-          (when placeholder (.setAttribute inp "placeholder" placeholder))
-          (when aria-label  (.setAttribute inp "aria-label" aria-label))
-          (when aria-desc   (.setAttribute inp "aria-describedby" aria-desc)))
+            (do (du/set-attr! inp "disabled" "")
+                (du/set-attr! inp "aria-disabled" "true"))
+            (do (du/remove-attr! inp "disabled")
+                (du/remove-attr! inp "aria-disabled")))
+          (when readonly?  (du/set-attr! inp "readonly" ""))
+          (when-not readonly? (du/remove-attr! inp "readonly"))
+          (when placeholder (du/set-attr! inp "placeholder" placeholder))
+          (when aria-label  (du/set-attr! inp "aria-label" aria-label))
+          (when aria-desc   (du/set-attr! inp "aria-describedby" aria-desc)))
 
         (sync-input-display! el)
         (render-calendar! el)))))
@@ -563,53 +563,53 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
+    (du/set-attr! container "part" "container")
 
-    (.setAttribute inp "part" "input")
-    (.setAttribute inp "type" "text")
-    (.setAttribute inp "inputmode" "none")
-    (.setAttribute inp "autocomplete" "off")
-    (.setAttribute inp "role" "combobox")
-    (.setAttribute inp "aria-haspopup" "dialog")
-    (.setAttribute inp "aria-expanded" "false")
+    (du/set-attr! inp "part" "input")
+    (du/set-attr! inp "type" "text")
+    (du/set-attr! inp "inputmode" "none")
+    (du/set-attr! inp "autocomplete" "off")
+    (du/set-attr! inp "role" "combobox")
+    (du/set-attr! inp "aria-haspopup" "dialog")
+    (du/set-attr! inp "aria-expanded" "false")
 
-    (.setAttribute btn "part" "btn")
-    (.setAttribute btn "type" "button")
-    (.setAttribute btn "aria-label" "Open calendar")
+    (du/set-attr! btn "part" "btn")
+    (du/set-attr! btn "type" "button")
+    (du/set-attr! btn "aria-label" "Open calendar")
     (set! (.-textContent btn) "\uD83D\uDCC5")
 
-    (.setAttribute popover "part" "popover")
-    (.setAttribute popover "role" "dialog")
-    (.setAttribute popover "aria-modal" "true")
-    (.setAttribute popover "aria-label" "Calendar")
+    (du/set-attr! popover "part" "popover")
+    (du/set-attr! popover "role" "dialog")
+    (du/set-attr! popover "aria-modal" "true")
+    (du/set-attr! popover "aria-label" "Calendar")
 
-    (.setAttribute nav "part" "nav")
+    (du/set-attr! nav "part" "nav")
 
-    (.setAttribute nav-prev "part" "navbtn")
-    (.setAttribute nav-prev "data-nav" "prev")
-    (.setAttribute nav-prev "type" "button")
-    (.setAttribute nav-prev "aria-label" "Previous month")
+    (du/set-attr! nav-prev "part" "navbtn")
+    (du/set-attr! nav-prev "data-nav" "prev")
+    (du/set-attr! nav-prev "type" "button")
+    (du/set-attr! nav-prev "aria-label" "Previous month")
     (set! (.-textContent nav-prev) "\u2039")
 
-    (.setAttribute month-lbl "part" "monthlabel")
-    (.setAttribute month-lbl "aria-live" "polite")
+    (du/set-attr! month-lbl "part" "monthlabel")
+    (du/set-attr! month-lbl "aria-live" "polite")
 
-    (.setAttribute nav-next "part" "navbtn")
-    (.setAttribute nav-next "data-nav" "next")
-    (.setAttribute nav-next "type" "button")
-    (.setAttribute nav-next "aria-label" "Next month")
+    (du/set-attr! nav-next "part" "navbtn")
+    (du/set-attr! nav-next "data-nav" "next")
+    (du/set-attr! nav-next "type" "button")
+    (du/set-attr! nav-next "aria-label" "Next month")
     (set! (.-textContent nav-next) "\u203A")
 
-    (.setAttribute weekdays "part" "weekdays")
-    (.setAttribute weekdays "aria-hidden" "true")
+    (du/set-attr! weekdays "part" "weekdays")
+    (du/set-attr! weekdays "aria-hidden" "true")
 
-    (.setAttribute grid "part" "grid")
-    (.setAttribute grid "role" "grid")
-    (.setAttribute grid "aria-label" "Calendar grid")
+    (du/set-attr! grid "part" "grid")
+    (du/set-attr! grid "role" "grid")
+    (du/set-attr! grid "aria-label" "Calendar grid")
 
-    (.setAttribute sr "part" "sr-status")
-    (.setAttribute sr "aria-live" "polite")
-    (.setAttribute sr "aria-atomic" "true")
+    (du/set-attr! sr "part" "sr-status")
+    (du/set-attr! sr "aria-live" "polite")
+    (du/set-attr! sr "aria-atomic" "true")
 
     (.appendChild nav nav-prev)
     (.appendChild nav month-lbl)
@@ -883,9 +883,9 @@
   (let [state (gobj/get this k-state)
         canon (when state (gobj/get state "canon"))]
     (if (= (:mode canon) :single)
-      (.removeAttribute this model/attr-value)
-      (do (.removeAttribute this model/attr-start)
-          (.removeAttribute this model/attr-end)))
+      (du/remove-attr! this model/attr-value)
+      (do (du/remove-attr! this model/attr-start)
+          (du/remove-attr! this model/attr-end)))
     (read-state! this)
     (render! this)))
 

@@ -76,11 +76,11 @@
       (du/remove-attr! el "aria-label"))))
 
 (defn- apply-state! [^js base state]
-  (.setAttribute base "data-selected" (if (:selected state) "true" "false"))
-  (.setAttribute base "data-disabled" (if (:disabled state) "true" "false"))
-  (.setAttribute base "data-size" (:size state))
-  (.setAttribute base "data-variant" (:variant state))
-  (.setAttribute base "data-orientation" (:orientation state)))
+  (du/set-attr! base "data-selected" (if (:selected state) "true" "false"))
+  (du/set-attr! base "data-disabled" (if (:disabled state) "true" "false"))
+  (du/set-attr! base "data-size" (:size state))
+  (du/set-attr! base "data-variant" (:variant state))
+  (du/set-attr! base "data-orientation" (:orientation state)))
 
 (defn- apply-model! [^js el state]
   (let [base (du/getv el key-base)]
@@ -138,7 +138,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute base "part" "base")
+    (du/set-attr! base "part" "base")
     (set! (.-className base) "base")
 
     (.appendChild base slot)

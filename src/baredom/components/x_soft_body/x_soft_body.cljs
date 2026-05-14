@@ -100,14 +100,14 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "viewBox" "0 0 300 200")
-    (.setAttribute svg "preserveAspectRatio" "none")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! svg "part" "svg")
+    (du/set-attr! svg "viewBox" "0 0 300 200")
+    (du/set-attr! svg "preserveAspectRatio" "none")
+    (du/set-attr! svg "aria-hidden" "true")
 
-    (.setAttribute path "part" "shape")
+    (du/set-attr! path "part" "shape")
 
-    (.setAttribute content "part" "content")
+    (du/set-attr! content "part" "content")
 
     (.appendChild svg path)
     (.appendChild content slot)
@@ -171,7 +171,8 @@
         ^js cx   (du/getv el k-cur-x)
         ^js cy   (du/getv el k-cur-y)
         d        (model/points->path-d cx cy model/point-count)]
-    (.setAttribute path "d" d)))
+    ;; Hot path: rAF-driven, ~60 writes/sec on the soft-body path "d".
+    (du/set-attr-untraced! path "d" d)))
 
 (defn- render-static! [^js el]
   (let [{:keys [path]} (du/getv el k-refs)
@@ -181,7 +182,7 @@
         m (du/getv el k-model)
         r (:radius m)
         d (model/static-rounded-rect-d w h r)]
-    (.setAttribute path "d" d)))
+    (du/set-attr! path "d" d)))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -206,7 +207,7 @@
           ptr-y      (du/getv el k-pointer-y)
           grabbed?   (du/getv el k-grabbed)]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
 
       ;; Update each control point
       (dotimes [i n]
@@ -233,7 +234,7 @@
 
       ;; Continue loop if still active or not settled
       (if (or ptr-active (not (settled? vx vy n)))
-        (du/setv! el k-raf
+        (du/setv-untraced! el k-raf
                   (js/requestAnimationFrame (fn animate-tick [_] (animate! el))))
         ;; Settled — stop loop, snap to rest
         (do
@@ -241,18 +242,18 @@
             (aset cx i (aget rx i))
             (aset cy i (aget ry i)))
           (render-path! el)
-          (du/setv! el k-raf nil))))))
+          (du/setv-untraced! el k-raf nil))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn animate-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -267,7 +268,7 @@
         ;; Update SVG viewBox
         (let [{:keys [svg]} (du/getv el k-refs)
               ^js svg svg]
-          (.setAttribute svg "viewBox" (str "0 0 " w " " h)))
+          (du/set-attr! svg "viewBox" (str "0 0 " w " " h)))
         ;; Reinitialise physics with new dimensions
         (let [m (du/getv el k-model)]
           (init-physics! el w h m)
