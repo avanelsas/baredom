@@ -123,10 +123,11 @@ All code must survive Google Closure Advanced Compilation (minification + renami
 
 **JS interop rules:**
 - Use `(.-prop el)` and `(set! (.-prop el) val)` for native DOM properties
-- Use `goog.object/get` / `goog.object/set` (aliased as `gobj/get` / `gobj/set`) for **non-native instance fields** (custom properties stored on element instances)
+- For **host-element instance fields** (refs map, cached model, handler map, transient UI state), use `du/setv!` and `du/getv` — these route through the `x-trace-history` recorder hook. `gobj/get` / `gobj/set` stay reserved for non-host JS objects (e.g. reading a key out of the refs JS object once you have it). The `gobj/(set|get) el k-X` form is forbidden and enforced by `bb scripts/check_du_discipline.bb` in CI.
 - Avoid dynamic property lookup
 - Apply `^js` type hints on all parameters representing DOM nodes, events, or element instances
 - Define constants for tag names, attribute names, event names, and CSS custom property names — no duplicated string literals
+- Do not define a local `(defn- make-el [tag] (.createElement js/document tag))` shim — it conflicts with the test-side `make-el` and is a thin wrapper. Inline `.createElement js/document` directly. Enforced in CI. (Exception: `x-copy` retains a `[^js doc tag]` variant because the doc parameter is a real abstraction over a custom document — not a shim.)
 
 **Forbidden:**
 - React, Reagent, Lit, Vue, Svelte, Alpine, JSX, TypeScript, virtual DOM, template DSLs, framework runtimes
@@ -199,7 +200,7 @@ See [`docs/MOBILE.md`](docs/MOBILE.md) for the full responsive checklist.
 Components **must** use shared utility modules — never reimplement locally:
 
 - **`component/register!`** — element registration from declarative options map
-- **`gobj/get`** / **`gobj/set`** — instance-field storage (refs, model cache, handlers)
+- **`du/setv!`** / **`du/getv`** — host-element instance-field storage (refs, model cache, handlers). The trace-recorder hook lives here; `gobj/set` / `gobj/get` on `el` is forbidden and enforced by `bb scripts/check_du_discipline.bb`. Use `gobj` only on non-host JS objects.
 - **`du/has-attr?`** / **`du/get-attr`** — attribute reads in `read-model`
 - **`du/dispatch!`** / **`du/dispatch-cancelable!`** — event dispatch
 - **`du/install-properties!`** — install property accessors from `model/property-api` (Tier 0; see _Property accessor tiers_ above)
