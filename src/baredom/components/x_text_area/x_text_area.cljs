@@ -163,7 +163,7 @@
                     :textarea textarea-el
                     :hint     hint-el
                     :error    error-el}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@
   (du/set-bool-attr! el "data-invalid" has-error?))
 
 (defn- apply-validity! [^js el ^js textarea-el]
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (sync-validity! el internals textarea-el)))
 
 (defn- apply-model! [^js el ^js refs m]
@@ -272,19 +272,19 @@
     (apply-error-vis!      error-el m)
     (apply-host-data!      el m)
     (apply-validity!       el textarea-el)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 ;; render! is the direct-write entry — form-disabled!/form-reset! mutate
 ;; attributes synchronously and want the apply to run unconditionally.
 ;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (apply-model! el refs (read-model el))))
 
 (defn- update-from-attrs! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= new-m old-m)
         (apply-model! el refs new-m)))))
 
@@ -295,7 +295,7 @@
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
 (defn- on-input [^js el ^js _evt]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
           value            (.-value textarea-el)
           prev-value       (or (du/get-attr el model/attr-value) "")
@@ -305,18 +305,18 @@
                             #js {:name name :value value :previousValue prev-value})]
       (if allowed?
         (do
-          (when-let [^js internals (gobj/get el k-internals)]
+          (when-let [^js internals (du/getv el k-internals)]
             (.setFormValue internals value)
             (sync-validity! el internals textarea-el))
           (du/dispatch! el model/event-input #js {:name name :value value}))
         (set! (.-value textarea-el) prev-value)))))
 
 (defn- on-change [^js el ^js _evt]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
           value            (.-value textarea-el)
           name             (or (du/get-attr el model/attr-name) "")]
-      (when-let [^js internals (gobj/get el k-internals)]
+      (when-let [^js internals (du/getv el k-internals)]
         (.setFormValue internals value)
         (sync-validity! el internals textarea-el))
       (du/dispatch! el model/event-change #js {:name name :value value}))))
@@ -325,21 +325,21 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
           input-h  (fn handle-textarea-input  [e] (on-input  el e))
           change-h (fn handle-textarea-change [e] (on-change el e))]
       (.addEventListener textarea-el "input"  input-h)
       (.addEventListener textarea-el "change" change-h)
-      (gobj/set el k-handlers #js {:input input-h :change change-h}))))
+      (du/setv! el k-handlers #js {:input input-h :change change-h}))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js textarea-el (gobj/get refs "textarea")]
         (.removeEventListener textarea-el "input"  (gobj/get handlers "input"))
         (.removeEventListener textarea-el "change" (gobj/get handlers "change")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -350,10 +350,10 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")]
       (set! (.-value textarea-el) "")))
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals ""))
   (render! el))
 
@@ -361,19 +361,19 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   ;; Push value attr to textarea if set
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")
           val-attr         (du/get-attr el model/attr-value)]
       (when val-attr
         (set! (.-value textarea-el) val-attr))))
   ;; Set initial form value
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
   (add-listeners! el)
   (render! el))
@@ -385,7 +385,7 @@
   (when (not= old-val new-val)
     ;; For value attr: sync to textarea.value only if it differs (avoids cursor jump on typing)
     (when (= attr-name model/attr-value)
-      (when-let [refs (gobj/get el k-refs)]
+      (when-let [refs (du/getv el k-refs)]
         (let [^js textarea-el (gobj/get refs "textarea")]
           (when (not= (.-value textarea-el) new-val)
             (set! (.-value textarea-el) (or new-val ""))))))

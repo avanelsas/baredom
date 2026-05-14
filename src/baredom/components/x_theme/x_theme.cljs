@@ -1,7 +1,6 @@
 (ns baredom.components.x-theme.x-theme
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-theme.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
@@ -19,25 +18,25 @@
         slot  (.createElement js/document "slot")]
     (.appendChild root style)
     (.appendChild root slot)
-    (gobj/set el k-refs #js {:style style})))
+    (du/setv! el k-refs #js {:style style})))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [preset] :as m}]
-  (let [^js refs (gobj/get el k-refs)]
+  (let [^js refs (du/getv el k-refs)]
     (when refs
       (let [^js style-el (.-style refs)]
         (set! (.-textContent style-el) (model/preset->css preset))
-        (gobj/set el k-model m)))))
+        (du/setv! el k-model m)))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ───────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (init-dom! el))
   (update-from-attrs! el))
 

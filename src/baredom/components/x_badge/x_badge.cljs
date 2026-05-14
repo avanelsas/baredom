@@ -150,14 +150,14 @@
     (.appendChild base label-el)
     (.appendChild root style)
     (.appendChild root base)
-    (gobj/set el k-refs {:base     base
+    (du/setv! el k-refs {:base     base
                          :slot-el  slot-el
                          :label-el label-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- slot-has-content? [^js slot-el]
@@ -198,11 +198,11 @@
     (if aria-describedby
       (.setAttribute base attr-aria-describedby aria-describedby)
       (.removeAttribute base attr-aria-describedby))
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -214,16 +214,16 @@
         handlers #js {}]
     (when slot-el (.addEventListener slot-el ev-slotchange on-slot))
     (gobj/set handlers hk-slot on-slot)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
-    (when-let [refs (gobj/get el k-refs)]
+  (when-let [hs (du/getv el k-handlers)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js slot-el (:slot-el refs)
             on-slot     (gobj/get hs hk-slot)]
         (when (and slot-el on-slot)
           (.removeEventListener slot-el ev-slotchange on-slot)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; count and max use model/parse-int-attr — keep as inline custom accessor

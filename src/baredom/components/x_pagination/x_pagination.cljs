@@ -151,7 +151,7 @@
     (.appendChild nav ol)
     (.appendChild root style)
     (.appendChild root nav)
-    (gobj/set el k-refs {:nav      nav
+    (du/setv! el k-refs {:nav      nav
                          :ol       ol
                          :prev-li  (:li prev)
                          :prev-btn (:btn prev)
@@ -159,9 +159,9 @@
                          :next-btn (:btn nxt)})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── DOM item builders ─────────────────────────────────────────────────────
 (defn- make-page-button! [n current? disabled?]
@@ -261,7 +261,7 @@
 (defn- on-click! [^js el ^js ev]
   (let [btn (find-button-in-path ev)]
     (when (and btn (not (.hasAttribute btn "disabled")))
-      (let [refs     (gobj/get el k-refs)
+      (let [refs     (du/getv el k-refs)
             prev-btn (:prev-btn refs)
             next-btn (:next-btn refs)
             page-attr (.getAttribute btn "data-page")]
@@ -290,16 +290,16 @@
         ^js ol  (:ol refs)
         handler (fn [^js ev] (on-click! el ev))]
     (.addEventListener ol "click" handler)
-    (gobj/set el k-handlers #js {:click handler})))
+    (du/setv! el k-handlers #js {:click handler})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
-    (when-let [refs (gobj/get el k-refs)]
+  (when-let [hs (du/getv el k-handlers)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js ol   (:ol refs)
             on-click (gobj/get hs "click")]
         (when (and ol on-click)
           (.removeEventListener ol "click" on-click)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; `page` is the only int prop without a 1-arg parse fn in the model

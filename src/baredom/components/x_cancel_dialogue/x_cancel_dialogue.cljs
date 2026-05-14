@@ -291,11 +291,11 @@
     (gobj/set refs rk-message     (:message  body-parts))
     (gobj/set refs rk-cancel-btn  (:cancel-btn  action-parts))
     (gobj/set refs rk-confirm-btn (:confirm-btn action-parts))
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (init-dom! el)))
+  (or (du/getv el k-refs) (init-dom! el)))
 
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -400,11 +400,11 @@
     (apply-danger!           refs new-m)
     (apply-disabled!         refs new-m)
     (apply-open-transition!  refs old-m new-m)
-    (gobj/set el k-model new-m)))
+    (du/setv! el k-model new-m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el old-m new-m))))
 
@@ -428,11 +428,11 @@
     (gobj/set handlers hk-cancel   cancel-h)
     (gobj/set handlers hk-confirm  confirm-h)
     (gobj/set handlers hk-keydown  keydown-h)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js backdrop (gobj/get refs rk-backdrop)
             ^js cancel   (gobj/get refs rk-cancel-btn)
@@ -446,7 +446,7 @@
         (when cancel-h   (.removeEventListener cancel   ev-click   cancel-h))
         (when confirm-h  (.removeEventListener confirm  ev-click   confirm-h))
         (when keydown-h  (.removeEventListener dialog   ev-keydown keydown-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

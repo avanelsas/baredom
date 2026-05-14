@@ -203,11 +203,11 @@
     (.appendChild root status)
     (.appendChild root badge)
 
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (init-dom! el)))
+  (or (du/getv el k-refs) (init-dom! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -251,9 +251,9 @@
 
 (defn- apply-image! [^js el ^js img {:keys [src]} show-img?]
   (let [next (or src "")
-        prev (or (gobj/get el k-last-src) "")]
+        prev (or (du/getv el k-last-src) "")]
     (when (not= prev next)
-      (gobj/set el k-last-src next)
+      (du/setv! el k-last-src next)
       (set! (.-src img) next)))
   (set-display! img (if show-img? "block" "none")))
 
@@ -289,7 +289,7 @@
         ^js status-el   status-el
         ^js badge-el    badge-el
         ^js badge-slot  badge-slot
-        img-ok?         (boolean (gobj/get el k-img-ok))
+        img-ok?         (boolean (du/getv el k-img-ok))
         has-src?        (some? (:src m))
         text            (model/display-text m)
         show-img?       (and has-src? img-ok?)
@@ -302,11 +302,11 @@
     (apply-text-layers!  initials-el fallback-el text show-initials? show-fallback?)
     (apply-status!       el status-el m)
     (apply-badge!        badge-el has-badge?)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -315,8 +315,8 @@
   (let [{:keys [img badge-slot]} (ensure-refs! el)
         ^js img        img
         ^js badge-slot badge-slot
-        on-load  (fn handle-img-load  [_] (gobj/set el k-img-ok true)  (update-from-attrs! el))
-        on-error (fn handle-img-error [_] (gobj/set el k-img-ok false) (update-from-attrs! el))
+        on-load  (fn handle-img-load  [_] (du/setv! el k-img-ok true)  (update-from-attrs! el))
+        on-error (fn handle-img-error [_] (du/setv! el k-img-ok false) (update-from-attrs! el))
         on-slot  (fn handle-slotchange [_] (update-from-attrs! el))
         handlers #js {}]
     (.addEventListener img ev-load  on-load)
@@ -325,11 +325,11 @@
     (gobj/set handlers hk-load  on-load)
     (gobj/set handlers hk-error on-error)
     (gobj/set handlers hk-slot  on-slot)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
-    (when-let [refs (gobj/get el k-refs)]
+  (when-let [hs (du/getv el k-handlers)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js img        (:img refs)
             ^js badge-slot (:badge-slot refs)
             on-load        (gobj/get hs hk-load)
@@ -339,7 +339,7 @@
         (when on-error (.removeEventListener img ev-error on-error))
         (when (and badge-slot on-slot)
           (.removeEventListener badge-slot ev-slotchange on-slot)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -358,7 +358,7 @@
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
     (when (= attr-name model/attr-src)
-      (gobj/set el k-img-ok false))
+      (du/setv! el k-img-ok false))
     (update-from-attrs! el)))
 
 ;; ── Public API ────────────────────────────────────────────────────────────

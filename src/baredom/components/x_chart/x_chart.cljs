@@ -142,7 +142,7 @@
 (declare chart-width)
 
 (defn- read-model [^js el]
-  (let [^js refs (gobj/get el k-refs)
+  (let [^js refs (du/getv el k-refs)
         m       (model/normalize
                  {:type-raw         (du/get-attr el model/attr-type)
                   :data-raw         (du/get-attr el model/attr-data)
@@ -631,7 +631,7 @@
   (set! (.-textContent sr-el) (sr-announce-text m)))
 
 (defn- apply-model! [^js el m]
-  (when-let [^js refs (gobj/get el k-refs)]
+  (when-let [^js refs (du/getv el k-refs)]
     (let [^js svg   (gobj/get refs "svg")
           ^js sr-el (gobj/get refs "sr")
           {:keys [type height padding series x-kind y-domain
@@ -654,15 +654,15 @@
         (apply-sr-text! sr-el m))
       (when loading? (hide-tooltip! refs))
       ;; Cache write at the tail — partial DOM writes don't leave a lying cache.
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs!
   "Read → diff → apply. Skips when the normalised model (including
   viewport-width) is unchanged from the cached value."
   [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -742,7 +742,7 @@
       (gobj/set refs "tooltip-rows"   row-arr)
       (gobj/set refs "crosshair"      nil)
       (gobj/set refs "dots"           nil)
-      (gobj/set el k-refs refs))
+      (du/setv! el k-refs refs))
 
     ;; ResizeObserver — viewport-width is in the model, so the change-guard
     ;; correctly fires a rerender on every resize.
@@ -750,7 +750,7 @@
                   (fn on-resize [_]
                     (update-from-attrs! el)))]
       (.observe ro container)
-      (gobj/set (gobj/get el k-refs) "ro" ro))
+      (gobj/set (du/getv el k-refs) "ro" ro))
 
     ;; Keyboard navigation
     (add-keyboard-listener! el container)))
@@ -758,12 +758,12 @@
 ;; ---- Lifecycle ----
 
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (let [^js refs (gobj/get el k-refs)]
+  (let [^js refs (du/getv el k-refs)]
     (when refs
       (let [^js ro (gobj/get refs "ro")]
         (when ro (.disconnect ro))))))

@@ -275,9 +275,9 @@
 
 (defn- ensure-refs!
   [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (let [refs (create-shadow! el)]
-        (gobj/set el k-refs refs)
+        (du/setv! el k-refs refs)
         refs)))
 
 ;; ── DOM patching (render-orchestrator: cache-at-tail render-pipeline) ───────
@@ -316,12 +316,12 @@
 (defn- apply-model! [^js el ^js refs m]
   (apply-attr-state! refs m)
   (apply-slot-state! refs)
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [new-m (read-public-state el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= new-m old-m)
         (apply-model! el refs new-m)))))
 
@@ -333,7 +333,7 @@
    base-el
    "click"
    (fn [^js event]
-     (let [refs   (gobj/get el k-refs)
+     (let [refs   (du/getv el k-refs)
            target (.-target event)
            anchor (closest-anchor target)
            source (source-from-event event)]
@@ -353,8 +353,8 @@
    (fn [^js event]
      (let [target (.-target event)]
        (when (and target (.matches ^js target ":focus-visible"))
-         (when-not (gobj/get el k-focus-visible)
-           (gobj/set el k-focus-visible true)
+         (when-not (du/getv el k-focus-visible)
+           (du/setv! el k-focus-visible true)
            (du/set-attr! el "data-focus-visible-within" "true")
            (du/dispatch! el model/event-focus-visible #js {}))))))
 
@@ -364,7 +364,7 @@
    (fn [^js event]
      (let [related (.-relatedTarget event)]
        (when-not (and related (.contains el ^js related))
-         (gobj/set el k-focus-visible false)
+         (du/setv! el k-focus-visible false)
          (du/remove-attr! el "data-focus-visible-within"))))))
 
 ;; ── Slot change wiring ───────────────────────────────────────────────────────
@@ -383,10 +383,10 @@
 
 (defn- connected!
   [^js el]
-  (let [first? (nil? (gobj/get el k-refs))
+  (let [first? (nil? (du/getv el k-refs))
         refs   (ensure-refs! el)]
     (when first?
-      (gobj/set el k-focus-visible false)
+      (du/setv! el k-focus-visible false)
       (setup-delegated-events! el (gobj/get refs "base"))
       (setup-slots! el refs))
     ;; On initial mount k-model is nil so the diff guard fires apply-model!
@@ -395,7 +395,7 @@
 
 (defn- disconnected!
   [^js el]
-  (gobj/set el k-focus-visible false))
+  (du/setv! el k-focus-visible false))
 
 (defn- attribute-changed!
   [^js el _name old-value new-value]

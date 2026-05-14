@@ -201,7 +201,7 @@
                     :label  label-el
                     :value  value-el
                     :input  input-el}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -282,7 +282,7 @@
     (du/remove-attr! input-el "disabled")))
 
 (defn- apply-form-value! [^js el {:keys [value]}]
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (str value))))
 
 (defn- apply-model! [^js el ^js refs m]
@@ -297,19 +297,19 @@
     (apply-input-value! input-el m)
     (apply-input-aria!  input-el m)
     (apply-form-value!  el m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 ;; render! is the direct-write entry — form-disabled!/form-reset! mutate
 ;; attributes synchronously and want the apply to run unconditionally.
 ;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (apply-model! el refs (read-model el))))
 
 (defn- update-from-attrs! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= new-m old-m)
         (apply-model! el refs new-m)))))
 
@@ -322,7 +322,7 @@
 (defn- make-input-handler [^js el]
   (fn [^js _evt]
     (when-not (du/has-attr? el model/attr-disabled)
-      (let [^js refs     (gobj/get el k-refs)
+      (let [^js refs     (du/getv el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
             num-val      (js/parseFloat raw-val)
@@ -348,7 +348,7 @@
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
     (when-not (du/has-attr? el model/attr-disabled)
-      (let [^js refs     (gobj/get el k-refs)
+      (let [^js refs     (du/getv el k-refs)
             ^js input-el (gobj/get refs "input")
             raw-val      (.-value input-el)
             num-val      (js/parseFloat raw-val)
@@ -369,7 +369,7 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
           input-h      (make-input-handler el)
           change-h     (make-change-handler el)
@@ -380,16 +380,16 @@
       (.addEventListener input-el "input"   input-h)
       (.addEventListener input-el "change"  change-h)
       (.addEventListener input-el "keydown" keydown-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js input-el (gobj/get refs "input")]
         (.removeEventListener input-el "input"   (gobj/get handlers "input"))
         (.removeEventListener input-el "change"  (gobj/get handlers "change"))
         (.removeEventListener input-el "keydown" (gobj/get handlers "keydown")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -407,10 +407,10 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el))

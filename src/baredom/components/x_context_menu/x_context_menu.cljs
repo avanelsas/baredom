@@ -152,8 +152,8 @@
 (defn- reposition!
   "Reposition the open layer using stored anchor + latest attribute model."
   [^js el]
-  (when-let [^js layer (gobj/get el k-layer)]
-    (when-let [anchor (gobj/get el k-anchor)]
+  (when-let [^js layer (du/getv el k-layer)]
+    (when-let [anchor (du/getv el k-anchor)]
       (let [{:keys [placement offset z-index]} (read-model el)
             ^js panel (overlay/get-panel layer)
             panel-size (if panel
@@ -212,7 +212,7 @@
 
         on-doc-click
         (fn handle-doc-click [^js ev]
-          (when-let [^js lyr (gobj/get el k-layer)]
+          (when-let [^js lyr (du/getv el k-layer)]
             (let [^js panel (overlay/get-panel lyr)
                   path      (.composedPath ev)
                   inside?   (some #(identical? % panel) (array-seq path))]
@@ -225,15 +225,15 @@
        (when (du/has-attr? el model/attr-open)
          (.addEventListener js/document "keydown" on-doc-keydown)
          (.addEventListener js/document "click"   on-doc-click)
-         (gobj/set el k-doc-handlers
+         (du/setv! el k-doc-handlers
                    #js {:keydown on-doc-keydown :click on-doc-click})))
      0)))
 
 (defn- remove-doc-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-doc-handlers)]
+  (when-let [handlers (du/getv el k-doc-handlers)]
     (.removeEventListener js/document "keydown" (gobj/get handlers "keydown"))
     (.removeEventListener js/document "click"   (gobj/get handlers "click"))
-    (gobj/set el k-doc-handlers nil)))
+    (du/setv! el k-doc-handlers nil)))
 
 (defn- remove-layer! [^js layer]
   (overlay/remove-layer! layer))
@@ -245,11 +245,11 @@
       (when proceed?
         (remove-doc-listeners! el)
         (du/remove-attr! el model/attr-open)
-        (let [^js layer (gobj/get el k-layer)]
+        (let [^js layer (du/getv el k-layer)]
           (remove-layer! layer)
-          (gobj/set el k-layer nil))
-        (gobj/set el k-anchor nil)
-        (gobj/set el k-model nil)
+          (du/setv! el k-layer nil))
+        (du/setv! el k-anchor nil)
+        (du/setv! el k-model nil)
         (du/dispatch! el model/event-close #js {:reason reason})))))
 
 ;; ── open! ─────────────────────────────────────────────────────────────────
@@ -269,9 +269,9 @@
                               {:width panel-est-w :height panel-est-h} z-index)
 
           (du/set-attr! el model/attr-open "")
-          (gobj/set el k-layer  layer)
-          (gobj/set el k-anchor anchor-rect)
-          (gobj/set el k-model  m)
+          (du/setv! el k-layer  layer)
+          (du/setv! el k-anchor anchor-rect)
+          (du/setv! el k-model  m)
           (add-doc-listeners! el)
 
           ;; Re-position after actual panel dimensions are known
@@ -309,11 +309,11 @@
 
     (gobj/set refs "root" root)
     (gobj/set refs "slot" slot)
-    (gobj/set el k-refs refs)))
+    (du/setv! el k-refs refs)))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   ;; If open attr was already set (e.g. SSR), the layer was not created yet.
   ;; Clear the attribute so subsequent open() calls work correctly.
@@ -321,12 +321,12 @@
     (du/remove-attr! el model/attr-open)))
 
 (defn- disconnected! [^js el]
-  (let [^js layer (gobj/get el k-layer)]
+  (let [^js layer (du/getv el k-layer)]
     (when layer
       (remove-layer! layer)
-      (gobj/set el k-layer nil)
-      (gobj/set el k-anchor nil)
-      (gobj/set el k-model nil))))
+      (du/setv! el k-layer nil)
+      (du/setv! el k-anchor nil)
+      (du/setv! el k-model nil))))
 
 (defn- attribute-changed! [^js el attr-name old-val new-val]
   (when (not= old-val new-val)
@@ -334,23 +334,23 @@
       ;; open attribute removed externally → tear down layer
       (and (= attr-name model/attr-open)
            (not (du/has-attr? el model/attr-open)))
-      (let [^js layer (gobj/get el k-layer)]
+      (let [^js layer (du/getv el k-layer)]
         (when layer
           (remove-doc-listeners! el)
           (remove-layer! layer)
-          (gobj/set el k-layer nil)
-          (gobj/set el k-anchor nil)
-          (gobj/set el k-model nil)))
+          (du/setv! el k-layer nil)
+          (du/setv! el k-anchor nil)
+          (du/setv! el k-model nil)))
 
       ;; placement / offset / z-index changed while open → reposition
-      (and (gobj/get el k-layer)
+      (and (du/getv el k-layer)
            (or (= attr-name model/attr-placement)
                (= attr-name model/attr-offset)
                (= attr-name model/attr-z-index)))
       (let [new-m (read-model el)]
-        (when (not= new-m (gobj/get el k-model))
+        (when (not= new-m (du/getv el k-model))
           (reposition! el)
-          (gobj/set el k-model new-m))))))
+          (du/setv! el k-model new-m))))))
 
 ;; ── Public methods (Tier-2 .defineProperty migration) ────────────────────
 (defn- define-methods! [^js proto]

@@ -50,14 +50,14 @@
     (.appendChild root label-div)
     (.appendChild root slot-el)
 
-    (gobj/set el k-refs {:root      root
+    (du/setv! el k-refs {:root      root
                          :label-div label-div
                          :slot-el   slot-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -84,17 +84,17 @@
       (do (set! (.-textContent label-div) "")
           (.setAttribute label-div "hidden" "")))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Child update (core coordinator) ─────────────────────────────────────────
 (defn- update-items! [^js el]
-  (let [{:keys [position striped?]} (or (gobj/get el k-model) (read-model el))
+  (let [{:keys [position striped?]} (or (du/getv el k-model) (read-model el))
         ^js items (.querySelectorAll el model/child-tag)
         len       (.-length items)]
     (loop [i 0]
@@ -144,13 +144,13 @@
     (.addEventListener el model/child-event-connected conn-h)
     (.addEventListener el model/child-event-click     click-h)
     (.addEventListener js/document model/child-event-disconnected doc-h)
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {"item-connected"        conn-h
                    "item-click"            click-h
                    "item-disconnected-doc" doc-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when hs
       (let [conn-h  (gobj/get hs "item-connected")
             click-h (gobj/get hs "item-click")
@@ -158,7 +158,7 @@
         (when conn-h  (.removeEventListener el model/child-event-connected conn-h))
         (when click-h (.removeEventListener el model/child-event-click click-h))
         (when doc-h   (.removeEventListener js/document model/child-event-disconnected doc-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
