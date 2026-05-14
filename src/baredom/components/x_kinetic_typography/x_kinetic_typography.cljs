@@ -2,7 +2,6 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [clojure.string :as str]
-            [goog.object :as gobj]
             [baredom.components.x-kinetic-typography.model :as model]))
 
 ;; ── Constants ────────────────────────────────────────────────────────────
@@ -275,18 +274,18 @@
     (.appendChild root container)
 
     ;; Store refs
-    (gobj/set el k-container      container)
-    (gobj/set el k-svg            svg)
-    (gobj/set el k-path-el        path-el)
-    (gobj/set el k-path-line      path-line)
-    (gobj/set el k-text-el        text-el)
-    (gobj/set el k-text-path      text-path)
-    (gobj/set el k-sr-only        sr-only)
-    (gobj/set el k-path-id        path-id)
-    (gobj/set el k-crawl-viewport crawl-viewport)
-    (gobj/set el k-crawl-text     crawl-text)
-    (gobj/set el k-echo-els       #js [])
-    (gobj/set el k-initialized    true)))
+    (du/setv! el k-container      container)
+    (du/setv! el k-svg            svg)
+    (du/setv! el k-path-el        path-el)
+    (du/setv! el k-path-line      path-line)
+    (du/setv! el k-text-el        text-el)
+    (du/setv! el k-text-path      text-path)
+    (du/setv! el k-sr-only        sr-only)
+    (du/setv! el k-path-id        path-id)
+    (du/setv! el k-crawl-viewport crawl-viewport)
+    (du/setv! el k-crawl-text     crawl-text)
+    (du/setv! el k-echo-els       #js [])
+    (du/setv! el k-initialized    true)))
 
 ;; ── Read model ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -345,10 +344,10 @@
 
 ;; ── SMIL animate management ──────────────────────────────────────────────
 (defn- remove-animate! [^js el]
-  (let [^js anim (gobj/get el k-animate-el)]
+  (let [^js anim (du/getv el k-animate-el)]
     (when anim
       (.remove anim)
-      (gobj/set el k-animate-el nil))))
+      (du/setv! el k-animate-el nil))))
 
 (defn- build-animate-el
   "Create a SMIL <animate> element for startOffset with optional begin delay."
@@ -378,23 +377,23 @@
   (when (and (not= animation val-none) (not (prefers-reduced-motion?)))
     (let [anim (build-animate-el animation direction duration-s 0)]
       (.appendChild text-path-el anim)
-      (gobj/set el k-animate-el anim))))
+      (du/setv! el k-animate-el anim))))
 
 ;; ── Echo management ──────────────────────────────────────────────────────
 (defn- clear-echoes! [^js el]
-  (let [^js echo-els (gobj/get el k-echo-els)]
+  (let [^js echo-els (du/getv el k-echo-els)]
     (when echo-els
       (dotimes [i (.-length echo-els)]
         (let [^js entry (aget echo-els i)]
           (.remove (aget entry "textEl"))))
-      (gobj/set el k-echo-els #js []))))
+      (du/setv! el k-echo-els #js []))))
 
 (defn- render-echoes!
   [^js el ^js svg display-text echo-count echo-delay echo-opacity echo-scale
    animation direction duration-s]
   (clear-echoes! el)
   (when (pos? echo-count)
-    (let [path-id     (gobj/get el k-path-id)
+    (let [path-id     (du/getv el k-path-id)
           echo-els    #js []
           add-animate (and (not= animation val-none) (not (prefers-reduced-motion?)))
           ;; Convert echo-delay (seconds) to a percentage offset along the path.
@@ -427,7 +426,7 @@
             (.appendChild svg tel)
             (.push echo-els #js {"textEl" tel}))
           (recur (inc i))))
-      (gobj/set el k-echo-els echo-els))))
+      (du/setv! el k-echo-els echo-els))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
 (defn- apply-crawl-mode!
@@ -514,28 +513,28 @@
         (du/set-attr! el attr-aria-label  text))))
 
 (defn- apply-model! [^js el m]
-  (let [^js svg           (gobj/get el k-svg)
-        ^js path-el       (gobj/get el k-path-el)
-        ^js path-line     (gobj/get el k-path-line)
-        ^js text-el       (gobj/get el k-text-el)
-        ^js text-path     (gobj/get el k-text-path)
-        ^js sr-only       (gobj/get el k-sr-only)
-        ^js crawl-text-el (gobj/get el k-crawl-text)]
+  (let [^js svg           (du/getv el k-svg)
+        ^js path-el       (du/getv el k-path-el)
+        ^js path-line     (du/getv el k-path-line)
+        ^js text-el       (du/getv el k-text-el)
+        ^js text-path     (du/getv el k-text-path)
+        ^js sr-only       (du/getv el k-sr-only)
+        ^js crawl-text-el (du/getv el k-crawl-text)]
     (if (:crawl? m)
       (apply-crawl-mode! el crawl-text-el m)
       (apply-path-mode!  el svg path-el path-line text-el text-path m))
     (apply-a11y! el sr-only m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   (update-from-attrs! el))
 
@@ -545,7 +544,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ───────────────────────────────────────────────────

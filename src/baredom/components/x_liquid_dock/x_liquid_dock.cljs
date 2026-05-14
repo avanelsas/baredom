@@ -232,7 +232,7 @@
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
-  (let [m         (gobj/get el k-model)
+  (let [m         (du/getv el k-model)
         uid       (next-uid)
         filter-id (str "goo-" uid)
         root      (.attachShadow el #js {:mode "open"})
@@ -243,7 +243,7 @@
         items-div (.createElement js/document "div")
         slot-el   (.createElement js/document "slot")]
 
-    (gobj/set el k-uid uid)
+    (du/setv! el k-uid uid)
 
     (set! (.-textContent style) style-text)
 
@@ -272,7 +272,7 @@
       (.appendChild root style)
       (.appendChild root nav)
 
-      (gobj/set el k-refs
+      (du/setv! el k-refs
                 (merge filter-refs
                        {:root      root
                         :nav       nav
@@ -282,9 +282,9 @@
                         :slot      slot-el})))))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -307,20 +307,20 @@
 ;;   blob[i*2+1] = phantom blob (rises on hover, creates viscous neck)
 
 (defn- get-assigned-elements [^js el]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when-let [^js slot (:slot refs)]
       (.assignedElements slot))))
 
 (defn- reconcile-blobs!
   "Ensure two blob divs per slotted child (rest + phantom). Add/remove as needed."
   [^js el]
-  (let [{:keys [liquid]} (gobj/get el k-refs)
+  (let [{:keys [liquid]} (du/getv el k-refs)
         ^js liquid      liquid
         ^js assigned    (or (get-assigned-elements el) #js [])
         n               (.-length assigned)
         needed          (* n 2)
-        ^js blob-arr    (or (gobj/get el k-blobs) #js [])
-        ^js state-arr   (or (gobj/get el k-blob-state) #js [])
+        ^js blob-arr    (or (du/getv el k-blobs) #js [])
+        ^js state-arr   (or (du/getv el k-blob-state) #js [])
         current         (.-length blob-arr)
         rest-size       52   ;; slightly larger than item for liquid mass feel
         phantom-size    44]  ;; slightly smaller for the rising phantom
@@ -354,14 +354,14 @@
             (.removeChild (.-parentNode div) div)))
         (recur (dec i))))
 
-    (gobj/set el k-blobs blob-arr)
-    (gobj/set el k-blob-state state-arr)))
+    (du/setv! el k-blobs blob-arr)
+    (du/setv! el k-blob-state state-arr)))
 
 ;; ── Item position caching ───────────────────────────────────────────────────
 (defn- cache-item-rects!
   "Cache the center position of each slotted item relative to the dock."
   [^js el]
-  (let [{:keys [nav]} (gobj/get el k-refs)
+  (let [{:keys [nav]} (du/getv el k-refs)
         ^js nav       nav
         ^js assigned  (or (get-assigned-elements el) #js [])
         n             (.-length assigned)
@@ -376,13 +376,13 @@
                 cy            (- (+ (.-top item-rect) (/ (.-height item-rect) 2))
                                  (.-top dock-rect))]
             (.push rects #js {:cx cx :cy cy})))))
-    (gobj/set el k-items-rect rects)))
+    (du/setv! el k-items-rect rects)))
 
 ;; ── Filter updates ──────────────────────────────────────────────────────────
 (defn- update-filter!
   "Updates SVG filter elements to reflect current model."
   [^js el {:keys [blur threshold ripple-scale]}]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when-let [^js blur-el (:blur-el refs)]
       (.setAttribute blur-el "stdDeviation" (str blur)))
     (when-let [^js matrix-el (:matrix-el refs)]
@@ -402,11 +402,11 @@
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [m             (gobj/get el k-model)
-          ^js mouse     (gobj/get el k-mouse)
-          ^js blob-arr  (gobj/get el k-blobs)
-          ^js state-arr (gobj/get el k-blob-state)
-          ^js rects     (gobj/get el k-items-rect)
+    (let [m             (du/getv el k-model)
+          ^js mouse     (du/getv el k-mouse)
+          ^js blob-arr  (du/getv el k-blobs)
+          ^js state-arr (du/getv el k-blob-state)
+          ^js rects     (du/getv el k-items-rect)
           ^js assigned  (or (get-assigned-elements el) #js [])
           n             (min (.-length rects)
                              (.-length assigned))
@@ -419,9 +419,9 @@
           position      (:position m)
           active-scale  (+ 1.0 (* mag-s 0.8))
           lerp-speed    0.10
-          phase         (or (gobj/get el k-noise-seed) 0)
+          phase         (or (du/getv el k-noise-seed) 0)
           now           (.now js/Date)
-          burst-time    (or (gobj/get el k-ripple-burst) 0)
+          burst-time    (or (du/getv el k-ripple-burst) 0)
           burst-active? (< (- now burst-time) 300)]
 
       ;; Ripple burst: temporarily boost displacement scale
@@ -429,7 +429,7 @@
         (let [burst-progress (/ (- now burst-time) 300.0)
               burst-scale    (* (- 1.0 burst-progress) 20.0)
               base-scale     (:ripple-scale m)
-              refs           (gobj/get el k-refs)]
+              refs           (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
             (.setAttribute disp-el "scale" (str (+ base-scale burst-scale))))))
 
@@ -522,38 +522,38 @@
 
       ;; Animate ripple by smoothly oscillating baseFrequency
       ;; (feTurbulence seed is integer-only and causes discrete jumps)
-      (let [phase     (gobj/get el k-noise-seed)
+      (let [phase     (du/getv el k-noise-seed)
             new-phase (+ phase (:ripple-speed m))
-            refs      (gobj/get el k-refs)
+            refs      (du/getv el k-refs)
             ;; Oscillate baseFrequency around 0.015 using sine for smooth looping
             freq      (+ 0.012 (* 0.006 (js/Math.sin new-phase)))]
-        (gobj/set el k-noise-seed new-phase)
+        (du/setv! el k-noise-seed new-phase)
         (when-let [^js turb-el (:turb-el refs)]
           (.setAttribute turb-el "baseFrequency" (str freq))))
 
       ;; Reset burst displacement when done
       (when (and (not burst-active?) (> burst-time 0))
-        (let [refs (gobj/get el k-refs)]
+        (let [refs (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
             (.setAttribute disp-el "scale" (str (:ripple-scale m)))))
-        (gobj/set el k-ripple-burst 0))
+        (du/setv! el k-ripple-burst 0))
 
       ;; Schedule next frame
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (prefers-reduced-motion?)
-    (let [m (gobj/get el k-model)]
+    (let [m (du/getv el k-model)]
       (when-not (:disabled? m)
-        (gobj/set el k-noise-seed 0)
-        (gobj/set el k-raf
+        (du/setv! el k-noise-seed 0)
+        (du/setv! el k-raf
                   (js/requestAnimationFrame (fn [_] (animate! el))))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Reset item transforms ──────────────────────────────────────────────────
 (defn- reset-item-transforms! [^js el]
@@ -565,23 +565,23 @@
 ;; ── Event dispatching ───────────────────────────────────────────────────────
 (defn- dispatch-select! [^js el index ^js item source]
   ;; Trigger ripple burst
-  (gobj/set el k-ripple-burst (.now js/Date))
+  (du/setv! el k-ripple-burst (.now js/Date))
   (du/dispatch-cancelable! el model/event-select
     (clj->js (model/select-detail index item source))))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
-  (let [{:keys [nav]} (gobj/get el k-refs)
+  (let [{:keys [nav]} (du/getv el k-refs)
         ^js nav nav]
     (when nav
       (let [^js rect  (.getBoundingClientRect nav)
-            ^js mouse (gobj/get el k-mouse)]
+            ^js mouse (du/getv el k-mouse)]
         (gobj/set mouse "x" (- (.-clientX e) (.-left rect)))
         (gobj/set mouse "y" (- (.-clientY e) (.-top rect)))
         (gobj/set mouse "active" true)))))
 
 (defn- on-pointerleave [^js el]
-  (let [^js mouse (gobj/get el k-mouse)]
+  (let [^js mouse (du/getv el k-mouse)]
     (gobj/set mouse "active" false)))
 
 (defn- find-item-index
@@ -595,7 +595,7 @@
           (recur (inc i)))))))
 
 (defn- on-click [^js el ^js e]
-  (let [m (gobj/get el k-model)]
+  (let [m (du/getv el k-model)]
     (when-not (:disabled? m)
       (when-let [^js assigned (get-assigned-elements el)]
         (let [^js target (.-target e)]
@@ -603,7 +603,7 @@
             (dispatch-select! el idx (aget assigned idx) "pointer")))))))
 
 (defn- on-keydown [^js el ^js e]
-  (let [m (gobj/get el k-model)]
+  (let [m (du/getv el k-model)]
     (when-not (:disabled? m)
       (let [^js assigned (get-assigned-elements el)
             n            (when assigned (.-length assigned))
@@ -611,19 +611,19 @@
             vertical?    (:vertical? m)
             prev-key     (if vertical? "ArrowUp" "ArrowLeft")
             next-key     (if vertical? "ArrowDown" "ArrowRight")
-            focus-idx    (or (gobj/get el k-focus-idx) -1)]
+            focus-idx    (or (du/getv el k-focus-idx) -1)]
         (when (and n (pos? n))
           (cond
             (= key prev-key)
             (do (.preventDefault e)
                 (let [new-idx (if (< focus-idx 1) (dec n) (dec focus-idx))]
-                  (gobj/set el k-focus-idx new-idx)
+                  (du/setv! el k-focus-idx new-idx)
                   (.focus ^js (aget assigned new-idx))))
 
             (= key next-key)
             (do (.preventDefault e)
                 (let [new-idx (if (>= focus-idx (dec n)) 0 (inc focus-idx))]
-                  (gobj/set el k-focus-idx new-idx)
+                  (du/setv! el k-focus-idx new-idx)
                   (.focus ^js (aget assigned new-idx))))
 
             (or (= key "Enter") (= key " "))
@@ -653,7 +653,7 @@
         h-click  (fn [e] (on-click el e))
         h-key    (fn [e] (on-keydown el e))
         h-slot   (fn [_] (on-slotchange el))
-        {:keys [slot]} (gobj/get el k-refs)
+        {:keys [slot]} (du/getv el k-refs)
         ^js slot slot]
     (.addEventListener el "pointermove" h-move)
     (.addEventListener el "pointerleave" h-leave)
@@ -661,20 +661,20 @@
     (.addEventListener el "keydown" h-key)
     (when slot
       (.addEventListener slot "slotchange" h-slot))
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               {:move h-move :leave h-leave :click h-click
                :key h-key :slot h-slot})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [handlers (du/getv el k-handlers)]
     (.removeEventListener el "pointermove" (:move handlers))
     (.removeEventListener el "pointerleave" (:leave handlers))
     (.removeEventListener el "click" (:click handlers))
     (.removeEventListener el "keydown" (:key handlers))
-    (when-let [{:keys [slot]} (gobj/get el k-refs)]
+    (when-let [{:keys [slot]} (du/getv el k-refs)]
       (when slot
         (.removeEventListener ^js slot "slotchange" (:slot handlers))))
-    (gobj/set el k-handlers nil)))
+    (du/setv! el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
@@ -697,44 +697,44 @@
 
 ;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ────────
 (defn- apply-model! [^js el m]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (update-filter! el m)
     (apply-host-style! el m)
     (cache-item-rects! el)
     (if (:disabled? m)
       (do (stop-animation! el)
           (reset-item-transforms! el))
-      (when-not (gobj/get el k-raf)
+      (when-not (du/getv el k-raf)
         (start-animation! el))))
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (gobj/set el k-mouse #js {:x 0 :y 0 :active false})
-    (gobj/set el k-blobs #js [])
-    (gobj/set el k-blob-state #js [])
-    (gobj/set el k-items-rect #js [])
-    (gobj/set el k-focus-idx -1)
-    (gobj/set el k-ripple-burst 0)
+    (du/setv! el k-model m)
+    (du/setv! el k-mouse #js {:x 0 :y 0 :active false})
+    (du/setv! el k-blobs #js [])
+    (du/setv! el k-blob-state #js [])
+    (du/setv! el k-items-rect #js [])
+    (du/setv! el k-focus-idx -1)
+    (du/setv! el k-ripple-burst 0)
     (ensure-refs! el)
     (apply-host-style! el m)
     (set-a11y! el)
     (remove-listeners! el)
     (add-listeners! el)
     ;; ResizeObserver (clean up any prior observer on reconnect)
-    (when-let [^js old-ro (gobj/get el k-ro)]
+    (when-let [^js old-ro (du/getv el k-ro)]
       (.disconnect old-ro))
     (let [ro (js/ResizeObserver.
               (fn [_] (on-resize! el)))]
-      (gobj/set el k-ro ro)
+      (du/setv! el k-ro ro)
       (.observe ro el))
     ;; Defer blob/rect setup to after slot assignment
     (js/requestAnimationFrame
@@ -747,9 +747,9 @@
   (stop-animation! el)
   (remove-listeners! el)
   (reset-item-transforms! el)
-  (when-let [^js ro (gobj/get el k-ro)]
+  (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (gobj/set el k-ro nil)))
+    (du/setv! el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)

@@ -96,12 +96,12 @@
     (.appendChild root style)
     (.appendChild root container)
     (.appendChild root sr-only)
-    (gobj/set el k-refs {:root root :container container :sr-only sr-only})))
+    (du/setv! el k-refs {:root root :container container :sr-only sr-only})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -129,7 +129,7 @@
 
 (defn- read-css-vars! [^js el]
   (let [^js cs (js/getComputedStyle el)]
-    (gobj/set el k-css-vars
+    (du/setv! el k-css-vars
               {:wght-min (parse-css-float (.getPropertyValue cs model/css-wght-min) model/default-wght-min)
                :wght-max (parse-css-float (.getPropertyValue cs model/css-wght-max) model/default-wght-max)
                :wdth-min (parse-css-float (.getPropertyValue cs model/css-wdth-min) model/default-wdth-min)
@@ -142,7 +142,7 @@
 
 ;; ── Text rendering ──────────────────────────────────────────────────────────
 (defn- build-chars! [^js el text]
-  (let [{:keys [container]} (gobj/get el k-refs)
+  (let [{:keys [container]} (du/getv el k-refs)
         ^js container container
         chars  (vec text)
         n      (count chars)
@@ -161,16 +161,16 @@
         (aset spans i span)
         ;; Each spring: #js [displacement, velocity]
         (aset springs i #js [0.0 0.0])))
-    (gobj/set el k-char-spans spans)
-    (gobj/set el k-springs springs)))
+    (du/setv! el k-char-spans spans)
+    (du/setv! el k-springs springs)))
 
 (defn- build-whole-text! [^js el text]
-  (let [{:keys [container]} (gobj/get el k-refs)
+  (let [{:keys [container]} (du/getv el k-refs)
         ^js container container]
     (set! (.-textContent container) text)
-    (gobj/set el k-char-spans nil)
+    (du/setv! el k-char-spans nil)
     ;; Single spring: #js [displacement, velocity]
-    (gobj/set el k-springs #js [#js [0.0 0.0]])))
+    (du/setv! el k-springs #js [#js [0.0 0.0]])))
 
 ;; ── Font variation application ──────────────────────────────────────────────
 (defn- apply-font-variation! [^js target ^js axes skew-deg]
@@ -206,7 +206,7 @@
       scroll-force
 
       (and (not per-char?) cursor-trigger?)
-      (let [{:keys [container]} (gobj/get el k-refs)
+      (let [{:keys [container]} (du/getv el k-refs)
             ^js container container
             ^js rect (.getBoundingClientRect container)
             cf       (cursor-force-from-rect rect mouse-x mouse-y radius)]
@@ -242,7 +242,7 @@
         skew-deg (if has-lean? (* new-disp intensity skew-max) 0.0)]
     (if per-char?
       (apply-font-variation! (aget spans i) axes skew-deg)
-      (let [{:keys [container]} (gobj/get el k-refs)]
+      (let [{:keys [container]} (du/getv el k-refs)]
         (apply-font-variation! container axes skew-deg)))))
 
 (declare animate!)
@@ -251,23 +251,23 @@
   "After processing all springs, either schedule the next frame or settle the
    animation if all springs are at rest and scroll delta has decayed."
   [^js el all-settled]
-  (let [still-scrolling? (> (or (gobj/get el k-scroll-delta) 0.0) 0.5)]
+  (let [still-scrolling? (> (or (du/getv el k-scroll-delta) 0.0) 0.5)]
     (if (and (aget all-settled 0) (not still-scrolling?))
       (do
-        (gobj/set el k-raf nil)
-        (gobj/set el k-scroll-delta 0.0)
-        (when (gobj/get el k-active)
-          (gobj/set el k-active false)
+        (du/setv! el k-raf nil)
+        (du/setv! el k-scroll-delta 0.0)
+        (when (du/getv el k-active)
+          (du/setv! el k-active false)
           (du/dispatch! el model/event-spring-settle #js {})))
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el)))))))
 
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [m          (gobj/get el k-model)
-          cv         (gobj/get el k-css-vars)
+    (let [m          (du/getv el k-model)
+          cv         (du/getv el k-css-vars)
           now        (js/performance.now)
-          last-frame (gobj/get el k-last-frame)
+          last-frame (du/getv el k-last-frame)
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)
           mass       (:mass m)
           tension    (:tension m)
@@ -278,20 +278,20 @@
           modes      (:modes m)
           axis-ctx   (assoc cv :modes modes :intensity intensity
                             :has-lean? (contains? modes mode-lean))
-          mouse-x    (gobj/get el k-mouse-x)
-          mouse-y    (gobj/get el k-mouse-y)
-          scroll-d   (or (gobj/get el k-scroll-delta) 0.0)
+          mouse-x    (du/getv el k-mouse-x)
+          mouse-y    (du/getv el k-mouse-y)
+          scroll-d   (or (du/getv el k-scroll-delta) 0.0)
           scroll-force (model/compute-scroll-force scroll-d)
-          ^js springs (gobj/get el k-springs)
-          ^js spans  (gobj/get el k-char-spans)
+          ^js springs (du/getv el k-springs)
+          ^js spans  (du/getv el k-char-spans)
           per-char?  (some? spans)
           n          (.-length springs)
           all-settled #js [true]]
 
-      (gobj/set el k-last-frame now)
+      (du/setv! el k-last-frame now)
       ;; Decay scroll delta instead of resetting — keeps force warm over
       ;; multiple frames so the spring has time to respond.
-      (gobj/set el k-scroll-delta (* scroll-d 0.85))
+      (du/setv! el k-scroll-delta (* scroll-d 0.85))
 
       ;; 1-slot JS array avoids volatile! while letting the dotimes body mutate.
       (dotimes [i n]
@@ -309,33 +309,33 @@
       (tick-or-stop! el all-settled))))
 
 (defn- start-animation! [^js el]
-  (when-not (gobj/get el k-raf)
-    (when-not (gobj/get el k-active)
-      (gobj/set el k-active true)
+  (when-not (du/getv el k-raf)
+    (when-not (du/getv el k-active)
+      (du/setv! el k-active true)
       (du/dispatch! el model/event-spring-activate #js {}))
-    (gobj/set el k-last-frame (js/performance.now))
-    (gobj/set el k-raf
+    (du/setv! el k-last-frame (js/performance.now))
+    (du/setv! el k-raf
               (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-mousemove [^js el ^js e]
-  (gobj/set el k-mouse-x (.-clientX e))
-  (gobj/set el k-mouse-y (.-clientY e))
+  (du/setv! el k-mouse-x (.-clientX e))
+  (du/setv! el k-mouse-y (.-clientY e))
   (when-not (prefers-reduced-motion?)
     (start-animation! el)))
 
 (defn- on-scroll [^js el]
   (let [current-y (.-scrollY js/window)
-        prev-y    (or (gobj/get el k-last-scroll-y) current-y)
+        prev-y    (or (du/getv el k-last-scroll-y) current-y)
         delta     (- current-y prev-y)]
-    (gobj/set el k-last-scroll-y current-y)
-    (gobj/set el k-scroll-delta
-              (+ (or (gobj/get el k-scroll-delta) 0.0) (js/Math.abs delta)))
+    (du/setv! el k-last-scroll-y current-y)
+    (du/setv! el k-scroll-delta
+              (+ (or (du/getv el k-scroll-delta) 0.0) (js/Math.abs delta)))
     (when-not (prefers-reduced-motion?)
       (start-animation! el))))
 
@@ -352,21 +352,21 @@
     (when (or (= trigger trigger-scroll) (= trigger trigger-both))
       (let [scroll-fn (fn handle-scroll [] (on-scroll el))]
         (gobj/set hdl hk-scroll scroll-fn)
-        (gobj/set el k-last-scroll-y (.-scrollY js/window))
+        (du/setv! el k-last-scroll-y (.-scrollY js/window))
         (.addEventListener js/window ev-scroll scroll-fn #js {:passive true})))
-    (gobj/set el k-handlers hdl)))
+    (du/setv! el k-handlers hdl)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [^js hdl (gobj/get el k-handlers)]
+  (when-let [^js hdl (du/getv el k-handlers)]
     (when-let [move-fn (gobj/get hdl hk-move)]
       (.removeEventListener js/document ev-pointermove move-fn))
     (when-let [scroll-fn (gobj/get hdl hk-scroll)]
       (.removeEventListener js/window ev-scroll scroll-fn))
-    (gobj/set el k-handlers nil)))
+    (du/setv! el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- update-a11y! [^js el text]
-  (let [{:keys [sr-only]} (gobj/get el k-refs)
+  (let [{:keys [sr-only]} (du/getv el k-refs)
         ^js sr-only sr-only]
     (set! (.-textContent sr-only) text)
     (if (= text "")
@@ -378,7 +378,7 @@
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 (defn- apply-model! [^js el m]
-  (let [old-m (gobj/get el k-model)]
+  (let [old-m (du/getv el k-model)]
     ;; Rebuild text DOM if text or per-char changed
     (when (or (not= (:text m) (:text old-m))
               (not= (:per-char? m) (:per-char? old-m)))
@@ -392,7 +392,7 @@
       (add-listeners! el m))
 
     ;; Update font-family override
-    (let [{:keys [container]} (gobj/get el k-refs)
+    (let [{:keys [container]} (du/getv el k-refs)
           ^js container container
           ff (:font-family m)]
       (if ff
@@ -407,22 +407,22 @@
 
     ;; Apply rest-state font-variation-settings
     (when-not (prefers-reduced-motion?)
-      (let [cv (gobj/get el k-css-vars)
+      (let [cv (du/getv el k-css-vars)
             rest-axes (model/map-force-to-axes 0.0 (:modes m) (:intensity m)
                         (:wght-min cv) (:wght-max cv) (:wdth-min cv) (:wdth-max cv)
                         (:slnt-min cv) (:slnt-max cv) (:opsz-min cv) (:opsz-max cv))]
         (if (:per-char? m)
-          (when-let [^js spans (gobj/get el k-char-spans)]
+          (when-let [^js spans (du/getv el k-char-spans)]
             (dotimes [i (.-length spans)]
               (apply-font-variation! (aget spans i) rest-axes 0.0)))
-          (let [{:keys [container]} (gobj/get el k-refs)]
+          (let [{:keys [container]} (du/getv el k-refs)]
             (apply-font-variation! container rest-axes 0.0)))))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
@@ -521,11 +521,11 @@
 (defn- connected! [^js el]
   (ensure-refs! el)
   (let [m (read-model el)]
-    (gobj/set el k-model nil)
-    (gobj/set el k-mouse-x 0.0)
-    (gobj/set el k-mouse-y 0.0)
-    (gobj/set el k-scroll-delta 0.0)
-    (gobj/set el k-active false)
+    (du/setv! el k-model nil)
+    (du/setv! el k-mouse-x 0.0)
+    (du/setv! el k-mouse-y 0.0)
+    (du/setv! el k-scroll-delta 0.0)
+    (du/setv! el k-active false)
     (apply-model! el m)))
 
 (defn- disconnected! [^js el]
@@ -534,7 +534,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-refs)
+    (when (du/getv el k-refs)
       (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────

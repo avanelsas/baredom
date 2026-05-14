@@ -149,7 +149,7 @@
         slot    (.createElement js/document "slot")
         filter-id (str "lg-goo-" uid)]
 
-    (gobj/set el k-uid uid)
+    (du/setv! el k-uid uid)
 
     (set! (.-textContent style) (build-style-text uid))
 
@@ -303,7 +303,7 @@
     (du/set-attr! el "data-entering" "")
     (js/setTimeout #(du/remove-attr! el "data-entering") 700)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root      root
                :svg       svg
                :g         g
@@ -318,15 +318,15 @@
                :satellites #js []})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Satellite management ───────────────────────────────────────────────────
 (defn- sync-satellites!
   "Ensure the SVG group and mask group each have exactly n satellite ellipses."
   [^js el n]
-  (let [refs     (gobj/get el k-refs)
+  (let [refs     (du/getv el k-refs)
         ^js g    (:g refs)
         ^js sats (:satellites refs)
         ^js mask-g    (gobj/get el "__xLiquidGlassMaskG")
@@ -358,7 +358,7 @@
 
 ;; ── Geometry initialisation ────────────────────────────────────────────────
 (defn- init-geometry! [^js el w h]
-  (let [m      (gobj/get el k-model)
+  (let [m      (du/getv el k-model)
         n      (:blobs m)
         ;; Central ellipse covers most of the area
         cx     (/ w 2.0)
@@ -375,7 +375,7 @@
         result (model/satellite-rest-positions n cx cy orbit-rx orbit-ry)]
 
     ;; Update core ellipse
-    (let [{:keys [core]} (gobj/get el k-refs)
+    (let [{:keys [core]} (du/getv el k-refs)
           ^js core core]
       (.setAttribute core "cx" (str cx))
       (.setAttribute core "cy" (str cy))
@@ -402,7 +402,7 @@
     (sync-satellites! el n)
 
     ;; Set satellite sizes (visible + mask)
-    (let [{:keys [satellites]} (gobj/get el k-refs)
+    (let [{:keys [satellites]} (du/getv el k-refs)
           ^js sats satellites
           ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
       (dotimes [i n]
@@ -415,12 +415,12 @@
             (.setAttribute msat "ry" (str sat-ry))))))
 
     ;; Store rest positions and geometry
-    (gobj/set el k-rest-x (aget result 0))
-    (gobj/set el k-rest-y (aget result 1))))
+    (du/setv! el k-rest-x (aget result 0))
+    (du/setv! el k-rest-y (aget result 1))))
 
 ;; ── Apply model to DOM ─────────────────────────────────────────────────────
 (defn- apply-model! [^js el m]
-  (let [refs (gobj/get el k-refs)
+  (let [refs (du/getv el k-refs)
         ^js blur-el (:blur refs)
         ^js glass   (:glass refs)
         ^js spec    (:specular refs)
@@ -481,19 +481,19 @@
 
 ;; ── Render satellites ──────────────────────────────────────────────────────
 (defn- render-satellites! [^js el t]
-  (let [m       (gobj/get el k-model)
+  (let [m       (du/getv el k-model)
         n       (:blobs m)
         speed   (:speed m)
         amp     (:amplitude m)
-        w       (gobj/get el k-width)
-        h       (gobj/get el k-height)
+        w       (du/getv el k-width)
+        h       (du/getv el k-height)
         ;; Displace relative to core radius, capped so satellites
         ;; stay within the goo filter merge range
         core-r  (* (js/Math.min w h) 0.32)
         max-disp (* amp core-r 0.6)
-        ^js rx  (gobj/get el k-rest-x)
-        ^js ry  (gobj/get el k-rest-y)
-        {:keys [satellites]} (gobj/get el k-refs)
+        ^js rx  (du/getv el k-rest-x)
+        ^js ry  (du/getv el k-rest-y)
+        {:keys [satellites]} (du/getv el k-refs)
         ^js sats satellites
         ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
     (dotimes [i n]
@@ -512,15 +512,15 @@
 
 ;; ── Render specular ────────────────────────────────────────────────────────
 (defn- render-specular! [^js el]
-  (let [m    (gobj/get el k-model)
-        refs (gobj/get el k-refs)
+  (let [m    (du/getv el k-model)
+        refs (du/getv el k-refs)
         ^js spec (:specular refs)]
     (when (:specular? m)
-      (let [active (gobj/get el k-pointer-active)
-            px     (gobj/get el k-pointer-x)
-            py     (gobj/get el k-pointer-y)
-            w      (gobj/get el k-width)
-            h      (gobj/get el k-height)
+      (let [active (du/getv el k-pointer-active)
+            px     (du/getv el k-pointer-x)
+            py     (du/getv el k-pointer-y)
+            w      (du/getv el k-width)
+            h      (du/getv el k-height)
             size   (* (:specular-size m) (js/Math.min w h))
             color  (str "var(" model/css-specular-color ",rgba(255,255,255,0.6))")]
         (if active
@@ -534,8 +534,8 @@
 
 ;; ── Render gradient drift ──────────────────────────────────────────────────
 (defn- render-gradient! [^js el t]
-  (let [m    (gobj/get el k-model)
-        refs (gobj/get el k-refs)
+  (let [m    (du/getv el k-model)
+        refs (du/getv el k-refs)
         ^js grad (:gradient refs)
         c1   (:color-1 m)
         c2   (:color-2 m)
@@ -554,12 +554,12 @@
 (defn- animate! [^js el]
   (when (.-isConnected el)
     (let [now        (js/performance.now)
-          last-frame (gobj/get el k-last-frame)
+          last-frame (du/getv el k-last-frame)
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)
-          t          (+ (gobj/get el k-time) dt)]
+          t          (+ (du/getv el k-time) dt)]
 
-      (gobj/set el k-last-frame now)
-      (gobj/set el k-time t)
+      (du/setv! el k-last-frame now)
+      (du/setv! el k-time t)
 
       ;; Update satellite positions
       (render-satellites! el t)
@@ -571,27 +571,27 @@
       (render-gradient! el t)
 
       ;; Always continue — noise never settles
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
-  (when-not (gobj/get el k-raf)
-    (gobj/set el k-last-frame (js/performance.now))
-    (gobj/set el k-raf
+  (when-not (du/getv el k-raf)
+    (du/setv! el k-last-frame (js/performance.now))
+    (du/setv! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
-  (let [m      (gobj/get el k-model)
+  (let [m      (du/getv el k-model)
         n      (:blobs m)
-        ^js rx (gobj/get el k-rest-x)
-        ^js ry (gobj/get el k-rest-y)
-        {:keys [satellites]} (gobj/get el k-refs)
+        ^js rx (du/getv el k-rest-x)
+        ^js ry (du/getv el k-rest-y)
+        {:keys [satellites]} (du/getv el k-refs)
         ^js sats satellites
         ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
     (dotimes [i n]
@@ -614,10 +614,10 @@
           w         (.-width cr)
           h         (.-height cr)]
       (when (and (> w 0) (> h 0))
-        (gobj/set el k-width w)
-        (gobj/set el k-height h)
+        (du/setv! el k-width w)
+        (du/setv! el k-height h)
         ;; Update SVG viewBox and mask bounds
-        (let [{:keys [svg]} (gobj/get el k-refs)
+        (let [{:keys [svg]} (du/getv el k-refs)
               ^js svg svg]
           (.setAttribute svg "viewBox" (str "0 0 " w " " h))
           ;; Mask must cover same area for userSpaceOnUse to work
@@ -628,43 +628,43 @@
             (.setAttribute mask-el "height" (str h))))
         ;; Reinitialise geometry with new dimensions
         (init-geometry! el w h)
-        (let [m (gobj/get el k-model)]
+        (let [m (du/getv el k-model)]
           (apply-model! el m)
           ;; Render
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
-            (do (render-satellites! el (or (gobj/get el k-time) 0.0))
+            (do (render-satellites! el (or (du/getv el k-time) 0.0))
                 (start-animation! el))))))))
 
 ;; ── Pointer event handlers ──────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
   (let [^js rect (.getBoundingClientRect el)]
-    (gobj/set el k-pointer-x (- (.-clientX e) (.-left rect)))
-    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect)))))
+    (du/setv! el k-pointer-x (- (.-clientX e) (.-left rect)))
+    (du/setv! el k-pointer-y (- (.-clientY e) (.-top rect)))))
 
 (defn- on-pointerenter [^js el]
-  (gobj/set el k-pointer-active true))
+  (du/setv! el k-pointer-active true))
 
 (defn- on-pointerleave [^js el]
-  (gobj/set el k-pointer-active false))
+  (du/setv! el k-pointer-active false))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [move-fn  (fn [^js e] (on-pointermove el e))
         enter-fn (fn [] (on-pointerenter el))
         leave-fn (fn [] (on-pointerleave el))]
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {"move" move-fn "enter" enter-fn "leave" leave-fn})
     (.addEventListener el "pointermove" move-fn #js {:passive true})
     (.addEventListener el "pointerenter" enter-fn)
     (.addEventListener el "pointerleave" leave-fn)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [^js hdl (gobj/get el k-handlers)]
+  (when-let [^js hdl (du/getv el k-handlers)]
     (.removeEventListener el "pointermove" (gobj/get hdl "move"))
     (.removeEventListener el "pointerenter" (gobj/get hdl "enter"))
     (.removeEventListener el "pointerleave" (gobj/get hdl "leave"))
-    (gobj/set el k-handlers nil)))
+    (du/setv! el k-handlers nil)))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -687,19 +687,19 @@
 ;; ── Update from attributes (render-pipeline with cache-at-tail) ───────────
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
-      (let [w (gobj/get el k-width)
-            h (gobj/get el k-height)]
+      (let [w (du/getv el k-width)
+            h (du/getv el k-height)]
         (when (and w h (> w 0) (> h 0))
           (init-geometry! el w h)
           (apply-model! el new-m)
           (if (or (:disabled? new-m) (prefers-reduced-motion?))
             (do (stop-animation! el)
                 (render-static! el))
-            (do (render-satellites! el (or (gobj/get el k-time) 0.0))
+            (do (render-satellites! el (or (du/getv el k-time) 0.0))
                 (start-animation! el)))))
-      (gobj/set el k-model new-m))))
+      (du/setv! el k-model new-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- parse-mode-prop [v]
@@ -724,18 +724,18 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (gobj/set el k-time 0.0)
-    (gobj/set el k-pointer-active false)
-    (gobj/set el k-pointer-x 0.0)
-    (gobj/set el k-pointer-y 0.0)
-    (gobj/set el k-grad-time 0.0)
+    (du/setv! el k-model m)
+    (du/setv! el k-time 0.0)
+    (du/setv! el k-pointer-active false)
+    (du/setv! el k-pointer-x 0.0)
+    (du/setv! el k-pointer-y 0.0)
+    (du/setv! el k-grad-time 0.0)
     (ensure-refs! el)
     (apply-model! el m)
     ;; Set up ResizeObserver
     (let [ro (js/ResizeObserver.
               (fn [^js entries] (on-resize! el entries)))]
-      (gobj/set el k-ro ro)
+      (du/setv! el k-ro ro)
       (.observe ro el))
     ;; Add pointer event listeners
     (remove-listeners! el)
@@ -744,13 +744,13 @@
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
-  (when-let [^js ro (gobj/get el k-ro)]
+  (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (gobj/set el k-ro nil)))
+    (du/setv! el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-refs)
+    (when (du/getv el k-refs)
       (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────

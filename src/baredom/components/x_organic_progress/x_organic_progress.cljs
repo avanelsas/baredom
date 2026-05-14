@@ -134,7 +134,7 @@
       (.appendChild root style)
       (.appendChild root svg)
 
-      (gobj/set el k-refs
+      (du/setv! el k-refs
                 (merge filter-refs
                        {:root       root
                         :svg        svg
@@ -143,9 +143,9 @@
                         :blooms-g   blooms-g})))))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -172,9 +172,9 @@
 (defn- reconcile-lines!
   "Add/remove SVG <line> elements to match segment count."
   [^js el seg-count ^js segments]
-  (let [{:keys [branches-g]} (gobj/get el k-refs)
+  (let [{:keys [branches-g]} (du/getv el k-refs)
         ^js branches-g branches-g
-        ^js old-lines  (or (gobj/get el k-lines) #js [])
+        ^js old-lines  (or (du/getv el k-lines) #js [])
         old-count      (.-length old-lines)
         new-lines      #js []]
 
@@ -204,13 +204,13 @@
         (.removeChild branches-g (aget old-lines i))
         (recur (inc i))))
 
-    (gobj/set el k-lines new-lines)
-    (gobj/set el k-prev-visible -1)))
+    (du/setv! el k-lines new-lines)
+    (du/setv! el k-prev-visible -1)))
 
 (defn- update-filter-for-variant!
   "Enable gooey filter for vine, disable for honeycomb (keep lines crisp)."
   [^js el honeycomb?]
-  (let [{:keys [branches-g blur-el]} (gobj/get el k-refs)
+  (let [{:keys [branches-g blur-el]} (du/getv el k-refs)
         ^js branches-g branches-g
         ^js blur-el    blur-el]
     (when branches-g
@@ -226,17 +226,17 @@
 (defn- clear-nodes!
   "Remove all lattice node circles."
   [^js el]
-  (let [{:keys [nodes-g]} (gobj/get el k-refs)
+  (let [{:keys [nodes-g]} (du/getv el k-refs)
         ^js nodes-g nodes-g
-        ^js old-els (gobj/get el k-node-els)]
+        ^js old-els (du/getv el k-node-els)]
     (when (and nodes-g old-els)
       (dotimes [i (.-length old-els)]
         (let [^js c (aget old-els i)]
           (when (.-parentNode c)
             (.removeChild nodes-g c))))))
-  (gobj/set el k-node-els nil)
-  (gobj/set el k-node-data nil)
-  (gobj/set el k-node-count 0))
+  (du/setv! el k-node-els nil)
+  (du/setv! el k-node-data nil)
+  (du/setv! el k-node-count 0))
 
 (defn- regenerate-segments!
   "Regenerate segments and reconcile SVG elements."
@@ -255,18 +255,18 @@
                         l-string noise-fn (:seed m) 0.436 38.0 20.0 100.0)))
         ^js segments (aget result 0)
         seg-count    (aget result 1)]
-    (gobj/set el k-segments segments)
-    (gobj/set el k-segment-count seg-count)
+    (du/setv! el k-segments segments)
+    (du/setv! el k-segment-count seg-count)
     (reconcile-lines! el seg-count segments)
     (update-filter-for-variant! el honeycomb?)
     (clear-nodes! el)))
 
 ;; ── Apply colors and stroke widths to lines ─────────────────────────────────
 (defn- apply-line-styles! [^js el]
-  (let [^js lines    (gobj/get el k-lines)
-        ^js segments (gobj/get el k-segments)
-        total        (gobj/get el k-segment-count)
-        m            (gobj/get el k-model)
+  (let [^js lines    (du/getv el k-lines)
+        ^js segments (du/getv el k-segments)
+        total        (du/getv el k-segment-count)
+        m            (du/getv el k-model)
         honeycomb?   (= (:variant m) "honeycomb")
         ;; Use CSS var() references so strokes respond to theme changes.
         ;; When a custom color attribute is set, use it directly; otherwise
@@ -306,11 +306,11 @@
 ;; ── Segment rendering (progressive reveal) ─────────────────────────────────
 
 (defn- render-segments! [^js el]
-  (let [spring-pos    (gobj/get el k-spring-pos)
-        total         (gobj/get el k-segment-count)
+  (let [spring-pos    (du/getv el k-spring-pos)
+        total         (du/getv el k-segment-count)
         visible-count (js/Math.floor (* (/ spring-pos 100.0) total))
-        prev-visible  (gobj/get el k-prev-visible)
-        ^js lines     (gobj/get el k-lines)]
+        prev-visible  (du/getv el k-prev-visible)
+        ^js lines     (du/getv el k-lines)]
     ;; Only update lines whose visibility changed
     (when (not= visible-count prev-visible)
       (let [lo (js/Math.min visible-count (if (< prev-visible 0) 0 prev-visible))
@@ -323,8 +323,8 @@
                                (if (< i visible-count) "1" "0"))))
             (recur (inc i)))))
       ;; Vine nodes: opacity toggle
-      (let [^js node-els  (gobj/get el k-node-els)
-            node-count    (or (gobj/get el k-node-count) 0)]
+      (let [^js node-els  (du/getv el k-node-els)
+            node-count    (or (du/getv el k-node-count) 0)]
         (when (and node-els (pos? node-count))
           (let [visible-nodes (js/Math.floor (* (/ spring-pos 100.0) node-count))]
             (dotimes [i node-count]
@@ -332,16 +332,16 @@
                 (when c
                   (.setAttribute c "opacity"
                                  (if (< i visible-nodes) "1" "0"))))))))
-      (gobj/set el k-prev-visible visible-count))))
+      (du/setv! el k-prev-visible visible-count))))
 
 ;; ── Bloom effect ────────────────────────────────────────────────────────────
 
 (defn- start-bloom! [^js el]
-  (let [^js segments (gobj/get el k-segments)
-        total        (gobj/get el k-segment-count)
-        {:keys [blooms-g]} (gobj/get el k-refs)
+  (let [^js segments (du/getv el k-segments)
+        total        (du/getv el k-segment-count)
+        {:keys [blooms-g]} (du/getv el k-refs)
         ^js blooms-g blooms-g
-        m            (gobj/get el k-model)
+        m            (du/getv el k-model)
         bloom-color  (str "var(" model/css-bloom-color ",#f472b6)")
         rng          (model/make-rng (+ (:seed m) 7))
         bloom-els    #js []]
@@ -366,35 +366,35 @@
             (gobj/set circle k-bloom-dy dy)
             (.appendChild blooms-g circle)
             (.push bloom-els circle)))))
-    (gobj/set el k-bloom-els bloom-els)
-    (gobj/set el k-bloom-active true)
-    (gobj/set el k-bloom-time 0.0)))
+    (du/setv! el k-bloom-els bloom-els)
+    (du/setv! el k-bloom-active true)
+    (du/setv! el k-bloom-time 0.0)))
 
 (defn- finish-bloom! [^js el]
-  (let [{:keys [blooms-g]} (gobj/get el k-refs)
+  (let [{:keys [blooms-g]} (du/getv el k-refs)
         ^js blooms-g blooms-g
-        ^js bloom-els (gobj/get el k-bloom-els)]
+        ^js bloom-els (du/getv el k-bloom-els)]
     ;; Remove all bloom circles
     (when bloom-els
       (dotimes [i (.-length bloom-els)]
         (let [^js c (aget bloom-els i)]
           (when (.-parentNode c)
             (.removeChild blooms-g c)))))
-    (gobj/set el k-bloom-els nil)
-    (gobj/set el k-bloom-active false)
+    (du/setv! el k-bloom-els nil)
+    (du/setv! el k-bloom-active false)
     ;; Dispatch bloom-end event
     (du/dispatch! el model/event-bloom-end #js {:progress 100})))
 
 (defn- update-bloom! [^js el dt]
-  (let [bloom-time (+ (gobj/get el k-bloom-time) dt)
+  (let [bloom-time (+ (du/getv el k-bloom-time) dt)
         duration   1.5
         t          (/ bloom-time duration)]
-    (gobj/set el k-bloom-time bloom-time)
+    (du/setv! el k-bloom-time bloom-time)
     (if (> t 1.0)
       ;; Bloom finished
       (finish-bloom! el)
       ;; Animate bloom elements
-      (let [^js bloom-els (gobj/get el k-bloom-els)
+      (let [^js bloom-els (du/getv el k-bloom-els)
             scale         (* 4.0 (model/ease-out-cubic (js/Math.min t 1.0)))
             opacity       (js/Math.max 0.0 (- 1.0 (* t t)))]
         (dotimes [i (.-length bloom-els)]
@@ -410,83 +410,83 @@
 
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [m          (gobj/get el k-model)
+    (let [m          (du/getv el k-model)
           now        (js/performance.now)
-          last-frame (gobj/get el k-last-frame)
+          last-frame (du/getv el k-last-frame)
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)]
 
-      (gobj/set el k-last-frame now)
+      (du/setv! el k-last-frame now)
 
       ;; Update time (for indeterminate oscillation)
-      (gobj/set el k-time (+ (gobj/get el k-time) dt))
+      (du/setv! el k-time (+ (du/getv el k-time) dt))
 
       ;; Spring physics: smooth progress interpolation
       (let [target (if (:indeterminate? m)
                      ;; Oscillate between 30-70% for indeterminate
-                     (+ 50.0 (* 20.0 (js/Math.sin (* (gobj/get el k-time) 1.5))))
+                     (+ 50.0 (* 20.0 (js/Math.sin (* (du/getv el k-time) 1.5))))
                      (:percent m))
-            current  (gobj/get el k-spring-pos)
-            velocity (gobj/get el k-spring-vel)
+            current  (du/getv el k-spring-pos)
+            velocity (du/getv el k-spring-vel)
             result   (model/spring-step current target velocity dt 120.0 12.0)]
-        (gobj/set el k-spring-pos (aget result 0))
-        (gobj/set el k-spring-vel (aget result 1)))
+        (du/setv! el k-spring-pos (aget result 0))
+        (du/setv! el k-spring-vel (aget result 1)))
 
       ;; Render visible segments
       (render-segments! el)
 
       ;; Check for completion
-      (when (and (:complete? m) (not (gobj/get el k-completed)))
-        (gobj/set el k-completed true)
+      (when (and (:complete? m) (not (du/getv el k-completed)))
+        (du/setv! el k-completed true)
         (du/dispatch! el model/event-complete #js {:progress 100})
         ;; Start bloom if enabled
         (when (:bloom? m)
           (start-bloom! el)))
 
       ;; Reset completed flag if progress drops below 100
-      (when (and (not (:complete? m)) (gobj/get el k-completed)
-                 (not (gobj/get el k-bloom-active)))
-        (gobj/set el k-completed false))
+      (when (and (not (:complete? m)) (du/getv el k-completed)
+                 (not (du/getv el k-bloom-active)))
+        (du/setv! el k-completed false))
 
       ;; Update bloom animation if active
-      (when (gobj/get el k-bloom-active)
+      (when (du/getv el k-bloom-active)
         (update-bloom! el dt))
 
       ;; Schedule next frame
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
-  (gobj/set el k-time 0.0)
-  (gobj/set el k-spring-pos 0.0)
-  (gobj/set el k-spring-vel 0.0)
-  (gobj/set el k-last-frame (js/performance.now))
-  (gobj/set el k-completed false)
-  (gobj/set el k-bloom-active false)
-  (gobj/set el k-prev-visible -1)
-  (gobj/set el k-raf
+  (du/setv! el k-time 0.0)
+  (du/setv! el k-spring-pos 0.0)
+  (du/setv! el k-spring-vel 0.0)
+  (du/setv! el k-last-frame (js/performance.now))
+  (du/setv! el k-completed false)
+  (du/setv! el k-bloom-active false)
+  (du/setv! el k-prev-visible -1)
+  (du/setv! el k-raf
             (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Static render (for reduced motion) ─────────────────────────────────────
 
 (defn- render-static! [^js el]
-  (let [m     (gobj/get el k-model)
-        total (gobj/get el k-segment-count)
+  (let [m     (du/getv el k-model)
+        total (du/getv el k-segment-count)
         pct   (if (:indeterminate? m) 50.0 (:percent m))
         visible-count (js/Math.floor (* (/ pct 100.0) total))
-        ^js lines (gobj/get el k-lines)]
+        ^js lines (du/getv el k-lines)]
     (dotimes [i total]
       (let [^js line (aget lines i)]
         (when line
           (.setAttribute line "opacity"
                          (if (< i visible-count) "1" "0")))))
     ;; Vine nodes: opacity
-    (let [^js node-els  (gobj/get el k-node-els)
-          node-count    (or (gobj/get el k-node-count) 0)]
+    (let [^js node-els  (du/getv el k-node-els)
+          node-count    (or (du/getv el k-node-count) 0)]
       (when (and node-els (pos? node-count))
         (let [visible-nodes (js/Math.floor (* (/ pct 100.0) node-count))]
           (dotimes [i node-count]
@@ -494,10 +494,10 @@
               (when c
                 (.setAttribute c "opacity"
                                (if (< i visible-nodes) "1" "0"))))))))
-    (gobj/set el k-prev-visible visible-count)
+    (du/setv! el k-prev-visible visible-count)
     ;; Fire completion for static mode
-    (when (and (:complete? m) (not (gobj/get el k-completed)))
-      (gobj/set el k-completed true)
+    (when (and (:complete? m) (not (du/getv el k-completed)))
+      (du/setv! el k-completed true)
       (du/dispatch! el model/event-complete #js {:progress 100}))))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
@@ -536,15 +536,15 @@
   (set-a11y! el new-m)
   (when (structural-change? old-m new-m)
     (regenerate-segments! el new-m)
-    (gobj/set el k-prev-visible -1)
+    (du/setv! el k-prev-visible -1)
     (when (prefers-reduced-motion?)
       (render-static! el)))
   (apply-line-styles! el)
-  (gobj/set el k-model new-m))
+  (du/setv! el k-model new-m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m old-m))))
 
@@ -584,21 +584,21 @@
 (defn- disconnected! [^js el]
   (stop-animation! el)
   ;; Clean up bloom elements
-  (when (gobj/get el k-bloom-active)
-    (let [{:keys [blooms-g]} (gobj/get el k-refs)
+  (when (du/getv el k-bloom-active)
+    (let [{:keys [blooms-g]} (du/getv el k-refs)
           ^js blooms-g blooms-g
-          ^js bloom-els (gobj/get el k-bloom-els)]
+          ^js bloom-els (du/getv el k-bloom-els)]
       (when bloom-els
         (dotimes [i (.-length bloom-els)]
           (let [^js c (aget bloom-els i)]
             (when (.-parentNode c)
               (.removeChild blooms-g c))))))
-    (gobj/set el k-bloom-els nil)
-    (gobj/set el k-bloom-active false)))
+    (du/setv! el k-bloom-els nil)
+    (du/setv! el k-bloom-active false)))
 
 (defn- attribute-changed! [^js el _attr-name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-refs)
+    (when (du/getv el k-refs)
       (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
