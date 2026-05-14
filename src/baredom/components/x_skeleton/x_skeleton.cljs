@@ -1,7 +1,6 @@
 (ns baredom.components.x-skeleton.x-skeleton
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-skeleton.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -97,8 +96,8 @@
     (.appendChild base shimmer)
     (.appendChild root style-el)
     (.appendChild root base)
-    (gobj/set el k-base        base)
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-base        base)
+    (du/setv! el k-initialized true)))
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -110,7 +109,7 @@
 
 ;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
 (defn- apply-model! [^js el {:keys [variant animation width height] :as m}]
-  (let [^js base (gobj/get el k-base)]
+  (let [^js base (du/getv el k-base)]
     (.setAttribute base "data-variant"   variant)
     (.setAttribute base "data-animation" animation)
     ;; Size overrides — applied as inline styles on base so they take
@@ -123,23 +122,23 @@
       (.removeProperty (.-style base) "height"))
     ;; Hide from assistive technology — skeletons carry no semantic content
     (du/set-attr! el "aria-hidden" "true")
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

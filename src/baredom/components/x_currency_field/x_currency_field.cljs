@@ -206,7 +206,7 @@
     (gobj/set refs rk-input   input-el)
     (gobj/set refs rk-hint    hint-el)
     (gobj/set refs rk-error   error-el)
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 ;; ── Validity sync ─────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@
   (du/set-bool-attr! el attr-data-invalid has-error?))
 
 (defn- apply-validity! [^js el ^js input-el]
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (sync-validity! el internals input-el (or (du/get-attr el model/attr-value) ""))))
 
 (defn- compute-error-display [{:keys [has-error? error] :as m}]
@@ -323,7 +323,7 @@
      :display-error (if custom-error? error (or computed-msg ""))}))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js label-el  (gobj/get refs rk-label)
           ^js symbol-el (gobj/get refs rk-symbol)
           ^js input-el  (gobj/get refs rk-input)
@@ -339,24 +339,24 @@
       (apply-error!        error-el display-error has-error?)
       (apply-host-data!    el has-error?)
       (apply-validity!     el input-el)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
 ;; ── Event handlers ────────────────────────────────────────────────────────
 (defn- on-input-focus [^js el ^js _evt]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           raw-val      (or (du/get-attr el model/attr-value) "")]
       (set! (.-value input-el) raw-val))))
 
 (defn- on-input-input [^js el ^js _evt]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           value        (.-value input-el)
           prev-value   (or (du/get-attr el model/attr-value) "")
@@ -364,14 +364,14 @@
       (if (du/dispatch-cancelable! el model/event-change-request
                                    #js {:name name :value value :previousValue prev-value})
         (do
-          (when-let [^js internals (gobj/get el k-internals)]
+          (when-let [^js internals (du/getv el k-internals)]
             (.setFormValue internals value)
             (sync-validity! el internals input-el value))
           (du/dispatch! el model/event-input #js {:name name :value value}))
         (set! (.-value input-el) prev-value)))))
 
 (defn- on-input-change [^js el ^js _evt]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           raw          (.-value input-el)
           num          (js/parseFloat raw)
@@ -382,7 +382,7 @@
                                    #js {:name name :value canonical :previousValue prev-value})
         (do
           (du/set-attr! el model/attr-value canonical)
-          (when-let [^js internals (gobj/get el k-internals)]
+          (when-let [^js internals (du/getv el k-internals)]
             (.setFormValue internals canonical)
             (sync-validity! el internals input-el canonical))
           (du/dispatch! el model/event-change #js {:name name :value canonical}))
@@ -390,7 +390,7 @@
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           focus-h      (fn handle-input-focus  [e] (on-input-focus  el e))
           input-h      (fn handle-input-input  [e] (on-input-input  el e))
@@ -402,16 +402,16 @@
       (gobj/set handlers hk-focus  focus-h)
       (gobj/set handlers hk-input  input-h)
       (gobj/set handlers hk-change change-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js input-el (gobj/get refs rk-input)]
         (.removeEventListener input-el ev-focus  (gobj/get handlers hk-focus))
         (.removeEventListener input-el ev-input  (gobj/get handlers hk-input))
         (.removeEventListener input-el ev-change (gobj/get handlers hk-change)))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────
 (defn- form-disabled! [^js el disabled?]
@@ -420,30 +420,30 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)]
       (set! (.-value input-el) "")))
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals ""))
   (update-from-attrs! el))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   ;; Push value attr to input (formatted) on connect so the displayed value
   ;; matches the attribute before any focus/blur cycle.
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           val-attr     (du/get-attr el model/attr-value)
           currency     (model/normalize-currency (du/get-attr el model/attr-currency))
           locale       (or (du/get-attr el model/attr-locale) "")]
       (when val-attr
         (set! (.-value input-el) (format-display val-attr currency locale)))))
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
   (add-listeners! el)
   (update-from-attrs! el))
@@ -457,7 +457,7 @@
     ;; input only when not focused, so external attribute writes don't clobber
     ;; an in-progress edit.
     (when (= attr-name model/attr-value)
-      (when-let [refs (gobj/get el k-refs)]
+      (when-let [refs (du/getv el k-refs)]
         (let [^js input-el (gobj/get refs rk-input)]
           (when-not (is-focused? el input-el)
             (let [currency (model/normalize-currency (du/get-attr el model/attr-currency))

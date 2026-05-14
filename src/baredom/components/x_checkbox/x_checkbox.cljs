@@ -199,7 +199,7 @@
       (gobj/set refs rk-control control-el)
       (gobj/set refs rk-box     box-el)
       (gobj/set refs rk-check   check-el)
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -251,24 +251,24 @@
   (du/set-bool-attr! el attr-data-disabled      disabled?))
 
 (defn- apply-form-value! [^js el {:keys [checked? value]}]
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (let [form-value (when checked? value)]
       (.setFormValue internals (or form-value nil)))))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js control-el (gobj/get refs rk-control)]
       (apply-control-aria!     control-el m)
       (apply-control-disabled! control-el m)
       (apply-host-data!        el m)
       (apply-form-value!       el m)
       ;; Cache write at the tail.
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -311,7 +311,7 @@
                         (let [gen-id (str "x-cb-lbl-" id)]
                           (du/set-attr! lbl attr-id gen-id)
                           gen-id))]
-            (when-let [refs (gobj/get el k-refs)]
+            (when-let [refs (du/getv el k-refs)]
               (let [^js control (gobj/get refs rk-control)]
                 (when-not (du/has-attr? el model/attr-aria-labelledby)
                   (du/set-attr! control attr-aria-labelledby lid))))))))))
@@ -329,7 +329,7 @@
       (try-toggle! el))))
 
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js control-el (gobj/get refs rk-control)
           click-h        (fn handle-control-click   [evt] (on-control-click   el evt))
           keydown-h      (fn handle-control-keydown [evt] (on-control-keydown el evt))
@@ -338,15 +338,15 @@
       (.addEventListener control-el ev-keydown keydown-h)
       (gobj/set handlers hk-click   click-h)
       (gobj/set handlers hk-keydown keydown-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js control-el (gobj/get refs rk-control)]
         (.removeEventListener control-el ev-click   (gobj/get handlers hk-click))
         (.removeEventListener control-el ev-keydown (gobj/get handlers hk-keydown)))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -364,10 +364,10 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (wire-external-label! el)
