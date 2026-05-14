@@ -210,9 +210,8 @@
         :connector-raw      (du/get-attr step-el step-model/attr-connector)
         :cutout-padding-raw (du/get-attr step-el step-model/attr-cutout-padding)
         :cutout-radius-raw  (du/get-attr step-el step-model/attr-cutout-radius)
-        :scroll-to-raw      (if (du/has-attr? step-el step-model/attr-scroll-to)
-                               (du/get-attr step-el step-model/attr-scroll-to)
-                               nil)})))
+        :scroll-to-raw      (when (du/has-attr? step-el step-model/attr-scroll-to)
+                               (du/get-attr step-el step-model/attr-scroll-to))})))
 
 ;; ── Resolve target element from selector ────────────────────────────────────
 (defn- resolve-target

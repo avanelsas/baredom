@@ -55,9 +55,8 @@
              ^js current translations]
         (if (or (nil? current) (>= i (.-length parts)))
           (when (and (some? current) (= i (.-length parts))) current)
-          (if (object? current)
-            (recur (inc i) (gobj/get current (aget parts i)))
-            nil))))))
+          (when (object? current)
+            (recur (inc i) (gobj/get current (aget parts i)))))))))
 
 (defn interpolate
   "Replace {placeholder} patterns in a template string with values from params map.

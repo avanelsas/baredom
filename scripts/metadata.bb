@@ -120,8 +120,7 @@
   (when-let [raw (extract-def text def-name)]
     (try
       (edn/read-string (preprocess-cljs raw))
-      (catch Exception _e
-        nil))))
+      (catch Exception _e))))
 
 (defn extract-tag-name
   "Extract tag-name string from model file text."
@@ -135,7 +134,7 @@
     (let [processed (preprocess-cljs raw)]
       (let [attr-defs (re-seq #"\(def\s+(?:\^:private\s+)?(\S+)\s+\"([^\"]+)\"\)" text)
             attr-map  (into {} (map (fn [[_ k v]] [(symbol k) v]) attr-defs))
-            syms (try (edn/read-string processed) (catch Exception _ nil))]
+            syms (try (edn/read-string processed) (catch Exception _))]
         (if (sequential? syms)
           (mapv (fn [s]
                   (if (string? s) s

@@ -214,8 +214,7 @@
    by the recorder. Public — used by the dock to mark its host element
    on mount."
   [^js el]
-  (gobj/set el internal-host-marker true)
-  nil)
+  (gobj/set el internal-host-marker true))
 
 (defn with-suppressed-recording!
   "Call thunk f with all recording suppressed for its synchronous
@@ -369,8 +368,7 @@
   [payload ^js el t]
   (when-not (:forensic? @state)
     (when-let [k (rate-limit-key payload el)]
-      (swap! state assoc-in [:rate-limit k] t)))
-  nil)
+      (swap! state assoc-in [:rate-limit k] t))))
 
 (defn- record!
   "Hook function passed to du/trace-hook and comp/lifecycle-hook. Receives a
@@ -582,15 +580,13 @@
   "Stop recording new events. Existing records are preserved."
   []
   (swap! state assoc :paused? true)
-  (schedule-notify!)
-  nil)
+  (schedule-notify!))
 
 (defn resume!
   "Resume recording after pause!."
   []
   (swap! state assoc :paused? false)
-  (schedule-notify!)
-  nil)
+  (schedule-notify!))
 
 (defn clear!
   "Empty the ring buffer and reset the record-id counter to 0. Drops all
@@ -610,8 +606,7 @@
          :next-session-id   0
          :active-session-id nil
          :rate-limit        {})
-  (schedule-notify!)
-  nil)
+  (schedule-notify!))
 
 (defn forensic-mode?
   "True when the recorder was installed in forensic mode
@@ -663,8 +658,7 @@
                  (update :sessions finalize-session
                          (:active-session-id s) t (:next-id s))
                  (assoc :active-session-id nil))))
-    (schedule-notify!)
-    nil))
+    (schedule-notify!)))
 
 (defn start-session!
   "Begin a new bounded recording slice. Returns the new session id.
@@ -813,8 +807,7 @@
   (swap! state update :imports
          (fn [imports]
            (vec (remove (fn [{:keys [id]}] (= id target-id)) imports))))
-  (schedule-notify!)
-  nil)
+  (schedule-notify!))
 
 (defn imports
   "Return a JS array of import metadata: {id, label, importedAt,
@@ -905,8 +898,7 @@
       (.click a)
       (finally
         (.removeChild (.-body js/document) a)
-        (js/URL.revokeObjectURL url)))
-    nil))
+        (js/URL.revokeObjectURL url)))))
 
 (defn download-trace!
   "Trigger a browser download of the current trace as
@@ -924,8 +916,7 @@
         envelope (model/make-export recs (:components s) (:sessions s) ctx)
         json-str (js/JSON.stringify envelope nil 2)
         filename (model/download-filename now)]
-    (trigger-download! json-str filename)
-    nil))
+    (trigger-download! json-str filename)))
 
 ;; ---------------------------------------------------------------------------
 ;; Install / uninstall
@@ -984,8 +975,7 @@
   (reset! cause-stack [])
   (install-dispatch-wrapper-once!)
   (reset! wrapper-active? true)
-  (install-window-api!)
-  nil)
+  (install-window-api!))
 
 (defn uninstall!
   "Deactivate recording. Used by tests; not part of the consumer API.
@@ -997,8 +987,7 @@
   (reset! du/trace-hook nil)
   (reset! comp/lifecycle-hook nil)
   (reset! wrapper-active? false)
-  (reset! cause-stack [])
-  nil)
+  (reset! cause-stack []))
 
 ;; ---------------------------------------------------------------------------
 ;; Activation
@@ -1013,5 +1002,4 @@
     (js/console.log
      "%c[BareDOM Trace History]%c Active — see window.BareDOM.traceHistory for the API"
      "color:#3b82f6;font-weight:bold"
-     "color:inherit"))
-  nil)
+     "color:inherit")))

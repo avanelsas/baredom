@@ -1004,8 +1004,7 @@
       (update-particles! el dt-ms)
       (draw-particles!   el)
       (let [alive (if particles (count-alive particles) 0)]
-        (advance-phase! el phase now alive))
-      nil)))
+        (advance-phase! el phase now alive)))))
 
 
 ;; ── Canvas sizing ───────────────────────────────────────────────────────────

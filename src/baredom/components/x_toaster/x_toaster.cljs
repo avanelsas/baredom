@@ -140,8 +140,7 @@
           (when (< i oldest-count)
             (let [^js toast (aget children i)]
               (.dismiss toast model/child-dismiss-reason-toaster))
-            (recur (inc i))))))
-    nil))
+            (recur (inc i))))))))
 
 ;; ── toast() method implementation ─────────────────────────────────────────────
 (defn- do-toast! [^js el opts]

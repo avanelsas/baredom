@@ -39,9 +39,8 @@
     :connector-raw      (du/get-attr el model/attr-connector)
     :cutout-padding-raw (du/get-attr el model/attr-cutout-padding)
     :cutout-radius-raw  (du/get-attr el model/attr-cutout-radius)
-    :scroll-to-raw      (if (du/has-attr? el model/attr-scroll-to)
-                           (du/get-attr el model/attr-scroll-to)
-                           nil)}))
+    :scroll-to-raw      (when (du/has-attr? el model/attr-scroll-to)
+                           (du/get-attr el model/attr-scroll-to))}))
 
 (defn- update-model! [^js el]
   (let [new-m (read-model el)]
@@ -85,9 +84,8 @@
                    #js {:get (fn []
                                (this-as ^js this
                                         (model/parse-scroll-to
-                                         (if (du/has-attr? this model/attr-scroll-to)
-                                           (du/get-attr this model/attr-scroll-to)
-                                           nil))))
+                                         (when (du/has-attr? this model/attr-scroll-to)
+                                           (du/get-attr this model/attr-scroll-to)))))
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
