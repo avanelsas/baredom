@@ -282,11 +282,11 @@
     (gobj/set refs rk-clear-btn (:clear-btn search-parts))
     (gobj/set refs rk-list      (:list list-parts))
     (gobj/set refs rk-empty     (:empty list-parts))
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (make-shadow! el)))
+  (or (du/getv el k-refs) (make-shadow! el)))
 
 ;; ── Item rendering ─────────────────────────────────────────────────────────
 (defn- append-group-header! [^js list-el group]
@@ -329,15 +329,15 @@
     (.setAttribute input-el attr-aria-activedescendant (str item-id-pref active-idx))))
 
 (defn- render-items! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js list-el  (gobj/get refs rk-list)
           ^js empty-el (gobj/get refs rk-empty)
           ^js input-el (gobj/get refs rk-input)
-          items-js     (gobj/get el k-items)
-          query        (or (gobj/get el k-query) "")
+          items-js     (du/getv el k-items)
+          query        (or (du/getv el k-query) "")
           items        (model/normalize-items items-js)
           {:keys [visible]} (model/filter-items items query)
-          active-idx   (or (gobj/get el k-active-idx) 0)]
+          active-idx   (or (du/getv el k-active-idx) 0)]
       (set! (.-textContent list-el) "")
       (if (empty? visible)
         (render-empty! empty-el input-el)
@@ -365,7 +365,7 @@
   (set! (.-textContent empty-el) empty-text))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js panel    (gobj/get refs rk-panel)
           ^js overlay  (gobj/get refs rk-overlay)
           ^js input    (gobj/get refs rk-input)
@@ -375,19 +375,19 @@
       (apply-input-state!  input m)
       (apply-empty-text!   empty-el m)
       (render-items! el)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
 ;; ── Open / close ───────────────────────────────────────────────────────────
 (defn- do-open! [^js el]
   (du/set-attr! el model/attr-open "")
-  (let [refs      (gobj/get el k-refs)
+  (let [refs      (du/getv el k-refs)
         ^js input (when refs (gobj/get refs rk-input))]
     (when input (.focus input)))
   (update-from-attrs! el)
@@ -395,7 +395,7 @@
 
 (defn- do-close! [^js el]
   (du/remove-attr! el model/attr-open)
-  (let [refs      (gobj/get el k-refs)
+  (let [refs      (du/getv el k-refs)
         ^js input (when refs (gobj/get refs rk-input))]
     (when input (.removeAttribute input attr-aria-activedescendant)))
   (update-from-attrs! el)
@@ -413,21 +413,21 @@
 
 ;; ── Keyboard navigation ────────────────────────────────────────────────────
 (defn- active-visible [^js el]
-  (let [items-js (gobj/get el k-items)
-        query    (or (gobj/get el k-query) "")
+  (let [items-js (du/getv el k-items)
+        query    (or (du/getv el k-query) "")
         items    (model/normalize-items items-js)
         {:keys [visible]} (model/filter-items items query)]
     visible))
 
 (defn- move-active! [^js el direction]
   (let [visible (active-visible el)
-        cur-idx (or (gobj/get el k-active-idx) 0)
+        cur-idx (or (du/getv el k-active-idx) 0)
         new-idx (if (= direction :down)
                   (model/next-active-idx visible cur-idx)
                   (model/prev-active-idx visible cur-idx))]
-    (gobj/set el k-active-idx new-idx)
+    (du/setv! el k-active-idx new-idx)
     (render-items! el)
-    (let [refs        (gobj/get el k-refs)
+    (let [refs        (du/getv el k-refs)
           ^js list-el (when refs (gobj/get refs rk-list))
           ^js item-el (when list-el
                         (.querySelector list-el (str "[" attr-data-idx "='" new-idx "']")))]
@@ -443,17 +443,17 @@
 
 (defn- select-active! [^js el]
   (let [visible (active-visible el)
-        cur-idx (or (gobj/get el k-active-idx) 0)]
+        cur-idx (or (du/getv el k-active-idx) 0)]
     (select-item! el (nth visible cur-idx nil))))
 
 ;; ── Event handlers ─────────────────────────────────────────────────────────
 (defn- on-input-input [^js el ^js _e]
-  (let [refs    (gobj/get el k-refs)
+  (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs rk-input))
         ^js clr (when refs (gobj/get refs rk-clear-btn))
         q       (when inp (.-value inp))]
-    (gobj/set el k-query (or q ""))
-    (gobj/set el k-active-idx 0)
+    (du/setv! el k-query (or q ""))
+    (du/setv! el k-active-idx 0)
     (when clr
       (if (and q (not= q ""))
         (.removeAttribute clr attr-hidden)
@@ -485,19 +485,19 @@
         (select-item! el (nth visible idx nil))))))
 
 (defn- on-clear-click [^js el ^js _e]
-  (let [refs    (gobj/get el k-refs)
+  (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs rk-input))
         ^js clr (when refs (gobj/get refs rk-clear-btn))]
     (when inp (set! (.-value inp) ""))
     (when clr (.setAttribute clr attr-hidden ""))
-    (gobj/set el k-query "")
-    (gobj/set el k-active-idx 0)
+    (du/setv! el k-query "")
+    (du/setv! el k-active-idx 0)
     (du/dispatch! el model/event-query-change #js {:query ""})
     (render-items! el)
     (when inp (.focus inp))))
 
 (defn- add-listeners! [^js el]
-  (let [refs        (gobj/get el k-refs)
+  (let [refs        (du/getv el k-refs)
         ^js input   (gobj/get refs rk-input)
         ^js overlay (gobj/get refs rk-overlay)
         ^js list-el (gobj/get refs rk-list)
@@ -518,11 +518,11 @@
     (gobj/set handlers hk-scrim   h-scrim)
     (gobj/set handlers hk-list    h-list)
     (gobj/set handlers hk-clear   h-clear)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (let [refs     (gobj/get el k-refs)
-        handlers (gobj/get el k-handlers)]
+  (let [refs     (du/getv el k-refs)
+        handlers (du/getv el k-handlers)]
     (when (and refs handlers)
       (let [^js input   (gobj/get refs rk-input)
             ^js overlay (gobj/get refs rk-overlay)
@@ -550,7 +550,7 @@
     ;; Focus the input on every transition into "open" (whether via property,
     ;; method, or setAttribute).
     (when (and (= attr-name model/attr-open) (some? new-val))
-      (let [refs      (gobj/get el k-refs)
+      (let [refs      (du/getv el k-refs)
             ^js input (when refs (gobj/get refs rk-input))]
         (when input
           (js/requestAnimationFrame (fn focus-input-after-raf [] (.focus input))))))))

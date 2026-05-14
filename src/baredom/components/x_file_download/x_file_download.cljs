@@ -150,11 +150,11 @@
       (gobj/set refs rk-anchor  anchor-el)
       (gobj/set refs rk-icon    icon-el)
       (gobj/set refs rk-content content-el)
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (make-shadow! el)))
+  (or (du/getv el k-refs) (make-shadow! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes
@@ -197,18 +197,18 @@
   (du/set-bool-attr! el attr-data-disabled disabled?))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js anchor-el (gobj/get refs rk-anchor)]
       (apply-href!          anchor-el m)
       (apply-download-attr! anchor-el m)
       (apply-anchor-aria!   anchor-el m)
       (apply-host-data!     el        m)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -231,22 +231,22 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (let [refs       (gobj/get el k-refs)
+  (let [refs       (du/getv el k-refs)
         ^js anchor (gobj/get refs rk-anchor)
         click-h    (fn handle-anchor-click [evt] (on-anchor-click el evt))
         handlers   #js {}]
     (.addEventListener anchor ev-click click-h)
     (gobj/set handlers hk-click click-h)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js anchor (gobj/get refs rk-anchor)
             click-h    (gobj/get hs hk-click)]
         (when click-h (.removeEventListener anchor ev-click click-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
