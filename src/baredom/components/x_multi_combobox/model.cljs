@@ -29,6 +29,9 @@
 ;; ── Performance cap ──────────────────────────────────────────────────────
 (def max-rendered-options 200)
 
+;; ── Value list separator ────────────────────────────────────────────────
+(def value-separator ",")
+
 (def observed-attributes
   #js [attr-value attr-placeholder attr-name attr-disabled
        attr-required attr-open attr-placement attr-max])
@@ -70,7 +73,7 @@
     (into #{}
           (comp (map str/trim)
                 (remove str/blank?))
-          (str/split s ","))))
+          (str/split s value-separator))))
 
 (defn serialize-value
   "Serializes a set of values into a sorted, comma-separated string.
@@ -78,7 +81,7 @@
   [value-set]
   (if (empty? value-set)
     ""
-    (str/join "," (sort value-set))))
+    (str/join value-separator (sort value-set))))
 
 ;; ── Attribute parsing ────────────────────────────────────────────────────
 (defn parse-max
