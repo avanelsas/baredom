@@ -5,11 +5,32 @@
             [baredom.components.x-select.model :as model]))
 
 ;; ---------------------------------------------------------------------------
-;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
+;; Instance field keys (Closure-safe: access via du/setv! / du/getv)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs     "__xSelectRefs")
 (def ^:private k-handlers "__xSelectHandlers")
 (def ^:private k-model    "__xSelectModel")
+
+;; ---------------------------------------------------------------------------
+;; Attribute / part name constants
+;; ---------------------------------------------------------------------------
+(def ^:private attr-part             "part")
+(def ^:private attr-hidden           "hidden")
+(def ^:private attr-aria-hidden      "aria-hidden")
+(def ^:private attr-aria-label       "aria-label")
+(def ^:private attr-data-size        "data-size")
+(def ^:private attr-data-disabled    "data-disabled")
+(def ^:private attr-data-placeholder "data-placeholder")
+
+(def ^:private part-wrapper "wrapper")
+(def ^:private part-select  "select")
+(def ^:private part-chevron "chevron")
+
+(def ^:private default-aria-label "select")
+
+;; Slot tags the component accepts. `.tagName` returns canonical UPPER-CASE
+;; in HTML documents, so compare directly without lower-casing per node.
+(def ^:private slot-tags #{"OPTION" "OPTGROUP"})
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -138,34 +159,33 @@
        "</svg>"))
 
 ;; ---------------------------------------------------------------------------
-;; DOM helpers
-;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
-
-;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
-        wrapper-el (make-el "div")
-        select-el  (make-el "select")
-        ph-opt-el  (make-el "option")
-        chevron-el (make-el "span")
-        slot-el    (make-el "slot")]
+        style-el   (.createElement js/document "style")
+        wrapper-el (.createElement js/document "div")
+        select-el  (.createElement js/document "select")
+        ph-opt-el  (.createElement js/document "option")
+        chevron-el (.createElement js/document "span")
+        slot-el    (.createElement js/document "slot")]
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! wrapper-el "part" "wrapper")
-    (du/set-attr! select-el  "part" "select")
-    (du/set-attr! chevron-el "part" "chevron")
-    (du/set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! wrapper-el attr-part        part-wrapper)
+    (du/set-attr! select-el  attr-part        part-select)
+    (du/set-attr! chevron-el attr-part        part-chevron)
+    (du/set-attr! chevron-el attr-aria-hidden "true")
 
-    ;; Placeholder option: empty value, hidden by default, disabled, selected
-    (du/set-attr! ph-opt-el "data-placeholder" "")
-    (du/set-attr! ph-opt-el "value" "")
-    (set! (.-hidden ph-opt-el) true)
-    (set! (.-disabled ph-opt-el) true)
+    ;; Placeholder option: empty value, hidden by default, disabled, selected.
+    ;; `disabled` and `hidden` go through du/ as attributes (visible to the
+    ;; trace recorder). `.selected` stays as a property write: <option>'s
+    ;; `selected` attribute reflects only the *default* state, not the live
+    ;; selection — setting the attribute would not produce the same effect.
+    (du/set-attr! ph-opt-el attr-data-placeholder "")
+    (du/set-attr! ph-opt-el model/attr-value      "")
+    (du/set-attr! ph-opt-el attr-hidden           "")
+    (du/set-attr! ph-opt-el model/attr-disabled   "")
     (set! (.-selected ph-opt-el) true)
 
     ;; Inline chevron SVG
@@ -184,7 +204,7 @@
                     :placeholder-opt ph-opt-el
                     :slot            slot-el
                     :chevron         chevron-el}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -213,25 +233,30 @@
         value          (:value m)
         name-val       (:name m)]
 
-    ;; Sync disabled to internal select
-    (set! (.-disabled select-el) disabled?)
+    ;; Sync disabled to internal select. <select>.disabled is a reflecting
+    ;; property, so the attribute path is functionally equivalent and stays
+    ;; visible to the trace recorder.
+    (if disabled?
+      (du/set-attr!    select-el model/attr-disabled "")
+      (du/remove-attr! select-el model/attr-disabled))
 
     ;; Sync required
     (if required?
-      (du/set-attr! select-el model/attr-required "")
+      (du/set-attr!    select-el model/attr-required "")
       (du/remove-attr! select-el model/attr-required))
 
     ;; Sync name
     (if (and (string? name-val) (not= name-val ""))
-      (du/set-attr! select-el model/attr-name name-val)
+      (du/set-attr!    select-el model/attr-name name-val)
       (du/remove-attr! select-el model/attr-name))
 
-    ;; Placeholder option visibility
+    ;; Placeholder option visibility. `hidden` reflects via attribute on
+    ;; HTMLElement, so the attribute path is equivalent to .hidden = bool.
     (if (and (string? placeholder) (not= placeholder ""))
       (do
         (set! (.-textContent ph-opt-el) placeholder)
-        (set! (.-hidden ph-opt-el) false))
-      (set! (.-hidden ph-opt-el) true))
+        (du/remove-attr! ph-opt-el attr-hidden))
+      (du/set-attr! ph-opt-el attr-hidden ""))
 
     ;; Sync value to internal select — only when the host has an
     ;; explicit `value` attribute. Without the some? guard we'd write
@@ -240,35 +265,38 @@
     ;; placeholder (display: empty). The slotted `selected` cloned in
     ;; by sync-options! is the source of truth when the host has no
     ;; value attr; an explicit attribute still overrides it.
+    ;;
+    ;; <select>.value is property-only (no `value` attribute on <select>),
+    ;; so this stays as a property write rather than going through du/.
     (when (some? value)
       (set! (.-value select-el) value))
 
     ;; data-size on wrapper for CSS size selectors
-    (du/set-attr! wrapper-el "data-size" size)
+    (du/set-attr! wrapper-el attr-data-size size)
 
     ;; data-disabled on wrapper for CSS disabled styles
     (if disabled?
-      (du/set-attr! wrapper-el "data-disabled" "")
-      (du/remove-attr! wrapper-el "data-disabled"))
+      (du/set-attr!    wrapper-el attr-data-disabled "")
+      (du/remove-attr! wrapper-el attr-data-disabled))
 
     ;; aria-label on internal select when no name attr present
     (if (or (nil? name-val) (= name-val ""))
-      (du/set-attr! select-el "aria-label" (or placeholder "select"))
-      (du/remove-attr! select-el "aria-label"))))
+      (du/set-attr!    select-el attr-aria-label (or placeholder default-aria-label))
+      (du/remove-attr! select-el attr-aria-label))))
 
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [m     (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= m old-m)
         (apply-model! el refs m)
-        (gobj/set el k-model m)))))
+        (du/setv! el k-model m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Option sync from slot
 ;; ---------------------------------------------------------------------------
 (defn- sync-options! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js select-el (gobj/get refs "select")
           ^js ph-opt-el (gobj/get refs "placeholder-opt")
           ^js slot-el   (gobj/get refs "slot")
@@ -281,11 +309,10 @@
             (recur))))
       ;; Append clones of assigned option/optgroup elements
       (doseq [^js node (array-seq assigned)]
-        (let [tag-lower (.toLowerCase (.-tagName node))]
-          (when (or (= tag-lower "option") (= tag-lower "optgroup"))
-            (.appendChild select-el (.cloneNode node true)))))
+        (when (contains? slot-tags (.-tagName node))
+          (.appendChild select-el (.cloneNode node true))))
       ;; Invalidate cached model so render! re-applies value to new options
-      (gobj/set el k-model nil)
+      (du/setv! el k-model nil)
       (render! el))))
 
 ;; ---------------------------------------------------------------------------
@@ -296,7 +323,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-change-handler [^js el]
   (fn [^js _]
-    (when-let [refs (gobj/get el k-refs)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js sel    (gobj/get refs "select")
             value      (.-value sel)
             prev-value (or (du/get-attr el model/attr-value) "")
@@ -308,7 +335,9 @@
                         #js {:value value :label label :previousValue prev-value})]
         (if allowed?
           (du/dispatch! el model/event-select-change #js {:value value :label label})
-          ;; Revert native select to previous value
+          ;; Revert native select to previous value. <select>.value is
+          ;; property-only — no attribute counterpart — so this stays as a
+          ;; property write rather than going through du/.
           (set! (.-value sel) prev-value))))))
 
 ;; ---------------------------------------------------------------------------
@@ -321,7 +350,7 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js select-el  (gobj/get refs "select")
           ^js slot-el    (gobj/get refs "slot")
           change-h       (make-change-handler el)
@@ -329,22 +358,22 @@
           handlers       #js {:change change-h :slotchange slotchange-h}]
       (.addEventListener select-el "change"     change-h)
       (.addEventListener slot-el   "slotchange" slotchange-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js select-el (gobj/get refs "select")
             ^js slot-el   (gobj/get refs "slot")]
         (.removeEventListener select-el "change"     (gobj/get handlers "change"))
         (.removeEventListener slot-el   "slotchange" (gobj/get handlers "slotchange")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs) (make-shadow! el))
+  (when-not (du/getv el k-refs) (make-shadow! el))
   (remove-listeners! el)
   (add-listeners! el)
   (sync-options! el)
