@@ -101,6 +101,30 @@
     (is (= -1 (model/next-active-idx 0 nil)))
     (is (= -1 (model/prev-active-idx 0 nil)))))
 
+;; ── clamp-active-idx ─────────────────────────────────────────────────────
+(deftest clamp-active-idx-test
+  (testing "empty visible list yields -1"
+    (is (= -1 (model/clamp-active-idx 0 0)))
+    (is (= -1 (model/clamp-active-idx 5 0)))
+    (is (= -1 (model/clamp-active-idx nil 0))))
+  (testing "in-range index passes through"
+    (is (= 0 (model/clamp-active-idx 0 3)))
+    (is (= 2 (model/clamp-active-idx 2 3))))
+  (testing "out-of-range index clamps to last visible"
+    (is (= 2 (model/clamp-active-idx 5 3))))
+  (testing "nil raw-idx is treated as 0"
+    (is (= 0 (model/clamp-active-idx nil 3)))))
+
+;; ── last-value ───────────────────────────────────────────────────────────
+(deftest last-value-test
+  (testing "empty set yields nil"
+    (is (nil? (model/last-value #{}))))
+  (testing "single value"
+    (is (= "apple" (model/last-value #{"apple"}))))
+  (testing "returns the largest value in sort order"
+    (is (= "cherry" (model/last-value #{"apple" "banana" "cherry"})))
+    (is (= "cherry" (model/last-value #{"cherry" "apple" "banana"})))))
+
 ;; ── highlight-match ──────────────────────────────────────────────────────
 (deftest highlight-match-test
   (testing "nil/empty query yields nil"

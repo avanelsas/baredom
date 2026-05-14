@@ -153,6 +153,22 @@
   [n active-idx]
   (if (zero? n) -1 (mod (dec (or active-idx n)) n)))
 
+(defn clamp-active-idx
+  "Returns active-idx bounded by visible-count.
+   -1 when there is nothing visible; otherwise the index, capped at the last
+   visible position. raw-idx of nil is treated as 0."
+  [raw-idx visible-count]
+  (if (zero? visible-count)
+    -1
+    (min (or raw-idx 0) (dec visible-count))))
+
+(defn last-value
+  "Returns the largest value in the set in sort order, or nil for an empty set.
+   The selected-set is rendered sorted, so this is the value Backspace removes."
+  [value-set]
+  (when (seq value-set)
+    (last (sort value-set))))
+
 ;; ── Highlight match ──────────────────────────────────────────────────────
 (defn highlight-match
   "Splits label around the first case-insensitive match of query.
