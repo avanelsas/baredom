@@ -116,21 +116,19 @@
    "}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────────
-(defn- make-el [tag]
-  (.createElement js/document tag))
 
 ;; ── Shadow DOM initialisation ─────────────────────────────────────────────────
 (defn- init-dom! [^js el]
   (let [root     (.attachShadow el #js {:mode "open"})
-        style    (make-el "style")
-        backdrop (make-el "div")
-        panel    (make-el "div")
-        header   (make-el "div")
-        hslot    (make-el "slot")
-        body     (make-el "div")
-        bslot    (make-el "slot")
-        footer   (make-el "div")
-        fslot    (make-el "slot")]
+        style    (.createElement js/document "style")
+        backdrop (.createElement js/document "div")
+        panel    (.createElement js/document "div")
+        header   (.createElement js/document "div")
+        hslot    (.createElement js/document "slot")
+        body     (.createElement js/document "div")
+        bslot    (.createElement js/document "slot")
+        footer   (.createElement js/document "div")
+        fslot    (.createElement js/document "slot")]
 
     (set! (.-textContent style) style-text)
 

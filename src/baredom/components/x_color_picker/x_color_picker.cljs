@@ -307,7 +307,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
@@ -334,8 +333,8 @@
 (defn- make-trigger!
   "Build the popover-mode trigger button + its inner colour swatch."
   []
-  (let [trigger        (make-el "button")
-        trigger-swatch (make-el "span")]
+  (let [trigger        (.createElement js/document "button")
+        trigger-swatch (.createElement js/document "span")]
     (du/set-attr! trigger "part" "trigger")
     (du/set-attr! trigger "type" "button")
     (du/set-attr! trigger "aria-label" "Pick color")
@@ -346,8 +345,8 @@
 (defn- make-area-section!
   "Build the saturation/value area + its draggable thumb."
   []
-  (let [area  (make-el "div")
-        thumb (make-el "div")]
+  (let [area  (.createElement js/document "div")
+        thumb (.createElement js/document "div")]
     (du/set-attr! area "part" "area")
     (du/set-attr! area "role" "slider")
     (du/set-attr! area "tabindex" "0")
@@ -359,12 +358,12 @@
 (defn- make-strips-section!
   "Build the hue + alpha strip column."
   []
-  (let [strips         (make-el "div")
-        hue-strip      (make-el "div")
-        hue-thumb      (make-el "div")
-        alpha-strip    (make-el "div")
-        alpha-gradient (make-el "div")
-        alpha-thumb    (make-el "div")]
+  (let [strips         (.createElement js/document "div")
+        hue-strip      (.createElement js/document "div")
+        hue-thumb      (.createElement js/document "div")
+        alpha-strip    (.createElement js/document "div")
+        alpha-gradient (.createElement js/document "div")
+        alpha-thumb    (.createElement js/document "div")]
     (du/set-attr! strips "part" "strips")
     (decorate-strip-slider! hue-strip   "hue-strip"   "Hue"     "360")
     (decorate-strip-slider! alpha-strip "alpha-strip" "Opacity" "100")
@@ -384,12 +383,12 @@
 (defn- make-controls-section!
   "Build the controls row: preview swatch, hex input, eyedropper, copy."
   []
-  (let [controls       (make-el "div")
-        preview        (make-el "div")
-        preview-color  (make-el "span")
-        hex-input      (make-el "input")
-        eyedropper-btn (make-el "button")
-        copy-btn       (make-el "button")]
+  (let [controls       (.createElement js/document "div")
+        preview        (.createElement js/document "div")
+        preview-color  (.createElement js/document "span")
+        hex-input      (.createElement js/document "input")
+        eyedropper-btn (.createElement js/document "button")
+        copy-btn       (.createElement js/document "button")]
     (du/set-attr! controls      "part" "controls")
     (du/set-attr! preview       "part" "preview")
     (du/set-attr! preview-color "part" "preview-color")
@@ -415,7 +414,7 @@
 (defn- make-swatches-section!
   "Build the preset-colour swatch listbox."
   []
-  (let [swatches (make-el "div")]
+  (let [swatches (.createElement js/document "div")]
     (du/set-attr! swatches "part" "swatches")
     (du/set-attr! swatches "role" "listbox")
     (du/set-attr! swatches "aria-label" "Preset colors")
@@ -423,9 +422,9 @@
 
 (defn- make-shadow! [^js el]
   (let [root      (.attachShadow el #js {:mode "open"})
-        style-el  (make-el "style")
-        container (make-el "div")
-        panel     (make-el "div")
+        style-el  (.createElement js/document "style")
+        container (.createElement js/document "div")
+        panel     (.createElement js/document "div")
         trig      (make-trigger!)
         area-sec  (make-area-section!)
         strips    (make-strips-section!)
@@ -511,7 +510,7 @@
       (du/setv! el k-swatches-cache swatch-list)
       (set! (.-innerHTML swatches-el) "")
       (doseq [hex swatch-list]
-        (let [btn (make-el "button")]
+        (let [btn (.createElement js/document "button")]
           (du/set-attr! btn "part" "swatch")
           (du/set-attr! btn "type" "button")
           (du/set-attr! btn "role" "option")

@@ -23,7 +23,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -63,10 +62,10 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root         (.attachShadow el #js {:mode "open"})
-        style-el     (make-el "style")
-        container-el (make-el "div")
-        preset-el    (make-el "div")
-        slot-el      (make-el "slot")]
+        style-el     (.createElement js/document "style")
+        container-el (.createElement js/document "div")
+        preset-el    (.createElement js/document "div")
+        slot-el      (.createElement js/document "slot")]
 
     (set! (.-textContent style-el) style-text)
 
@@ -103,7 +102,7 @@
   [^js item-def animation]
   (if (:layout item-def)
     ;; Nested layout container
-    (let [^js div (make-el "div")
+    (let [^js div (.createElement js/document "div")
           cls     (if (= :horizontal (:layout item-def)) "sg-row" "sg-col")]
       (set! (.-className div) cls)
       (set! (.. div -style -gap) (:gap item-def))
@@ -113,7 +112,7 @@
         (.appendChild div (build-item! child-def animation)))
       div)
     ;; Leaf: x-skeleton element
-    (let [^js skel (make-el "x-skeleton")]
+    (let [^js skel (.createElement js/document "x-skeleton")]
       (when-let [v (:variant item-def)]
         (du/set-attr! skel "variant" v))
       (when-let [w (:width item-def)]
@@ -130,7 +129,7 @@
   (when-let [preset-def (get model/presets preset-name)]
     (let [layout-cls (if (= :horizontal (:layout preset-def)) "sg-row" "sg-col")]
       (dotimes [_ cnt]
-        (let [^js wrap (make-el "div")]
+        (let [^js wrap (.createElement js/document "div")]
           (set! (.-className wrap) layout-cls)
           (set! (.. wrap -style -gap) (:gap preset-def))
           (doseq [item-def (:items preset-def)]

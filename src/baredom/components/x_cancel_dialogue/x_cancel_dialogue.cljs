@@ -207,19 +207,18 @@
    "}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 (defn- new-headline-id []
   (str "x-cd-headline-" (.. js/crypto (randomUUID))))
 
 ;; ── Shadow DOM initialisation (shadow-builders pattern) ───────────────────────
 (defn- make-backdrop! []
-  (let [backdrop (make-el "div")]
+  (let [backdrop (.createElement js/document "div")]
     (.setAttribute backdrop attr-part part-backdrop)
     backdrop))
 
 (defn- make-dialog! [headline-id]
-  (let [dialog (make-el "div")]
+  (let [dialog (.createElement js/document "div")]
     (.setAttribute dialog attr-part            part-dialog)
     (.setAttribute dialog attr-role            role-dialog)
     (.setAttribute dialog attr-aria-modal      val-true)
@@ -227,8 +226,8 @@
     dialog))
 
 (defn- make-header! [headline-id]
-  (let [header   (make-el "div")
-        headline (make-el "h2")]
+  (let [header   (.createElement js/document "div")
+        headline (.createElement js/document "h2")]
     (.setAttribute header   attr-part part-header)
     (.setAttribute headline attr-part part-headline)
     (.setAttribute headline attr-id   headline-id)
@@ -236,9 +235,9 @@
     {:header header :headline headline}))
 
 (defn- make-body! []
-  (let [body       (make-el "div")
-        body-slot  (make-el "slot")
-        message-el (make-el "p")]
+  (let [body       (.createElement js/document "div")
+        body-slot  (.createElement js/document "slot")
+        message-el (.createElement js/document "p")]
     (.setAttribute body       attr-part part-body)
     (.setAttribute body-slot  attr-name part-body)
     (.setAttribute message-el attr-part part-message)
@@ -247,9 +246,9 @@
     {:body body :body-slot body-slot :message message-el}))
 
 (defn- make-actions! []
-  (let [actions     (make-el "div")
-        cancel-btn  (make-el "button")
-        confirm-btn (make-el "button")]
+  (let [actions     (.createElement js/document "div")
+        cancel-btn  (.createElement js/document "button")
+        confirm-btn (.createElement js/document "button")]
     (.setAttribute actions     attr-part part-actions)
     (.setAttribute cancel-btn  attr-part part-cancel-btn)
     (.setAttribute cancel-btn  attr-type "button")
@@ -260,7 +259,7 @@
     {:actions actions :cancel-btn cancel-btn :confirm-btn confirm-btn}))
 
 (defn- assemble-panel! [header-parts body-parts action-parts]
-  (let [panel (make-el "div")]
+  (let [panel (.createElement js/document "div")]
     (.setAttribute panel attr-part part-panel)
     (.appendChild panel (:header  header-parts))
     (.appendChild panel (:body    body-parts))
@@ -270,7 +269,7 @@
 (defn- init-dom! [^js el]
   (let [headline-id  (new-headline-id)
         root         (.attachShadow el #js {:mode "open"})
-        style        (make-el "style")
+        style        (.createElement js/document "style")
         backdrop     (make-backdrop!)
         dialog       (make-dialog! headline-id)
         header-parts (make-header! headline-id)

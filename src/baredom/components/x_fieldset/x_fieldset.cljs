@@ -121,7 +121,6 @@
 (def ^:private light-style-id "x-fieldset-input-styles")
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 (defn- ensure-light-dom-styles!
   "Inject the shared light-DOM <style> into document.head exactly once.
@@ -130,7 +129,7 @@
   one-document-wide effect with the per-instance setup."
   []
   (when-not (.getElementById js/document light-style-id)
-    (let [ls (make-el "style")]
+    (let [ls (.createElement js/document "style")]
       (du/set-attr! ls attr-id light-style-id)
       (set! (.-textContent ls) light-dom-style-text)
       (.appendChild (.-head js/document) ls))))
@@ -138,11 +137,11 @@
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
-        root-el    (make-el "div")
-        legend-el  (make-el "div")
-        content-el (make-el "div")
-        slot-el    (make-el "slot")
+        style-el   (.createElement js/document "style")
+        root-el    (.createElement js/document "div")
+        legend-el  (.createElement js/document "div")
+        content-el (.createElement js/document "div")
+        slot-el    (.createElement js/document "slot")
         refs       #js {}]
 
     (set! (.-textContent style-el) style-text)

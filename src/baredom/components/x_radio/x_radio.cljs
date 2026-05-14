@@ -86,16 +86,15 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [^js tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
-        control-el (make-el "button")
-        dot-el     (make-el "span")]
+        style-el   (.createElement js/document "style")
+        control-el (.createElement js/document "button")
+        dot-el     (.createElement js/document "span")]
 
     (set! (.-textContent style-el) style-text)
 

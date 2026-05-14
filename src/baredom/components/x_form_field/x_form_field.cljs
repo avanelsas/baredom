@@ -118,18 +118,17 @@
    "@media (prefers-reduced-motion:reduce){[part=input]{transition:none;}}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
-        field-el   (make-el "div")
-        label-el   (make-el "label")
-        wrapper-el (make-el "div")
-        input-el   (make-el "input")
-        hint-el    (make-el "span")
-        error-el   (make-el "span")
+        style-el   (.createElement js/document "style")
+        field-el   (.createElement js/document "div")
+        label-el   (.createElement js/document "label")
+        wrapper-el (.createElement js/document "div")
+        input-el   (.createElement js/document "input")
+        hint-el    (.createElement js/document "span")
+        error-el   (.createElement js/document "span")
         refs       #js {}]
 
     (set! (.-textContent style-el) style-text)

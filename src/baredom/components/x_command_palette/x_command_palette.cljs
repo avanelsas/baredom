@@ -92,7 +92,6 @@
 (def ^:private key-escape     "Escape")
 
 ;; ── Helpers ────────────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 (defn- read-model [^js el]
   (model/normalize
@@ -199,15 +198,15 @@
 
 ;; ── Shadow builders ────────────────────────────────────────────────────────
 (defn- make-overlay! []
-  (let [overlay (make-el "div")]
+  (let [overlay (.createElement js/document "div")]
     (.setAttribute overlay attr-part part-overlay)
     overlay))
 
 (defn- make-search-section! []
-  (let [search-wrap (make-el "div")
-        search-icon (make-el "span")
-        input-el    (make-el "input")
-        clear-btn   (make-el "button")]
+  (let [search-wrap (.createElement js/document "div")
+        search-icon (.createElement js/document "span")
+        input-el    (.createElement js/document "input")
+        clear-btn   (.createElement js/document "button")]
     (.setAttribute search-wrap attr-part part-search-wrap)
 
     (.setAttribute search-icon attr-part        part-search-icon)
@@ -235,9 +234,9 @@
     {:search-wrap search-wrap :input input-el :clear-btn clear-btn}))
 
 (defn- make-list-section! []
-  (let [list-wrap (make-el "div")
-        list-el   (make-el "div")
-        empty-el  (make-el "div")]
+  (let [list-wrap (.createElement js/document "div")
+        list-el   (.createElement js/document "div")
+        empty-el  (.createElement js/document "div")]
     (.setAttribute list-wrap attr-part part-list-wrap)
 
     (.setAttribute list-el attr-part       part-list)
@@ -253,7 +252,7 @@
     {:list-wrap list-wrap :list list-el :empty empty-el}))
 
 (defn- make-panel! [search-parts list-parts]
-  (let [panel (make-el "div")]
+  (let [panel (.createElement js/document "div")]
     (.setAttribute panel attr-part       part-panel)
     (.setAttribute panel attr-role       val-dialog)
     (.setAttribute panel attr-aria-modal val-true)
@@ -263,7 +262,7 @@
 
 (defn- make-shadow! [^js el]
   (let [^js root      (.attachShadow el #js {:mode "open"})
-        ^js style     (make-el "style")
+        ^js style     (.createElement js/document "style")
         ^js overlay   (make-overlay!)
         search-parts  (make-search-section!)
         list-parts    (make-list-section!)
@@ -290,14 +289,14 @@
 
 ;; ── Item rendering ─────────────────────────────────────────────────────────
 (defn- append-group-header! [^js list-el group]
-  (let [^js header (make-el "div")]
+  (let [^js header (.createElement js/document "div")]
     (.setAttribute header attr-part        part-group-header)
     (.setAttribute header attr-aria-hidden val-true)
     (set! (.-textContent header) group)
     (.appendChild list-el header)))
 
 (defn- append-item! [^js list-el idx item active-idx]
-  (let [^js div (make-el "div")]
+  (let [^js div (.createElement js/document "div")]
     (.setAttribute div attr-part     part-item)
     (.setAttribute div attr-role     val-option)
     (.setAttribute div attr-id       (str item-id-pref idx))

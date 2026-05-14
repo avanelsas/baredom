@@ -179,21 +179,20 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root         (.attachShadow el #js {:mode "open"})
-        style-el     (make-el "style")
-        trigger-el   (make-el "span")
-        trigger-slot (make-el "slot")
-        panel-el     (make-el "div")
-        arrow-el     (make-el "div")
-        body-el      (make-el "div")
-        text-el      (make-el "span")
-        content-slot (make-el "slot")
+        style-el     (.createElement js/document "style")
+        trigger-el   (.createElement js/document "span")
+        trigger-slot (.createElement js/document "slot")
+        panel-el     (.createElement js/document "div")
+        arrow-el     (.createElement js/document "div")
+        body-el      (.createElement js/document "div")
+        text-el      (.createElement js/document "span")
+        content-slot (.createElement js/document "slot")
         tid          (next-id!)]
 
     (set! (.-textContent style-el) style-text)

@@ -51,15 +51,14 @@
    ":host([loading]){pointer-events:none;opacity:0.6;}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ── Shadow DOM construction ───────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (when-not (.-shadowRoot el)
     (let [root     (.attachShadow el #js {:mode "open"})
-          style-el (make-el "style")
-          form-el  (make-el "form")
-          slot-el  (make-el "slot")
+          style-el (.createElement js/document "style")
+          form-el  (.createElement js/document "form")
+          slot-el  (.createElement js/document "slot")
           refs     #js {}]
 
       (set! (.-textContent style-el) style-text)

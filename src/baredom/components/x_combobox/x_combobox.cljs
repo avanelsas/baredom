@@ -116,7 +116,6 @@
   (str listbox-id-prefix (.. js/crypto (randomUUID))))
 
 ;; ── DOM helpers ────────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ── Style ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -264,7 +263,7 @@
 
 ;; ── Shadow builders (shadow-builders named pattern) ────────────────────────
 (defn- make-input! [lb-id]
-  (let [input-el (make-el "input")]
+  (let [input-el (.createElement js/document "input")]
     (.setAttribute input-el attr-part              part-input)
     (.setAttribute input-el attr-type              val-text)
     (.setAttribute input-el attr-role              val-combobox)
@@ -275,7 +274,7 @@
     input-el))
 
 (defn- make-clear! []
-  (let [clear-el (make-el "button")]
+  (let [clear-el (.createElement js/document "button")]
     (.setAttribute clear-el attr-part       part-clear)
     (.setAttribute clear-el attr-type       val-button)
     (.setAttribute clear-el attr-aria-label val-clear-label)
@@ -284,14 +283,14 @@
     clear-el))
 
 (defn- make-chevron! []
-  (let [chevron-el (make-el "span")]
+  (let [chevron-el (.createElement js/document "span")]
     (.setAttribute chevron-el attr-part        part-chevron)
     (.setAttribute chevron-el attr-aria-hidden val-true)
     (set! (.-innerHTML chevron-el) chevron-svg)
     chevron-el))
 
 (defn- make-wrapper! [^js input-el ^js clear-el ^js chevron-el]
-  (let [wrapper-el (make-el "div")]
+  (let [wrapper-el (.createElement js/document "div")]
     (.setAttribute wrapper-el attr-part part-wrapper)
     (.appendChild wrapper-el input-el)
     (.appendChild wrapper-el clear-el)
@@ -299,7 +298,7 @@
     wrapper-el))
 
 (defn- make-panel! [lb-id]
-  (let [panel-el (make-el "div")]
+  (let [panel-el (.createElement js/document "div")]
     (.setAttribute panel-el attr-part           part-panel)
     (.setAttribute panel-el attr-role           val-listbox)
     (.setAttribute panel-el attr-id             lb-id)
@@ -308,14 +307,14 @@
 
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (make-el "style")
+        style-el   (.createElement js/document "style")
         lb-id      (new-listbox-id)
         input-el   (make-input! lb-id)
         clear-el   (make-clear!)
         chevron-el (make-chevron!)
         wrapper-el (make-wrapper! input-el clear-el chevron-el)
         panel-el   (make-panel! lb-id)
-        slot-el    (make-el "slot")
+        slot-el    (.createElement js/document "slot")
         refs       #js {}]
 
     (set! (.-textContent style-el) style-text)
@@ -377,7 +376,7 @@
   (if highlight
     (do
       (.appendChild div (.createTextNode js/document (:before highlight)))
-      (let [^js b (make-el "b")]
+      (let [^js b (.createElement js/document "b")]
         (set! (.-textContent b) (:match highlight))
         (.appendChild div b))
       (.appendChild div (.createTextNode js/document (:after highlight))))
@@ -385,7 +384,7 @@
   (.appendChild panel-el div))
 
 (defn- render-empty! [^js panel-el ^js input-el]
-  (let [^js msg (make-el "div")]
+  (let [^js msg (.createElement js/document "div")]
     (du/set-attr! msg attr-part part-empty-msg)
     (set! (.-textContent msg) model/empty-message)
     (.appendChild panel-el msg)
@@ -393,7 +392,7 @@
 
 (defn- render-option-list! [^js panel-el ^js input-el visible active-idx selected-value]
   (doseq [[idx opt] (map-indexed vector visible)]
-    (let [^js div    (make-el "div")
+    (let [^js div    (.createElement js/document "div")
           highlight  (model/highlight-match (:label opt) (or (du/getv panel-el "_query") ""))]
       (append-option! panel-el div idx active-idx (:value opt) highlight (:label opt))
       (when (= (:value opt) selected-value)
