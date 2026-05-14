@@ -77,13 +77,13 @@
     (.appendChild root style)
     (.appendChild root slot-el)
     (.appendChild root overflow)
-    (gobj/set el k-refs {:slot-el  slot-el
+    (du/setv! el k-refs {:slot-el  slot-el
                          :overflow overflow})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -149,11 +149,11 @@
         (set! (.-textContent overflow) "")
         (set! (.. overflow -style -display) "none")))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-layout! el new-m))))
 
@@ -168,16 +168,16 @@
         ^js slot-el slot-el
         on-slot (fn [_] (refresh-layout! el))]
     (when slot-el (.addEventListener slot-el "slotchange" on-slot))
-    (gobj/set el k-handlers #js {:slot on-slot})))
+    (du/setv! el k-handlers #js {:slot on-slot})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
-    (when-let [refs (gobj/get el k-refs)]
+  (when-let [hs (du/getv el k-handlers)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js slot-el (:slot-el refs)
             on-slot (gobj/get hs "slot")]
         (when (and slot-el on-slot)
           (.removeEventListener slot-el "slotchange" on-slot)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 ;; max uses model/parse-max for getter — keep as inline custom accessor
