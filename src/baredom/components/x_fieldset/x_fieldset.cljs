@@ -163,11 +163,11 @@
     (gobj/set refs rk-root-el    root-el)
     (gobj/set refs rk-legend-el  legend-el)
     (gobj/set refs rk-content-el content-el)
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (make-shadow! el)))
+  (or (du/getv el k-refs) (make-shadow! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -202,19 +202,19 @@
   (du/set-bool-attr! content-el attr-inert         disabled?))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js root-el    (gobj/get refs rk-root-el)
           ^js legend-el  (gobj/get refs rk-legend-el)
           ^js content-el (gobj/get refs rk-content-el)]
       (apply-legend!         legend-el m)
       (apply-host-aria!      root-el   m)
       (apply-disabled-state! el        content-el m)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
