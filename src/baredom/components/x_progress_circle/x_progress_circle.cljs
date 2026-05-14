@@ -1,7 +1,6 @@
 (ns baredom.components.x-progress-circle.x-progress-circle
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-progress-circle.model :as model]))
 
 ;; ── Constants ─────────────────────────────────────────────────────────────
@@ -135,10 +134,10 @@
     (.appendChild base   center)
     (.appendChild root   style-el)
     (.appendChild root   base)
-    (gobj/set el k-base       base)
-    (gobj/set el k-fill       fill)
-    (gobj/set el k-value-node value-node)
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-base       base)
+    (du/setv! el k-fill       fill)
+    (du/setv! el k-value-node value-node)
+    (du/setv! el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -155,10 +154,10 @@
 (defn- apply-model! [^js el {:keys [value max percent variant size label
                                     show-value indeterminate aria-valuetext]
                              :as m}]
-  (let [^js base       (gobj/get el k-base)
-        ^js fill       (gobj/get el k-fill)
-        ^js value-node (gobj/get el k-value-node)
-        was-completed  (gobj/get el k-completed)
+  (let [^js base       (du/getv el k-base)
+        ^js fill       (du/getv el k-fill)
+        ^js value-node (du/getv el k-value-node)
+        was-completed  (du/getv el k-completed)
         now-complete   (and (not indeterminate) (>= value max))
         offset         (if indeterminate
                          (* circumference 0.75)
@@ -202,24 +201,24 @@
     ;; x-progress-circle-complete event
     (when (and now-complete (not was-completed))
       (du/dispatch! el model/event-complete #js {:value value :max max}))
-    (gobj/set el k-completed (boolean now-complete))
-    (gobj/set el k-model m)))
+    (du/setv! el k-completed (boolean now-complete))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

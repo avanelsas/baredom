@@ -120,7 +120,7 @@
     (.appendChild root control-el)
 
     (let [refs #js {:root root :control control-el :track track-el :thumb thumb-el}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ── Read element state from attributes ───────────────────────────────────────
@@ -164,7 +164,7 @@
   (du/set-bool-attr! el "data-disabled" disabled?))
 
 (defn- apply-form-value! [^js el {:keys [checked? value]}]
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (when checked? value))))
 
 (defn- apply-model! [^js el ^js refs m]
@@ -173,19 +173,19 @@
     (apply-disabled!   control-el m)
     (apply-host-data!  el m)
     (apply-form-value! el m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 ;; render! is the direct-write entry — try-toggle!/form-disabled!/form-reset!
 ;; mutate attributes synchronously and want the apply to run unconditionally.
 ;; attribute-changed! uses update-from-attrs! which gates on a model diff.
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (apply-model! el refs (read-model el))))
 
 (defn- update-from-attrs! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= new-m old-m)
         (apply-model! el refs new-m)))))
 
@@ -221,12 +221,12 @@
                         (let [gen-id (str "x-sw-lbl-" id)]
                           (du/set-attr! lbl "id" gen-id)
                           gen-id))]
-            (when-let [refs (gobj/get el k-refs)]
+            (when-let [refs (du/getv el k-refs)]
               (du/set-attr! (gobj/get refs "control") "aria-labelledby" lid))))))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js control-el (gobj/get refs "control")
           click-h   (fn handle-control-click   [^js _e] (try-toggle! el))
           keydown-h (fn handle-control-keydown [^js e]
@@ -237,15 +237,15 @@
           handlers  #js {:click click-h :keydown keydown-h}]
       (.addEventListener control-el "click"   click-h)
       (.addEventListener control-el "keydown" keydown-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js control-el (gobj/get refs "control")]
         (.removeEventListener control-el "click"   (gobj/get handlers "click"))
         (.removeEventListener control-el "keydown" (gobj/get handlers "keydown")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ── Form-associated callbacks ─────────────────────────────────────────────────
 (defn- form-disabled! [^js el disabled?]
@@ -258,10 +258,10 @@
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (wire-external-label! el)

@@ -90,12 +90,12 @@
     (.setAttribute container "aria-live" "polite")
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs #js {"root" root "container" container})))
+    (du/setv! el k-refs #js {"root" root "container" container})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Position ──────────────────────────────────────────────────────────────────
 (defn- apply-position! [^js el]
@@ -130,23 +130,23 @@
         ^js root (gobj/get refs "root")
         dismiss-h (fn [e] (on-alert-dismiss el e))]
     (.addEventListener root alert-model/event-dismiss dismiss-h #js {:capture false})
-    (gobj/set el k-handlers #js {"dismiss" dismiss-h})))
+    (du/setv! el k-handlers #js {"dismiss" dismiss-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js root     (gobj/get refs "root")
             dismiss-h (gobj/get hs "dismiss")]
         (when dismiss-h
           (.removeEventListener root alert-model/event-dismiss dismiss-h #js {:capture false})))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── push! ────────────────────────────────────────────────────────────────────
 (defn- push! [^js el ^js opts]
   (let [refs      (ensure-refs! el)
         ^js container (gobj/get refs "container")
-        current-max (or (gobj/get el k-max) model/default-max)
+        current-max (or (du/getv el k-max) model/default-max)
         current-count (.-length (.querySelectorAll container model/alert-tag))]
     (when (< current-count current-max)
       (let [^js alert (.createElement js/document model/alert-tag)
@@ -223,7 +223,7 @@
 (defn- attribute-changed! [^js el n _old-val _new-val]
   (cond
     (= n model/attr-position) (apply-position! el)
-    (= n model/attr-max)      (gobj/set el k-max (model/parse-max (du/get-attr el model/attr-max)))))
+    (= n model/attr-max)      (du/setv! el k-max (model/parse-max (du/get-attr el model/attr-max)))))
 
 (defn- install-methods! [^js proto]
   (.defineProperty js/Object proto "push"

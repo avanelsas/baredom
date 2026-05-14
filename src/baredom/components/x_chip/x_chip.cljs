@@ -154,7 +154,7 @@
     (.appendChild container remove-btn)
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root       root
                :container  container
                :label-el   label-el

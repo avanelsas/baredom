@@ -106,9 +106,9 @@
       :else                              "linux")))
 
 (defn- ensure-detected-platform! [^js el]
-  (or (gobj/get el k-detected-platform)
+  (or (du/getv el k-detected-platform)
       (let [p (detect-platform!)]
-        (gobj/set el k-detected-platform p)
+        (du/setv! el k-detected-platform p)
         p)))
 
 ;; ── DOM initialisation ───────────────────────────────────────────────────────
@@ -122,12 +122,12 @@
     (.appendChild root style)
     (.appendChild root base)
     (gobj/set refs rk-base base)
-    (gobj/set el k-refs refs)))
+    (du/setv! el k-refs refs)))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -188,11 +188,11 @@
     (du/set-attr! el attr-data-size size)
     (apply-host-aria! el label)
     (render-base! base m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 

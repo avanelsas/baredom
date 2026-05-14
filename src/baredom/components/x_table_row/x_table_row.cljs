@@ -76,12 +76,12 @@
     (.appendChild root style)
     (.appendChild root slot-el)
 
-    (gobj/set el k-refs {:root root :slot-el slot-el})))
+    (du/setv! el k-refs {:root root :slot-el slot-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -121,17 +121,17 @@
 (defn- apply-model! [^js el m]
   (ensure-refs! el)
   (apply-host-attrs! el m)
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-click! [^js el]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (du/dispatch-cancelable! el model/event-click (clj->js (model/click-detail m)))))
 
 (defn- dispatch-connected! [^js el m]
@@ -142,14 +142,14 @@
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-click [^js el ^js _e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when (model/interactive-eligible? m)
       (dispatch-click! el))))
 
 (defn- on-keydown [^js el ^js e]
   (let [key (.-key e)]
     (when (or (= key "Enter") (= key " "))
-      (let [m (or (gobj/get el k-model) (read-model el))]
+      (let [m (or (du/getv el k-model) (read-model el))]
         (when (model/interactive-eligible? m)
           (.preventDefault e)
           (dispatch-click! el))))))
@@ -160,15 +160,15 @@
         keydown-h (fn handle-row-keydown [e] (on-keydown el e))]
     (.addEventListener el "click" click-h)
     (.addEventListener el "keydown" keydown-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown keydown-h})))
+    (du/setv! el k-handlers #js {:click click-h :keydown keydown-h})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
+  (when-let [hs (du/getv el k-handlers)]
     (let [click-h   (gobj/get hs "click")
           keydown-h (gobj/get hs "keydown")]
       (when click-h   (.removeEventListener el "click" click-h))
       (when keydown-h (.removeEventListener el "keydown" keydown-h))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -196,7 +196,7 @@
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el)
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (dispatch-connected! el m)))
 
 (defn- disconnected! [^js el]

@@ -1,7 +1,6 @@
 (ns baredom.components.x-spinner.x-spinner
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-spinner.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -70,8 +69,8 @@
     ;; Static a11y attributes on the host — set once
     (du/set-attr! el "role"      "status")
     (du/set-attr! el "aria-live" "polite")
-    (gobj/set el k-ring ring)
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-ring ring)
+    (du/setv! el k-initialized true)))
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -85,22 +84,22 @@
   (du/set-attr! el "data-size"    size)
   (du/set-attr! el "data-variant" variant)
   (du/set-attr! el "aria-label"   label)
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
-  (when (and (not= old-val new-val) (gobj/get el k-initialized))
+  (when (and (not= old-val new-val) (du/getv el k-initialized))
     (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

@@ -205,12 +205,12 @@
     (gobj/set refs rk-header   header)
     (gobj/set refs rk-body     body)
     (gobj/set refs rk-footer   footer)
-    (gobj/set el k-refs refs)))
+    (du/setv! el k-refs refs)))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -247,36 +247,36 @@
     (vec (concat shadow-els slotted-els))))
 
 (defn- activate-focus-trap! [^js el]
-  (let [refs       (gobj/get el k-refs)
+  (let [refs       (du/getv el k-refs)
         ^js dialog (when refs (gobj/get refs rk-dialog))
         tabbables  (when refs (collect-tabbables refs))]
-    (gobj/set el k-restore (.-activeElement js/document))
-    (gobj/set el k-tabbables (when tabbables (clj->js tabbables)))
+    (du/setv! el k-restore (.-activeElement js/document))
+    (du/setv! el k-tabbables (when tabbables (clj->js tabbables)))
     (if (seq tabbables)
       (.focus (first tabbables))
       (when dialog
         (when-not (.hasAttribute dialog attr-tabindex)
           (.setAttribute dialog attr-tabindex tab-stop)
-          (gobj/set el k-dialog-tab true))
+          (du/setv! el k-dialog-tab true))
         (.focus dialog)))))
 
 (defn- deactivate-focus-trap! [^js el]
-  (let [refs              (gobj/get el k-refs)
+  (let [refs              (du/getv el k-refs)
         ^js dialog        (when refs (gobj/get refs rk-dialog))
-        restore           (gobj/get el k-restore)
-        dialog-tab-added  (true? (gobj/get el k-dialog-tab))]
-    (gobj/set el k-tabbables nil)
-    (gobj/set el k-restore nil)
+        restore           (du/getv el k-restore)
+        dialog-tab-added  (true? (du/getv el k-dialog-tab))]
+    (du/setv! el k-tabbables nil)
+    (du/setv! el k-restore nil)
     (when (and dialog dialog-tab-added)
       (.removeAttribute dialog attr-tabindex)
-      (gobj/set el k-dialog-tab false))
+      (du/setv! el k-dialog-tab false))
     (when (and restore (.-isConnected restore))
       (.focus restore))))
 
 (defn- cycle-focus! [^js el ^js e]
-  (let [tabbables-js (gobj/get el k-tabbables)
+  (let [tabbables-js (du/getv el k-tabbables)
         tabbables    (if tabbables-js (vec (array-seq tabbables-js)) [])
-        refs         (gobj/get el k-refs)
+        refs         (du/getv el k-refs)
         ^js dialog   (when refs (gobj/get refs rk-dialog))]
     (if (empty? tabbables)
       (do (.preventDefault e)
@@ -314,9 +314,9 @@
 
 ;; ── Transition detection ──────────────────────────────────────────────────────
 (defn- handle-open-transition! [^js el open?]
-  (let [prev-open (gobj/get el k-prev-open)]
+  (let [prev-open (du/getv el k-prev-open)]
     (when (not= prev-open open?)
-      (gobj/set el k-prev-open open?)
+      (du/setv! el k-prev-open open?)
       (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
       (if open?
         (js/setTimeout (fn delayed-focus-trap [] (activate-focus-trap! el)) 0)
@@ -336,11 +336,11 @@
     (apply-host-data!   el m)
     (apply-dialog-aria! dialog m)
     (handle-open-transition! el (:open? m))
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
@@ -366,11 +366,11 @@
     (.addEventListener dialog   ev-keydown keydown-h)
     (gobj/set handlers hk-backdrop backdrop-h)
     (gobj/set handlers hk-keydown  keydown-h)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js backdrop (gobj/get refs rk-backdrop)
             ^js dialog   (gobj/get refs rk-dialog)
@@ -378,7 +378,7 @@
             keydown-h    (gobj/get hs hk-keydown)]
         (when backdrop-h (.removeEventListener backdrop ev-click   backdrop-h))
         (when keydown-h  (.removeEventListener dialog   ev-keydown keydown-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

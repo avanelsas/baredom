@@ -1,7 +1,6 @@
 (ns baredom.components.x-spacer.x-spacer
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-spacer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -36,7 +35,7 @@
         ^js style (make-el "style")]
     (set! (.-textContent style) style-text)
     (.appendChild root style)
-    (gobj/set el k-refs #js {:root root})))
+    (du/setv! el k-refs #js {:root root})))
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -53,17 +52,17 @@
     (.setProperty style "--x-spacer-size" size)
     (du/set-attr! el "role" "none")
     (du/set-attr! el "aria-hidden" "true")
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (update-from-attrs! el))
 
@@ -71,7 +70,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val)
-             (gobj/get el k-refs))
+             (du/getv el k-refs))
     (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

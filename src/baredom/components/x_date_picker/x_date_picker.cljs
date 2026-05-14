@@ -52,7 +52,7 @@
         cfg       {:format (:format canon) :locale (:locale canon)}
         disp      (model/display-value canon cfg)
         ;; stored month: default to value-d / start-d / today
-        existing  (gobj/get el k-state)
+        existing  (du/getv el k-state)
         cur-month (when existing (gobj/get existing "month"))
         anchor    (or (:value-d canon) (:start-d canon)
                       (js/Date. (js/Date.now)))
@@ -61,7 +61,7 @@
                        :cfg    cfg
                        :disp   disp
                        :month  month}]
-    (gobj/set el k-state state)
+    (du/setv! el k-state state)
     state))
 
 ;; ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@
 (defn- render-grid!
   [^js el ^js grid canon]
   (set! (.-textContent grid) "")
-  (let [state (gobj/get el k-state)
+  (let [state (du/getv el k-state)
         ^js month (when state (gobj/get state "month"))
         items (model/month-grid month)]
     (doseq [{:keys [date in-month?]} items]
@@ -123,8 +123,8 @@
 (defn- apply-grid-focus!
   "Set tabindex=0 on the focused day cell (from k-grid-focus), -1 on all others."
   [^js el]
-  (let [iso  (gobj/get el k-grid-focus)
-        refs (gobj/get el k-refs)
+  (let [iso  (du/getv el k-grid-focus)
+        refs (du/getv el k-refs)
         ^js grid (when refs (gobj/get refs "grid"))]
     (when (and grid iso)
       (when-let [^js btn (.querySelector grid (str "[data-iso=\"" iso "\"]"))]
@@ -133,8 +133,8 @@
 (defn- focus-grid-date!
   "Set the focused date and move DOM focus to that cell."
   [^js el iso]
-  (gobj/set el k-grid-focus iso)
-  (let [refs (gobj/get el k-refs)
+  (du/setv! el k-grid-focus iso)
+  (let [refs (du/getv el k-refs)
         ^js grid (when refs (gobj/get refs "grid"))]
     (when grid
       ;; Remove previous tabindex=0
@@ -150,8 +150,8 @@
 
 (defn- render-weekdays!
   [^js el ^js weekdays-el]
-  (when-not (gobj/get el k-wd-done)
-    (gobj/set el k-wd-done true)
+  (when-not (du/getv el k-wd-done)
+    (du/setv! el k-wd-done true)
     (let [labels #js ["Su" "Mo" "Tu" "We" "Th" "Fr" "Sa"]]
       (dotimes [i 7]
         (let [^js div (make-el "div")]
@@ -172,12 +172,12 @@
 
 (defn- render-calendar!
   [^js el]
-  (let [refs      (gobj/get el k-refs)]
+  (let [refs      (du/getv el k-refs)]
     (when refs
       (let [^js month-label (gobj/get refs "month-label")
             ^js grid        (gobj/get refs "grid")
             ^js weekdays-el (gobj/get refs "weekdays")
-            state           (gobj/get el k-state)
+            state           (du/getv el k-state)
             canon           (when state (gobj/get state "canon"))
             ^js month       (when state (gobj/get state "month"))
             cfg             (when state (gobj/get state "cfg"))
@@ -195,11 +195,11 @@
 
 (defn- sync-input-display!
   [^js el]
-  (let [refs    (gobj/get el k-refs)
+  (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
-        state   (gobj/get el k-state)
+        state   (du/getv el k-state)
         disp    (when state (gobj/get state "disp"))
-        focused (gobj/get el k-focused)]
+        focused (du/getv el k-focused)]
     (when (and inp (not focused))
       (set! (.-value inp) (or disp "")))))
 
@@ -209,7 +209,7 @@
 
 (defn- render!
   [^js el]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when refs
       (let [^js inp     (gobj/get refs "input")
             ^js btn     (gobj/get refs "btn")
@@ -256,7 +256,7 @@
   "Apply date selection. For single: set value. For range: smart first/second click."
   [^js el ^js d reason]
   (when-not (du/has-attr? el model/attr-readonly)
-    (let [state  (gobj/get el k-state)
+    (let [state  (du/getv el k-state)
           canon  (when state (gobj/get state "canon"))
           mode   (when canon (:mode canon))
           mode-s (if (= mode :range) "range" "single")
@@ -277,7 +277,7 @@
               (du/remove-attr! el "open")
               (render! el)))
           ;; Range mode
-          (let [step (or (gobj/get el k-range-step) 0)
+          (let [step (or (du/getv el k-range-step) 0)
                 cur-start (:start-d canon)]
             (cond
               ;; Step 0: no selection yet — set start
@@ -285,7 +285,7 @@
               (do
                 (du/set-attr! el model/attr-start (model/date->iso d))
                 (du/remove-attr! el model/attr-end)
-                (gobj/set el k-range-step 1))
+                (du/setv! el k-range-step 1))
 
               ;; Step 1: start selected, pick end
               (= step 1)
@@ -302,7 +302,7 @@
                                      d)]
                     (du/set-attr! el model/attr-start (model/date->iso final-start))
                     (du/set-attr! el model/attr-end (model/date->iso final-end))
-                    (gobj/set el k-range-step 0)
+                    (du/setv! el k-range-step 0)
                     (when (and (du/has-attr? el model/attr-close-on-select)
                                (some? final-start) (some? final-end))
                       (du/remove-attr! el "open")))
@@ -310,17 +310,17 @@
                   (do
                     (du/set-attr! el model/attr-start (model/date->iso d))
                     (du/remove-attr! el model/attr-end)
-                    (gobj/set el k-range-step 1))))
+                    (du/setv! el k-range-step 1))))
 
               ;; Step 2+: reset and start fresh
               :else
               (do
                 (du/set-attr! el model/attr-start (model/date->iso d))
                 (du/remove-attr! el model/attr-end)
-                (gobj/set el k-range-step 1)))
+                (du/setv! el k-range-step 1)))
             (read-state! el)
             (render! el)
-            (let [new-state (gobj/get el k-state)
+            (let [new-state (du/getv el k-state)
                   new-canon (when new-state (gobj/get new-state "canon"))
                   s-iso     (when (:start-d new-canon) (model/date->iso (:start-d new-canon)))
                   e-iso     (when (:end-d new-canon) (model/date->iso (:end-d new-canon)))
@@ -335,10 +335,10 @@
 
 (defn- commit-display!
   [^js el reason]
-  (let [refs    (gobj/get el k-refs)
+  (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
         val     (when inp (.-value inp))
-        state   (gobj/get el k-state)
+        state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
         mode    (:mode canon)
         mode-s  (if (= mode :range) "range" "single")]
@@ -367,7 +367,7 @@
                                                 :mode mode-s :reason reason})
               (du/set-attr! el model/attr-start s-iso)
               (du/set-attr! el model/attr-end   e-iso)
-              (gobj/set el k-range-step 0)
+              (du/setv! el k-range-step 0)
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
@@ -380,7 +380,7 @@
 
 (defn- navigate-month!
   [^js el direction]
-  (let [state   (gobj/get el k-state)
+  (let [state   (du/getv el k-state)
         ^js cur (when state (gobj/get state "month"))]
     (when cur
       (let [y    (.getUTCFullYear cur)
@@ -400,7 +400,7 @@
   (when-not (du/has-attr? el "open")
     (du/set-attr! el "open" "")
     ;; attributeChangedCallback already triggers render; set grid focus
-    (let [state  (gobj/get el k-state)
+    (let [state  (du/getv el k-state)
           canon  (when state (gobj/get state "canon"))
           anchor (or (:value-d canon) (:start-d canon) (js/Date. (js/Date.now)))
           iso    (model/date->iso anchor)]
@@ -636,7 +636,7 @@
                     :weekdays   weekdays
                     :grid       grid
                     :sr         sr}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -645,12 +645,12 @@
 
 (defn- on-input-event!
   [^js el ^js _e]
-  (let [refs    (gobj/get el k-refs)
+  (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
-        state   (gobj/get el k-state)
+        state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
         mode-s  (if (= (:mode canon) :range) "range" "single")]
-    (gobj/set el k-display (when inp (.-value inp)))
+    (du/setv! el k-display (when inp (.-value inp)))
     (du/dispatch! el model/event-input
                #js {:value (when inp (.-value inp)) :mode mode-s})))
 
@@ -668,11 +668,11 @@
 
 (defn- on-input-focus!
   [^js el ^js _e]
-  (gobj/set el k-focused true))
+  (du/setv! el k-focused true))
 
 (defn- on-input-blur!
   [^js el ^js _e]
-  (gobj/set el k-focused false)
+  (du/setv! el k-focused false)
   (when-not (du/has-attr? el model/attr-disabled)
     (commit-display! el "blur"))
   (sync-input-display! el))
@@ -709,9 +709,9 @@
   [^js el ^js e]
   (when-not (du/has-attr? el model/attr-disabled)
     (let [key     (.-key e)
-          cur-iso (gobj/get el k-grid-focus)
+          cur-iso (du/getv el k-grid-focus)
           ^js cur (when cur-iso (model/iso->date cur-iso))
-          state   (gobj/get el k-state)
+          state   (du/getv el k-state)
           canon   (when state (gobj/get state "canon"))
           ^js month (when state (gobj/get state "month"))
           nav-date
@@ -754,7 +754,7 @@
           (.preventDefault e)
           (close-popover! el)
           ;; Return focus to input
-          (let [refs (gobj/get el k-refs)
+          (let [refs (du/getv el k-refs)
                 ^js inp (when refs (gobj/get refs "input"))]
             (when inp (.focus inp))))))))
 
@@ -765,7 +765,7 @@
 
 (defn- add-listeners!
   [^js el]
-  (let [refs      (gobj/get el k-refs)
+  (let [refs      (du/getv el k-refs)
         ^js inp   (gobj/get refs "input")
         ^js btn   (gobj/get refs "btn")
         ^js prev  (gobj/get refs "nav-prev")
@@ -801,7 +801,7 @@
     (.addEventListener pop "pointerdown" h-pop-md)
     (.addEventListener js/document "pointerdown" h-doc-click true)
 
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {:input     h-input
                    :keydown   h-keydown
                    :focus     h-focus
@@ -816,8 +816,8 @@
 
 (defn- remove-listeners!
   [^js el]
-  (let [refs     (gobj/get el k-refs)
-        handlers (gobj/get el k-handlers)]
+  (let [refs     (du/getv el k-refs)
+        handlers (du/getv el k-handlers)]
     (when (and refs handlers)
       (let [^js inp  (gobj/get refs "input")
             ^js btn  (gobj/get refs "btn")
@@ -843,7 +843,7 @@
 
 (defn- connected!
   [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (remove-listeners! el)
   (add-listeners! el)

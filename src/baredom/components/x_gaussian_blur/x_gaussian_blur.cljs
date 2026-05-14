@@ -1,7 +1,6 @@
 (ns baredom.components.x-gaussian-blur.x-gaussian-blur
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-gaussian-blur.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
@@ -127,10 +126,10 @@
     (.appendChild root style-el)
     (.appendChild root backdrop)
     (.appendChild root content)
-    (gobj/set el k-backdrop backdrop)
-    (gobj/set el k-slot     slot-el)
-    (gobj/set el k-blobs    #js [])
-    (gobj/set el k-initialized true)))
+    (du/setv! el k-backdrop backdrop)
+    (du/setv! el k-slot     slot-el)
+    (du/setv! el k-blobs    #js [])
+    (du/setv! el k-initialized true)))
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -185,8 +184,8 @@
 (defn- reconcile-blobs!
   "Adds/removes blob divs to match count, then updates each blob's style."
   [^js el {:keys [blobs animation speed-s blur]}]
-  (let [^js backdrop (gobj/get el k-backdrop)
-        ^js arr      (gobj/get el k-blobs)
+  (let [^js backdrop (du/getv el k-backdrop)
+        ^js arr      (du/getv el k-blobs)
         current      (.-length arr)
         target       (count blobs)]
     ;; Add missing blobs
@@ -221,39 +220,39 @@
   (du/set-attr! el attr-data-animation animation))
 
 (defn- apply-model! [^js el m]
-  (let [^js backdrop (gobj/get el k-backdrop)
-        ^js slot-el  (gobj/get el k-slot)]
+  (let [^js backdrop (du/getv el k-backdrop)
+        ^js slot-el  (du/getv el k-slot)]
     (apply-backdrop-style! backdrop m)
     (apply-host-data!      el m)
     (reconcile-blobs!      el m)
     (update-a11y!          el slot-el)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-initialized)
+  (when-not (du/getv el k-initialized)
     (init-dom! el))
-  (let [^js slot-el (gobj/get el k-slot)
+  (let [^js slot-el (du/getv el k-slot)
         handler     (fn handle-slotchange [] (update-a11y! el slot-el))]
-    (gobj/set el k-slotchange handler)
+    (du/setv! el k-slotchange handler)
     (.addEventListener slot-el ev-slotchange handler))
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (let [^js slot-el (gobj/get el k-slot)
-        handler     (gobj/get el k-slotchange)]
+  (let [^js slot-el (du/getv el k-slot)
+        handler     (du/getv el k-slotchange)]
     (when (and slot-el handler)
       (.removeEventListener slot-el ev-slotchange handler))))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-initialized)
+    (when (du/getv el k-initialized)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

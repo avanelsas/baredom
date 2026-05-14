@@ -120,7 +120,7 @@
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
 (defn- init-dom! [^js el]
-  (let [m         (gobj/get el k-model)
+  (let [m         (du/getv el k-model)
         uid       (next-uid)
         filter-id (str "mb-" uid)
         root      (.attachShadow el #js {:mode "open"})
@@ -128,7 +128,7 @@
         viewport  (.createElement js/document "div")
         svg       (.createElementNS js/document svg-ns "svg")]
 
-    (gobj/set el k-uid uid)
+    (du/setv! el k-uid uid)
 
     (set! (.-textContent style) style-text)
 
@@ -146,14 +146,14 @@
       (.appendChild root style)
       (.appendChild root viewport)
 
-      (gobj/set el k-refs
+      (du/setv! el k-refs
                 (merge filter-refs
                        {:root root :viewport viewport :svg svg})))))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -174,7 +174,7 @@
   "Creates blob divs, appends to viewport, stores in k-blobs array.
    Initialises k-positions to all (0,0)."
   [^js el {:keys [blob-count blob-size colors]}]
-  (let [{:keys [viewport]} (gobj/get el k-refs)
+  (let [{:keys [viewport]} (du/getv el k-refs)
         ^js viewport viewport
         sizes   (model/blob-sizes blob-size blob-count)
         ^js arr #js []
@@ -189,26 +189,26 @@
         (.appendChild viewport div)
         (.push arr div)
         (.push pos #js {:x 0 :y 0})))
-    (gobj/set el k-blobs arr)
-    (gobj/set el k-positions pos)
-    (gobj/set el k-speeds (model/blob-speeds blob-count))))
+    (du/setv! el k-blobs arr)
+    (du/setv! el k-positions pos)
+    (du/setv! el k-speeds (model/blob-speeds blob-count))))
 
 (defn- remove-all-blobs! [^js el]
-  (when-let [^js arr (gobj/get el k-blobs)]
+  (when-let [^js arr (du/getv el k-blobs)]
     (dotimes [i (.-length arr)]
       (let [^js div (aget arr i)]
         (when (.-parentNode div)
           (.removeChild (.-parentNode div) div))))
-    (gobj/set el k-blobs #js [])
-    (gobj/set el k-positions #js [])))
+    (du/setv! el k-blobs #js [])
+    (du/setv! el k-positions #js [])))
 
 (defn- reconcile-blobs!
   "Adds/removes blob divs to match the model, then updates sizes and colors."
   [^js el {:keys [blob-count blob-size colors]}]
-  (let [{:keys [viewport]} (gobj/get el k-refs)
+  (let [{:keys [viewport]} (du/getv el k-refs)
         ^js viewport viewport
-        ^js arr      (gobj/get el k-blobs)
-        ^js pos      (gobj/get el k-positions)
+        ^js arr      (du/getv el k-blobs)
+        ^js pos      (du/getv el k-positions)
         current      (.-length arr)
         sizes        (model/blob-sizes blob-size blob-count)]
     ;; Add missing blobs
@@ -236,7 +236,7 @@
         (set! (.. div -style -height) (str size "px"))
         (set! (.. div -style -background) (aget colors i))))
     ;; Recompute speeds
-    (gobj/set el k-speeds (model/blob-speeds blob-count))))
+    (du/setv! el k-speeds (model/blob-speeds blob-count))))
 
 ;; ── Host style sync ─────────────────────────────────────────────────────────
 (defn- apply-host-style!
@@ -249,7 +249,7 @@
 (defn- update-filter!
   "Updates SVG filter elements to reflect current model."
   [^js el {:keys [blur threshold noise? noise-scale noise-intensity]}]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when-let [^js blur-el (:blur-el refs)]
       (.setAttribute blur-el "stdDeviation" (str blur)))
     (when-let [^js matrix-el (:matrix-el refs)]
@@ -262,13 +262,13 @@
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [^js mouse    (gobj/get el k-mouse)
-          ^js arr      (gobj/get el k-blobs)
-          ^js pos      (gobj/get el k-positions)
-          ^js speeds   (gobj/get el k-speeds)
+    (let [^js mouse    (du/getv el k-mouse)
+          ^js arr      (du/getv el k-blobs)
+          ^js pos      (du/getv el k-positions)
+          ^js speeds   (du/getv el k-speeds)
           mx           (gobj/get mouse "x")
           my           (gobj/get mouse "y")
-          m            (gobj/get el k-model)
+          m            (du/getv el k-model)
           n            (.-length arr)]
       ;; Lerp each blob toward mouse
       (dotimes [i n]
@@ -286,34 +286,34 @@
 
       ;; Animate noise shimmer
       (when (:noise? m)
-        (let [seed      (gobj/get el k-noise-seed)
+        (let [seed      (du/getv el k-noise-seed)
               new-seed  (+ seed (:noise-speed m))
-              refs      (gobj/get el k-refs)]
-          (gobj/set el k-noise-seed new-seed)
+              refs      (du/getv el k-refs)]
+          (du/setv! el k-noise-seed new-seed)
           (when-let [^js turb-el (:turb-el refs)]
             (.setAttribute turb-el "seed" (str (js/Math.floor new-seed))))))
 
       ;; Schedule next frame
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (prefers-reduced-motion?)
-    (gobj/set el k-noise-seed 0)
-    (gobj/set el k-raf
+    (du/setv! el k-noise-seed 0)
+    (du/setv! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Mouse tracking ──────────────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when-let [^js viewport (:viewport refs)]
       (let [^js rect (.getBoundingClientRect viewport)
-            ^js mouse (gobj/get el k-mouse)]
+            ^js mouse (du/getv el k-mouse)]
         (gobj/set mouse "x" (- (.-clientX e) (.-left rect)))
         (gobj/set mouse "y" (- (.-clientY e) (.-top rect)))))))
 
@@ -321,12 +321,12 @@
 (defn- add-listeners! [^js el]
   (let [handler (fn [e] (on-pointermove el e))]
     (.addEventListener js/window "pointermove" handler)
-    (gobj/set el k-handler handler)))
+    (du/setv! el k-handler handler)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [handler (gobj/get el k-handler)]
+  (when-let [handler (du/getv el k-handler)]
     (.removeEventListener js/window "pointermove" handler)
-    (gobj/set el k-handler nil)))
+    (du/setv! el k-handler nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
@@ -361,8 +361,8 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (gobj/set el k-mouse #js {:x 0 :y 0})
+    (du/setv! el k-model m)
+    (du/setv! el k-mouse #js {:x 0 :y 0})
     (ensure-refs! el)
     (remove-all-blobs! el)
     (create-blobs! el m)
@@ -378,15 +378,15 @@
 
 ;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ──────
 (defn- apply-model! [^js el m]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (reconcile-blobs! el m)
     (update-filter! el m)
     (apply-host-style! el m))
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 

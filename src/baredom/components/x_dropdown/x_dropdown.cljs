@@ -215,7 +215,7 @@
                     :label   label-el
                     :chevron chevron-el
                     :panel   panel-el}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -241,19 +241,19 @@
   (du/set-attr! panel-el "data-placement" placement))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js trigger-el (gobj/get refs "trigger")
           ^js label-el   (gobj/get refs "label")
           ^js panel-el   (gobj/get refs "panel")]
       (apply-label!            label-el m)
       (apply-trigger-state!    trigger-el m)
       (apply-panel-placement!  panel-el m)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -279,7 +279,7 @@
 ;; Document-level listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-doc-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
       ;; Defer one tick so the click that opens the dropdown finishes
@@ -296,7 +296,7 @@
            (.addEventListener js/document "keydown" doc-keydown-h)))))))
 
 (defn- remove-doc-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
       (.removeEventListener js/document "click"   doc-click-h)
@@ -357,8 +357,8 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-static-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js trigger-el (gobj/get refs "trigger")
             ^js panel-el   (gobj/get refs "panel")]
         (.addEventListener trigger-el "click"    (gobj/get handlers "triggerClick"))
@@ -368,8 +368,8 @@
           (.addEventListener panel-el "click"    (gobj/get handlers "panelClick")))))))
 
 (defn- remove-static-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js trigger-el (gobj/get refs "trigger")
             ^js panel-el   (gobj/get refs "panel")]
         (.removeEventListener trigger-el "click"    (gobj/get handlers "triggerClick"))
@@ -382,11 +382,11 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (remove-static-listeners! el)
   (remove-doc-listeners! el)
-  (gobj/set el k-handlers (make-handlers el))
+  (du/setv! el k-handlers (make-handlers el))
   (add-static-listeners! el)
   (when (du/has-attr? el model/attr-open)
     (add-doc-listeners! el))

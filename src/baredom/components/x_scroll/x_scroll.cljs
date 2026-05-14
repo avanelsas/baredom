@@ -185,7 +185,7 @@
     (.appendChild root indicators)
     (.appendChild root live)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root       root
                :viewport   viewport
                :track      track
@@ -196,9 +196,9 @@
                :live       live})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -295,7 +295,7 @@
         loop?        (model/effective-loop? (:loop? m) cnt)
         vp-sz        (viewport-size viewport m)
         snap-off     (snap-offset (:snap m) vp-sz size)]
-    (gobj/set el k-child-count cnt)
+    (du/setv! el k-child-count cnt)
     (when (pos? cnt)
       ;; Set gap on track
       (set! (.. track -style -gap) (str gap "px"))
@@ -389,22 +389,22 @@
 (declare go-to!)
 
 (defn- stop-autoplay! [^js el]
-  (when-let [tid (gobj/get el k-autoplay-tid)]
+  (when-let [tid (du/getv el k-autoplay-tid)]
     (js/clearInterval tid)
-    (gobj/set el k-autoplay-tid nil)))
+    (du/setv! el k-autoplay-tid nil)))
 
 (defn- start-autoplay! [^js el]
   (stop-autoplay! el)
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when (and (:auto-play? m) (not (:disabled? m)))
-      (gobj/set el k-autoplay-tid
+      (du/setv! el k-autoplay-tid
                 (js/setInterval
                  (fn []
                    (when (.-isConnected el)
                      (let [cnt (child-count el)]
                        (when (pos? cnt)
-                         (let [cur (:active-index (or (gobj/get el k-model) (read-model el)))
-                               m2  (or (gobj/get el k-model) (read-model el))
+                         (let [cur (:active-index (or (du/getv el k-model) (read-model el)))
+                               m2  (or (du/getv el k-model) (read-model el))
                                nxt (model/resolve-target-index cur 1 cnt (:loop? m2))]
                            (when (not= cur nxt)
                              (go-to! el nxt 1)))))))
@@ -421,8 +421,8 @@
   Without hint, direction is inferred from shortest path."
   ([^js el target-idx] (go-to! el target-idx nil))
   ([^js el target-idx hint-delta]
-  (let [m     (or (gobj/get el k-model) (read-model el))
-        cnt   (or (gobj/get el k-child-count) (child-count el))
+  (let [m     (or (du/getv el k-model) (read-model el))
+        cnt   (or (du/getv el k-child-count) (child-count el))
         prev  (:active-index m)]
     (when (and (pos? cnt) (not (:disabled? m)))
       (let [loop?   (model/effective-loop? (:loop? m) cnt)
@@ -444,7 +444,7 @@
                            (clj->js (model/start-detail dir prev)))
               ;; Update model and position
               (let [new-m (assoc m :active-index target)]
-                (gobj/set el k-model new-m)
+                (du/setv! el k-model new-m)
                 (du/set-attr! el model/attr-active-index (str target))
                 (if loop?
                   (animate-loop-step! el new-m raw-delta)
@@ -478,14 +478,14 @@
                 (restart-autoplay! el))))))))))
 
 (defn- next! [^js el]
-  (let [m   (or (gobj/get el k-model) (read-model el))
-        cnt (or (gobj/get el k-child-count) (child-count el))
+  (let [m   (or (du/getv el k-model) (read-model el))
+        cnt (or (du/getv el k-child-count) (child-count el))
         nxt (model/resolve-target-index (:active-index m) 1 cnt (:loop? m))]
     (go-to! el nxt 1)))
 
 (defn- prev! [^js el]
-  (let [m   (or (gobj/get el k-model) (read-model el))
-        cnt (or (gobj/get el k-child-count) (child-count el))
+  (let [m   (or (du/getv el k-model) (read-model el))
+        cnt (or (du/getv el k-child-count) (child-count el))
         prv (model/resolve-target-index (:active-index m) -1 cnt (:loop? m))]
     (go-to! el prv -1)))
 
@@ -493,7 +493,7 @@
 (declare on-window-pointermove on-window-pointerup)
 
 (defn- on-pointerdown [^js el ^js e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when-not (:disabled? m)
       (let [{:keys [track]} (ensure-refs! el)
             ^js track track
@@ -508,7 +508,7 @@
                   (on-window-pointerup el evt))]
           (.addEventListener js/window "pointermove" move-h)
           (.addEventListener js/window "pointerup" up-h)
-          (gobj/set el k-drag-state
+          (du/setv! el k-drag-state
                     (js-obj dk-start-x     (.-clientX e)
                             dk-start-y     (.-clientY e)
                             dk-start-time  (.now js/Date)
@@ -521,7 +521,7 @@
                             dk-up-h        up-h)))))))
 
 (defn- on-window-pointermove [^js el ^js e]
-  (when-let [ds (gobj/get el k-drag-state)]
+  (when-let [ds (du/getv el k-drag-state)]
     (.preventDefault e)
     (let [horiz?    (gobj/get ds dk-horiz)
           start-pos (if horiz? (gobj/get ds dk-start-x) (gobj/get ds dk-start-y))
@@ -540,10 +540,10 @@
         (let [{:keys [viewport track]} (ensure-refs! el)
               ^js viewport viewport
               ^js track    track
-              m     (or (gobj/get el k-model) (read-model el))
+              m     (or (du/getv el k-model) (read-model el))
               size  (slide-size el m)
               gap   (:gap m)
-              cnt   (or (gobj/get el k-child-count) (child-count el))
+              cnt   (or (du/getv el k-child-count) (child-count el))
               active (:active-index m)
               loop?  (model/effective-loop? (:loop? m) cnt)
               vp-sz (viewport-size viewport m)
@@ -566,8 +566,8 @@
                                   (str "translateY(" translate "px)"))))))))
 
 (defn- on-window-pointerup [^js el ^js e]
-  (when-let [ds (gobj/get el k-drag-state)]
-    (gobj/set el k-drag-state nil)
+  (when-let [ds (du/getv el k-drag-state)]
+    (du/setv! el k-drag-state nil)
     (let [{:keys [track]} (ensure-refs! el)
           ^js track track]
       ;; Re-enable transition
@@ -579,9 +579,9 @@
             delta     (- end-pos start-pos)
             dt        (- (.now js/Date) (gobj/get ds dk-last-time))
             velocity  (if (pos? dt) (/ (js/Math.abs delta) dt) 0)
-            m         (or (gobj/get el k-model) (read-model el))
+            m         (or (du/getv el k-model) (read-model el))
             size      (slide-size el m)
-            cnt       (or (gobj/get el k-child-count) (child-count el))
+            cnt       (or (du/getv el k-child-count) (child-count el))
             active    (:active-index m)
             ;; Determine target slide
             nav-delta (cond
@@ -606,7 +606,7 @@
 
 ;; ── Keyboard ────────────────────────────────────────────────────────────────
 (defn- on-keydown [^js el ^js e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when-not (:disabled? m)
       (let [key  (.-key e)
             horiz? (horizontal? m)
@@ -617,7 +617,7 @@
               (and (not horiz?) (= key "ArrowUp"))   (do (prev! el) true)
               (and (not horiz?) (= key "ArrowDown")) (do (next! el) true)
               (= key "Home") (do (go-to! el 0) true)
-              (= key "End")  (do (go-to! el (dec (or (gobj/get el k-child-count)
+              (= key "End")  (do (go-to! el (dec (or (du/getv el k-child-count)
                                                      (child-count el)))) true)
               :else false)]
         (when handled?
@@ -631,16 +631,16 @@
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
-  (let [m   (or (gobj/get el k-model) (read-model el))
+  (let [m   (or (du/getv el k-model) (read-model el))
         cnt (child-count el)]
-    (gobj/set el k-child-count cnt)
+    (du/setv! el k-child-count cnt)
     ;; Clamp active index if needed
     (when (and (pos? cnt) (>= (:active-index m) cnt))
       (let [clamped (dec cnt)]
         (du/set-attr! el model/attr-active-index (str clamped))
-        (gobj/set el k-model (assoc m :active-index clamped))))
+        (du/setv! el k-model (assoc m :active-index clamped))))
     ;; Rebuild indicators and update button states
-    (let [m2  (or (gobj/get el k-model) (read-model el))
+    (let [m2  (or (du/getv el k-model) (read-model el))
           {:keys [prev-btn next-btn live]} (ensure-refs! el)
           ^js prev-btn prev-btn
           ^js next-btn next-btn
@@ -680,7 +680,7 @@
     (.addEventListener el "pointerleave" leave-h)
     (.addEventListener el "focusin" focusin-h)
     (.addEventListener el "focusout" focusout-h)
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {:prev      prev-h
                    :next      next-h
                    :keydown   key-h
@@ -694,8 +694,8 @@
 
 (defn- remove-listeners! [^js el]
   (stop-autoplay! el)
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js prev-btn (:prev-btn refs)
             ^js next-btn (:next-btn refs)
@@ -706,36 +706,36 @@
         (when-let [h (gobj/get hs "keydown")] (.removeEventListener el "keydown" h))
         (when-let [h (gobj/get hs "pdown")]   (.removeEventListener viewport "pointerdown" h))
         ;; Clean up any in-progress drag window listeners
-        (when-let [ds (gobj/get el k-drag-state)]
+        (when-let [ds (du/getv el k-drag-state)]
           (when-let [mh (gobj/get ds dk-move-h)] (.removeEventListener js/window "pointermove" mh))
           (when-let [uh (gobj/get ds dk-up-h)]   (.removeEventListener js/window "pointerup" uh))
-          (gobj/set el k-drag-state nil))
+          (du/setv! el k-drag-state nil))
         (when-let [h (gobj/get hs "slot")]    (.removeEventListener slot "slotchange" h))
         (when-let [h (gobj/get hs "vis")]     (.removeEventListener js/document "visibilitychange" h))
         (when-let [h (gobj/get hs "enter")]   (.removeEventListener el "pointerenter" h))
         (when-let [h (gobj/get hs "leave")]   (.removeEventListener el "pointerleave" h))
         (when-let [h (gobj/get hs "focusin")] (.removeEventListener el "focusin" h))
         (when-let [h (gobj/get hs "focusout")] (.removeEventListener el "focusout" h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Resize observer ─────────────────────────────────────────────────────────
 (defn- setup-resize-observer! [^js el]
-  (when-let [old (gobj/get el k-resize-obs)]
+  (when-let [old (du/getv el k-resize-obs)]
     (.disconnect ^js old))
   (let [{:keys [viewport]} (ensure-refs! el)
         ^js viewport viewport
         obs (js/ResizeObserver.
              (fn [_entries]
                (when (.-isConnected el)
-                 (let [m (or (gobj/get el k-model) (read-model el))]
+                 (let [m (or (du/getv el k-model) (read-model el))]
                    (position-slides! el m)))))]
     (.observe obs viewport)
-    (gobj/set el k-resize-obs obs)))
+    (du/setv! el k-resize-obs obs)))
 
 (defn- teardown-resize-observer! [^js el]
-  (when-let [obs (gobj/get el k-resize-obs)]
+  (when-let [obs (du/getv el k-resize-obs)]
     (.disconnect ^js obs)
-    (gobj/set el k-resize-obs nil)))
+    (du/setv! el k-resize-obs nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [mode show-controls? show-indicators?
@@ -745,7 +745,7 @@
         ^js prev-btn prev-btn
         ^js next-btn next-btn
         ^js live     live
-        cnt (or (gobj/get el k-child-count) (child-count el))]
+        cnt (or (du/getv el k-child-count) (child-count el))]
     ;; Data attributes for CSS
     (du/set-attr! el "data-mode" mode)
     (if show-controls?
@@ -779,11 +779,11 @@
     (position-slides! el m)
 
     ;; Cache
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
