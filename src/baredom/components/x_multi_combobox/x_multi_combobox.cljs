@@ -19,6 +19,40 @@
 (def ^:private opt-id-prefix "x-mcb-opt-")
 
 ;; ---------------------------------------------------------------------------
+;; Attribute / part / role name constants
+;; ---------------------------------------------------------------------------
+(def ^:private attr-part                  "part")
+(def ^:private attr-role                  "role")
+(def ^:private attr-id                    "id")
+(def ^:private attr-type                  "type")
+(def ^:private attr-autocomplete          "autocomplete")
+(def ^:private attr-data-value            "data-value")
+(def ^:private attr-data-active           "data-active")
+(def ^:private attr-data-disabled         "data-disabled")
+(def ^:private attr-data-placement        "data-placement")
+(def ^:private attr-aria-label            "aria-label")
+(def ^:private attr-aria-hidden           "aria-hidden")
+(def ^:private attr-aria-expanded         "aria-expanded")
+(def ^:private attr-aria-disabled         "aria-disabled")
+(def ^:private attr-aria-controls         "aria-controls")
+(def ^:private attr-aria-autocomplete     "aria-autocomplete")
+(def ^:private attr-aria-multiselectable  "aria-multiselectable")
+(def ^:private attr-aria-activedescendant "aria-activedescendant")
+
+(def ^:private part-wrapper   "wrapper")
+(def ^:private part-chip-area "chip-area")
+(def ^:private part-input     "input")
+(def ^:private part-chevron   "chevron")
+(def ^:private part-panel     "panel")
+(def ^:private part-option    "option")
+(def ^:private part-empty-msg "empty-msg")
+
+(def ^:private role-combobox "combobox")
+(def ^:private role-listbox  "listbox")
+(def ^:private role-option   "option")
+(def ^:private role-group    "group")
+
+;; ---------------------------------------------------------------------------
 ;; UID counter
 ;; ---------------------------------------------------------------------------
 (def ^:private id-state #js {:n 0})
@@ -29,9 +63,13 @@
     (str "x-mcb-lb-" n)))
 
 ;; ---------------------------------------------------------------------------
-;; DOM helpers
+;; Helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
+(defn- sorted-value-array
+  "Returns the value set as a sorted JS array — the shape consumers expect
+   in CustomEvent details and the `value` property getter."
+  [value-set]
+  (to-array (sort value-set)))
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -258,44 +296,44 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root        (.attachShadow el #js {:mode "open"})
-        style-el    (make-el "style")
-        wrapper-el  (make-el "div")
-        chip-area   (make-el "div")
-        input-el    (make-el "input")
-        chevron-el  (make-el "span")
-        panel-el    (make-el "div")
-        slot-el     (make-el "slot")
+        style-el    (.createElement js/document "style")
+        wrapper-el  (.createElement js/document "div")
+        chip-area   (.createElement js/document "div")
+        input-el    (.createElement js/document "input")
+        chevron-el  (.createElement js/document "span")
+        panel-el    (.createElement js/document "div")
+        slot-el     (.createElement js/document "slot")
         lb-id       (next-id!)]
 
     (set! (.-textContent style-el) style-text)
 
-    (du/set-attr! wrapper-el "part" "wrapper")
+    (du/set-attr! wrapper-el attr-part part-wrapper)
 
-    (du/set-attr! chip-area "part"       "chip-area")
-    (du/set-attr! chip-area "role"       "group")
-    (du/set-attr! chip-area "aria-label" "Selected values")
+    (du/set-attr! chip-area attr-part       part-chip-area)
+    (du/set-attr! chip-area attr-role       role-group)
+    (du/set-attr! chip-area attr-aria-label "Selected values")
 
-    (du/set-attr! input-el "part"              "input")
-    (du/set-attr! input-el "type"              "text")
-    (du/set-attr! input-el "role"              "combobox")
-    (du/set-attr! input-el "aria-expanded"     "false")
-    (du/set-attr! input-el "aria-autocomplete" "list")
-    (du/set-attr! input-el "aria-controls"     lb-id)
-    (du/set-attr! input-el "autocomplete"      "off")
+    (du/set-attr! input-el attr-part              part-input)
+    (du/set-attr! input-el attr-type              "text")
+    (du/set-attr! input-el attr-role              role-combobox)
+    (du/set-attr! input-el attr-aria-expanded     "false")
+    (du/set-attr! input-el attr-aria-autocomplete "list")
+    (du/set-attr! input-el attr-aria-controls     lb-id)
+    (du/set-attr! input-el attr-autocomplete      "off")
 
-    (du/set-attr! chevron-el "part"        "chevron")
-    (du/set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! chevron-el attr-part        part-chevron)
+    (du/set-attr! chevron-el attr-aria-hidden "true")
     (set! (.-innerHTML chevron-el)
           (str "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\""
                " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
                "<path d=\"M2.5 4.5L6 8L9.5 4.5\" stroke=\"currentColor\""
                " stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"))
 
-    (du/set-attr! panel-el "part"               "panel")
-    (du/set-attr! panel-el "role"               "listbox")
-    (du/set-attr! panel-el "id"                 lb-id)
-    (du/set-attr! panel-el "aria-multiselectable" "true")
-    (du/set-attr! panel-el "data-placement"     model/default-placement)
+    (du/set-attr! panel-el attr-part                 part-panel)
+    (du/set-attr! panel-el attr-role                 role-listbox)
+    (du/set-attr! panel-el attr-id                   lb-id)
+    (du/set-attr! panel-el attr-aria-multiselectable "true")
+    (du/set-attr! panel-el attr-data-placement       model/default-placement)
 
     (.appendChild chip-area input-el)
     (.appendChild wrapper-el chip-area)
@@ -371,7 +409,7 @@
       (doseq [v (sort value-set)]
         (let [opt   (model/find-option-by-value options v)
               label (if opt (:label opt) v)
-              ^js chip (make-el "x-chip")]
+              ^js chip (.createElement js/document "x-chip")]
           (du/set-attr! chip "label" label)
           (du/set-attr! chip "value" v)
           (du/set-attr! chip "removable" "")
@@ -399,38 +437,38 @@
       (set! (.-textContent panel-el) "")
 
       (if (empty? visible)
-        (let [^js msg (make-el "div")]
-          (du/set-attr! msg "part" "empty-msg")
+        (let [^js msg (.createElement js/document "div")]
+          (du/set-attr! msg attr-part part-empty-msg)
           (set! (.-textContent msg) model/empty-message)
           (.appendChild panel-el msg)
-          (.removeAttribute input-el "aria-activedescendant"))
+          (du/remove-attr! input-el attr-aria-activedescendant))
         (do
           (doseq [[idx opt] (map-indexed vector visible)]
-            (let [^js div    (make-el "div")
+            (let [^js div    (.createElement js/document "div")
                   opt-id     (str opt-id-prefix idx)
                   highlight  (model/highlight-match (:label opt) query)]
-              (du/set-attr! div "part"       "option")
-              (du/set-attr! div "role"       "option")
-              (du/set-attr! div "id"         opt-id)
-              (du/set-attr! div "data-value" (:value opt))
+              (du/set-attr! div attr-part       part-option)
+              (du/set-attr! div attr-role       role-option)
+              (du/set-attr! div attr-id         opt-id)
+              (du/set-attr! div attr-data-value (:value opt))
               (when at-max?
-                (du/set-attr! div "data-disabled" "")
-                (du/set-attr! div "aria-disabled" "true"))
+                (du/set-attr! div attr-data-disabled "")
+                (du/set-attr! div attr-aria-disabled "true"))
               (when (= idx active-idx)
-                (du/set-attr! div "data-active" ""))
+                (du/set-attr! div attr-data-active ""))
               (if highlight
                 (do
                   (.appendChild div (.createTextNode js/document (:before highlight)))
-                  (let [^js b (make-el "b")]
+                  (let [^js b (.createElement js/document "b")]
                     (set! (.-textContent b) (:match highlight))
                     (.appendChild div b))
                   (.appendChild div (.createTextNode js/document (:after highlight))))
                 (set! (.-textContent div) (:label opt)))
               (.appendChild panel-el div)))
           (if (>= active-idx 0)
-            (du/set-attr! input-el "aria-activedescendant"
-                       (str opt-id-prefix active-idx))
-            (.removeAttribute input-el "aria-activedescendant")))))))
+            (du/set-attr! input-el attr-aria-activedescendant
+                          (str opt-id-prefix active-idx))
+            (du/remove-attr! input-el attr-aria-activedescendant)))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
@@ -444,9 +482,9 @@
       (set! (.-placeholder input-el)
             (if (empty? value) placeholder ""))
       (set! (.-disabled input-el) disabled?)
-      (du/set-attr! input-el "aria-expanded" (str open?))
+      (du/set-attr! input-el attr-aria-expanded (str open?))
 
-      (du/set-attr! panel-el "data-placement" placement)
+      (du/set-attr! panel-el attr-data-placement placement)
 
       ;; Clear input text when panel closes
       (when-not open?
@@ -503,7 +541,7 @@
     (when-not (or (contains? value-set item-value)
                   (model/max-reached? value-set max-val))
       (let [new-set  (conj value-set item-value)
-            new-arr  (to-array (sort new-set))
+            new-arr  (sorted-value-array new-set)
             allowed? (du/dispatch-cancelable!
                       el model/event-change-request
                       #js {:value new-arr :action "add" :item item-value})]
@@ -515,13 +553,13 @@
           (when-let [refs (du/getv el k-refs)]
             (set! (.-value (gobj/get refs "input")) ""))
           (du/set-attr! el model/attr-value (model/serialize-value new-set))
-          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
+          (du/dispatch! el model/event-change #js {:value new-arr}))))))
 
 (defn- remove-item! [^js el item-value]
   (let [value-set (:value (read-model el))]
     (when (contains? value-set item-value)
       (let [new-set  (disj value-set item-value)
-            new-arr  (to-array (sort new-set))
+            new-arr  (sorted-value-array new-set)
             allowed? (du/dispatch-cancelable!
                       el model/event-change-request
                       #js {:value new-arr :action "remove" :item item-value})]
@@ -529,7 +567,7 @@
           (if (empty? new-set)
             (du/remove-attr! el model/attr-value)
             (du/set-attr! el model/attr-value (model/serialize-value new-set)))
-          (du/dispatch! el model/event-change #js {:value (to-array (sort new-set))}))))))
+          (du/dispatch! el model/event-change #js {:value new-arr}))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard navigation
@@ -651,11 +689,11 @@
         on-panel-click
         (fn [^js evt]
           (let [^js target (.-target evt)
-                ^js opt-el (if (.hasAttribute target "data-value")
+                ^js opt-el (if (.hasAttribute target attr-data-value)
                              target
                              (.closest target "[data-value]"))]
-            (when (and opt-el (not (.hasAttribute opt-el "data-disabled")))
-              (let [value (.getAttribute opt-el "data-value")]
+            (when (and opt-el (not (.hasAttribute opt-el attr-data-disabled)))
+              (let [value (.getAttribute opt-el attr-data-value)]
                 (add-item! el value)))))
 
         on-chip-remove
@@ -703,44 +741,36 @@
 ;; ---------------------------------------------------------------------------
 ;; Listener management
 ;; ---------------------------------------------------------------------------
-(defn- add-static-listeners! [^js el]
+;; Each entry: [refs-key event-name handler-key]. refs-key nil means the host
+;; element itself. Both add/remove iterate the same spec so they cannot drift.
+(def ^:private listener-spec
+  [["input"    "focus"         "inputFocus"]
+   ["input"    "input"         "inputInput"]
+   ["input"    "keydown"       "inputKeydown"]
+   ["chipArea" "x-chip-remove" "chipRemove"]
+   ["chevron"  "pointerdown"   "chevronPointerdown"]
+   ["panel"    "pointerdown"   "panelPointerdown"]
+   ["panel"    "click"         "panelClick"]
+   [nil        "focusout"      "focusout"]
+   ["slot"     "slotchange"    "slotchange"]])
+
+(defn- iter-listeners! [^js el op]
   (when-let [refs (du/getv el k-refs)]
     (when-let [handlers (du/getv el k-handlers)]
-      (let [^js input-el   (gobj/get refs "input")
-            ^js chip-area  (gobj/get refs "chipArea")
-            ^js chevron-el (gobj/get refs "chevron")
-            ^js panel-el   (gobj/get refs "panel")
-            ^js slot-el    (gobj/get refs "slot")]
-        (.addEventListener input-el   "focus"       (gobj/get handlers "inputFocus"))
-        (.addEventListener input-el   "input"       (gobj/get handlers "inputInput"))
-        (.addEventListener input-el   "keydown"     (gobj/get handlers "inputKeydown"))
-        (.addEventListener chip-area  "x-chip-remove" (gobj/get handlers "chipRemove"))
-        (.addEventListener chevron-el "pointerdown" (gobj/get handlers "chevronPointerdown"))
-        (.addEventListener panel-el   "pointerdown" (gobj/get handlers "panelPointerdown"))
-        (.addEventListener panel-el   "click"       (gobj/get handlers "panelClick"))
-        (.addEventListener el         "focusout"    (gobj/get handlers "focusout"))
-        (.addEventListener slot-el    "slotchange"  (gobj/get handlers "slotchange"))))))
+      (doseq [[refs-key event handler-key] listener-spec]
+        (let [target (if refs-key (gobj/get refs refs-key) el)]
+          (op target event (gobj/get handlers handler-key)))))))
+
+(defn- add-static-listeners! [^js el]
+  (iter-listeners! el (fn [^js t event handler] (.addEventListener    t event handler))))
 
 (defn- remove-static-listeners! [^js el]
-  (when-let [refs (du/getv el k-refs)]
-    (when-let [handlers (du/getv el k-handlers)]
-      (let [^js input-el   (gobj/get refs "input")
-            ^js chip-area  (gobj/get refs "chipArea")
-            ^js chevron-el (gobj/get refs "chevron")
-            ^js panel-el   (gobj/get refs "panel")
-            ^js slot-el    (gobj/get refs "slot")]
-        (.removeEventListener input-el   "focus"       (gobj/get handlers "inputFocus"))
-        (.removeEventListener input-el   "input"       (gobj/get handlers "inputInput"))
-        (.removeEventListener input-el   "keydown"     (gobj/get handlers "inputKeydown"))
-        (.removeEventListener chip-area  "x-chip-remove" (gobj/get handlers "chipRemove"))
-        (.removeEventListener chevron-el "pointerdown" (gobj/get handlers "chevronPointerdown"))
-        (.removeEventListener panel-el   "pointerdown" (gobj/get handlers "panelPointerdown"))
-        (.removeEventListener panel-el   "click"       (gobj/get handlers "panelClick"))
-        (.removeEventListener el         "focusout"    (gobj/get handlers "focusout"))
-        (.removeEventListener slot-el    "slotchange"  (gobj/get handlers "slotchange"))))))
+  (iter-listeners! el (fn [^js t event handler] (.removeEventListener t event handler))))
 
 (defn- add-doc-listeners! [^js el]
   (when-let [handlers (du/getv el k-handlers)]
+    ;; Defer to the next macrotask: the same pointerdown that opened the panel
+    ;; would otherwise be caught by this listener and immediately close it.
     (js/setTimeout
      (fn []
        (when (and (.-isConnected el) (du/has-attr? el model/attr-open))
@@ -783,22 +813,24 @@
 ;; Property accessors
 ;; ---------------------------------------------------------------------------
 (defn- install-property-accessors! [^js proto]
-  ;; Custom value accessor: getter returns JS array, setter accepts array or string
+  ;; Custom value accessor: getter returns JS array, setter accepts array or string.
+  ;; Setter routes through du/ so programmatic `el.value = […]` is visible to
+  ;; the trace recorder (x-trace-history) like every other attribute mutation.
   (.defineProperty js/Object proto "value"
     #js {:configurable true
          :enumerable true
          :get (fn []
                 (this-as ^js this
-                  (to-array (sort (model/parse-value (du/get-attr this model/attr-value))))))
+                  (sorted-value-array (model/parse-value (du/get-attr this model/attr-value)))))
          :set (fn [v]
                 (this-as ^js this
                   (let [s (cond
                             (string? v) v
-                            (array? v)  (str/join "," (js->clj v))
+                            (array? v)  (str/join model/value-separator (js->clj v))
                             :else       "")]
                     (if (= s "")
-                      (.removeAttribute this model/attr-value)
-                      (.setAttribute this model/attr-value s)))))})
+                      (du/remove-attr! this model/attr-value)
+                      (du/set-attr!    this model/attr-value s)))))})
   ;; Standard reflectors
   (du/define-string-prop! proto "placeholder" model/attr-placeholder)
   (du/define-string-prop! proto "name"        model/attr-name)
