@@ -62,12 +62,12 @@
     (.appendChild root style)
     (.appendChild root container)
 
-    (gobj/set el k-refs {:root root :container container :slot slot-el})))
+    (du/setv! el k-refs {:root root :container container :slot slot-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -92,7 +92,7 @@
   (let [children (get-slotted-children el)
         n        (.-length children)]
     (when (pos? n)
-      (let [{:keys [container]} (gobj/get el k-refs)
+      (let [{:keys [container]} (du/getv el k-refs)
             ^js container container
             offsets  (make-array n)
             heights  (make-array n)]
@@ -110,14 +110,14 @@
                   r (.getBoundingClientRect child)]
               (aset offsets i (- (.-top r) (.-top c-rect)))
               (aset heights i (.-height r)))))
-        (gobj/set el k-natural-offsets offsets)
-        (gobj/set el k-child-heights heights)))))
+        (du/setv! el k-natural-offsets offsets)
+        (du/setv! el k-child-heights heights)))))
 
 ;; ── Height management ───────────────────────────────────────────────────────
 (defn- update-height!
   "Set the host element height to create enough scroll room for stacking."
   [^js el]
-  (let [m        (or (gobj/get el k-model) (read-model el))
+  (let [m        (or (du/getv el k-model) (read-model el))
         children (get-slotted-children el)
         n        (.-length children)
         vh       (.-innerHeight js/window)
@@ -129,14 +129,14 @@
 (defn- update-scroll!
   "Compute card transforms based on current scroll position. Called from rAF."
   [^js el]
-  (let [m          (or (gobj/get el k-model) (read-model el))
+  (let [m          (or (du/getv el k-model) (read-model el))
         rect       (.getBoundingClientRect el)
         ;; How far the element top has scrolled above the viewport top
         scroll-off (js/Math.max 0 (- (.-top rect)))
         children   (get-slotted-children el)
         n          (.-length children)
-        offsets    (gobj/get el k-natural-offsets)
-        heights    (gobj/get el k-child-heights)]
+        offsets    (du/getv el k-natural-offsets)
+        heights    (du/getv el k-child-heights)]
 
     (when (and (pos? n) offsets heights
                (= (.-length offsets) n)
@@ -151,7 +151,7 @@
             align-shift (if (du/has-attr? el model/attr-align)
                           (let [last-h     (aget heights (dec n))
                                 total-stack-h (+ (* (dec n) peek-val) last-h)
-                                {:keys [container]} (gobj/get el k-refs)
+                                {:keys [container]} (du/getv el k-refs)
                                 container-h (.-clientHeight ^js container)]
                             (- (model/compute-stack-area-y container-h total-stack-h align-val)
                                stack-top))
@@ -159,7 +159,7 @@
             ;; Progress and stacked count
             progress   (model/compute-overall-progress scroll-off n sd)
             stacked    (model/compute-stacked-count scroll-off n sd)
-            old-stacked (or (gobj/get el k-stacked-count) 0)]
+            old-stacked (or (du/getv el k-stacked-count) 0)]
 
         ;; Apply transforms to each child
         (dotimes [i n]
@@ -187,44 +187,44 @@
 
         ;; Dispatch change event when stacked count changes
         (when (not= stacked old-stacked)
-          (gobj/set el k-stacked-count stacked)
+          (du/setv! el k-stacked-count stacked)
           (du/dispatch! el model/event-change
                      (clj->js (model/change-detail stacked n progress))))
 
         ;; Dispatch progress event
-        (let [last-prog (gobj/get el k-last-prog)]
+        (let [last-prog (du/getv el k-last-prog)]
           (when (or (nil? last-prog)
                     (> (js/Math.abs (- progress last-prog)) 0.001))
-            (gobj/set el k-last-prog progress)
+            (du/setv! el k-last-prog progress)
             (du/dispatch! el model/event-progress
                        (clj->js (model/progress-detail progress stacked n))))))))
   ;; Clear rAF handle
-  (gobj/set el k-raf nil))
+  (du/setv! el k-raf nil))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- disabled? [^js el]
-  (let [m (gobj/get el k-model)]
+  (let [m (du/getv el k-model)]
     (and m (:disabled? m))))
 
 (defn- on-scroll [^js el]
   (when (and (.-isConnected el)
-             (gobj/get el k-visible)
+             (du/getv el k-visible)
              (not (disabled? el)))
-    (when-not (gobj/get el k-raf)
-      (gobj/set el k-raf
+    (when-not (du/getv el k-raf)
+      (du/setv! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
 ;; ── IntersectionObserver ────────────────────────────────────────────────────
 (defn- attach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (not (gobj/get hs "scrollAttached")))
       (let [scroll-h (gobj/get hs "scroll")]
         (.addEventListener js/window "scroll" scroll-h #js {:passive true})
         (gobj/set hs "scrollAttached" true)))))
 
 (defn- detach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (gobj/get hs "scrollAttached"))
       (let [scroll-h (gobj/get hs "scroll")]
         (.removeEventListener js/window "scroll" scroll-h)
@@ -235,14 +235,14 @@
   the browser has completed layout before we measure."
   [^js el]
   ;; Cancel any pending cache rAF
-  (when-let [raf (gobj/get el k-cache-raf)]
+  (when-let [raf (du/getv el k-cache-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-cache-raf nil))
+    (du/setv! el k-cache-raf nil))
   ;; Schedule in next frame — layout is guaranteed to be done
-  (gobj/set el k-cache-raf
+  (du/setv! el k-cache-raf
             (js/requestAnimationFrame
              (fn [_]
-               (gobj/set el k-cache-raf nil)
+               (du/setv! el k-cache-raf nil)
                (when (.-isConnected el)
                  (cache-natural-offsets! el)
                  (update-scroll! el))))))
@@ -250,7 +250,7 @@
 (defn- on-intersection [^js el ^js entries]
   (let [^js entry (aget entries 0)
         is-intersecting (.-isIntersecting entry)]
-    (gobj/set el k-visible is-intersecting)
+    (du/setv! el k-visible is-intersecting)
     (if is-intersecting
       (when-not (disabled? el)
         (attach-scroll-listener! el)
@@ -259,23 +259,23 @@
       (detach-scroll-listener! el))))
 
 (defn- setup-observer! [^js el]
-  (when-let [old (gobj/get el k-io)]
+  (when-let [old (du/getv el k-io)]
     (.disconnect ^js old))
   (let [obs (js/IntersectionObserver.
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs)))
+    (du/setv! el k-io obs)))
 
 (defn- teardown-observer! [^js el]
-  (when-let [obs (gobj/get el k-io)]
+  (when-let [obs (du/getv el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil)))
+    (du/setv! el k-io nil)))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slotchange [^js el]
   (update-height! el)
-  (when (gobj/get el k-visible)
+  (when (du/getv el k-visible)
     (schedule-cache-and-update! el)))
 
 ;; ── Clean up child styles ───────────────────────────────────────────────────
@@ -296,21 +296,21 @@
         slot-h      (fn [_e] (on-slotchange el))
         resize-h    (fn [_e]
                       (update-height! el)
-                      (when (gobj/get el k-visible)
+                      (when (du/getv el k-visible)
                         (schedule-cache-and-update! el)))]
     (.addEventListener slot "slotchange" slot-h)
     (.addEventListener js/window "resize" resize-h)
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
                    :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when hs
       (detach-scroll-listener! el)
-      (let [refs (gobj/get el k-refs)]
+      (let [refs (du/getv el k-refs)]
         (when refs
           (let [^js slot (:slot refs)]
             (when-let [h (gobj/get hs "slot")]
@@ -318,37 +318,37 @@
       (when-let [h (gobj/get hs "resize")]
         (.removeEventListener js/window "resize" h))))
   ;; Cancel pending rAFs
-  (when-let [raf (gobj/get el k-raf)]
+  (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-raf nil))
-  (when-let [raf (gobj/get el k-cache-raf)]
+    (du/setv! el k-raf nil))
+  (when-let [raf (du/getv el k-cache-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-cache-raf nil))
-  (gobj/set el k-handlers nil))
+    (du/setv! el k-cache-raf nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [disabled?] :as m}]
-  (gobj/set el k-model m)
+  (du/setv! el k-model m)
   (if disabled?
     (do
       (clean-child-styles! el)
-      (gobj/set el k-stacked-count 0)
-      (gobj/set el k-last-prog nil)
+      (du/setv! el k-stacked-count 0)
+      (du/setv! el k-last-prog nil)
       (detach-scroll-listener! el))
-    (when (gobj/get el k-visible)
+    (when (du/getv el k-visible)
       (attach-scroll-listener! el)
       (schedule-cache-and-update! el))))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Public method: refresh ──────────────────────────────────────────────────
 (defn- refresh! [^js el]
   (update-height! el)
-  (when (gobj/get el k-visible)
+  (when (du/getv el k-visible)
     (schedule-cache-and-update! el)))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
@@ -394,17 +394,17 @@
   (clean-child-styles! el)
   (remove-listeners! el)
   (teardown-observer! el)
-  (gobj/set el k-visible false)
-  (gobj/set el k-stacked-count 0)
-  (gobj/set el k-last-prog nil)
-  (gobj/set el k-natural-offsets nil)
-  (gobj/set el k-child-heights nil))
+  (du/setv! el k-visible false)
+  (du/setv! el k-stacked-count 0)
+  (du/setv! el k-last-prog nil)
+  (du/setv! el k-natural-offsets nil)
+  (du/setv! el k-child-heights nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (update-from-attrs! el)
     (update-height! el)
-    (when (gobj/get el k-visible)
+    (when (du/getv el k-visible)
       (schedule-cache-and-update! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────

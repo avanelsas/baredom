@@ -1,7 +1,6 @@
 (ns baredom.components.x-splash.x-splash
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-splash.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -153,7 +152,7 @@
     (.appendChild root style)
     (.appendChild root overlay-el)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root        root
                :overlay-el  overlay-el
                :content-el  content-el
@@ -162,9 +161,9 @@
                :bar-el      bar-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -198,16 +197,16 @@
 
 ;; ── Fade-out logic ───────────────────────────────────────────────────────────
 (defn- clear-fade-timer! [^js el]
-  (when-let [tid (gobj/get el k-fade-timer)]
+  (when-let [tid (du/getv el k-fade-timer)]
     (js/clearTimeout tid)
-    (gobj/set el k-fade-timer nil)))
+    (du/setv! el k-fade-timer nil)))
 
 (defn- fire-hidden-event! [^js el]
   (du/dispatch! el model/event-hidden #js {}))
 
 (defn- finish-fade-out! [^js el]
   (clear-fade-timer! el)
-  (gobj/set el k-fading-out false)
+  (du/setv! el k-fading-out false)
   (du/remove-attr! el "data-fading-out")
   (let [{:keys [overlay-el]} (ensure-refs! el)
         ^js overlay-el overlay-el]
@@ -216,8 +215,8 @@
   (fire-hidden-event! el))
 
 (defn- start-fade-out! [^js el]
-  (when-not (gobj/get el k-fading-out)
-    (gobj/set el k-fading-out true)
+  (when-not (du/getv el k-fading-out)
+    (du/setv! el k-fading-out true)
     (if (prefers-reduced-motion?)
       (finish-fade-out! el)
       (let [{:keys [overlay-el]} (ensure-refs! el)
@@ -226,7 +225,7 @@
                      (when (and (= (.-target e) overlay-el)
                                 (= (.-propertyName e) "opacity"))
                        (.removeEventListener overlay-el "transitionend" on-end)
-                       (when (gobj/get el k-fading-out)
+                       (when (du/getv el k-fading-out)
                          (finish-fade-out! el))))]
         ;; Keep overlay visible at opacity 1 via inline styles, then
         ;; transition to opacity 0 on the next frame.
@@ -239,21 +238,21 @@
          (fn []
            (js/requestAnimationFrame
             (fn []
-              (when (gobj/get el k-fading-out)
+              (when (du/getv el k-fading-out)
                 (set! (.. overlay-el -style -opacity) "0"))))))
         ;; Safety timeout in case transitionend never fires
-        (gobj/set el k-fade-timer
+        (du/setv! el k-fade-timer
                   (js/setTimeout
                    (fn []
-                     (when (gobj/get el k-fading-out)
+                     (when (du/getv el k-fading-out)
                        (.removeEventListener overlay-el "transitionend" on-end)
                        (finish-fade-out! el)))
                    (+ (fade-duration-ms el) 60)))))))
 
 (defn- cancel-fade-out! [^js el]
-  (when (gobj/get el k-fading-out)
+  (when (du/getv el k-fading-out)
     (clear-fade-timer! el)
-    (gobj/set el k-fading-out false)
+    (du/setv! el k-fading-out false)
     (du/remove-attr! el "data-fading-out")
     (let [{:keys [overlay-el]} (ensure-refs! el)
           ^js overlay-el overlay-el]
@@ -268,7 +267,7 @@
         ^js spinner-el  spinner-el
         ^js progress-el progress-el
         ^js bar-el      bar-el
-        old-m           (gobj/get el k-model)
+        old-m           (du/getv el k-model)
         was-active?     (:active? old-m)]
 
     ;; Data attributes for CSS
@@ -312,11 +311,11 @@
     (when-not (du/has-attr? el "aria-label")
       (du/set-attr! el "aria-label" "Loading"))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 

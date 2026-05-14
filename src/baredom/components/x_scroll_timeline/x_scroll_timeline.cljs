@@ -325,7 +325,7 @@
     (.appendChild root style)
     (.appendChild root container)
     (.appendChild root live)
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root       root
                :container  container
                :track      (:track trk)
@@ -340,9 +340,9 @@
                :live       live})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -377,7 +377,7 @@
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 ;; ── Announce to live region ─────────────────────────────────────────────────
 (defn- announce! [^js el msg]
-  (let [{:keys [live]} (gobj/get el k-refs)]
+  (let [{:keys [live]} (du/getv el k-refs)]
     (set! (.-textContent ^js live) msg)
     (js/setTimeout (fn [] (set! (.-textContent ^js live) "")) 1000)))
 
@@ -405,9 +405,9 @@
 (defn- rebuild-markers!
   "Create/remove marker elements in shadow DOM to match child count."
   [^js el children]
-  (let [{:keys [container]} (gobj/get el k-refs)
+  (let [{:keys [container]} (du/getv el k-refs)
         ^js container container
-        old-markers (or (gobj/get el k-marker-els) #js [])
+        old-markers (or (du/getv el k-marker-els) #js [])
         n (.-length children)]
     ;; Remove old markers
     (dotimes [i (.-length old-markers)]
@@ -420,14 +420,14 @@
           (.add (.-classList m) "tl-marker")
           (.appendChild container m)
           (aset markers i m)))
-      (gobj/set el k-marker-els markers))))
+      (du/setv! el k-marker-els markers))))
 
 (defn- rebuild-date-labels!
   "Create/remove date label elements in shadow DOM."
   [^js el children]
-  (let [{:keys [container]} (gobj/get el k-refs)
+  (let [{:keys [container]} (du/getv el k-refs)
         ^js container container
-        old-dates (or (gobj/get el k-date-els) #js [])
+        old-dates (or (du/getv el k-date-els) #js [])
         n (.-length children)]
     ;; Remove old date labels (some entries may be nil)
     (dotimes [i (.-length old-dates)]
@@ -445,18 +445,18 @@
               (.appendChild container d)
               (aset dates i d))
             (aset dates i nil))))
-      (gobj/set el k-date-els dates))))
+      (du/setv! el k-date-els dates))))
 
 (defn- position-overlays!
   "Reposition markers and date labels to align with child centers."
   [^js el children]
-  (let [markers  (gobj/get el k-marker-els)
-        dates    (gobj/get el k-date-els)
-        {:keys [container]} (gobj/get el k-refs)
+  (let [markers  (du/getv el k-marker-els)
+        dates    (du/getv el k-date-els)
+        {:keys [container]} (du/getv el k-refs)
         ^js container container
         cont-rect (.getBoundingClientRect container)
         cont-top  (.-top cont-rect)
-        m         (or (gobj/get el k-model) (read-model el))
+        m         (or (du/getv el k-model) (read-model el))
         layout    (:layout m)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)
@@ -473,7 +473,7 @@
 
 ;; ── Track rendering ─────────────────────────────────────────────────────────
 (defn- update-straight-track! [^js el progress no-progress?]
-  (let [{:keys [track-fill]} (gobj/get el k-refs)
+  (let [{:keys [track-fill]} (du/getv el k-refs)
         ^js track-fill track-fill]
     (if no-progress?
       (set! (.. track-fill -style -height) "0%")
@@ -482,10 +482,10 @@
 (defn- rebuild-curved-track!
   "Rebuild the SVG serpentine path based on current child positions."
   [^js el children]
-  (let [{:keys [container track-svg track-path fill-path]} (gobj/get el k-refs)
+  (let [{:keys [container track-svg track-path fill-path]} (du/getv el k-refs)
         ^js container container
         ^js track-svg track-svg
-        m         (or (gobj/get el k-model) (read-model el))
+        m         (or (du/getv el k-model) (read-model el))
         layout    (:layout m)
         cont-rect (.getBoundingClientRect container)
         cont-top  (.-top cont-rect)
@@ -526,7 +526,7 @@
         (.setAttribute ^js fill-path "stroke-dashoffset" "1")))))
 
 (defn- update-curved-track! [^js el progress no-progress?]
-  (let [{:keys [fill-path]} (gobj/get el k-refs)
+  (let [{:keys [fill-path]} (du/getv el k-refs)
         ^js fill-path fill-path]
     (if no-progress?
       (.setAttribute fill-path "stroke-dashoffset" "1")
@@ -556,15 +556,15 @@
 (defn- update-active-entry!
   "Mark an entry child as active (set data-active), remove from previous."
   [^js el children new-index]
-  (let [old-index (or (gobj/get el k-active-index) -1)]
+  (let [old-index (or (du/getv el k-active-index) -1)]
     (when (not= old-index new-index)
       (swap-active-attr! children                      old-index new-index model/data-active)
-      (swap-active-attr! (gobj/get el k-marker-els)    old-index new-index "data-active")
-      (swap-active-attr! (gobj/get el k-date-els)      old-index new-index "data-active")
+      (swap-active-attr! (du/getv el k-marker-els)    old-index new-index "data-active")
+      (swap-active-attr! (du/getv el k-date-els)      old-index new-index "data-active")
       (if (>= new-index 0)
         (du/set-attr! el "data-active-index" (str new-index))
         (du/remove-attr! el "data-active-index"))
-      (gobj/set el k-active-index new-index)
+      (du/setv! el k-active-index new-index)
       (du/dispatch! el model/event-entry-change
                     #js {:index         new-index
                          :id            (entry-id-at children new-index)
@@ -576,7 +576,7 @@
 (defn- ensure-entry-states!
   "Ensure the entry states array matches the current child count."
   [^js el n]
-  (let [states (gobj/get el k-entry-states)]
+  (let [states (du/getv el k-entry-states)]
     (if (and states (= (.-length states) n))
       states
       (let [new-states (make-array n)]
@@ -585,7 +585,7 @@
                 (if (and states (< i (.-length states)))
                   (aget states i)
                   false)))
-        (gobj/set el k-entry-states new-states)
+        (du/setv! el k-entry-states new-states)
         new-states))))
 
 (defn- update-entry-states!
@@ -637,10 +637,10 @@
   "Fire `event-progress` only when progress has moved more than 0.001
    from the last dispatched value (cached on el via k-last-prog)."
   [^js el progress active-idx active-id]
-  (let [last-prog (gobj/get el k-last-prog)]
+  (let [last-prog (du/getv el k-last-prog)]
     (when (or (nil? last-prog)
               (> (js/Math.abs (- progress last-prog)) 0.001))
-      (gobj/set el k-last-prog progress)
+      (du/setv! el k-last-prog progress)
       (du/dispatch! el model/event-progress
                     #js {:progress    progress
                          :activeIndex active-idx
@@ -649,7 +649,7 @@
 (defn- update-scroll!
   "Compute entry activation and dispatch events. Called from rAF callback."
   [^js el]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when-not (:disabled? m)
       (let [children    (get-entry-children el)
             n           (.-length children)
@@ -657,7 +657,7 @@
             trigger-y   (* vp-height (:threshold m))
             entry-rects (read-entry-rects children)
             active-idx  (model/find-active-entry entry-rects trigger-y)
-            {:keys [container]} (gobj/get el k-refs)
+            {:keys [container]} (du/getv el k-refs)
             ^js container container
             cont-rect   (.getBoundingClientRect container)
             progress    (model/compute-overall-progress
@@ -669,23 +669,23 @@
         (update-entry-states! el children entry-rects trigger-y)
         (update-track-fill! el track-prog m)
         (dispatch-progress-if-changed! el progress active-idx active-id))))
-  (gobj/set el k-raf nil))
+  (du/setv! el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
 (defn- autoplay-running? [^js el]
-  (some? (gobj/get el k-autoplay-raf)))
+  (some? (du/getv el k-autoplay-raf)))
 
 (defn- autoplay-tick [^js el]
   (fn tick [^js ts]
     (when (and (.-isConnected el)
-               (gobj/get el k-visible)
-               (not (gobj/get el k-autoplay-paused)))
-      (let [m (gobj/get el k-model)]
+               (du/getv el k-visible)
+               (not (du/getv el k-autoplay-paused)))
+      (let [m (du/getv el k-model)]
         (when (and m (:autoplay? m) (not (:disabled? m)))
-          (let [last-ts (gobj/get el k-autoplay-last)
+          (let [last-ts (du/getv el k-autoplay-last)
                 dt      (if last-ts (/ (- ts last-ts) 1000.0) 0)]
-            (gobj/set el k-autoplay-last ts)
+            (du/setv! el k-autoplay-last ts)
             (when (> dt 0)
               (.scrollBy js/window 0 (* (:autoplay-speed m) dt))
               ;; Loop: detect page bottom and scroll back to element start.
@@ -697,22 +697,22 @@
                     (let [rect    (.getBoundingClientRect el)
                           abs-top (+ (.-top rect) scroll-y)]
                       (.scrollTo js/window 0 (max 0 (- abs-top vh)))
-                      (gobj/set el k-autoplay-last nil))))))
-            (gobj/set el k-autoplay-raf
+                      (du/setv! el k-autoplay-last nil))))))
+            (du/setv! el k-autoplay-raf
                       (js/requestAnimationFrame tick))))))))
 
 (defn- pause-autoplay! [^js el]
-  (when-not (gobj/get el k-autoplay-paused)
-    (gobj/set el k-autoplay-paused true)
+  (when-not (du/getv el k-autoplay-paused)
+    (du/setv! el k-autoplay-paused true)
     ;; Cancel pending autoplay rAF
-    (when-let [raf (gobj/get el k-autoplay-raf)]
+    (when-let [raf (du/getv el k-autoplay-raf)]
       (js/cancelAnimationFrame raf)
-      (gobj/set el k-autoplay-raf nil))
+      (du/setv! el k-autoplay-raf nil))
     ;; Set data attribute for CSS indicator
     (du/set-attr! el "data-autoplay-paused" "")
     ;; Dispatch pause event
-    (let [prog     (or (gobj/get el k-last-prog) 0)
-          idx      (or (gobj/get el k-active-index) -1)
+    (let [prog     (or (du/getv el k-last-prog) 0)
+          idx      (or (du/getv el k-active-index) -1)
           children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
@@ -720,18 +720,18 @@
                  #js {:progress prog :activeIndex idx :activeId aid}))))
 
 (defn- resume-autoplay! [^js el]
-  (when (gobj/get el k-autoplay-paused)
-    (gobj/set el k-autoplay-paused false)
+  (when (du/getv el k-autoplay-paused)
+    (du/setv! el k-autoplay-paused false)
     (du/remove-attr! el "data-autoplay-paused")
     ;; Reset timestamp to avoid delta spike
-    (gobj/set el k-autoplay-last nil)
+    (du/setv! el k-autoplay-last nil)
     ;; Restart rAF loop
     (let [tick (autoplay-tick el)]
-      (gobj/set el k-autoplay-raf
+      (du/setv! el k-autoplay-raf
                 (js/requestAnimationFrame tick)))
     ;; Dispatch resume event
-    (let [prog     (or (gobj/get el k-last-prog) 0)
-          idx      (or (gobj/get el k-active-index) -1)
+    (let [prog     (or (du/getv el k-last-prog) 0)
+          idx      (or (du/getv el k-active-index) -1)
           children (get-entry-children el)
           aid      (when (and (>= idx 0) (< idx (.-length children)))
                      (entry-id (aget children idx)))]
@@ -740,38 +740,38 @@
 
 (defn- stop-autoplay! [^js el]
   ;; Cancel rAF
-  (when-let [raf (gobj/get el k-autoplay-raf)]
+  (when-let [raf (du/getv el k-autoplay-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-autoplay-raf nil))
+    (du/setv! el k-autoplay-raf nil))
   ;; Remove pause/resume listeners
-  (when-let [hs (gobj/get el k-autoplay-handlers)]
+  (when-let [hs (du/getv el k-autoplay-handlers)]
     (.removeEventListener el "pointerdown"  (gobj/get hs "pointerdown"))
     (.removeEventListener el "pointerup"    (gobj/get hs "pointerup"))
     (.removeEventListener el "pointerleave" (gobj/get hs "pointerleave"))
     (.removeEventListener el "keydown"      (gobj/get hs "keydown"))
     (.removeEventListener el "keyup"        (gobj/get hs "keyup"))
-    (gobj/set el k-autoplay-handlers nil))
+    (du/setv! el k-autoplay-handlers nil))
   ;; Clean up state
   (du/remove-attr! el "data-autoplay-paused")
   (du/remove-attr! el "tabindex")
-  (gobj/set el k-autoplay-paused false)
-  (gobj/set el k-autoplay-last nil))
+  (du/setv! el k-autoplay-paused false)
+  (du/setv! el k-autoplay-last nil))
 
 (defn- start-autoplay! [^js el]
   (when-not (autoplay-running? el)
-    (let [m (gobj/get el k-model)]
+    (let [m (du/getv el k-model)]
       (when (and m (:autoplay? m) (not (:disabled? m))
-                 (gobj/get el k-visible)
+                 (du/getv el k-visible)
                  (not (prefers-reduced-motion?)))
         ;; Make focusable for Space key
         (du/set-attr! el "tabindex" "0")
         ;; Init state
-        (gobj/set el k-autoplay-paused false)
-        (gobj/set el k-autoplay-last nil)
+        (du/setv! el k-autoplay-paused false)
+        (du/setv! el k-autoplay-last nil)
         ;; Attach pause/resume listeners (pointer events unify mouse + touch)
         (let [on-pointerdown  (fn [_e] (pause-autoplay! el))
               on-pointerup    (fn [_e] (resume-autoplay! el))
-              on-pointerleave (fn [_e] (when (gobj/get el k-autoplay-paused)
+              on-pointerleave (fn [_e] (when (du/getv el k-autoplay-paused)
                                          (resume-autoplay! el)))
               on-keydown      (fn [^js e]
                                 (when (= (.-code e) "Space")
@@ -785,7 +785,7 @@
           (.addEventListener el "pointerleave" on-pointerleave)
           (.addEventListener el "keydown"      on-keydown)
           (.addEventListener el "keyup"        on-keyup)
-          (gobj/set el k-autoplay-handlers
+          (du/setv! el k-autoplay-handlers
                     #js {:pointerdown  on-pointerdown
                          :pointerup    on-pointerup
                          :pointerleave on-pointerleave
@@ -793,34 +793,34 @@
                          :keyup        on-keyup}))
         ;; Start rAF loop
         (let [tick (autoplay-tick el)]
-          (gobj/set el k-autoplay-raf
+          (du/setv! el k-autoplay-raf
                     (js/requestAnimationFrame tick)))))))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- disabled? [^js el]
-  (let [m (gobj/get el k-model)]
+  (let [m (du/getv el k-model)]
     (and m (:disabled? m))))
 
 (defn- on-scroll [^js el]
   (when (and (.-isConnected el)
-             (gobj/get el k-visible)
+             (du/getv el k-visible)
              (not (disabled? el))
              (not (prefers-reduced-motion?)))
-    (when-not (gobj/get el k-raf)
-      (gobj/set el k-raf
+    (when-not (du/getv el k-raf)
+      (du/setv! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
 ;; ── IntersectionObserver callback ───────────────────────────────────────────
 (defn- attach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (not (gobj/get hs "scrollAttached")))
       (let [scroll-h (gobj/get hs "scroll")]
         (.addEventListener js/window "scroll" scroll-h #js {:passive true})
         (gobj/set hs "scrollAttached" true)))))
 
 (defn- detach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (gobj/get hs "scrollAttached"))
       (let [scroll-h (gobj/get hs "scroll")]
         (.removeEventListener js/window "scroll" scroll-h)
@@ -829,16 +829,16 @@
 (defn- on-intersection [^js el ^js entries]
   (let [^js entry (aget entries 0)
         is-intersecting (.-isIntersecting entry)]
-    (gobj/set el k-visible is-intersecting)
+    (du/setv! el k-visible is-intersecting)
     (if is-intersecting
       (when-not (disabled? el)
         (attach-scroll-listener! el)
         (update-scroll! el)
         (announce! el "Timeline entered viewport")
         (du/dispatch! el model/event-enter
-                   #js {:progress (or (gobj/get el k-last-prog) 0)})
+                   #js {:progress (or (du/getv el k-last-prog) 0)})
         ;; Start autoplay if enabled
-        (let [m (gobj/get el k-model)]
+        (let [m (du/getv el k-model)]
           (when (and m (:autoplay? m))
             (start-autoplay! el))))
       (do
@@ -847,13 +847,13 @@
         (when-not (disabled? el)
           (announce! el "Timeline left viewport")
           (du/dispatch! el model/event-leave
-                     #js {:progress (or (gobj/get el k-last-prog) 0)}))))))
+                     #js {:progress (or (du/getv el k-last-prog) 0)}))))))
 
 ;; ── Slot change / resize ────────────────────────────────────────────────────
 (defn- rebuild-layout!
   "Full layout rebuild: reassign sides, rebuild markers/dates, reposition."
   [^js el]
-  (let [m        (or (gobj/get el k-model) (read-model el))
+  (let [m        (or (du/getv el k-model) (read-model el))
         children (get-entry-children el)]
     ;; Assign child attributes
     (assign-child-attrs! el children (:layout m))
@@ -869,12 +869,12 @@
          (when (= (:track m) "curved")
            (rebuild-curved-track! el children))
          ;; Update scroll state if visible
-         (when (gobj/get el k-visible)
+         (when (du/getv el k-visible)
            (update-scroll! el)))))))
 
 (defn- on-slotchange [^js el]
   ;; Reset entry states cache
-  (gobj/set el k-entry-states nil)
+  (du/setv! el k-entry-states nil)
   (rebuild-layout! el))
 
 ;; ── Listener management ────────────────────────────────────────────────────
@@ -883,22 +883,22 @@
         ^js slot    slot
         scroll-h    (fn [_e] (on-scroll el))
         slot-h      (fn [_e] (on-slotchange el))
-        resize-h    (fn [_e] (when (gobj/get el k-visible)
-                               (gobj/set el k-entry-states nil)
+        resize-h    (fn [_e] (when (du/getv el k-visible)
+                               (du/setv! el k-entry-states nil)
                                (rebuild-layout! el)))]
     (.addEventListener slot "slotchange" slot-h)
     (.addEventListener js/window "resize" resize-h)
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {:scroll         scroll-h
                    :slot           slot-h
                    :resize         resize-h
                    :scrollAttached false})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when hs
       (detach-scroll-listener! el)
-      (let [refs (gobj/get el k-refs)]
+      (let [refs (du/getv el k-refs)]
         (when refs
           (let [^js slot (:slot refs)]
             (when-let [h (gobj/get hs "slot")]
@@ -906,25 +906,25 @@
       (when-let [h (gobj/get hs "resize")]
         (.removeEventListener js/window "resize" h))))
   ;; Cancel pending rAF
-  (when-let [raf (gobj/get el k-raf)]
+  (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (gobj/set el k-raf nil))
-  (gobj/set el k-handlers nil))
+    (du/setv! el k-raf nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────
 (defn- setup-observer! [^js el]
-  (when-let [old (gobj/get el k-io)]
+  (when-let [old (du/getv el k-io)]
     (.disconnect ^js old))
   (let [obs (js/IntersectionObserver.
              (fn [entries] (on-intersection el entries))
              #js {:threshold #js [0]})]
     (.observe obs el)
-    (gobj/set el k-io obs)))
+    (du/setv! el k-io obs)))
 
 (defn- teardown-observer! [^js el]
-  (when-let [obs (gobj/get el k-io)]
+  (when-let [obs (du/getv el k-io)]
     (.disconnect ^js obs)
-    (gobj/set el k-io nil)))
+    (du/setv! el k-io nil)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- apply-host-attrs!
@@ -945,8 +945,8 @@
   "Tear down everything that should not be running while disabled."
   [^js el]
   (clean-entry-attrs! el)
-  (gobj/set el k-active-index -1)
-  (gobj/set el k-entry-states nil)
+  (du/setv! el k-active-index -1)
+  (du/setv! el k-entry-states nil)
   (detach-scroll-listener! el)
   (stop-autoplay! el))
 
@@ -969,24 +969,24 @@
   [^js el old-m new-m]
   (cond
     (structural-change? old-m new-m) (rebuild-layout! el)
-    (scroll-input-change? old-m new-m) (when (gobj/get el k-visible)
+    (scroll-input-change? old-m new-m) (when (du/getv el k-visible)
                                          (update-scroll! el))))
 
 (defn- sync-autoplay!
   "Start or stop autoplay based on the current model + visibility."
   [^js el {:keys [autoplay? disabled?]}]
   (when-not disabled?
-    (if (and autoplay? (gobj/get el k-visible))
+    (if (and autoplay? (du/getv el k-visible))
       (start-autoplay! el)
       (stop-autoplay! el))))
 
 (defn- apply-model! [^js el {:keys [disabled?] :as m}]
   (let [{:keys [container]} (ensure-refs! el)
         ^js container container
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (apply-host-attrs!     el m)
     (apply-container-aria! container m)
-    (gobj/set el k-model m)
+    (du/setv! el k-model m)
     (cond
       disabled?  (enter-disabled-state! el)
       old-m      (handle-model-changes! el old-m m))
@@ -994,7 +994,7 @@
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -1065,15 +1065,15 @@
   ;; Clean data attributes from children
   (clean-entry-attrs! el)
   ;; Dispatch leave event if visible
-  (when (gobj/get el k-visible)
+  (when (du/getv el k-visible)
     (du/dispatch! el model/event-leave
-                  #js {:progress (or (gobj/get el k-last-prog) 0)}))
+                  #js {:progress (or (du/getv el k-last-prog) 0)}))
   (remove-listeners! el)
   (teardown-observer! el)
-  (gobj/set el k-visible false)
-  (gobj/set el k-active-index -1)
-  (gobj/set el k-last-prog nil)
-  (gobj/set el k-entry-states nil))
+  (du/setv! el k-visible false)
+  (du/setv! el k-active-index -1)
+  (du/setv! el k-last-prog nil)
+  (du/setv! el k-entry-states nil))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
