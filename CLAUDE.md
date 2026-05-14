@@ -110,7 +110,7 @@ Reference by name when discussing architecture:
 - **`render-pipeline`** — `update-from-attrs!`: `read-model` → change-guard → `apply-model!` (caches model at end). Golden sample: `x-icon`.
 - **`model-layer`** — pure `model.cljs` with required metadata defs + `normalize`. Golden sample: `x-icon/model.cljs`. See [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md) for field specs.
 - **`registration-idiom`** — named lifecycle `defn-` functions + `component/register!` + `du/install-properties!`. Golden sample: `x-icon`. See [`docs/REGISTRATION.md`](docs/REGISTRATION.md) for template.
-- **`render-orchestrator`** — `render!` reads as a phase list of named effect helpers (`apply-host-css-vars!`, `apply-area!`, …). Each phase is one named call; the orchestrator stays around 15–25 lines. References: `x-chart` (`render!`), `x-color-picker` (`render!`).
+- **`render-orchestrator`** — `render!` (or `apply-model!`) reads as a phase list of named effect helpers (`apply-host-css-vars!`, `apply-area!`, …). Each phase is one named call; the orchestrator stays around 5–25 lines. References: `x-icon` (`apply-model!`, smallest readable demo), `x-chart` (`render!`), `x-color-picker` (`render!`).
 - **`shadow-builders`** — break long `make-shadow!` / `init-dom!` into per-section builders that each create + decorate + assemble + return a refs map. The top-level builder composes them. References: `x-color-picker` (`make-trigger!`, `make-area-section!`, `make-strips-section!`, `make-controls-section!`), `x-scroll-timeline` (`make-track-section!`, `make-svg-track!`, `make-entries-section!`).
 - **`listener-spec`** — for components with 5+ static listeners, encode them as a single vector of `[refs-key event handler-key capture?]` tuples. Both `add-listeners!` and `remove-listeners!` iterate it, so they cannot drift. References: `x-color-picker` (`listener-spec` + `build-all-handlers`), `baredom.utils.overlay/attach-listener!`.
 
@@ -160,6 +160,8 @@ Every component under `src/baredom/components/<name>/` follows:
 1. **`model.cljs`** — Pure functions only. No DOM or side effects. Required defs: `tag-name`, `observed-attributes`, `property-api`, `event-schema`, `method-api`. See [`docs/MODEL-LAYER.md`](docs/MODEL-LAYER.md).
 2. **`<name>.cljs`** — DOM and lifecycle layer. Shadow DOM creation, `render!`, event wiring, lifecycle callbacks, `init!` via `component/register!`.
 3. **`src/baredom/exports/<name>.cljs`** — ESM entry point. Exposes `^:export init`, `register!`, and `public-api` metadata.
+
+**Model fns have two callers, not one.** A `model.cljs` function is called both from its component (which supplies fully-shaped input via `read-model`) *and* directly from `model_test.cljs` (which often passes sparse maps like `{}`). The input contract that holds in production does **not** hold in tests. Concretely: if a destructured key like `:label-present?` is documented as `boolean`, tests may still pass `nil` for it, and `(and nil …)` returns `nil` rather than `false`. **Coerce output booleans explicitly** at the return site — e.g. `:labelled? (boolean (and label-present? …))` — instead of relying on inputs to already be booleans. The same rule applies to any output whose downstream consumer (or test assertion) checks a strict predicate like `false?` / `true?` / `nil?`.
 
 ### Additional files per component
 

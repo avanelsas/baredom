@@ -80,22 +80,24 @@
     :label-present? (du/has-attr? el model/attr-label)}))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
-(defn- apply-model! [^js el {:keys [size-css color-css label labelled?] :as m}]
-  (ensure-refs! el)
+(defn- apply-css-vars! [^js el {:keys [size-css color-css]}]
   (let [^js style (.-style el)]
     (.setProperty style css-var-size  size-css)
-    (.setProperty style css-var-color color-css))
+    (.setProperty style css-var-color color-css)))
 
+(defn- apply-aria! [^js el {:keys [labelled? label]}]
   (if labelled?
-    (do
-      (du/set-attr!    el attr-role       role-img)
-      (du/set-attr!    el attr-aria-label label)
-      (du/remove-attr! el attr-aria-hidden))
-    (do
-      (du/set-attr!    el attr-aria-hidden aria-hidden-true)
-      (du/remove-attr! el attr-role)
-      (du/remove-attr! el attr-aria-label)))
+    (do (du/set-attr!    el attr-role       role-img)
+        (du/set-attr!    el attr-aria-label label)
+        (du/remove-attr! el attr-aria-hidden))
+    (do (du/set-attr!    el attr-aria-hidden aria-hidden-true)
+        (du/remove-attr! el attr-role)
+        (du/remove-attr! el attr-aria-label))))
 
+(defn- apply-model! [^js el m]
+  (ensure-refs!    el)
+  (apply-css-vars! el m)
+  (apply-aria!     el m)
   (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
