@@ -83,7 +83,7 @@
 (defn- get-color-rgb
   "Get RGB for a color string, using a cache on the element instance."
   [^js el color-str]
-  (let [^js cache (gobj/get el k-color-cache)]
+  (let [^js cache (du/getv el k-color-cache)]
     (if-let [cached (gobj/get cache color-str)]
       cached
       (let [rgb (css-color-to-rgb color-str)]
@@ -148,9 +148,9 @@
                         phase-name (str "u_orb_phases[" i "]")]
                     (gobj/set uniforms pos-name (.getUniformLocation gl program pos-name))
                     (gobj/set uniforms phase-name (.getUniformLocation gl program phase-name))))
-                (gobj/set el k-uniforms uniforms))
+                (du/setv! el k-uniforms uniforms))
 
-              (gobj/set el k-program program)
+              (du/setv! el k-program program)
 
               ;; Enable blending for alpha
               (.enable gl (.-BLEND gl))
@@ -168,12 +168,12 @@
     (.appendChild root style)
     (.appendChild root canvas)
     (let [^js gl (init-webgl! el canvas)]
-      (gobj/set el k-refs {:root root :canvas canvas :gl gl}))))
+      (du/setv! el k-refs {:root root :canvas canvas :gl gl}))))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -198,16 +198,16 @@
     (dotimes [i n]
       (let [bp (aget base i)]
         (.push pos #js [(aget bp 0) (aget bp 1)])))
-    (gobj/set el k-orb-base base)
-    (gobj/set el k-orb-phases phases)
-    (gobj/set el k-orb-pos pos)))
+    (du/setv! el k-orb-base base)
+    (du/setv! el k-orb-phases phases)
+    (du/setv! el k-orb-pos pos)))
 
 (defn- reconcile-orbs!
   "Adjust orb arrays when orb-count changes."
   [^js el new-count]
-  (let [^js base   (gobj/get el k-orb-base)
-        ^js phases (gobj/get el k-orb-phases)
-        ^js pos    (gobj/get el k-orb-pos)
+  (let [^js base   (du/getv el k-orb-base)
+        ^js phases (du/getv el k-orb-phases)
+        ^js pos    (du/getv el k-orb-pos)
         current    (.-length base)
         two-pi     (* 2.0 js/Math.PI)]
     (when (not= current new-count)
@@ -242,14 +242,14 @@
 ;; ── Update uniforms ─────────────────────────────────────────────────────────
 (defn- update-uniforms!
   [^js el ^js gl m]
-  (let [^js uniforms (gobj/get el k-uniforms)
-        ^js canvas   (:canvas (gobj/get el k-refs))
+  (let [^js uniforms (du/getv el k-uniforms)
+        ^js canvas   (:canvas (du/getv el k-refs))
         w            (.-width canvas)
         h            (.-height canvas)
-        time         (gobj/get el k-time)
-        activity     (gobj/get el k-activity)
-        ^js pos      (gobj/get el k-orb-pos)
-        ^js phases   (gobj/get el k-orb-phases)
+        time         (du/getv el k-time)
+        activity     (du/getv el k-activity)
+        ^js pos      (du/getv el k-orb-pos)
+        ^js phases   (du/getv el k-orb-phases)
         n            (:orb-count m)
         rgb-primary  (get-color-rgb el (:color-primary m))
         rgb-secondary (get-color-rgb el (:color-secondary m))
@@ -282,41 +282,41 @@
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [refs (gobj/get el k-refs)
+    (let [refs (du/getv el k-refs)
           ^js gl (:gl refs)]
       (when gl
         (let [^js canvas (:canvas refs)
-              m          (gobj/get el k-model)
+              m          (du/getv el k-model)
               now        (js/performance.now)
-              last-frame (gobj/get el k-last-frame)
+              last-frame (du/getv el k-last-frame)
               dt         (/ (- now last-frame) 1000.0)
               ;; Clamp dt to prevent huge jumps
               dt         (js/Math.min dt 0.1)]
 
-          (gobj/set el k-last-frame now)
+          (du/setv! el k-last-frame now)
 
           ;; Update time
           (when-not (prefers-reduced-motion?)
-            (gobj/set el k-time (+ (gobj/get el k-time) dt)))
+            (du/setv! el k-time (+ (du/getv el k-time) dt)))
 
           ;; Decay activity
-          (let [activity    (gobj/get el k-activity)
-                impulse     (gobj/get el k-impulse)
+          (let [activity    (du/getv el k-activity)
+                impulse     (du/getv el k-impulse)
                 target      (if (> impulse 0.01) 1.0 0.0)
                 decay-speed (if (> impulse 0.01) 8.0 2.0)
                 new-activity (model/lerp activity target (js/Math.min 1.0 (* decay-speed dt)))]
-            (gobj/set el k-activity new-activity)
-            (gobj/set el k-impulse (* impulse (js/Math.max 0.0 (- 1.0 (* 5.0 dt))))))
+            (du/setv! el k-activity new-activity)
+            (du/setv! el k-impulse (* impulse (js/Math.max 0.0 (- 1.0 (* 5.0 dt))))))
 
           ;; Update orb positions (noise-based drift)
           (when-not (prefers-reduced-motion?)
-            (let [^js base    (gobj/get el k-orb-base)
-                  ^js pos     (gobj/get el k-orb-pos)
+            (let [^js base    (du/getv el k-orb-base)
+                  ^js pos     (du/getv el k-orb-pos)
                   n           (:orb-count m)
-                  activity    (gobj/get el k-activity)
+                  activity    (du/getv el k-activity)
                   drift-speed (+ 0.3 (* 0.7 activity))
-                  drift-time  (+ (gobj/get el k-drift-time) (* dt drift-speed))]
-              (gobj/set el k-drift-time drift-time)
+                  drift-time  (+ (du/getv el k-drift-time) (* dt drift-speed))]
+              (du/setv! el k-drift-time drift-time)
               (dotimes [i n]
                 (let [^js bp (aget base i)
                       bx     (aget bp 0)
@@ -352,35 +352,35 @@
               (.drawArrays gl (.-TRIANGLE_STRIP gl) 0 4)))))
 
       ;; Schedule next frame
-      (gobj/set el k-raf
+      (du/setv! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
-  (gobj/set el k-time 0.0)
-  (gobj/set el k-last-frame (js/performance.now))
-  (gobj/set el k-activity 0.0)
-  (gobj/set el k-impulse 0.0)
-  (gobj/set el k-raf
+  (du/setv! el k-time 0.0)
+  (du/setv! el k-last-frame (js/performance.now))
+  (du/setv! el k-activity 0.0)
+  (du/setv! el k-impulse 0.0)
+  (du/setv! el k-raf
             (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Activity event handlers ─────────────────────────────────────────────────
 (defn- on-scroll [^js el _e]
   (let [scroll-y (.-scrollY js/window)
-        last-y   (gobj/get el k-last-scroll)]
-    (gobj/set el k-last-scroll scroll-y)
+        last-y   (du/getv el k-last-scroll)]
+    (du/setv! el k-last-scroll scroll-y)
     (when (some? last-y)
       (let [delta (js/Math.abs (- scroll-y last-y))
             impulse (js/Math.min 1.0 (/ delta 100.0))]
-        (gobj/set el k-impulse
-                  (js/Math.min 1.0 (+ (gobj/get el k-impulse) impulse)))))))
+        (du/setv! el k-impulse
+                  (js/Math.min 1.0 (+ (du/getv el k-impulse) impulse)))))))
 
 (defn- on-pointermove [^js el ^js e]
-  (let [^js last-ptr (gobj/get el k-last-ptr)
+  (let [^js last-ptr (du/getv el k-last-ptr)
         cx           (.-clientX e)
         cy           (.-clientY e)]
     (if last-ptr
@@ -389,20 +389,20 @@
               dy (- cy (gobj/get last-ptr "y"))
               velocity (js/Math.sqrt (+ (* dx dx) (* dy dy)))
               impulse  (js/Math.min 1.0 (/ velocity 50.0))]
-          (gobj/set el k-impulse
-                    (js/Math.min 1.0 (+ (gobj/get el k-impulse) impulse))))
+          (du/setv! el k-impulse
+                    (js/Math.min 1.0 (+ (du/getv el k-impulse) impulse))))
         (gobj/set last-ptr "x" cx)
         (gobj/set last-ptr "y" cy))
       ;; First event: store position, skip velocity calculation
-      (gobj/set el k-last-ptr #js {"x" cx "y" cy}))))
+      (du/setv! el k-last-ptr #js {"x" cx "y" cy}))))
 
 (defn- on-keydown [^js el _e]
-  (gobj/set el k-impulse
-            (js/Math.min 1.0 (+ (gobj/get el k-impulse) 0.3))))
+  (du/setv! el k-impulse
+            (js/Math.min 1.0 (+ (du/getv el k-impulse) 0.3))))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (let [m (gobj/get el k-model)]
+  (let [m (du/getv el k-model)]
     (when (:interactive? m)
       (let [scroll-fn  (fn [e] (on-scroll el e))
             pointer-fn (fn [e] (on-pointermove el e))
@@ -411,17 +411,17 @@
         (.addEventListener js/window "scroll" scroll-fn #js {:passive true})
         (.addEventListener js/window "pointermove" pointer-fn #js {:passive true})
         (.addEventListener js/window "keydown" key-fn #js {:passive true})
-        (gobj/set el k-handlers handlers)))))
+        (du/setv! el k-handlers handlers)))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [^js handlers (gobj/get el k-handlers)]
+  (when-let [^js handlers (du/getv el k-handlers)]
     (when-let [f (gobj/get handlers "scroll")]
       (.removeEventListener js/window "scroll" f))
     (when-let [f (gobj/get handlers "pointer")]
       (.removeEventListener js/window "pointermove" f))
     (when-let [f (gobj/get handlers "key")]
       (.removeEventListener js/window "keydown" f))
-    (gobj/set el k-handlers nil)))
+    (du/setv! el k-handlers nil)))
 
 ;; ── Accessibility ───────────────────────────────────────────────────────────
 (defn- set-a11y! [^js el]
@@ -457,11 +457,11 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (gobj/set el k-color-cache #js {})
-    (gobj/set el k-drift-time 0.0)
-    (gobj/set el k-last-ptr nil)
-    (gobj/set el k-last-scroll nil)
+    (du/setv! el k-model m)
+    (du/setv! el k-color-cache #js {})
+    (du/setv! el k-drift-time 0.0)
+    (du/setv! el k-last-ptr nil)
+    (du/setv! el k-last-scroll nil)
     (ensure-refs! el)
     (init-orbs! el (:orb-count m))
     (set-a11y! el)
@@ -475,18 +475,18 @@
 
 ;; ── Apply model + update-from-attrs! (cache-at-tail render-pipeline) ────────
 (defn- apply-model! [^js el m]
-  (gobj/set el k-color-cache #js {})
-  (when (gobj/get el k-refs)
+  (du/setv! el k-color-cache #js {})
+  (when (du/getv el k-refs)
     (reconcile-orbs! el (:orb-count m))
     ;; Re-evaluate listeners if interactive changed
     (remove-listeners! el)
     (when (.-isConnected el)
       (add-listeners! el)))
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 

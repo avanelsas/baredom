@@ -99,7 +99,7 @@
     (.appendChild root style)
     (.appendChild root viewport)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root        root
                :viewport    viewport
                :slot        slot-el})))
@@ -109,7 +109,7 @@
   (light DOM). Returns a JS object with :layer and :svg refs.
   Stored in the same k-refs map used for shadow refs."
   [^js el]
-  (let [refs (gobj/get el k-refs)
+  (let [refs (du/getv el k-refs)
         existing-layer (when refs (:ghost-layer refs))]
     (if (and existing-layer (.-isConnected existing-layer))
       refs
@@ -135,26 +135,26 @@
         (.appendChild layer svg)
         (.appendChild (.-body js/document) layer)
         (let [new-refs (assoc refs :ghost-layer layer :svg svg)]
-          (gobj/set el k-refs new-refs)
+          (du/setv! el k-refs new-refs)
           new-refs)))))
 
 (defn- destroy-light-layer! [^js el]
-  (let [refs (gobj/get el k-refs)
+  (let [refs (du/getv el k-refs)
         ^js layer (when refs (:ghost-layer refs))]
     (when (and layer (.-parentNode layer))
       (.removeChild (.-parentNode layer) layer))
     (when refs
-      (gobj/set el k-refs (-> refs (dissoc :ghost-layer) (dissoc :svg)))))
-  (gobj/set el k-filter-id nil)
-  (gobj/set el k-filter-blur nil)
-  (gobj/set el k-filter-matrix nil)
-  (gobj/set el k-goo-base-blur nil)
-  (gobj/set el k-goo-base-threshold nil))
+      (du/setv! el k-refs (-> refs (dissoc :ghost-layer) (dissoc :svg)))))
+  (du/setv! el k-filter-id nil)
+  (du/setv! el k-filter-blur nil)
+  (du/setv! el k-filter-matrix nil)
+  (du/setv! el k-goo-base-blur nil)
+  (du/setv! el k-goo-base-threshold nil))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -225,7 +225,7 @@
   (if active-name
     (du/set-attr! el model/attr-data-active-state active-name)
     (du/remove-attr! el model/attr-data-active-state))
-  (gobj/set el k-current-state active-name))
+  (du/setv! el k-current-state active-name))
 
 (defn- prefers-reduced-motion? []
   (boolean (.-matches (.matchMedia js/window "(prefers-reduced-motion:reduce)"))))
@@ -259,7 +259,7 @@
 ;; ── Goo filter ──────────────────────────────────────────────────────────────
 (defn- ensure-goo-filter! [^js el]
   (let [{:keys [^js svg]} (ensure-light-layer! el)]
-    (or (gobj/get el k-filter-id)
+    (or (du/getv el k-filter-id)
         (let [uid (next-uid)
               filter-id (str "x-morph-stack-goo-" uid)
               defs   (.createElementNS js/document svg-ns "defs")
@@ -281,16 +281,16 @@
           (.appendChild filt matrix)
           (.appendChild defs filt)
           (.appendChild svg defs)
-          (gobj/set el k-filter-id filter-id)
-          (gobj/set el k-filter-blur blur)
-          (gobj/set el k-filter-matrix matrix)
+          (du/setv! el k-filter-id filter-id)
+          (du/setv! el k-filter-blur blur)
+          (du/setv! el k-filter-matrix matrix)
           filter-id))))
 
 (defn- apply-goo-filter-values!
   "Write `blur-px` and `threshold` to the cached SVG filter nodes."
   [^js el blur-px threshold]
-  (let [^js blur   (gobj/get el k-filter-blur)
-        ^js matrix (gobj/get el k-filter-matrix)]
+  (let [^js blur   (du/getv el k-filter-blur)
+        ^js matrix (du/getv el k-filter-matrix)]
     (when blur   (.setAttribute blur   "stdDeviation" (str blur-px)))
     (when matrix (.setAttribute matrix "values"       (model/goo-matrix-values threshold)))))
 
@@ -336,8 +336,8 @@
   morph text-bearing shapes with `variant=\"liquid\"` without the start/end
   text being smeared into illegibility by the gooey blur."
   [^js el progress]
-  (let [base-b (gobj/get el k-goo-base-blur)
-        base-t (gobj/get el k-goo-base-threshold)]
+  (let [base-b (du/getv el k-goo-base-blur)
+        base-t (du/getv el k-goo-base-threshold)]
     (when (and (some? base-b) (some? base-t))
       (let [f (goo-identity-factor progress)
             inv (- 1.0 f)
@@ -353,14 +353,14 @@
         t (read-css-number el "--x-morph-stack-goo-threshold" model/default-goo-threshold)]
     ;; Capture the variant/author values once per transition; tick! will fade
     ;; them toward identity as the spring settles.
-    (gobj/set el k-goo-base-blur b)
-    (gobj/set el k-goo-base-threshold t)
+    (du/setv! el k-goo-base-blur b)
+    (du/setv! el k-goo-base-threshold t)
     (apply-goo-filter-values! el b t)
     (set! (.. ghost-layer -style -filter)        (str "url(#" filter-id ")"))
     (set! (.. ghost-layer -style -webkitFilter)  (str "url(#" filter-id ")"))))
 
 (defn- stop-goo! [^js el]
-  (let [refs (gobj/get el k-refs)
+  (let [refs (du/getv el k-refs)
         ^js layer (when refs (:ghost-layer refs))]
     (when layer
       (set! (.. layer -style -filter) "")
@@ -567,20 +567,20 @@
 (declare finalize-transition!)
 
 (defn- tick! [^js el now]
-  (let [token (gobj/get el k-token)
-        entries ^js (gobj/get el k-entries)
-        last-time (gobj/get el k-last-time)
-        m (or (gobj/get el k-model) (read-model el))
+  (let [token (du/getv el k-token)
+        entries ^js (du/getv el k-entries)
+        last-time (du/getv el k-last-time)
+        m (or (du/getv el k-model) (read-model el))
         mass (:mass m)
         tension (:stiffness m)
         friction (:damping m)
         ;; `time-scale` lets the `duration` attribute stretch / compress the
         ;; spring's natural settle time without altering its character. >1 means
         ;; the spring evolves faster per real second, <1 means slower.
-        time-scale (or (gobj/get el k-time-scale) 1.0)
+        time-scale (or (du/getv el k-time-scale) 1.0)
         dt-real (if last-time (/ (- now last-time) 1000.0) (/ 1.0 60.0))
         dt (max 0.0 (min (/ 1.0 30.0) (* time-scale dt-real)))]
-    (gobj/set el k-last-time now)
+    (du/setv! el k-last-time now)
     (when (and entries (.-length entries))
       (let [len (.-length entries)
             ;; 1-slot JS arrays so the dotimes body can mutate without volatile!.
@@ -609,9 +609,9 @@
           (let [raf (.requestAnimationFrame js/window
                                             (fn [now2]
                                               ;; Token may have changed mid-flight; check before continuing.
-                                              (when (= token (gobj/get el k-token))
+                                              (when (= token (du/getv el k-token))
                                                 (tick! el now2))))]
-            (gobj/set el k-raf raf)))))))
+            (du/setv! el k-raf raf)))))))
 
 ;; ── Finalize ────────────────────────────────────────────────────────────────
 (defn- run-finalizers! [^js entries]
@@ -622,32 +622,32 @@
         (when f (f))))))
 
 (defn- finalize-transition! [^js el token settle?]
-  (when (= token (gobj/get el k-token))
-    (let [entries ^js (gobj/get el k-entries)]
-      (when-let [raf (gobj/get el k-raf)]
+  (when (= token (du/getv el k-token))
+    (let [entries ^js (du/getv el k-entries)]
+      (when-let [raf (du/getv el k-raf)]
         (.cancelAnimationFrame js/window raf)
-        (gobj/set el k-raf nil))
+        (du/setv! el k-raf nil))
       (run-finalizers! entries)
-      (gobj/set el k-entries nil)
-      (gobj/set el k-last-time nil)
+      (du/setv! el k-entries nil)
+      (du/setv! el k-last-time nil)
       (stop-goo! el)
       (when settle?
-        (let [from (gobj/get el k-from)
-              to   (gobj/get el k-to)
+        (let [from (du/getv el k-from)
+              to   (du/getv el k-to)
               detail (clj->js (model/changed-detail from to))]
           (du/dispatch! el model/event-changed detail)
-          (gobj/set el k-from nil)
-          (gobj/set el k-to nil))))))
+          (du/setv! el k-from nil)
+          (du/setv! el k-to nil))))))
 
 (defn- cancel-current!
   "Stop any in-flight transition without firing the changed event."
   [^js el]
-  (when-let [raf (gobj/get el k-raf)]
+  (when-let [raf (du/getv el k-raf)]
     (.cancelAnimationFrame js/window raf)
-    (gobj/set el k-raf nil))
-  (run-finalizers! ^js (gobj/get el k-entries))
-  (gobj/set el k-entries nil)
-  (gobj/set el k-last-time nil)
+    (du/setv! el k-raf nil))
+  (run-finalizers! ^js (du/getv el k-entries))
+  (du/setv! el k-entries nil)
+  (du/setv! el k-last-time nil)
   (stop-goo! el))
 
 ;; ── Transition orchestrator ─────────────────────────────────────────────────
@@ -657,8 +657,8 @@
   Returns true when the transition was started (or instantly applied),
   false when cancelled by event preventDefault."
   [^js el ^String to-name ^String reason]
-  (let [from-name (gobj/get el k-current-state)
-        m (or (gobj/get el k-model) (read-model el))
+  (let [from-name (du/getv el k-current-state)
+        m (or (du/getv el k-model) (read-model el))
         names (state-names el)]
     (cond
       ;; No states or unknown target → no-op.
@@ -700,15 +700,15 @@
                       _        (.-offsetWidth ^js (:viewport (ensure-refs! el)))
                       new-snap (snapshot-morph-data to-root)
                       entries  (build-entries! el old-snap new-snap)
-                      token    (inc (or (gobj/get el k-token) 0))]
-                  (gobj/set el k-token token)
-                  (gobj/set el k-entries entries)
-                  (gobj/set el k-last-time nil)
-                  (gobj/set el k-from from-name)
-                  (gobj/set el k-to   to-name)
+                      token    (inc (or (du/getv el k-token) 0))]
+                  (du/setv! el k-token token)
+                  (du/setv! el k-entries entries)
+                  (du/setv! el k-last-time nil)
+                  (du/setv! el k-from from-name)
+                  (du/setv! el k-to   to-name)
                   ;; Snapshot the time scale for this transition. Spring params
                   ;; don't change mid-flight, so this only needs computing once.
-                  (gobj/set el k-time-scale
+                  (du/setv! el k-time-scale
                             (model/time-scale-for (:duration m)
                                                   (:stiffness m)
                                                   (:damping m)
@@ -727,16 +727,16 @@
                     (finalize-transition! el token true)
                     (let [raf (.requestAnimationFrame js/window
                                                       (fn [now]
-                                                        (when (= token (gobj/get el k-token))
+                                                        (when (= token (du/getv el k-token))
                                                           (tick! el now))))]
-                      (gobj/set el k-raf raf)))
+                      (du/setv! el k-raf raf)))
                   true)))))))))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────
 (defn- next-state! [^js el reason]
   (let [names (state-names el)
         len (.-length names)
-        cur (gobj/get el k-current-state)]
+        cur (du/getv el k-current-state)]
     (when (pos? len)
       (let [idx (loop [i 0]
                   (if (>= i len) -1
@@ -747,7 +747,7 @@
 (defn- prev-state! [^js el reason]
   (let [names (state-names el)
         len (.-length names)
-        cur (gobj/get el k-current-state)]
+        cur (du/getv el k-current-state)]
     (when (pos? len)
       (let [idx (loop [i 0]
                   (if (>= i len) 0
@@ -765,7 +765,7 @@
   (du/set-attr! el model/attr-data-variant (:variant m))
   (let [names (state-names el)
         target (model/resolve-active (vec (array-seq names)) m)
-        current (gobj/get el k-current-state)]
+        current (du/getv el k-current-state)]
     (cond
       ;; First-time mount: no current state → instantly show target, no events.
       (nil? current)
@@ -783,17 +783,17 @@
 (defn- update-from-attrs! [^js el]
   (ensure-refs! el)
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
-      (gobj/set el k-model new-m)
+      (du/setv! el k-model new-m)
       (apply-model! el new-m))))
 
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- on-slot-change [^js el]
   (let [names (state-names el)
-        m (or (gobj/get el k-model) (read-model el))
+        m (or (du/getv el k-model) (read-model el))
         target (model/resolve-active (vec (array-seq names)) m)
-        current (gobj/get el k-current-state)]
+        current (du/getv el k-current-state)]
     (cond
       (nil? target)
       (do (cancel-current! el)
@@ -817,16 +817,16 @@
   (let [{:keys [^js slot]} (ensure-refs! el)
         slot-h (fn [_e] (on-slot-change el))]
     (.addEventListener slot "slotchange" slot-h)
-    (gobj/set el k-handlers #js {:slot slot-h})))
+    (du/setv! el k-handlers #js {:slot slot-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js slot (:slot refs)
             slot-h (gobj/get hs "slot")]
         (when slot-h (.removeEventListener slot "slotchange" slot-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors & methods ────────────────────────────────────────────
 ;; number-attr-prop! returns nil for absent attribute and parses any string with
@@ -915,7 +915,7 @@
   (add-listeners! el)
   (update-from-attrs! el)
   ;; Initial slot may have already populated before connect — ensure visibility.
-  (when (nil? (gobj/get el k-current-state))
+  (when (nil? (du/getv el k-current-state))
     (on-slot-change el)))
 
 (defn- disconnected! [^js el]

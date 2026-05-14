@@ -269,8 +269,8 @@
     (.appendChild root style)
     (.appendChild root container)
 
-    (gobj/set el k-uid uid)
-    (gobj/set el k-refs
+    (du/setv! el k-uid uid)
+    (du/setv! el k-refs
               {:root    root
                :svg     svg
                :paths   paths
@@ -281,9 +281,9 @@
                :grad-id grad-id})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -299,13 +299,13 @@
 
 ;; ── Wave state initialisation ───────────────────────────────────────────────
 (defn- init-wave-state! [^js el n]
-  (gobj/set el k-wave-amps   (js/Float64Array. n))
-  (gobj/set el k-wave-vels   (js/Float64Array. n))
-  (gobj/set el k-wave-phases (js/Float64Array. n)))
+  (du/setv! el k-wave-amps   (js/Float64Array. n))
+  (du/setv! el k-wave-vels   (js/Float64Array. n))
+  (du/setv! el k-wave-phases (js/Float64Array. n)))
 
 ;; ── Path visibility ─────────────────────────────────────────────────────────
 (defn- update-path-visibility! [^js el n-active]
-  (let [{:keys [paths filt-id]} (gobj/get el k-refs)]
+  (let [{:keys [paths filt-id]} (du/getv el k-refs)]
     (dotimes [i max-layers]
       (let [^js p (aget paths i)]
         (if (< i n-active)
@@ -325,16 +325,16 @@
 
 ;; ── Render waves ────────────────────────────────────────────────────────────
 (defn- render-waves! [^js el]
-  (let [m       (gobj/get el k-model)
-        w       (gobj/get el k-width)
-        h       (gobj/get el k-height)
-        t       (gobj/get el k-time)
-        prog    (gobj/get el k-progress)
+  (let [m       (du/getv el k-model)
+        w       (du/getv el k-width)
+        h       (du/getv el k-height)
+        t       (du/getv el k-time)
+        prog    (du/getv el k-progress)
         n       (:layers m)
         vert?   (vertical-fill? m)
-        ^js wa  (gobj/get el k-wave-amps)
-        ^js wp  (gobj/get el k-wave-phases)
-        {:keys [paths]} (gobj/get el k-refs)]
+        ^js wa  (du/getv el k-wave-amps)
+        ^js wp  (du/getv el k-wave-phases)
+        {:keys [paths]} (du/getv el k-refs)]
     (when (and w h (> w 0) (> h 0))
       (dotimes [i n]
         (let [^js p  (aget paths i)
@@ -350,13 +350,13 @@
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
-  (let [m     (gobj/get el k-model)
-        w     (gobj/get el k-width)
-        h     (gobj/get el k-height)
-        prog  (or (gobj/get el k-progress) 0.0)
+  (let [m     (du/getv el k-model)
+        w     (du/getv el k-width)
+        h     (du/getv el k-height)
+        prog  (or (du/getv el k-progress) 0.0)
         n     (:layers m)
         vert? (vertical-fill? m)
-        {:keys [paths]} (gobj/get el k-refs)]
+        {:keys [paths]} (du/getv el k-refs)]
     (when (and w h (> w 0) (> h 0))
       (dotimes [i n]
         (let [^js p (aget paths i)]
@@ -384,15 +384,15 @@
     (not (.-isConnected el))
     nil
 
-    (or (:disabled? (gobj/get el k-model)) (prefers-reduced-motion?))
+    (or (:disabled? (du/getv el k-model)) (prefers-reduced-motion?))
     ;; Bail out without rescheduling — leaves k-raf cleared so a future
     ;; re-enable via start-animation! will kick the loop back on.
-    (gobj/set el k-raf nil)
+    (du/setv! el k-raf nil)
 
     :else
-    (let [m           (gobj/get el k-model)
+    (let [m           (du/getv el k-model)
           now         (js/performance.now)
-          last-frame  (gobj/get el k-last-frame)
+          last-frame  (du/getv el k-last-frame)
           dt          (/ (js/Math.min (- now last-frame) 100.0) 1000.0)
           ;; Read CSS wave-speed multiplier
           wave-speed  (let [raw (.getPropertyValue
@@ -403,21 +403,21 @@
           n           (:layers m)
           wi          (:wave-intensity m)
           si          (:splash-intensity m)
-          vel         (or (gobj/get el k-scroll-vel) 0.0)
-          ^js wa      (gobj/get el k-wave-amps)
-          ^js wv      (gobj/get el k-wave-vels)
-          ^js wp      (gobj/get el k-wave-phases)]
+          vel         (or (du/getv el k-scroll-vel) 0.0)
+          ^js wa      (du/getv el k-wave-amps)
+          ^js wv      (du/getv el k-wave-vels)
+          ^js wp      (du/getv el k-wave-phases)]
 
-      (gobj/set el k-last-frame now)
+      (du/setv! el k-last-frame now)
 
       ;; Accumulate time
-      (gobj/set el k-time (+ (or (gobj/get el k-time) 0.0) (* dt wave-speed)))
+      (du/setv! el k-time (+ (or (du/getv el k-time) 0.0) (* dt wave-speed)))
 
       ;; Smooth fill level toward target
-      (let [cur-prog  (or (gobj/get el k-progress) 0.0)
-            tgt-prog  (or (gobj/get el k-target-progress) 0.0)
+      (let [cur-prog  (or (du/getv el k-progress) 0.0)
+            tgt-prog  (or (du/getv el k-target-progress) 0.0)
             new-prog  (model/lerp cur-prog tgt-prog (* 5.0 dt))]
-        (gobj/set el k-progress new-prog))
+        (du/setv! el k-progress new-prog))
 
       ;; Update each wave layer's spring. 1-slot JS array avoids volatile!.
       (let [any-moving? #js [false]]
@@ -439,76 +439,76 @@
               (aset any-moving? 0 true))))
 
         ;; Decay scroll velocity
-        (gobj/set el k-scroll-vel (* vel (js/Math.max 0.0 (- 1.0 (* 3.0 dt)))))
+        (du/setv! el k-scroll-vel (* vel (js/Math.max 0.0 (- 1.0 (* 3.0 dt)))))
 
         ;; Render
         (render-waves! el)
 
         ;; Dispatch progress event (throttled)
-        (let [prog      (gobj/get el k-progress)
-              last-disp (or (gobj/get el k-last-dispatch) -1.0)]
+        (let [prog      (du/getv el k-progress)
+              last-disp (or (du/getv el k-last-dispatch) -1.0)]
           (when (> (js/Math.abs (- prog last-disp)) 0.005)
-            (gobj/set el k-last-dispatch prog)
+            (du/setv! el k-last-dispatch prog)
             (dispatch-progress! el prog vel)))
 
         ;; Continue or stop
-        (let [prog-diff (js/Math.abs (- (or (gobj/get el k-progress) 0.0)
-                                        (or (gobj/get el k-target-progress) 0.0)))]
+        (let [prog-diff (js/Math.abs (- (or (du/getv el k-progress) 0.0)
+                                        (or (du/getv el k-target-progress) 0.0)))]
           (if (or (aget any-moving? 0) (> vel 0.01) (> prog-diff 0.001))
-            (gobj/set el k-raf
+            (du/setv! el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el))))
             ;; Settled
-            (gobj/set el k-raf nil)))))))
+            (du/setv! el k-raf nil)))))))
 
 (defn- start-animation! [^js el]
-  (when-not (gobj/get el k-raf)
-    (gobj/set el k-last-frame (js/performance.now))
-    (gobj/set el k-raf
+  (when-not (du/getv el k-raf)
+    (du/setv! el k-last-frame (js/performance.now))
+    (du/setv! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
   (when (and (.-isConnected el)
-             (gobj/get el k-visible)
-             (not (:disabled? (gobj/get el k-model))))
+             (du/getv el k-visible)
+             (not (:disabled? (du/getv el k-model))))
     ;; Lazy re-resolve: target selector specified but not yet found
-    (let [m-pre      (gobj/get el k-model)
-          cur-tgt    (gobj/get el k-scroll-target)]
+    (let [m-pre      (du/getv el k-model)
+          cur-tgt    (du/getv el k-scroll-target)]
       (when (and (nil? cur-tgt) (some? (:target m-pre)))
         (when-let [resolved (resolve-scroll-target el (:target m-pre))]
           (detach-scroll-listener! el)
-          (gobj/set el k-scroll-target resolved)
+          (du/setv! el k-scroll-target resolved)
           (attach-scroll-listener! el))))
-    (let [m           (gobj/get el k-model)
-          scroll-tgt  (gobj/get el k-scroll-target)
+    (let [m           (du/getv el k-model)
+          scroll-tgt  (du/getv el k-scroll-target)
           orientation (:orientation m)
           ^js info    (get-scroll-info scroll-tgt orientation)
           scroll-pos  (aget info 0)
           scroll-h    (aget info 1)
           client-h    (aget info 2)
           now         (js/performance.now)
-          last-scroll (or (gobj/get el k-last-scroll) scroll-pos)
-          last-t      (or (gobj/get el k-last-scroll-t) now)
+          last-scroll (or (du/getv el k-last-scroll) scroll-pos)
+          last-t      (or (du/getv el k-last-scroll-t) now)
           dt          (/ (- now last-t) 1000.0)
           progress    (model/compute-scroll-progress scroll-pos scroll-h client-h)
           velocity    (model/compute-scroll-velocity scroll-pos last-scroll dt)]
 
-      (gobj/set el k-target-progress progress)
-      (gobj/set el k-scroll-vel (js/Math.max (or (gobj/get el k-scroll-vel) 0.0) velocity))
-      (gobj/set el k-last-scroll scroll-pos)
-      (gobj/set el k-last-scroll-t now)
+      (du/setv! el k-target-progress progress)
+      (du/setv! el k-scroll-vel (js/Math.max (or (du/getv el k-scroll-vel) 0.0) velocity))
+      (du/setv! el k-last-scroll scroll-pos)
+      (du/setv! el k-last-scroll-t now)
 
       (when-not (or (:disabled? m) (prefers-reduced-motion?))
         (start-animation! el))
 
       ;; For disabled/reduced-motion, update immediately
       (when (or (:disabled? m) (prefers-reduced-motion?))
-        (gobj/set el k-progress progress)
+        (du/setv! el k-progress progress)
         (render-static! el)
         (dispatch-progress! el progress velocity)))))
 
@@ -520,10 +520,10 @@
           w         (.-width cr)
           h         (.-height cr)]
       (when (and (> w 0) (> h 0))
-        (gobj/set el k-width w)
-        (gobj/set el k-height h)
+        (du/setv! el k-width w)
+        (du/setv! el k-height h)
         ;; Update SVG viewBox
-        (let [{:keys [svg feLight grad]} (gobj/get el k-refs)
+        (let [{:keys [svg feLight grad]} (du/getv el k-refs)
               ^js svg svg
               ^js feLight feLight
               ^js grad grad
@@ -538,7 +538,7 @@
           (.setAttribute grad "fx" (str (* w 0.5)))
           (.setAttribute grad "fy" (str h)))
         ;; Re-render
-        (let [m (gobj/get el k-model)]
+        (let [m (du/getv el k-model)]
           (if (or (:disabled? m) (prefers-reduced-motion?))
             (render-static! el)
             (do (render-waves! el)
@@ -548,10 +548,10 @@
 (defn- on-intersection [^js el ^js entries]
   (let [^js entry (aget entries 0)
         is-visible (.-isIntersecting entry)]
-    (gobj/set el k-visible is-visible)
+    (du/setv! el k-visible is-visible)
     (if is-visible
       ;; Start tracking
-      (let [m (gobj/get el k-model)]
+      (let [m (du/getv el k-model)]
         (when-not (or (:disabled? m) (prefers-reduced-motion?))
           (start-animation! el)))
       ;; Stop when not visible
@@ -559,20 +559,20 @@
 
 ;; ── Scroll target management ────────────────────────────────────────────────
 (defn- attach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (not (gobj/get hs "scrollAttached")))
       (let [scroll-h  (gobj/get hs "scroll")
-            scroll-tgt (gobj/get el k-scroll-target)]
+            scroll-tgt (du/getv el k-scroll-target)]
         (if scroll-tgt
           (.addEventListener scroll-tgt "scroll" scroll-h #js {:passive true})
           (.addEventListener js/window "scroll" scroll-h #js {:passive true}))
         (gobj/set hs "scrollAttached" true)))))
 
 (defn- detach-scroll-listener! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when (and hs (gobj/get hs "scrollAttached"))
       (let [scroll-h  (gobj/get hs "scroll")
-            scroll-tgt (gobj/get el k-scroll-target)]
+            scroll-tgt (du/getv el k-scroll-target)]
         (if scroll-tgt
           (.removeEventListener scroll-tgt "scroll" scroll-h)
           (.removeEventListener js/window "scroll" scroll-h))
@@ -580,20 +580,20 @@
 
 (defn- retry-scroll-target! [^js el]
   (when (.-isConnected el)
-    (let [m          (gobj/get el k-model)
+    (let [m          (du/getv el k-model)
           target-sel (:target m)]
-      (when (and (some? target-sel) (nil? (gobj/get el k-scroll-target)))
+      (when (and (some? target-sel) (nil? (du/getv el k-scroll-target)))
         (when-let [resolved (resolve-scroll-target el target-sel)]
           (detach-scroll-listener! el)
-          (gobj/set el k-scroll-target resolved)
+          (du/setv! el k-scroll-target resolved)
           (attach-scroll-listener! el)
           (on-scroll el))))))
 
 (defn- setup-scroll-target! [^js el]
-  (let [m          (gobj/get el k-model)
+  (let [m          (du/getv el k-model)
         target-sel (:target m)
         scroll-tgt (resolve-scroll-target el target-sel)]
-    (gobj/set el k-scroll-target scroll-tgt)
+    (du/setv! el k-scroll-target scroll-tgt)
     (attach-scroll-listener! el)
     (on-scroll el)
     ;; If target selector specified but not found, retry next frame
@@ -604,13 +604,13 @@
 ;; ── Listener management ────────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
   (let [scroll-h (fn [_e] (on-scroll el))]
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {"scroll"         scroll-h
                    "scrollAttached" false})))
 
 (defn- remove-listeners! [^js el]
   (detach-scroll-listener! el)
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Observer setup/teardown ─────────────────────────────────────────────────
 (defn- setup-observers! [^js el]
@@ -619,20 +619,20 @@
             (fn [^js entries] (on-intersection el entries))
             #js {:threshold #js [0]})]
     (.observe io el)
-    (gobj/set el k-io io))
+    (du/setv! el k-io io))
   ;; ResizeObserver
   (let [ro (js/ResizeObserver.
             (fn [^js entries] (on-resize! el entries)))]
     (.observe ro el)
-    (gobj/set el k-ro ro)))
+    (du/setv! el k-ro ro)))
 
 (defn- teardown-observers! [^js el]
-  (when-let [^js io (gobj/get el k-io)]
+  (when-let [^js io (du/getv el k-io)]
     (.disconnect io)
-    (gobj/set el k-io nil))
-  (when-let [^js ro (gobj/get el k-ro)]
+    (du/setv! el k-io nil))
+  (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (gobj/set el k-ro nil)))
+    (du/setv! el k-ro nil)))
 
 ;; ── Theme application ───────────────────────────────────────────────────────
 (defn- apply-theme! [^js el theme]
@@ -667,8 +667,8 @@
     (detach-scroll-listener! el)
     (setup-scroll-target! el))
   ;; Re-render
-  (let [w (gobj/get el k-width)
-        h (gobj/get el k-height)]
+  (let [w (du/getv el k-width)
+        h (du/getv el k-height)]
     (when (and w h (> w 0) (> h 0))
       (if (or (:disabled? new-m) (prefers-reduced-motion?))
         (do (stop-animation! el)
@@ -678,9 +678,9 @@
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
-      (gobj/set el k-model new-m)
+      (du/setv! el k-model new-m)
       (apply-model! el new-m old-m))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
@@ -704,13 +704,13 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
-    (gobj/set el k-progress 0.0)
-    (gobj/set el k-target-progress 0.0)
-    (gobj/set el k-scroll-vel 0.0)
-    (gobj/set el k-time 0.0)
-    (gobj/set el k-last-dispatch -1.0)
-    (gobj/set el k-visible true)
+    (du/setv! el k-model m)
+    (du/setv! el k-progress 0.0)
+    (du/setv! el k-target-progress 0.0)
+    (du/setv! el k-scroll-vel 0.0)
+    (du/setv! el k-time 0.0)
+    (du/setv! el k-last-dispatch -1.0)
+    (du/setv! el k-visible true)
     (ensure-refs! el)
     ;; Apply theme and init wave state
     (apply-theme! el (:theme m))
@@ -726,11 +726,11 @@
   (stop-animation! el)
   (remove-listeners! el)
   (teardown-observers! el)
-  (gobj/set el k-visible false))
+  (du/setv! el k-visible false))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-refs)
+    (when (du/getv el k-refs)
       (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────

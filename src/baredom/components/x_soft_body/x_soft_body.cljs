@@ -115,16 +115,16 @@
     (.appendChild root svg)
     (.appendChild root content)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root    root
                :svg     svg
                :path    path
                :content content})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -157,28 +157,28 @@
       (aset cy i (aget ry i))
       (aset vx i 0.0)
       (aset vy i 0.0))
-    (gobj/set el k-rest-x rx)
-    (gobj/set el k-rest-y ry)
-    (gobj/set el k-cur-x cx)
-    (gobj/set el k-cur-y cy)
-    (gobj/set el k-vel-x vx)
-    (gobj/set el k-vel-y vy)))
+    (du/setv! el k-rest-x rx)
+    (du/setv! el k-rest-y ry)
+    (du/setv! el k-cur-x cx)
+    (du/setv! el k-cur-y cy)
+    (du/setv! el k-vel-x vx)
+    (du/setv! el k-vel-y vy)))
 
 ;; ── Render path ─────────────────────────────────────────────────────────────
 (defn- render-path! [^js el]
-  (let [{:keys [path]} (gobj/get el k-refs)
+  (let [{:keys [path]} (du/getv el k-refs)
         ^js path path
-        ^js cx   (gobj/get el k-cur-x)
-        ^js cy   (gobj/get el k-cur-y)
+        ^js cx   (du/getv el k-cur-x)
+        ^js cy   (du/getv el k-cur-y)
         d        (model/points->path-d cx cy model/point-count)]
     (.setAttribute path "d" d)))
 
 (defn- render-static! [^js el]
-  (let [{:keys [path]} (gobj/get el k-refs)
+  (let [{:keys [path]} (du/getv el k-refs)
         ^js path path
-        w (gobj/get el k-width)
-        h (gobj/get el k-height)
-        m (gobj/get el k-model)
+        w (du/getv el k-width)
+        h (du/getv el k-height)
+        m (du/getv el k-model)
         r (:radius m)
         d (model/static-rounded-rect-d w h r)]
     (.setAttribute path "d" d)))
@@ -186,27 +186,27 @@
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
   (when (.-isConnected el)
-    (let [m          (gobj/get el k-model)
+    (let [m          (du/getv el k-model)
           now        (js/performance.now)
-          last-frame (gobj/get el k-last-frame)
+          last-frame (du/getv el k-last-frame)
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)
           n          model/point-count
           stiffness  (:stiffness m)
           damping    (:damping m)
           intensity  (:intensity m)
           grab-rad   (:grab-radius m)
-          ^js rx     (gobj/get el k-rest-x)
-          ^js ry     (gobj/get el k-rest-y)
-          ^js cx     (gobj/get el k-cur-x)
-          ^js cy     (gobj/get el k-cur-y)
-          ^js vx     (gobj/get el k-vel-x)
-          ^js vy     (gobj/get el k-vel-y)
-          ptr-active (gobj/get el k-pointer-active)
-          ptr-x      (gobj/get el k-pointer-x)
-          ptr-y      (gobj/get el k-pointer-y)
-          grabbed?   (gobj/get el k-grabbed)]
+          ^js rx     (du/getv el k-rest-x)
+          ^js ry     (du/getv el k-rest-y)
+          ^js cx     (du/getv el k-cur-x)
+          ^js cy     (du/getv el k-cur-y)
+          ^js vx     (du/getv el k-vel-x)
+          ^js vy     (du/getv el k-vel-y)
+          ptr-active (du/getv el k-pointer-active)
+          ptr-x      (du/getv el k-pointer-x)
+          ptr-y      (du/getv el k-pointer-y)
+          grabbed?   (du/getv el k-grabbed)]
 
-      (gobj/set el k-last-frame now)
+      (du/setv! el k-last-frame now)
 
       ;; Update each control point
       (dotimes [i n]
@@ -233,7 +233,7 @@
 
       ;; Continue loop if still active or not settled
       (if (or ptr-active (not (settled? vx vy n)))
-        (gobj/set el k-raf
+        (du/setv! el k-raf
                   (js/requestAnimationFrame (fn animate-tick [_] (animate! el))))
         ;; Settled — stop loop, snap to rest
         (do
@@ -241,18 +241,18 @@
             (aset cx i (aget rx i))
             (aset cy i (aget ry i)))
           (render-path! el)
-          (gobj/set el k-raf nil))))))
+          (du/setv! el k-raf nil))))))
 
 (defn- start-animation! [^js el]
-  (when-not (gobj/get el k-raf)
-    (gobj/set el k-last-frame (js/performance.now))
-    (gobj/set el k-raf
+  (when-not (du/getv el k-raf)
+    (du/setv! el k-last-frame (js/performance.now))
+    (du/setv! el k-raf
               (js/requestAnimationFrame (fn animate-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
-  (when-let [raf-id (gobj/get el k-raf)]
+  (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (gobj/set el k-raf nil)))
+    (du/setv! el k-raf nil)))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -262,14 +262,14 @@
           w         (.-width cr)
           h         (.-height cr)]
       (when (and (> w 0) (> h 0))
-        (gobj/set el k-width w)
-        (gobj/set el k-height h)
+        (du/setv! el k-width w)
+        (du/setv! el k-height h)
         ;; Update SVG viewBox
-        (let [{:keys [svg]} (gobj/get el k-refs)
+        (let [{:keys [svg]} (du/getv el k-refs)
               ^js svg svg]
           (.setAttribute svg "viewBox" (str "0 0 " w " " h)))
         ;; Reinitialise physics with new dimensions
-        (let [m (gobj/get el k-model)]
+        (let [m (du/getv el k-model)]
           (init-physics! el w h m)
           ;; Render immediately
           (if (or (:disabled? m) (prefers-reduced-motion?))
@@ -279,30 +279,30 @@
 
 ;; ── Pointer event handlers ──────────────────────────────────────────────────
 (defn- on-pointermove [^js el ^js e]
-  (let [{:keys [svg]} (gobj/get el k-refs)
+  (let [{:keys [svg]} (du/getv el k-refs)
         ^js svg svg
         ^js rect (.getBoundingClientRect svg)]
-    (gobj/set el k-pointer-x (- (.-clientX e) (.-left rect)))
-    (gobj/set el k-pointer-y (- (.-clientY e) (.-top rect)))))
+    (du/setv! el k-pointer-x (- (.-clientX e) (.-left rect)))
+    (du/setv! el k-pointer-y (- (.-clientY e) (.-top rect)))))
 
 (defn- on-pointerenter [^js el]
-  (gobj/set el k-pointer-active true)
-  (let [m (gobj/get el k-model)]
+  (du/setv! el k-pointer-active true)
+  (let [m (du/getv el k-model)]
     (when-not (or (:disabled? m) (prefers-reduced-motion?))
       (start-animation! el))))
 
 (defn- on-pointerleave [^js el]
-  (gobj/set el k-pointer-active false)
-  (gobj/set el k-grabbed false))
+  (du/setv! el k-pointer-active false)
+  (du/setv! el k-grabbed false))
 
 (defn- on-pointerdown [^js el ^js e]
-  (gobj/set el k-grabbed true)
+  (du/setv! el k-grabbed true)
   ;; Update pointer position from the down event
   (on-pointermove el e)
   (du/dispatch! el model/event-grab #js {}))
 
 (defn- on-pointerup [^js el]
-  (gobj/set el k-grabbed false)
+  (du/setv! el k-grabbed false)
   (du/dispatch! el model/event-release #js {}))
 
 ;; ── Listener management ─────────────────────────────────────────────────────
@@ -312,7 +312,7 @@
         leave-fn (fn [] (on-pointerleave el))
         down-fn  (fn [^js e] (on-pointerdown el e))
         up-fn    (fn [] (on-pointerup el))]
-    (gobj/set el k-handlers
+    (du/setv! el k-handlers
               #js {"move" move-fn "enter" enter-fn "leave" leave-fn
                    "down" down-fn "up" up-fn})
     (.addEventListener el "pointermove" move-fn #js {:passive true})
@@ -322,20 +322,20 @@
     (.addEventListener el "pointerup" up-fn)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [^js hdl (gobj/get el k-handlers)]
+  (when-let [^js hdl (du/getv el k-handlers)]
     (.removeEventListener el "pointermove" (gobj/get hdl "move"))
     (.removeEventListener el "pointerenter" (gobj/get hdl "enter"))
     (.removeEventListener el "pointerleave" (gobj/get hdl "leave"))
     (.removeEventListener el "pointerdown" (gobj/get hdl "down"))
     (.removeEventListener el "pointerup" (gobj/get hdl "up"))
-    (gobj/set el k-handlers nil)))
+    (du/setv! el k-handlers nil)))
 
 ;; ── Update from attributes ──────────────────────────────────────────────────
 ;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
 (defn- apply-model! [^js el m]
   ;; Re-init physics if we have dimensions (radius may have changed)
-  (let [w (gobj/get el k-width)
-        h (gobj/get el k-height)]
+  (let [w (du/getv el k-width)
+        h (du/getv el k-height)]
     (when (and w h (> w 0) (> h 0))
       (init-physics! el w h m)
       (if (or (:disabled? m) (prefers-reduced-motion?))
@@ -343,11 +343,11 @@
             (render-static! el))
         (do (render-path! el)
             (start-animation! el)))))
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
 
@@ -363,16 +363,16 @@
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (let [m (read-model el)]
-    (gobj/set el k-model m)
+    (du/setv! el k-model m)
     (ensure-refs! el)
-    (gobj/set el k-pointer-active false)
-    (gobj/set el k-grabbed false)
-    (gobj/set el k-pointer-x 0.0)
-    (gobj/set el k-pointer-y 0.0)
+    (du/setv! el k-pointer-active false)
+    (du/setv! el k-grabbed false)
+    (du/setv! el k-pointer-x 0.0)
+    (du/setv! el k-pointer-y 0.0)
     ;; Set up ResizeObserver
     (let [ro (js/ResizeObserver.
               (fn [^js entries] (on-resize! el entries)))]
-      (gobj/set el k-ro ro)
+      (du/setv! el k-ro ro)
       (.observe ro el))
     ;; Add pointer event listeners
     (remove-listeners! el)
@@ -381,13 +381,13 @@
 (defn- disconnected! [^js el]
   (stop-animation! el)
   (remove-listeners! el)
-  (when-let [^js ro (gobj/get el k-ro)]
+  (when-let [^js ro (du/getv el k-ro)]
     (.disconnect ro)
-    (gobj/set el k-ro nil)))
+    (du/setv! el k-ro nil)))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (gobj/get el k-refs)
+    (when (du/getv el k-refs)
       (update-from-attrs! el))))
 
 ;; ── Public API ──────────────────────────────────────────────────────────────
