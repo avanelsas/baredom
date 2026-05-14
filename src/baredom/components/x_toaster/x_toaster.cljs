@@ -79,13 +79,13 @@
     (set! (.-textContent style) style-text)
     (.appendChild root style)
     (.appendChild root slot-el)
-    (gobj/set el k-refs {:root    root
+    (du/setv! el k-refs {:root    root
                          :slot-el slot-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -100,11 +100,11 @@
   (du/set-attr! el "role"       "region")
   (du/set-attr! el "aria-label" label)
   (du/set-attr! el "data-position" position)
-  (gobj/set el k-model m))
+  (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -144,7 +144,7 @@
 
 ;; ── toast() method implementation ─────────────────────────────────────────────
 (defn- do-toast! [^js el opts]
-  (let [m          (or (gobj/get el k-model) (read-model el))
+  (let [m          (or (du/getv el k-model) (read-model el))
         max-toasts (:max-toasts m)]
     (evict-oldest! el max-toasts)
     (let [^js toast (.createElement js/document model/child-tag)]
@@ -170,15 +170,15 @@
 (defn- add-listeners! [^js el]
   (let [dismiss-h (fn [^js e] (on-toast-dismiss el e))]
     (.addEventListener el model/child-event-dismiss dismiss-h)
-    (gobj/set el k-handlers #js {"dismiss" dismiss-h})))
+    (du/setv! el k-handlers #js {"dismiss" dismiss-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs (gobj/get el k-handlers)]
+  (let [hs (du/getv el k-handlers)]
     (when hs
       (let [dismiss-h (gobj/get hs "dismiss")]
         (when dismiss-h
           (.removeEventListener el model/child-event-dismiss dismiss-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

@@ -234,11 +234,11 @@
     (.appendChild root style)
     (.appendChild root container)
 
-    (gobj/set el k-refs refs)
+    (du/setv! el k-refs refs)
     refs))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs) (init-dom! el)))
+  (or (du/getv el k-refs) (init-dom! el)))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -311,11 +311,11 @@
     (apply-icon!           icon-wrap icon-slot default-icon m)
     (apply-dismiss-button! dismiss-btn m)
     (apply-host-a11y!      el m)
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -343,24 +343,24 @@
 
 ;; ── Timer management ────────────────────────────────────────────────────────
 (defn- clear-timeout! [^js el]
-  (when-let [tid (gobj/get el k-timeout)]
+  (when-let [tid (du/getv el k-timeout)]
     (js/clearTimeout tid)
-    (gobj/set el k-timeout nil)))
+    (du/setv! el k-timeout nil)))
 
 (declare start-exit-and-remove!)
 
 (defn- schedule-timeout! [^js el]
   (clear-timeout! el)
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when (and (model/dismiss-eligible? m)
                (number? (:timeout-ms m))
-               (not (gobj/get el k-exiting)))
-      (gobj/set el k-timeout
+               (not (du/getv el k-exiting)))
+      (du/setv! el k-timeout
                 (js/setTimeout
                  (fn on-timeout-fire []
-                   (gobj/set el k-timeout nil)
-                   (when (and (.-isConnected el) (not (gobj/get el k-exiting)))
-                     (let [m2 (or (gobj/get el k-model) (read-model el))]
+                   (du/setv! el k-timeout nil)
+                   (when (and (.-isConnected el) (not (du/getv el k-exiting)))
+                     (let [m2 (or (du/getv el k-model) (read-model el))]
                        (when (model/dismiss-eligible? m2)
                          (let [detail (clj->js (model/dismiss-detail m2 reason-timeout))
                                ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
@@ -369,8 +369,8 @@
 
 ;; ── Animation ───────────────────────────────────────────────────────────────
 (defn- start-enter! [^js el]
-  (when-not (gobj/get el k-entered)
-    (gobj/set el k-entered true)
+  (when-not (du/getv el k-entered)
+    (du/setv! el k-entered true)
     (du/set-attr! el attr-data-entering "")
     (let [{:keys [container]} (ensure-refs! el)
           ^js container container]
@@ -381,8 +381,8 @@
         (.addEventListener container ev-animationend on-end)))))
 
 (defn- start-exit-and-remove! [^js el]
-  (when-not (gobj/get el k-exiting)
-    (gobj/set el k-exiting true)
+  (when-not (du/getv el k-exiting)
+    (du/setv! el k-exiting true)
     (clear-timeout! el)
     (du/remove-attr! el attr-data-entering)
     (let [dur (exit-duration-ms el)]
@@ -393,24 +393,24 @@
           (letfn [(on-end [^js e]
                     (when (= (.-target e) container)
                       (.removeEventListener container ev-animationend on-end)
-                      (when-let [tid (gobj/get el k-exit-timer)]
+                      (when-let [tid (du/getv el k-exit-timer)]
                         (js/clearTimeout tid)
-                        (gobj/set el k-exit-timer nil))
+                        (du/setv! el k-exit-timer nil))
                       (when (.-isConnected el) (.remove el))))]
             (du/set-attr! el attr-data-exiting "")
             (.addEventListener container ev-animationend on-end)
-            (gobj/set el k-exit-timer
+            (du/setv! el k-exit-timer
                       (js/setTimeout
                        (fn on-exit-fallback []
-                         (when (and (.-isConnected el) (gobj/get el k-exiting))
+                         (when (and (.-isConnected el) (du/getv el k-exiting))
                            (.removeEventListener container ev-animationend on-end)
-                           (gobj/set el k-exit-timer nil)
+                           (du/setv! el k-exit-timer nil)
                            (.remove el)))
                        (+ dur 60)))))))))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch-dismiss! [^js el reason]
-  (let [m      (or (gobj/get el k-model) (read-model el))
+  (let [m      (or (du/getv el k-model) (read-model el))
         detail (clj->js (model/dismiss-detail m reason))
         ok?    (du/dispatch-cancelable! el model/event-dismiss detail)]
     (when ok? (start-exit-and-remove! el))
@@ -418,15 +418,15 @@
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-dismiss-click [^js el ^js e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
-    (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
+  (let [m (or (du/getv el k-model) (read-model el))]
+    (when (and (model/dismiss-eligible? m) (not (du/getv el k-exiting)))
       (.preventDefault e)
       (dispatch-dismiss! el reason-button))))
 
 (defn- on-keydown [^js el ^js e]
   (when (= (.-key e) key-escape)
-    (let [m (or (gobj/get el k-model) (read-model el))]
-      (when (and (model/dismiss-eligible? m) (not (gobj/get el k-exiting)))
+    (let [m (or (du/getv el k-model) (read-model el))]
+      (when (and (model/dismiss-eligible? m) (not (du/getv el k-exiting)))
         (.preventDefault e)
         (dispatch-dismiss! el reason-keyboard)))))
 
@@ -441,22 +441,22 @@
     (.addEventListener el          ev-keydown key-h)
     (gobj/set handlers hk-click   click-h)
     (gobj/set handlers hk-keydown key-h)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
   (clear-timeout! el)
-  (when-let [tid (gobj/get el k-exit-timer)]
+  (when-let [tid (du/getv el k-exit-timer)]
     (js/clearTimeout tid)
-    (gobj/set el k-exit-timer nil))
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+    (du/setv! el k-exit-timer nil))
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js btn (:dismiss-btn refs)
             click-h (gobj/get hs hk-click)
             key-h   (gobj/get hs hk-keydown)]
         (when click-h (.removeEventListener btn ev-click   click-h))
         (when key-h   (.removeEventListener el  ev-keydown key-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 ;; Four simple reflectors are Tier 1 (du/define-{string,bool}-prop!).

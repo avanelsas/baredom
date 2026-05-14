@@ -307,7 +307,7 @@
                     :body       body-el
                     :footer     footer-el
                     :footerSlot footer-slot}]
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -481,7 +481,7 @@
 ;; Render
 ;; ---------------------------------------------------------------------------
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [{:keys [open? no-close? heading close-label placement]} (read-model el)
           ^js panel-el   (gobj/get refs "panel")
           ^js header-el  (gobj/get refs "header")
@@ -598,7 +598,7 @@
       (set! (.. arrow -style -left) (str arrow-x "px")))))
 
 (defn- portal-open! [^js el _source]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [m          (read-model el)
           ^js trigger (gobj/get refs "trigger")
           z-index    1000
@@ -613,12 +613,12 @@
       ;; Move body content (from default slot)
       (let [^js default-slot (.querySelector (.-shadowRoot el) "slot:not([name])")
             moved-body (move-nodes-to! default-slot p-body)]
-        (gobj/set el k-moved-body (to-array moved-body)))
+        (du/setv! el k-moved-body (to-array moved-body)))
 
       ;; Move footer content
       (let [^js footer-slot (gobj/get refs "footerSlot")
             moved-footer (move-nodes-to! footer-slot p-footer)]
-        (gobj/set el k-moved-footer (to-array moved-footer))
+        (du/setv! el k-moved-footer (to-array moved-footer))
         ;; Show footer if it has content
         (when (pos? (count moved-footer))
           (.removeAttribute p-footer "hidden")))
@@ -639,7 +639,7 @@
         (overlay/attach-listener! layer layer       "keydown" on-escape    true)
         (overlay/attach-listener! layer layer       "click"   on-backdrop  false))
 
-      (gobj/set el k-layer layer)
+      (du/setv! el k-layer layer)
 
       ;; Animate in after paint
       (js/requestAnimationFrame
@@ -650,17 +650,17 @@
            (du/set-attr! p-panel "data-open" "")))))))
 
 (defn- portal-close! [^js el]
-  (when-let [^js layer (gobj/get el k-layer)]
+  (when-let [^js layer (du/getv el k-layer)]
     ;; Return moved nodes
-    (when-let [moved-body (gobj/get el k-moved-body)]
+    (when-let [moved-body (du/getv el k-moved-body)]
       (return-nodes! el (array-seq moved-body)))
-    (when-let [moved-footer (gobj/get el k-moved-footer)]
+    (when-let [moved-footer (du/getv el k-moved-footer)]
       (return-nodes! el (array-seq moved-footer)))
     ;; Remove layer
     (overlay/remove-layer! layer)
-    (gobj/set el k-layer nil)
-    (gobj/set el k-moved-body nil)
-    (gobj/set el k-moved-footer nil)))
+    (du/setv! el k-layer nil)
+    (du/setv! el k-moved-body nil)
+    (du/setv! el k-moved-footer nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; Open / Close
@@ -695,7 +695,7 @@
 ;; Document-level listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-doc-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
       ;; Delay by one tick so the opening click does not immediately re-close
@@ -707,7 +707,7 @@
        0))))
 
 (defn- remove-doc-listeners! [^js el]
-  (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
       (.removeEventListener js/document "click"   doc-click-h)
@@ -749,7 +749,7 @@
 
         footer-slotchange-h
         (fn [^js _evt]
-          (when-let [refs (gobj/get el k-refs)]
+          (when-let [refs (du/getv el k-refs)]
             (let [^js footer-slot (gobj/get refs "footerSlot")
                   ^js footer-el   (gobj/get refs "footer")]
               (du/set-bool-attr! footer-el "hidden"
@@ -766,8 +766,8 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-static-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js trigger-el  (gobj/get refs "trigger")
             ^js close-btn   (gobj/get refs "closeBtn")
             ^js footer-slot (gobj/get refs "footerSlot")]
@@ -777,8 +777,8 @@
         (.addEventListener footer-slot "slotchange" (gobj/get handlers "footerSlotchange"))))))
 
 (defn- remove-static-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js trigger-el  (gobj/get refs "trigger")
             ^js close-btn   (gobj/get refs "closeBtn")
             ^js footer-slot (gobj/get refs "footerSlot")]
@@ -791,11 +791,11 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (remove-static-listeners! el)
   (remove-doc-listeners! el)
-  (gobj/set el k-handlers (make-handlers el))
+  (du/setv! el k-handlers (make-handlers el))
   (add-static-listeners! el)
   (when (du/has-attr? el model/attr-open)
     (add-doc-listeners! el))
@@ -807,7 +807,7 @@
   (remove-doc-listeners! el))
 
 (defn- attribute-changed! [^js el name _old _new]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (render! el)
     (when (= name model/attr-open)
       (if (du/has-attr? el model/attr-open)
