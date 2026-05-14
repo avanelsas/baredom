@@ -669,7 +669,7 @@
         (update-entry-states! el children entry-rects trigger-y)
         (update-track-fill! el track-prog m)
         (dispatch-progress-if-changed! el progress active-idx active-id))))
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
@@ -807,7 +807,7 @@
              (not (disabled? el))
              (not (prefers-reduced-motion?)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
@@ -908,7 +908,7 @@
   ;; Cancel pending rAF
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────

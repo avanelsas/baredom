@@ -320,6 +320,18 @@
       (is (= 0 (count-records))
           "no record was emitted to the trace recorder"))))
 
+(deftest setv-untraced-produces-no-record-test
+  (testing "du/setv-untraced! stamps the instance field but does NOT fire
+            the trace hook. Used for animation bookkeeping (k-raf,
+            k-last-frame, k-time) that has no diagnostic value at any
+            frequency."
+    (let [el (make-el mutation-tag)]
+      (du/setv-untraced! el "k-raf" 42)
+      (is (= 42 (du/getv el "k-raf"))
+          "field IS stamped on the element")
+      (is (= 0 (count-records))
+          "no record was emitted to the trace recorder"))))
+
 ;; ── lifecycle hooks ─────────────────────────────────────────────────────────
 
 (defn- with-test-el

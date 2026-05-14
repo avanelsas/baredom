@@ -254,12 +254,12 @@
   (let [still-scrolling? (> (or (du/getv el k-scroll-delta) 0.0) 0.5)]
     (if (and (aget all-settled 0) (not still-scrolling?))
       (do
-        (du/setv! el k-raf nil)
+        (du/setv-untraced! el k-raf nil)
         (du/setv! el k-scroll-delta 0.0)
         (when (du/getv el k-active)
           (du/setv! el k-active false)
           (du/dispatch! el model/event-spring-settle #js {})))
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el)))))))
 
 (defn- animate! [^js el]
@@ -288,7 +288,7 @@
           n          (.-length springs)
           all-settled #js [true]]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
       ;; Decay scroll delta instead of resetting — keeps force warm over
       ;; multiple frames so the spring has time to respond.
       (du/setv! el k-scroll-delta (* scroll-d 0.85))
@@ -313,14 +313,14 @@
     (when-not (du/getv el k-active)
       (du/setv! el k-active true)
       (du/dispatch! el model/event-spring-activate #js {}))
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Event handlers ──────────────────────────────────────────────────────────
 (defn- on-mousemove [^js el ^js e]

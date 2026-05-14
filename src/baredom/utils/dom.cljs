@@ -97,6 +97,22 @@
   (.removeAttribute el attr-name)
   nil)
 
+(defn setv-untraced!
+  "Like setv! but skips the trace recorder. Use for instance-field writes
+   that have no diagnostic value at any frequency — typically the trio
+   of animation bookkeeping fields stamped every frame inside `animate!`:
+
+     k-raf         — the requestAnimationFrame id (replaced each frame)
+     k-last-frame  — the previous frame's timestamp
+     k-time        — accumulated animation time
+
+   Tracing these records ~120 state/instance-field-set events per second
+   per running animation, drowning out semantic state changes. Use the
+   normal `setv!` for actual UI state (selection, hover, pressed, etc.)."
+  [^js el k v]
+  (gobj/set el k v)
+  nil)
+
 (defn set-bool-attr!
   "Delegates to set-attr!/remove-attr! so a single hook site fires per call."
   [^js el attr-name value]

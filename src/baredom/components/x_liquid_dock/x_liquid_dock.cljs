@@ -542,7 +542,7 @@
         (du/setv! el k-ripple-burst 0))
 
       ;; Schedule next frame
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
@@ -550,13 +550,13 @@
     (let [m (du/getv el k-model)]
       (when-not (:disabled? m)
         (du/setv! el k-noise-seed 0)
-        (du/setv! el k-raf
+        (du/setv-untraced! el k-raf
                   (js/requestAnimationFrame (fn [_] (animate! el))))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Reset item transforms ──────────────────────────────────────────────────
 (defn- reset-item-transforms! [^js el]

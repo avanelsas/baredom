@@ -207,7 +207,7 @@
           ptr-y      (du/getv el k-pointer-y)
           grabbed?   (du/getv el k-grabbed)]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
 
       ;; Update each control point
       (dotimes [i n]
@@ -234,7 +234,7 @@
 
       ;; Continue loop if still active or not settled
       (if (or ptr-active (not (settled? vx vy n)))
-        (du/setv! el k-raf
+        (du/setv-untraced! el k-raf
                   (js/requestAnimationFrame (fn animate-tick [_] (animate! el))))
         ;; Settled — stop loop, snap to rest
         (do
@@ -242,18 +242,18 @@
             (aset cx i (aget rx i))
             (aset cy i (aget ry i)))
           (render-path! el)
-          (du/setv! el k-raf nil))))))
+          (du/setv-untraced! el k-raf nil))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn animate-first-frame [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]

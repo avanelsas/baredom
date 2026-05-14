@@ -419,10 +419,10 @@
           last-frame (du/getv el k-last-frame)
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
 
       ;; Update time (for indeterminate oscillation)
-      (du/setv! el k-time (+ (du/getv el k-time) dt))
+      (du/setv-untraced! el k-time (+ (du/getv el k-time) dt))
 
       ;; Spring physics: smooth progress interpolation
       (let [target (if (:indeterminate? m)
@@ -456,24 +456,24 @@
         (update-bloom! el dt))
 
       ;; Schedule next frame
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
-  (du/setv! el k-time 0.0)
+  (du/setv-untraced! el k-time 0.0)
   (du/setv! el k-spring-pos 0.0)
   (du/setv! el k-spring-vel 0.0)
-  (du/setv! el k-last-frame (js/performance.now))
+  (du/setv-untraced! el k-last-frame (js/performance.now))
   (du/setv! el k-completed false)
   (du/setv! el k-bloom-active false)
   (du/setv! el k-prev-visible -1)
-  (du/setv! el k-raf
+  (du/setv-untraced! el k-raf
             (js/requestAnimationFrame (fn [_] (animate! el)))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Static render (for reduced motion) ─────────────────────────────────────
 

@@ -267,12 +267,12 @@
   (when-not (du/getv el k-raf-pend?)
     (du/setv! el k-raf-pend? true)
     (let [id (js/requestAnimationFrame (fn [_] (raf-tick! el)))]
-      (du/setv! el k-raf id))))
+      (du/setv-untraced! el k-raf id))))
 
 (defn- cancel-raf! [^js el]
   (when-let [id (du/getv el k-raf)]
     (js/cancelAnimationFrame id)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-raf-pend? false))
 
 ;; ── Pointer handlers ────────────────────────────────────────────────────────

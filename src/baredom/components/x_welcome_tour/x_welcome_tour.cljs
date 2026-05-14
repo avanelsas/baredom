@@ -652,10 +652,10 @@
   "Request a throttled reposition via requestAnimationFrame."
   [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame
                (fn []
-                 (du/setv! el k-raf nil)
+                 (du/setv-untraced! el k-raf nil)
                  (when (and (.-isConnected el) (du/getv el k-layer))
                    (render! el)))))))
 
@@ -816,7 +816,7 @@
     (when raf (js/cancelAnimationFrame raf)))
   (du/setv! el k-handlers nil)
   (du/setv! el k-resize-obs nil)
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── MutationObserver for child steps ────────────────────────────────────────
 (defn- install-mutation-observer! [^js el]

@@ -561,8 +561,8 @@
           dt         (/ (js/Math.min (- now last-frame) 100.0) 1000.0)
           t          (+ (du/getv el k-time) dt)]
 
-      (du/setv! el k-last-frame now)
-      (du/setv! el k-time t)
+      (du/setv-untraced! el k-last-frame now)
+      (du/setv-untraced! el k-time t)
 
       ;; Update satellite positions
       (render-satellites! el t)
@@ -574,19 +574,19 @@
       (render-gradient! el t)
 
       ;; Always continue — noise never settles
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Render static (disabled / reduced-motion) ──────────────────────────────
 (defn- render-static! [^js el]
@@ -728,7 +728,7 @@
 (defn- connected! [^js el]
   (let [m (read-model el)]
     (du/setv! el k-model m)
-    (du/setv! el k-time 0.0)
+    (du/setv-untraced! el k-time 0.0)
     (du/setv! el k-pointer-active false)
     (du/setv! el k-pointer-x 0.0)
     (du/setv! el k-pointer-y 0.0)

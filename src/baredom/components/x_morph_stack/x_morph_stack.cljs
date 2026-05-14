@@ -611,7 +611,7 @@
                                               ;; Token may have changed mid-flight; check before continuing.
                                               (when (= token (du/getv el k-token))
                                                 (tick! el now2))))]
-            (du/setv! el k-raf raf)))))))
+            (du/setv-untraced! el k-raf raf)))))))
 
 ;; ── Finalize ────────────────────────────────────────────────────────────────
 (defn- run-finalizers! [^js entries]
@@ -626,7 +626,7 @@
     (let [entries ^js (du/getv el k-entries)]
       (when-let [raf (du/getv el k-raf)]
         (.cancelAnimationFrame js/window raf)
-        (du/setv! el k-raf nil))
+        (du/setv-untraced! el k-raf nil))
       (run-finalizers! entries)
       (du/setv! el k-entries nil)
       (du/setv! el k-last-time nil)
@@ -644,7 +644,7 @@
   [^js el]
   (when-let [raf (du/getv el k-raf)]
     (.cancelAnimationFrame js/window raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (run-finalizers! ^js (du/getv el k-entries))
   (du/setv! el k-entries nil)
   (du/setv! el k-last-time nil)
@@ -729,7 +729,7 @@
                                                       (fn [now]
                                                         (when (= token (du/getv el k-token))
                                                           (tick! el now))))]
-                      (du/setv! el k-raf raf)))
+                      (du/setv-untraced! el k-raf raf)))
                   true)))))))))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────

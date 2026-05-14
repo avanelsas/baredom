@@ -255,13 +255,13 @@
 (defn- stop-animation! [^js el]
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
     (du/setv! el k-last-time (js/performance.now))
     (du/setv! el k-burst-start (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
 (defn- step-particles! [^js el dt-frames]
@@ -368,7 +368,7 @@
         (set! (.-globalAlpha ctx) 1.0)))))
 
 (defn- animate! [^js el]
-  (du/setv! el k-raf nil)
+  (du/setv-untraced! el k-raf nil)
   (when (.-isConnected el)
     (let [now       (js/performance.now)
           last-time (or (du/getv el k-last-time) now)
@@ -379,7 +379,7 @@
       (let [alive (compact-particles! el)]
         (draw-particles! el)
         (if (pos? alive)
-          (du/setv! el k-raf
+          (du/setv-untraced! el k-raf
                     (js/requestAnimationFrame (fn on-raf-tick [_] (animate! el))))
           (let [start    (or (du/getv el k-burst-start) now)
                 duration (js/Math.round (- now start))]

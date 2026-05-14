@@ -389,7 +389,7 @@
     (or (:disabled? (du/getv el k-model)) (prefers-reduced-motion?))
     ;; Bail out without rescheduling — leaves k-raf cleared so a future
     ;; re-enable via start-animation! will kick the loop back on.
-    (du/setv! el k-raf nil)
+    (du/setv-untraced! el k-raf nil)
 
     :else
     (let [m           (du/getv el k-model)
@@ -410,10 +410,10 @@
           ^js wv      (du/getv el k-wave-vels)
           ^js wp      (du/getv el k-wave-phases)]
 
-      (du/setv! el k-last-frame now)
+      (du/setv-untraced! el k-last-frame now)
 
       ;; Accumulate time
-      (du/setv! el k-time (+ (or (du/getv el k-time) 0.0) (* dt wave-speed)))
+      (du/setv-untraced! el k-time (+ (or (du/getv el k-time) 0.0) (* dt wave-speed)))
 
       ;; Smooth fill level toward target
       (let [cur-prog  (or (du/getv el k-progress) 0.0)
@@ -457,21 +457,21 @@
         (let [prog-diff (js/Math.abs (- (or (du/getv el k-progress) 0.0)
                                         (or (du/getv el k-target-progress) 0.0)))]
           (if (or (aget any-moving? 0) (> vel 0.01) (> prog-diff 0.001))
-            (du/setv! el k-raf
+            (du/setv-untraced! el k-raf
                       (js/requestAnimationFrame (fn [_] (animate! el))))
             ;; Settled
-            (du/setv! el k-raf nil)))))))
+            (du/setv-untraced! el k-raf nil)))))))
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-last-frame (js/performance.now))
-    (du/setv! el k-raf
+    (du/setv-untraced! el k-last-frame (js/performance.now))
+    (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- stop-animation! [^js el]
   (when-let [raf-id (du/getv el k-raf)]
     (js/cancelAnimationFrame raf-id)
-    (du/setv! el k-raf nil)))
+    (du/setv-untraced! el k-raf nil)))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- on-scroll [^js el]
@@ -710,7 +710,7 @@
     (du/setv! el k-progress 0.0)
     (du/setv! el k-target-progress 0.0)
     (du/setv! el k-scroll-vel 0.0)
-    (du/setv! el k-time 0.0)
+    (du/setv-untraced! el k-time 0.0)
     (du/setv! el k-last-dispatch -1.0)
     (du/setv! el k-visible true)
     (ensure-refs! el)

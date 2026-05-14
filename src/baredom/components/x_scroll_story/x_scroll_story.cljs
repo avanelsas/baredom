@@ -291,7 +291,7 @@
             (du/dispatch! el model/event-progress
                        (clj->js (model/progress-detail progress active-idx active-id))))))))
   ;; Clear rAF handle
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
 
@@ -429,7 +429,7 @@
              (not (disabled? el))
              (not (prefers-reduced-motion?)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
@@ -511,7 +511,7 @@
   ;; Cancel pending rAF
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (du/setv! el k-handlers nil))
 
 ;; ── IntersectionObserver setup/teardown ─────────────────────────────────────

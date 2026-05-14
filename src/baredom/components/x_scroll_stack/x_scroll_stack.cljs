@@ -199,7 +199,7 @@
             (du/dispatch! el model/event-progress
                        (clj->js (model/progress-detail progress stacked n))))))))
   ;; Clear rAF handle
-  (du/setv! el k-raf nil))
+  (du/setv-untraced! el k-raf nil))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
 (defn- disabled? [^js el]
@@ -211,7 +211,7 @@
              (du/getv el k-visible)
              (not (disabled? el)))
     (when-not (du/getv el k-raf)
-      (du/setv! el k-raf
+      (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))
 
@@ -320,7 +320,7 @@
   ;; Cancel pending rAFs
   (when-let [raf (du/getv el k-raf)]
     (js/cancelAnimationFrame raf)
-    (du/setv! el k-raf nil))
+    (du/setv-untraced! el k-raf nil))
   (when-let [raf (du/getv el k-cache-raf)]
     (js/cancelAnimationFrame raf)
     (du/setv! el k-cache-raf nil))
