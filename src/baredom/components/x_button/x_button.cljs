@@ -76,6 +76,11 @@
 (def ^:private ev-slotchange   "slotchange")
 
 (def ^:private selector-focus-visible ":focus-visible")
+;; `attr-form` is the *attribute name* on the host (`<x-button form="my-form">`);
+;; `selector-form` is the CSS *tag* selector used to locate the closest <form>
+;; ancestor when no form-id attribute is supplied. They happen to share a
+;; string but encode different intent.
+(def ^:private selector-form "form")
 
 ;; ── Styles ──────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -314,45 +319,42 @@
    "}"))
 
 ;; ── Shadow DOM builders ─────────────────────────────────────────────────────
-(defn- make-el [tag]
-  (.createElement js/document tag))
-
 (defn- build-refs!
   "Build the shadow DOM and return the refs JS object. Stores nothing on
   the host — caller does that via `du/setv!`."
   [^js el]
   (let [root                (.attachShadow el #js {:mode "open"})
-        style-el            (make-el "style")
-        button-el           (make-el "button")
-        inner-el            (make-el "span")
-        icon-start-el       (make-el "span")
-        label-el            (make-el "span")
-        spinner-el          (make-el "span")
-        spinner-fallback-el (make-el "span")
-        icon-end-el         (make-el "span")
-        default-slot-el     (make-el "slot")
-        icon-start-slot-el  (make-el "slot")
-        icon-end-slot-el    (make-el "slot")
-        spinner-slot-el     (make-el "slot")
+        style-el            (.createElement js/document "style")
+        button-el           (.createElement js/document "button")
+        inner-el            (.createElement js/document "span")
+        icon-start-el       (.createElement js/document "span")
+        label-el            (.createElement js/document "span")
+        spinner-el          (.createElement js/document "span")
+        spinner-fallback-el (.createElement js/document "span")
+        icon-end-el         (.createElement js/document "span")
+        default-slot-el     (.createElement js/document "slot")
+        icon-start-slot-el  (.createElement js/document "slot")
+        icon-end-slot-el    (.createElement js/document "slot")
+        spinner-slot-el     (.createElement js/document "slot")
         refs                #js {}]
 
     (set! (.-textContent style-el) style-text)
 
-    (.setAttribute button-el           attr-part part-button)
-    (.setAttribute inner-el            attr-part part-inner)
-    (.setAttribute icon-start-el       attr-part part-icon-start)
-    (.setAttribute label-el            attr-part part-label)
-    (.setAttribute spinner-el          attr-part part-spinner)
-    (.setAttribute spinner-slot-el     attr-part part-spinner-slot)
-    (.setAttribute spinner-fallback-el attr-part part-spinner-fallback)
-    (.setAttribute icon-end-el         attr-part part-icon-end)
+    (du/set-attr! button-el           attr-part part-button)
+    (du/set-attr! inner-el            attr-part part-inner)
+    (du/set-attr! icon-start-el       attr-part part-icon-start)
+    (du/set-attr! label-el            attr-part part-label)
+    (du/set-attr! spinner-el          attr-part part-spinner)
+    (du/set-attr! spinner-slot-el     attr-part part-spinner-slot)
+    (du/set-attr! spinner-fallback-el attr-part part-spinner-fallback)
+    (du/set-attr! icon-end-el         attr-part part-icon-end)
 
-    (.setAttribute icon-start-slot-el attr-name model/slot-icon-start)
-    (.setAttribute icon-end-slot-el   attr-name model/slot-icon-end)
-    (.setAttribute spinner-slot-el    attr-name model/slot-spinner)
+    (du/set-attr! icon-start-slot-el attr-name model/slot-icon-start)
+    (du/set-attr! icon-end-slot-el   attr-name model/slot-icon-end)
+    (du/set-attr! spinner-slot-el    attr-name model/slot-spinner)
 
-    (.setAttribute spinner-el          attr-aria-hidden val-true)
-    (.setAttribute spinner-fallback-el attr-aria-hidden val-true)
+    (du/set-attr! spinner-el          attr-aria-hidden val-true)
+    (du/set-attr! spinner-fallback-el attr-aria-hidden val-true)
 
     (.appendChild icon-start-el icon-start-slot-el)
     (.appendChild label-el default-slot-el)
@@ -385,24 +387,17 @@
 (defn- slot-has-content? [^js slot-el]
   (> (alength (assigned-nodes slot-el)) 0))
 
-(defn- meaningful-text-node? [^js node]
-  (and (= (.-nodeType node) js/Node.TEXT_NODE)
-       (not= "" (.trim (or (.-textContent node) "")))))
-
-(defn- meaningful-element-node? [^js node]
-  (and (= (.-nodeType node) js/Node.ELEMENT_NODE)
-       (not= "" (.trim (or (.-textContent node) "")))))
+(defn- meaningful-node?
+  "A text or element node whose trimmed textContent is non-empty.
+   Used to decide whether the label slot supplies its own accessible name."
+  [^js node]
+  (let [t (.-nodeType node)]
+    (and (or (= t js/Node.TEXT_NODE)
+             (= t js/Node.ELEMENT_NODE))
+         (not= "" (.trim (or (.-textContent node) ""))))))
 
 (defn- slot-has-meaningful-text? [^js slot-el]
-  (let [nodes (assigned-nodes slot-el)]
-    (loop [idx 0]
-      (if (< idx (alength nodes))
-        (let [node (aget nodes idx)]
-          (if (or (meaningful-text-node? node)
-                  (meaningful-element-node? node))
-            true
-            (recur (inc idx))))
-        false))))
+  (boolean (some meaningful-node? (array-seq (assigned-nodes slot-el)))))
 
 ;; ── Model reading ───────────────────────────────────────────────────────────
 (defn- read-public-state [^js el]
@@ -446,7 +441,7 @@
 (defn- find-owner-form [^js el]
   (or (when-let [form-id (du/get-attr el attr-form)]
         (.getElementById js/document form-id))
-      (.closest el attr-form)))
+      (.closest el selector-form)))
 
 ;; ── DOM patching ────────────────────────────────────────────────────────────
 (defn- bool-attr
@@ -456,11 +451,12 @@
   (if v val-true val-false))
 
 (defn- toggle-attr!
-  "Set or remove an attribute depending on whether `v` is truthy."
+  "Set or remove an attribute depending on whether `v` is truthy. Routes
+   through du/ so shadow-internal mutations are visible to the trace recorder."
   [^js node attr v]
   (if v
-    (.setAttribute node attr (if (string? v) v (str v)))
-    (.removeAttribute node attr)))
+    (du/set-attr!    node attr (if (string? v) v (str v)))
+    (du/remove-attr! node attr)))
 
 (defn- apply-button-aria! [^js button-el public-state aria-label-value]
   (toggle-attr! button-el attr-aria-busy    (model/aria-busy public-state))
@@ -468,16 +464,16 @@
   (toggle-attr! button-el attr-aria-label   aria-label-value))
 
 (defn- apply-button-data-state! [^js button-el public-state m]
-  (.setAttribute button-el attr-data-variant        (:variant public-state))
-  (.setAttribute button-el attr-data-size           (:size    public-state))
-  (.setAttribute button-el attr-data-loading        (bool-attr (:loading  public-state)))
-  (.setAttribute button-el attr-data-disabled       (bool-attr (:disabled public-state)))
-  (.setAttribute button-el attr-data-hover          (bool-attr (:hover?          m)))
-  (.setAttribute button-el attr-data-active         (bool-attr (:active?         m)))
-  (.setAttribute button-el attr-data-focus-visible  (bool-attr (:focus-visible?  m)))
-  (.setAttribute button-el attr-data-has-icon-start (bool-attr (:has-icon-start? m)))
-  (.setAttribute button-el attr-data-has-icon-end   (bool-attr (:has-icon-end?   m)))
-  (.setAttribute button-el attr-data-has-spinner    (bool-attr (:has-spinner?    m))))
+  (du/set-attr! button-el attr-data-variant        (:variant public-state))
+  (du/set-attr! button-el attr-data-size           (:size    public-state))
+  (du/set-attr! button-el attr-data-loading        (bool-attr (:loading  public-state)))
+  (du/set-attr! button-el attr-data-disabled       (bool-attr (:disabled public-state)))
+  (du/set-attr! button-el attr-data-hover          (bool-attr (:hover?          m)))
+  (du/set-attr! button-el attr-data-active         (bool-attr (:active?         m)))
+  (du/set-attr! button-el attr-data-focus-visible  (bool-attr (:focus-visible?  m)))
+  (du/set-attr! button-el attr-data-has-icon-start (bool-attr (:has-icon-start? m)))
+  (du/set-attr! button-el attr-data-has-icon-end   (bool-attr (:has-icon-end?   m)))
+  (du/set-attr! button-el attr-data-has-spinner    (bool-attr (:has-spinner?    m))))
 
 (defn- apply-host-data! [^js el public-state]
   (du/set-attr! el attr-data-variant (:variant public-state))
@@ -487,7 +483,7 @@
   (let [^js refs   (du/getv el k-refs)
         ^js button (gobj/get refs rk-button)
         public     (:public m)]
-    (.setAttribute button attr-type (:type public))
+    (du/set-attr! button attr-type (:type public))
     (set! (.-disabled button) (or (:disabled public) (:loading public)))
     (apply-button-aria!       button public (:aria-label-value m))
     (apply-button-data-state! button public m)
