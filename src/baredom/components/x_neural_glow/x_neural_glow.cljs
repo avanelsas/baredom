@@ -98,8 +98,7 @@
     (if (.getShaderParameter gl shader (.-COMPILE_STATUS gl))
       shader
       (do (js/console.warn "x-neural-glow shader error:" (.getShaderInfoLog gl shader))
-          (.deleteShader gl shader)
-          nil))))
+          (.deleteShader gl shader)))))
 
 (defn- create-program [^js gl ^js vs ^js fs]
   (let [program (.createProgram gl)]
@@ -109,8 +108,7 @@
     (if (.getProgramParameter gl program (.-LINK_STATUS gl))
       program
       (do (js/console.warn "x-neural-glow link error:" (.getProgramInfoLog gl program))
-          (.deleteProgram gl program)
-          nil))))
+          (.deleteProgram gl program)))))
 
 (defn- init-webgl!
   "Initialise WebGL: compile shaders, create program, set up quad buffer,

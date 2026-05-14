@@ -877,8 +877,7 @@
     (gobj/set el model/k-view-selected m)
     (when (and (some? id)
                (= :causality (gobj/get el model/k-dock-mode)))
-      (model/set-ui-state! el :causality-needs-fit true))
-    nil))
+      (model/set-ui-state! el :causality-needs-fit true))))
 
 (defn- effective-selection!
   "Return the currently-selected record IFF it still passes the active

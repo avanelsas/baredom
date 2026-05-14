@@ -444,8 +444,7 @@
                      ;; fades out simultaneously. Same `t`, so they crossfade.
                      (when text-diff?
                        (set! (.. ghost -style -opacity)
-                             (str (max 0.0 (min 1.0 tt)))))
-                     nil))
+                             (str (max 0.0 (min 1.0 tt)))))))
           finalize (fn []
                      (set! (.. new-node -style -visibility) "")
                      (when (.-parentNode ghost)
@@ -491,8 +490,7 @@
                      (set! (.. ghost -style -transform)
                            (str "translate(" dx "px," dy "px) scale(" sx "," sy ")"))
                      (set! (.. ghost -style -opacity)
-                           (str (max 0.0 (- 1.0 tt))))
-                     nil))
+                           (str (max 0.0 (- 1.0 tt))))))
           finalize (fn []
                      (when (.-parentNode ghost)
                        (.removeChild (.-parentNode ghost) ghost)))]

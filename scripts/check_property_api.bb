@@ -91,8 +91,7 @@
     (try
       (edn/read-string {:default (fn [_tag value] value)} map-text)
       (catch Exception e
-        (println "  WARN: could not parse property-api:" (ex-message e))
-        nil))))
+        (println "  WARN: could not parse property-api:" (ex-message e))))))
 
 ;; ── Compare ──────────────────────────────────────────────────────────────────
 

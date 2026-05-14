@@ -420,8 +420,7 @@
           (.add (.-classList m) "tl-marker")
           (.appendChild container m)
           (aset markers i m)))
-      (gobj/set el k-marker-els markers))
-    nil))
+      (gobj/set el k-marker-els markers))))
 
 (defn- rebuild-date-labels!
   "Create/remove date label elements in shadow DOM."
@@ -446,8 +445,7 @@
               (.appendChild container d)
               (aset dates i d))
             (aset dates i nil))))
-      (gobj/set el k-date-els dates))
-    nil))
+      (gobj/set el k-date-els dates))))
 
 (defn- position-overlays!
   "Reposition markers and date labels to align with child centers."

@@ -1406,6 +1406,4 @@
   [^js host k v]
   (let [^js m (or (gobj/get host k-ui-state) (js-obj))]
     (gobj/set m (name k) v)
-    (gobj/set host k-ui-state m)
-    nil))
-
+    (gobj/set host k-ui-state m)))
