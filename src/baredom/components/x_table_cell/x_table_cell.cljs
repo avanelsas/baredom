@@ -180,7 +180,7 @@
     (.appendChild root style)
     (.appendChild root cell)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               {:root              root
                :cell              cell
                :content           content
@@ -188,9 +188,9 @@
                :sort-icon-default sort-icon-default})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -260,11 +260,11 @@
 
     (set! (.-innerHTML sort-icon-default) (sort-icon-svg m))
 
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -283,7 +283,7 @@
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-sort-click [^js el ^js _e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when (and (model/sort-btn-visible? m) (not (:disabled? m)))
       (dispatch-sort! el))))
 
@@ -293,17 +293,17 @@
         ^js sort-btn sort-btn
         sort-click-h (fn handle-sort-click [e] (on-sort-click el e))]
     (.addEventListener sort-btn "click" sort-click-h)
-    (gobj/set el k-handlers #js {:sort-click sort-click-h})))
+    (du/setv! el k-handlers #js {:sort-click sort-click-h})))
 
 (defn- remove-listeners! [^js el]
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [{:keys [sort-btn]} refs
             ^js sort-btn sort-btn
             h (gobj/get hs "sort-click")]
         (when h (.removeEventListener sort-btn "click" h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
@@ -351,7 +351,7 @@
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el)
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
   (dispatch-connected! el m)))
 
 (defn- disconnected! [^js el]

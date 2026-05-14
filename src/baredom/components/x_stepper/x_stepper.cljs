@@ -236,12 +236,12 @@
     (.setAttribute container "role" "list")
     (.appendChild root style)
     (.appendChild root container)
-    (gobj/set el k-refs {:root root :container container})))
+    (du/setv! el k-refs {:root root :container container})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -341,17 +341,17 @@
     (doseq [[idx step] (map-indexed vector steps)]
       (let [state (model/step-state idx current)]
         (.appendChild container (make-step-node! idx step state disabled?))))
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
 ;; ── Event handlers ───────────────────────────────────────────────────────────
 (defn- on-container-click [^js el ^js e]
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when-not (:disabled? m)
       (let [^js target (.-target e)
             ^js btn    (.closest target "[part=step-indicator]")]
@@ -370,17 +370,17 @@
         ^js container container
         click-h (fn handle-container-click [e] (on-container-click el e))]
     (.addEventListener container "click" click-h)
-    (gobj/set el k-handlers #js {:click click-h})))
+    (du/setv! el k-handlers #js {:click click-h})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
-    (let [refs (gobj/get el k-refs)]
+  (when-let [hs (du/getv el k-handlers)]
+    (let [refs (du/getv el k-refs)]
       (when refs
         (let [^js container (:container refs)
               click-h       (gobj/get hs "click")]
           (when (and container click-h)
             (.removeEventListener container "click" click-h))))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 ;; orientation/size getters compose parse + canonical-form normalisation, so

@@ -107,14 +107,14 @@
     (.appendChild root caption-div)
     (.appendChild root slot-el)
 
-    (gobj/set el k-refs {:root        root
+    (du/setv! el k-refs {:root        root
                          :caption-div caption-div
                          :slot-el     slot-el})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -181,11 +181,11 @@
     ;; Recompute stripe attributes on child rows when striped is on.
     (when striped?
       (update-stripe-attrs! el))
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
-        old-m (gobj/get el k-model)]
+        old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))
 
@@ -237,7 +237,7 @@
       (dispatch-sort! el col-index direction prev-dir))))
 
 (defn- on-row-click [^js el ^js e]
-  (let [m          (or (gobj/get el k-model) (read-model el))
+  (let [m          (or (du/getv el k-model) (read-model el))
         selectable (:selectable m)]
     (when (not= selectable select-none)
       (let [^js row      (.-target e)
@@ -251,7 +251,7 @@
 
 (defn- on-row-connected [^js el ^js _e]
   ;; Re-compute stripe attributes whenever a new row connects.
-  (let [m (or (gobj/get el k-model) (read-model el))]
+  (let [m (or (du/getv el k-model) (read-model el))]
     (when (:striped? m)
       (update-stripe-attrs! el))))
 
@@ -267,17 +267,17 @@
     (gobj/set handlers hk-sort      sort-h)
     (gobj/set handlers hk-row-click row-click-h)
     (gobj/set handlers hk-row-conn  row-conn-h)
-    (gobj/set el k-handlers handlers)))
+    (du/setv! el k-handlers handlers)))
 
 (defn- remove-listeners! [^js el]
-  (when-let [hs (gobj/get el k-handlers)]
+  (when-let [hs (du/getv el k-handlers)]
     (let [sort-h      (gobj/get hs hk-sort)
           row-click-h (gobj/get hs hk-row-click)
           row-conn-h  (gobj/get hs hk-row-conn)]
       (when sort-h      (.removeEventListener el ev-cell-sort     sort-h))
       (when row-click-h (.removeEventListener el ev-row-click     row-click-h))
       (when row-conn-h  (.removeEventListener el ev-row-connected row-conn-h))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
