@@ -1144,6 +1144,81 @@
          (du/setv! el "first-ever" "v")
          (is (= 1 (count-records))))))))
 
+;; ── Shadow-internal attribution to owning host ──────────────────────────────
+;;
+;; When du/set-attr! is called on a shadow-internal element (e.g. the
+;; inner <button> of x-button receiving a `data-hover` write), the record
+;; should attribute to the owning custom-element host: same cid, host's
+;; tag, and rate-limited under the host's bucket. Without host
+;; resolution, each shadow-internal node would become its own
+;; cid-less anonymous "component" and rate-limiting would never engage.
+
+(defn- make-shadow-host
+  "Create a real custom-element-like host (hyphenated tag) attached to
+   the body, with an open shadow root containing a single inner element
+   the test will mutate. Returns [host inner]."
+  []
+  (let [^js host    (.createElement js/document "x-trace-shadow-host")
+        ^js shadow  (.attachShadow host #js {:mode "open"})
+        ^js inner   (.createElement js/document "button")]
+    (.appendChild shadow inner)
+    (.appendChild (.-body js/document) host)
+    [host inner]))
+
+(deftest shadow-internal-mutation-attributes-to-host-test
+  (testing "du/set-attr! on a shadow-internal node produces a record
+            whose tag is the host's tag — confirms find-owning-host
+            walks across the shadow boundary."
+    (let [[^js host ^js inner] (make-shadow-host)]
+      (du/set-attr! inner "data-hover" "true")
+      (is (= 1 (count-records)))
+      (let [r (record-at 0)]
+        (is (= "x-trace-shadow-host" (.-tag r))
+            "record's tag is the host's tag, not the inner element's")
+        (is (= "data-hover" (.-attribute r))
+            "the attribute being mutated is preserved verbatim"))
+      (.remove host))))
+
+(deftest shadow-internal-uses-host-componentId-test
+  (testing "two shadow-internal mutations on the same host share a cid;
+            a third mutation on a separate host gets a distinct cid."
+    (let [[^js host-a ^js inner-a] (make-shadow-host)
+          [^js host-b ^js inner-b] (make-shadow-host)]
+      (du/set-attr! inner-a "data-x" "1")
+      (du/set-attr! inner-a "data-y" "2")
+      (du/set-attr! inner-b "data-x" "1")
+      (is (= 3 (count-records)))
+      (let [cid-a-1 (.-componentId (record-at 0))
+            cid-a-2 (.-componentId (record-at 1))
+            cid-b   (.-componentId (record-at 2))]
+        (is (= cid-a-1 cid-a-2)
+            "both mutations on host-a's shadow share host-a's cid")
+        (is (not= cid-a-1 cid-b)
+            "mutation on host-b's shadow gets a distinct cid"))
+      (.remove host-a)
+      (.remove host-b))))
+
+(deftest shadow-internal-rate-limited-under-host-test
+  (testing "two du/set-attr! on the same shadow-internal node within
+            16ms collapse to one record because the rate-limit key uses
+            the host's cid + attribute name."
+    (with-normal-mode!
+     (fn []
+       (let [[^js host ^js inner] (make-shadow-host)]
+         ;; First write primes the host's cid and the rate-limit key.
+         (du/set-attr! inner "data-hover" "true")
+         (is (= 1 (count-records)))
+         ;; Second write of the same attribute within 16ms is dropped.
+         (du/set-attr! inner "data-hover" "false")
+         (is (= 1 (count-records))
+             "duplicate (host-cid, data-hover) within 16ms is dropped")
+         ;; A different attribute on the same shadow node is a separate
+         ;; bucket — it records.
+         (du/set-attr! inner "data-active" "true")
+         (is (= 2 (count-records))
+             "different attribute is a different rate-limit key")
+         (.remove host))))))
+
 ;; ── Export — JSON envelope from live state ─────────────────────────────────
 
 (deftest export-empty-envelope-test
