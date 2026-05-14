@@ -56,6 +56,9 @@ jobs:
       - name: Check :require indent drift
         run: bb scripts/check_require_style.bb
 
+      - name: Check du discipline (no gobj on host, no make-el shim)
+        run: bb scripts/check_du_discipline.bb
+
       - name: Build ESM library
         run: npm run build
 
