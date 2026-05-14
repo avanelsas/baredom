@@ -154,19 +154,19 @@
     (set! (.-textContent style) (build-style-text uid))
 
     ;; SVG setup
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "viewBox" "0 0 300 200")
-    (.setAttribute svg "preserveAspectRatio" "none")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! svg "part" "svg")
+    (du/set-attr! svg "viewBox" "0 0 300 200")
+    (du/set-attr! svg "preserveAspectRatio" "none")
+    (du/set-attr! svg "aria-hidden" "true")
 
     ;; Filter setup — blur + alpha contrast = organic goo edges
-    (.setAttribute filter-el "id" filter-id)
-    (.setAttribute blur-el "in" "SourceGraphic")
-    (.setAttribute blur-el "stdDeviation" "10")
-    (.setAttribute blur-el "result" "blur")
-    (.setAttribute cm-el "in" "blur")
-    (.setAttribute cm-el "mode" "matrix")
-    (.setAttribute cm-el "values" "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9")
+    (du/set-attr! filter-el "id" filter-id)
+    (du/set-attr! blur-el "in" "SourceGraphic")
+    (du/set-attr! blur-el "stdDeviation" "10")
+    (du/set-attr! blur-el "result" "blur")
+    (du/set-attr! cm-el "in" "blur")
+    (du/set-attr! cm-el "mode" "matrix")
+    (du/set-attr! cm-el "values" "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9")
 
     (.appendChild filter-el blur-el)
     (.appendChild filter-el cm-el)
@@ -174,11 +174,11 @@
     (.appendChild svg defs)
 
     ;; Filtered group — semi-transparent for glass tint
-    (.setAttribute g "filter" (str "url(#" filter-id ")"))
-    (.setAttribute g "opacity" "0.35")
+    (du/set-attr! g "filter" (str "url(#" filter-id ")"))
+    (du/set-attr! g "opacity" "0.35")
 
     ;; Core ellipse
-    (.setAttribute core "class" "blob-core")
+    (du/set-attr! core "class" "blob-core")
 
     (.appendChild g core)
     (.appendChild svg g)
@@ -189,18 +189,18 @@
           stop1     (.createElementNS js/document svg-ns "stop")
           stop2     (.createElementNS js/document svg-ns "stop")
           stop3     (.createElementNS js/document svg-ns "stop")]
-      (.setAttribute edge-grad "id" edge-id)
-      (.setAttribute edge-grad "x1" "0") (.setAttribute edge-grad "y1" "0")
-      (.setAttribute edge-grad "x2" "1") (.setAttribute edge-grad "y2" "1")
-      (.setAttribute stop1 "offset" "0%")
-      (.setAttribute stop1 "stop-color" "white")
-      (.setAttribute stop1 "stop-opacity" "0.9")
-      (.setAttribute stop2 "offset" "50%")
-      (.setAttribute stop2 "stop-color" "white")
-      (.setAttribute stop2 "stop-opacity" "0.15")
-      (.setAttribute stop3 "offset" "100%")
-      (.setAttribute stop3 "stop-color" "white")
-      (.setAttribute stop3 "stop-opacity" "0.5")
+      (du/set-attr! edge-grad "id" edge-id)
+      (du/set-attr! edge-grad "x1" "0") (du/set-attr! edge-grad "y1" "0")
+      (du/set-attr! edge-grad "x2" "1") (du/set-attr! edge-grad "y2" "1")
+      (du/set-attr! stop1 "offset" "0%")
+      (du/set-attr! stop1 "stop-color" "white")
+      (du/set-attr! stop1 "stop-opacity" "0.9")
+      (du/set-attr! stop2 "offset" "50%")
+      (du/set-attr! stop2 "stop-color" "white")
+      (du/set-attr! stop2 "stop-opacity" "0.15")
+      (du/set-attr! stop3 "offset" "100%")
+      (du/set-attr! stop3 "stop-color" "white")
+      (du/set-attr! stop3 "stop-opacity" "0.5")
       (.appendChild edge-grad stop1)
       (.appendChild edge-grad stop2)
       (.appendChild edge-grad stop3)
@@ -211,12 +211,12 @@
     (let [border-g    (.createElementNS js/document svg-ns "g")
           border-core (.createElementNS js/document svg-ns "ellipse")
           edge-id     (gobj/get el "__xLiquidGlassEdgeId")]
-      (.setAttribute border-g "filter" (str "url(#" filter-id ")"))
-      (.setAttribute border-g "opacity" "0.7")
-      (.setAttribute border-core "class" "blob-border")
-      (.setAttribute border-core "fill" "none")
-      (.setAttribute border-core "stroke" (str "url(#" edge-id ")"))
-      (.setAttribute border-core "stroke-width" "2.5")
+      (du/set-attr! border-g "filter" (str "url(#" filter-id ")"))
+      (du/set-attr! border-g "opacity" "0.7")
+      (du/set-attr! border-core "class" "blob-border")
+      (du/set-attr! border-core "fill" "none")
+      (du/set-attr! border-core "stroke" (str "url(#" edge-id ")"))
+      (du/set-attr! border-core "stroke-width" "2.5")
       (.appendChild border-g border-core)
       (.appendChild svg border-g)
       (gobj/set el "__xLiquidGlassBorderG" border-g)
@@ -227,13 +227,13 @@
           grain-id     (str "lg-grain-" uid)
           turb         (.createElementNS js/document svg-ns "feTurbulence")
           grain-cm     (.createElementNS js/document svg-ns "feColorMatrix")]
-      (.setAttribute grain-filter "id" grain-id)
-      (.setAttribute turb "type" "fractalNoise")
-      (.setAttribute turb "baseFrequency" "0.6")
-      (.setAttribute turb "numOctaves" "3")
-      (.setAttribute turb "stitchTiles" "stitch")
-      (.setAttribute grain-cm "type" "matrix")
-      (.setAttribute grain-cm "values" "0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0")
+      (du/set-attr! grain-filter "id" grain-id)
+      (du/set-attr! turb "type" "fractalNoise")
+      (du/set-attr! turb "baseFrequency" "0.6")
+      (du/set-attr! turb "numOctaves" "3")
+      (du/set-attr! turb "stitchTiles" "stitch")
+      (du/set-attr! grain-cm "type" "matrix")
+      (du/set-attr! grain-cm "values" "0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0")
       (.appendChild grain-filter turb)
       (.appendChild grain-filter grain-cm)
       (.appendChild defs grain-filter)
@@ -244,14 +244,14 @@
           mask-id   (str "lg-mask-" uid)
           mask-g    (.createElementNS js/document svg-ns "g")
           mask-core (.createElementNS js/document svg-ns "ellipse")]
-      (.setAttribute mask-el "id" mask-id)
+      (du/set-attr! mask-el "id" mask-id)
       ;; maskUnits/maskContentUnits default to objectBoundingBox which
       ;; would normalise coordinates. We need userSpaceOnUse to match
       ;; the SVG viewBox coordinate system.
-      (.setAttribute mask-el "maskUnits" "userSpaceOnUse")
-      (.setAttribute mask-el "maskContentUnits" "userSpaceOnUse")
-      (.setAttribute mask-g "filter" (str "url(#" filter-id ")"))
-      (.setAttribute mask-core "fill" "white")
+      (du/set-attr! mask-el "maskUnits" "userSpaceOnUse")
+      (du/set-attr! mask-el "maskContentUnits" "userSpaceOnUse")
+      (du/set-attr! mask-g "filter" (str "url(#" filter-id ")"))
+      (du/set-attr! mask-core "fill" "white")
       (.appendChild mask-g mask-core)
       (.appendChild mask-el mask-g)
       (.appendChild defs mask-el)
@@ -261,13 +261,13 @@
       (gobj/set el "__xLiquidGlassMaskId" mask-id))
 
     ;; Glass — masked to blob shape via SVG mask
-    (.setAttribute glass "part" "glass")
+    (du/set-attr! glass "part" "glass")
     (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
       (set! (.. glass -style -mask) mask-ref)
       (set! (.. glass -style -webkitMask) mask-ref))
 
     ;; Grain — texture overlay masked to blob shape
-    (.setAttribute grain "part" "grain")
+    (du/set-attr! grain "part" "grain")
     (set! (.. grain -style -filter)
           (str "url(#" (gobj/get el "__xLiquidGlassGrainId") ")"))
     (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
@@ -275,19 +275,19 @@
       (set! (.. grain -style -webkitMask) mask-ref))
 
     ;; Gradient — masked to blob shape
-    (.setAttribute grad "part" "gradient")
+    (du/set-attr! grad "part" "gradient")
     (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
       (set! (.. grad -style -mask) mask-ref)
       (set! (.. grad -style -webkitMask) mask-ref))
 
     ;; Specular — masked to blob shape
-    (.setAttribute spec "part" "specular")
+    (du/set-attr! spec "part" "specular")
     (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
       (set! (.. spec -style -mask) mask-ref)
       (set! (.. spec -style -webkitMask) mask-ref))
 
     ;; Content
-    (.setAttribute content "part" "content")
+    (du/set-attr! content "part" "content")
     (.appendChild content slot)
 
     ;; Assemble shadow DOM: glass → SVG blob → grain → gradient → specular → content
@@ -344,14 +344,14 @@
     (loop [i (.-length sats)]
       (when (< i n)
         (let [sat (.createElementNS js/document svg-ns "ellipse")]
-          (.setAttribute sat "class" (str "blob-sat-" i))
-          (.setAttribute sat "fill" "#ffffff")
+          (du/set-attr! sat "class" (str "blob-sat-" i))
+          (du/set-attr! sat "fill" "#ffffff")
           (.appendChild g sat)
           (.push sats sat))
         ;; Mirror in mask group
         (when mask-g
           (let [msat (.createElementNS js/document svg-ns "ellipse")]
-            (.setAttribute msat "fill" "white")
+            (du/set-attr! msat "fill" "white")
             (.appendChild mask-g msat)
             (.push mask-sats msat)))
         (recur (inc i))))))
@@ -377,26 +377,26 @@
     ;; Update core ellipse
     (let [{:keys [core]} (du/getv el k-refs)
           ^js core core]
-      (.setAttribute core "cx" (str cx))
-      (.setAttribute core "cy" (str cy))
-      (.setAttribute core "rx" (str core-rx))
-      (.setAttribute core "ry" (str core-ry)))
+      (du/set-attr! core "cx" (str cx))
+      (du/set-attr! core "cy" (str cy))
+      (du/set-attr! core "rx" (str core-rx))
+      (du/set-attr! core "ry" (str core-ry)))
 
     ;; Update mask core to match
     (when-let [^js mc (gobj/get el "__xLiquidGlassMaskCore")]
-      (.setAttribute mc "cx" (str cx))
-      (.setAttribute mc "cy" (str cy))
-      (.setAttribute mc "rx" (str core-rx))
-      (.setAttribute mc "ry" (str core-ry)))
+      (du/set-attr! mc "cx" (str cx))
+      (du/set-attr! mc "cy" (str cy))
+      (du/set-attr! mc "rx" (str core-rx))
+      (du/set-attr! mc "ry" (str core-ry)))
 
     ;; Border uses slightly larger radii to encompass satellite area
     (let [outer-rx (* w 0.44)
           outer-ry (* h 0.44)]
       (when-let [^js bc (gobj/get el "__xLiquidGlassBorderCore")]
-        (.setAttribute bc "cx" (str cx))
-        (.setAttribute bc "cy" (str cy))
-        (.setAttribute bc "rx" (str outer-rx))
-        (.setAttribute bc "ry" (str outer-ry))))
+        (du/set-attr! bc "cx" (str cx))
+        (du/set-attr! bc "cy" (str cy))
+        (du/set-attr! bc "rx" (str outer-rx))
+        (du/set-attr! bc "ry" (str outer-ry))))
 
     ;; Sync satellite count
     (sync-satellites! el n)
@@ -407,12 +407,12 @@
           ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
       (dotimes [i n]
         (let [^js sat (aget sats i)]
-          (.setAttribute sat "rx" (str sat-rx))
-          (.setAttribute sat "ry" (str sat-ry)))
+          (du/set-attr! sat "rx" (str sat-rx))
+          (du/set-attr! sat "ry" (str sat-ry)))
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
-            (.setAttribute msat "rx" (str sat-rx))
-            (.setAttribute msat "ry" (str sat-ry))))))
+            (du/set-attr! msat "rx" (str sat-rx))
+            (du/set-attr! msat "ry" (str sat-ry))))))
 
     ;; Store rest positions and geometry
     (du/setv! el k-rest-x (aget result 0))
@@ -428,16 +428,16 @@
         ^js g       (:g refs)]
 
     ;; Update goo filter blur
-    (.setAttribute blur-el "stdDeviation" (str (:goo m)))
+    (du/set-attr! blur-el "stdDeviation" (str (:goo m)))
 
     ;; Update backdrop blur on glass div
     (.setProperty (.-style glass) model/css-blur (str (:blur m) "px"))
 
     ;; Fill ellipses with white — group opacity controls translucency
-    (.setAttribute core "fill" "#ffffff")
+    (du/set-attr! core "fill" "#ffffff")
     (let [^js sats (:satellites refs)]
       (dotimes [i (.-length sats)]
-        (.setAttribute ^js (aget sats i) "fill" "#ffffff")))
+        (du/set-attr! ^js (aget sats i) "fill" "#ffffff")))
 
     ;; Mode-dependent styling
     (let [submerged? (= :submerged (:mode m))
@@ -460,7 +460,7 @@
               (set! (.. content-el -style -opacity) (str (.toFixed c-opacity 2)))
               (set! (.. content-el -style -mask) mask-ref)
               (set! (.. content-el -style -webkitMask) mask-ref)
-              (.setAttribute g "opacity" (.toFixed g-opacity 2))
+              (du/set-attr! g "opacity" (.toFixed g-opacity 2))
               (when grain-el (set! (.. grain-el -style -opacity) (.toFixed gr-opacity 2))))
             (set! (.. el -style -contain) "layout style"))
           (do
@@ -471,7 +471,7 @@
             (set! (.. content-el -style -opacity) "")
             (set! (.. content-el -style -mask) "")
             (set! (.. content-el -style -webkitMask) "")
-            (.setAttribute g "opacity" "0.35")
+            (du/set-attr! g "opacity" "0.35")
             (when grain-el (set! (.. grain-el -style -opacity) "0.4"))
             (set! (.. el -style -contain) ""))))
 
@@ -502,13 +502,13 @@
             cx-str (.toFixed (aget result 0) 2)
             cy-str (.toFixed (aget result 1) 2)
             ^js sat (aget sats i)]
-        (.setAttribute sat "cx" cx-str)
-        (.setAttribute sat "cy" cy-str)
+        (du/set-attr! sat "cx" cx-str)
+        (du/set-attr! sat "cy" cy-str)
         ;; Mirror to mask satellite
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
-            (.setAttribute msat "cx" cx-str)
-            (.setAttribute msat "cy" cy-str)))))))
+            (du/set-attr! msat "cx" cx-str)
+            (du/set-attr! msat "cy" cy-str)))))))
 
 ;; ── Render specular ────────────────────────────────────────────────────────
 (defn- render-specular! [^js el]
@@ -599,12 +599,12 @@
             cy-str (.toFixed (aget ry i) 2)]
         (when (< i (.-length sats))
           (let [^js sat (aget sats i)]
-            (.setAttribute sat "cx" cx-str)
-            (.setAttribute sat "cy" cy-str)))
+            (du/set-attr! sat "cx" cx-str)
+            (du/set-attr! sat "cy" cy-str)))
         (when (and mask-sats (< i (.-length mask-sats)))
           (let [^js msat (aget mask-sats i)]
-            (.setAttribute msat "cx" cx-str)
-            (.setAttribute msat "cy" cy-str)))))))
+            (du/set-attr! msat "cx" cx-str)
+            (du/set-attr! msat "cy" cy-str)))))))
 
 ;; ── ResizeObserver ──────────────────────────────────────────────────────────
 (defn- on-resize! [^js el ^js entries]
@@ -619,13 +619,13 @@
         ;; Update SVG viewBox and mask bounds
         (let [{:keys [svg]} (du/getv el k-refs)
               ^js svg svg]
-          (.setAttribute svg "viewBox" (str "0 0 " w " " h))
+          (du/set-attr! svg "viewBox" (str "0 0 " w " " h))
           ;; Mask must cover same area for userSpaceOnUse to work
           (when-let [^js mask-el (.querySelector svg (str "#" (gobj/get el "__xLiquidGlassMaskId")))]
-            (.setAttribute mask-el "x" "0")
-            (.setAttribute mask-el "y" "0")
-            (.setAttribute mask-el "width" (str w))
-            (.setAttribute mask-el "height" (str h))))
+            (du/set-attr! mask-el "x" "0")
+            (du/set-attr! mask-el "y" "0")
+            (du/set-attr! mask-el "width" (str w))
+            (du/set-attr! mask-el "height" (str h))))
         ;; Reinitialise geometry with new dimensions
         (init-geometry! el w h)
         (let [m (du/getv el k-model)]

@@ -59,7 +59,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute box attr-part part-box)
+    (du/set-attr! box attr-part part-box)
     (.appendChild box slot)
 
     (.appendChild root style)

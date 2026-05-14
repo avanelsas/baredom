@@ -172,19 +172,19 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute backdrop attr-part model/part-backdrop)
+    (du/set-attr! backdrop attr-part model/part-backdrop)
 
-    (.setAttribute dialog attr-part model/part-dialog)
-    (.setAttribute dialog attr-role model/role-dialog)
-    (.setAttribute dialog model/aria-modal val-true)
+    (du/set-attr! dialog attr-part model/part-dialog)
+    (du/set-attr! dialog attr-role model/role-dialog)
+    (du/set-attr! dialog model/aria-modal val-true)
 
-    (.setAttribute header attr-part model/part-header)
-    (.setAttribute hslot  attr-name slot-header)
+    (du/set-attr! header attr-part model/part-header)
+    (du/set-attr! hslot  attr-name slot-header)
 
-    (.setAttribute body attr-part model/part-body)
+    (du/set-attr! body attr-part model/part-body)
 
-    (.setAttribute footer attr-part model/part-footer)
-    (.setAttribute fslot  attr-name slot-footer)
+    (du/set-attr! footer attr-part model/part-footer)
+    (du/set-attr! fslot  attr-name slot-footer)
 
     (.appendChild header hslot)
     (.appendChild body bslot)
@@ -254,7 +254,7 @@
       (.focus (first tabbables))
       (when dialog
         (when-not (.hasAttribute dialog attr-tabindex)
-          (.setAttribute dialog attr-tabindex tab-stop)
+          (du/set-attr! dialog attr-tabindex tab-stop)
           (du/setv! el k-dialog-tab true))
         (.focus dialog)))))
 
@@ -266,7 +266,7 @@
     (du/setv! el k-tabbables nil)
     (du/setv! el k-restore nil)
     (when (and dialog dialog-tab-added)
-      (.removeAttribute dialog attr-tabindex)
+      (du/remove-attr! dialog attr-tabindex)
       (du/setv! el k-dialog-tab false))
     (when (and restore (.-isConnected restore))
       (.focus restore))))
@@ -326,7 +326,7 @@
   (du/set-attr! el attr-data-size size))
 
 (defn- apply-dialog-aria! [^js dialog {:keys [label]}]
-  (.setAttribute dialog model/aria-label label))
+  (du/set-attr! dialog model/aria-label label))
 
 (defn- apply-model! [^js el m]
   (let [refs       (ensure-refs! el)

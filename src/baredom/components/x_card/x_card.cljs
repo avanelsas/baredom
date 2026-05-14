@@ -173,7 +173,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     (set! (.-className base) cls-base)
     (.appendChild base slot)
 
@@ -219,9 +219,9 @@
   (set-or-remove-attr! el attr-aria-disabled (:aria-disabled m)))
 
 (defn- apply-base-state! [^js base m]
-  (.setAttribute base attr-data-variant (:variant m))
-  (.setAttribute base attr-data-padding (:padding m))
-  (.setAttribute base attr-data-radius  (:radius m))
+  (du/set-attr! base attr-data-variant (:variant m))
+  (du/set-attr! base attr-data-padding (:padding m))
+  (du/set-attr! base attr-data-radius  (:radius m))
   (set-or-remove-attr! base attr-data-interactive (when (:interactive m) val-true))
   (set-or-remove-attr! base attr-data-disabled    (when (:disabled m)    val-true)))
 

@@ -143,7 +143,7 @@
     (set! (.-textContent style) style-text)
 
     (set! (.-className wrap) cls-wrap)
-    (.setAttribute canvas attr-aria-hidden val-true)
+    (du/set-attr! canvas attr-aria-hidden val-true)
     (.appendChild wrap canvas)
 
     (set! (.-className content) cls-content)

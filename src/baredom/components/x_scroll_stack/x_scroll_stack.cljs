@@ -55,8 +55,8 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
-    (.setAttribute container "role" "region")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! container "role" "region")
 
     (.appendChild container slot-el)
     (.appendChild root style)

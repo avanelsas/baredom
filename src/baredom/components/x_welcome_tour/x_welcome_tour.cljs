@@ -227,7 +227,7 @@
   "Apply `attrs` (a flat seq of k v k v) on `el` via setAttribute."
   [^js el attrs]
   (doseq [[k v] (partition 2 attrs)]
-    (.setAttribute el k v)))
+    (du/set-attr! el k v)))
 
 (defn- make-svg-backdrop!
   "Build the SVG backdrop with mask cutout and glow rect.
@@ -355,12 +355,12 @@
   [{:keys [^js mask-cut ^js glow]} cutout]
   (let [{:keys [x y width height rx ry]} cutout]
     (doseq [^js r [mask-cut glow]]
-      (.setAttribute r "x" (str x))
-      (.setAttribute r "y" (str y))
-      (.setAttribute r "width" (str width))
-      (.setAttribute r "height" (str height))
-      (.setAttribute r "rx" (str rx))
-      (.setAttribute r "ry" (str ry)))))
+      (du/set-attr! r "x" (str x))
+      (du/set-attr! r "y" (str y))
+      (du/set-attr! r "width" (str width))
+      (du/set-attr! r "height" (str height))
+      (du/set-attr! r "rx" (str rx))
+      (du/set-attr! r "ry" (str ry)))))
 
 ;; ── Update popover position ─────────────────────────────────────────────────
 (defn- update-popover-position!
@@ -412,7 +412,7 @@
           (model/connector-anchor-points target-rect popover-rect final-placement)
           d (model/connector-path-d connector-type target-point popover-point final-placement)]
       (set! (.. conn-svg -style -display) "block")
-      (.setAttribute conn-path "d" (or d "")))
+      (du/set-attr! conn-path "d" (or d "")))
     (set! (.. conn-svg -style -display) "none")))
 
 ;; ── Update dots ─────────────────────────────────────────────────────────────
@@ -426,9 +426,9 @@
       (set! (.-innerHTML dots-el) "")
       (dotimes [i total]
         (let [^js dot (.createElement js/document "span")]
-          (.setAttribute dot "part" "dot")
+          (du/set-attr! dot "part" "dot")
           (when (= i step)
-            (.setAttribute dot "data-active" ""))
+            (du/set-attr! dot "data-active" ""))
           (.appendChild dots-el dot))))
     (set! (.. dots-el -style -display) "none")))
 
@@ -614,7 +614,7 @@
   (set! (.-textContent (:prev-btn refs)) prev-label)
   (set! (.-textContent (:next-btn refs)) (if last? done-label next-label))
   (set! (.. (:prev-btn refs) -style -visibility) (if first? "hidden" "visible"))
-  (.setAttribute (:close-btn refs) "aria-label" (str skip-label " tour")))
+  (du/set-attr! (:close-btn refs) "aria-label" (str skip-label " tour")))
 
 (defn- apply-open-step! [el refs m]
   (let [step-els (get-step-els el)
@@ -889,7 +889,7 @@
                                         (model/parse-step (du/get-attr this model/attr-step))))
                         :set (fn [v]
                                (this-as ^js this
-                                        (.setAttribute this model/attr-step (str (or v 0)))))
+                                        (du/set-attr! this model/attr-step (str (or v 0)))))
                         :enumerable true :configurable true})
 
   (du/define-string-prop! proto "connector" model/attr-connector "arrow")

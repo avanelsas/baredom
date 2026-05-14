@@ -218,8 +218,8 @@
       (du/remove-attr! el attr-aria-keyshortcuts))
     (when remove-btn
       (if disabled?
-        (.setAttribute remove-btn attr-disabled "")
-        (.removeAttribute remove-btn attr-disabled)))
+        (du/set-attr! remove-btn attr-disabled "")
+        (du/remove-attr! remove-btn attr-disabled)))
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]

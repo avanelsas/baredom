@@ -296,32 +296,32 @@
 
     (set! (.-textContent style-el) style-text)
 
-    (.setAttribute viewport attr-part     part-viewport)
-    (.setAttribute viewport attr-tabindex "0")
+    (du/set-attr! viewport attr-part     part-viewport)
+    (du/set-attr! viewport attr-tabindex "0")
 
-    (.setAttribute track attr-part part-track)
+    (du/set-attr! track attr-part part-track)
     (.appendChild track slot-el)
 
-    (.setAttribute prev-btn attr-part       part-prev-btn)
-    (.setAttribute prev-btn attr-type       val-button)
-    (.setAttribute prev-btn attr-aria-label val-prev-label)
+    (du/set-attr! prev-btn attr-part       part-prev-btn)
+    (du/set-attr! prev-btn attr-type       val-button)
+    (du/set-attr! prev-btn attr-aria-label val-prev-label)
     (set! (.-innerHTML prev-btn) svg-prev)
 
-    (.setAttribute next-btn attr-part       part-next-btn)
-    (.setAttribute next-btn attr-type       val-button)
-    (.setAttribute next-btn attr-aria-label val-next-label)
+    (du/set-attr! next-btn attr-part       part-next-btn)
+    (du/set-attr! next-btn attr-type       val-button)
+    (du/set-attr! next-btn attr-aria-label val-next-label)
     (set! (.-innerHTML next-btn) svg-next)
 
     (.appendChild viewport track)
     (.appendChild viewport prev-btn)
     (.appendChild viewport next-btn)
 
-    (.setAttribute dots-el attr-part       part-dots)
-    (.setAttribute dots-el attr-role       val-tablist)
-    (.setAttribute dots-el attr-aria-label val-slide-indicators)
+    (du/set-attr! dots-el attr-part       part-dots)
+    (du/set-attr! dots-el attr-role       val-tablist)
+    (du/set-attr! dots-el attr-aria-label val-slide-indicators)
 
-    (.setAttribute live-el attr-aria-live   val-polite)
-    (.setAttribute live-el attr-aria-atomic val-true)
+    (du/set-attr! live-el attr-aria-live   val-polite)
+    (du/set-attr! live-el attr-aria-atomic val-true)
     (set! (.-className live-el) cls-sr-only)
 
     (.appendChild root style-el)
@@ -390,18 +390,18 @@
       (set! (.-innerHTML dots-el) "")
       (dotimes [i slide-count]
         (let [^js dot (.createElement js/document "button")]
-          (.setAttribute dot attr-part       part-dot)
-          (.setAttribute dot attr-type       val-button)
-          (.setAttribute dot attr-role       val-tab)
-          (.setAttribute dot attr-aria-label (str "Go to slide " (inc i)))
-          (.setAttribute dot attr-data-index (str i))
+          (du/set-attr! dot attr-part       part-dot)
+          (du/set-attr! dot attr-type       val-button)
+          (du/set-attr! dot attr-role       val-tab)
+          (du/set-attr! dot attr-aria-label (str "Go to slide " (inc i)))
+          (du/set-attr! dot attr-data-index (str i))
           (.appendChild dots-el dot)))
       (du/setv! el k-dot-count slide-count))
     (let [children (.-children dots-el)]
       (dotimes [i (.-length children)]
         (let [^js dot (aget children i)]
-          (.setAttribute dot attr-aria-current  (str (= i current)))
-          (.setAttribute dot attr-aria-selected (str (= i current))))))))
+          (du/set-attr! dot attr-aria-current  (str (= i current)))
+          (du/set-attr! dot attr-aria-selected (str (= i current))))))))
 
 ;; ── Fade-mode helpers ──────────────────────────────────────────────────────
 (defn- update-fade-active! [^js el current]
@@ -460,7 +460,7 @@
         (set! (.. next-btn -style -display) "none"))))
 
 (defn- apply-dots! [^js el ^js dots-el {:keys [current slide-count direction] :as m}]
-  (.setAttribute dots-el attr-aria-orientation direction)
+  (du/set-attr! dots-el attr-aria-orientation direction)
   (if (model/show-dots? m)
     (do (set! (.. dots-el -style -display) "flex")
         (rebuild-dots! el dots-el slide-count current))
@@ -470,7 +470,7 @@
   (when (> slide-count 0)
     (set! (.-textContent live-el)
           (str "Slide " (inc current) " of " slide-count)))
-  (.setAttribute live-el attr-aria-live (if autoplay? val-off val-polite)))
+  (du/set-attr! live-el attr-aria-live (if autoplay? val-off val-polite)))
 
 (defn- apply-model! [^js el m]
   (let [^js refs     (ensure-refs! el)
@@ -700,8 +700,8 @@
                           :set (fn [v]
                                  (this-as ^js this
                                    (if v
-                                     (.removeAttribute this attr)
-                                     (.setAttribute this attr val-false))))
+                                     (du/remove-attr! this attr)
+                                     (du/set-attr! this attr val-false))))
                           :enumerable true :configurable true}))
 
   (.defineProperty js/Object proto "currentSlide"
@@ -712,7 +712,7 @@
                                   model/default-current)))
                         :set (fn [v]
                                (this-as ^js this
-                                 (.setAttribute this model/attr-current
+                                 (du/set-attr! this model/attr-current
                                                 (str (int v)))))
                         :enumerable true :configurable true})
 
@@ -725,8 +725,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if (nil? v)
-                                   (.removeAttribute this model/attr-interval)
-                                   (.setAttribute this model/attr-interval
+                                   (du/remove-attr! this model/attr-interval)
+                                   (du/set-attr! this model/attr-interval
                                                   (str (int v))))))
                         :enumerable true :configurable true})
 
@@ -738,8 +738,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if v
-                                   (.setAttribute this model/attr-transition (str v))
-                                   (.removeAttribute this model/attr-transition))))
+                                   (du/set-attr! this model/attr-transition (str v))
+                                   (du/remove-attr! this model/attr-transition))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto model/attr-direction
@@ -750,8 +750,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if v
-                                   (.setAttribute this model/attr-direction (str v))
-                                   (.removeAttribute this model/attr-direction))))
+                                   (du/set-attr! this model/attr-direction (str v))
+                                   (du/remove-attr! this model/attr-direction))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto model/attr-peek
@@ -762,8 +762,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                  (if v
-                                   (.setAttribute this model/attr-peek (str v))
-                                   (.removeAttribute this model/attr-peek))))
+                                   (du/set-attr! this model/attr-peek (str v))
+                                   (du/remove-attr! this model/attr-peek))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto "slideCount"

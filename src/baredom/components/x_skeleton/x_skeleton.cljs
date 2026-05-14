@@ -91,8 +91,8 @@
         base     (.createElement js/document "div")
         shimmer  (.createElement js/document "div")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute base    "part" "base")
-    (.setAttribute shimmer "part" "shimmer")
+    (du/set-attr! base    "part" "base")
+    (du/set-attr! shimmer "part" "shimmer")
     (.appendChild base shimmer)
     (.appendChild root style-el)
     (.appendChild root base)
@@ -110,8 +110,8 @@
 ;; ── Apply model (cache-at-tail render-pipeline) ───────────────────────────
 (defn- apply-model! [^js el {:keys [variant animation width height] :as m}]
   (let [^js base (du/getv el k-base)]
-    (.setAttribute base "data-variant"   variant)
-    (.setAttribute base "data-animation" animation)
+    (du/set-attr! base "data-variant"   variant)
+    (du/set-attr! base "data-animation" animation)
     ;; Size overrides — applied as inline styles on base so they take
     ;; precedence over the variant defaults without touching the host
     (if width
@@ -152,8 +152,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-variant v)
-                                          (.removeAttribute this model/attr-variant))))
+                                          (du/set-attr! this model/attr-variant v)
+                                          (du/remove-attr! this model/attr-variant))))
                         :enumerable true :configurable true})
   ;; animation — string, reflects to attr
   (.defineProperty js/Object proto model/attr-animation
@@ -164,8 +164,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-animation v)
-                                          (.removeAttribute this model/attr-animation))))
+                                          (du/set-attr! this model/attr-animation v)
+                                          (du/remove-attr! this model/attr-animation))))
                         :enumerable true :configurable true})
   ;; width — string CSS value, reflects to attr
   (.defineProperty js/Object proto model/attr-width
@@ -175,8 +175,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-width v)
-                                          (.removeAttribute this model/attr-width))))
+                                          (du/set-attr! this model/attr-width v)
+                                          (du/remove-attr! this model/attr-width))))
                         :enumerable true :configurable true})
   ;; height — string CSS value, reflects to attr
   (.defineProperty js/Object proto model/attr-height
@@ -186,8 +186,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-height v)
-                                          (.removeAttribute this model/attr-height))))
+                                          (du/set-attr! this model/attr-height v)
+                                          (du/remove-attr! this model/attr-height))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ─────────────────────────────────────────────────────────

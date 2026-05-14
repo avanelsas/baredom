@@ -89,7 +89,7 @@
         track (.createElement js/document "div")
         slot  (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
-    (.setAttribute track "part" "track")
+    (du/set-attr! track "part" "track")
     (.appendChild track slot)
     (.appendChild root style)
     (.appendChild root track)
@@ -352,7 +352,7 @@
 ;; ── Slot change ─────────────────────────────────────────────────────────────
 (defn- ensure-tabindex! [^js item]
   (when (nil? (.getAttribute item "tabindex"))
-    (.setAttribute item "tabindex" "0")))
+    (du/set-attr! item "tabindex" "0")))
 
 (defn- on-slotchange [^js el ^js _e]
   (when-let [^js items (assigned-elements el)]

@@ -45,10 +45,10 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute container "part" "container")
+    (du/set-attr! container "part" "container")
     (.appendChild container slot)
 
-    (.setAttribute svg "part" "filters")
+    (du/set-attr! svg "part" "filters")
     (set! (.. svg -style -position) "absolute")
     (set! (.. svg -style -width) "0")
     (set! (.. svg -style -height) "0")
@@ -81,23 +81,23 @@
         ^js turb      (.createElementNS js/document svg-ns "feTurbulence")
         ^js disp      (.createElementNS js/document svg-ns "feDisplacementMap")]
 
-    (.setAttribute filter-el "id" filter-id)
-    (.setAttribute filter-el "x" "-10%")
-    (.setAttribute filter-el "y" "-10%")
-    (.setAttribute filter-el "width" "120%")
-    (.setAttribute filter-el "height" "120%")
+    (du/set-attr! filter-el "id" filter-id)
+    (du/set-attr! filter-el "x" "-10%")
+    (du/set-attr! filter-el "y" "-10%")
+    (du/set-attr! filter-el "width" "120%")
+    (du/set-attr! filter-el "height" "120%")
 
-    (.setAttribute turb "type" "turbulence")
-    (.setAttribute turb "baseFrequency" (str frequency))
-    (.setAttribute turb "numOctaves" "3")
-    (.setAttribute turb "seed" (str (js/Math.floor (* (js/Math.random) 1000))))
-    (.setAttribute turb "result" "turbulence")
+    (du/set-attr! turb "type" "turbulence")
+    (du/set-attr! turb "baseFrequency" (str frequency))
+    (du/set-attr! turb "numOctaves" "3")
+    (du/set-attr! turb "seed" (str (js/Math.floor (* (js/Math.random) 1000))))
+    (du/set-attr! turb "result" "turbulence")
 
-    (.setAttribute disp "in" "SourceGraphic")
-    (.setAttribute disp "in2" "turbulence")
-    (.setAttribute disp "scale" "0")
-    (.setAttribute disp "xChannelSelector" "R")
-    (.setAttribute disp "yChannelSelector" "G")
+    (du/set-attr! disp "in" "SourceGraphic")
+    (du/set-attr! disp "in2" "turbulence")
+    (du/set-attr! disp "scale" "0")
+    (du/set-attr! disp "xChannelSelector" "R")
+    (du/set-attr! disp "yChannelSelector" "G")
 
     (.appendChild filter-el turb)
     (.appendChild filter-el disp)
@@ -135,10 +135,10 @@
         (if reduced?
           ;; Reduced motion: brief flash at half intensity, then remove
           (do
-            (.setAttribute disp "scale" (str (/ intensity 2)))
+            (du/set-attr! disp "scale" (str (/ intensity 2)))
             (let [raf-id (js/requestAnimationFrame
                           (fn []
-                            (.setAttribute disp "scale" "0")
+                            (du/set-attr! disp "scale" "0")
                             (.removeChild svg filter-el)
                             (set! (.. container -style -filter) "")
                             (du/dispatch! el model/event-end #js {:x click-x :y click-y})))]
@@ -152,8 +152,8 @@
                           current-scale (* intensity (- 1 eased))
                           current-freq  (* frequency (- 1 (* eased 0.7)))]
 
-                      (.setAttribute disp "scale" (str current-scale))
-                      (.setAttribute turb "baseFrequency" (str current-freq))
+                      (du/set-attr! disp "scale" (str current-scale))
+                      (du/set-attr! turb "baseFrequency" (str current-freq))
 
                       (if (>= progress 1.0)
                         ;; Animation complete

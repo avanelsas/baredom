@@ -186,36 +186,36 @@
         ^js disp-el   (.createElementNS js/document svg-ns "feDisplacementMap")]
 
     ;; Filter bounds — oversized to prevent clipping
-    (.setAttribute filter-el "id" filter-id)
-    (.setAttribute filter-el "x" "-20%")
-    (.setAttribute filter-el "y" "-20%")
-    (.setAttribute filter-el "width" "140%")
-    (.setAttribute filter-el "height" "140%")
+    (du/set-attr! filter-el "id" filter-id)
+    (du/set-attr! filter-el "x" "-20%")
+    (du/set-attr! filter-el "y" "-20%")
+    (du/set-attr! filter-el "width" "140%")
+    (du/set-attr! filter-el "height" "140%")
 
     ;; Stage 1: Gaussian blur (creates the gooey merge)
-    (.setAttribute blur-el "in" "SourceGraphic")
-    (.setAttribute blur-el "stdDeviation" (str blur))
-    (.setAttribute blur-el "result" "blur")
+    (du/set-attr! blur-el "in" "SourceGraphic")
+    (du/set-attr! blur-el "stdDeviation" (str blur))
+    (du/set-attr! blur-el "result" "blur")
 
     ;; Stage 2: Color matrix threshold (sharpens merged blobs)
-    (.setAttribute matrix-el "in" "blur")
-    (.setAttribute matrix-el "type" "matrix")
-    (.setAttribute matrix-el "values" threshold)
-    (.setAttribute matrix-el "result" "goo")
+    (du/set-attr! matrix-el "in" "blur")
+    (du/set-attr! matrix-el "type" "matrix")
+    (du/set-attr! matrix-el "values" threshold)
+    (du/set-attr! matrix-el "result" "goo")
 
     ;; Stage 3: Turbulence (for ripple displacement)
-    (.setAttribute turb-el "type" "fractalNoise")
-    (.setAttribute turb-el "baseFrequency" "0.015")
-    (.setAttribute turb-el "numOctaves" "2")
-    (.setAttribute turb-el "seed" "0")
-    (.setAttribute turb-el "result" "noise")
+    (du/set-attr! turb-el "type" "fractalNoise")
+    (du/set-attr! turb-el "baseFrequency" "0.015")
+    (du/set-attr! turb-el "numOctaves" "2")
+    (du/set-attr! turb-el "seed" "0")
+    (du/set-attr! turb-el "result" "noise")
 
     ;; Stage 4: Displacement map (ripple effect on the goo)
-    (.setAttribute disp-el "in" "goo")
-    (.setAttribute disp-el "in2" "noise")
-    (.setAttribute disp-el "scale" (str ripple-scale))
-    (.setAttribute disp-el "xChannelSelector" "R")
-    (.setAttribute disp-el "yChannelSelector" "G")
+    (du/set-attr! disp-el "in" "goo")
+    (du/set-attr! disp-el "in2" "noise")
+    (du/set-attr! disp-el "scale" (str ripple-scale))
+    (du/set-attr! disp-el "xChannelSelector" "R")
+    (du/set-attr! disp-el "yChannelSelector" "G")
 
     (.appendChild filter-el blur-el)
     (.appendChild filter-el matrix-el)
@@ -248,21 +248,21 @@
     (set! (.-textContent style) style-text)
 
     ;; Nav — dock container
-    (.setAttribute nav "part" "dock")
-    (.setAttribute nav "role" "navigation")
-    (.setAttribute nav "aria-label" "Navigation dock")
+    (du/set-attr! nav "part" "dock")
+    (du/set-attr! nav "role" "navigation")
+    (du/set-attr! nav "aria-label" "Navigation dock")
 
     ;; Hidden SVG for filter definitions
-    (.setAttribute svg "part" "filter-svg")
-    (.setAttribute svg "aria-hidden" "true")
-    (.setAttribute svg "role" "presentation")
+    (du/set-attr! svg "part" "filter-svg")
+    (du/set-attr! svg "aria-hidden" "true")
+    (du/set-attr! svg "role" "presentation")
 
     ;; Liquid layer
-    (.setAttribute liquid "part" "liquid-layer")
+    (du/set-attr! liquid "part" "liquid-layer")
     (set! (.. liquid -style -filter) (str "url(#" filter-id ")"))
 
     ;; Items layer
-    (.setAttribute items-div "part" "items")
+    (du/set-attr! items-div "part" "items")
     (.appendChild items-div slot-el)
 
     (let [filter-refs (create-svg-filter! svg filter-id m)]
@@ -384,11 +384,11 @@
   [^js el {:keys [blur threshold ripple-scale]}]
   (let [refs (du/getv el k-refs)]
     (when-let [^js blur-el (:blur-el refs)]
-      (.setAttribute blur-el "stdDeviation" (str blur)))
+      (du/set-attr! blur-el "stdDeviation" (str blur)))
     (when-let [^js matrix-el (:matrix-el refs)]
-      (.setAttribute matrix-el "values" threshold))
+      (du/set-attr! matrix-el "values" threshold))
     (when-let [^js disp-el (:disp-el refs)]
-      (.setAttribute disp-el "scale" (str ripple-scale)))))
+      (du/set-attr! disp-el "scale" (str ripple-scale)))))
 
 ;; ── Host style sync ─────────────────────────────────────────────────────────
 (defn- apply-host-style!
@@ -431,7 +431,7 @@
               base-scale     (:ripple-scale m)
               refs           (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
-            (.setAttribute disp-el "scale" (str (+ base-scale burst-scale))))))
+            (du/set-attr! disp-el "scale" (str (+ base-scale burst-scale))))))
 
       ;; Update each item pair
       (dotimes [i n]
@@ -529,13 +529,13 @@
             freq      (+ 0.012 (* 0.006 (js/Math.sin new-phase)))]
         (du/setv! el k-noise-seed new-phase)
         (when-let [^js turb-el (:turb-el refs)]
-          (.setAttribute turb-el "baseFrequency" (str freq))))
+          (du/set-attr! turb-el "baseFrequency" (str freq))))
 
       ;; Reset burst displacement when done
       (when (and (not burst-active?) (> burst-time 0))
         (let [refs (du/getv el k-refs)]
           (when-let [^js disp-el (:disp-el refs)]
-            (.setAttribute disp-el "scale" (str (:ripple-scale m)))))
+            (du/set-attr! disp-el "scale" (str (:ripple-scale m)))))
         (du/setv! el k-ripple-burst 0))
 
       ;; Schedule next frame
@@ -639,7 +639,7 @@
     (dotimes [i (.-length assigned)]
       (let [^js item (aget assigned i)]
         (when (nil? (.getAttribute item "tabindex"))
-          (.setAttribute item "tabindex" "0")))))
+          (du/set-attr! item "tabindex" "0")))))
   ;; Defer position caching until layout is stable
   (js/requestAnimationFrame (fn [_] (cache-item-rects! el))))
 

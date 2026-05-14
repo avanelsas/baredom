@@ -79,19 +79,19 @@
         ^js blur-el   (.createElementNS js/document svg-ns "feGaussianBlur")
         ^js matrix-el (.createElementNS js/document svg-ns "feColorMatrix")]
 
-    (.setAttribute filter-el "id" filter-id)
-    (.setAttribute filter-el "x" "-10%")
-    (.setAttribute filter-el "y" "-10%")
-    (.setAttribute filter-el "width" "120%")
-    (.setAttribute filter-el "height" "120%")
+    (du/set-attr! filter-el "id" filter-id)
+    (du/set-attr! filter-el "x" "-10%")
+    (du/set-attr! filter-el "y" "-10%")
+    (du/set-attr! filter-el "width" "120%")
+    (du/set-attr! filter-el "height" "120%")
 
-    (.setAttribute blur-el "in" "SourceGraphic")
-    (.setAttribute blur-el "stdDeviation" (str glow-val))
-    (.setAttribute blur-el "result" "blur")
+    (du/set-attr! blur-el "in" "SourceGraphic")
+    (du/set-attr! blur-el "stdDeviation" (str glow-val))
+    (du/set-attr! blur-el "result" "blur")
 
-    (.setAttribute matrix-el "in" "blur")
-    (.setAttribute matrix-el "type" "matrix")
-    (.setAttribute matrix-el "values" "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7")
+    (du/set-attr! matrix-el "in" "blur")
+    (du/set-attr! matrix-el "type" "matrix")
+    (du/set-attr! matrix-el "values" "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7")
 
     (.appendChild filter-el blur-el)
     (.appendChild filter-el matrix-el)
@@ -114,17 +114,17 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "viewBox" "0 0 800 200")
-    (.setAttribute svg "preserveAspectRatio" "xMidYMid slice")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! svg "part" "svg")
+    (du/set-attr! svg "viewBox" "0 0 800 200")
+    (du/set-attr! svg "preserveAspectRatio" "xMidYMid slice")
+    (du/set-attr! svg "aria-hidden" "true")
 
-    (.setAttribute branches-g "part" "branches")
-    (.setAttribute branches-g "filter" (str "url(#" filter-id ")"))
+    (du/set-attr! branches-g "part" "branches")
+    (du/set-attr! branches-g "filter" (str "url(#" filter-id ")"))
 
-    (.setAttribute nodes-g "part" "nodes")
+    (du/set-attr! nodes-g "part" "nodes")
 
-    (.setAttribute blooms-g "part" "blooms")
+    (du/set-attr! blooms-g "part" "blooms")
 
     (let [filter-refs (create-gooey-filter! defs-el filter-id 2)]
       (.appendChild svg defs-el)
@@ -183,7 +183,7 @@
       (let [^js line (if (< i old-count)
                        (aget old-lines i)
                        (let [l (.createElementNS js/document svg-ns "line")]
-                         (.setAttribute l "stroke-linecap" "round")
+                         (du/set-attr! l "stroke-linecap" "round")
                          (.appendChild branches-g l)
                          l))
             ^js seg  (aget segments i)
@@ -191,11 +191,11 @@
             y1       (gobj/get seg "y1")
             x2       (gobj/get seg "x2")
             y2       (gobj/get seg "y2")]
-        (.setAttribute line "x1" (str x1))
-        (.setAttribute line "y1" (str y1))
-        (.setAttribute line "x2" (str x2))
-        (.setAttribute line "y2" (str y2))
-        (.setAttribute line "opacity" "0")
+        (du/set-attr! line "x1" (str x1))
+        (du/set-attr! line "y1" (str y1))
+        (du/set-attr! line "x2" (str x2))
+        (du/set-attr! line "y2" (str y2))
+        (du/set-attr! line "opacity" "0")
         (.push new-lines line)))
 
     ;; Remove excess lines
@@ -216,12 +216,12 @@
     (when branches-g
       (if honeycomb?
         ;; Honeycomb: no filter — crisp geometric lines
-        (.removeAttribute branches-g "filter")
+        (du/remove-attr! branches-g "filter")
         ;; Vine: gooey organic blur
-        (.setAttribute branches-g "filter" "url(#x-organic-progress-gooey)")))
+        (du/set-attr! branches-g "filter" "url(#x-organic-progress-gooey)")))
     ;; Adjust blur for vine
     (when (and blur-el (not honeycomb?))
-      (.setAttribute blur-el "stdDeviation" "2"))))
+      (du/set-attr! blur-el "stdDeviation" "2"))))
 
 (defn- clear-nodes!
   "Remove all lattice node circles."
@@ -286,11 +286,11 @@
           (let [^js line (aget lines i)
                 ^js seg  (aget segments i)
                 depth    (gobj/get seg "depth")]
-            (.setAttribute line "stroke-width" (str base-w))
+            (du/set-attr! line "stroke-width" (str base-w))
             (set! (.. line -style -stroke)
                   (case depth 0 primary-css 1 secondary-css secondary-css))
-            (.setAttribute line "stroke-linecap" "round")
-            (.setAttribute line "stroke-opacity" (case depth 0 "0.9" 1 "0.7" "0.5"))))
+            (du/set-attr! line "stroke-linecap" "round")
+            (du/set-attr! line "stroke-opacity" (case depth 0 "0.9" 1 "0.7" "0.5"))))
         ;; Vine: organic with round caps, width tapers with depth
         (dotimes [i total]
           (let [^js line (aget lines i)
@@ -298,10 +298,10 @@
                 depth    (gobj/get seg "depth")
                 w        (js/Math.max 0.5 (- base-w (* depth 0.6)))
                 color    (if (zero? depth) primary-css secondary-css)]
-            (.setAttribute line "stroke-width" (str w))
+            (du/set-attr! line "stroke-width" (str w))
             (set! (.. line -style -stroke) color)
-            (.setAttribute line "stroke-linecap" "round")
-            (.setAttribute line "stroke-opacity" "1"))))))
+            (du/set-attr! line "stroke-linecap" "round")
+            (du/set-attr! line "stroke-opacity" "1"))))))
 
 ;; ── Segment rendering (progressive reveal) ─────────────────────────────────
 
@@ -319,7 +319,7 @@
           (when (< i hi)
             (let [^js line (aget lines i)]
               (when line
-                (.setAttribute line "opacity"
+                (du/set-attr! line "opacity"
                                (if (< i visible-count) "1" "0"))))
             (recur (inc i)))))
       ;; Vine nodes: opacity toggle
@@ -330,7 +330,7 @@
             (dotimes [i node-count]
               (let [^js c (aget node-els i)]
                 (when c
-                  (.setAttribute c "opacity"
+                  (du/set-attr! c "opacity"
                                  (if (< i visible-nodes) "1" "0"))))))))
       (du/setv! el k-prev-visible visible-count))))
 
@@ -355,12 +355,12 @@
                 y2     (gobj/get seg "y2")
                 dx     (- (* 2.0 (model/rng-next! rng)) 1.0)
                 dy     (- (* 2.0 (model/rng-next! rng)) 1.0)]
-            (.setAttribute circle "cx" (str x2))
-            (.setAttribute circle "cy" (str y2))
-            (.setAttribute circle "r" "0")
+            (du/set-attr! circle "cx" (str x2))
+            (du/set-attr! circle "cy" (str y2))
+            (du/set-attr! circle "r" "0")
             (set! (.. circle -style -fill) bloom-color)
-            (.setAttribute circle "opacity" "0")
-            (.setAttribute circle "class" "bloom-petal")
+            (du/set-attr! circle "opacity" "0")
+            (du/set-attr! circle "class" "bloom-petal")
             ;; Store scatter direction
             (gobj/set circle k-bloom-dx dx)
             (gobj/set circle k-bloom-dy dy)
@@ -401,9 +401,9 @@
           (let [^js c  (aget bloom-els i)
                 dx     (* (gobj/get c k-bloom-dx) scale 8.0)
                 dy     (* (gobj/get c k-bloom-dy) scale 8.0)]
-            (.setAttribute c "r" (str (* scale 2.5)))
-            (.setAttribute c "opacity" (str opacity))
-            (.setAttribute c "transform"
+            (du/set-attr! c "r" (str (* scale 2.5)))
+            (du/set-attr! c "opacity" (str opacity))
+            (du/set-attr! c "transform"
                            (str "translate(" dx "," dy ")"))))))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
@@ -482,7 +482,7 @@
     (dotimes [i total]
       (let [^js line (aget lines i)]
         (when line
-          (.setAttribute line "opacity"
+          (du/set-attr! line "opacity"
                          (if (< i visible-count) "1" "0")))))
     ;; Vine nodes: opacity
     (let [^js node-els  (du/getv el k-node-els)
@@ -492,7 +492,7 @@
           (dotimes [i node-count]
             (let [^js c (aget node-els i)]
               (when c
-                (.setAttribute c "opacity"
+                (du/set-attr! c "opacity"
                                (if (< i visible-nodes) "1" "0"))))))))
     (du/setv! el k-prev-visible visible-count)
     ;; Fire completion for static mode
@@ -568,8 +568,8 @@
          :set (fn xop-set-bloom [v]
                 (this-as ^js this
                   (if v
-                    (.removeAttribute this model/attr-bloom)
-                    (.setAttribute this model/attr-bloom "false"))))
+                    (du/remove-attr! this model/attr-bloom)
+                    (du/set-attr! this model/attr-bloom "false"))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

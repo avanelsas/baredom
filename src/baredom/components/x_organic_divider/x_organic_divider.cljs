@@ -103,10 +103,10 @@
         base     (.createElement js/document "div")
         svg      (.createElementNS js/document svg-ns "svg")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute base "part" "base")
-    (.setAttribute svg "xmlns" svg-ns)
-    (.setAttribute svg "preserveAspectRatio" "none")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! base "part" "base")
+    (du/set-attr! svg "xmlns" svg-ns)
+    (du/set-attr! svg "preserveAspectRatio" "none")
+    (du/set-attr! svg "aria-hidden" "true")
     (.appendChild base svg)
     (.appendChild root style-el)
     (.appendChild root base)
@@ -156,14 +156,14 @@
     (let [^js p     (aget paths-arr i)
           {:keys [x-offset y-offset]} (nth transforms i)
           layer-num (inc i)]
-      (.setAttribute p "d" effective-path)
-      (.setAttribute p "fill"
+      (du/set-attr! p "d" effective-path)
+      (du/set-attr! p "fill"
                      (str "var(--x-organic-divider-color-" layer-num ")"))
-      (.setAttribute p "opacity" (str (layer-opacity i layers)))
+      (du/set-attr! p "opacity" (str (layer-opacity i layers)))
       (if (or (pos? x-offset) (pos? y-offset))
-        (.setAttribute p "transform"
+        (du/set-attr! p "transform"
                        (str "translate(" x-offset "," y-offset ")"))
-        (.removeAttribute p "transform"))
+        (du/remove-attr! p "transform"))
       (if is-morph
         (do (.setProperty (.-style p) "--x-organic-divider-d"
                           (str "path(\"" effective-path "\")"))
@@ -192,7 +192,7 @@
         is-drift       (= animation "drift")
         is-morph       (= animation "morph")
         effective-path (if is-drift drift-d path-d)]
-    (.setAttribute svg "viewBox" (if is-drift viewbox-drift viewbox-static))
+    (du/set-attr! svg "viewBox" (if is-drift viewbox-drift viewbox-static))
     (ensure-paths! svg paths-arr layers)
     (apply-paths! paths-arr layers transforms effective-path path-alt is-morph)
     (.setProperty (.-style base) "height" height)
@@ -227,8 +227,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-shape v)
-                                          (.removeAttribute this model/attr-shape))))
+                                          (du/set-attr! this model/attr-shape v)
+                                          (du/remove-attr! this model/attr-shape))))
                         :enumerable true :configurable true})
 
   ;; layers — string, reflects to attr
@@ -240,8 +240,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-layers v)
-                                          (.removeAttribute this model/attr-layers))))
+                                          (du/set-attr! this model/attr-layers v)
+                                          (du/remove-attr! this model/attr-layers))))
                         :enumerable true :configurable true})
 
   ;; height — string, reflects to attr
@@ -253,8 +253,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-height v)
-                                          (.removeAttribute this model/attr-height))))
+                                          (du/set-attr! this model/attr-height v)
+                                          (du/remove-attr! this model/attr-height))))
                         :enumerable true :configurable true})
 
   ;; flip / mirror — booleans
@@ -270,8 +270,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-animation v)
-                                          (.removeAttribute this model/attr-animation))))
+                                          (du/set-attr! this model/attr-animation v)
+                                          (du/remove-attr! this model/attr-animation))))
                         :enumerable true :configurable true})
 
   ;; path — string, reflects to attr
@@ -282,8 +282,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-path v)
-                                          (.removeAttribute this model/attr-path))))
+                                          (du/set-attr! this model/attr-path v)
+                                          (du/remove-attr! this model/attr-path))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ─────────────────────────────────────────────────────────

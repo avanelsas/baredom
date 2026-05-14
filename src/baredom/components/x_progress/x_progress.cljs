@@ -108,12 +108,12 @@
         track      (.createElement js/document "div")
         fill       (.createElement js/document "div")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute base       "part" "base")
-    (.setAttribute header     "part" "header")
-    (.setAttribute label-node "part" "label-text")
-    (.setAttribute value-node "part" "value-text")
-    (.setAttribute track      "part" "track")
-    (.setAttribute fill       "part" "fill")
+    (du/set-attr! base       "part" "base")
+    (du/set-attr! header     "part" "header")
+    (du/set-attr! label-node "part" "label-text")
+    (du/set-attr! value-node "part" "value-text")
+    (du/set-attr! track      "part" "track")
+    (du/set-attr! fill       "part" "fill")
     (.appendChild header label-node)
     (.appendChild header value-node)
     (.appendChild track  fill)
@@ -153,9 +153,9 @@
         now-complete   (and (not indeterminate) (>= value max))]
 
     ;; Data attributes on base — drive CSS
-    (.setAttribute base "data-variant"      variant)
-    (.setAttribute base "data-size"         size)
-    (.setAttribute base "data-indeterminate" (if indeterminate "true" "false"))
+    (du/set-attr! base "data-variant"      variant)
+    (du/set-attr! base "data-size"         size)
+    (du/set-attr! base "data-indeterminate" (if indeterminate "true" "false"))
 
     ;; Fill width
     (set! (.-width (.-style fill))
@@ -184,8 +184,8 @@
     (if indeterminate
       (do
         (du/remove-attr! el "aria-valuenow")
-        (.setAttribute    el "aria-busy"      "true")
-        (.setAttribute    el "aria-valuetext" aria-valuetext))
+        (du/set-attr!    el "aria-busy"      "true")
+        (du/set-attr!    el "aria-valuetext" aria-valuetext))
       (do
         (du/set-attr! el "aria-valuenow"  (str value))
         (du/set-attr! el "aria-valuemax"  (str max))

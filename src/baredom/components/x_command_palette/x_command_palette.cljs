@@ -199,7 +199,7 @@
 ;; ── Shadow builders ────────────────────────────────────────────────────────
 (defn- make-overlay! []
   (let [overlay (.createElement js/document "div")]
-    (.setAttribute overlay attr-part part-overlay)
+    (du/set-attr! overlay attr-part part-overlay)
     overlay))
 
 (defn- make-search-section! []
@@ -207,26 +207,26 @@
         search-icon (.createElement js/document "span")
         input-el    (.createElement js/document "input")
         clear-btn   (.createElement js/document "button")]
-    (.setAttribute search-wrap attr-part part-search-wrap)
+    (du/set-attr! search-wrap attr-part part-search-wrap)
 
-    (.setAttribute search-icon attr-part        part-search-icon)
-    (.setAttribute search-icon attr-aria-hidden val-true)
+    (du/set-attr! search-icon attr-part        part-search-icon)
+    (du/set-attr! search-icon attr-aria-hidden val-true)
     (set! (.-textContent search-icon) val-search-glyph)
 
-    (.setAttribute input-el attr-part              part-input)
-    (.setAttribute input-el attr-type              val-search)
-    (.setAttribute input-el attr-role              val-combobox)
-    (.setAttribute input-el attr-autocomplete      val-off)
-    (.setAttribute input-el attr-autocorrect       val-off)
-    (.setAttribute input-el attr-spellcheck        val-false)
-    (.setAttribute input-el attr-aria-autocomplete val-list)
-    (.setAttribute input-el attr-aria-expanded     val-false)
-    (.setAttribute input-el attr-aria-controls     list-id)
+    (du/set-attr! input-el attr-part              part-input)
+    (du/set-attr! input-el attr-type              val-search)
+    (du/set-attr! input-el attr-role              val-combobox)
+    (du/set-attr! input-el attr-autocomplete      val-off)
+    (du/set-attr! input-el attr-autocorrect       val-off)
+    (du/set-attr! input-el attr-spellcheck        val-false)
+    (du/set-attr! input-el attr-aria-autocomplete val-list)
+    (du/set-attr! input-el attr-aria-expanded     val-false)
+    (du/set-attr! input-el attr-aria-controls     list-id)
 
-    (.setAttribute clear-btn attr-part       part-clear-btn)
-    (.setAttribute clear-btn attr-type       val-button)
-    (.setAttribute clear-btn attr-aria-label val-clear)
-    (.setAttribute clear-btn attr-hidden     "")
+    (du/set-attr! clear-btn attr-part       part-clear-btn)
+    (du/set-attr! clear-btn attr-type       val-button)
+    (du/set-attr! clear-btn attr-aria-label val-clear)
+    (du/set-attr! clear-btn attr-hidden     "")
 
     (.appendChild search-wrap search-icon)
     (.appendChild search-wrap input-el)
@@ -237,15 +237,15 @@
   (let [list-wrap (.createElement js/document "div")
         list-el   (.createElement js/document "div")
         empty-el  (.createElement js/document "div")]
-    (.setAttribute list-wrap attr-part part-list-wrap)
+    (du/set-attr! list-wrap attr-part part-list-wrap)
 
-    (.setAttribute list-el attr-part       part-list)
-    (.setAttribute list-el attr-id         list-id)
-    (.setAttribute list-el attr-role       val-listbox)
-    (.setAttribute list-el attr-aria-label val-results)
+    (du/set-attr! list-el attr-part       part-list)
+    (du/set-attr! list-el attr-id         list-id)
+    (du/set-attr! list-el attr-role       val-listbox)
+    (du/set-attr! list-el attr-aria-label val-results)
 
-    (.setAttribute empty-el attr-part   part-empty)
-    (.setAttribute empty-el attr-hidden "")
+    (du/set-attr! empty-el attr-part   part-empty)
+    (du/set-attr! empty-el attr-hidden "")
 
     (.appendChild list-wrap list-el)
     (.appendChild list-wrap empty-el)
@@ -253,9 +253,9 @@
 
 (defn- make-panel! [search-parts list-parts]
   (let [panel (.createElement js/document "div")]
-    (.setAttribute panel attr-part       part-panel)
-    (.setAttribute panel attr-role       val-dialog)
-    (.setAttribute panel attr-aria-modal val-true)
+    (du/set-attr! panel attr-part       part-panel)
+    (du/set-attr! panel attr-role       val-dialog)
+    (du/set-attr! panel attr-aria-modal val-true)
     (.appendChild panel (:search-wrap search-parts))
     (.appendChild panel (:list-wrap   list-parts))
     panel))
@@ -290,32 +290,32 @@
 ;; ── Item rendering ─────────────────────────────────────────────────────────
 (defn- append-group-header! [^js list-el group]
   (let [^js header (.createElement js/document "div")]
-    (.setAttribute header attr-part        part-group-header)
-    (.setAttribute header attr-aria-hidden val-true)
+    (du/set-attr! header attr-part        part-group-header)
+    (du/set-attr! header attr-aria-hidden val-true)
     (set! (.-textContent header) group)
     (.appendChild list-el header)))
 
 (defn- append-item! [^js list-el idx item active-idx]
   (let [^js div (.createElement js/document "div")]
-    (.setAttribute div attr-part     part-item)
-    (.setAttribute div attr-role     val-option)
-    (.setAttribute div attr-id       (str item-id-pref idx))
-    (.setAttribute div attr-data-id  (str (:id item)))
-    (.setAttribute div attr-data-idx (str idx))
-    (.setAttribute div attr-tabindex "-1")
+    (du/set-attr! div attr-part     part-item)
+    (du/set-attr! div attr-role     val-option)
+    (du/set-attr! div attr-id       (str item-id-pref idx))
+    (du/set-attr! div attr-data-id  (str (:id item)))
+    (du/set-attr! div attr-data-idx (str idx))
+    (du/set-attr! div attr-tabindex "-1")
     (when (:disabled? item)
-      (.setAttribute div attr-aria-disabled val-true))
+      (du/set-attr! div attr-aria-disabled val-true))
     (set! (.-textContent div) (:label item))
     (when (= idx active-idx)
-      (.setAttribute div attr-aria-selected val-true))
+      (du/set-attr! div attr-aria-selected val-true))
     (.appendChild list-el div)))
 
 (defn- render-empty! [^js empty-el ^js input-el]
-  (.removeAttribute empty-el attr-hidden)
-  (when input-el (.removeAttribute input-el attr-aria-activedescendant)))
+  (du/remove-attr! empty-el attr-hidden)
+  (when input-el (du/remove-attr! input-el attr-aria-activedescendant)))
 
 (defn- render-item-list! [^js empty-el ^js list-el ^js input-el visible active-idx]
-  (.setAttribute empty-el attr-hidden "")
+  (du/set-attr! empty-el attr-hidden "")
   (loop [remaining (map-indexed vector visible)
          last-group nil]
     (when-let [[idx item] (first remaining)]
@@ -325,7 +325,7 @@
         (append-item! list-el idx item active-idx)
         (recur (rest remaining) (or g last-group)))))
   (when input-el
-    (.setAttribute input-el attr-aria-activedescendant (str item-id-pref active-idx))))
+    (du/set-attr! input-el attr-aria-activedescendant (str item-id-pref active-idx))))
 
 (defn- render-items! [^js el]
   (when-let [refs (du/getv el k-refs)]
@@ -344,21 +344,21 @@
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ────────
 (defn- apply-panel-aria! [^js panel {:keys [label]}]
-  (.setAttribute panel attr-aria-label (or label val-default-label)))
+  (du/set-attr! panel attr-aria-label (or label val-default-label)))
 
 (defn- apply-scrim! [^js overlay {:keys [scrim?]}]
   (if scrim?
-    (.removeAttribute overlay attr-hidden)
-    (.setAttribute overlay attr-hidden "")))
+    (du/remove-attr! overlay attr-hidden)
+    (du/set-attr! overlay attr-hidden "")))
 
 (defn- apply-input-state! [^js input {:keys [placeholder open? disabled?]}]
-  (.setAttribute input attr-placeholder    placeholder)
-  (.setAttribute input attr-aria-expanded  (if open? val-true val-false))
+  (du/set-attr! input attr-placeholder    placeholder)
+  (du/set-attr! input attr-aria-expanded  (if open? val-true val-false))
   (if disabled?
-    (do (.setAttribute input attr-disabled       "")
-        (.setAttribute input attr-aria-disabled  val-true))
-    (do (.removeAttribute input attr-disabled)
-        (.removeAttribute input attr-aria-disabled))))
+    (do (du/set-attr! input attr-disabled       "")
+        (du/set-attr! input attr-aria-disabled  val-true))
+    (do (du/remove-attr! input attr-disabled)
+        (du/remove-attr! input attr-aria-disabled))))
 
 (defn- apply-empty-text! [^js empty-el {:keys [empty-text]}]
   (set! (.-textContent empty-el) empty-text))
@@ -396,7 +396,7 @@
   (du/remove-attr! el model/attr-open)
   (let [refs      (du/getv el k-refs)
         ^js input (when refs (gobj/get refs rk-input))]
-    (when input (.removeAttribute input attr-aria-activedescendant)))
+    (when input (du/remove-attr! input attr-aria-activedescendant)))
   (update-from-attrs! el)
   (du/dispatch! el model/event-close #js {}))
 
@@ -455,8 +455,8 @@
     (du/setv! el k-active-idx 0)
     (when clr
       (if (and q (not= q ""))
-        (.removeAttribute clr attr-hidden)
-        (.setAttribute clr attr-hidden "")))
+        (du/remove-attr! clr attr-hidden)
+        (du/set-attr! clr attr-hidden "")))
     (du/dispatch! el model/event-query-change #js {:query (or q "")})
     (render-items! el)))
 
@@ -488,7 +488,7 @@
         ^js inp (when refs (gobj/get refs rk-input))
         ^js clr (when refs (gobj/get refs rk-clear-btn))]
     (when inp (set! (.-value inp) ""))
-    (when clr (.setAttribute clr attr-hidden ""))
+    (when clr (du/set-attr! clr attr-hidden ""))
     (du/setv! el k-query "")
     (du/setv! el k-active-idx 0)
     (du/dispatch! el model/event-query-change #js {:query ""})

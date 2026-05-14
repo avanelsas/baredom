@@ -100,14 +100,14 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute svg "part" "svg")
-    (.setAttribute svg "viewBox" "0 0 300 200")
-    (.setAttribute svg "preserveAspectRatio" "none")
-    (.setAttribute svg "aria-hidden" "true")
+    (du/set-attr! svg "part" "svg")
+    (du/set-attr! svg "viewBox" "0 0 300 200")
+    (du/set-attr! svg "preserveAspectRatio" "none")
+    (du/set-attr! svg "aria-hidden" "true")
 
-    (.setAttribute path "part" "shape")
+    (du/set-attr! path "part" "shape")
 
-    (.setAttribute content "part" "content")
+    (du/set-attr! content "part" "content")
 
     (.appendChild svg path)
     (.appendChild content slot)
@@ -171,7 +171,7 @@
         ^js cx   (du/getv el k-cur-x)
         ^js cy   (du/getv el k-cur-y)
         d        (model/points->path-d cx cy model/point-count)]
-    (.setAttribute path "d" d)))
+    (du/set-attr! path "d" d)))
 
 (defn- render-static! [^js el]
   (let [{:keys [path]} (du/getv el k-refs)
@@ -181,7 +181,7 @@
         m (du/getv el k-model)
         r (:radius m)
         d (model/static-rounded-rect-d w h r)]
-    (.setAttribute path "d" d)))
+    (du/set-attr! path "d" d)))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
 (defn- animate! [^js el]
@@ -267,7 +267,7 @@
         ;; Update SVG viewBox
         (let [{:keys [svg]} (du/getv el k-refs)
               ^js svg svg]
-          (.setAttribute svg "viewBox" (str "0 0 " w " " h)))
+          (du/set-attr! svg "viewBox" (str "0 0 " w " " h)))
         ;; Reinitialise physics with new dimensions
         (let [m (du/getv el k-model)]
           (init-physics! el w h m)

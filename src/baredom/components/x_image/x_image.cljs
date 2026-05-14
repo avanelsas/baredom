@@ -149,27 +149,27 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute frame attr-part part-frame)
+    (du/set-attr! frame attr-part part-frame)
 
-    (.setAttribute shimmer attr-part        part-shimmer)
-    (.setAttribute shimmer attr-aria-hidden val-true)
+    (du/set-attr! shimmer attr-part        part-shimmer)
+    (du/set-attr! shimmer attr-aria-hidden val-true)
 
-    (.setAttribute img attr-part part-image)
+    (du/set-attr! img attr-part part-image)
     (set! (.-alt img) "")
     (set! (.-decoding img) val-async)
     (set! (.-loading img) model/default-loading)
 
-    (.setAttribute error-box attr-part       part-error)
-    (.setAttribute error-box attr-role       val-img)
-    (.setAttribute error-box attr-aria-label fallback-error-label)
+    (du/set-attr! error-box attr-part       part-error)
+    (du/set-attr! error-box attr-role       val-img)
+    (du/set-attr! error-box attr-aria-label fallback-error-label)
 
-    (.setAttribute error-slot attr-name slot-error)
+    (du/set-attr! error-slot attr-name slot-error)
 
-    (.setAttribute error-default attr-part part-error-default)
-    (.setAttribute error-glyph attr-part        part-error-glyph)
-    (.setAttribute error-glyph attr-aria-hidden val-true)
+    (du/set-attr! error-default attr-part part-error-default)
+    (du/set-attr! error-glyph attr-part        part-error-glyph)
+    (du/set-attr! error-glyph attr-aria-hidden val-true)
     (set! (.-textContent error-glyph) glyph-error)
-    (.setAttribute error-text attr-part part-error-text)
+    (du/set-attr! error-text attr-part part-error-text)
     (set! (.-textContent error-text) default-error-text)
 
     (.appendChild error-default error-glyph)
@@ -256,9 +256,9 @@
           ;; Reset to loading state BEFORE assignment so sync load events
           ;; (data URLs) see the correct pending state.
           (set-host-state! el model/state-loading)
-          (.setAttribute img attr-src new-src))
+          (du/set-attr! img attr-src new-src))
         (do
-          (.removeAttribute img attr-src)
+          (du/remove-attr! img attr-src)
           (set-host-state! el model/state-loading))))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ─────
@@ -294,7 +294,7 @@
         (warn-once! el k-warned-alt msg-missing-alt)))))
 
 (defn- apply-error-label! [^js error-box {:keys [decorative? alt]}]
-  (.setAttribute error-box attr-aria-label
+  (du/set-attr! error-box attr-aria-label
                  (if (and (not decorative?) (not= "" alt))
                    alt
                    fallback-error-label)))
@@ -355,8 +355,8 @@
          :set (fn xi-set-string-attr [v]
                 (this-as ^js this
                   (if (or (nil? v) (= v ""))
-                    (.removeAttribute this attr-name-str)
-                    (.setAttribute this attr-name-str (str v)))))
+                    (du/remove-attr! this attr-name-str)
+                    (du/set-attr! this attr-name-str (str v)))))
          :enumerable  true
          :configurable true}))
 

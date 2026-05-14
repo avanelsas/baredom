@@ -66,17 +66,17 @@
   (let [has-selected? (.hasAttribute tab "selected")]
     (cond
       (and selected? (not has-selected?))
-      (.setAttribute tab "selected" "")
+      (du/set-attr! tab "selected" "")
 
       (and (not selected?) has-selected?)
-      (.removeAttribute tab "selected")
+      (du/remove-attr! tab "selected")
 
       :else nil)))
 
 (defn- set-tab-tabindex-if-needed! [^js tab tabindex]
   (let [current (.getAttribute tab "tabindex")]
     (when (not= current tabindex)
-      (.setAttribute tab "tabindex" tabindex))))
+      (du/set-attr! tab "tabindex" tabindex))))
 
 (defn- select-tab! [tabs value]
   (doseq [tab tabs]
@@ -91,8 +91,8 @@
     (when (and id (not= id ""))
       (when-let [panel (.getElementById js/document id)]
         (if visible?
-          (.removeAttribute panel "hidden")
-          (.setAttribute panel "hidden" ""))))))
+          (du/remove-attr! panel "hidden")
+          (du/set-attr! panel "hidden" ""))))))
 
 (defn- update-panels! [tabs selected-value]
   (doseq [tab tabs]
@@ -196,12 +196,12 @@
 (defn- apply-model! [^js el state]
   (let [base (du/getv el key-base)]
     (when base
-      (.setAttribute base "role" "tablist")
-      (.setAttribute base "aria-orientation" (:orientation state))
+      (du/set-attr! base "role" "tablist")
+      (du/set-attr! base "aria-orientation" (:orientation state))
       (let [label (:label state)]
         (if (and label (not= label ""))
-          (.setAttribute base "aria-label" label)
-          (.removeAttribute base "aria-label"))))
+          (du/set-attr! base "aria-label" label)
+          (du/remove-attr! base "aria-label"))))
     (du/setv! el key-model state)))
 
 (defn- update-from-attrs! [^js el]
@@ -252,7 +252,7 @@
         base (.createElement js/document "div")
         slot (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
-    (.setAttribute base "part" "base")
+    (du/set-attr! base "part" "base")
     (set! (.-className base) "base")
     (.appendChild base slot)
     (.appendChild root style)

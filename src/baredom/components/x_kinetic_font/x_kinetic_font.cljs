@@ -90,9 +90,9 @@
         container (.createElement js/document "div")
         sr-only   (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (.setAttribute container "part" "container")
-    (.setAttribute sr-only "class" "sr-only")
-    (.setAttribute sr-only "part" "sr-only")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! sr-only "class" "sr-only")
+    (du/set-attr! sr-only "part" "sr-only")
     (.appendChild root style)
     (.appendChild root container)
     (.appendChild root sr-only)
@@ -152,9 +152,9 @@
     (dotimes [i n]
       (let [ch   (nth chars i)
             span (.createElement js/document "span")]
-        (.setAttribute span "part" "char")
+        (du/set-attr! span "part" "char")
         (if (= ch " ")
-          (do (.setAttribute span "data-ws" "")
+          (do (du/set-attr! span "data-ws" "")
               (set! (.-innerHTML span) "&nbsp;"))
           (set! (.-textContent span) ch))
         (.appendChild container span)
@@ -440,8 +440,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-trigger)
-                    (.setAttribute this model/attr-trigger (str v)))))
+                    (du/remove-attr! this model/attr-trigger)
+                    (du/set-attr! this model/attr-trigger (str v)))))
          :enumerable true :configurable true})
 
   ;; mass (number)
@@ -452,8 +452,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-mass)
-                    (.setAttribute this model/attr-mass (str v)))))
+                    (du/remove-attr! this model/attr-mass)
+                    (du/set-attr! this model/attr-mass (str v)))))
          :enumerable true :configurable true})
 
   ;; tension (number)
@@ -464,8 +464,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-tension)
-                    (.setAttribute this model/attr-tension (str v)))))
+                    (du/remove-attr! this model/attr-tension)
+                    (du/set-attr! this model/attr-tension (str v)))))
          :enumerable true :configurable true})
 
   ;; friction (number)
@@ -476,8 +476,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-friction)
-                    (.setAttribute this model/attr-friction (str v)))))
+                    (du/remove-attr! this model/attr-friction)
+                    (du/set-attr! this model/attr-friction (str v)))))
          :enumerable true :configurable true})
 
   ;; intensity (number)
@@ -488,8 +488,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-intensity)
-                    (.setAttribute this model/attr-intensity (str v)))))
+                    (du/remove-attr! this model/attr-intensity)
+                    (du/set-attr! this model/attr-intensity (str v)))))
          :enumerable true :configurable true})
 
   ;; radius (number)
@@ -500,8 +500,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-radius)
-                    (.setAttribute this model/attr-radius (str v)))))
+                    (du/remove-attr! this model/attr-radius)
+                    (du/set-attr! this model/attr-radius (str v)))))
          :enumerable true :configurable true})
 
   ;; fontFamily (string, maps to font-family attribute)
@@ -513,8 +513,8 @@
          :set (fn [v]
                 (this-as ^js this
                   (if (nil? v)
-                    (.removeAttribute this model/attr-font-family)
-                    (.setAttribute this model/attr-font-family (str v)))))
+                    (du/remove-attr! this model/attr-font-family)
+                    (du/set-attr! this model/attr-font-family (str v)))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

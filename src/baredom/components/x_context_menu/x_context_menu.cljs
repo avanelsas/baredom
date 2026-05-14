@@ -121,9 +121,9 @@
 (defn- make-layer! [^js el z-index]
   (let [^js layer (overlay/make-layer! el panel-style-text z-index)
         ^js panel (.createElement js/document "div")]
-    (.setAttribute panel attr-part     part-panel)
-    (.setAttribute panel attr-role     role-menu)
-    (.setAttribute panel attr-tabindex "-1")
+    (du/set-attr! panel attr-part     part-panel)
+    (du/set-attr! panel attr-role     role-menu)
+    (du/set-attr! panel attr-tabindex "-1")
     (.appendChild (.-shadowRoot layer) panel)
     layer))
 

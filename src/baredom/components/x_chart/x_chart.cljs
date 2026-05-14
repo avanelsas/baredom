@@ -784,8 +784,8 @@
         :set (fn [v]
                (this-as ^js this
                         (if (some? v)
-                          (.setAttribute this attr-name (str (int v)))
-                          (.removeAttribute this attr-name))))}))
+                          (du/set-attr! this attr-name (str (int v)))
+                          (du/remove-attr! this attr-name))))}))
 
 (defn- define-data-prop! [^js proto]
   (.defineProperty
@@ -802,8 +802,8 @@
                (this-as ^js this
                         (gobj/set this k-data v)
                         (if (array? v)
-                          (.setAttribute this model/attr-data (js/JSON.stringify v))
-                          (.removeAttribute this model/attr-data))))}))
+                          (du/set-attr! this model/attr-data (js/JSON.stringify v))
+                          (du/remove-attr! this model/attr-data))))}))
 
 ;; ---- Element class + registration ----
 

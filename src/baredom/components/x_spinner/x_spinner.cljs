@@ -62,8 +62,8 @@
         style (.createElement js/document "style")
         ring  (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (.setAttribute ring "part" "ring")
-    (.setAttribute ring "aria-hidden" "true")
+    (du/set-attr! ring "part" "ring")
+    (du/set-attr! ring "aria-hidden" "true")
     (.appendChild root style)
     (.appendChild root ring)
     ;; Static a11y attributes on the host — set once

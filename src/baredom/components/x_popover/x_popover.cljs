@@ -620,7 +620,7 @@
         (du/setv! el k-moved-footer (to-array moved-footer))
         ;; Show footer if it has content
         (when (pos? (count moved-footer))
-          (.removeAttribute p-footer "hidden")))
+          (du/remove-attr! p-footer "hidden")))
 
       ;; Position
       (position-portal-panel! p-panel p-arrow trigger (:placement m))

@@ -47,7 +47,7 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute base attr-part part-base)
+    (du/set-attr! base attr-part part-base)
     (set! (.-className base) cls-base)
     (.appendChild base slot)
 
@@ -78,7 +78,7 @@
                                     justify-items auto-flow] :as m}]
   (let [{:keys [base]} (ensure-refs! el)
         ^js style (.-style base)]
-    (.setAttribute base attr-data-gap gap)
+    (du/set-attr! base attr-data-gap gap)
     (.setProperty style css-var-columns       columns)
     (.setProperty style css-var-row-gap       row-gap)
     (.setProperty style css-var-column-gap    column-gap)

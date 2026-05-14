@@ -33,7 +33,7 @@
         span  (.createElement js/document tag-span)
         refs  #js {}]
     (set! (.-textContent style) styles)
-    (.setAttribute span attr-part part-text)
+    (du/set-attr! span attr-part part-text)
     (.appendChild root style)
     (.appendChild root span)
     (gobj/set refs rk-span span)

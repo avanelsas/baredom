@@ -225,31 +225,31 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute item-div "class" "timeline-item")
+    (du/set-attr! item-div "class" "timeline-item")
 
-    (.setAttribute label-col "class" "label-col")
-    (.setAttribute label-slot "name" "label")
-    (.setAttribute label-text "class" "label-text")
+    (du/set-attr! label-col "class" "label-col")
+    (du/set-attr! label-slot "name" "label")
+    (du/set-attr! label-text "class" "label-text")
     (.appendChild label-slot label-text)
     (.appendChild label-col label-slot)
 
-    (.setAttribute track-col "class" "track-col")
-    (.setAttribute marker "class" "marker")
-    (.setAttribute icon-slot "name" "icon")
-    (.setAttribute default-icon "class" "default-icon")
-    (.setAttribute default-icon "aria-hidden" "true")
+    (du/set-attr! track-col "class" "track-col")
+    (du/set-attr! marker "class" "marker")
+    (du/set-attr! icon-slot "name" "icon")
+    (du/set-attr! default-icon "class" "default-icon")
+    (du/set-attr! default-icon "aria-hidden" "true")
     (.appendChild icon-slot default-icon)
     (.appendChild marker icon-slot)
-    (.setAttribute connector "class" "connector")
+    (du/set-attr! connector "class" "connector")
     (.appendChild track-col marker)
     (.appendChild track-col connector)
 
-    (.setAttribute content-col "class" "content-col")
-    (.setAttribute title-el "class" "title")
-    (.setAttribute body-el "class" "body")
+    (du/set-attr! content-col "class" "content-col")
+    (du/set-attr! title-el "class" "title")
+    (du/set-attr! body-el "class" "body")
     (.appendChild body-el default-slot)
-    (.setAttribute actions-el "class" "actions")
-    (.setAttribute actions-slot "name" "actions")
+    (du/set-attr! actions-el "class" "actions")
+    (du/set-attr! actions-slot "name" "actions")
     (.appendChild actions-el actions-slot)
     (.appendChild content-col title-el)
     (.appendChild content-col body-el)
@@ -331,16 +331,16 @@
       (du/remove-attr! el "aria-label"))))
 
 (defn- apply-marker! [^js marker ^js default-icon {:keys [marker-icon marker-aria]}]
-  (.setAttribute marker "aria-label" marker-aria)
+  (du/set-attr! marker "aria-label" marker-aria)
   (set! (.-textContent default-icon)
         (if (some? marker-icon) marker-icon "")))
 
 (defn- apply-text! [^js label-text ^js title-el {:keys [label title]}]
   (set! (.-textContent label-text) label)
   (if (not= title "")
-    (do (.removeAttribute title-el "hidden")
+    (do (du/remove-attr! title-el "hidden")
         (set! (.-textContent title-el) title))
-    (do (.setAttribute title-el "hidden" "")
+    (do (du/set-attr! title-el "hidden" "")
         (set! (.-textContent title-el) ""))))
 
 (defn- apply-model! [^js el m]
@@ -420,8 +420,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-label (str v))
-                                          (.removeAttribute this model/attr-label))))
+                                          (du/set-attr! this model/attr-label (str v))
+                                          (du/remove-attr! this model/attr-label))))
                         :enumerable true :configurable true})
 
   ;; Override HTMLElement.title (tooltip) — intentional, this component
@@ -433,8 +433,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and v (not= v ""))
-                                          (.setAttribute this model/attr-title (str v))
-                                          (.removeAttribute this model/attr-title))))
+                                          (du/set-attr! this model/attr-title (str v))
+                                          (du/remove-attr! this model/attr-title))))
                         :enumerable true :configurable true})
 
   (du/define-string-prop! proto model/attr-status    model/attr-status    "pending")

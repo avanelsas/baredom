@@ -214,23 +214,23 @@
 ;; ── Shadow DOM initialisation (shadow-builders pattern) ───────────────────────
 (defn- make-backdrop! []
   (let [backdrop (.createElement js/document "div")]
-    (.setAttribute backdrop attr-part part-backdrop)
+    (du/set-attr! backdrop attr-part part-backdrop)
     backdrop))
 
 (defn- make-dialog! [headline-id]
   (let [dialog (.createElement js/document "div")]
-    (.setAttribute dialog attr-part            part-dialog)
-    (.setAttribute dialog attr-role            role-dialog)
-    (.setAttribute dialog attr-aria-modal      val-true)
-    (.setAttribute dialog attr-aria-labelledby headline-id)
+    (du/set-attr! dialog attr-part            part-dialog)
+    (du/set-attr! dialog attr-role            role-dialog)
+    (du/set-attr! dialog attr-aria-modal      val-true)
+    (du/set-attr! dialog attr-aria-labelledby headline-id)
     dialog))
 
 (defn- make-header! [headline-id]
   (let [header   (.createElement js/document "div")
         headline (.createElement js/document "h2")]
-    (.setAttribute header   attr-part part-header)
-    (.setAttribute headline attr-part part-headline)
-    (.setAttribute headline attr-id   headline-id)
+    (du/set-attr! header   attr-part part-header)
+    (du/set-attr! headline attr-part part-headline)
+    (du/set-attr! headline attr-id   headline-id)
     (.appendChild header headline)
     {:header header :headline headline}))
 
@@ -238,9 +238,9 @@
   (let [body       (.createElement js/document "div")
         body-slot  (.createElement js/document "slot")
         message-el (.createElement js/document "p")]
-    (.setAttribute body       attr-part part-body)
-    (.setAttribute body-slot  attr-name part-body)
-    (.setAttribute message-el attr-part part-message)
+    (du/set-attr! body       attr-part part-body)
+    (du/set-attr! body-slot  attr-name part-body)
+    (du/set-attr! message-el attr-part part-message)
     (.appendChild body body-slot)
     (.appendChild body message-el)
     {:body body :body-slot body-slot :message message-el}))
@@ -249,18 +249,18 @@
   (let [actions     (.createElement js/document "div")
         cancel-btn  (.createElement js/document "button")
         confirm-btn (.createElement js/document "button")]
-    (.setAttribute actions     attr-part part-actions)
-    (.setAttribute cancel-btn  attr-part part-cancel-btn)
-    (.setAttribute cancel-btn  attr-type "button")
-    (.setAttribute confirm-btn attr-part part-confirm-btn)
-    (.setAttribute confirm-btn attr-type "button")
+    (du/set-attr! actions     attr-part part-actions)
+    (du/set-attr! cancel-btn  attr-part part-cancel-btn)
+    (du/set-attr! cancel-btn  attr-type "button")
+    (du/set-attr! confirm-btn attr-part part-confirm-btn)
+    (du/set-attr! confirm-btn attr-type "button")
     (.appendChild actions cancel-btn)
     (.appendChild actions confirm-btn)
     {:actions actions :cancel-btn cancel-btn :confirm-btn confirm-btn}))
 
 (defn- assemble-panel! [header-parts body-parts action-parts]
   (let [panel (.createElement js/document "div")]
-    (.setAttribute panel attr-part part-panel)
+    (du/set-attr! panel attr-part part-panel)
     (.appendChild panel (:header  header-parts))
     (.appendChild panel (:body    body-parts))
     (.appendChild panel (:actions action-parts))
@@ -371,8 +371,8 @@
 (defn- apply-danger! [refs {:keys [danger?]}]
   (let [^js confirm (gobj/get refs rk-confirm-btn)]
     (if danger?
-      (.setAttribute confirm attr-data-danger "")
-      (.removeAttribute confirm attr-data-danger))))
+      (du/set-attr! confirm attr-data-danger "")
+      (du/remove-attr! confirm attr-data-danger))))
 
 (defn- apply-disabled! [refs {:keys [disabled?]}]
   (let [^js cancel  (gobj/get refs rk-cancel-btn)

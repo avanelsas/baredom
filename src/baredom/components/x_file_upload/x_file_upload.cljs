@@ -275,11 +275,11 @@
 ;; ---------------------------------------------------------------------------
 (defn- apply-file-input! [^js file-input {:keys [accept multiple?]}]
   (if (= accept "")
-    (.removeAttribute file-input "accept")
+    (du/remove-attr! file-input "accept")
     (du/set-attr! file-input "accept" accept))
   (if multiple?
     (du/set-attr! file-input "multiple" "")
-    (.removeAttribute file-input "multiple")))
+    (du/remove-attr! file-input "multiple")))
 
 (defn- apply-drop-zone-state! [^js drop-zone {:keys [disabled?]}]
   (du/set-attr! drop-zone "tabindex"      (if disabled? "-1" "0"))

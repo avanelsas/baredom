@@ -108,8 +108,8 @@
         canvas (.createElement js/document "canvas")
         ctx    (.getContext canvas "2d")]
     (set! (.-textContent style) style-text)
-    (.setAttribute wrap "part" "canvas-wrap")
-    (.setAttribute canvas "part" "canvas")
+    (du/set-attr! wrap "part" "canvas-wrap")
+    (du/set-attr! canvas "part" "canvas")
     (.appendChild wrap canvas)
     (.appendChild root style)
     (.appendChild root wrap)

@@ -160,17 +160,17 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute cell "part" "cell")
+    (du/set-attr! cell "part" "cell")
 
-    (.setAttribute content "part" "content")
+    (du/set-attr! content "part" "content")
     (.appendChild content default-slot)
 
-    (.setAttribute sort-btn "part" "sort-btn")
-    (.setAttribute sort-btn "type" "button")
+    (du/set-attr! sort-btn "part" "sort-btn")
+    (du/set-attr! sort-btn "type" "button")
 
-    (.setAttribute sort-icon-slot "name" model/slot-sort-icon)
-    (.setAttribute sort-icon-default "part" "sort-icon-default")
-    (.setAttribute sort-icon-default "aria-hidden" "true")
+    (du/set-attr! sort-icon-slot "name" model/slot-sort-icon)
+    (du/set-attr! sort-icon-default "part" "sort-icon-default")
+    (du/set-attr! sort-icon-default "aria-hidden" "true")
     (set! (.-innerHTML sort-icon-default) svg-sort-neutral)
     (.appendChild sort-icon-slot sort-icon-default)
     (.appendChild sort-btn sort-icon-slot)
@@ -255,7 +255,7 @@
     (set! (.-hidden sort-btn) (not visible?))
     (set! (.-tabIndex sort-btn)
           (js/parseInt (model/sort-btn-tabindex m) 10))
-    (.setAttribute sort-btn "aria-label" (model/sort-btn-aria-label sort-direction))
+    (du/set-attr! sort-btn "aria-label" (model/sort-btn-aria-label sort-direction))
     (set! (.-disabled sort-btn) (boolean disabled?))
 
     (set! (.-innerHTML sort-icon-default) (sort-icon-svg m))
@@ -326,8 +326,8 @@
                                (this-as ^js this
                                         (let [n (js/parseInt v 10)]
                                           (if (and (not (js/isNaN n)) (pos? n))
-                                            (.setAttribute this model/attr-col-span (str n))
-                                            (.removeAttribute this model/attr-col-span)))))
+                                            (du/set-attr! this model/attr-col-span (str n))
+                                            (du/remove-attr! this model/attr-col-span)))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto "rowSpan"
@@ -339,8 +339,8 @@
                                (this-as ^js this
                                         (let [n (js/parseInt v 10)]
                                           (if (and (not (js/isNaN n)) (pos? n))
-                                            (.setAttribute this model/attr-row-span (str n))
-                                            (.removeAttribute this model/attr-row-span)))))
+                                            (du/set-attr! this model/attr-row-span (str n))
+                                            (du/remove-attr! this model/attr-row-span)))))
                         :enumerable true :configurable true})
 
   (du/define-string-prop! proto "sortDirection" model/attr-sort-direction "none"))

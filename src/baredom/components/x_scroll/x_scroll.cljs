@@ -151,32 +151,32 @@
 
     (set! (.-textContent style) style-text)
 
-    (.setAttribute viewport "part" "viewport")
-    (.setAttribute viewport "role" "region")
-    (.setAttribute viewport "aria-roledescription" "carousel")
+    (du/set-attr! viewport "part" "viewport")
+    (du/set-attr! viewport "role" "region")
+    (du/set-attr! viewport "aria-roledescription" "carousel")
 
-    (.setAttribute track "part" "track")
+    (du/set-attr! track "part" "track")
 
     (.appendChild track slot)
     (.appendChild viewport track)
 
-    (.setAttribute prev-btn "part" "prev")
-    (.setAttribute prev-btn "type" "button")
-    (.setAttribute prev-btn "aria-label" "Previous slide")
+    (du/set-attr! prev-btn "part" "prev")
+    (du/set-attr! prev-btn "type" "button")
+    (du/set-attr! prev-btn "aria-label" "Previous slide")
     (set! (.-textContent prev-btn) "\u2039")
 
-    (.setAttribute next-btn "part" "next")
-    (.setAttribute next-btn "type" "button")
-    (.setAttribute next-btn "aria-label" "Next slide")
+    (du/set-attr! next-btn "part" "next")
+    (du/set-attr! next-btn "type" "button")
+    (du/set-attr! next-btn "aria-label" "Next slide")
     (set! (.-textContent next-btn) "\u203A")
 
-    (.setAttribute indicators "part" "indicators")
-    (.setAttribute indicators "role" "tablist")
-    (.setAttribute indicators "aria-label" "Slide indicators")
+    (du/set-attr! indicators "part" "indicators")
+    (du/set-attr! indicators "role" "tablist")
+    (du/set-attr! indicators "aria-label" "Slide indicators")
 
-    (.setAttribute live "part" "live")
-    (.setAttribute live "aria-live" "polite")
-    (.setAttribute live "aria-atomic" "true")
+    (du/set-attr! live "part" "live")
+    (du/set-attr! live "aria-live" "polite")
+    (du/set-attr! live "aria-atomic" "true")
 
     (.appendChild root style)
     (.appendChild root viewport)
@@ -369,11 +369,11 @@
     (set! (.-innerHTML indicators) "")
     (dotimes [i cnt]
       (let [btn (.createElement js/document "button")]
-        (.setAttribute btn "part" "indicator")
-        (.setAttribute btn "type" "button")
-        (.setAttribute btn "role" "tab")
-        (.setAttribute btn "aria-label" (str "Slide " (inc i)))
-        (.setAttribute btn "aria-selected" (str (= i active)))
+        (du/set-attr! btn "part" "indicator")
+        (du/set-attr! btn "type" "button")
+        (du/set-attr! btn "role" "tab")
+        (du/set-attr! btn "aria-label" (str "Slide " (inc i)))
+        (du/set-attr! btn "aria-selected" (str (= i active)))
         (.addEventListener btn "click" (fn [_e] (on-click-fn i)))
         (.appendChild indicators btn)))))
 
@@ -382,7 +382,7 @@
         ^js indicators indicators
         dots (.-children indicators)]
     (dotimes [i (.-length dots)]
-      (.setAttribute ^js (aget dots i) "aria-selected" (str (= i active))))))
+      (du/set-attr! ^js (aget dots i) "aria-selected" (str (= i active))))))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 ;; ── Autoplay ────────────────────────────────────────────────────────────────
@@ -754,8 +754,8 @@
 
     ;; Aria
     (if (seq label)
-      (.setAttribute viewport "aria-label" label)
-      (.removeAttribute viewport "aria-label"))
+      (du/set-attr! viewport "aria-label" label)
+      (du/remove-attr! viewport "aria-label"))
 
     ;; Control button states
     (set! (.-disabled prev-btn) (not (model/can-go-prev? m cnt)))
@@ -809,8 +809,8 @@
          :set (fn xs-set-show-controls [v]
                 (this-as ^js this
                   (if v
-                    (.removeAttribute this model/attr-show-controls)
-                    (.setAttribute this model/attr-show-controls "false"))))
+                    (du/remove-attr! this model/attr-show-controls)
+                    (du/set-attr! this model/attr-show-controls "false"))))
          :enumerable true :configurable true})
 
   ;; label uses strict-empty setter semantics — setting "" removes the
@@ -823,8 +823,8 @@
          :set (fn xs-set-label [v]
                 (this-as ^js this
                   (if (and v (not= v ""))
-                    (.setAttribute this model/attr-label (str v))
-                    (.removeAttribute this model/attr-label))))
+                    (du/set-attr! this model/attr-label (str v))
+                    (du/remove-attr! this model/attr-label))))
          :enumerable true :configurable true})
 
   ;; Methods (Tier-2 .defineProperty :value descriptors — replaces bare

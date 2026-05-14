@@ -85,9 +85,9 @@
         style     (.createElement js/document "style")
         container (.createElement js/document "div")]
     (set! (.-textContent style) style-text)
-    (.setAttribute container "part" "container")
-    (.setAttribute container "role" "log")
-    (.setAttribute container "aria-live" "polite")
+    (du/set-attr! container "part" "container")
+    (du/set-attr! container "role" "log")
+    (du/set-attr! container "aria-live" "polite")
     (.appendChild root style)
     (.appendChild root container)
     (du/setv! el k-refs #js {"root" root "container" container})))
@@ -156,13 +156,13 @@
             icon-val  (gobj/get opts "icon")
             timeout-val (gobj/get opts "timeoutMs")
             dismissible-val (gobj/get opts "dismissible")]
-        (.setAttribute alert model/data-notification-id id)
-        (when type-val    (.setAttribute alert "type" type-val))
-        (when text-val    (.setAttribute alert "text" text-val))
-        (when icon-val    (.setAttribute alert "icon" icon-val))
-        (when timeout-val (.setAttribute alert "timeout-ms" (str (int timeout-val))))
+        (du/set-attr! alert model/data-notification-id id)
+        (when type-val    (du/set-attr! alert "type" type-val))
+        (when text-val    (du/set-attr! alert "text" text-val))
+        (when icon-val    (du/set-attr! alert "icon" icon-val))
+        (when timeout-val (du/set-attr! alert "timeout-ms" (str (int timeout-val))))
         ;; Only set dismissible=false when explicitly false; default (true) is handled by x-alert
-        (when (false? dismissible-val) (.setAttribute alert "dismissible" "false"))
+        (when (false? dismissible-val) (du/set-attr! alert "dismissible" "false"))
         (.appendChild container alert)
         (let [new-count (.-length (.querySelectorAll container model/alert-tag))]
           (du/dispatch! el model/event-push #js {:id id :count new-count}))
@@ -185,8 +185,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-position (str v))
-                                          (.removeAttribute this model/attr-position))))
+                                          (du/set-attr! this model/attr-position (str v))
+                                          (du/remove-attr! this model/attr-position))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto model/attr-max
@@ -196,8 +196,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if v
-                                          (.setAttribute this model/attr-max (str (int v)))
-                                          (.removeAttribute this model/attr-max))))
+                                          (du/set-attr! this model/attr-max (str (int v)))
+                                          (du/remove-attr! this model/attr-max))))
                         :enumerable true :configurable true})
 
   (.defineProperty js/Object proto "count"

@@ -106,7 +106,7 @@
         base     (.createElement js/document "div")
         slot-el  (.createElement js/document "slot")]
     (set! (.-textContent style-el) style-text)
-    (.setAttribute base "part" "shape")
+    (du/set-attr! base "part" "shape")
     (.appendChild base slot-el)
     (.appendChild root style-el)
     (.appendChild root base)
@@ -209,8 +209,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-shape v)
-                                          (.removeAttribute this model/attr-shape))))
+                                          (du/set-attr! this model/attr-shape v)
+                                          (du/remove-attr! this model/attr-shape))))
                         :enumerable true :configurable true})
 
   ;; path — string, reflects to attr
@@ -221,8 +221,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-path v)
-                                          (.removeAttribute this model/attr-path))))
+                                          (du/set-attr! this model/attr-path v)
+                                          (du/remove-attr! this model/attr-path))))
                         :enumerable true :configurable true})
 
   ;; animation — string, reflects to attr
@@ -234,8 +234,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-animation v)
-                                          (.removeAttribute this model/attr-animation))))
+                                          (du/set-attr! this model/attr-animation v)
+                                          (du/remove-attr! this model/attr-animation))))
                         :enumerable true :configurable true})
 
   ;; ratio — string, reflects to attr
@@ -247,8 +247,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-ratio v)
-                                          (.removeAttribute this model/attr-ratio))))
+                                          (du/set-attr! this model/attr-ratio v)
+                                          (du/remove-attr! this model/attr-ratio))))
                         :enumerable true :configurable true})
 
   ;; width — string CSS value, reflects to attr
@@ -259,8 +259,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-width v)
-                                          (.removeAttribute this model/attr-width))))
+                                          (du/set-attr! this model/attr-width v)
+                                          (du/remove-attr! this model/attr-width))))
                         :enumerable true :configurable true})
 
   ;; height — string CSS value, reflects to attr
@@ -271,8 +271,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this model/attr-height v)
-                                          (.removeAttribute this model/attr-height))))
+                                          (du/set-attr! this model/attr-height v)
+                                          (du/remove-attr! this model/attr-height))))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ─────────────────────────────────────────────────────────

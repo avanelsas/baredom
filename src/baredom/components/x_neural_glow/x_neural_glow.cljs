@@ -164,7 +164,7 @@
         style  (.createElement js/document "style")
         canvas (.createElement js/document "canvas")]
     (set! (.-textContent style) style-text)
-    (.setAttribute canvas "part" "canvas")
+    (du/set-attr! canvas "part" "canvas")
     (.appendChild root style)
     (.appendChild root canvas)
     (let [^js gl (init-webgl! el canvas)]
@@ -450,8 +450,8 @@
          :set (fn xng-set-interactive [v]
                 (this-as ^js this
                   (if v
-                    (.removeAttribute this model/attr-interactive)
-                    (.setAttribute this model/attr-interactive "false"))))
+                    (du/remove-attr! this model/attr-interactive)
+                    (du/set-attr! this model/attr-interactive "false"))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

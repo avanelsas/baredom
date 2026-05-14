@@ -237,35 +237,35 @@
         path-id         (str "xkt-" (random-uuid))]
 
     (set! (.-textContent style-el) style-text)
-    (.setAttribute container attr-part "container")
-    (.setAttribute svg       attr-part "svg")
-    (.setAttribute svg       attr-aria-hidden val-true)
-    (.setAttribute svg       "focusable" "false")
+    (du/set-attr! container attr-part "container")
+    (du/set-attr! svg       attr-part "svg")
+    (du/set-attr! svg       attr-aria-hidden val-true)
+    (du/set-attr! svg       "focusable" "false")
 
     ;; Path definition in <defs>
-    (.setAttribute path-el "id" path-id)
+    (du/set-attr! path-el "id" path-id)
     (.appendChild defs path-el)
 
     ;; Decorative path line (for optional visible path)
-    (.setAttribute path-line attr-part "path-line")
+    (du/set-attr! path-line attr-part "path-line")
     (.appendChild svg path-line)
 
     ;; Text on path
-    (.setAttribute text-el   attr-part "text")
-    (.setAttribute text-path "href" (str "#" path-id))
+    (du/set-attr! text-el   attr-part "text")
+    (du/set-attr! text-path "href" (str "#" path-id))
     (.appendChild text-el text-path)
 
     (.appendChild svg defs)
     (.appendChild svg text-el)
 
     ;; Crawl mode elements
-    (.setAttribute crawl-viewport attr-part "crawl-viewport")
-    (.setAttribute crawl-text     attr-part "crawl-text")
+    (du/set-attr! crawl-viewport attr-part "crawl-viewport")
+    (du/set-attr! crawl-text     attr-part "crawl-text")
     (.appendChild crawl-viewport crawl-text)
 
     ;; SR-only text
     (.add (.-classList sr-only) "sr-only")
-    (.setAttribute sr-only attr-part "sr-only")
+    (du/set-attr! sr-only attr-part "sr-only")
 
     (.appendChild container svg)
     (.appendChild container crawl-viewport)
@@ -333,7 +333,7 @@
         (when (and has-gradient grad-start grad-end)
           (let [t    (if (> n 1) (/ i (dec n)) 0)
                 size (+ grad-start (* t (- grad-end grad-start)))]
-            (.setAttribute tspan "font-size" (str size grad-unit))))
+            (du/set-attr! tspan "font-size" (str size grad-unit))))
         ;; Color wave — inline animation with staggered delay
         (when has-color-wave
           (set! (.-cssText (.-style tspan))
@@ -355,20 +355,20 @@
   (let [anim (svg-el "animate")
         dur  (str duration-s "s")
         dir  (if (= direction val-reverse) val-reverse "normal")]
-    (.setAttribute anim "attributeName" "startOffset")
-    (.setAttribute anim "repeatCount" "indefinite")
-    (.setAttribute anim "dur" dur)
+    (du/set-attr! anim "attributeName" "startOffset")
+    (du/set-attr! anim "repeatCount" "indefinite")
+    (du/set-attr! anim "dur" dur)
     (when (pos? begin-delay-s)
-      (.setAttribute anim "begin" (str begin-delay-s "s")))
+      (du/set-attr! anim "begin" (str begin-delay-s "s")))
     (case animation
-      "scroll"    (do (.setAttribute anim "from" (if (= dir val-reverse) "100%" "0%"))
-                      (.setAttribute anim "to"   (if (= dir val-reverse) "0%" "100%")))
-      "bounce"    (do (.setAttribute anim "values" (if (= dir val-reverse) "100%;0%;100%" "0%;100%;0%"))
-                      (.setAttribute anim "calcMode" "spline")
-                      (.setAttribute anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
-      "oscillate" (do (.setAttribute anim "values" (if (= dir val-reverse) "120%;-20%;120%" "-20%;120%;-20%"))
-                      (.setAttribute anim "calcMode" "spline")
-                      (.setAttribute anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
+      "scroll"    (do (du/set-attr! anim "from" (if (= dir val-reverse) "100%" "0%"))
+                      (du/set-attr! anim "to"   (if (= dir val-reverse) "0%" "100%")))
+      "bounce"    (do (du/set-attr! anim "values" (if (= dir val-reverse) "100%;0%;100%" "0%;100%;0%"))
+                      (du/set-attr! anim "calcMode" "spline")
+                      (du/set-attr! anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
+      "oscillate" (do (du/set-attr! anim "values" (if (= dir val-reverse) "120%;-20%;120%" "-20%;120%;-20%"))
+                      (du/set-attr! anim "calcMode" "spline")
+                      (du/set-attr! anim "keySplines" "0.42 0 0.58 1;0.42 0 0.58 1"))
       nil)
     anim))
 
@@ -410,13 +410,13 @@
                 scale-val (.pow js/Math echo-scale idx)
                 ;; Displace each echo further along the path
                 start-off (str "-" (* offset-pct idx) "%")]
-            (.setAttribute tel attr-part "text-echo")
-            (.setAttribute tel "opacity" (str opacity))
-            (.setAttribute tel "font-size"
+            (du/set-attr! tel attr-part "text-echo")
+            (du/set-attr! tel "opacity" (str opacity))
+            (du/set-attr! tel "font-size"
                            (str "calc(var(--x-kinetic-typography-font-size) * " scale-val ")"))
             (.setAttributeNS tp xlink-ns "href" (str "#" path-id))
-            (.setAttribute tp "href" (str "#" path-id))
-            (.setAttribute tp "startOffset" start-off)
+            (du/set-attr! tp "href" (str "#" path-id))
+            (du/set-attr! tp "startOffset" start-off)
             (set! (.-textContent tp) display-text)
             (when add-animate
               (let [anim (build-animate-el animation direction duration-s
@@ -454,10 +454,10 @@
 (defn- apply-svg-path!
   "Update the SVG viewBox, the textPath path, and the decorative path-line."
   [^js svg ^js path-el ^js path-line {:keys [view-box path-d]}]
-  (when view-box (.setAttribute svg "viewBox" view-box))
-  (when path-d (.setAttribute path-el "d" path-d))
+  (when view-box (du/set-attr! svg "viewBox" view-box))
+  (when path-d (du/set-attr! path-el "d" path-d))
   (when (and path-line path-d)
-    (.setAttribute path-line "d" path-d)))
+    (du/set-attr! path-line "d" path-d)))
 
 (defn- apply-text-content!
   "Render the display text — either flat textContent or per-character tspans
@@ -556,8 +556,8 @@
                         :set (fn [v]
                                (this-as ^js this
                                         (if (and (string? v) (not= "" v))
-                                          (.setAttribute this attr-name v)
-                                          (.removeAttribute this attr-name))))
+                                          (du/set-attr! this attr-name v)
+                                          (du/remove-attr! this attr-name))))
                         :enumerable true :configurable true}))
 
 (defn- install-property-accessors! [^js proto]
