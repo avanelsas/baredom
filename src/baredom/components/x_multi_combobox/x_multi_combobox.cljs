@@ -292,27 +292,28 @@
    "}"))
 
 ;; ---------------------------------------------------------------------------
-;; Shadow DOM construction
+;; Shadow DOM construction — shadow-builders pattern
 ;; ---------------------------------------------------------------------------
-(defn- make-shadow! [^js el]
-  (let [root        (.attachShadow el #js {:mode "open"})
-        style-el    (.createElement js/document "style")
-        wrapper-el  (.createElement js/document "div")
-        chip-area   (.createElement js/document "div")
-        input-el    (.createElement js/document "input")
-        chevron-el  (.createElement js/document "span")
-        panel-el    (.createElement js/document "div")
-        slot-el     (.createElement js/document "slot")
-        lb-id       (next-id!)]
+(def ^:private chevron-svg-html
+  (str "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\""
+       " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
+       "<path d=\"M2.5 4.5L6 8L9.5 4.5\" stroke=\"currentColor\""
+       " stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"))
 
+(defn- make-style! ^js []
+  (let [^js style-el (.createElement js/document "style")]
     (set! (.-textContent style-el) style-text)
+    style-el))
 
-    (du/set-attr! wrapper-el attr-part part-wrapper)
-
+(defn- make-chip-area! ^js []
+  (let [^js chip-area (.createElement js/document "div")]
     (du/set-attr! chip-area attr-part       part-chip-area)
     (du/set-attr! chip-area attr-role       role-group)
     (du/set-attr! chip-area attr-aria-label "Selected values")
+    chip-area))
 
+(defn- make-input! ^js [lb-id]
+  (let [^js input-el (.createElement js/document "input")]
     (du/set-attr! input-el attr-part              part-input)
     (du/set-attr! input-el attr-type              "text")
     (du/set-attr! input-el attr-role              role-combobox)
@@ -320,34 +321,55 @@
     (du/set-attr! input-el attr-aria-autocomplete "list")
     (du/set-attr! input-el attr-aria-controls     lb-id)
     (du/set-attr! input-el attr-autocomplete      "off")
+    input-el))
 
+(defn- make-chevron! ^js []
+  (let [^js chevron-el (.createElement js/document "span")]
     (du/set-attr! chevron-el attr-part        part-chevron)
     (du/set-attr! chevron-el attr-aria-hidden "true")
-    (set! (.-innerHTML chevron-el)
-          (str "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\""
-               " xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\">"
-               "<path d=\"M2.5 4.5L6 8L9.5 4.5\" stroke=\"currentColor\""
-               " stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"))
+    (set! (.-innerHTML chevron-el) chevron-svg-html)
+    chevron-el))
 
+(defn- make-wrapper! ^js [^js chip-area ^js input-el ^js chevron-el]
+  (let [^js wrapper-el (.createElement js/document "div")]
+    (du/set-attr! wrapper-el attr-part part-wrapper)
+    (.appendChild chip-area input-el)
+    (.appendChild wrapper-el chip-area)
+    (.appendChild wrapper-el chevron-el)
+    wrapper-el))
+
+(defn- make-panel! ^js [lb-id]
+  (let [^js panel-el (.createElement js/document "div")]
     (du/set-attr! panel-el attr-part                 part-panel)
     (du/set-attr! panel-el attr-role                 role-listbox)
     (du/set-attr! panel-el attr-id                   lb-id)
     (du/set-attr! panel-el attr-aria-multiselectable "true")
     (du/set-attr! panel-el attr-data-placement       model/default-placement)
+    panel-el))
 
-    (.appendChild chip-area input-el)
-    (.appendChild wrapper-el chip-area)
-    (.appendChild wrapper-el chevron-el)
+(defn- init-instance-fields! [^js el lb-id]
+  (du/setv! el k-listbox-id lb-id)
+  (du/setv! el k-options [])
+  (du/setv! el k-query "")
+  (du/setv! el k-active-idx 0))
+
+(defn- make-shadow! [^js el]
+  (let [^js root      (.attachShadow el #js {:mode "open"})
+        lb-id         (next-id!)
+        ^js style-el  (make-style!)
+        ^js chip-area (make-chip-area!)
+        ^js input-el  (make-input! lb-id)
+        ^js chevron-el (make-chevron!)
+        ^js wrapper-el (make-wrapper! chip-area input-el chevron-el)
+        ^js panel-el  (make-panel! lb-id)
+        ^js slot-el   (.createElement js/document "slot")]
 
     (.appendChild root style-el)
     (.appendChild root wrapper-el)
     (.appendChild root panel-el)
     (.appendChild root slot-el)
 
-    (du/setv! el k-listbox-id lb-id)
-    (du/setv! el k-options [])
-    (du/setv! el k-query "")
-    (du/setv! el k-active-idx 0)
+    (init-instance-fields! el lb-id)
 
     (let [refs #js {:wrapper  wrapper-el
                     :chipArea chip-area
@@ -418,57 +440,76 @@
           (.insertBefore chip-area chip input-el))))))
 
 ;; ---------------------------------------------------------------------------
-;; Panel rendering
+;; Panel rendering — render-orchestrator pattern
 ;; ---------------------------------------------------------------------------
+(defn- panel-state
+  "Derive the current panel render state from element instance fields + attrs.
+   Returns {:visible :query :active-idx :at-max?}. Active-idx is -1 when
+   nothing is visible."
+  [^js el]
+  (let [options (du/getv el k-options)
+        query   (or (du/getv el k-query) "")
+        m       (read-model el)
+        visible (model/filter-options options query (:value m))]
+    {:visible    visible
+     :query      query
+     :active-idx (model/clamp-active-idx (du/getv el k-active-idx) (count visible))
+     :at-max?    (model/max-reached? (:value m) (:max m))}))
+
+(defn- render-empty! [^js panel-el]
+  (let [^js msg (.createElement js/document "div")]
+    (du/set-attr! msg attr-part part-empty-msg)
+    (set! (.-textContent msg) model/empty-message)
+    (.appendChild panel-el msg)))
+
+(defn- append-highlighted-label! [^js div label highlight]
+  (if highlight
+    (do
+      (.appendChild div (.createTextNode js/document (:before highlight)))
+      (let [^js b (.createElement js/document "b")]
+        (set! (.-textContent b) (:match highlight))
+        (.appendChild div b))
+      (.appendChild div (.createTextNode js/document (:after highlight))))
+    (set! (.-textContent div) label)))
+
+(defn- render-option! [^js panel-el idx opt active? at-max? highlight]
+  (let [^js div (.createElement js/document "div")
+        opt-id  (str opt-id-prefix idx)]
+    (du/set-attr! div attr-part       part-option)
+    (du/set-attr! div attr-role       role-option)
+    (du/set-attr! div attr-id         opt-id)
+    (du/set-attr! div attr-data-value (:value opt))
+    (when at-max?
+      (du/set-attr! div attr-data-disabled "")
+      (du/set-attr! div attr-aria-disabled "true"))
+    (when active?
+      (du/set-attr! div attr-data-active ""))
+    (append-highlighted-label! div (:label opt) highlight)
+    (.appendChild panel-el div)))
+
+(defn- render-options! [^js panel-el {:keys [visible query active-idx at-max?]}]
+  (doseq [[idx opt] (map-indexed vector visible)]
+    (render-option! panel-el idx opt
+                    (= idx active-idx)
+                    at-max?
+                    (model/highlight-match (:label opt) query))))
+
+(defn- update-active-descendant! [^js input-el active-idx]
+  (if (>= active-idx 0)
+    (du/set-attr!    input-el attr-aria-activedescendant
+                     (str opt-id-prefix active-idx))
+    (du/remove-attr! input-el attr-aria-activedescendant)))
+
 (defn- render-panel! [^js el]
   (when-let [refs (du/getv el k-refs)]
     (let [^js panel-el (gobj/get refs "panel")
           ^js input-el (gobj/get refs "input")
-          options      (du/getv el k-options)
-          query        (or (du/getv el k-query) "")
-          m            (read-model el)
-          value-set    (:value m)
-          max-val      (:max m)
-          at-max?      (model/max-reached? value-set max-val)
-          visible      (model/filter-options options query value-set)
-          raw-idx      (or (du/getv el k-active-idx) 0)
-          active-idx   (if (empty? visible) -1 (min raw-idx (dec (count visible))))]
-
+          state        (panel-state el)]
       (set! (.-textContent panel-el) "")
-
-      (if (empty? visible)
-        (let [^js msg (.createElement js/document "div")]
-          (du/set-attr! msg attr-part part-empty-msg)
-          (set! (.-textContent msg) model/empty-message)
-          (.appendChild panel-el msg)
-          (du/remove-attr! input-el attr-aria-activedescendant))
-        (do
-          (doseq [[idx opt] (map-indexed vector visible)]
-            (let [^js div    (.createElement js/document "div")
-                  opt-id     (str opt-id-prefix idx)
-                  highlight  (model/highlight-match (:label opt) query)]
-              (du/set-attr! div attr-part       part-option)
-              (du/set-attr! div attr-role       role-option)
-              (du/set-attr! div attr-id         opt-id)
-              (du/set-attr! div attr-data-value (:value opt))
-              (when at-max?
-                (du/set-attr! div attr-data-disabled "")
-                (du/set-attr! div attr-aria-disabled "true"))
-              (when (= idx active-idx)
-                (du/set-attr! div attr-data-active ""))
-              (if highlight
-                (do
-                  (.appendChild div (.createTextNode js/document (:before highlight)))
-                  (let [^js b (.createElement js/document "b")]
-                    (set! (.-textContent b) (:match highlight))
-                    (.appendChild div b))
-                  (.appendChild div (.createTextNode js/document (:after highlight))))
-                (set! (.-textContent div) (:label opt)))
-              (.appendChild panel-el div)))
-          (if (>= active-idx 0)
-            (du/set-attr! input-el attr-aria-activedescendant
-                          (str opt-id-prefix active-idx))
-            (du/remove-attr! input-el attr-aria-activedescendant)))))))
+      (if (empty? (:visible state))
+        (render-empty!    panel-el)
+        (render-options!  panel-el state))
+      (update-active-descendant! input-el (:active-idx state)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
@@ -601,142 +642,153 @@
         (add-item! el (:value opt))))))
 
 ;; ---------------------------------------------------------------------------
-;; Handler construction
+;; Keydown — each key is one named effect, dispatched via key-handlers map
 ;; ---------------------------------------------------------------------------
+(defn- key-arrow-down! [^js el ^js evt]
+  (.preventDefault evt)
+  (if (du/has-attr? el model/attr-open)
+    (navigate! el :next)
+    (open-panel! el "keyboard")))
+
+(defn- key-arrow-up! [^js el ^js evt]
+  (.preventDefault evt)
+  (if (du/has-attr? el model/attr-open)
+    (navigate! el :prev)
+    (open-panel! el "keyboard")))
+
+(defn- key-enter! [^js el ^js evt]
+  (.preventDefault evt)
+  (when (du/has-attr? el model/attr-open)
+    (select-active! el)))
+
+(defn- key-escape! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (close-panel! el "escape")
+    (when-let [refs (du/getv el k-refs)]
+      (.focus (gobj/get refs "input")))))
+
+(defn- key-backspace! [^js el ^js _evt]
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js input-el (gobj/get refs "input")]
+      (when (= "" (.-value input-el))
+        (when-let [last-val (model/last-value (:value (read-model el)))]
+          (remove-item! el last-val))))))
+
+(defn- key-home! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (du/setv! el k-active-idx 0)
+    (render-panel! el)))
+
+(defn- key-end! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (let [options   (du/getv el k-options)
+          query     (or (du/getv el k-query) "")
+          value-set (:value (read-model el))
+          n         (count (model/filter-options options query value-set))]
+      (du/setv! el k-active-idx (max 0 (dec n)))
+      (render-panel! el))))
+
+(def ^:private key-handlers
+  {"ArrowDown" key-arrow-down!
+   "ArrowUp"   key-arrow-up!
+   "Enter"     key-enter!
+   "Escape"    key-escape!
+   "Backspace" key-backspace!
+   "Home"      key-home!
+   "End"       key-end!})
+
+;; ---------------------------------------------------------------------------
+;; Handler factories — each returns a closure over the host element
+;; ---------------------------------------------------------------------------
+(defn- on-input-focus [^js el]
+  (fn [^js _evt]
+    (open-panel! el "focus")))
+
+(defn- on-input-input [^js el]
+  (fn [^js evt]
+    (let [^js input (.-target evt)
+          q         (.-value input)]
+      (du/setv! el k-query q)
+      (du/setv! el k-active-idx 0)
+      (when-not (du/has-attr? el model/attr-open)
+        (open-panel! el "input"))
+      (render-panel! el)
+      (du/dispatch! el model/event-input #js {:query q}))))
+
+(defn- on-input-keydown [^js el]
+  (fn [^js evt]
+    (when-let [handler (get key-handlers (.-key evt))]
+      (handler el evt))))
+
+(defn- on-chevron-pointerdown [^js el]
+  (fn [^js evt]
+    (.preventDefault evt)
+    (if (du/has-attr? el model/attr-open)
+      (close-panel! el "pointer")
+      (do
+        (open-panel! el "pointer")
+        (when-let [refs (du/getv el k-refs)]
+          (.focus (gobj/get refs "input")))))))
+
+(defn- on-panel-pointerdown [^js _el]
+  (fn [^js evt]
+    (.preventDefault evt)))
+
+(defn- on-panel-click [^js el]
+  (fn [^js evt]
+    (let [^js target (.-target evt)
+          ^js opt-el (if (.hasAttribute target attr-data-value)
+                       target
+                       (.closest target "[data-value]"))]
+      (when (and opt-el (not (.hasAttribute opt-el attr-data-disabled)))
+        (let [value (.getAttribute opt-el attr-data-value)]
+          (add-item! el value))))))
+
+(defn- on-chip-remove [^js el]
+  (fn [^js evt]
+    (let [^js detail (.-detail evt)
+          chip-value (gobj/get detail "value")]
+      (when chip-value
+        (remove-item! el chip-value)))))
+
+(defn- on-focusout [^js el]
+  (fn [^js evt]
+    (when (du/has-attr? el model/attr-open)
+      (let [related (.-relatedTarget evt)]
+        (when (or (nil? related)
+                  (not (.contains el related)))
+          (close-panel! el "focusout"))))))
+
+(defn- on-slotchange [^js el]
+  ;; Slot contents changed — option labels may differ. Invalidate the
+  ;; cached model so the next apply re-renders chips and panel.
+  (fn [^js _evt]
+    (sync-options! el)
+    (du/setv! el k-model nil)
+    (update-from-attrs! el)))
+
+(defn- on-doc-click [^js el]
+  (fn [^js evt]
+    (when (du/has-attr? el model/attr-open)
+      (let [path    (array-seq (.composedPath evt))
+            inside? (some #(identical? % el) path)]
+        (when-not inside?
+          (close-panel! el "outside-click"))))))
+
 (defn- make-handlers [^js el]
-  (let [on-input-focus
-        (fn [^js _evt]
-          (open-panel! el "focus"))
-
-        on-input-input
-        (fn [^js evt]
-          (let [^js input (.-target evt)
-                q         (.-value input)]
-            (du/setv! el k-query q)
-            (du/setv! el k-active-idx 0)
-            (when-not (du/has-attr? el model/attr-open)
-              (open-panel! el "input"))
-            (render-panel! el)
-            (du/dispatch! el model/event-input #js {:query q})))
-
-        on-input-keydown
-        (fn [^js evt]
-          (let [key (.-key evt)]
-            (cond
-              (= key "ArrowDown")
-              (do (.preventDefault evt)
-                  (if (du/has-attr? el model/attr-open)
-                    (navigate! el :next)
-                    (open-panel! el "keyboard")))
-
-              (= key "ArrowUp")
-              (do (.preventDefault evt)
-                  (if (du/has-attr? el model/attr-open)
-                    (navigate! el :prev)
-                    (open-panel! el "keyboard")))
-
-              (= key "Enter")
-              (do (.preventDefault evt)
-                  (when (du/has-attr? el model/attr-open)
-                    (select-active! el)))
-
-              (= key "Escape")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (close-panel! el "escape")
-                (when-let [refs (du/getv el k-refs)]
-                  (.focus (gobj/get refs "input"))))
-
-              (= key "Backspace")
-              (when-let [refs (du/getv el k-refs)]
-                (let [^js input-el (gobj/get refs "input")]
-                  (when (= "" (.-value input-el))
-                    (let [value-set (:value (read-model el))]
-                      (when (seq value-set)
-                        (let [last-val (last (sort value-set))]
-                          (remove-item! el last-val)))))))
-
-              (= key "Home")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (du/setv! el k-active-idx 0)
-                (render-panel! el))
-
-              (= key "End")
-              (when (du/has-attr? el model/attr-open)
-                (.preventDefault evt)
-                (let [options   (du/getv el k-options)
-                      query     (or (du/getv el k-query) "")
-                      value-set (:value (read-model el))
-                      n         (count (model/filter-options options query value-set))]
-                  (du/setv! el k-active-idx (max 0 (dec n)))
-                  (render-panel! el))))))
-
-        on-chevron-pointerdown
-        (fn [^js evt]
-          (.preventDefault evt)
-          (if (du/has-attr? el model/attr-open)
-            (close-panel! el "pointer")
-            (do
-              (open-panel! el "pointer")
-              (when-let [refs (du/getv el k-refs)]
-                (.focus (gobj/get refs "input"))))))
-
-        on-panel-pointerdown
-        (fn [^js evt]
-          (.preventDefault evt))
-
-        on-panel-click
-        (fn [^js evt]
-          (let [^js target (.-target evt)
-                ^js opt-el (if (.hasAttribute target attr-data-value)
-                             target
-                             (.closest target "[data-value]"))]
-            (when (and opt-el (not (.hasAttribute opt-el attr-data-disabled)))
-              (let [value (.getAttribute opt-el attr-data-value)]
-                (add-item! el value)))))
-
-        on-chip-remove
-        (fn [^js evt]
-          (let [^js detail (.-detail evt)
-                chip-value (gobj/get detail "value")]
-            (when chip-value
-              (remove-item! el chip-value))))
-
-        on-focusout
-        (fn [^js evt]
-          (when (du/has-attr? el model/attr-open)
-            (let [related (.-relatedTarget evt)]
-              (when (or (nil? related)
-                        (not (.contains el related)))
-                (close-panel! el "focusout")))))
-
-        on-slotchange
-        (fn [^js _evt]
-          ;; Slot contents changed — option labels may differ. Invalidate the
-          ;; cached model so the next apply re-renders chips and panel.
-          (sync-options! el)
-          (du/setv! el k-model nil)
-          (update-from-attrs! el))
-
-        on-doc-click
-        (fn [^js evt]
-          (when (du/has-attr? el model/attr-open)
-            (let [path    (array-seq (.composedPath evt))
-                  inside? (some #(identical? % el) path)]
-              (when-not inside?
-                (close-panel! el "outside-click")))))]
-
-    #js {:inputFocus         on-input-focus
-         :inputInput         on-input-input
-         :inputKeydown       on-input-keydown
-         :chevronPointerdown on-chevron-pointerdown
-         :panelPointerdown   on-panel-pointerdown
-         :panelClick         on-panel-click
-         :chipRemove         on-chip-remove
-         :focusout           on-focusout
-         :slotchange         on-slotchange
-         :docClick           on-doc-click}))
+  #js {:inputFocus         (on-input-focus         el)
+       :inputInput         (on-input-input         el)
+       :inputKeydown       (on-input-keydown       el)
+       :chevronPointerdown (on-chevron-pointerdown el)
+       :panelPointerdown   (on-panel-pointerdown   el)
+       :panelClick         (on-panel-click         el)
+       :chipRemove         (on-chip-remove         el)
+       :focusout           (on-focusout            el)
+       :slotchange         (on-slotchange          el)
+       :docClick           (on-doc-click           el)})
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
