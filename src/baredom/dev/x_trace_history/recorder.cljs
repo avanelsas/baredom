@@ -243,6 +243,32 @@
       (.-host root)
       (.-parentNode node))))
 
+(defn- custom-element-tag?
+  "True if `name` looks like a custom-element tag — has a hyphen, per
+   the HTML spec for valid custom-element names."
+  [name]
+  (and (some? name) (.includes ^js name "-")))
+
+(defn- find-owning-host
+  "Walk up from `el` (across shadow boundaries via root.host) to the
+   nearest custom-element ancestor — including `el` itself. Returns nil
+   if no custom-element ancestor exists.
+
+   Used to attribute shadow-internal mutations to their owning host so
+   the trace recorder's component-id and rate-limit machinery key off
+   the host instead of treating each shadow-internal node as its own
+   component. A render touching ten attributes on a shadow <button>
+   inside x-button now produces one rate-limited record per attribute
+   under the x-button host's cid, not ten records under ten anonymous
+   cids."
+  [^js el]
+  (loop [^js node el]
+    (cond
+      (nil? node)                              nil
+      (not (instance? js/Element node))        nil
+      (custom-element-tag? (.-localName node)) node
+      :else                                    (recur (ancestor-up node)))))
+
 (defn- inside-internal-host?
   "True when an ancestor of `el` bears the internal-host-marker. Walks
    across (open) shadow boundaries via root.host and through the light
@@ -285,8 +311,17 @@
         ^js el (:el payload)]
     (when-not (or (and (not force?) (:paused? s))
                   (inside-internal-host? el))
-      (let [tag                  (model/tag-of el)
-            {cid :id new-cid? :new?} (resolve-component-id! el tag (:next-component-id s))
+      ;; Attribute records to the owning custom-element host. A
+      ;; mutation on a shadow-internal node — e.g. (du/set-attr! sel
+      ;; "data-hover" "true") inside x-button's apply-button-data-state!
+      ;; — should appear in the trace under x-button's cid, not as a
+      ;; new anonymous cid for the shadow <button>. find-owning-host
+      ;; falls back to `el` when no custom-element ancestor exists, so
+      ;; native-element targets and host events both pass through
+      ;; unchanged.
+      (let [^js host             (or (find-owning-host el) el)
+            tag                  (model/tag-of host)
+            {cid :id new-cid? :new?} (resolve-component-id! host tag (:next-component-id s))
             cause-id             (peek @cause-stack)
             payload+         (assoc payload
                                     :tag tag
@@ -336,19 +371,24 @@
    Reading componentId is side-effect-free here — it's just a gobj
    read of the previously-stamped field."
   [payload ^js el]
-  (when-let [cid (gobj/get el component-id-key)]
-    (case (:type payload)
-      (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
-      (str cid ":evt:" (:event-name payload))
+  ;; Look up the cid on the owning host so shadow-internal mutations
+  ;; throttle against the host's bucket — without this, a render that
+  ;; writes ten data-* attributes on a shadow <button> would emit ten
+  ;; records, none of them rate-limited (shadow nodes carry no cid).
+  (let [^js host (or (find-owning-host el) el)]
+    (when-let [cid (gobj/get host component-id-key)]
+      (case (:type payload)
+        (:event/dispatch :event/dispatch-cancelable :event/dispatch-document)
+        (str cid ":evt:" (:event-name payload))
 
-      :state/instance-field-set
-      (str cid ":fld:" (:field payload))
+        :state/instance-field-set
+        (str cid ":fld:" (:field payload))
 
-      (:dom/attribute-set :dom/attribute-removed)
-      (str cid ":attr:" (:attribute payload))
+        (:dom/attribute-set :dom/attribute-removed)
+        (str cid ":attr:" (:attribute payload))
 
-      ;; lifecycle/* and unknown types: nil → no rate-limit.
-      nil)))
+        ;; lifecycle/* and unknown types: nil → no rate-limit.
+        nil))))
 
 (defn- rate-limited?
   "Pure: was this (payload, el, t) within `rate-limit-window-ms` of
