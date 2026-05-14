@@ -207,7 +207,7 @@
       (gobj/set refs rk-trigger     trigger-el)
       (gobj/set refs rk-header-text header-text-el)
       (gobj/set refs rk-content     content-el)
-      (gobj/set el k-refs refs)
+      (du/setv! el k-refs refs)
       refs)))
 
 ;; ---------------------------------------------------------------------------
@@ -291,17 +291,17 @@
   (set! (.-textContent header-text-el) header))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js trigger-el     (gobj/get refs rk-trigger)
           ^js header-text-el (gobj/get refs rk-header-text)]
       (apply-header-text!    header-text-el m)
       (apply-trigger-state!  trigger-el m)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -336,7 +336,7 @@
       (toggle! el src-keyboard))))
 
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js trigger-el (gobj/get refs rk-trigger)
           click-h        (fn handle-trigger-click   [evt] (on-trigger-click   el evt))
           keydown-h      (fn handle-trigger-keydown [evt] (on-trigger-keydown el evt))
@@ -345,21 +345,21 @@
       (.addEventListener trigger-el ev-keydown keydown-h)
       (gobj/set handlers hk-click   click-h)
       (gobj/set handlers hk-keydown keydown-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js trigger-el (gobj/get refs rk-trigger)]
         (.removeEventListener trigger-el ev-click   (gobj/get handlers hk-click))
         (.removeEventListener trigger-el ev-keydown (gobj/get handlers hk-keydown)))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el))
   (remove-listeners! el)
   (add-listeners! el)
@@ -373,7 +373,7 @@
     (update-from-attrs! el)
     ;; Animate content when [open] attribute toggles.
     (when (= attr-name model/attr-open)
-      (when-let [refs (gobj/get el k-refs)]
+      (when-let [refs (du/getv el k-refs)]
         (let [^js content-el (gobj/get refs rk-content)
               open?          (du/has-attr? el model/attr-open)]
           (when content-el
