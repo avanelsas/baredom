@@ -27,12 +27,11 @@
    "width:0;}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root  (.attachShadow el #js {:mode "open"})
-        ^js style (make-el "style")]
+        ^js style (.createElement js/document "style")]
     (set! (.-textContent style) style-text)
     (.appendChild root style)
     (du/setv! el k-refs #js {:root root})))

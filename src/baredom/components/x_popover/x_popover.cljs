@@ -223,7 +223,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Slot helpers
@@ -236,18 +235,18 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root         (.attachShadow el #js {:mode "open"})
-        style-el     (make-el "style")
-        trigger-el   (make-el "span")
-        trigger-slot (make-el "slot")
-        panel-el     (make-el "div")
-        arrow-el     (make-el "div")
-        header-el    (make-el "div")
-        heading-el   (make-el "span")
-        close-btn    (make-el "button")
-        body-el      (make-el "div")
-        body-slot    (make-el "slot")
-        footer-el    (make-el "div")
-        footer-slot  (make-el "slot")]
+        style-el     (.createElement js/document "style")
+        trigger-el   (.createElement js/document "span")
+        trigger-slot (.createElement js/document "slot")
+        panel-el     (.createElement js/document "div")
+        arrow-el     (.createElement js/document "div")
+        header-el    (.createElement js/document "div")
+        heading-el   (.createElement js/document "span")
+        close-btn    (.createElement js/document "button")
+        body-el      (.createElement js/document "div")
+        body-slot    (.createElement js/document "slot")
+        footer-el    (.createElement js/document "div")
+        footer-slot  (.createElement js/document "slot")]
 
     (set! (.-textContent style-el) style-text)
 
@@ -513,13 +512,13 @@
 ;; ---------------------------------------------------------------------------
 (defn- build-portal-panel! [^js layer {:keys [heading close-label no-close?]}]
   (let [^js shadow  (.-shadowRoot layer)
-        ^js panel   (make-el "div")
-        ^js arrow   (make-el "div")
-        ^js header  (make-el "div")
-        ^js heading-el (make-el "span")
-        ^js close-btn  (make-el "button")
-        ^js body    (make-el "div")
-        ^js footer  (make-el "div")]
+        ^js panel   (.createElement js/document "div")
+        ^js arrow   (.createElement js/document "div")
+        ^js header  (.createElement js/document "div")
+        ^js heading-el (.createElement js/document "span")
+        ^js close-btn  (.createElement js/document "button")
+        ^js body    (.createElement js/document "div")
+        ^js footer  (.createElement js/document "div")]
 
     (du/set-attr! panel "part" "panel")
     (du/set-attr! panel "role" "dialog")

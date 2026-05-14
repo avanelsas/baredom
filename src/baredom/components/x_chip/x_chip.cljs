@@ -132,15 +132,14 @@
    "animation-duration:0ms;}}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root       (.attachShadow el #js {:mode "open"})
-        ^js style      (make-el "style")
-        ^js container  (make-el "span")
-        ^js label-el   (make-el "span")
-        ^js remove-btn (make-el "button")
-        ^js remove-x   (make-el "span")]
+        ^js style      (.createElement js/document "style")
+        ^js container  (.createElement js/document "span")
+        ^js label-el   (.createElement js/document "span")
+        ^js remove-btn (.createElement js/document "button")
+        ^js remove-x   (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
     (du/set-attr! container  attr-part        part-container)
     (du/set-attr! label-el   attr-part        part-label)

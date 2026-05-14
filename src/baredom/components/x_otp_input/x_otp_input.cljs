@@ -99,7 +99,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 (defn- slot-input-type [mask?]
   (if mask? "password" "text"))
@@ -108,7 +107,7 @@
 ;; Slot construction (rebuild only when length/type/mask changes)
 ;; ---------------------------------------------------------------------------
 (defn- make-slot! [index length type-name first? mask?]
-  (let [^js input (make-el "input")]
+  (let [^js input (.createElement js/document "input")]
     (du/set-attr! input "part"           "slot")
     (du/set-attr! input "data-index"     (str index))
     (du/set-attr! input "maxlength"      "1")
@@ -500,8 +499,8 @@
 (defn- make-shadow! [^js el]
   (when-not (.-shadowRoot el)
     (let [root      (.attachShadow el #js {:mode "open"})
-          style-el  (make-el "style")
-          group-el  (make-el "div")]
+          style-el  (.createElement js/document "style")
+          group-el  (.createElement js/document "div")]
       (set! (.-textContent style-el) style-text)
       (du/set-attr! group-el "part" "root")
       (du/set-attr! group-el "role" "group")

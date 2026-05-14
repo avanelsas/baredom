@@ -148,7 +148,6 @@
    "*{transition:none !important;animation:none !important;}}"))
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag] (.createElement js/document tag))
 
 (defn- remove-all-children! [^js parent]
   (loop []
@@ -159,14 +158,14 @@
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root      (.attachShadow el #js {:mode "open"})
-        ^js style     (make-el "style")
-        ^js container (make-el "div")
+        ^js style     (.createElement js/document "style")
+        ^js container (.createElement js/document "div")
         refs          #js {}]
     (set! (.-textContent style) style-text)
     (du/set-attr! container attr-part part-container)
 
     ;; Start in no-label mode: single line div.
-    (let [^js line (make-el "div")]
+    (let [^js line (.createElement js/document "div")]
       (du/set-attr! line attr-part part-line)
       (.appendChild container line))
 
@@ -199,11 +198,11 @@
 
 ;; ── Label-mode DOM swapping ───────────────────────────────────────────────
 (defn- build-label-children! [^js container ^js refs]
-  (let [^js line-left  (make-el "div")
-        ^js label-wrap (make-el "span")
-        ^js slot-el    (make-el "slot")
-        ^js label-text (make-el "span")
-        ^js line-right (make-el "div")]
+  (let [^js line-left  (.createElement js/document "div")
+        ^js label-wrap (.createElement js/document "span")
+        ^js slot-el    (.createElement js/document "slot")
+        ^js label-text (.createElement js/document "span")
+        ^js line-right (.createElement js/document "div")]
     (du/set-attr! line-left  attr-part part-line-left)
     (du/set-attr! label-wrap attr-part part-label)
     (du/set-attr! slot-el    attr-name slot-name-label)
@@ -221,7 +220,7 @@
     (gobj/set refs rk-mode       mode-label)))
 
 (defn- build-no-label-children! [^js container ^js refs]
-  (let [^js line (make-el "div")]
+  (let [^js line (.createElement js/document "div")]
     (du/set-attr! line attr-part part-line)
     (.appendChild container line)
     (gobj/set refs rk-line-left  nil)

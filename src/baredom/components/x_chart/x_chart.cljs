@@ -14,8 +14,6 @@
 
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
 
-(defn- make-el [tag]
-  (.createElement js/document tag))
 
 (defn- make-svg-el [tag]
   (.createElementNS js/document svg-ns tag))
@@ -669,10 +667,10 @@
 ;; ---- Shadow DOM creation ----
 
 (defn- make-tooltip-row! []
-  (let [^js row    (make-el "div")
-        ^js swatch (make-el "span")
-        ^js label  (make-el "span")
-        ^js value  (make-el "span")]
+  (let [^js row    (.createElement js/document "div")
+        ^js swatch (.createElement js/document "span")
+        ^js label  (.createElement js/document "span")
+        ^js value  (.createElement js/document "span")]
     (du/set-attr! row    "part"       "tooltip-row")
     (du/set-attr! row    "data-hidden" "true")
     (du/set-attr! swatch "part"       "tooltip-swatch")
@@ -685,13 +683,13 @@
 
 (defn- make-shadow! [^js el]
   (let [^js root       (.attachShadow el #js {:mode "open"})
-        ^js style-el   (make-el "style")
-        ^js container  (make-el "div")
+        ^js style-el   (.createElement js/document "style")
+        ^js container  (.createElement js/document "div")
         ^js svg        (make-svg-el "svg")
-        ^js sr-el      (make-el "div")
-        ^js tooltip-el (make-el "div")
-        ^js header-el  (make-el "div")
-        ^js body-el    (make-el "div")
+        ^js sr-el      (.createElement js/document "div")
+        ^js tooltip-el (.createElement js/document "div")
+        ^js header-el  (.createElement js/document "div")
+        ^js body-el    (.createElement js/document "div")
         row-arr        (js/Array. model/max-tooltip-rows)]
 
     (set! (.-textContent style-el) style-text)

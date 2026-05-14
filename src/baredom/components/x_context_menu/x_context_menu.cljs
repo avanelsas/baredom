@@ -36,8 +36,6 @@
 (def ^:private panel-est-h 300)
 
 ;; ── DOM helpers ───────────────────────────────────────────────────────────
-(defn- make-el [tag]
-  (.createElement js/document tag))
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private host-style-text
@@ -122,7 +120,7 @@
 ;; ── Layer management ──────────────────────────────────────────────────────
 (defn- make-layer! [^js el z-index]
   (let [^js layer (overlay/make-layer! el panel-style-text z-index)
-        ^js panel (make-el "div")]
+        ^js panel (.createElement js/document "div")]
     (.setAttribute panel attr-part     part-panel)
     (.setAttribute panel attr-role     role-menu)
     (.setAttribute panel attr-tabindex "-1")
@@ -299,8 +297,8 @@
 ;; ── Shadow DOM creation ───────────────────────────────────────────────────
 (defn- make-shadow! [^js el]
   (let [^js root  (.attachShadow el #js {:mode "open"})
-        ^js style (make-el "style")
-        ^js slot  (make-el "slot")
+        ^js style (.createElement js/document "style")
+        ^js slot  (.createElement js/document "slot")
         refs      #js {}]
 
     (set! (.-textContent style) host-style-text)

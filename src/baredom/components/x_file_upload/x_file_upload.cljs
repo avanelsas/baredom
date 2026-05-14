@@ -17,7 +17,6 @@
 ;; ---------------------------------------------------------------------------
 ;; DOM helpers
 ;; ---------------------------------------------------------------------------
-(defn- make-el [tag] (.createElement js/document tag))
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -204,14 +203,14 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-shadow! [^js el]
   (let [root         (.attachShadow el #js {:mode "open"})
-        style-el     (make-el "style")
-        drop-zone    (make-el "div")
-        file-input   (make-el "input")
-        content-el   (make-el "div")
-        slot-el      (make-el "slot")
-        drag-overlay (make-el "div")
-        file-list    (make-el "div")
-        live-region  (make-el "div")]
+        style-el     (.createElement js/document "style")
+        drop-zone    (.createElement js/document "div")
+        file-input   (.createElement js/document "input")
+        content-el   (.createElement js/document "div")
+        slot-el      (.createElement js/document "slot")
+        drag-overlay (.createElement js/document "div")
+        file-list    (.createElement js/document "div")
+        live-region  (.createElement js/document "div")]
 
     (set! (.-textContent style-el) style-text)
 
@@ -331,10 +330,10 @@
       ;; Render each file
       (dotimes [i n]
         (let [^js file (aget files i)
-              ^js item (make-el "div")
-              ^js name-el (make-el "span")
-              ^js size-el (make-el "span")
-              ^js remove-el (make-el "button")
+              ^js item (.createElement js/document "div")
+              ^js name-el (.createElement js/document "span")
+              ^js size-el (.createElement js/document "span")
+              ^js remove-el (.createElement js/document "button")
               fname (.-name file)]
 
           (du/set-attr! item "part" "file-item")
@@ -342,7 +341,7 @@
 
           ;; Thumbnail for images
           (when (model/file-is-image? file)
-            (let [^js img (make-el "img")]
+            (let [^js img (.createElement js/document "img")]
               (du/set-attr! img "part" "thumbnail")
               (set! (.-src img) (js/URL.createObjectURL file))
               (du/set-attr! img "alt" fname)
