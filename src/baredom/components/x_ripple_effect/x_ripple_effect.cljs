@@ -1,7 +1,6 @@
 (ns baredom.components.x-ripple-effect.x-ripple-effect
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
-            [goog.object :as gobj]
             [baredom.components.x-ripple-effect.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
@@ -59,14 +58,14 @@
     (.appendChild root container)
     (.appendChild root svg)
 
-    (gobj/set el k-refs {:root root :container container :svg svg})
-    (gobj/set el k-counter 0)
-    (gobj/set el k-frames #js [])))
+    (du/setv! el k-refs {:root root :container container :svg svg})
+    (du/setv! el k-counter 0)
+    (du/setv! el k-frames #js [])))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -114,9 +113,9 @@
             {:keys [container svg]} (ensure-refs! el)
             ^js container container
             ^js svg       svg
-            cnt           (gobj/get el k-counter)
+            cnt           (du/getv el k-counter)
             filter-id     (str "xr-" cnt)
-            _             (gobj/set el k-counter (inc cnt))
+            _             (du/setv! el k-counter (inc cnt))
             {:keys [filter-el turb disp]} (create-filter! svg filter-id frequency)
             ^js turb      turb
             ^js disp      disp
@@ -124,7 +123,7 @@
             click-x       (.-clientX event)
             click-y       (.-clientY event)
             start-time    (.now js/performance)
-            ^js frames    (gobj/get el k-frames)
+            ^js frames    (du/getv el k-frames)
             reduced?      (prefers-reduced-motion?)]
 
         ;; Apply filter to container (inside shadow DOM, same scope as SVG filter)
@@ -179,16 +178,16 @@
 (defn- add-listeners! [^js el]
   (let [handler (fn [e] (on-pointerdown el e))]
     (.addEventListener el "pointerdown" handler)
-    (gobj/set el k-handler handler)))
+    (du/setv! el k-handler handler)))
 
 (defn- remove-listeners! [^js el]
   ;; Cancel all active rAF
-  (when-let [^js frames (gobj/get el k-frames)]
+  (when-let [^js frames (du/getv el k-frames)]
     (dotimes [i (.-length frames)]
       (js/cancelAnimationFrame (aget frames i)))
     (set! (.-length frames) 0))
   ;; Remove in-flight filter elements
-  (when-let [{:keys [svg container]} (gobj/get el k-refs)]
+  (when-let [{:keys [svg container]} (du/getv el k-refs)]
     (let [^js svg svg
           ^js container container]
       (loop []
@@ -197,9 +196,9 @@
           (recur)))
       (set! (.. container -style -filter) "")))
   ;; Remove pointer listener
-  (when-let [handler (gobj/get el k-handler)]
+  (when-let [handler (du/getv el k-handler)]
     (.removeEventListener el "pointerdown" handler)
-    (gobj/set el k-handler nil)))
+    (du/setv! el k-handler nil)))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

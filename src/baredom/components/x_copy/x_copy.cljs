@@ -147,7 +147,7 @@
     (.appendChild root style)
     (.appendChild root wrap)
 
-    (gobj/set el k-refs
+    (du/setv! el k-refs
               #js {:root        root
                    :wrap        wrap
                    :trigger     trigger
@@ -156,9 +156,9 @@
                    :tooltipText tooltip-text})))
 
 (defn- ensure-refs! [^js el]
-  (or (gobj/get el k-refs)
+  (or (du/getv el k-refs)
       (do (init-dom! el)
-          (gobj/get el k-refs))))
+          (du/getv el k-refs))))
 
 ;; ── Attribute readers ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -176,7 +176,7 @@
 
 ;; ── Text resolution ───────────────────────────────────────────────────────────
 (defn- resolve-text [^js el]
-  (let [tv (gobj/get el k-text-val)]
+  (let [tv (du/getv el k-text-val)]
     (if (string? tv)
       tv
       (let [text-attr (du/get-attr el model/attr-text)]
@@ -261,23 +261,23 @@
 (defn- hide-tooltip! [^js el]
   (du/remove-attr! el attr-data-tooltip-open)
   (du/remove-attr! el attr-data-tooltip-kind)
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when refs
       (set! (.-textContent (gobj/get refs rk-tooltip-text)) ""))))
 
 (defn- show-tooltip! [^js el kind message tooltip-ms]
-  (let [refs (gobj/get el k-refs)]
+  (let [refs (du/getv el k-refs)]
     (when refs
-      (when-let [tid (gobj/get el k-tid)]
+      (when-let [tid (du/getv el k-tid)]
         (js/clearTimeout tid)
-        (gobj/set el k-tid nil))
+        (du/setv! el k-tid nil))
       (du/set-attr! el attr-data-tooltip-open "")
       (du/set-attr! el attr-data-tooltip-kind kind)
       (set! (.-textContent (gobj/get refs rk-tooltip-text)) message)
-      (gobj/set el k-tid
+      (du/setv! el k-tid
                 (js/setTimeout
                  (fn on-tooltip-timeout []
-                   (gobj/set el k-tid nil)
+                   (du/setv! el k-tid nil)
                    (hide-tooltip! el))
                  tooltip-ms)))))
 
@@ -333,21 +333,21 @@
                         (copy! el))))]
     (.addEventListener trigger "click" click-h)
     (.addEventListener js/document "keydown" key-h)
-    (gobj/set el k-handlers #js {:click click-h :keydown key-h})))
+    (du/setv! el k-handlers #js {:click click-h :keydown key-h})))
 
 (defn- remove-listeners! [^js el]
-  (when-let [tid (gobj/get el k-tid)]
+  (when-let [tid (du/getv el k-tid)]
     (js/clearTimeout tid)
-    (gobj/set el k-tid nil))
-  (let [hs   (gobj/get el k-handlers)
-        refs (gobj/get el k-refs)]
+    (du/setv! el k-tid nil))
+  (let [hs   (du/getv el k-handlers)
+        refs (du/getv el k-refs)]
     (when (and hs refs)
       (let [^js trigger (gobj/get refs "trigger")
             click-h    (gobj/get hs "click")
             key-h      (gobj/get hs "keydown")]
         (when click-h (.removeEventListener trigger "click" click-h))
         (when key-h   (.removeEventListener js/document "keydown" key-h)))))
-  (gobj/set el k-handlers nil))
+  (du/setv! el k-handlers nil))
 
 ;; ── Render ────────────────────────────────────────────────────────────────────
 ;; The model drives only the disabled state on the trigger + aria-disabled on
@@ -361,12 +361,12 @@
     (if disabled?
       (du/set-attr!    el attr-aria-disabled val-true)
       (du/remove-attr! el attr-aria-disabled))
-    (gobj/set el k-model m)))
+    (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
