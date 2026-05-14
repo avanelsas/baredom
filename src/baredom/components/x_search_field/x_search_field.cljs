@@ -164,7 +164,7 @@
                       :icon    icon-el
                       :input   input-el
                       :clear   clear-el}]
-        (gobj/set el k-refs refs)
+        (du/setv! el k-refs refs)
         refs))))
 
 ;; ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@
 ;; Render
 ;; ---------------------------------------------------------------------------
 (defn- render! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
           ^js clear-el (gobj/get refs "clear")
           m            (model/normalize
@@ -219,7 +219,7 @@
 
       (toggle-clear-visibility! input-el clear-el el)
 
-      (when-let [^js internals (gobj/get el k-internals)]
+      (when-let [^js internals (du/getv el k-internals)]
         (sync-validity! el internals input-el)))))
 
 ;; ---------------------------------------------------------------------------
@@ -230,12 +230,12 @@
 ;; ---------------------------------------------------------------------------
 (defn- make-input-handler [^js el]
   (fn [^js _evt]
-    (when-let [refs (gobj/get el k-refs)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             ^js clear-el (gobj/get refs "clear")
             value        (.-value input-el)
             name         (or (du/get-attr el model/attr-name) "")]
-        (when-let [^js internals (gobj/get el k-internals)]
+        (when-let [^js internals (du/getv el k-internals)]
           (.setFormValue internals value)
           (sync-validity! el internals input-el))
         (toggle-clear-visibility! input-el clear-el el)
@@ -243,11 +243,11 @@
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
-    (when-let [refs (gobj/get el k-refs)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             value        (.-value input-el)
             name         (or (du/get-attr el model/attr-name) "")]
-        (when-let [^js internals (gobj/get el k-internals)]
+        (when-let [^js internals (du/getv el k-internals)]
           (.setFormValue internals value)
           (sync-validity! el internals input-el))
         (du/dispatch! el model/event-change #js {:name name :value value})))))
@@ -256,23 +256,23 @@
   (fn [^js evt]
     (when (= "Enter" (.-key evt))
       (.preventDefault evt)
-      (when-let [refs (gobj/get el k-refs)]
+      (when-let [refs (du/getv el k-refs)]
         (let [^js input-el (gobj/get refs "input")
               value        (.-value input-el)
               name         (or (du/get-attr el model/attr-name) "")]
           (if (and (du/has-attr? el model/attr-required) (= value ""))
-            (when-let [^js internals (gobj/get el k-internals)]
+            (when-let [^js internals (du/getv el k-internals)]
               (.reportValidity internals))
             (du/dispatch-cancelable! el model/event-search #js {:name name :value value})))))))
 
 (defn- make-click-handler [^js el]
   (fn [^js _evt]
-    (when-let [refs (gobj/get el k-refs)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")
             ^js clear-el (gobj/get refs "clear")
             name         (or (du/get-attr el model/attr-name) "")]
         (set! (.-value input-el) "")
-        (when-let [^js internals (gobj/get el k-internals)]
+        (when-let [^js internals (du/getv el k-internals)]
           (.setFormValue internals "")
           (sync-validity! el internals input-el))
         (toggle-clear-visibility! input-el clear-el el)
@@ -283,7 +283,7 @@
 ;; Listener management
 ;; ---------------------------------------------------------------------------
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
           ^js clear-el (gobj/get refs "clear")
           input-h      (make-input-handler el)
@@ -294,22 +294,22 @@
       (.addEventListener input-el "change"  change-h)
       (.addEventListener input-el "keydown" keydown-h)
       (.addEventListener clear-el "click"   click-h)
-      (gobj/set el k-handlers
+      (du/setv! el k-handlers
                 #js {:input   input-h
                      :change  change-h
                      :keydown keydown-h
                      :click   click-h}))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs     (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs     (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js input-el (gobj/get refs "input")
             ^js clear-el (gobj/get refs "clear")]
         (.removeEventListener input-el "input"   (gobj/get handlers "input"))
         (.removeEventListener input-el "change"  (gobj/get handlers "change"))
         (.removeEventListener input-el "keydown" (gobj/get handlers "keydown"))
         (.removeEventListener clear-el "click"   (gobj/get handlers "click")))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form-associated callbacks
@@ -320,10 +320,10 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")]
       (set! (.-value input-el) "")))
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals ""))
   (render! el))
 
@@ -331,19 +331,19 @@
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (gobj/get el k-refs)
+  (when-not (du/getv el k-refs)
     (make-shadow! el)
     (when (.-attachInternals el)
-      (gobj/set el k-internals (.attachInternals el))))
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   ;; Push value attr to input if set
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
           val-attr     (du/get-attr el model/attr-value)]
       (when val-attr
         (set! (.-value input-el) val-attr))))
   ;; Set initial form value
-  (when-let [^js internals (gobj/get el k-internals)]
+  (when-let [^js internals (du/getv el k-internals)]
     (.setFormValue internals (or (du/get-attr el model/attr-value) "")))
   (add-listeners! el)
   (render! el))
@@ -354,7 +354,7 @@
 (defn- attribute-changed! [^js el name _old new-val]
   ;; For value attr: sync to input.value only if it differs
   (when (= name model/attr-value)
-    (when-let [refs (gobj/get el k-refs)]
+    (when-let [refs (du/getv el k-refs)]
       (let [^js input-el (gobj/get refs "input")]
         (when (not= (.-value input-el) new-val)
           (set! (.-value input-el) (or new-val ""))))))

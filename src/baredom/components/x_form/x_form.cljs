@@ -72,7 +72,7 @@
       (.appendChild root form-el)
 
       (gobj/set refs rk-form form-el)
-      (gobj/set el k-refs refs))))
+      (du/setv! el k-refs refs))))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -91,15 +91,15 @@
         (du/remove-attr! form-el attr-data-loading))))
 
 (defn- apply-model! [^js el m]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js form-el (gobj/get refs rk-form)]
       (apply-form-attrs! form-el m)
-      (gobj/set el k-model m))))
+      (du/setv! el k-model m))))
 
 (defn- update-from-attrs! [^js el]
-  (when (gobj/get el k-refs)
+  (when (du/getv el k-refs)
     (let [new-m (read-model el)
-          old-m (gobj/get el k-model)]
+          old-m (du/getv el k-model)]
       (when (not= old-m new-m)
         (apply-model! el new-m)))))
 
@@ -154,7 +154,7 @@
 (defn- on-click [^js el ^js e]
   (when-let [^js btn (.closest (.-target e) sel-button)]
     (let [btn-type (.-type btn)]
-      (when-let [refs (gobj/get el k-refs)]
+      (when-let [refs (du/getv el k-refs)]
         (let [^js form-el (gobj/get refs rk-form)]
           (cond
             (or (= btn-type "submit") (= btn-type ""))
@@ -164,7 +164,7 @@
 
 ;; ── Listener management ───────────────────────────────────────────────────
 (defn- add-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
+  (when-let [refs (du/getv el k-refs)]
     (let [^js form-el (gobj/get refs rk-form)
           submit-h    (fn handle-form-submit [e] (on-submit el e))
           reset-h     (fn handle-form-reset  [e] (on-reset  el e))
@@ -176,16 +176,16 @@
       (gobj/set handlers hk-submit submit-h)
       (gobj/set handlers hk-reset  reset-h)
       (gobj/set handlers hk-click  click-h)
-      (gobj/set el k-handlers handlers))))
+      (du/setv! el k-handlers handlers))))
 
 (defn- remove-listeners! [^js el]
-  (when-let [refs (gobj/get el k-refs)]
-    (when-let [handlers (gobj/get el k-handlers)]
+  (when-let [refs (du/getv el k-refs)]
+    (when-let [handlers (du/getv el k-handlers)]
       (let [^js form-el (gobj/get refs rk-form)]
         (.removeEventListener form-el ev-submit (gobj/get handlers hk-submit))
         (.removeEventListener form-el ev-reset  (gobj/get handlers hk-reset))
         (.removeEventListener el      ev-click  (gobj/get handlers hk-click)))
-      (gobj/set el k-handlers nil))))
+      (du/setv! el k-handlers nil))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
