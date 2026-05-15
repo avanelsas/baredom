@@ -800,18 +800,7 @@
   (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
 
   ;; showControls is an opt-out boolean — absent attribute = true (default).
-  ;; Setter writes "false" to disable, removes to re-enable. define-parsed-prop!
-  ;; doesn't fit the inverted setter semantics.
-  (.defineProperty js/Object proto "showControls"
-    #js {:get (fn xs-get-show-controls []
-                (this-as ^js this
-                  (model/parse-bool-default-true (.getAttribute this model/attr-show-controls))))
-         :set (fn xs-set-show-controls [v]
-                (this-as ^js this
-                  (if v
-                    (du/remove-attr! this model/attr-show-controls)
-                    (du/set-attr! this model/attr-show-controls "false"))))
-         :enumerable true :configurable true})
+  (du/define-bool-default-true-prop! proto "showControls" model/attr-show-controls)
 
   ;; label uses strict-empty setter semantics — setting "" removes the
   ;; attribute (so derive-state falls back to the default landmark name).

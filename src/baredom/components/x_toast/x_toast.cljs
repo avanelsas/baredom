@@ -530,17 +530,7 @@
   (du/define-string-prop! proto model/attr-message model/attr-message "")
   (du/define-string-prop! proto model/attr-icon    model/attr-icon)
 
-  (.defineProperty js/Object proto model/attr-dismissible
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-bool-default-true
-                                         (.getAttribute this model/attr-dismissible))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (du/set-attr! this model/attr-dismissible "")
-                                          (du/set-attr! this model/attr-dismissible "false"))))
-                        :enumerable true :configurable true})
+  (du/define-bool-default-true-prop! proto model/attr-dismissible model/attr-dismissible)
 
   (du/define-bool-prop! proto model/attr-disabled model/attr-disabled)
 
