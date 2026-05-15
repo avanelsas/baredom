@@ -50,7 +50,7 @@
    :transition   {:type 'string}
    :direction    {:type 'string}
    :peek         {:type 'string}
-   :slideCount   {:type 'number :read-only true}})
+   :slideCount   {:type 'number :readonly true}})
 
 (def event-schema
   {event-change {:detail     {:index 'number :previousIndex 'number :reason 'string}
@@ -235,4 +235,7 @@
    (if (= direction "vertical") vertical-next-keys horizontal-next-keys)
    key))
 
-(def method-api nil)
+(def method-api
+  {"next"     {:args [] :returns 'void}
+   "previous" {:args [] :returns 'void}
+   "goTo"     {:args [{:name "index" :type 'number}] :returns 'void}})

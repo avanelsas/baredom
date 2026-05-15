@@ -202,7 +202,7 @@
 
 ;; ── Public methods ────────────────────────────────────────────────────────
 (defn- form-of [^js this]
-  (when-let [refs (gobj/get this k-refs)]
+  (when-let [refs (du/getv this k-refs)]
     (gobj/get refs rk-form)))
 
 (defn- set-field-error! [^js this field-name msg]

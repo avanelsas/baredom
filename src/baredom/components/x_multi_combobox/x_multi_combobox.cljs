@@ -4,6 +4,7 @@
             [baredom.components.x-multi-combobox.model :as model]
             [baredom.components.x-chip.x-chip :as x-chip]
             [baredom.utils.dom :as du]
+            [baredom.utils.overlay :as overlay]
             [clojure.string :as str]))
 
 ;; ---------------------------------------------------------------------------
@@ -16,6 +17,7 @@
 (def ^:private k-query      "__xMultiComboboxQuery")
 (def ^:private k-listbox-id "__xMultiComboboxListboxId")
 (def ^:private k-model      "__xMultiComboboxModel")
+(def ^:private k-doc-deferral "__xMultiComboboxDocDeferral")
 (def ^:private opt-id-prefix "x-mcb-opt-")
 
 ;; ---------------------------------------------------------------------------
@@ -823,13 +825,14 @@
   (when-let [handlers (du/getv el k-handlers)]
     ;; Defer to the next macrotask: the same pointerdown that opened the panel
     ;; would otherwise be caught by this listener and immediately close it.
-    (js/setTimeout
-     (fn []
-       (when (and (.-isConnected el) (du/has-attr? el model/attr-open))
-         (.addEventListener js/document "click" (gobj/get handlers "docClick"))))
-     0)))
+    ;; Tracked + cancellable via overlay/defer-doc-listener!.
+    (overlay/defer-doc-listener! el k-doc-deferral
+      (fn []
+        (when (du/has-attr? el model/attr-open)
+          (.addEventListener js/document "click" (gobj/get handlers "docClick")))))))
 
 (defn- remove-doc-listeners! [^js el]
+  (overlay/cancel-deferred-doc-listener! el k-doc-deferral)
   (when-let [handlers (du/getv el k-handlers)]
     (.removeEventListener js/document "click" (gobj/get handlers "docClick"))))
 

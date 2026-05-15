@@ -23,6 +23,14 @@
   (:require [clojure.string :as str]
             [babashka.fs :as fs]))
 
+;; NOTE: this pattern is intentionally narrow. A broadened form
+;; (`\(gobj/(?:set|get) (?:el|this)\b`) catches more leak vectors —
+;; `(gobj/get this k-X)` in property accessors, `(gobj/set el model/k-X …)`
+;; — but surfaces ~50 pre-existing violations across ~20 components and
+;; the `x-trace-history` dev tool. A separate sweep PR will broaden the
+;; pattern alongside the cleanup. See the audit plan at
+;; `.claude/plans/you-are-an-experienced-wondrous-peach.md` (cross-cutting
+;; pattern #1 — "gobj/get this k-X via helpers").
 (def ^:private gobj-pattern #"\(gobj/(?:set|get) el k-")
 (def ^:private shim-pattern #"\(defn-? make-el \[(?:\^js )?tag\]")
 

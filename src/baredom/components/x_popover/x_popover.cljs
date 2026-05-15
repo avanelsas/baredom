@@ -13,6 +13,7 @@
 (def ^:private k-layer        "__xPopoverLayer")
 (def ^:private k-moved-body   "__xPopoverMovedBody")
 (def ^:private k-moved-footer "__xPopoverMovedFooter")
+(def ^:private k-doc-deferral "__xPopoverDocDeferral")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -597,8 +598,13 @@
       (set! (.. arrow -style -left) (str arrow-x "px")))))
 
 (defn- portal-open! [^js el _source]
-  (when-let [refs (du/getv el k-refs)]
-    (let [m          (read-model el)
+  ;; Idempotent: both `do-open!` (after setting the `open` attribute, which
+  ;; triggers attribute-changed!) and `attribute-changed!` itself call this.
+  ;; Without the guard the do-open! → attribute-changed! → portal-open! chain
+  ;; produces a second layer that orphans the first.
+  (when-not (du/getv el k-layer)
+    (when-let [refs (du/getv el k-refs)]
+      (let [m          (read-model el)
           ^js trigger (gobj/get refs "trigger")
           z-index    1000
           ^js layer  (overlay/make-layer! el portal-panel-style-text z-index)
@@ -646,7 +652,7 @@
          (when (and p-panel (.-isConnected el))
            ;; Reposition with actual dimensions
            (position-portal-panel! p-panel p-arrow trigger (:placement m))
-           (du/set-attr! p-panel "data-open" "")))))))
+           (du/set-attr! p-panel "data-open" ""))))))))
 
 (defn- portal-close! [^js el]
   (when-let [^js layer (du/getv el k-layer)]
@@ -697,15 +703,16 @@
   (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
-      ;; Delay by one tick so the opening click does not immediately re-close
-      (js/setTimeout
-       (fn []
-         (when (and (.-isConnected el) (du/has-attr? el model/attr-open))
-           (.addEventListener js/document "click"   doc-click-h)
-           (.addEventListener js/document "keydown" doc-keydown-h)))
-       0))))
+      ;; Delay by one tick so the opening click does not immediately re-close.
+      ;; Tracked + cancellable via overlay/defer-doc-listener!.
+      (overlay/defer-doc-listener! el k-doc-deferral
+        (fn []
+          (when (du/has-attr? el model/attr-open)
+            (.addEventListener js/document "click"   doc-click-h)
+            (.addEventListener js/document "keydown" doc-keydown-h)))))))
 
 (defn- remove-doc-listeners! [^js el]
+  (overlay/cancel-deferred-doc-listener! el k-doc-deferral)
   (when-let [handlers (du/getv el k-handlers)]
     (let [doc-click-h   (gobj/get handlers "docClick")
           doc-keydown-h (gobj/get handlers "docKeydown")]
@@ -810,8 +817,26 @@
     (render! el)
     (when (= name model/attr-open)
       (if (du/has-attr? el model/attr-open)
-        (add-doc-listeners! el)
-        (remove-doc-listeners! el)))))
+        (do
+          (add-doc-listeners! el)
+          ;; External open (`el.open = true` or `setAttribute`): do-open!'s
+          ;; portal-open! path runs first when the API path is used and
+          ;; sets k-layer, so this branch is a no-op there. When the
+          ;; attribute is added externally and portal mode is on, we must
+          ;; build the portal layer here — otherwise the panel renders only
+          ;; in the shadow root and `el.open = true` does the wrong thing
+          ;; in portal mode.
+          (when (and (du/has-attr? el model/attr-portal)
+                     (not (du/getv el k-layer)))
+            (portal-open! el "attribute")))
+        (do
+          (remove-doc-listeners! el)
+          ;; Symmetric to portal-open! above: external `open` removal
+          ;; (`el.open = false` or `removeAttribute`) must tear down the
+          ;; portal layer. portal-close! is idempotent when no layer is
+          ;; present (do-close! already cleaned up), so this is safe to
+          ;; call unconditionally.
+          (portal-close! el))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
