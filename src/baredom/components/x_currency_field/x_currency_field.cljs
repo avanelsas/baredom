@@ -482,7 +482,7 @@
                (this-as ^js this
                  (let [str-v (if (and (some? v) (not= v js/undefined)) (str v) "")]
                    (du/set-attr! this model/attr-value str-v)
-                   (when-let [refs (gobj/get this k-refs)]
+                   (when-let [refs (du/getv this k-refs)]
                      (let [^js input-el (gobj/get refs rk-input)
                            currency     (model/normalize-currency
                                          (du/get-attr this model/attr-currency))
@@ -499,14 +499,14 @@
   (.defineProperty js/Object proto "checkValidity"
                    #js {:value (fn xcf-check-validity []
                                  (this-as ^js this
-                                   (if-let [^js internals (gobj/get this k-internals)]
+                                   (if-let [^js internals (du/getv this k-internals)]
                                      (.checkValidity internals)
                                      true)))
                         :writable true :configurable true})
   (.defineProperty js/Object proto "reportValidity"
                    #js {:value (fn xcf-report-validity []
                                  (this-as ^js this
-                                   (if-let [^js internals (gobj/get this k-internals)]
+                                   (if-let [^js internals (du/getv this k-internals)]
                                      (.reportValidity internals)
                                      true)))
                         :writable true :configurable true}))

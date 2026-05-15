@@ -205,12 +205,12 @@
       (.appendChild edge-grad stop2)
       (.appendChild edge-grad stop3)
       (.appendChild defs edge-grad)
-      (gobj/set el "__xLiquidGlassEdgeId" edge-id))
+      (du/setv! el "__xLiquidGlassEdgeId" edge-id))
 
     ;; Border group — goo filter, gradient stroke for glass edge shimmer
     (let [border-g    (.createElementNS js/document svg-ns "g")
           border-core (.createElementNS js/document svg-ns "ellipse")
-          edge-id     (gobj/get el "__xLiquidGlassEdgeId")]
+          edge-id     (du/getv el "__xLiquidGlassEdgeId")]
       (du/set-attr! border-g "filter" (str "url(#" filter-id ")"))
       (du/set-attr! border-g "opacity" "0.7")
       (du/set-attr! border-core "class" "blob-border")
@@ -219,8 +219,8 @@
       (du/set-attr! border-core "stroke-width" "2.5")
       (.appendChild border-g border-core)
       (.appendChild svg border-g)
-      (gobj/set el "__xLiquidGlassBorderG" border-g)
-      (gobj/set el "__xLiquidGlassBorderCore" border-core))
+      (du/setv! el "__xLiquidGlassBorderG" border-g)
+      (du/setv! el "__xLiquidGlassBorderCore" border-core))
 
     ;; Grain filter — feTurbulence noise for tactile frosted glass texture
     (let [grain-filter (.createElementNS js/document svg-ns "filter")
@@ -237,7 +237,7 @@
       (.appendChild grain-filter turb)
       (.appendChild grain-filter grain-cm)
       (.appendChild defs grain-filter)
-      (gobj/set el "__xLiquidGlassGrainId" grain-id))
+      (du/setv! el "__xLiquidGlassGrainId" grain-id))
 
     ;; Mask — goo-filtered blob shape used to clip the glass backdrop-filter
     (let [mask-el   (.createElementNS js/document svg-ns "mask")
@@ -255,34 +255,34 @@
       (.appendChild mask-g mask-core)
       (.appendChild mask-el mask-g)
       (.appendChild defs mask-el)
-      (gobj/set el "__xLiquidGlassMaskG" mask-g)
-      (gobj/set el "__xLiquidGlassMaskCore" mask-core)
-      (gobj/set el "__xLiquidGlassMaskSats" #js [])
-      (gobj/set el "__xLiquidGlassMaskId" mask-id))
+      (du/setv! el "__xLiquidGlassMaskG" mask-g)
+      (du/setv! el "__xLiquidGlassMaskCore" mask-core)
+      (du/setv! el "__xLiquidGlassMaskSats" #js [])
+      (du/setv! el "__xLiquidGlassMaskId" mask-id))
 
     ;; Glass — masked to blob shape via SVG mask
     (du/set-attr! glass "part" "glass")
-    (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+    (let [mask-ref (str "url(#" (du/getv el "__xLiquidGlassMaskId") ")")]
       (set! (.. glass -style -mask) mask-ref)
       (set! (.. glass -style -webkitMask) mask-ref))
 
     ;; Grain — texture overlay masked to blob shape
     (du/set-attr! grain "part" "grain")
     (set! (.. grain -style -filter)
-          (str "url(#" (gobj/get el "__xLiquidGlassGrainId") ")"))
-    (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+          (str "url(#" (du/getv el "__xLiquidGlassGrainId") ")"))
+    (let [mask-ref (str "url(#" (du/getv el "__xLiquidGlassMaskId") ")")]
       (set! (.. grain -style -mask) mask-ref)
       (set! (.. grain -style -webkitMask) mask-ref))
 
     ;; Gradient — masked to blob shape
     (du/set-attr! grad "part" "gradient")
-    (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+    (let [mask-ref (str "url(#" (du/getv el "__xLiquidGlassMaskId") ")")]
       (set! (.. grad -style -mask) mask-ref)
       (set! (.. grad -style -webkitMask) mask-ref))
 
     ;; Specular — masked to blob shape
     (du/set-attr! spec "part" "specular")
-    (let [mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+    (let [mask-ref (str "url(#" (du/getv el "__xLiquidGlassMaskId") ")")]
       (set! (.. spec -style -mask) mask-ref)
       (set! (.. spec -style -webkitMask) mask-ref))
 
@@ -329,8 +329,8 @@
   (let [refs     (du/getv el k-refs)
         ^js g    (:g refs)
         ^js sats (:satellites refs)
-        ^js mask-g    (gobj/get el "__xLiquidGlassMaskG")
-        ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
+        ^js mask-g    (du/getv el "__xLiquidGlassMaskG")
+        ^js mask-sats (du/getv el "__xLiquidGlassMaskSats")]
     ;; Remove excess satellites from both groups
     (loop [i (dec (.-length sats))]
       (when (>= i n)
@@ -383,7 +383,7 @@
       (du/set-attr! core "ry" (str core-ry)))
 
     ;; Update mask core to match
-    (when-let [^js mc (gobj/get el "__xLiquidGlassMaskCore")]
+    (when-let [^js mc (du/getv el "__xLiquidGlassMaskCore")]
       (du/set-attr! mc "cx" (str cx))
       (du/set-attr! mc "cy" (str cy))
       (du/set-attr! mc "rx" (str core-rx))
@@ -392,7 +392,7 @@
     ;; Border uses slightly larger radii to encompass satellite area
     (let [outer-rx (* w 0.44)
           outer-ry (* h 0.44)]
-      (when-let [^js bc (gobj/get el "__xLiquidGlassBorderCore")]
+      (when-let [^js bc (du/getv el "__xLiquidGlassBorderCore")]
         (du/set-attr! bc "cx" (str cx))
         (du/set-attr! bc "cy" (str cy))
         (du/set-attr! bc "rx" (str outer-rx))
@@ -404,7 +404,7 @@
     ;; Set satellite sizes (visible + mask)
     (let [{:keys [satellites]} (du/getv el k-refs)
           ^js sats satellites
-          ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
+          ^js mask-sats (du/getv el "__xLiquidGlassMaskSats")]
       (dotimes [i n]
         (let [^js sat (aget sats i)]
           (du/set-attr! sat "rx" (str sat-rx))
@@ -443,7 +443,7 @@
     (let [submerged? (= :submerged (:mode m))
           ^js content-el (:content refs)
           ^js grain-el   (:grain refs)
-          mask-ref (str "url(#" (gobj/get el "__xLiquidGlassMaskId") ")")]
+          mask-ref (str "url(#" (du/getv el "__xLiquidGlassMaskId") ")")]
       (if submerged?
           (do
             ;; Content is "submerged" — sits below the glass layers
@@ -495,7 +495,7 @@
         ^js ry  (du/getv el k-rest-y)
         {:keys [satellites]} (du/getv el k-refs)
         ^js sats satellites
-        ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
+        ^js mask-sats (du/getv el "__xLiquidGlassMaskSats")]
     (dotimes [i n]
       (let [result (model/displace-satellite
                     (aget rx i) (aget ry i) i t speed max-disp)
@@ -596,7 +596,7 @@
         ^js ry (du/getv el k-rest-y)
         {:keys [satellites]} (du/getv el k-refs)
         ^js sats satellites
-        ^js mask-sats (gobj/get el "__xLiquidGlassMaskSats")]
+        ^js mask-sats (du/getv el "__xLiquidGlassMaskSats")]
     (dotimes [i n]
       (let [cx-str (.toFixed (aget rx i) 2)
             cy-str (.toFixed (aget ry i) 2)]
@@ -624,7 +624,7 @@
               ^js svg svg]
           (du/set-attr! svg "viewBox" (str "0 0 " w " " h))
           ;; Mask must cover same area for userSpaceOnUse to work
-          (when-let [^js mask-el (.querySelector svg (str "#" (gobj/get el "__xLiquidGlassMaskId")))]
+          (when-let [^js mask-el (.querySelector svg (str "#" (du/getv el "__xLiquidGlassMaskId")))]
             (du/set-attr! mask-el "x" "0")
             (du/set-attr! mask-el "y" "0")
             (du/set-attr! mask-el "width" (str w))

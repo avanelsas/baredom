@@ -203,7 +203,7 @@
   (.defineProperty js/Object proto "count"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (let [refs (gobj/get this k-refs)]
+                                        (let [refs (du/getv this k-refs)]
                                           (if refs
                                             (let [^js container (gobj/get refs "container")]
                                               (.-length (.querySelectorAll container model/alert-tag)))

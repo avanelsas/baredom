@@ -368,11 +368,11 @@
   ;; stackedCount / progress — read-only, no shared helper applies.
   (.defineProperty js/Object proto "stackedCount"
     #js {:get (fn xss-get-stacked-count []
-                (this-as ^js this (or (gobj/get this k-stacked-count) 0)))
+                (this-as ^js this (or (du/getv this k-stacked-count) 0)))
          :enumerable true :configurable true})
   (.defineProperty js/Object proto "progress"
     #js {:get (fn xss-get-progress []
-                (this-as ^js this (or (gobj/get this k-last-prog) 0)))
+                (this-as ^js this (or (du/getv this k-last-prog) 0)))
          :enumerable true :configurable true})
 
   ;; refresh() method

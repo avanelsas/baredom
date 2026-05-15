@@ -610,16 +610,16 @@
   (.defineProperty js/Object proto "activeIndex"
     #js {:get (fn xss-get-active-index []
                 (this-as ^js this
-                  (let [idx (gobj/get this k-active-index)]
+                  (let [idx (du/getv this k-active-index)]
                     (if (some? idx) idx -1))))
          :enumerable true :configurable true})
   (.defineProperty js/Object proto "progress"
     #js {:get (fn xss-get-progress []
-                (this-as ^js this (or (gobj/get this k-last-prog) 0)))
+                (this-as ^js this (or (du/getv this k-last-prog) 0)))
          :enumerable true :configurable true})
   (.defineProperty js/Object proto "autoplayPaused"
     #js {:get (fn xss-get-autoplay-paused []
-                (this-as ^js this (boolean (gobj/get this k-autoplay-paused))))
+                (this-as ^js this (boolean (du/getv this k-autoplay-paused))))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

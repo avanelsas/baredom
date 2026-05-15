@@ -428,12 +428,12 @@
   (.defineProperty js/Object proto "textValue"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (gobj/get this k-text-val)))
+                                        (du/getv this k-text-val)))
                         :set (fn [v]
                                (this-as ^js this
                                         (if (string? v)
-                                          (gobj/set this k-text-val v)
-                                          (gobj/set this k-text-val js/undefined))))
+                                          (du/setv! this k-text-val v)
+                                          (du/setv! this k-text-val js/undefined))))
                         :enumerable true :configurable true})
 
   ;; Public method: copy() → Promise

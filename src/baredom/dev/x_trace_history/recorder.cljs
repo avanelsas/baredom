@@ -180,11 +180,15 @@
     {:id nil :new? false}
 
     :else
-    (let [existing (gobj/get el component-id-key)]
+    (let [existing (du/getv el component-id-key)]
       (if (some? existing)
         {:id existing :new? false}
         (do
-          (gobj/set el component-id-key next-id)
+          ;; assign-component-id! runs INSIDE the trace hook (record! →
+          ;; find-owning-host → assign-component-id!); routing through
+          ;; du/setv! would fire the hook recursively. The id assignment
+          ;; is a recorder-internal correlation key, never user-visible.
+          (gobj/set el component-id-key next-id) ;; allow-gobj: recorder bootstrap
           {:id next-id :new? true})))))
 
 (defn- reserve-id!
@@ -212,9 +216,14 @@
 (defn mark-internal!
   "Stamp `el` so events originating inside its shadow tree are bypassed
    by the recorder. Public — used by the dock to mark its host element
-   on mount."
+   on mount.
+
+   This write IS the act of installing the internal-host filter:
+   routing through du/setv! would fire the hook BEFORE the filter is in
+   place, recording the bootstrap write itself in the user's trace.
+   The marker is recorder-internal state, never user-visible."
   [^js el]
-  (gobj/set el internal-host-marker true))
+  (gobj/set el internal-host-marker true)) ;; allow-gobj: recorder bootstrap
 
 (defn with-suppressed-recording!
   "Call thunk f with all recording suppressed for its synchronous
@@ -275,6 +284,8 @@
    tree via parentNode, so a marked host outside any shadow still acts
    as a boundary. The marker on `el` itself does NOT count — we ask
    whether `el` is *inside* a marked host, not whether it IS one.
+   Used for dispatch + lifecycle filtering so the dock's own
+   connect/disconnect / dispatched events remain visible in traces.
 
    Returns false for nil, document, and non-Node EventTargets (window,
    XMLHttpRequest, MessagePort, WebSocket — none have getRootNode)."
@@ -286,6 +297,33 @@
         (or (nil? node) (identical? node js/document)) false
         (gobj/get node internal-host-marker)           true
         :else                                          (recur (ancestor-up node))))))
+
+(def ^:private write-payload-types
+  "Payload types representing writes that should be filtered when their
+   `:el` IS the marked host itself, not just inside one. These all
+   originate from `du/setv!` / `du/set-attr!` / `du/remove-attr!` calls
+   in the dock or recorder UI, and would otherwise pollute traces with
+   noisy bookkeeping records."
+  #{:state/instance-field-set
+    :dom/attribute-set
+    :dom/attribute-removed})
+
+(defn- internal-skip?
+  "True when the payload's `:el` is inside a marked internal host. For
+   write payloads (state / DOM mutation), also catches the marker on
+   `el` itself — post-gobj-on-host-sweep, the dock's own filter / view
+   writes route through `du/setv!` against the dock's marked host
+   directly. Dispatch and lifecycle payloads use the strict ancestor
+   check (`inside-internal-host?`) so the dock's own dispatched events
+   and connect/disconnect stay visible."
+  [payload]
+  (let [^js el (:el payload)]
+    (if (contains? write-payload-types (:type payload))
+      (if-not (instance? js/Node el)
+        false
+        (or (gobj/get el internal-host-marker) ;; allow-gobj: read recorder's own marker
+            (inside-internal-host? el)))
+      (inside-internal-host? el))))
 
 (defn- push-record-with-id!
   "Build and push a record with a pre-determined id and timestamp. Reads
@@ -310,7 +348,7 @@
   (let [s @state
         ^js el (:el payload)]
     (when-not (or (and (not force?) (:paused? s))
-                  (inside-internal-host? el))
+                  (internal-skip? payload))
       ;; Attribute records to the owning custom-element host. A
       ;; mutation on a shadow-internal node — e.g. (du/set-attr! sel
       ;; "data-hover" "true") inside x-button's apply-button-data-state!
@@ -429,7 +467,7 @@
     (when-not (or (pos? @suppression-depth)
                   (and @wrapper-active?
                        (contains? wrapper-handled-types type))
-                  (inside-internal-host? el)
+                  (internal-skip? payload)
                   (rate-limited? @state payload el t))
       (let [id (reserve-id!)]
         (push-record-with-id! payload id t)

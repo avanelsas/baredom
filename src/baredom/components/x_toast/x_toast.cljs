@@ -574,7 +574,7 @@
                    #js {:value (fn [reason]
                                  (this-as ^js this
                                    (let [r (if (string? reason) reason "api")]
-                                     (when (and (not (gobj/get this k-exiting))
+                                     (when (and (not (du/getv this k-exiting))
                                                 (.-isConnected this))
                                        (dispatch-dismiss! this r)))
                                    nil))

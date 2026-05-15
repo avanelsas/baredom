@@ -794,13 +794,13 @@
         :enumerable   true
         :get (fn []
                (this-as ^js this
-                        (let [cached (gobj/get this k-data)]
+                        (let [cached (du/getv this k-data)]
                           (or cached
                               (let [raw (.getAttribute this model/attr-data)]
                                 (model/parse-series-data raw))))))
         :set (fn [v]
                (this-as ^js this
-                        (gobj/set this k-data v)
+                        (du/setv! this k-data v)
                         (if (array? v)
                           (du/set-attr! this model/attr-data (js/JSON.stringify v))
                           (du/remove-attr! this model/attr-data))))}))

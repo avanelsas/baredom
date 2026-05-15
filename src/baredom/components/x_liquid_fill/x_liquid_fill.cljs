@@ -700,7 +700,7 @@
   (.defineProperty js/Object proto "progress"
                    #js {:get (fn []
                                (this-as ^js this
-                                        (or (gobj/get this k-progress) 0.0)))
+                                        (or (du/getv this k-progress) 0.0)))
                         :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

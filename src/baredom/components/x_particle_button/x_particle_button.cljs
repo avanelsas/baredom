@@ -1,6 +1,5 @@
 (ns baredom.components.x-particle-button.x-particle-button
   (:require [baredom.utils.component :as component]
-            [goog.object :as gobj]
             [baredom.utils.dom :as du]
             [baredom.components.x-particle-button.model :as model]))
 
@@ -34,8 +33,8 @@
 (def ^:private k-hover-start "__xPBHoverStart")
 
 ;; ── Instance field helpers ──────────────────────────────────────────────────
-(defn- gp [^js el k] (gobj/get el k))
-(defn- sp! [^js el k v] (gobj/set el k v))
+(defn- gp [^js el k] (du/getv el k))
+(defn- sp! [^js el k v] (du/setv! el k v))
 
 (defn- get-el-state [^js el] (gp el k-state))
 (defn- set-el-state! [^js el v] (sp! el k-state v))
