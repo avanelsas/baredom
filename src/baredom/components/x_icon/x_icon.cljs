@@ -5,8 +5,8 @@
    [baredom.utils.dom :as du]))
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
-(def ^:private k-refs  "__xIconRefs")
-(def ^:private k-model "__xIconModel")
+(def ^:private k-initialized? "__xIconInitialized")
+(def ^:private k-model        "__xIconModel")
 
 ;; ── String-literal constants (no duplication; Closure-Advanced safe) ─────────
 (def ^:private css-var-size  "--x-icon-size")
@@ -23,7 +23,7 @@
 (def ^:private aria-hidden-true "true")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
-(def style-text
+(def ^:private style-text
   (str
    ":host{"
    "display:inline-flex;"
@@ -54,9 +54,7 @@
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         box   (.createElement js/document "span")
-        slot  (.createElement js/document "slot")
-        refs  {:root root :box box}]
-
+        slot  (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
 
     (du/set-attr! box attr-part part-box)
@@ -65,11 +63,11 @@
     (.appendChild root style)
     (.appendChild root box)
 
-    (du/setv! el k-refs refs)
-    refs))
+    (du/mark-initialized! el k-initialized?)))
 
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs) (init-dom! el)))
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -95,7 +93,7 @@
         (du/remove-attr! el attr-aria-label))))
 
 (defn- apply-model! [^js el m]
-  (ensure-refs!    el)
+  (ensure-shadow!  el)
   (apply-css-vars! el m)
   (apply-aria!     el m)
   (du/setv! el k-model m))
@@ -112,7 +110,6 @@
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (ensure-refs! el)
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
