@@ -59,13 +59,13 @@
    :disabled    {:type 'boolean}
    :label       {:type 'string}
    :marker      {:type 'string}
-   :activeIndex {:type 'number :read-only true}
-   :progress    {:type 'number :read-only true}
+   :activeIndex {:type 'number :readonly true}
+   :progress    {:type 'number :readonly true}
    :autoplay          {:type 'boolean}
    :autoplaySpeed     {:type 'number}
    :autoplayLoop      {:type 'boolean}
    :autoplayIndicator {:type 'boolean}
-   :autoplayPaused    {:type 'boolean :read-only true}})
+   :autoplayPaused    {:type 'boolean :readonly true}})
 
 ;; ── Event schema ────────────────────────────────────────────────────────────
 (def event-schema

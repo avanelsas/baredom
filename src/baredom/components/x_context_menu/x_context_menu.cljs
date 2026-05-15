@@ -9,6 +9,7 @@
 (def ^:private k-refs         "__xContextMenuRefs")
 (def ^:private k-layer        "__xContextMenuLayer")
 (def ^:private k-doc-handlers "__xContextMenuDocH")
+(def ^:private k-doc-deferral "__xContextMenuDocDeferral")
 (def ^:private k-anchor       "__xContextMenuAnchor")
 (def ^:private k-model        "__xContextMenuModel")
 
@@ -217,17 +218,19 @@
               (when (and panel (not inside?))
                 (close! el reason-backdrop)))))]
 
-    ;; Delay by one tick so the opening click/contextmenu does not immediately close
-    (js/setTimeout
-     (fn delayed-add-doc-listeners []
-       (when (du/has-attr? el model/attr-open)
-         (.addEventListener js/document "keydown" on-doc-keydown)
-         (.addEventListener js/document "click"   on-doc-click)
-         (du/setv! el k-doc-handlers
-                   #js {:keydown on-doc-keydown :click on-doc-click})))
-     0)))
+    ;; Delay by one tick so the opening click/contextmenu does not immediately close.
+    ;; Tracked + cancellable via overlay/defer-doc-listener! so a fast
+    ;; disconnect-within-window cannot leak document listeners.
+    (overlay/defer-doc-listener! el k-doc-deferral
+      (fn []
+        (when (du/has-attr? el model/attr-open)
+          (.addEventListener js/document "keydown" on-doc-keydown)
+          (.addEventListener js/document "click"   on-doc-click)
+          (du/setv! el k-doc-handlers
+                    #js {:keydown on-doc-keydown :click on-doc-click}))))))
 
 (defn- remove-doc-listeners! [^js el]
+  (overlay/cancel-deferred-doc-listener! el k-doc-deferral)
   (when-let [handlers (du/getv el k-doc-handlers)]
     (.removeEventListener js/document "keydown" (gobj/get handlers "keydown"))
     (.removeEventListener js/document "click"   (gobj/get handlers "click"))
@@ -256,6 +259,13 @@
    and dispatch open-request / open events."
   [^js el anchor-rect reason]
   (when-not (du/has-attr? el model/attr-disabled)
+    ;; Guard against double-open: a rapid `openAt(x1,y1); openAt(x2,y2)`
+    ;; (e.g. a second contextmenu before backdrop dismissal lands) would
+    ;; otherwise overwrite k-layer and orphan the first layer in the
+    ;; overlay root. Close the stale layer first; the close path also
+    ;; clears doc handlers and dispatches `close`.
+    (when (du/getv el k-layer)
+      (close! el reason-programmatic))
     (let [proceed? (du/dispatch-cancelable! el model/event-open-request #js {:reason reason})]
       (when proceed?
         (let [{:keys [placement offset z-index] :as m} (read-model el)
@@ -319,6 +329,7 @@
     (du/remove-attr! el model/attr-open)))
 
 (defn- disconnected! [^js el]
+  (remove-doc-listeners! el)
   (let [^js layer (du/getv el k-layer)]
     (when layer
       (remove-layer! layer)

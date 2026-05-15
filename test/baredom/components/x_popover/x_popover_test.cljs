@@ -657,3 +657,59 @@
             (done))
           50))
        50))))
+
+;; ---------------------------------------------------------------------------
+;; Portal teardown on external open-attribute changes (R4)
+;; ---------------------------------------------------------------------------
+;; Without symmetric teardown in attribute-changed!, external code doing
+;; `el.removeAttribute("open")` or `el.open = false` leaves the portal
+;; layer orphaned in __xOverlayRoot — only do-close! (the keyboard /
+;; outside-click path) cleans up.
+
+(defn- portal-layer-count []
+  (let [^js root (.getElementById js/document "__xOverlayRoot")]
+    (if root (.-childElementCount root) 0)))
+
+(deftest portal-external-attribute-removal-tears-down-layer-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (is (pos? (portal-layer-count))
+             "portal layer should exist after show")
+         (.removeAttribute el model/attr-open)
+         (is (zero? (portal-layer-count))
+             "portal layer should be gone after removeAttribute(\"open\")")
+         (done))
+       50))))
+
+(deftest portal-external-open-property-false-tears-down-layer-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (.show el)
+      (js/setTimeout
+       (fn []
+         (is (pos? (portal-layer-count))
+             "portal layer should exist after show")
+         (set! (.-open el) false)
+         (is (zero? (portal-layer-count))
+             "portal layer should be gone after el.open = false")
+         (done))
+       50))))
+
+(deftest portal-external-open-property-true-creates-layer-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-portal "")
+      (set! (.-open el) true)
+      ;; attribute-changed! must build the portal layer for external opens too
+      (js/setTimeout
+       (fn []
+         (is (pos? (portal-layer-count))
+             "portal layer should exist after el.open = true (external open)")
+         (.hide el)
+         (done))
+       50))))

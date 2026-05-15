@@ -772,22 +772,22 @@
                                  (or (du/getv this k-slide-count) 0)))
                         :enumerable true :configurable true})
 
-  (gobj/set proto "next"
-            (fn carousel-next []
-              (this-as ^js this
-                (let [m (read-model this)]
-                  (go-to! this (model/next-index m) reason-api)))))
+  (aset proto "next"
+        (fn carousel-next []
+          (this-as ^js this
+            (let [m (read-model this)]
+              (go-to! this (model/next-index m) reason-api)))))
 
-  (gobj/set proto "previous"
-            (fn carousel-previous []
-              (this-as ^js this
-                (let [m (read-model this)]
-                  (go-to! this (model/prev-index m) reason-api)))))
+  (aset proto "previous"
+        (fn carousel-previous []
+          (this-as ^js this
+            (let [m (read-model this)]
+              (go-to! this (model/prev-index m) reason-api)))))
 
-  (gobj/set proto "goTo"
-            (fn carousel-go-to [idx]
-              (this-as ^js this
-                (go-to! this idx reason-api)))))
+  (aset proto "goTo"
+        (fn carousel-go-to [idx]
+          (this-as ^js this
+            (go-to! this idx reason-api)))))
 
 ;; ── Lifecycle ──────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

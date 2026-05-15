@@ -8,6 +8,7 @@
 (def ^:private k-model      "__xSplashModel")
 (def ^:private k-fade-timer "__xSplashFadeTimer")
 (def ^:private k-fading-out "__xSplashFadingOut")
+(def ^:private k-fade-on-end "__xSplashFadeOnEnd")
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -214,6 +215,19 @@
   (du/remove-attr! el "aria-busy")
   (fire-hidden-event! el))
 
+(defn- clear-fade-on-end!
+  "Remove the transitionend listener attached by start-fade-out!, if any.
+   Stash is set when start-fade-out! attaches and cleared here and in
+   the on-end body. Disconnect + cancel-fade-out! both call this so the
+   listener can't survive across a teardown and fire for the next fade.
+   Reads refs without `ensure-refs!` so disconnect doesn't re-init DOM."
+  [^js el]
+  (when-let [on-end (du/getv el k-fade-on-end)]
+    (when-let [refs (du/getv el k-refs)]
+      (let [^js overlay-el (:overlay-el refs)]
+        (.removeEventListener overlay-el "transitionend" on-end)))
+    (du/setv! el k-fade-on-end nil)))
+
 (defn- start-fade-out! [^js el]
   (when-not (du/getv el k-fading-out)
     (du/setv! el k-fading-out true)
@@ -225,33 +239,40 @@
                      (when (and (= (.-target e) overlay-el)
                                 (= (.-propertyName e) "opacity"))
                        (.removeEventListener overlay-el "transitionend" on-end)
+                       (du/setv! el k-fade-on-end nil)
                        (when (du/getv el k-fading-out)
                          (finish-fade-out! el))))]
+        ;; Stash so disconnect / cancel can detach the listener.
+        (du/setv! el k-fade-on-end on-end)
         ;; Keep overlay visible at opacity 1 via inline styles, then
         ;; transition to opacity 0 on the next frame.
         (set! (.. overlay-el -style -display) "flex")
         (set! (.. overlay-el -style -opacity) "1")
         (du/set-attr! el "data-fading-out" "")
         (.addEventListener overlay-el "transitionend" on-end)
-        ;; Trigger transition on next frame so the browser sees the change
+        ;; Trigger transition on next frame so the browser sees the change.
+        ;; Guard on isConnected so disconnect during the two-frame window
+        ;; leaves a no-op instead of mutating a stale node.
         (js/requestAnimationFrame
          (fn []
            (js/requestAnimationFrame
             (fn []
-              (when (du/getv el k-fading-out)
+              (when (and (.-isConnected el)
+                         (du/getv el k-fading-out))
                 (set! (.. overlay-el -style -opacity) "0"))))))
         ;; Safety timeout in case transitionend never fires
         (du/setv! el k-fade-timer
                   (js/setTimeout
                    (fn []
                      (when (du/getv el k-fading-out)
-                       (.removeEventListener overlay-el "transitionend" on-end)
+                       (clear-fade-on-end! el)
                        (finish-fade-out! el)))
                    (+ (fade-duration-ms el) 60)))))))
 
 (defn- cancel-fade-out! [^js el]
   (when (du/getv el k-fading-out)
     (clear-fade-timer! el)
+    (clear-fade-on-end! el)
     (du/setv! el k-fading-out false)
     (du/remove-attr! el "data-fading-out")
     (let [{:keys [overlay-el]} (ensure-refs! el)
@@ -325,7 +346,8 @@
   nil)
 
 (defn- remove-listeners! [^js el]
-  (clear-fade-timer! el))
+  (clear-fade-timer! el)
+  (clear-fade-on-end! el))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

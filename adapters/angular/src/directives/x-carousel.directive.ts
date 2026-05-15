@@ -44,4 +44,7 @@ export class BaredomCarousel implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  next(): void { return this.el.next(); }
+  previous(): void { return this.el.previous(); }
+  goTo(index: number): void { return this.el.goTo(index); }
 }

@@ -860,17 +860,21 @@
     ;; Rebuild markers and date labels
     (rebuild-markers! el children)
     (rebuild-date-labels! el children)
-    ;; Position overlays after a microtask (let layout settle)
+    ;; Position overlays after a microtask (let layout settle).
+    ;; Guard on isConnected so the callback no-ops after disconnect —
+    ;; the rAF id isn't tracked, so we can't cancel it, but we can
+    ;; refuse to do work on a stale element.
     (js/requestAnimationFrame
      (fn [_]
-       (let [children (get-entry-children el)]
-         (position-overlays! el children)
-         ;; Rebuild curved track if needed
-         (when (= (:track m) "curved")
-           (rebuild-curved-track! el children))
-         ;; Update scroll state if visible
-         (when (du/getv el k-visible)
-           (update-scroll! el)))))))
+       (when (.-isConnected el)
+         (let [children (get-entry-children el)]
+           (position-overlays! el children)
+           ;; Rebuild curved track if needed
+           (when (= (:track m) "curved")
+             (rebuild-curved-track! el children))
+           ;; Update scroll state if visible
+           (when (du/getv el k-visible)
+             (update-scroll! el))))))))
 
 (defn- on-slotchange [^js el]
   ;; Reset entry states cache
@@ -1030,7 +1034,7 @@
   (.defineProperty js/Object proto prop-name
                    #js {:get (fn []
                                (this-as ^js this
-                                        (let [v (gobj/get this field-key)]
+                                        (let [v (du/getv this field-key)]
                                           (if (some? v) v default))))
                         :enumerable true :configurable true}))
 

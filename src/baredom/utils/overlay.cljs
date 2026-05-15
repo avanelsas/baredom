@@ -1,7 +1,8 @@
 (ns baredom.utils.overlay
   "Shared overlay root management for portal-based components.
    Provides document-level fixed layers that escape CSS stacking contexts."
-  (:require [goog.object :as gobj]))
+  (:require [baredom.utils.dom :as du]
+            [goog.object :as gobj]))
 
 (def ^:private overlay-root-id "__xOverlayRoot")
 (def ^:private k-listeners     "__xOverlayListeners")
@@ -85,3 +86,39 @@
     (detach-listeners! layer)
     (when (.-parentNode layer)
       (.removeChild (.-parentNode layer) layer))))
+
+(declare cancel-deferred-doc-listener!)
+
+(defn defer-doc-listener!
+  "Schedule `install-fn` to run on the next macrotask, with cancel support.
+
+   Use for overlay components that defer document-listener installation
+   past the event that triggered open — otherwise the opening pointer
+   click is caught by the new listener and immediately re-closes the
+   panel. Pair with `cancel-deferred-doc-listener!` on disconnect and on
+   programmatic close to avoid leaking listeners that reference a stale
+   element after teardown.
+
+   The timer id is stored on `el` under instance-field key `k`. Calling
+   `defer-doc-listener!` again with the same `k` cancels the prior
+   pending timer first. `install-fn` only runs if `el` is still
+   `isConnected` when the timer fires; component-specific predicates
+   (e.g. \"open attribute still present\") remain `install-fn`'s
+   responsibility."
+  [^js el k install-fn]
+  (cancel-deferred-doc-listener! el k)
+  (let [id (js/setTimeout
+            (fn run-deferred-doc-listener-install []
+              (du/setv! el k nil)
+              (when (.-isConnected el)
+                (install-fn)))
+            0)]
+    (du/setv! el k id)))
+
+(defn cancel-deferred-doc-listener!
+  "Cancel a pending `defer-doc-listener!` call at `k` on `el`, if any.
+   Safe to call when no deferral is pending."
+  [^js el k]
+  (when-let [id (du/getv el k)]
+    (js/clearTimeout id)
+    (du/setv! el k nil)))

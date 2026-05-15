@@ -285,3 +285,48 @@
                               (done))
                             30)))
       (.openAt el 100 100))))
+
+;; ---- R5: deferred doc-listener install is cancellable on disconnect ----
+;;
+;; add-doc-listeners! schedules the document keydown/click install via
+;; overlay/defer-doc-listener! (setTimeout 0). If the element disconnects
+;; within that window, the timer must be cancelled so the listeners are
+;; never installed against a stale element.
+
+(defn- doc-handlers-installed? [^js el]
+  ;; The deferred install path stores #js {:keydown :click} under
+  ;; __xContextMenuDocH only after the timer fires. Peeking at the
+  ;; instance field tells us whether the install actually happened.
+  (some? (.-__xContextMenuDocH el)))
+
+(deftest disconnect-cancels-deferred-doc-listener-install-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.appendChild el (make-item))
+      (.openAt el 50 50)
+      ;; Disconnect within the setTimeout-0 deferral window
+      (.remove el)
+      (js/setTimeout
+       (fn []
+         (is (not (doc-handlers-installed? el))
+             "doc handlers should not be installed when disconnect lands before the deferred install timer fires")
+         (done))
+       30))))
+
+;; ---- R6: double openAt does not orphan the first layer ----
+
+(deftest double-open-collapses-to-one-layer-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.appendChild el (make-item))
+      (.openAt el 50 50)
+      (.openAt el 200 200)
+      ;; Both openAt calls have run; only one layer should remain
+      (js/setTimeout
+       (fn []
+         (let [^js root  (.getElementById js/document "__xOverlayRoot")
+               children (if root (.-childElementCount root) 0)]
+           (is (= 1 children)
+               "double openAt should leave exactly one layer (no orphan from the first call)"))
+         (done))
+       30))))
