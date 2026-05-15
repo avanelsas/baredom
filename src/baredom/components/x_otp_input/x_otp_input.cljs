@@ -556,13 +556,13 @@
   (aset proto "checkValidity"
         (fn []
           (this-as ^js this
-                   (if-let [^js internals (gobj/get this k-internals)]
+                   (if-let [^js internals (du/getv this k-internals)]
                      (.checkValidity internals)
                      true))))
   (aset proto "reportValidity"
         (fn []
           (this-as ^js this
-                   (if-let [^js internals (gobj/get this k-internals)]
+                   (if-let [^js internals (du/getv this k-internals)]
                      (.reportValidity internals)
                      true)))))
 
