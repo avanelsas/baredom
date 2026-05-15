@@ -28,7 +28,7 @@ Keys:
 - `:reflects-attribute` — attribute name constant (optional, when property should sync to/from an attribute)
 - `:readonly` — `true` for read-only properties (optional)
 
-Note: The golden sample (x-alert) uses a minimal format with only `:type`. Add `:reflects-attribute` and `:readonly` only when needed.
+Note: the example above is x-alert's `property-api` — the minimal form with only `:type`. The golden sample x-icon uses the richer form with `:reflects-attribute` and `:default` (see its `model.cljs`). Both are acceptable; add `:reflects-attribute`, `:default`, or `:readonly` only when needed.
 
 ### `event-schema`
 Map of event constant symbol to descriptor:
