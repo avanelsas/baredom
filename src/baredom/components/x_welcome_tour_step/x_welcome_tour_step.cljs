@@ -8,7 +8,7 @@
             [baredom.components.x-welcome-tour-step.model :as model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
-(def ^:private k-refs  "__xWelcomeTourStepRefs")
+(def ^:private k-initialized? "__xWelcomeTourStepInitialized")
 (def ^:private k-model "__xWelcomeTourStepModel")
 
 ;; ── Styles ──────────────────────────────────────────────────────────────────
@@ -23,12 +23,11 @@
     (set! (.-textContent style) style-text)
     (.appendChild root style)
     (.appendChild root slot)
-    (du/setv! el k-refs {:root root :slot slot})))
+    (du/mark-initialized! el k-initialized?)))
 
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs)
-      (do (init-dom! el)
-          (du/getv el k-refs))))
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -95,7 +94,7 @@
 
 ;; ── Element class ───────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (update-model! el)
   (du/dispatch! el model/event-connected #js {}))
 

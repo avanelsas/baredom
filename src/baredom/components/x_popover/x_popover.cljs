@@ -11,6 +11,7 @@
 (def ^:private k-refs         "__xPopoverRefs")
 (def ^:private k-handlers     "__xPopoverHandlers")
 (def ^:private k-layer        "__xPopoverLayer")
+(def ^:private k-model        "__xPopoverModel")
 (def ^:private k-moved-body   "__xPopoverMovedBody")
 (def ^:private k-moved-footer "__xPopoverMovedFooter")
 (def ^:private k-doc-deferral "__xPopoverDocDeferral")
@@ -480,25 +481,34 @@
 ;; ---------------------------------------------------------------------------
 ;; Render
 ;; ---------------------------------------------------------------------------
+(defn- apply-model! [^js el m]
+  (let [refs (du/getv el k-refs)
+        {:keys [open? no-close? heading close-label placement]} m
+        ^js panel-el   (gobj/get refs "panel")
+        ^js header-el  (gobj/get refs "header")
+        ^js heading-el (gobj/get refs "heading")
+        ^js close-btn  (gobj/get refs "closeBtn")]
+
+    (du/set-attr! panel-el "data-placement" placement)
+    (du/set-bool-attr! panel-el "inert" (not open?))
+
+    (if (not= heading "")
+      (du/set-attr! panel-el "aria-labelledby" "popover-heading")
+      (du/remove-attr! panel-el "aria-labelledby"))
+
+    (set! (.-textContent heading-el) heading)
+    (du/set-attr! close-btn "aria-label" close-label)
+    (du/set-bool-attr! close-btn "hidden" no-close?)
+    (du/set-bool-attr! header-el "hidden" (and (= heading "") no-close?))
+
+    (du/setv! el k-model m)))
+
 (defn- render! [^js el]
-  (when-let [refs (du/getv el k-refs)]
-    (let [{:keys [open? no-close? heading close-label placement]} (read-model el)
-          ^js panel-el   (gobj/get refs "panel")
-          ^js header-el  (gobj/get refs "header")
-          ^js heading-el (gobj/get refs "heading")
-          ^js close-btn  (gobj/get refs "closeBtn")]
-
-      (du/set-attr! panel-el "data-placement" placement)
-      (du/set-bool-attr! panel-el "inert" (not open?))
-
-      (if (not= heading "")
-        (du/set-attr! panel-el "aria-labelledby" "popover-heading")
-        (du/remove-attr! panel-el "aria-labelledby"))
-
-      (set! (.-textContent heading-el) heading)
-      (du/set-attr! close-btn "aria-label" close-label)
-      (du/set-bool-attr! close-btn "hidden" no-close?)
-      (du/set-bool-attr! header-el "hidden" (and (= heading "") no-close?)))))
+  (when (du/getv el k-refs)
+    (let [new-m (read-model el)
+          old-m (du/getv el k-model)]
+      (when (not= old-m new-m)
+        (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Dispatch helpers

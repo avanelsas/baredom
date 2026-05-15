@@ -1,4 +1,5 @@
-(ns baredom.components.x-splash.model)
+(ns baredom.components.x-splash.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-splash")
 
@@ -50,13 +51,6 @@
       (when-not (js/isNaN n)
         (max 0 (min 100 n))))))
 
-(defn parse-bool-default-true
-  "Parse an attribute that is true when absent or empty, false only when \"false\"."
-  [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
-
 (defn derive-state
   "Derive a stable view-model from raw attribute inputs.
 
@@ -77,7 +71,7 @@
   {:active?  (boolean active-present?)
    :variant  (normalize-variant variant-raw)
    :progress (parse-progress progress-raw)
-   :spinner? (parse-bool-default-true spinner-attr)
+   :spinner? (mu/parse-bool-default-true spinner-attr)
    :overlay  (normalize-overlay overlay-raw)})
 
 (def method-api {})

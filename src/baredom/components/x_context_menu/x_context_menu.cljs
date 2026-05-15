@@ -6,7 +6,7 @@
             [goog.object :as gobj]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs         "__xContextMenuRefs")
+(def ^:private k-initialized? "__xContextMenuInitialized")
 (def ^:private k-layer        "__xContextMenuLayer")
 (def ^:private k-doc-handlers "__xContextMenuDocH")
 (def ^:private k-doc-deferral "__xContextMenuDocDeferral")
@@ -308,20 +308,15 @@
 (defn- make-shadow! [^js el]
   (let [^js root  (.attachShadow el #js {:mode "open"})
         ^js style (.createElement js/document "style")
-        ^js slot  (.createElement js/document "slot")
-        refs      #js {}]
-
+        ^js slot  (.createElement js/document "slot")]
     (set! (.-textContent style) host-style-text)
     (.appendChild root style)
     (.appendChild root slot)
-
-    (gobj/set refs "root" root)
-    (gobj/set refs "slot" slot)
-    (du/setv! el k-refs refs)))
+    (du/mark-initialized! el k-initialized?)))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs)
+  (when-not (du/initialized? el k-initialized?)
     (make-shadow! el))
   ;; If open attr was already set (e.g. SSR), the layer was not created yet.
   ;; Clear the attribute so subsequent open() calls work correctly.

@@ -155,7 +155,10 @@
         (du/set-attr! span "part" "char")
         (if (= ch " ")
           (do (du/set-attr! span "data-ws" "")
-              (set! (.-innerHTML span) "&nbsp;"))
+              ;; U+00A0 NO-BREAK SPACE. Setting via textContent avoids
+              ;; the only innerHTML write in the codebase; the literal
+              ;; non-breaking space renders identically to "&nbsp;".
+              (set! (.-textContent span) " "))
           (set! (.-textContent span) ch))
         (.appendChild container span)
         (aset spans i span)

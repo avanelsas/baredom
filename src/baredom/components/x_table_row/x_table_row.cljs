@@ -5,7 +5,7 @@
             [baredom.components.x-table-row.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
-(def ^:private k-refs     "__xTableRowRefs")
+(def ^:private k-initialized? "__xTableRowInitialized")
 (def ^:private k-model    "__xTableRowModel")
 (def ^:private k-handlers "__xTableRowHandlers")
 
@@ -76,12 +76,11 @@
     (.appendChild root style)
     (.appendChild root slot-el)
 
-    (du/setv! el k-refs {:root root :slot-el slot-el})))
+    (du/mark-initialized! el k-initialized?)))
 
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs)
-      (do (init-dom! el)
-          (du/getv el k-refs))))
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -119,7 +118,7 @@
   (set! (.-tabIndex el) (if (model/interactive-eligible? m) 0 -1)))
 
 (defn- apply-model! [^js el m]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (apply-host-attrs! el m)
   (du/setv! el k-model m))
 
@@ -192,7 +191,7 @@
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el)

@@ -17,6 +17,20 @@
   [s]
   (some? s))
 
+(defn parse-bool-default-true
+  "HTML boolean attribute that defaults to `true`: absent → true, present
+   with the literal value `\"false\"` (case-insensitive, trimmed) → false,
+   anything else (including the empty string) → true. Pass the value of
+   `getAttribute` (a string or `nil`).
+
+   Same shape as `parse-bool-attr` but inverted default. Use for
+   attributes like `dismissible`, `arrows`, `dots`, `spinner` where
+   the natural default is enabled and opting out is explicit."
+  [s]
+  (if (nil? s)
+    true
+    (not= (.toLowerCase (.trim (str s))) "false")))
+
 (defn non-empty-string?
   "True when value is a string with at least one character."
   [value]

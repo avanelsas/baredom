@@ -1,4 +1,5 @@
-(ns baredom.components.x-alert.model)
+(ns baredom.components.x-alert.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-alert")
 
@@ -48,13 +49,6 @@
   "Convert an internal type keyword back to its attribute string."
   [t]
   (or (get kw->type t) "info"))
-
-(defn parse-bool-default-true
-  "Parse an attribute that is true when absent or empty, false only when \"false\"."
-  [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
 
 (defn parse-timeout-ms
   "Parse timeout-ms attribute to a positive integer, or nil if absent/invalid."
@@ -114,7 +108,7 @@
      :text        (or text "")
      :icon-mode   icon-mode
      :icon        (when (= icon-mode :custom) icon*)
-     :dismissible? (parse-bool-default-true dismissible-attr)
+     :dismissible? (mu/parse-bool-default-true dismissible-attr)
      :disabled?   (boolean disabled-present?)
      :timeout-ms  (parse-timeout-ms timeout-ms-raw)}))
 

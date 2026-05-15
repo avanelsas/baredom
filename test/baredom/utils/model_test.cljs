@@ -2,6 +2,31 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [baredom.utils.model :as model]))
 
+;; ── parse-bool-default-true ─────────────────────────────────────────────────
+
+(deftest parse-bool-default-true-absent-test
+  (is (true? (model/parse-bool-default-true nil))
+      "absent attribute returns true (the documented default)"))
+
+(deftest parse-bool-default-true-empty-test
+  (is (true? (model/parse-bool-default-true ""))
+      "empty string returns true — HTML boolean-attribute convention"))
+
+(deftest parse-bool-default-true-false-test
+  (is (false? (model/parse-bool-default-true "false")))
+  (testing "case-insensitive match against the literal 'false'"
+    (is (false? (model/parse-bool-default-true "FALSE")))
+    (is (false? (model/parse-bool-default-true "False"))))
+  (testing "trimmed before comparison"
+    (is (false? (model/parse-bool-default-true "  false  ")))))
+
+(deftest parse-bool-default-true-other-values-test
+  (testing "any non-'false' value is true"
+    (is (true? (model/parse-bool-default-true "true")))
+    (is (true? (model/parse-bool-default-true "0")))
+    (is (true? (model/parse-bool-default-true "yes")))
+    (is (true? (model/parse-bool-default-true "no")))))
+
 ;; ── sanitize-svg-path-d ─────────────────────────────────────────────────────
 
 (deftest sanitize-svg-path-d-valid-paths-test

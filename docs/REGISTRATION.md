@@ -99,6 +99,59 @@ Document the reason inline so future readers understand why the tier dropped. Re
 - Use `this-as` inside property getter/setter bodies — never reference `this` directly.
 - Registration is idempotent (the factory guards with `when-not .get js/customElements`).
 
+## Shadow-root initialisation
+
+Pick one of two patterns depending on whether the component needs to cache shadow children for re-decoration.
+
+### No cached children → `du/initialized?` flag (preferred when applicable)
+
+Golden sample: `x_icon`. `init-dom!` builds the shadow tree, calls `(du/mark-initialized! el k-initialized?)`, and returns `nil`. `ensure-shadow!` calls `init-dom!` only when `(du/initialized? el k-initialized?)` is false. No refs map — the host element, shadow root, and any selectors are looked up freshly when needed.
+
+```clojure
+(def ^:private k-initialized? "__xFooInitialized")
+
+(defn- init-dom! [^js el]
+  (let [root  (.attachShadow el #js {:mode "open"})
+        style (.createElement js/document "style")]
+    ;; ... build tree ...
+    (du/mark-initialized! el k-initialized?)))
+
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
+```
+
+Use this when `apply-model!` writes directly to the host element (CSS variables on `.-style`, attributes via `du/`) and shadow children aren't re-touched after creation.
+
+### Cached children → refs map
+
+When `apply-model!` reads back specific shadow children to mutate, store a refs map. Use **CLJS keywords** for refs map keys with `:keys` destructure:
+
+```clojure
+(def ^:private k-refs "__xFooRefs")
+
+(defn- init-dom! [^js el]
+  (let [root  (.attachShadow el #js {:mode "open"})
+        ...
+        refs  {:root root :container container :input-el input-el}]
+    ;; ... assemble ...
+    (du/setv! el k-refs refs)
+    refs))
+
+(defn- ensure-refs! [^js el]
+  (or (du/getv el k-refs) (init-dom! el)))
+
+(defn- apply-model! [^js el m]
+  (let [{:keys [container input-el]} (ensure-refs! el)]
+    ...))
+```
+
+References: `x-avatar`, `x-badge`, `x-text-area`.
+
+**Refs-key convention** — Prefer CLJS keyword keys (`{:foo el}`) with `:keys [foo]` destructuring over string-keyed `#js {}` JS objects accessed via `gobj/get`. The CLJS form is destructure-friendly and Closure-Advanced-safe. Only drop to the `#js {} + gobj/get` form when the refs object crosses a register-prototype boundary (rare).
+
+**When in doubt**: if your component would `(du/getv el k-refs)` only for an init flag (never reading the values back), use `du/initialized?` — that's the sentinel-refs anti-pattern. Audited and swept out in PRs #216–#218.
+
 ## Forbidden registration patterns
 
 - Manual `element-class` functions with `js*` — use `component/register!` instead
