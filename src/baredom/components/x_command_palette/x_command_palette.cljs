@@ -561,11 +561,11 @@
                         :enumerable   true
                         :get (fn []
                                (this-as ^js this
-                                 (or (gobj/get this k-items) #js [])))
+                                 (or (du/getv this k-items) #js [])))
                         :set (fn [v]
                                (this-as ^js this
-                                 (gobj/set this k-items v)
-                                 (gobj/set this k-active-idx 0)
+                                 (du/setv! this k-items v)
+                                 (du/setv! this k-active-idx 0)
                                  (render-items! this)))}))
 
 (defn- define-methods! [^js proto]

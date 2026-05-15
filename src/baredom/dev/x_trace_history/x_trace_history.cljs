@@ -11,6 +11,7 @@
    [clojure.string :as str]
    [goog.object :as gobj]
    [baredom.utils.component :as comp]
+   [baredom.utils.dom :as du]
    [baredom.dev.x-trace-history.dock-css :as dock-css]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
@@ -556,7 +557,7 @@
    at the start)."
   [^js el]
   (when (model/ui-state el :causality-needs-fit)
-    (let [^js container (gobj/get el model/k-causality-el)
+    (let [^js container (du/getv el model/k-causality-el)
           layout        (model/ui-state el :causality-layout)
           sel-id        (get-selected el)
           node          (when layout (model/find-laid-node layout sel-id))
@@ -627,7 +628,7 @@
    addition is detected as a transition. No-op once the user has any
    live records or has manually navigated off :live."
   [^js el]
-  (let [view       (gobj/get el model/k-view)
+  (let [view       (du/getv el model/k-view)
         ^js imps   (recorder/imports)
         cur-count  (.-length imps)
         prev       (or (model/ui-state el :auto-switch-import) 0)]
@@ -640,7 +641,7 @@
                    (zero? (.-length ^js (recorder/records))))
           (let [^js latest (aget imps (dec cur-count))
                 id         (.-id latest)]
-            (gobj/set el model/k-view [:import id]))))
+            (du/setv! el model/k-view [:import id]))))
 
       ;; Imports shrank (the user dropped one while we weren't
       ;; mounted, or some test path called remove-import!). Rebaseline
@@ -852,8 +853,8 @@
 (defn- get-selected
   "Read the selected record-id for the active view from k-view-selected."
   [^js el]
-  (let [view (gobj/get el model/k-view)
-        ^js m (gobj/get el model/k-view-selected)]
+  (let [view (du/getv el model/k-view)
+        ^js m (du/getv el model/k-view-selected)]
     (when m (gobj/get m (view-key view)))))
 
 (defn- set-selected!
@@ -868,15 +869,15 @@
    stale flag would silently scroll a LATER unrelated render when
    the user reselects."
   [^js el id]
-  (let [view  (gobj/get el model/k-view)
-        ^js m (or (gobj/get el model/k-view-selected) (js-obj))
+  (let [view  (du/getv el model/k-view)
+        ^js m (or (du/getv el model/k-view-selected) (js-obj))
         k     (view-key view)]
     (if (nil? id)
       (gobj/remove m k)
       (gobj/set    m k id))
-    (gobj/set el model/k-view-selected m)
+    (du/setv! el model/k-view-selected m)
     (when (and (some? id)
-               (= :causality (gobj/get el model/k-dock-mode)))
+               (= :causality (du/getv el model/k-dock-mode)))
       (model/set-ui-state! el :causality-needs-fit true))))
 
 (defn- effective-selection!
@@ -945,20 +946,20 @@
   "Repaint timeline, count, hint, detail pane, pause-button, record-button
    and session strip from current recorder + filter + view + selection state."
   [^js el]
-  (let [^js timeline-el  (gobj/get el model/k-timeline-el)
-        ^js causality-el (gobj/get el model/k-causality-el)
-        ^js lanes-el     (gobj/get el model/k-lanes-el)
-        ^js svg-pane-el  (gobj/get el model/k-svg-pane-el)
-        ^js count-el     (gobj/get el model/k-count-el)
-        ^js detail-el    (gobj/get el model/k-detail-el)
-        ^js splitter-el  (gobj/get el model/k-splitter-el)
-        ^js hint-el      (gobj/get el model/k-hint-el)
-        ^js pause-btn    (gobj/get el model/k-pause-btn)
-        ^js record-btn   (gobj/get el model/k-record-btn)
-        ^js sessions-el  (gobj/get el model/k-sessions-el)
-        ^js tag-sel-el   (gobj/get el model/k-tag-select-el)
-        spec             (gobj/get el model/k-filter)
-        view             (gobj/get el model/k-view)
+  (let [^js timeline-el  (du/getv el model/k-timeline-el)
+        ^js causality-el (du/getv el model/k-causality-el)
+        ^js lanes-el     (du/getv el model/k-lanes-el)
+        ^js svg-pane-el  (du/getv el model/k-svg-pane-el)
+        ^js count-el     (du/getv el model/k-count-el)
+        ^js detail-el    (du/getv el model/k-detail-el)
+        ^js splitter-el  (du/getv el model/k-splitter-el)
+        ^js hint-el      (du/getv el model/k-hint-el)
+        ^js pause-btn    (du/getv el model/k-pause-btn)
+        ^js record-btn   (du/getv el model/k-record-btn)
+        ^js sessions-el  (du/getv el model/k-sessions-el)
+        ^js tag-sel-el   (du/getv el model/k-tag-select-el)
+        spec             (du/getv el model/k-filter)
+        view             (du/getv el model/k-view)
         ^js recs         (view-records view)
         filtered         (filter-recs recs spec)
         cnt-filtered     (count filtered)
@@ -969,9 +970,9 @@
         ^js sessions     (recorder/sessions)
         ^js imports      (recorder/imports)
         active-rec-id    (recorder/active-session-id)
-        axis-mode        (or (gobj/get el model/k-axis-mode)
+        axis-mode        (or (du/getv el model/k-axis-mode)
                              model/default-axis-mode)
-        dock-mode        (or (gobj/get el model/k-dock-mode)
+        dock-mode        (or (du/getv el model/k-dock-mode)
                              model/default-dock-mode)]
     (sync-tag-options!       tag-sel-el)
     (apply-pane-visibility! el timeline-el causality-el dock-mode)
@@ -1061,7 +1062,7 @@
   (if collapsed?
     (.add    (.-classList el) "collapsed")
     (.remove (.-classList el) "collapsed"))
-  (when-let [^js btn (gobj/get el model/k-collapse-btn)]
+  (when-let [^js btn (du/getv el model/k-collapse-btn)]
     (set! (.-textContent btn)
           (if collapsed? collapse-icon-closed collapse-icon-open))
     ;; aria-expanded so screen readers track the disclosure state.
@@ -1072,8 +1073,8 @@
    by both the click handler and the document-level keyboard
    shortcut so the two entry points stay in sync."
   [^js el]
-  (let [next? (not (boolean (gobj/get el model/k-collapsed)))]
-    (gobj/set el model/k-collapsed next?)
+  (let [next? (not (boolean (du/getv el model/k-collapsed)))]
+    (du/setv! el model/k-collapsed next?)
     (apply-collapsed-state! el next?)))
 
 (defn- on-action-click!
@@ -1088,8 +1089,8 @@
       ;; selections so stale ids don't linger, AND switch back to the
       ;; Live view so the session strip's active chip doesn't dangle
       ;; on a now-deleted session id.
-      "clear"  (do (gobj/set el model/k-view-selected (js-obj))
-                   (gobj/set el model/k-view :live)
+      "clear"  (do (du/setv! el model/k-view-selected (js-obj))
+                   (du/setv! el model/k-view :live)
                    (recorder/clear!))
       ;; Export is read-only — produce a .trace.json download from the
       ;; current recorder snapshot. Does not change view, selection,
@@ -1098,7 +1099,7 @@
       ;; Import delegates to the hidden <input type='file'>. Drag-drop
       ;; is the other entry point; both routes converge on
       ;; import-file! below.
-      "import" (when-let [^js input (gobj/get el model/k-import-input)]
+      "import" (when-let [^js input (du/getv el model/k-import-input)]
                  (set! (.-value input) "")  ; allow re-picking the same file
                  (.click input))
       ;; Collapse toggle — flips the dock between full-width and a
@@ -1136,7 +1137,7 @@
     (when-let [^js btn (.closest target "[data-x-th-session]")]
       (let [k        (.getAttribute btn "data-x-th-session")
             new-view (parse-chip-key k)]
-        (gobj/set el model/k-view new-view)
+        (du/setv! el model/k-view new-view)
         (render! el)))))
 
 (defn- on-import-close-click!
@@ -1146,10 +1147,10 @@
   [^js el ^js target]
   (when-let [^js close-btn (.closest target "[data-x-th-import-close]")]
     (let [id   (js/parseInt (.getAttribute close-btn "data-x-th-import-close") 10)
-          view (gobj/get el model/k-view)]
+          view (du/getv el model/k-view)]
       (when (and (model/import-view? view)
                  (= id (model/view-id view)))
-        (gobj/set el model/k-view :live))
+        (du/setv! el model/k-view :live))
       (recorder/remove-import! id))))
 
 (defn- on-lane-label-click!
@@ -1159,12 +1160,12 @@
   [^js el ^js target]
   (when-let [^js label (.closest target "[data-x-th-lane-tag]")]
     (let [lane-tag (.getAttribute label "data-x-th-lane-tag")
-          spec     (gobj/get el model/k-filter)
+          spec     (du/getv el model/k-filter)
           curr-tag (:tag spec)
           new-tag  (when-not (= lane-tag curr-tag) lane-tag)
           new-spec (assoc spec :tag new-tag)]
-      (gobj/set el model/k-filter new-spec)
-      (when-let [^js sel (gobj/get el model/k-tag-select-el)]
+      (du/setv! el model/k-filter new-spec)
+      (when-let [^js sel (du/getv el model/k-tag-select-el)]
         (set! (.-value sel) (or new-tag "all")))
       (render! el))))
 
@@ -1194,9 +1195,9 @@
   "Apply a new tag filter from a select-change detail value. The 'all'
    sentinel maps to nil :tag (matches every record)."
   [^js el value]
-  (let [spec     (gobj/get el model/k-filter)
+  (let [spec     (du/getv el model/k-filter)
         new-spec (assoc spec :tag (when-not (= value "all") value))]
-    (gobj/set el model/k-filter new-spec)
+    (du/setv! el model/k-filter new-spec)
     (render! el)))
 
 (defn- handle-axis-change!
@@ -1209,7 +1210,7 @@
                "order" :order
                "time"  :time
                model/default-axis-mode)]
-    (gobj/set el model/k-axis-mode mode)
+    (du/setv! el model/k-axis-mode mode)
     (render! el)))
 
 (defn- handle-mode-change!
@@ -1224,7 +1225,7 @@
                "timeline"  :timeline
                "causality" :causality
                model/default-dock-mode)]
-    (gobj/set el model/k-dock-mode mode)
+    (du/setv! el model/k-dock-mode mode)
     (if (= :causality mode)
       (model/set-ui-state! el :causality-needs-fit true)
       (model/set-ui-state! el :causality-needs-fit false))
@@ -1235,12 +1236,12 @@
    payload. `cat` is the data-x-th-cat string (e.g. \"events\");
    `checked?` is the new boolean."
   [^js el cat checked?]
-  (let [spec     (gobj/get el model/k-filter)
+  (let [spec     (du/getv el model/k-filter)
         cats     (or (:categories spec) (set model/all-categories))
         cat-kw   (keyword cat)
         new-cats (if checked? (conj cats cat-kw) (disj cats cat-kw))
         new-spec (assoc spec :categories new-cats)]
-    (gobj/set el model/k-filter new-spec)
+    (du/setv! el model/k-filter new-spec)
     (render! el)))
 
 (defn- handle-select-change!
@@ -1272,9 +1273,9 @@
     (when (and target (.hasAttribute target "data-x-th-search"))
       (let [raw      (or (.. e -detail -value) "")
             q        (.toLowerCase raw)
-            spec     (gobj/get el model/k-filter)
+            spec     (du/getv el model/k-filter)
             new-spec (assoc spec :search (when-not (= "" q) q))]
-        (gobj/set el model/k-filter new-spec)
+        (du/setv! el model/k-filter new-spec)
         (render! el)))))
 
 (defn- handle-checkbox-change!
@@ -1350,13 +1351,13 @@
 (defn- handle-pointermove!
   [^js el ^js e]
   (let [^js target   (.-target e)
-        ^js tooltip  (gobj/get el model/k-tooltip-el)
-        ^js timeline (gobj/get el model/k-timeline-el)
+        ^js tooltip  (du/getv el model/k-tooltip-el)
+        ^js timeline (du/getv el model/k-timeline-el)
         ;; Resolve hovered records from the active view's source
         ;; (live / session / import). Reading the live ring buffer
         ;; here would lose the tooltip whenever the dock is viewing
         ;; an import or session whose records aren't in :live.
-        view         (gobj/get el model/k-view)
+        view         (du/getv el model/k-view)
         ^js recs     (view-records view)]
     (cond
       (circle-target? target)
@@ -1375,7 +1376,7 @@
 
 (defn- handle-pointerleave!
   [^js el _e]
-  (hide-tooltip! ^js (gobj/get el model/k-tooltip-el)))
+  (hide-tooltip! ^js (du/getv el model/k-tooltip-el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Scrubber — pointer-drag on the SVG to step selection by nearest record
@@ -1421,9 +1422,9 @@
   (.setPointerCapture svg-pane (.-pointerId e))
   (let [pane-rect (.getBoundingClientRect svg-pane)
         plot-w    (max svg-min-w (.-clientWidth svg-pane))
-        spec      (gobj/get el model/k-filter)
-        axis-mode (or (gobj/get el model/k-axis-mode) model/default-axis-mode)
-        view      (gobj/get el model/k-view)
+        spec      (du/getv el model/k-filter)
+        axis-mode (or (du/getv el model/k-axis-mode) model/default-axis-mode)
+        view      (du/getv el model/k-view)
         ^js recs  (view-records view)
         filtered  (filter-recs recs spec)
         bounds    (model/time-bounds filtered)
@@ -1441,7 +1442,7 @@
 
 (defn- handle-svg-pointerdown!
   [^js el ^js e]
-  (let [^js svg-pane (gobj/get el model/k-svg-pane-el)]
+  (let [^js svg-pane (du/getv el model/k-svg-pane-el)]
     (start-scrub! el svg-pane e)))
 
 ;; ---------------------------------------------------------------------------
@@ -1450,8 +1451,8 @@
 
 (defn- step-selection!
   [^js el dir]
-  (let [spec       (gobj/get el model/k-filter)
-        view       (gobj/get el model/k-view)
+  (let [spec       (du/getv el model/k-filter)
+        view       (du/getv el model/k-view)
         ^js recs   (view-records view)
         filtered   (filter-recs recs spec)
         curr-id    (get-selected el)
@@ -1578,7 +1579,7 @@
    hint string lands. Storing the timeout id on the host lets us
    replace it when a second error fires before the first cleared."
   [^js el msg]
-  (let [^js hint-el (gobj/get el model/k-hint-el)
+  (let [^js hint-el (du/getv el model/k-hint-el)
         prev-tok    (model/ui-state el :import-error)]
     (when (number? prev-tok)
       (js/clearTimeout prev-tok))
@@ -1597,9 +1598,9 @@
    immediately sees what they just loaded. Also clears any prior
    error so the regular hint message returns on the next render."
   [^js el import-id]
-  (let [^js hint-el (gobj/get el model/k-hint-el)]
+  (let [^js hint-el (du/getv el model/k-hint-el)]
     (.remove (.-classList hint-el) "error"))
-  (gobj/set el model/k-view [:import import-id])
+  (du/setv! el model/k-view [:import import-id])
   (render! el))
 
 (defn- import-text!
@@ -1641,7 +1642,7 @@
    Counter-based (:drag-depth in ui-state) so passing over a child
    element doesn't flicker the overlay."
   [^js el]
-  (let [^js overlay (gobj/get el model/k-drop-overlay)
+  (let [^js overlay (du/getv el model/k-drop-overlay)
         d           (or (model/ui-state el :drag-depth) 0)]
     (model/set-ui-state! el :drag-depth (inc d))
     (.removeAttribute overlay "hidden")))
@@ -1650,7 +1651,7 @@
   "Hide the drop-overlay when the dragleave count returns to 0 or
    after a successful drop."
   [^js el]
-  (let [^js overlay (gobj/get el model/k-drop-overlay)
+  (let [^js overlay (du/getv el model/k-drop-overlay)
         d           (max 0 (dec (or (model/ui-state el :drag-depth) 0)))]
     (model/set-ui-state! el :drag-depth d)
     (when (zero? d)
@@ -1695,7 +1696,7 @@
     ;; Reset the drag counter unconditionally — a drop fires WITHOUT a
     ;; final dragleave on every browser we care about.
     (model/set-ui-state! el :drag-depth 0)
-    (let [^js overlay (gobj/get el model/k-drop-overlay)]
+    (let [^js overlay (du/getv el model/k-drop-overlay)]
       (.setAttribute overlay "hidden" ""))
     (let [^js dt    (.-dataTransfer e)
           ^js files (when dt (.-files dt))]
@@ -1736,23 +1737,23 @@
   "Resolve and cache every shadow-DOM ref the dock reads in the hot path
    so render! doesn't repeat querySelector calls."
   [^js el ^js shadow]
-  (gobj/set el model/k-shadow      shadow)
-  (gobj/set el model/k-timeline-el (.querySelector shadow "[data-x-th-timeline]"))
-  (gobj/set el model/k-lanes-el    (.querySelector shadow "[data-x-th-lanes]"))
-  (gobj/set el model/k-svg-pane-el (.querySelector shadow "[data-x-th-svg-pane]"))
-  (gobj/set el model/k-tooltip-el  (.querySelector shadow "[data-x-th-tooltip]"))
-  (gobj/set el model/k-count-el    (.querySelector shadow "[data-x-th-count]"))
-  (gobj/set el model/k-detail-el   (.querySelector shadow "[data-x-th-detail]"))
-  (gobj/set el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
-  (gobj/set el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
-  (gobj/set el model/k-tag-select-el   (.querySelector shadow "[data-x-th-tag]"))
-  (gobj/set el model/k-causality-el    (.querySelector shadow "[data-x-th-causality]"))
-  (gobj/set el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
-  (gobj/set el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
-  (gobj/set el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
-  (gobj/set el model/k-import-input  (.querySelector shadow "[data-x-th-import-input]"))
-  (gobj/set el model/k-drop-overlay  (.querySelector shadow "[data-x-th-drop-overlay]"))
-  (gobj/set el model/k-collapse-btn  (.querySelector shadow "[data-x-th-action='collapse']")))
+  (du/setv! el model/k-shadow      shadow)
+  (du/setv! el model/k-timeline-el (.querySelector shadow "[data-x-th-timeline]"))
+  (du/setv! el model/k-lanes-el    (.querySelector shadow "[data-x-th-lanes]"))
+  (du/setv! el model/k-svg-pane-el (.querySelector shadow "[data-x-th-svg-pane]"))
+  (du/setv! el model/k-tooltip-el  (.querySelector shadow "[data-x-th-tooltip]"))
+  (du/setv! el model/k-count-el    (.querySelector shadow "[data-x-th-count]"))
+  (du/setv! el model/k-detail-el   (.querySelector shadow "[data-x-th-detail]"))
+  (du/setv! el model/k-splitter-el (.querySelector shadow "[data-x-th-splitter]"))
+  (du/setv! el model/k-hint-el       (.querySelector shadow "[data-x-th-hint]"))
+  (du/setv! el model/k-tag-select-el   (.querySelector shadow "[data-x-th-tag]"))
+  (du/setv! el model/k-causality-el    (.querySelector shadow "[data-x-th-causality]"))
+  (du/setv! el model/k-pause-btn     (.querySelector shadow "[data-x-th-action='pause']"))
+  (du/setv! el model/k-record-btn    (.querySelector shadow "[data-x-th-action='record']"))
+  (du/setv! el model/k-sessions-el   (.querySelector shadow "[data-x-th-sessions]"))
+  (du/setv! el model/k-import-input  (.querySelector shadow "[data-x-th-import-input]"))
+  (du/setv! el model/k-drop-overlay  (.querySelector shadow "[data-x-th-drop-overlay]"))
+  (du/setv! el model/k-collapse-btn  (.querySelector shadow "[data-x-th-action='collapse']")))
 
 (defn- build-listener-tuples
   "Allocate the dock's static event listeners as #js [target event
@@ -1829,25 +1830,25 @@
    them, and attach. Called on every (re)mount — never produces
    duplicate listeners because unmount! always cancels first."
   [^js el ^js shadow]
-  (let [^js timeline-el   (gobj/get el model/k-timeline-el)
-        ^js svg-pane-el   (gobj/get el model/k-svg-pane-el)
-        ^js splitter-el   (gobj/get el model/k-splitter-el)
-        ^js detail-el     (gobj/get el model/k-detail-el)
-        ^js import-input  (gobj/get el model/k-import-input)
-        ^js causality-el  (gobj/get el model/k-causality-el)
+  (let [^js timeline-el   (du/getv el model/k-timeline-el)
+        ^js svg-pane-el   (du/getv el model/k-svg-pane-el)
+        ^js splitter-el   (du/getv el model/k-splitter-el)
+        ^js detail-el     (du/getv el model/k-detail-el)
+        ^js import-input  (du/getv el model/k-import-input)
+        ^js causality-el  (du/getv el model/k-causality-el)
         tuples            (build-listener-tuples
                            el shadow timeline-el svg-pane-el splitter-el detail-el
                            import-input causality-el)]
-    (gobj/set el model/k-listeners tuples)
+    (du/setv! el model/k-listeners tuples)
     (add-listeners! tuples)))
 
 (defn- unbind-listeners!
   "Cancel every static listener attached by bind-listeners! and clear
    the slot. Idempotent — a second call with no listeners is a no-op."
   [^js el]
-  (when-let [^js tuples (gobj/get el model/k-listeners)]
+  (when-let [^js tuples (du/getv el model/k-listeners)]
     (remove-listeners! tuples)
-    (gobj/set el model/k-listeners nil)))
+    (du/setv! el model/k-listeners nil)))
 
 (defn- initialize-filter-state!
   "Set up k-filter / k-view / k-view-selected / k-axis-mode on the
@@ -1860,25 +1861,25 @@
    reused shadow tree, so the checkboxes stay in sync with the
    filter spec across remount."
   [^js el cats]
-  (when-not (gobj/get el model/k-filter)
-    (gobj/set el model/k-filter {:tag nil :categories cats :search nil}))
-  (when-not (gobj/get el model/k-view)
-    (gobj/set el model/k-view :live))
-  (when-not (gobj/get el model/k-view-selected)
-    (gobj/set el model/k-view-selected (js-obj)))
-  (when-not (gobj/get el model/k-axis-mode)
-    (gobj/set el model/k-axis-mode model/default-axis-mode))
+  (when-not (du/getv el model/k-filter)
+    (du/setv! el model/k-filter {:tag nil :categories cats :search nil}))
+  (when-not (du/getv el model/k-view)
+    (du/setv! el model/k-view :live))
+  (when-not (du/getv el model/k-view-selected)
+    (du/setv! el model/k-view-selected (js-obj)))
+  (when-not (du/getv el model/k-axis-mode)
+    (du/setv! el model/k-axis-mode model/default-axis-mode))
   ;; Dock-mode persists across remount, same as axis-mode: a user
   ;; flipped to :causality before disconnect should land back in
   ;; causality on reconnect rather than getting reset to timeline.
-  (when-not (gobj/get el model/k-dock-mode)
-    (gobj/set el model/k-dock-mode model/default-dock-mode))
+  (when-not (du/getv el model/k-dock-mode)
+    (du/setv! el model/k-dock-mode model/default-dock-mode))
   ;; Default is expanded (collapsed = false). After this slot is set
   ;; once it survives remount, so apply-collapsed-state! below re-
   ;; applies the user's prior choice when the dock reconnects.
-  (when-not (some? (gobj/get el model/k-collapsed))
-    (gobj/set el model/k-collapsed false))
-  (apply-collapsed-state! el (boolean (gobj/get el model/k-collapsed))))
+  (when-not (some? (du/getv el model/k-collapsed))
+    (du/setv! el model/k-collapsed false))
+  (apply-collapsed-state! el (boolean (du/getv el model/k-collapsed))))
 
 (defn- mount!
   "Connect the dock: attach (or reuse) the shadow root, cache refs,
@@ -1890,7 +1891,7 @@
    be attached once per host) and `bind-listeners!` installs a
    fresh set of listeners after `unmount!`'s symmetric tear-down."
   [^js el]
-  (when-not (gobj/get el model/k-mounted)
+  (when-not (du/getv el model/k-mounted)
     ;; Mark BEFORE attaching the shadow so any synchronous lifecycle
     ;; events from inside the shadow (e.g. nested components
     ;; registering) are already gated by the recorder's internal-host
@@ -1916,9 +1917,9 @@
                        (fn []
                          (maybe-auto-switch-import! el)
                          (render! el)))]
-              (gobj/set el model/k-sub-token tok))
+              (du/setv! el model/k-sub-token tok))
             (render! el)
-            (gobj/set el model/k-mounted true))))
+            (du/setv! el model/k-mounted true))))
       ;; INVARIANT (runtime-checked): every record emitted during
       ;; mount must be caught by either the suppression scope above
       ;; (for detached internals) or the internal-host marker (for
@@ -1941,15 +1942,15 @@
    state persist across mount cycles so the dock comes back in the
    same shape it was in when disconnected."
   [^js el]
-  (when-let [tok (gobj/get el model/k-sub-token)]
+  (when-let [tok (du/getv el model/k-sub-token)]
     (recorder/unsubscribe! tok))
   (when-let [err-tok (model/ui-state el :import-error)]
     (when (number? err-tok)
       (js/clearTimeout err-tok)))
   (unbind-listeners! el)
-  (gobj/set el model/k-sub-token nil)
+  (du/setv! el model/k-sub-token nil)
   (model/set-ui-state! el :import-error nil)
-  (gobj/set el model/k-mounted nil))
+  (du/setv! el model/k-mounted nil))
 
 ;; ---------------------------------------------------------------------------
 ;; Activation

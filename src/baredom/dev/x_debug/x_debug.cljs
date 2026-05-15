@@ -6,6 +6,7 @@
    inspection panel."
   (:require
    [goog.object :as gobj]
+   [baredom.utils.dom :as du]
    [baredom.dev.x-debug.model :as model]
    [baredom.dev.x-debug-registry :as registry]))
 
@@ -61,7 +62,7 @@
         (reduce-kv
          (fn [acc prop-key prop-meta]
            (let [js-name (name prop-key)]
-             (conj acc [js-name (gobj/get el js-name) (boolean (:readonly prop-meta))])))
+             (conj acc [js-name (du/getv el js-name) (boolean (:readonly prop-meta))])))
          []
          props)))))
 
@@ -357,7 +358,7 @@
   "Injects debug overlay into a BareDOM element's shadow root."
   [^js debug-el ^js el]
   (when (and (.-shadowRoot el)
-             (not (gobj/get el model/k-instrumented)))
+             (not (du/getv el model/k-instrumented)))
     (let [^js sr      (.-shadowRoot el)
           tag-name    (.. el -tagName toLowerCase)
           ;; Inject debug style
@@ -383,17 +384,17 @@
                       (.removeEventListener label "click" click-fn)
                       (when (.contains sr style) (.removeChild sr style))
                       (when (.contains sr label) (.removeChild sr label)))]
-        (gobj/set el model/k-cleanup-fns cleanup))
-      (gobj/set el model/k-instrumented true))))
+        (du/setv! el model/k-cleanup-fns cleanup))
+      (du/setv! el model/k-instrumented true))))
 
 (defn- uninstrument-element!
   "Removes debug overlay from a BareDOM element."
   [^js el]
-  (when (gobj/get el model/k-instrumented)
-    (when-let [cleanup (gobj/get el model/k-cleanup-fns)]
+  (when (du/getv el model/k-instrumented)
+    (when-let [cleanup (du/getv el model/k-cleanup-fns)]
       (cleanup))
-    (gobj/set el model/k-instrumented nil)
-    (gobj/set el model/k-cleanup-fns nil)))
+    (du/setv! el model/k-instrumented nil)
+    (du/setv! el model/k-cleanup-fns nil)))
 
 ;; ---------------------------------------------------------------------------
 ;; MutationObserver for element discovery

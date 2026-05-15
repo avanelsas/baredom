@@ -358,7 +358,7 @@
   (.defineProperty js/Object proto "progress"
     #js {:get (fn xspx-get-progress []
                 (this-as ^js this
-                  (or (gobj/get this k-last-prog) 0)))
+                  (or (du/getv this k-last-prog) 0)))
          :enumerable true :configurable true}))
 
 ;; ── Element class ───────────────────────────────────────────────────────────

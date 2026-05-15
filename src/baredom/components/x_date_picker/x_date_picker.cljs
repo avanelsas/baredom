@@ -873,14 +873,14 @@
   "Body of the focus() prototype method — exposed so the .defineProperty
   :value descriptor stays a tight thunk."
   [^js this]
-  (let [refs (gobj/get this k-refs)
+  (let [refs (du/getv this k-refs)
         ^js inp (when refs (gobj/get refs "input"))]
     (when inp (.focus inp))))
 
 (defn- xdp-clear!
   "Body of the clear() prototype method."
   [^js this]
-  (let [state (gobj/get this k-state)
+  (let [state (du/getv this k-state)
         canon (when state (gobj/get state "canon"))]
     (if (= (:mode canon) :single)
       (du/remove-attr! this model/attr-value)

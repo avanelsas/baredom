@@ -23,16 +23,21 @@
   (:require [clojure.string :as str]
             [babashka.fs :as fs]))
 
-;; NOTE: this pattern is intentionally narrow. A broadened form
-;; (`\(gobj/(?:set|get) (?:el|this)\b`) catches more leak vectors —
-;; `(gobj/get this k-X)` in property accessors, `(gobj/set el model/k-X …)`
-;; — but surfaces ~50 pre-existing violations across ~20 components and
-;; the `x-trace-history` dev tool. A separate sweep PR will broaden the
-;; pattern alongside the cleanup. See the audit plan at
-;; `.claude/plans/you-are-an-experienced-wondrous-peach.md` (cross-cutting
-;; pattern #1 — "gobj/get this k-X via helpers").
-(def ^:private gobj-pattern #"\(gobj/(?:set|get) el k-")
-(def ^:private shim-pattern #"\(defn-? make-el \[(?:\^js )?tag\]")
+;; Matches `(gobj/get el …)` and `(gobj/set this …)` and similar — any
+;; gobj read/write whose first argument is `el` or `this` (the project's
+;; two conventional names for the host element). The previous narrow
+;; form (`\(gobj/(set|get) el k-`) missed:
+;;   • `gobj/get this k-X` in property accessors (host binding is `this`)
+;;   • `gobj/get el "X"` and `gobj/get el model/k-X` — non-`k-` keys
+;;   • `gobj/get this field-key` — helper-function parameter
+;; Each form bypasses the trace-recorder hook. Lines tagged with
+;; `;; allow-gobj:` (same line or any of the two lines above) are
+;; exempt — reserved for the recorder's own bootstrap, where routing
+;; through `du/setv!` would either recurse on the hook or fire it before
+;; the internal-host filter is in place.
+(def ^:private gobj-pattern  #"\(gobj/(?:set|get) (?:el|this)\b")
+(def ^:private allow-marker  "allow-gobj:")
+(def ^:private shim-pattern  #"\(defn-? make-el \[(?:\^js )?tag\]")
 
 (defn- find-cljs-files []
   (->> (concat (fs/glob "src/baredom/components" "**/*.cljs")
@@ -50,11 +55,14 @@
                      (remove (fn [[_ l]] (comment-line? l))))
         hits    (atom [])]
     (doseq [[lineno line] lines]
-      (when (re-find gobj-pattern line)
+      (when (and (re-find gobj-pattern line)
+                 (not (str/includes? line allow-marker)))
         (swap! hits conj
                (str path ":" lineno
                     ": forbidden gobj on host element — use (du/setv! el k-X v) "
-                    "or (du/getv el k-X). " (str/trim line))))
+                    "or (du/getv el k-X), or tag the same line with "
+                    "`;; allow-gobj: <reason>` for recorder-internal bootstrap. "
+                    (str/trim line))))
       (when (re-find shim-pattern line)
         (swap! hits conj
                (str path ":" lineno
