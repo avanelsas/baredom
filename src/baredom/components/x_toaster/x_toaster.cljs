@@ -5,7 +5,7 @@
             [baredom.components.x-toaster.model :as model]))
 
 ;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
-(def ^:private k-refs     "__xToasterRefs")
+(def ^:private k-initialized? "__xToasterInitialized")
 (def ^:private k-model    "__xToasterModel")
 (def ^:private k-handlers "__xToasterHandlers")
 
@@ -79,13 +79,11 @@
     (set! (.-textContent style) style-text)
     (.appendChild root style)
     (.appendChild root slot-el)
-    (du/setv! el k-refs {:root    root
-                         :slot-el slot-el})))
+    (du/mark-initialized! el k-initialized?)))
 
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs)
-      (do (init-dom! el)
-          (du/getv el k-refs))))
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -96,7 +94,7 @@
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [position label] :as m}]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (du/set-attr! el "role"       "region")
   (du/set-attr! el "aria-label" label)
   (du/set-attr! el "data-position" position)
@@ -222,7 +220,7 @@
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (remove-listeners! el)
   (add-listeners! el)
   (update-from-attrs! el))

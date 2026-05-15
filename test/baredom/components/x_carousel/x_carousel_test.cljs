@@ -347,13 +347,16 @@
       (wait-frame
        (fn []
          (is (= "fade" (.getAttribute el "data-transition")))
-         ;; First slide should be visible, second hidden
+         ;; First slide is marked active via the `data-active` attribute;
+         ;; visibility is driven by CSS `::slotted([data-active])` rather
+         ;; than mutating slotted children's inline style.opacity (which
+         ;; would pollute consumer-owned light-DOM state).
          (let [^js slot (shadow-part el "slot")
                children (.assignedElements slot)
                ^js first-child (aget children 0)
                ^js second-child (aget children 1)]
-           (is (= "1" (.. first-child -style -opacity)))
-           (is (= "0" (.. second-child -style -opacity))))
+           (is (.hasAttribute first-child  "data-active"))
+           (is (not (.hasAttribute second-child "data-active"))))
          (done))))))
 
 ;; ── Vertical direction ──────────────────────────────────────────────────────

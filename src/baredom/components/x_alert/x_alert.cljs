@@ -35,7 +35,6 @@
 (def ^:private slot-name-icon    "icon")
 
 (def ^:private val-true             "true")
-(def ^:private val-false            "false")
 (def ^:private val-dismiss-label    "Dismiss alert")
 (def ^:private val-dismiss-glyph    "×")
 (def ^:private val-escape-shortcut  "Escape")
@@ -191,49 +190,58 @@
    "animation:none !important;}}"))
 
 ;; ── DOM initialisation ──────────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root         (.attachShadow el #js {:mode "open"})
-        style        (.createElement js/document "style")
-        container    (.createElement js/document "div")
-        icon-wrap    (.createElement js/document "span")
+;; shadow-builders pattern (x-color-picker, x-scroll-timeline): each
+;; section builder constructs + decorates + assembles its subtree and
+;; returns a refs map. `init-dom!` composes them.
+
+(defn- make-icon-section! []
+  (let [icon-wrap    (.createElement js/document "span")
         icon-slot    (.createElement js/document "slot")
-        default-icon (.createElement js/document "span")
-        text-el      (.createElement js/document "span")
-        dismiss-btn  (.createElement js/document "button")
-        dismiss-x    (.createElement js/document "span")
-        refs         {:root         root
-                      :container    container
-                      :icon-wrap    icon-wrap
-                      :icon-slot    icon-slot
-                      :default-icon default-icon
-                      :text-el      text-el
-                      :dismiss-btn  dismiss-btn}]
-
-    (set! (.-textContent style) style-text)
-
-    (du/set-attr! container attr-part part-container)
-
+        default-icon (.createElement js/document "span")]
     (du/set-attr! icon-wrap    attr-part        part-icon)
     (du/set-attr! icon-wrap    attr-aria-hidden val-true)
     (du/set-attr! icon-slot    attr-name        slot-name-icon)
     (du/set-attr! default-icon attr-part        part-default-icon)
     (.appendChild icon-slot default-icon)
     (.appendChild icon-wrap icon-slot)
+    {:icon-wrap icon-wrap :icon-slot icon-slot :default-icon default-icon}))
 
+(defn- make-text-section! []
+  (let [text-el (.createElement js/document "span")]
     (du/set-attr! text-el attr-part part-text)
+    {:text-el text-el}))
 
+(defn- make-dismiss-section! []
+  (let [dismiss-btn (.createElement js/document "button")
+        dismiss-x   (.createElement js/document "span")]
     (du/set-attr! dismiss-btn attr-part part-dismiss)
     (du/set-attr! dismiss-btn attr-type val-button-type)
     (du/set-attr! dismiss-x   attr-aria-hidden val-true)
     (set! (.-textContent dismiss-x) val-dismiss-glyph)
     (.appendChild dismiss-btn dismiss-x)
+    {:dismiss-btn dismiss-btn}))
 
-    (.appendChild container icon-wrap)
-    (.appendChild container text-el)
-    (.appendChild container dismiss-btn)
+(defn- init-dom! [^js el]
+  (let [root      (.attachShadow el #js {:mode "open"})
+        style     (.createElement js/document "style")
+        container (.createElement js/document "div")
+        icon      (make-icon-section!)
+        text      (make-text-section!)
+        dismiss   (make-dismiss-section!)
+        refs      {:root         root
+                   :container    container
+                   :icon-wrap    (:icon-wrap icon)
+                   :icon-slot    (:icon-slot icon)
+                   :default-icon (:default-icon icon)
+                   :text-el      (:text-el text)
+                   :dismiss-btn  (:dismiss-btn dismiss)}]
+    (set! (.-textContent style) style-text)
+    (du/set-attr! container attr-part part-container)
+    (.appendChild container (:icon-wrap icon))
+    (.appendChild container (:text-el text))
+    (.appendChild container (:dismiss-btn dismiss))
     (.appendChild root style)
     (.appendChild root container)
-
     (du/setv! el k-refs refs)
     refs))
 
@@ -380,33 +388,47 @@
                   (du/remove-attr! el attr-data-entering)))]
         (.addEventListener container ev-animationend on-end)))))
 
+(defn- exit-immediate?
+  "Skip the animation when motion is disabled or there's no duration."
+  [^js el]
+  (or (zero? (exit-duration-ms el)) (prefers-reduced-motion?)))
+
+(defn- finish-exit!
+  "Detach the animationend listener, clear the safety timer, and remove
+   the element if still connected. Idempotent: whichever of the two
+   exit races (transitionend / fallback timer) fires first calls this;
+   the other path is a no-op afterwards."
+  [^js el ^js container on-end]
+  (.removeEventListener container ev-animationend on-end)
+  (when-let [tid (du/getv el k-exit-timer)]
+    (js/clearTimeout tid)
+    (du/setv! el k-exit-timer nil))
+  (when (.-isConnected el) (.remove el)))
+
+(defn- run-exit-animation! [^js el]
+  (let [{:keys [container]} (ensure-refs! el)
+        ^js container       container
+        dur                 (exit-duration-ms el)]
+    (letfn [(on-end [^js e]
+              (when (= (.-target e) container)
+                (finish-exit! el container on-end)))]
+      (du/set-attr! el attr-data-exiting "")
+      (.addEventListener container ev-animationend on-end)
+      (du/setv! el k-exit-timer
+                (js/setTimeout
+                 (fn on-exit-fallback []
+                   (when (and (.-isConnected el) (du/getv el k-exiting))
+                     (finish-exit! el container on-end)))
+                 (+ dur 60))))))
+
 (defn- start-exit-and-remove! [^js el]
   (when-not (du/getv el k-exiting)
     (du/setv! el k-exiting true)
     (clear-timeout! el)
     (du/remove-attr! el attr-data-entering)
-    (let [dur (exit-duration-ms el)]
-      (if (or (zero? dur) (prefers-reduced-motion?))
-        (.remove el)
-        (let [{:keys [container]} (ensure-refs! el)
-              ^js container container]
-          (letfn [(on-end [^js e]
-                    (when (= (.-target e) container)
-                      (.removeEventListener container ev-animationend on-end)
-                      (when-let [tid (du/getv el k-exit-timer)]
-                        (js/clearTimeout tid)
-                        (du/setv! el k-exit-timer nil))
-                      (when (.-isConnected el) (.remove el))))]
-            (du/set-attr! el attr-data-exiting "")
-            (.addEventListener container ev-animationend on-end)
-            (du/setv! el k-exit-timer
-                      (js/setTimeout
-                       (fn on-exit-fallback []
-                         (when (and (.-isConnected el) (du/getv el k-exiting))
-                           (.removeEventListener container ev-animationend on-end)
-                           (du/setv! el k-exit-timer nil)
-                           (.remove el)))
-                       (+ dur 60)))))))))
+    (if (exit-immediate? el)
+      (.remove el)
+      (run-exit-animation! el))))
 
 ;; ── Event dispatch ──────────────────────────────────────────────────────────
 (defn- dispatch-dismiss! [^js el reason]
@@ -468,25 +490,8 @@
   (du/define-bool-prop!   proto model/attr-disabled model/attr-disabled)
 
   ;; Tier 2 — `dismissible` is a 3-state boolean with `true` as the *absent*
-  ;; default. Tier-1 du/define-bool-prop! treats attribute-absence as `false`,
-  ;; which would invert the default. We need:
-  ;;   - getter: route through model/parse-bool-default-true so the absent
-  ;;     attribute returns `true`, "false" returns `false`, anything else `true`.
-  ;;   - setter: writing `true` sets the attribute to "" (boolean-attribute
-  ;;     convention), writing `false` sets it to the literal "false" string
-  ;;     (rather than removing the attribute) so the resolved value is
-  ;;     explicitly false rather than the absent-default true.
-  (.defineProperty js/Object proto model/attr-dismissible
-                   #js {:get (fn []
-                               (this-as ^js this
-                                 (model/parse-bool-default-true
-                                  (.getAttribute this model/attr-dismissible))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                 (if v
-                                   (du/set-attr! this model/attr-dismissible "")
-                                   (du/set-attr! this model/attr-dismissible val-false))))
-                        :enumerable true :configurable true})
+  ;; default. Routed through the shared helper that encodes this convention.
+  (du/define-bool-default-true-prop! proto model/attr-dismissible model/attr-dismissible)
 
   ;; Tier 2 — `timeoutMs` is the camelCase JS property reflecting the
   ;; kebab-case `timeout-ms` HTML attribute. du/define-number-prop! always

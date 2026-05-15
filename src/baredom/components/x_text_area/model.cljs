@@ -92,8 +92,8 @@
      :minlength    (parse-positive-int minlength-raw)
      :autocomplete (or autocomplete-raw "")
      :resize       (normalize-resize resize-raw)
-     :has-error?   (and (string? error-raw) (not= error-raw "") (some? error-raw))
-     :has-hint?    (and (string? hint-raw)  (not= hint-raw "")  (some? hint-raw))
-     :has-label?   (and (string? label-raw) (not= label-raw "") (some? label-raw))}))
+     :has-error?   (and (string? error-raw) (not= error-raw ""))
+     :has-hint?    (and (string? hint-raw)  (not= hint-raw ""))
+     :has-label?   (and (string? label-raw) (not= label-raw ""))}))
 
 (def method-api {})

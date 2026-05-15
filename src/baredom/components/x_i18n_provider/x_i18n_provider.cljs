@@ -6,7 +6,7 @@
             [baredom.components.x-i18n.model :as i18n-model]))
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
-(def ^:private k-refs         "__xI18nProviderRefs")
+(def ^:private k-initialized? "__xI18nProviderInitialized")
 (def ^:private k-model        "__xI18nProviderModel")
 (def ^:private k-translations "__xI18nProviderTranslations")
 (def ^:private k-abort        "__xI18nProviderAbort")
@@ -44,7 +44,7 @@
     (set! (.-textContent style) styles)
     (.appendChild root style)
     (.appendChild root slot)
-    (du/setv! el k-refs #js {:style style :slot slot})))
+    (du/mark-initialized! el k-initialized?)))
 
 ;; ── Read model from attributes ──────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -172,7 +172,7 @@
 
 ;; ── Lifecycle ───────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs)
+  (when-not (du/initialized? el k-initialized?)
     (init-dom! el))
   (update-from-attrs! el))
 
@@ -181,7 +181,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (when (du/getv el k-refs)
+    (when (du/initialized? el k-initialized?)
       (update-from-attrs! el))))
 
 ;; ── Property accessors ──────────────────────────────────────────────────────

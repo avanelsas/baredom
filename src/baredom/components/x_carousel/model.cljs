@@ -69,13 +69,6 @@
 
 ;; ── Parsers ─────────────────────────────────────────────────────────────────
 
-(defn parse-bool-default-true
-  "Parse an attribute that is true when absent or empty, false only when \"false\"."
-  [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
-
 (defn parse-non-neg-int
   "Parse a string to a non-negative integer. Returns fallback on failure."
   [s fallback]
@@ -149,8 +142,8 @@
     {:autoplay?   (boolean autoplay-present?)
      :interval    (parse-pos-int interval-raw default-interval 100)
      :loop?       (boolean loop-present?)
-     :arrows?     (parse-bool-default-true arrows-raw)
-     :dots?       (parse-bool-default-true dots-raw)
+     :arrows?     (mu/parse-bool-default-true arrows-raw)
+     :dots?       (mu/parse-bool-default-true dots-raw)
      :disabled?   (boolean disabled-present?)
      :current     current
      :transition  (parse-transition transition-raw)

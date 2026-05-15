@@ -4,8 +4,8 @@
             [baredom.components.x-spacer.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs  "__xSpacerRefs")
-(def ^:private k-model "__xSpacerModel")
+(def ^:private k-initialized? "__xSpacerInitialized")
+(def ^:private k-model        "__xSpacerModel")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -34,7 +34,7 @@
         ^js style (.createElement js/document "style")]
     (set! (.-textContent style) style-text)
     (.appendChild root style)
-    (du/setv! el k-refs #js {:root root})))
+    (du/mark-initialized! el k-initialized?)))
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -61,7 +61,7 @@
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs)
+  (when-not (du/initialized? el k-initialized?)
     (make-shadow! el))
   (update-from-attrs! el))
 
@@ -69,7 +69,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val)
-             (du/getv el k-refs))
+             (du/initialized? el k-initialized?))
     (update-from-attrs! el)))
 
 ;; ── Property accessors ────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
    [baredom.components.x-bento-item.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs  "__xBentoItemRefs")
+(def ^:private k-initialized? "__xBentoItemInitialized")
 (def ^:private k-model "__xBentoItemModel")
 
 ;; ── String-literal constants ──────────────────────────────────────────────
@@ -28,23 +28,18 @@
   (let [root  (.attachShadow el #js {:mode "open"})
         style (.createElement js/document "style")
         base  (.createElement js/document "div")
-        slot  (.createElement js/document "slot")
-        refs  {:root root :base base}]
-
+        slot  (.createElement js/document "slot")]
     (set! (.-textContent style) style-text)
-
     (du/set-attr! base attr-part part-base)
     (set! (.-className base) cls-base)
     (.appendChild base slot)
-
     (.appendChild root style)
     (.appendChild root base)
+    (du/mark-initialized! el k-initialized?)))
 
-    (du/setv! el k-refs refs)
-    refs))
-
-(defn- ensure-refs! [^js el]
-  (or (du/getv el k-refs) (init-dom! el)))
+(defn- ensure-shadow! [^js el]
+  (when-not (du/initialized? el k-initialized?)
+    (init-dom! el)))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
@@ -55,7 +50,7 @@
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- apply-model! [^js el {:keys [col-span-css row-span-css order] :as m}]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (let [^js style (.-style el)]
     (.setProperty style css-grid-column col-span-css)
     (.setProperty style css-grid-row    row-span-css)
@@ -72,7 +67,7 @@
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (ensure-refs! el)
+  (ensure-shadow! el)
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]

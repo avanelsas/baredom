@@ -10,6 +10,22 @@
 (def ^:private k-fading-out "__xSplashFadingOut")
 (def ^:private k-fade-on-end "__xSplashFadeOnEnd")
 
+;; ── Attribute / value string constants ──────────────────────────────────────
+(def ^:private attr-data-fading-out "data-fading-out")
+(def ^:private attr-data-variant    "data-variant")
+(def ^:private attr-data-overlay    "data-overlay")
+(def ^:private attr-aria-busy       "aria-busy")
+(def ^:private attr-aria-live       "aria-live")
+(def ^:private attr-aria-label      "aria-label")
+(def ^:private attr-aria-valuenow   "aria-valuenow")
+(def ^:private attr-role            "role")
+
+(def ^:private val-aria-busy-true   "true")
+(def ^:private val-aria-live-polite "polite")
+(def ^:private val-role-progressbar "progressbar")
+(def ^:private val-role-status      "status")
+(def ^:private val-default-label    "Loading")
+
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
   (str
@@ -139,7 +155,7 @@
     (du/set-attr! spinner-el "aria-hidden" "true")
 
     (du/set-attr! progress-el "part" "progress")
-    (du/set-attr! progress-el "role" "progressbar")
+    (du/set-attr! progress-el attr-role val-role-progressbar)
     (du/set-attr! progress-el "aria-valuemin" "0")
     (du/set-attr! progress-el "aria-valuemax" "100")
 
@@ -208,11 +224,11 @@
 (defn- finish-fade-out! [^js el]
   (clear-fade-timer! el)
   (du/setv! el k-fading-out false)
-  (du/remove-attr! el "data-fading-out")
+  (du/remove-attr! el attr-data-fading-out)
   (let [{:keys [overlay-el]} (ensure-refs! el)
         ^js overlay-el overlay-el]
     (set! (.. overlay-el -style -display) "none"))
-  (du/remove-attr! el "aria-busy")
+  (du/remove-attr! el attr-aria-busy)
   (fire-hidden-event! el))
 
 (defn- clear-fade-on-end!
@@ -248,7 +264,7 @@
         ;; transition to opacity 0 on the next frame.
         (set! (.. overlay-el -style -display) "flex")
         (set! (.. overlay-el -style -opacity) "1")
-        (du/set-attr! el "data-fading-out" "")
+        (du/set-attr! el attr-data-fading-out "")
         (.addEventListener overlay-el "transitionend" on-end)
         ;; Trigger transition on next frame so the browser sees the change.
         ;; Guard on isConnected so disconnect during the two-frame window
@@ -274,7 +290,7 @@
     (clear-fade-timer! el)
     (clear-fade-on-end! el)
     (du/setv! el k-fading-out false)
-    (du/remove-attr! el "data-fading-out")
+    (du/remove-attr! el attr-data-fading-out)
     (let [{:keys [overlay-el]} (ensure-refs! el)
           ^js overlay-el overlay-el]
       (set! (.. overlay-el -style -display) "")
@@ -292,8 +308,8 @@
         was-active?     (:active? old-m)]
 
     ;; Data attributes for CSS
-    (du/set-attr! el "data-variant" variant)
-    (du/set-attr! el "data-overlay" overlay)
+    (du/set-attr! el attr-data-variant variant)
+    (du/set-attr! el attr-data-overlay overlay)
 
     ;; Spinner visibility
     (set! (.. spinner-el -style -display)
@@ -303,18 +319,18 @@
     (if (some? progress)
       (do (set! (.. progress-el -style -display) "block")
           (set! (.. bar-el -style -width) (str progress "%"))
-          (du/set-attr! progress-el "aria-valuenow" (str progress)))
+          (du/set-attr! progress-el attr-aria-valuenow (str progress)))
       (do (set! (.. progress-el -style -display) "none")
-          (du/remove-attr! progress-el "aria-valuenow")))
+          (du/remove-attr! progress-el attr-aria-valuenow)))
 
     ;; Active / fade handling
     (cond
       ;; Becoming active
       (and active? (not was-active?))
       (do (cancel-fade-out! el)
-          (du/set-attr! el "aria-busy" "true")
-          (du/set-attr! el "aria-live" "polite")
-          (du/set-attr! el "role" "status")
+          (du/set-attr! el attr-aria-busy val-aria-busy-true)
+          (du/set-attr! el attr-aria-live val-aria-live-polite)
+          (du/set-attr! el attr-role     val-role-status)
           ;; Clear inline overrides so CSS rules take effect
           (set! (.. overlay-el -style -display) "")
           (set! (.. overlay-el -style -opacity) ""))
@@ -326,11 +342,11 @@
       ;; First render, not active — ensure hidden
       (and (not active?) (nil? old-m))
       (do (set! (.. overlay-el -style -display) "none")
-          (du/remove-attr! el "aria-busy")))
+          (du/remove-attr! el attr-aria-busy)))
 
     ;; Set aria-label default if none provided
-    (when-not (du/has-attr? el "aria-label")
-      (du/set-attr! el "aria-label" "Loading"))
+    (when-not (du/has-attr? el attr-aria-label)
+      (du/set-attr! el attr-aria-label val-default-label))
 
     (du/setv! el k-model m)))
 
@@ -366,17 +382,7 @@
                                           (du/set-attr! this model/attr-progress (str v)))))
                         :enumerable true :configurable true})
 
-  (.defineProperty js/Object proto model/attr-spinner
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (model/parse-bool-default-true
-                                         (.getAttribute this model/attr-spinner))))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (du/set-attr! this model/attr-spinner "")
-                                          (du/set-attr! this model/attr-spinner "false"))))
-                        :enumerable true :configurable true})
+  (du/define-bool-default-true-prop! proto model/attr-spinner model/attr-spinner)
 
   (du/define-string-prop! proto model/attr-overlay model/attr-overlay "solid"))
 

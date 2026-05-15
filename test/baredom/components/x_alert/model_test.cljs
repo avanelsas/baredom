@@ -1,5 +1,5 @@
 (ns baredom.components.x-alert.model-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is]]
             [baredom.components.x-alert.model :as model]))
 
 ;; ── parse-type ───────────────────────────────────────────────────────────────
@@ -26,21 +26,6 @@
   (is (= "warning" (model/type->attr :warning)))
   (is (= "error"   (model/type->attr :error)))
   (is (= "info"    (model/type->attr :unknown))))
-
-;; ── parse-bool-default-true ──────────────────────────────────────────────────
-(deftest parse-bool-default-true-test
-  (testing "absent (nil) → true"
-    (is (true? (model/parse-bool-default-true nil))))
-  (testing "empty string → true"
-    (is (true? (model/parse-bool-default-true ""))))
-  (testing "\"true\" → true"
-    (is (true? (model/parse-bool-default-true "true"))))
-  (testing "\"false\" → false"
-    (is (false? (model/parse-bool-default-true "false"))))
-  (testing "\"FALSE\" → false (case-insensitive)"
-    (is (false? (model/parse-bool-default-true "FALSE"))))
-  (testing "other values → true"
-    (is (true? (model/parse-bool-default-true "yes")))))
 
 ;; ── parse-timeout-ms ─────────────────────────────────────────────────────────
 (deftest parse-timeout-ms-valid-test

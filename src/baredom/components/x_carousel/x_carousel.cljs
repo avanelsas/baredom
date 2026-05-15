@@ -72,7 +72,6 @@
 (def ^:private css-var-peek "--_peek")
 
 (def ^:private val-true                "true")
-(def ^:private val-false               "false")
 (def ^:private val-zero-peek           "0px")
 (def ^:private val-button              "button")
 (def ^:private val-region              "region")
@@ -197,7 +196,11 @@
    ":host([data-transition=fade]) ::slotted(*){"
    "grid-area:1/1;"
    "min-width:100%;max-width:100%;"
+   "opacity:0;"
    "transition:opacity var(--x-carousel-transition-duration) ease;}"
+
+   ":host([data-transition=fade]) ::slotted([data-active]){"
+   "opacity:1;}"
 
    "[part=prev-btn],[part=next-btn]{"
    "position:absolute;"
@@ -404,19 +407,27 @@
           (du/set-attr! dot attr-aria-selected (str (= i current))))))))
 
 ;; ── Fade-mode helpers ──────────────────────────────────────────────────────
+;; Switch the active slotted child via the `data-active` attribute. CSS in
+;; style-text (`::slotted([data-active]){opacity:1}`) handles the visual.
+;; Avoids polluting consumer light-DOM children's inline `style.opacity`
+;; — those nodes are owned by the page, not by the component.
+
+(def ^:private attr-data-active "data-active")
+
 (defn- update-fade-active! [^js el current]
   (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
         children    (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
       (let [^js child (aget children i)]
-        (set! (.. child -style -opacity) (if (= i current) "1" "0"))))))
+        (if (= i current)
+          (du/set-attr!    child attr-data-active "")
+          (du/remove-attr! child attr-data-active))))))
 
 (defn- clear-fade-styles! [^js el]
   (let [^js slot-el (gobj/get (du/getv el k-refs) rk-slot)
         children    (.assignedElements slot-el)]
     (dotimes [i (.-length children)]
-      (let [^js child (aget children i)]
-        (set! (.. child -style -opacity) "")))))
+      (du/remove-attr! (aget children i) attr-data-active))))
 
 ;; ── DOM patching (render-orchestrator: phase list of named helpers) ───────
 (defn- apply-host-data! [^js el {:keys [direction transition peek]}]
@@ -686,23 +697,10 @@
   (doseq [attr [model/attr-autoplay model/attr-loop model/attr-disabled]]
     (du/define-bool-prop! proto attr attr))
 
-  ;; Default-true boolean properties: arrows, dots — Tier 2 because the
-  ;; absent attribute reads as true, and writing false stores the literal
-  ;; "false" string rather than removing the attribute. du/define-bool-prop!
-  ;; would treat the missing attribute as false (the opposite of the
-  ;; intended default).
+  ;; Default-true boolean properties: arrows, dots — routed through the
+  ;; shared helper for absent-default-true semantics.
   (doseq [attr [model/attr-arrows model/attr-dots]]
-    (.defineProperty js/Object proto attr
-                     #js {:get (fn []
-                                 (this-as ^js this
-                                   (model/parse-bool-default-true
-                                    (.getAttribute this attr))))
-                          :set (fn [v]
-                                 (this-as ^js this
-                                   (if v
-                                     (du/remove-attr! this attr)
-                                     (du/set-attr! this attr val-false))))
-                          :enumerable true :configurable true}))
+    (du/define-bool-default-true-prop! proto attr attr))
 
   (.defineProperty js/Object proto "currentSlide"
                    #js {:get (fn []

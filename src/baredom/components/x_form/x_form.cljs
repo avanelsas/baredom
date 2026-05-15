@@ -36,7 +36,11 @@
 (def ^:private sel-named-enabled "[name]:not([disabled])")
 (def ^:private sel-named         "[name]")
 (def ^:private sel-error         "[error]")
-(def ^:private sel-button        "button,input[type=submit],input[type=reset]")
+(def ^:private sel-button
+  ;; Native form-control buttons + the library's own x-button. The latter
+  ;; is included per CLAUDE.md dogfooding rule: when a project surface
+  ;; could use x-button, it should — x-form is exactly that surface.
+  "button,input[type=submit],input[type=reset],x-button[type=submit],x-button[type=reset]")
 
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -115,8 +119,12 @@
 
 ;; ── Value collection ──────────────────────────────────────────────────────
 (defn- collect-values [^js el]
+  ;; Use a null-prototype object so consumer-supplied field names like
+  ;; "toString" or "__proto__" don't shadow Object.prototype methods on
+  ;; the result. (Adversarial form name="toString" would otherwise break
+  ;; consumer code calling values.toString().)
   (let [fields (.querySelectorAll el sel-named-enabled)
-        result (js/Object.)]
+        result (js/Object.create nil)]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)
             field-name (.-name field)]
@@ -206,10 +214,19 @@
     (gobj/get refs rk-form)))
 
 (defn- set-field-error! [^js this field-name msg]
-  (when-let [^js field (.querySelector this (str "[name=\"" field-name "\"]"))]
-    (if (or (nil? msg) (= msg "") (= msg js/undefined))
-      (du/remove-attr! field attr-error)
-      (du/set-attr! field attr-error msg))))
+  ;; Match by .name property instead of interpolating field-name into a
+  ;; CSS selector. Names containing `"`, `]`, `\` or other CSS-special
+  ;; characters are legal HTML but would throw SyntaxError on
+  ;; `[name="<raw>"]`. Iterating named fields and comparing .name avoids
+  ;; the issue entirely.
+  (let [fields (.querySelectorAll this sel-named)
+        clear? (or (nil? msg) (= msg "") (= msg js/undefined))]
+    (dotimes [i (.-length fields)]
+      (let [^js field (aget fields i)]
+        (when (= (.-name field) field-name)
+          (if clear?
+            (du/remove-attr! field attr-error)
+            (du/set-attr! field attr-error msg)))))))
 
 (defn- clear-errors! [^js this]
   (let [fields (.querySelectorAll this sel-error)]

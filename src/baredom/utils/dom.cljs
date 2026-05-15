@@ -1,5 +1,6 @@
 (ns baredom.utils.dom
-  (:require [goog.object :as gobj]))
+  (:require [baredom.utils.model :as mu]
+            [goog.object :as gobj]))
 
 ;; ---------------------------------------------------------------------------
 ;; Trace hook — dev-only extension point
@@ -222,6 +223,33 @@
         :enumerable   true
         :get (fn [] (this-as ^js this (has-attr? this attr-name)))
         :set (fn [v] (this-as ^js this (set-bool-attr! this attr-name (boolean v))))}))
+
+(defn define-bool-default-true-prop!
+  "Install a boolean JS property for an HTML attribute that defaults to
+   `true`. Absent → true, attribute value `\"false\"` (case-insensitive,
+   trimmed) → false, any other value → true. Setter REMOVES the attribute
+   for truthy values (so the explicit-true HTML matches the natural-true
+   absent default) and writes the literal `\"false\"` for falsy. Removing
+   for falsy would resolve back to the default `true`, defeating the
+   point — hence the explicit `\"false\"` encoding.
+
+   Use for `dismissible`, `arrows`, `dots`, `spinner`, etc. — boolean
+   attributes whose natural state is enabled and opting out is explicit.
+   This is the centralised form of the Tier-2 pattern previously
+   hand-rolled in x-alert, x-carousel, and x-splash."
+  [^js proto prop-name attr-name]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn []
+               (this-as ^js this
+                 (mu/parse-bool-default-true (get-attr this attr-name))))
+        :set (fn [v]
+               (this-as ^js this
+                 (if v
+                   (remove-attr! this attr-name)
+                   (set-attr! this attr-name "false"))))}))
 
 (defn- normalize-prop-val
   "Coerce a JS property setter input to the string form an HTML attribute
