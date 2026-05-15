@@ -73,13 +73,6 @@
   (let [v (when (string? s) (.toLowerCase (.trim s)))]
     (if (contains? allowed-snaps v) v "none")))
 
-(defn parse-bool-default-true
-  "Parse an attribute that is true when absent or empty, false only when \"false\"."
-  [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
-
 (defn parse-non-neg-int
   "Parse a string to a non-negative integer, returning default-val on failure."
   [s default-val]
@@ -130,7 +123,7 @@
    :loop?            (mu/parse-bool-present loop-attr)
    :auto-play?       (mu/parse-bool-present auto-play-attr)
    :interval         (parse-interval interval-raw)
-   :show-controls?   (parse-bool-default-true show-controls-attr)
+   :show-controls?   (mu/parse-bool-default-true show-controls-attr)
    :show-indicators? (mu/parse-bool-present show-indicators-attr)
    :active-index     (parse-active-index active-index-raw)
    :gap              (parse-gap gap-raw)

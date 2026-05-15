@@ -47,13 +47,6 @@
    event-select {:cancelable false :detail {:item 'object}}
    event-query-change {:cancelable false :detail {:query 'string}}})
 
-(defn parse-bool-default-true
-  "nil → true, \"false\" → false, anything else → true."
-  [s]
-  (if (nil? s)
-    true
-    (not= s "false")))
-
 (defn normalize-str
   "Trim and return nil if empty."
   [s]
@@ -145,14 +138,14 @@
   [{:keys [open-present? modal-raw dismissible-raw disabled-raw
            no-scrim-raw close-on-scrim-raw close-on-escape-raw
            label-raw placeholder-raw empty-text-raw]}]
-  (let [modal?          (parse-bool-default-true modal-raw)
-        dismissible?    (parse-bool-default-true dismissible-raw)
+  (let [modal?          (mu/parse-bool-default-true modal-raw)
+        dismissible?    (mu/parse-bool-default-true dismissible-raw)
         no-scrim?       (mu/parse-bool-attr no-scrim-raw)
         scrim?          (and modal? (not no-scrim?))
         close-on-scrim? (if (some? close-on-scrim-raw)
                           (mu/parse-bool-attr close-on-scrim-raw)
                           scrim?)
-        close-on-escape? (parse-bool-default-true close-on-escape-raw)]
+        close-on-escape? (mu/parse-bool-default-true close-on-escape-raw)]
     {:open?            (boolean open-present?)
      :modal?           modal?
      :dismissible?     dismissible?

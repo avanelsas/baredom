@@ -44,21 +44,6 @@
     (is (true? (mu/parse-bool-present "false")))
     (is (true? (mu/parse-bool-present "anything")))))
 
-;; ── parse-bool-default-true ─────────────────────────────────────────────────
-(deftest parse-bool-default-true-test
-  (testing "absent (nil) -> true"
-    (is (true? (model/parse-bool-default-true nil))))
-  (testing "empty string -> true"
-    (is (true? (model/parse-bool-default-true ""))))
-  (testing "\"true\" -> true"
-    (is (true? (model/parse-bool-default-true "true"))))
-  (testing "\"false\" -> false"
-    (is (false? (model/parse-bool-default-true "false"))))
-  (testing "\"FALSE\" -> false (case-insensitive)"
-    (is (false? (model/parse-bool-default-true "FALSE"))))
-  (testing "other values -> true"
-    (is (true? (model/parse-bool-default-true "yes")))))
-
 ;; ── parse-non-neg-int ───────────────────────────────────────────────────────
 (deftest parse-non-neg-int-valid-test
   (is (= 42  (model/parse-non-neg-int "42" 0)))

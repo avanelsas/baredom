@@ -11,13 +11,6 @@
     (is (= false (mu/parse-bool-attr "false")))
     (is (= false (mu/parse-bool-attr nil)))))
 
-(deftest parse-bool-default-true-test
-  (testing "parse-bool-default-true"
-    (is (= true  (model/parse-bool-default-true nil)))
-    (is (= true  (model/parse-bool-default-true "")))
-    (is (= true  (model/parse-bool-default-true "true")))
-    (is (= false (model/parse-bool-default-true "false")))))
-
 (deftest normalize-str-test
   (testing "normalize-str"
     (is (= "hello" (model/normalize-str "  hello  ")))

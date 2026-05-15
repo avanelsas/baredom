@@ -1,4 +1,5 @@
-(ns baredom.components.x-toast.model)
+(ns baredom.components.x-toast.model
+  (:require [baredom.utils.model :as mu]))
 
 (def tag-name "x-toast")
 
@@ -54,13 +55,6 @@
   "Convert an internal type keyword back to its attribute string."
   [t]
   (or (get kw->type t) "info"))
-
-(defn parse-bool-default-true
-  "Parse an attribute that is true when absent or empty, false only when \"false\"."
-  [s]
-  (if (nil? s)
-    true
-    (not= (.toLowerCase (.trim (str s))) "false")))
 
 (defn parse-bool-default-false
   "Parse an attribute that is false when absent, true when present (any value except \"false\")."
@@ -133,7 +127,7 @@
      :message       (or (when (string? message) (.trim message)) "")
      :icon-mode     icon-mode
      :icon          (when (= icon-mode :custom) icon*)
-     :dismissible?  (parse-bool-default-true dismissible-attr)
+     :dismissible?  (mu/parse-bool-default-true dismissible-attr)
      :disabled?     (boolean disabled-present?)
      :timeout-ms    (parse-timeout-ms timeout-ms-raw)
      :show-progress? (parse-bool-default-false show-progress-attr)}))
