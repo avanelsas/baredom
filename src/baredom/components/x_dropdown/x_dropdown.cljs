@@ -170,52 +170,59 @@
 ;; ---------------------------------------------------------------------------
 ;; Shadow DOM construction
 ;; ---------------------------------------------------------------------------
-(defn- make-shadow! [^js el]
-  (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (.createElement js/document "style")
-        trigger-el (.createElement js/document "button")
+;; Each per-section builder creates + decorates + assembles + returns its
+;; element(s). `assemble-dropdown-shadow!` composes them, attaches them to
+;; the host shadow, and stashes the refs JS object on the element.
+
+(defn- make-style-section! []
+  (let [el (.createElement js/document "style")]
+    (set! (.-textContent el) style-text)
+    el))
+
+(defn- make-trigger-section! []
+  (let [trigger-el (.createElement js/document "button")
         label-el   (.createElement js/document "span")
-        chevron-el (.createElement js/document "span")
-        panel-el   (.createElement js/document "div")
-        inner-el   (.createElement js/document "div")
-        slot-el    (.createElement js/document "slot")]
-
-    (set! (.-textContent style-el) style-text)
-
+        chevron-el (.createElement js/document "span")]
     (du/set-attr! trigger-el "part"          "trigger")
     (du/set-attr! trigger-el "type"          "button")
     (du/set-attr! trigger-el "aria-haspopup" "true")
     (du/set-attr! trigger-el "aria-expanded" "false")
     (du/set-attr! trigger-el "aria-controls" "panel")
-
-    (du/set-attr! label-el   "part"       "trigger-label")
-
-    (du/set-attr! chevron-el "part"       "chevron")
-    (du/set-attr! chevron-el "aria-hidden" "true")
+    (du/set-attr! label-el   "part"          "trigger-label")
+    (du/set-attr! chevron-el "part"          "chevron")
+    (du/set-attr! chevron-el "aria-hidden"   "true")
     (set! (.-textContent chevron-el) "\u25BE")
+    (.appendChild trigger-el label-el)
+    (.appendChild trigger-el chevron-el)
+    {:trigger trigger-el :label label-el :chevron chevron-el}))
 
+(defn- make-panel-section! []
+  (let [panel-el (.createElement js/document "div")
+        inner-el (.createElement js/document "div")
+        slot-el  (.createElement js/document "slot")]
     (du/set-attr! panel-el "part"           "panel")
     (du/set-attr! panel-el "id"             "panel")
     (du/set-attr! panel-el "data-placement" model/default-placement)
-
-    (du/set-attr! inner-el "part" "panel-inner")
-
-    (.appendChild trigger-el label-el)
-    (.appendChild trigger-el chevron-el)
-
+    (du/set-attr! inner-el "part"           "panel-inner")
     (.appendChild inner-el slot-el)
     (.appendChild panel-el inner-el)
+    {:panel panel-el}))
 
+(defn- assemble-dropdown-shadow! [^js el]
+  (let [root     (.attachShadow el #js {:mode "open"})
+        style-el (make-style-section!)
+        {:keys [trigger label chevron]} (make-trigger-section!)
+        {:keys [panel]}                 (make-panel-section!)
+        refs     #js {:trigger trigger
+                      :label   label
+                      :chevron chevron
+                      :panel   panel}]
     (.appendChild root style-el)
-    (.appendChild root trigger-el)
-    (.appendChild root panel-el)
+    (.appendChild root trigger)
+    (.appendChild root panel)
+    (du/setv! el k-refs refs)
+    refs))
 
-    (let [refs #js {:trigger trigger-el
-                    :label   label-el
-                    :chevron chevron-el
-                    :panel   panel-el}]
-      (du/setv! el k-refs refs)
-      refs)))
 
 ;; ---------------------------------------------------------------------------
 ;; Model reading
@@ -382,7 +389,7 @@
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
-    (make-shadow! el))
+    (assemble-dropdown-shadow! el))
   (remove-static-listeners! el)
   (remove-doc-listeners! el)
   (du/setv! el k-handlers (make-handlers el))

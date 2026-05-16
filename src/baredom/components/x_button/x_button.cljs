@@ -319,65 +319,99 @@
    "}"))
 
 ;; ── Shadow DOM builders ─────────────────────────────────────────────────────
+;; Each per-section builder creates + decorates + assembles + returns its
+;; element(s). `build-refs!` composes them, attaches to the host shadow, and
+;; populates the refs JS object the caller stashes via `du/setv!`.
+
+(defn- make-style-section! []
+  (let [el (.createElement js/document "style")]
+    (set! (.-textContent el) style-text)
+    el))
+
+(defn- make-icon-start-segment! []
+  (let [icon-el (.createElement js/document "span")
+        slot-el (.createElement js/document "slot")]
+    (du/set-attr! icon-el attr-part part-icon-start)
+    (du/set-attr! slot-el attr-name model/slot-icon-start)
+    (.appendChild icon-el slot-el)
+    {:wrapper icon-el :slot slot-el}))
+
+(defn- make-label-segment! []
+  (let [label-el (.createElement js/document "span")
+        slot-el  (.createElement js/document "slot")]
+    (du/set-attr! label-el attr-part part-label)
+    (.appendChild label-el slot-el)
+    {:wrapper label-el :slot slot-el}))
+
+(defn- make-spinner-segment! []
+  (let [spinner-el  (.createElement js/document "span")
+        slot-el     (.createElement js/document "slot")
+        fallback-el (.createElement js/document "span")]
+    (du/set-attr! spinner-el  attr-part        part-spinner)
+    (du/set-attr! slot-el     attr-part        part-spinner-slot)
+    (du/set-attr! slot-el     attr-name        model/slot-spinner)
+    (du/set-attr! fallback-el attr-part        part-spinner-fallback)
+    (du/set-attr! spinner-el  attr-aria-hidden val-true)
+    (du/set-attr! fallback-el attr-aria-hidden val-true)
+    (.appendChild spinner-el slot-el)
+    (.appendChild spinner-el fallback-el)
+    {:wrapper spinner-el :slot slot-el}))
+
+(defn- make-icon-end-segment! []
+  (let [icon-el (.createElement js/document "span")
+        slot-el (.createElement js/document "slot")]
+    (du/set-attr! icon-el attr-part part-icon-end)
+    (du/set-attr! slot-el attr-name model/slot-icon-end)
+    (.appendChild icon-el slot-el)
+    {:wrapper icon-el :slot slot-el}))
+
+(defn- make-inner-section!
+  "Build the inner wrapper containing the four segments and return both the
+  wrapper element and the four slots (so callers can stash slot refs)."
+  []
+  (let [inner-el   (.createElement js/document "span")
+        icon-start (make-icon-start-segment!)
+        label      (make-label-segment!)
+        spinner    (make-spinner-segment!)
+        icon-end   (make-icon-end-segment!)]
+    (du/set-attr! inner-el attr-part part-inner)
+    (.appendChild inner-el (:wrapper icon-start))
+    (.appendChild inner-el (:wrapper label))
+    (.appendChild inner-el (:wrapper spinner))
+    (.appendChild inner-el (:wrapper icon-end))
+    {:inner-el        inner-el
+     :icon-start-slot (:slot icon-start)
+     :label-slot      (:slot label)
+     :spinner-slot    (:slot spinner)
+     :icon-end-slot   (:slot icon-end)}))
+
+(defn- make-button-section!
+  "Build the host <button> wrapping the inner section. Returns the button
+  element and the four slots the inner section produced."
+  []
+  (let [button-el (.createElement js/document "button")
+        inner     (make-inner-section!)]
+    (du/set-attr! button-el attr-part part-button)
+    (.appendChild button-el (:inner-el inner))
+    (assoc inner :button-el button-el)))
+
 (defn- build-refs!
   "Build the shadow DOM and return the refs JS object. Stores nothing on
   the host — caller does that via `du/setv!`."
   [^js el]
-  (let [root                (.attachShadow el #js {:mode "open"})
-        style-el            (.createElement js/document "style")
-        button-el           (.createElement js/document "button")
-        inner-el            (.createElement js/document "span")
-        icon-start-el       (.createElement js/document "span")
-        label-el            (.createElement js/document "span")
-        spinner-el          (.createElement js/document "span")
-        spinner-fallback-el (.createElement js/document "span")
-        icon-end-el         (.createElement js/document "span")
-        default-slot-el     (.createElement js/document "slot")
-        icon-start-slot-el  (.createElement js/document "slot")
-        icon-end-slot-el    (.createElement js/document "slot")
-        spinner-slot-el     (.createElement js/document "slot")
-        refs                #js {}]
-
-    (set! (.-textContent style-el) style-text)
-
-    (du/set-attr! button-el           attr-part part-button)
-    (du/set-attr! inner-el            attr-part part-inner)
-    (du/set-attr! icon-start-el       attr-part part-icon-start)
-    (du/set-attr! label-el            attr-part part-label)
-    (du/set-attr! spinner-el          attr-part part-spinner)
-    (du/set-attr! spinner-slot-el     attr-part part-spinner-slot)
-    (du/set-attr! spinner-fallback-el attr-part part-spinner-fallback)
-    (du/set-attr! icon-end-el         attr-part part-icon-end)
-
-    (du/set-attr! icon-start-slot-el attr-name model/slot-icon-start)
-    (du/set-attr! icon-end-slot-el   attr-name model/slot-icon-end)
-    (du/set-attr! spinner-slot-el    attr-name model/slot-spinner)
-
-    (du/set-attr! spinner-el          attr-aria-hidden val-true)
-    (du/set-attr! spinner-fallback-el attr-aria-hidden val-true)
-
-    (.appendChild icon-start-el icon-start-slot-el)
-    (.appendChild label-el default-slot-el)
-    (.appendChild spinner-el spinner-slot-el)
-    (.appendChild spinner-el spinner-fallback-el)
-    (.appendChild icon-end-el icon-end-slot-el)
-
-    (.appendChild inner-el icon-start-el)
-    (.appendChild inner-el label-el)
-    (.appendChild inner-el spinner-el)
-    (.appendChild inner-el icon-end-el)
-
-    (.appendChild button-el inner-el)
-
+  (let [root      (.attachShadow el #js {:mode "open"})
+        style-el  (make-style-section!)
+        {:keys [button-el icon-start-slot label-slot
+                spinner-slot icon-end-slot]} (make-button-section!)
+        refs      #js {}]
     (.appendChild root style-el)
     (.appendChild root button-el)
-
     (gobj/set refs rk-root            root)
     (gobj/set refs rk-button          button-el)
-    (gobj/set refs rk-label-slot      default-slot-el)
-    (gobj/set refs rk-icon-start-slot icon-start-slot-el)
-    (gobj/set refs rk-icon-end-slot   icon-end-slot-el)
-    (gobj/set refs rk-spinner-slot    spinner-slot-el)
+    (gobj/set refs rk-label-slot      label-slot)
+    (gobj/set refs rk-icon-start-slot icon-start-slot)
+    (gobj/set refs rk-icon-end-slot   icon-end-slot)
+    (gobj/set refs rk-spinner-slot    spinner-slot)
     refs))
 
 ;; ── Slot probing ────────────────────────────────────────────────────────────
