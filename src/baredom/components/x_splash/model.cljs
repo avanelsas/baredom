@@ -15,11 +15,11 @@
 (def event-hidden "x-splash-hidden")
 
 (def property-api
-  {:active   {:type 'boolean}
-   :variant  {:type 'string}
-   :progress {:type 'number}
-   :spinner  {:type 'boolean}
-   :overlay  {:type 'string}})
+  {:active   {:type 'boolean :reflects-attribute attr-active}
+   :variant  {:type 'string  :reflects-attribute attr-variant}
+   :progress {:type 'number  :reflects-attribute attr-progress}
+   :spinner  {:type 'boolean :reflects-attribute attr-spinner}
+   :overlay  {:type 'string  :reflects-attribute attr-overlay}})
 
 (def event-schema
   {event-hidden {:detail     {}
