@@ -21,9 +21,9 @@
 
 ;; ── Public API metadata ───────────────────────────────────────────────────────
 (def property-api
-  {:position  {:type 'string}
-   :maxToasts {:type 'number}
-   :label     {:type 'string}})
+  {:position  {:type 'string :reflects-attribute attr-position}
+   :maxToasts {:type 'number :reflects-attribute attr-max-toasts}
+   :label     {:type 'string :reflects-attribute attr-label}})
 
 (def event-schema
   {event-dismiss

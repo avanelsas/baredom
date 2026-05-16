@@ -10,7 +10,7 @@
 (def default-preset "default")
 
 (def property-api
-  {:preset {:type 'string}})
+  {:preset {:type 'string :reflects-attribute attr-preset}})
 
 (def event-schema {})
 
