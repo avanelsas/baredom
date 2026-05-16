@@ -4,6 +4,28 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-sidebar.model :as model]))
 
+;; ── Instance-field keys ──────────────────────────────────────────────────────
+;; Stashed on the host element via `du/setv!` so every mutation routes through
+;; the x-trace-history recorder hook. Prior to PR refactor these were string
+;; keys read/written via `gobj/get|set instance "_X"` which bypassed the hook.
+
+(def ^:private k-root                  "__xSidebarRoot")
+(def ^:private k-backdrop              "__xSidebarBackdrop")
+(def ^:private k-sidebar               "__xSidebarSidebar")
+(def ^:private k-panel                 "__xSidebarPanel")
+(def ^:private k-slot                  "__xSidebarSlot")
+(def ^:private k-panel-tabindex-added  "__xSidebarPanelTabindexAdded")
+(def ^:private k-restore-focus-target  "__xSidebarRestoreFocusTarget")
+(def ^:private k-tabbables             "__xSidebarTabbables")
+(def ^:private k-prev-state            "__xSidebarPrevState")
+(def ^:private k-handlers              "__xSidebarHandlers")
+(def ^:private k-listening             "__xSidebarListening")
+
+;; ── Handler-map keys (live on a JS object, not the host) ─────────────────────
+(def ^:private handler-backdrop-click "onBackdropClick")
+(def ^:private handler-keydown        "onKeydown")
+(def ^:private handler-resize         "onResize")
+
 (def css-text
   (str
    ":host {"
@@ -154,8 +176,8 @@
 
 (defn focused-sidebar-descendant
   [instance]
-  (let [root (gobj/get instance "_root")
-        sidebar (gobj/get instance "_sidebar")
+  (let [root (du/getv instance k-root)
+        sidebar (du/getv instance k-sidebar)
         shadow-active (when root (.-activeElement root))
         doc-active (.-activeElement js/document)]
     (cond
@@ -174,58 +196,70 @@
 
 (defn focus-panel!
   [instance]
-  (let [panel (gobj/get instance "_panel")]
+  (let [panel (du/getv instance k-panel)]
     (when-not (.hasAttribute panel "tabindex")
       (du/set-attr! panel "tabindex" "-1")
-      (gobj/set instance "_panelTabindexAdded" true))
+      (du/setv! instance k-panel-tabindex-added true))
     (.focus panel)))
 
 (defn activate-focus-trap!
   [instance]
-  (let [panel (gobj/get instance "_panel")
+  (let [panel (du/getv instance k-panel)
         tabbables (collect-tabbables panel)]
-    (gobj/set instance "_restoreFocusTarget" (.-activeElement js/document))
-    (gobj/set instance "_tabbables" (clj->js tabbables))
+    (du/setv! instance k-restore-focus-target (.-activeElement js/document))
+    (du/setv! instance k-tabbables (clj->js tabbables))
     (if (seq tabbables)
       (.focus (first tabbables))
       (focus-panel! instance))))
 
 (defn deactivate-focus-trap!
   [instance]
-  (let [restore-target (gobj/get instance "_restoreFocusTarget")
-        panel (gobj/get instance "_panel")
-        panel-tabindex-added (true? (gobj/get instance "_panelTabindexAdded"))]
+  (let [restore-target (du/getv instance k-restore-focus-target)
+        panel (du/getv instance k-panel)
+        panel-tabindex-added (true? (du/getv instance k-panel-tabindex-added))]
     (release-sidebar-focus! instance)
-    (gobj/set instance "_tabbables" nil)
-    (gobj/set instance "_restoreFocusTarget" nil)
+    (du/setv! instance k-tabbables nil)
+    (du/setv! instance k-restore-focus-target nil)
     (when (and panel panel-tabindex-added)
       (du/remove-attr! panel "tabindex")
-      (gobj/set instance "_panelTabindexAdded" false))
+      (du/setv! instance k-panel-tabindex-added false))
     (when (and restore-target (.-isConnected restore-target))
       (.focus restore-target))))
 
+;; ── Focus cycling (Tab/Shift-Tab) ───────────────────────────────────────────
+;; cycle-focus! reads as a phase list: gather tabbables → branch on empty →
+;; compute wrap target → preventDefault + focus. The three helpers below pull
+;; each phase out of the original 22-line function.
+
+(defn- read-tabbables
+  [instance]
+  (let [tabbables-js (du/getv instance k-tabbables)]
+    (if tabbables-js (vec (array-seq tabbables-js)) [])))
+
+(defn- focus-empty-trap!
+  [instance ^js event]
+  (.preventDefault event)
+  (when (du/getv instance k-panel)
+    (focus-panel! instance)))
+
+(defn- wrap-tab-target
+  [tabbables shift?]
+  (let [active   (.-activeElement js/document)
+        first-el (first tabbables)
+        last-el  (last tabbables)]
+    (cond
+      (and shift?       (= active first-el)) last-el
+      (and (not shift?) (= active last-el))  first-el
+      :else                                  nil)))
+
 (defn cycle-focus!
-  [instance event]
-  (let [tabbables-js (gobj/get instance "_tabbables")
-        tabbables (if tabbables-js (vec (array-seq tabbables-js)) [])
-        panel (gobj/get instance "_panel")]
+  [instance ^js event]
+  (let [tabbables (read-tabbables instance)]
     (if (empty? tabbables)
-      (do
+      (focus-empty-trap! instance event)
+      (when-let [target (wrap-tab-target tabbables (.-shiftKey event))]
         (.preventDefault event)
-        (when panel
-          (focus-panel! instance)))
-      (let [active (.-activeElement js/document)
-            first-el (first tabbables)
-            last-el (last tabbables)
-            shift? (.-shiftKey event)]
-        (cond
-          (and shift? (= active first-el))
-          (do (.preventDefault event) (.focus last-el))
-
-          (and (not shift?) (= active last-el))
-          (do (.preventDefault event) (.focus first-el))
-
-          :else nil)))))
+        (.focus target)))))
 
 (defn apply-host-state!
   [instance {:keys [effective-variant placement open collapsed-applied reduced-motion]}]
@@ -237,14 +271,14 @@
 
 (defn apply-a11y!
   [instance {:keys [label aria-hidden]}]
-  (when-let [sidebar (gobj/get instance "_sidebar")]
+  (when-let [sidebar (du/getv instance k-sidebar)]
     (du/set-attr! sidebar "role" "navigation")
     (du/set-attr! sidebar "aria-label" label)
     (du/set-attr! sidebar "aria-hidden" (if aria-hidden "true" "false"))))
 
 (defn apply-backdrop!
   [instance {:keys [show-backdrop]}]
-  (when-let [backdrop (gobj/get instance "_backdrop")]
+  (when-let [backdrop (du/getv instance k-backdrop)]
     (set-data-attr! backdrop "data-active" (if show-backdrop "true" "false"))
     (set! (.-hidden backdrop) (not show-backdrop))
     (when (exists? (.-inert backdrop))
@@ -252,7 +286,7 @@
 
 (defn apply-panel-state!
   [instance {:keys [open placement effective-variant collapsed-applied]}]
-  (when-let [panel (gobj/get instance "_panel")]
+  (when-let [panel (du/getv instance k-panel)]
     (set-data-attr! panel "data-open" (if open "true" "false"))
     (set-data-attr! panel "data-placement" placement)
     (set-data-attr! panel "data-variant" effective-variant)
@@ -274,38 +308,62 @@
   (when (model/toggle-should-fire? prev-state next-state)
     (emit-toggle! instance (:open next-state))))
 
+;; ── Shadow construction ──────────────────────────────────────────────────────
+;; Each per-section builder creates + decorates + assembles + returns its
+;; element(s). `assemble-shadow!` composes them, attaches to the host, and
+;; stashes refs on the instance. `ensure-shadow!` is a one-shot guard.
+
+(defn- make-style! []
+  (let [el (.createElement js/document "style")]
+    (set! (.-textContent el) css-text)
+    el))
+
+(defn- make-backdrop! []
+  (let [el (.createElement js/document "div")]
+    (set! (.-className el) "backdrop")
+    (du/set-attr! el "part" model/part-backdrop)
+    (set! (.-hidden el) true)
+    el))
+
+(defn- make-panel! []
+  (let [panel (.createElement js/document "div")
+        slot  (.createElement js/document "slot")]
+    (set! (.-className panel) "panel")
+    (du/set-attr! panel "part" model/part-panel)
+    (.appendChild panel slot)
+    {:panel panel :slot slot}))
+
+(defn- make-sidebar! [panel]
+  (let [el (.createElement js/document "aside")]
+    (set! (.-className el) "sidebar")
+    (du/set-attr! el "part" model/part-sidebar)
+    (.appendChild el panel)
+    el))
+
+(defn- assemble-shadow! [^js instance]
+  (let [root                 (.attachShadow instance #js {:mode "open"})
+        style-el             (make-style!)
+        backdrop-el          (make-backdrop!)
+        {:keys [panel slot]} (make-panel!)
+        sidebar-el           (make-sidebar! panel)]
+    (.appendChild root style-el)
+    (.appendChild root backdrop-el)
+    (.appendChild root sidebar-el)
+    (du/setv! instance k-root     root)
+    (du/setv! instance k-backdrop backdrop-el)
+    (du/setv! instance k-sidebar  sidebar-el)
+    (du/setv! instance k-panel    panel)
+    (du/setv! instance k-slot     slot)))
+
 (defn ensure-shadow!
-  [instance]
-  (when-not (gobj/get instance "_root")
-    (let [root (.attachShadow instance #js {:mode "open"})
-          style-el (.createElement js/document "style")
-          backdrop-el (.createElement js/document "div")
-          sidebar-el (.createElement js/document "aside")
-          panel-el (.createElement js/document "div")
-          slot-el (.createElement js/document "slot")]
-      (set! (.-textContent style-el) css-text)
-      (set! (.-className backdrop-el) "backdrop")
-      (du/set-attr! backdrop-el "part" model/part-backdrop)
-      (set! (.-hidden backdrop-el) true)
-      (set! (.-className sidebar-el) "sidebar")
-      (du/set-attr! sidebar-el "part" model/part-sidebar)
-      (set! (.-className panel-el) "panel")
-      (du/set-attr! panel-el "part" model/part-panel)
-      (.appendChild panel-el slot-el)
-      (.appendChild sidebar-el panel-el)
-      (.appendChild root style-el)
-      (.appendChild root backdrop-el)
-      (.appendChild root sidebar-el)
-      (gobj/set instance "_root" root)
-      (gobj/set instance "_backdrop" backdrop-el)
-      (gobj/set instance "_sidebar" sidebar-el)
-      (gobj/set instance "_panel" panel-el)
-      (gobj/set instance "_slot" slot-el))))
+  [^js instance]
+  (when-not (du/getv instance k-root)
+    (assemble-shadow! instance)))
 
 (defn render!
   [instance]
   (ensure-shadow! instance)
-  (let [prev-state (or (gobj/get instance "_prevState") {})
+  (let [prev-state (or (du/getv instance k-prev-state) {})
         next-state (model/compute-state (read-inputs instance))]
     (apply-host-state! instance next-state)
     ;; Release/restore focus before aria-hidden is applied on close.
@@ -314,12 +372,12 @@
     (apply-backdrop! instance next-state)
     (apply-panel-state! instance next-state)
     (dispatch-state-events! instance prev-state next-state)
-    (gobj/set instance "_prevState" next-state)))
+    (du/setv! instance k-prev-state next-state)))
 
 (defn on-backdrop-click
   [instance event]
-  (let [state (gobj/get instance "_prevState")
-        backdrop (gobj/get instance "_backdrop")]
+  (let [state (du/getv instance k-prev-state)
+        backdrop (du/getv instance k-backdrop)]
     (when (and (or (:is-modal state) (:is-overlay state))
                (:open state)
                (= (.-target event) backdrop))
@@ -328,7 +386,7 @@
 
 (defn on-keydown
   [instance event]
-  (let [state (gobj/get instance "_prevState")
+  (let [state (du/getv instance k-prev-state)
         key (.-key event)]
     (when (and (or (:is-modal state) (:is-overlay state))
                (:open state))
@@ -350,39 +408,39 @@
 
 (defn bind-handlers!
   [instance]
-  (when-not (gobj/get instance "_handlers")
-    (gobj/set instance "_handlers"
+  (when-not (du/getv instance k-handlers)
+    (du/setv! instance k-handlers
               #js {:onBackdropClick (fn [event] (on-backdrop-click instance event))
-                   :onKeydown (fn [event] (on-keydown instance event))
-                   :onResize (fn [event] (on-resize instance event))})))
+                   :onKeydown       (fn [event] (on-keydown        instance event))
+                   :onResize        (fn [event] (on-resize         instance event))})))
 
 (defn add-listeners!
   [instance]
-  (when-not (true? (gobj/get instance "_listening"))
-    (let [handlers (gobj/get instance "_handlers")
-          backdrop (gobj/get instance "_backdrop")
-          root (gobj/get instance "_root")]
+  (when-not (true? (du/getv instance k-listening))
+    (let [handlers (du/getv instance k-handlers)
+          backdrop (du/getv instance k-backdrop)
+          root     (du/getv instance k-root)]
       (when (and backdrop handlers)
-        (.addEventListener backdrop "click" (gobj/get handlers "onBackdropClick")))
+        (.addEventListener backdrop "click" (gobj/get handlers handler-backdrop-click)))
       (when (and root handlers)
-        (.addEventListener root "keydown" (gobj/get handlers "onKeydown")))
+        (.addEventListener root "keydown" (gobj/get handlers handler-keydown)))
       (when handlers
-        (.addEventListener js/window "resize" (gobj/get handlers "onResize")))
-      (gobj/set instance "_listening" true))))
+        (.addEventListener js/window "resize" (gobj/get handlers handler-resize)))
+      (du/setv! instance k-listening true))))
 
 (defn remove-listeners!
   [instance]
-  (when (true? (gobj/get instance "_listening"))
-    (let [handlers (gobj/get instance "_handlers")
-          backdrop (gobj/get instance "_backdrop")
-          root (gobj/get instance "_root")]
+  (when (true? (du/getv instance k-listening))
+    (let [handlers (du/getv instance k-handlers)
+          backdrop (du/getv instance k-backdrop)
+          root     (du/getv instance k-root)]
       (when (and backdrop handlers)
-        (.removeEventListener backdrop "click" (gobj/get handlers "onBackdropClick")))
+        (.removeEventListener backdrop "click" (gobj/get handlers handler-backdrop-click)))
       (when (and root handlers)
-        (.removeEventListener root "keydown" (gobj/get handlers "onKeydown")))
+        (.removeEventListener root "keydown" (gobj/get handlers handler-keydown)))
       (when handlers
-        (.removeEventListener js/window "resize" (gobj/get handlers "onResize")))
-      (gobj/set instance "_listening" false))))
+        (.removeEventListener js/window "resize" (gobj/get handlers handler-resize)))
+      (du/setv! instance k-listening false))))
 
 (defn- connected!
   [instance]
