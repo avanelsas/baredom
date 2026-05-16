@@ -10,6 +10,24 @@
 (def ^:private k-model    "__xAvatarGroupModel")
 (def ^:private k-handlers "__xAvatarGroupHandlers")
 
+;; ── String-literal constants (no duplication; Closure-Advanced safe) ──────
+(def ^:private attr-part           "part")
+(def ^:private attr-role           "role")
+(def ^:private attr-aria-label     "aria-label")
+(def ^:private attr-aria-hidden    "aria-hidden")
+(def ^:private attr-aria-disabled  "aria-disabled")
+(def ^:private attr-data-size      "data-size")
+(def ^:private attr-data-overlap   "data-overlap")
+(def ^:private attr-data-direction "data-direction")
+
+(def ^:private part-overflow "overflow")
+(def ^:private role-group    "group")
+(def ^:private role-img      "img")
+(def ^:private val-true      "true")
+
+(def ^:private ev-slotchange "slotchange")
+(def ^:private hk-slot       "slot")
+
 ;; ── Styles ────────────────────────────────────────────────────────────────
 (def style-text
   (str
@@ -72,8 +90,8 @@
         slot-el    (.createElement js/document "slot")
         overflow   (.createElement js/document "span")]
     (set! (.-textContent style) style-text)
-    (du/set-attr! overflow "part" "overflow")
-    (du/set-attr! overflow "aria-hidden" "true")
+    (du/set-attr! overflow attr-part        part-overflow)
+    (du/set-attr! overflow attr-aria-hidden val-true)
     (.appendChild root style)
     (.appendChild root slot-el)
     (.appendChild root overflow)
@@ -95,8 +113,61 @@
     :disabled-present? (du/has-attr? el model/attr-disabled)
     :label-raw         (du/get-attr el model/attr-label)}))
 
-;; ── Layout application ────────────────────────────────────────────────────
-(defn- apply-layout! [^js el {:keys [size overlap max direction disabled label] :as m}]
+;; ── Layout application (render-orchestrator phase list) ─────────────────
+;; apply-layout! reads the model + slotted children, then walks four named
+;; phase helpers (data attrs → host aria → per-child apply → overflow bubble)
+;; and caches the model. Each helper handles one slice of the rendered
+;; output so the orchestrator stays a phase list, not a 50-line monolith.
+
+(defn- apply-host-data! [^js el {:keys [size overlap direction]}]
+  (du/set-attr! el attr-data-size      size)
+  (du/set-attr! el attr-data-overlap   overlap)
+  (du/set-attr! el attr-data-direction direction))
+
+(defn- apply-host-aria! [^js el {:keys [disabled label]}]
+  (du/set-attr! el attr-role role-group)
+  (if label
+    (du/set-attr!    el attr-aria-label label)
+    (du/remove-attr! el attr-aria-label))
+  (if disabled
+    (du/set-attr!    el attr-aria-disabled val-true)
+    (du/remove-attr! el attr-aria-disabled)))
+
+(defn- show-visible-child! [^js child {:keys [size disabled]} margin idx]
+  (set! (.. child -style -display) "")
+  (du/set-attr! child model/attr-size size)
+  (if disabled
+    (du/set-attr!    child model/attr-disabled "")
+    (du/remove-attr! child model/attr-disabled))
+  (set! (.. child -style -marginInlineStart)
+        (if (pos? idx) margin "0px")))
+
+(defn- hide-child! [^js child]
+  (set! (.. child -style -display) "none"))
+
+(defn- apply-children! [children vis-count m margin]
+  (doseq [[^js child idx] (map vector children (range))]
+    (if (< idx vis-count)
+      (show-visible-child! child m margin idx)
+      (hide-child! child))))
+
+(defn- show-overflow-bubble! [^js overflow hidden-count margin]
+  (set! (.-textContent overflow) (str "+" hidden-count))
+  (du/set-attr! overflow attr-role       role-img)
+  (du/set-attr! overflow attr-aria-label (str hidden-count " more"))
+  (set! (.. overflow -style -display)           "inline-flex")
+  (set! (.. overflow -style -marginInlineStart) margin))
+
+(defn- hide-overflow-bubble! [^js overflow]
+  (set! (.-textContent overflow) "")
+  (set! (.. overflow -style -display) "none"))
+
+(defn- apply-overflow! [^js overflow hidden-count margin]
+  (if (pos? hidden-count)
+    (show-overflow-bubble! overflow hidden-count margin)
+    (hide-overflow-bubble! overflow)))
+
+(defn- apply-layout! [^js el {:keys [overlap max] :as m}]
   (let [{:keys [slot-el overflow]} (ensure-refs! el)
         ^js slot-el  slot-el
         ^js overflow overflow
@@ -104,51 +175,10 @@
         total        (count children)
         [vis-count hidden-count] (model/compute-visible-hidden total max)
         margin       (get model/overlap-margin overlap "0px")]
-
-    ;; Data attributes drive CSS selectors
-    (du/set-attr! el "data-size"      size)
-    (du/set-attr! el "data-overlap"   overlap)
-    (du/set-attr! el "data-direction" direction)
-
-    ;; ARIA on host
-    (du/set-attr! el "role" "group")
-    (if label
-      (du/set-attr! el "aria-label" label)
-      (du/remove-attr! el "aria-label"))
-    (if disabled
-      (du/set-attr! el "aria-disabled" "true")
-      (du/remove-attr! el "aria-disabled"))
-
-    ;; Apply size, disabled, overlap margin to each child avatar
-    (doseq [[^js child idx] (map vector children (range))]
-      (if (< idx vis-count)
-        (do
-          ;; Show child
-          (set! (.. child -style -display) "")
-          ;; Propagate size
-          (du/set-attr! child "size" size)
-          ;; Propagate disabled
-          (if disabled
-            (du/set-attr! child "disabled" "")
-            (du/remove-attr! child "disabled"))
-          ;; Overlap margin (not on first child in display order)
-          (set! (.. child -style -marginInlineStart)
-                (if (pos? idx) margin "0px")))
-        ;; Hide overflow children
-        (set! (.. child -style -display) "none")))
-
-    ;; Overflow bubble
-    (if (pos? hidden-count)
-      (do
-        (set! (.-textContent overflow) (str "+" hidden-count))
-        (du/set-attr! overflow "role"       "img")
-        (du/set-attr! overflow "aria-label" (str hidden-count " more"))
-        (set! (.. overflow -style -display)          "inline-flex")
-        (set! (.. overflow -style -marginInlineStart) margin))
-      (do
-        (set! (.-textContent overflow) "")
-        (set! (.. overflow -style -display) "none")))
-
+    (apply-host-data! el m)
+    (apply-host-aria! el m)
+    (apply-children!  children vis-count m margin)
+    (apply-overflow!  overflow hidden-count margin)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]
@@ -167,16 +197,16 @@
   (let [{:keys [slot-el]} (ensure-refs! el)
         ^js slot-el slot-el
         on-slot (fn [_] (refresh-layout! el))]
-    (when slot-el (.addEventListener slot-el "slotchange" on-slot))
-    (du/setv! el k-handlers #js {:slot on-slot})))
+    (when slot-el (.addEventListener slot-el ev-slotchange on-slot))
+    (du/setv! el k-handlers (js-obj hk-slot on-slot))))
 
 (defn- remove-listeners! [^js el]
   (when-let [hs (du/getv el k-handlers)]
     (when-let [refs (du/getv el k-refs)]
       (let [^js slot-el (:slot-el refs)
-            on-slot (gobj/get hs "slot")]
+            on-slot (gobj/get hs hk-slot)]
         (when (and slot-el on-slot)
-          (.removeEventListener slot-el "slotchange" on-slot)))))
+          (.removeEventListener slot-el ev-slotchange on-slot)))))
   (du/setv! el k-handlers nil))
 
 ;; ── Property accessors ────────────────────────────────────────────────────
