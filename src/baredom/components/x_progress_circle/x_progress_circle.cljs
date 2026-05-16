@@ -223,10 +223,13 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
-  (du/define-string-prop! proto model/attr-value model/attr-value "0")
-  (du/define-string-prop! proto model/attr-max   model/attr-max   "100")
-  (du/define-bool-prop!   proto "indeterminate"  model/attr-indeterminate)
-  (du/define-bool-prop!   proto "showValue"      model/attr-show-value))
+  (du/define-string-prop! proto model/attr-value   model/attr-value "0")
+  (du/define-string-prop! proto model/attr-max     model/attr-max   "100")
+  (du/define-string-prop! proto model/attr-variant model/attr-variant)
+  (du/define-string-prop! proto model/attr-size    model/attr-size)
+  (du/define-string-prop! proto model/attr-label   model/attr-label)
+  (du/define-bool-prop!   proto "indeterminate"    model/attr-indeterminate)
+  (du/define-bool-prop!   proto "showValue"        model/attr-show-value))
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────

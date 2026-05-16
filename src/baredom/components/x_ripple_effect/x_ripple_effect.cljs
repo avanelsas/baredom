@@ -152,8 +152,11 @@
                           current-scale (* intensity (- 1 eased))
                           current-freq  (* frequency (- 1 (* eased 0.7)))]
 
-                      (du/set-attr! disp "scale" (str current-scale))
-                      (du/set-attr! turb "baseFrequency" (str current-freq))
+                      ;; Hot path: rAF-driven. scale + baseFrequency fire
+                      ;; ~60×/sec for the lifetime of the ripple; route
+                      ;; around the trace recorder so it stays readable.
+                      (du/set-attr-untraced! disp "scale" (str current-scale))
+                      (du/set-attr-untraced! turb "baseFrequency" (str current-freq))
 
                       (if (>= progress 1.0)
                         ;; Animation complete

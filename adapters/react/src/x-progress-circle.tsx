@@ -10,6 +10,9 @@ init();
 export interface XProgressCircleProps {
   value?: string;
   max?: string;
+  variant?: string;
+  size?: string;
+  label?: string;
   indeterminate?: boolean;
   showValue?: boolean;
   onComplete?: (e: CustomEvent<{ value: number; max: number }>) => void;

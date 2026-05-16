@@ -32,6 +32,9 @@
 (def property-api
   {:value         {:type 'string  :reflects-attribute attr-value}
    :max           {:type 'string  :reflects-attribute attr-max}
+   :variant       {:type 'string  :reflects-attribute attr-variant}
+   :size          {:type 'string  :reflects-attribute attr-size}
+   :label         {:type 'string  :reflects-attribute attr-label}
    :indeterminate {:type 'boolean :reflects-attribute attr-indeterminate}
    :showValue     {:type 'boolean :reflects-attribute attr-show-value}})
 
