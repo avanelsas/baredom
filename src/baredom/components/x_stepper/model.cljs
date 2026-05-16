@@ -15,11 +15,11 @@
 (def event-change "x-stepper-change")
 
 (def property-api
-  {:steps       {:type 'string}
-   :current     {:type 'number}
-   :orientation {:type 'string}
-   :size        {:type 'string}
-   :disabled    {:type 'boolean}})
+  {:steps       {:type 'string  :reflects-attribute attr-steps}
+   :current     {:type 'number  :reflects-attribute attr-current}
+   :orientation {:type 'string  :reflects-attribute attr-orientation}
+   :size        {:type 'string  :reflects-attribute attr-size}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
   {event-change {:detail {:from 'number :to 'number} :cancelable true}})
