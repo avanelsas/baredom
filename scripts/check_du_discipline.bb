@@ -39,7 +39,15 @@
 ;; the internal-host filter is in place.
 (def ^:private gobj-pattern  #"\(gobj/(?:set|get) (?:el|this|instance)\b")
 (def ^:private allow-marker  "allow-gobj:")
-(def ^:private shim-pattern  #"\(defn-? make-el \[(?:\^js )?tag\]")
+;; Scanned against the full source (not per-line) so the whitespace class
+;; can cross newlines and the multi-line form
+;;   (defn- make-el
+;;     [tag]
+;;     (.createElement js/document tag))
+;; is caught alongside the single-line form `(defn- make-el [tag]`. The
+;; previous per-line regex with a literal space between `make-el` and `[`
+;; let the multi-line shape slip past (x-date-picker, 2026-05-16).
+(def ^:private shim-pattern  #"\(defn-? make-el\s+\[(?:\^js )?tag\]")
 
 (defn- find-cljs-files []
   (->> (concat (fs/glob "src/baredom/components" "**/*.cljs")
@@ -50,12 +58,22 @@
 (defn- comment-line? [line]
   (str/starts-with? (str/triml line) ";"))
 
+(defn- line-of-offset
+  "Return the 1-based line number containing character offset `off` in `src`."
+  [^String src off]
+  (loop [i 0 line 1]
+    (cond
+      (>= i off)               line
+      (= (.charAt src i) \newline) (recur (inc i) (inc line))
+      :else                    (recur (inc i) line))))
+
 (defn- check-file [path]
   (let [src     (slurp path)
         lines   (->> (str/split-lines src)
                      (map-indexed (fn [idx l] [(inc idx) l]))
                      (remove (fn [[_ l]] (comment-line? l))))
         hits    (atom [])]
+    ;; gobj-on-host: scanned per-line so we can pinpoint the exact line.
     (doseq [[lineno line] lines]
       (when (and (re-find gobj-pattern line)
                  (not (str/includes? line allow-marker)))
@@ -64,12 +82,17 @@
                     ": forbidden gobj on host element — use (du/setv! el k-X v) "
                     "or (du/getv el k-X), or tag the same line with "
                     "`;; allow-gobj: <reason>` for recorder-internal bootstrap. "
-                    (str/trim line))))
-      (when (re-find shim-pattern line)
-        (swap! hits conj
-               (str path ":" lineno
-                    ": forbidden `make-el [tag]` shim — inline as "
-                    "(.createElement js/document \"...\"). " (str/trim line)))))
+                    (str/trim line)))))
+    ;; make-el shim: scanned against the full source so the regex's `\s+`
+    ;; can cross newlines. Line number derived from the match offset.
+    (let [m (re-matcher shim-pattern src)]
+      (while (.find m)
+        (let [lineno (line-of-offset src (.start m))]
+          (swap! hits conj
+                 (str path ":" lineno
+                      ": forbidden `make-el [tag]` shim — inline as "
+                      "(.createElement js/document \"...\"). "
+                      (str/trim (.group m)))))))
     @hits))
 
 (defn -main [& _]

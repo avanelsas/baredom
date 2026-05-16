@@ -19,14 +19,6 @@
 (def ^:private k-grid-focus "__xDatePickerGridFocus")
 
 ;; ---------------------------------------------------------------------------
-;; Helpers
-;; ---------------------------------------------------------------------------
-
-(defn- make-el
-  [tag]
-  (.createElement js/document tag))
-
-;; ---------------------------------------------------------------------------
 ;; Read state from element attrs
 ;; ---------------------------------------------------------------------------
 
@@ -100,7 +92,7 @@
         ^js month (when state (gobj/get state "month"))
         items (model/month-grid month)]
     (doseq [{:keys [date in-month?]} items]
-      (let [^js btn  (make-el "button")
+      (let [^js btn  (.createElement js/document "button")
             iso      (model/date->iso date)
             day      (.getUTCDate date)
             disabled? (day-out-of-range? date canon)
@@ -154,7 +146,7 @@
     (du/setv! el k-wd-done true)
     (let [labels #js ["Su" "Mo" "Tu" "We" "Th" "Fr" "Sa"]]
       (dotimes [i 7]
-        (let [^js div (make-el "div")]
+        (let [^js div (.createElement js/document "div")]
           (du/set-attr! div "part" "weekday")
           (du/set-attr! div "aria-hidden" "true")
           (set! (.-textContent div) (aget labels i))
@@ -548,18 +540,18 @@
 (defn- make-shadow!
   [^js el]
   (let [^js root      (.attachShadow el #js {:mode "open"})
-        ^js style     (make-el "style")
-        ^js container (make-el "div")
-        ^js inp       (make-el "input")
-        ^js btn       (make-el "button")
-        ^js popover   (make-el "div")
-        ^js nav       (make-el "div")
-        ^js nav-prev  (make-el "button")
-        ^js month-lbl (make-el "div")
-        ^js nav-next  (make-el "button")
-        ^js weekdays  (make-el "div")
-        ^js grid      (make-el "div")
-        ^js sr        (make-el "div")]
+        ^js style     (.createElement js/document "style")
+        ^js container (.createElement js/document "div")
+        ^js inp       (.createElement js/document "input")
+        ^js btn       (.createElement js/document "button")
+        ^js popover   (.createElement js/document "div")
+        ^js nav       (.createElement js/document "div")
+        ^js nav-prev  (.createElement js/document "button")
+        ^js month-lbl (.createElement js/document "div")
+        ^js nav-next  (.createElement js/document "button")
+        ^js weekdays  (.createElement js/document "div")
+        ^js grid      (.createElement js/document "div")
+        ^js sr        (.createElement js/document "div")]
 
     (set! (.-textContent style) style-text)
 
