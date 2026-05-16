@@ -379,48 +379,53 @@
           (du/set-attr!    el attr-role       role-text)
           (du/set-attr!    el attr-aria-label text)))))
 
-;; ── Update from attributes ──────────────────────────────────────────────────
+;; ── DOM patching (render-orchestrator: phase list of named helpers) ────────
+;; apply-model! reads as: rebuild text DOM if text/per-char changed → rebuild
+;; listeners if trigger changed → apply font-family override → re-read CSS
+;; vars → update a11y → apply rest-state axes → cache model. Each phase is
+;; guarded individually so a partial diff only re-runs the parts that
+;; actually changed.
+
+(defn- rebuild-text-dom! [^js el m]
+  (if (:per-char? m)
+    (build-chars!      el (:text m))
+    (build-whole-text! el (:text m))))
+
+(defn- rebuild-listeners! [^js el m]
+  (remove-listeners! el)
+  (add-listeners!    el m))
+
+(defn- apply-font-family! [^js el {:keys [font-family]}]
+  (let [{:keys [container]} (du/getv el k-refs)
+        ^js container container]
+    (if font-family
+      (.setProperty    (.-style container) "font-family" font-family)
+      (.removeProperty (.-style container) "font-family"))))
+
+(defn- apply-rest-state-axes! [^js el m]
+  (when-not (prefers-reduced-motion?)
+    (let [cv         (du/getv el k-css-vars)
+          rest-axes  (model/map-force-to-axes 0.0 (:modes m) (:intensity m)
+                       (:wght-min cv) (:wght-max cv) (:wdth-min cv) (:wdth-max cv)
+                       (:slnt-min cv) (:slnt-max cv) (:opsz-min cv) (:opsz-max cv))]
+      (if (:per-char? m)
+        (when-let [^js spans (du/getv el k-char-spans)]
+          (dotimes [i (.-length spans)]
+            (apply-font-variation! (aget spans i) rest-axes 0.0)))
+        (let [{:keys [container]} (du/getv el k-refs)]
+          (apply-font-variation! container rest-axes 0.0))))))
+
 (defn- apply-model! [^js el m]
   (let [old-m (du/getv el k-model)]
-    ;; Rebuild text DOM if text or per-char changed
-    (when (or (not= (:text m) (:text old-m))
+    (when (or (not= (:text m)      (:text old-m))
               (not= (:per-char? m) (:per-char? old-m)))
-      (if (:per-char? m)
-        (build-chars! el (:text m))
-        (build-whole-text! el (:text m))))
-
-    ;; Rebuild listeners if trigger changed
+      (rebuild-text-dom!    el m))
     (when (not= (:trigger m) (:trigger old-m))
-      (remove-listeners! el)
-      (add-listeners! el m))
-
-    ;; Update font-family override
-    (let [{:keys [container]} (du/getv el k-refs)
-          ^js container container
-          ff (:font-family m)]
-      (if ff
-        (.setProperty (.-style container) "font-family" ff)
-        (.removeProperty (.-style container) "font-family")))
-
-    ;; Re-read CSS vars (axis ranges may depend on font-family)
-    (read-css-vars! el)
-
-    ;; Update accessibility
-    (update-a11y! el (:text m))
-
-    ;; Apply rest-state font-variation-settings
-    (when-not (prefers-reduced-motion?)
-      (let [cv (du/getv el k-css-vars)
-            rest-axes (model/map-force-to-axes 0.0 (:modes m) (:intensity m)
-                        (:wght-min cv) (:wght-max cv) (:wdth-min cv) (:wdth-max cv)
-                        (:slnt-min cv) (:slnt-max cv) (:opsz-min cv) (:opsz-max cv))]
-        (if (:per-char? m)
-          (when-let [^js spans (du/getv el k-char-spans)]
-            (dotimes [i (.-length spans)]
-              (apply-font-variation! (aget spans i) rest-axes 0.0)))
-          (let [{:keys [container]} (du/getv el k-refs)]
-            (apply-font-variation! container rest-axes 0.0)))))
-
+      (rebuild-listeners!   el m))
+    (apply-font-family!     el m)
+    (read-css-vars!         el)
+    (update-a11y!           el (:text m))
+    (apply-rest-state-axes! el m)
     (du/setv! el k-model m)))
 
 (defn- update-from-attrs! [^js el]

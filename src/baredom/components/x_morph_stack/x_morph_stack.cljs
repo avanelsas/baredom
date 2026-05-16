@@ -651,6 +651,75 @@
   (stop-goo! el))
 
 ;; ── Transition orchestrator ─────────────────────────────────────────────────
+;; start-transition! is a phase-list:
+;;   target validation → already-visible no-op → cancelable event →
+;;   cancel-current → branch on reduced-motion: apply-instant-transition!
+;;   vs. start-spring-animation!.
+
+(defn- valid-target? [names to-name]
+  (and (pos? (.-length names))
+       (some? to-name)
+       (some #(= % to-name) names)))
+
+(defn- apply-instant-transition!
+  "Reduced-motion / disabled path: skip the spring animation, apply the
+  active display synchronously, and fire `changed` on the next microtask."
+  [^js el from-name to-name]
+  (apply-active-display! el to-name)
+  (js/queueMicrotask
+   (fn []
+     (du/dispatch! el model/event-changed
+       (clj->js (model/changed-detail from-name to-name))))))
+
+(defn- snapshot-and-build-entries!
+  "Take before/after layout snapshots around the active-display swap, force
+  a layout flush in between, and produce the per-morph-id entries the tick!
+  loop interpolates over."
+  [^js el from-root to-root to-name]
+  (let [old-snap (snapshot-morph-data from-root)
+        _        (apply-active-display! el to-name)
+        ;; Force layout so the second snapshot reflects the new positions.
+        _        (.-offsetWidth ^js (:viewport (ensure-refs! el)))
+        new-snap (snapshot-morph-data to-root)]
+    (build-entries! el old-snap new-snap)))
+
+(defn- prime-goo-if-needed!
+  "If the active variant uses the goo filter, start the goo loop and prime
+  the filter at progress=0 so the first painted frame is already wearing
+  the trapezoidal envelope (identity, no blur). Without this the very
+  first paint would show the filter at full base strength, smearing the
+  source-state text for one frame before `update-goo-fade!` runs."
+  [^js el variant]
+  (when (model/variant-uses-goo? variant)
+    (start-goo! el)
+    (update-goo-fade! el 0)))
+
+(defn- start-spring-animation!
+  "Full-motion path: snapshot both states, build per-morph-id entries,
+  bump the token, prime goo if needed, and kick off the rAF tick loop.
+  Finalises immediately if there's nothing to animate."
+  [^js el m from-name to-name from-root to-root]
+  (let [entries (snapshot-and-build-entries! el from-root to-root to-name)
+        token   (inc (or (du/getv el k-token) 0))]
+    (du/setv! el k-token     token)
+    (du/setv! el k-entries   entries)
+    (du/setv! el k-last-time nil)
+    (du/setv! el k-from      from-name)
+    (du/setv! el k-to        to-name)
+    ;; Spring params don't change mid-flight, so cache the time scale once.
+    (du/setv! el k-time-scale
+              (model/time-scale-for (:duration m) (:stiffness m)
+                                    (:damping m)  (:mass m)))
+    (prime-goo-if-needed! el (:variant m))
+    (if (zero? (.-length entries))
+      ;; No morph-ids on either side → nothing to interpolate; finalise.
+      (finalize-transition! el token true)
+      (let [raf (.requestAnimationFrame js/window
+                                        (fn [now]
+                                          (when (= token (du/getv el k-token))
+                                            (tick! el now))))]
+        (du/setv-untraced! el k-raf raf)))))
+
 (defn- start-transition!
   "Drive a transition from the currently visible state to `to-name`.
   `reason` is one of \"attribute\" or \"method\".
@@ -658,19 +727,11 @@
   false when cancelled by event preventDefault."
   [^js el ^String to-name ^String reason]
   (let [from-name (du/getv el k-current-state)
-        m (or (du/getv el k-model) (read-model el))
-        names (state-names el)]
+        m         (or (du/getv el k-model) (read-model el))
+        names     (state-names el)]
     (cond
-      ;; No states or unknown target → no-op.
-      (or (zero? (.-length names))
-          (nil? to-name)
-          (not (some #(= % to-name) names)))
-      false
-
-      ;; Already visible → no-op.
-      (= from-name to-name)
-      true
-
+      (not (valid-target? names to-name)) false
+      (= from-name to-name)               true
       :else
       (let [from-root (when from-name (root-for-name el from-name))
             to-root   (root-for-name el to-name)
@@ -679,58 +740,12 @@
         (if-not ok?
           false
           (do
-            ;; Cancel any in-flight transition first (no `changed` event for it).
+            ;; Cancel any in-flight transition first (no `changed` event).
             (cancel-current! el)
-            (let [reduced? (or (prefers-reduced-motion?) (:disabled? m))]
-              (cond
-                reduced?
-                (do
-                  (apply-active-display! el to-name)
-                  ;; Fire `changed` next microtask.
-                  (js/queueMicrotask
-                   (fn []
-                     (du/dispatch! el model/event-changed
-                       (clj->js (model/changed-detail from-name to-name)))))
-                  true)
-
-                :else
-                (let [old-snap (snapshot-morph-data from-root)
-                      _        (apply-active-display! el to-name)
-                      ;; Force layout
-                      _        (.-offsetWidth ^js (:viewport (ensure-refs! el)))
-                      new-snap (snapshot-morph-data to-root)
-                      entries  (build-entries! el old-snap new-snap)
-                      token    (inc (or (du/getv el k-token) 0))]
-                  (du/setv! el k-token token)
-                  (du/setv! el k-entries entries)
-                  (du/setv! el k-last-time nil)
-                  (du/setv! el k-from from-name)
-                  (du/setv! el k-to   to-name)
-                  ;; Snapshot the time scale for this transition. Spring params
-                  ;; don't change mid-flight, so this only needs computing once.
-                  (du/setv! el k-time-scale
-                            (model/time-scale-for (:duration m)
-                                                  (:stiffness m)
-                                                  (:damping m)
-                                                  (:mass m)))
-                  (when (model/variant-uses-goo? (:variant m))
-                    (start-goo! el)
-                    ;; Prime the filter at progress=0 so the first painted
-                    ;; frame already has the trapezoidal envelope applied
-                    ;; (i.e. identity, no blur). Without this the very first
-                    ;; paint would show the filter at full base strength,
-                    ;; smearing the source-state text for one frame before
-                    ;; the first `tick!` runs `update-goo-fade!`.
-                    (update-goo-fade! el 0))
-                  (if (zero? (.-length entries))
-                    ;; Nothing to animate (no morph-ids on either side); finalize immediately.
-                    (finalize-transition! el token true)
-                    (let [raf (.requestAnimationFrame js/window
-                                                      (fn [now]
-                                                        (when (= token (du/getv el k-token))
-                                                          (tick! el now))))]
-                      (du/setv-untraced! el k-raf raf)))
-                  true)))))))))
+            (if (or (prefers-reduced-motion?) (:disabled? m))
+              (apply-instant-transition!  el from-name to-name)
+              (start-spring-animation!    el m from-name to-name from-root to-root))
+            true))))))
 
 ;; ── Public methods ──────────────────────────────────────────────────────────
 (defn- next-state! [^js el reason]
