@@ -31,12 +31,13 @@
 
 (def event-press "press")
 
+;; Canonical event-schema shape (matches x-button, x-alert, x-modal, …):
+;; key is the event-name symbol, value carries `:detail` and optional
+;; `:cancelable`. The dispatch site (`du/dispatch!` in x_card.cljs) controls
+;; bubbles/composed; `:event-name` is redundant because the symbol key is
+;; resolved by the type-generator helpers.
 (def event-schema
-  {:press
-   {:event-name "press"
-    :detail {}
-    :bubbles true
-    :composed true}})
+  {event-press {:detail {}}})
 
 (defn valid-enum
   [value allowed fallback]

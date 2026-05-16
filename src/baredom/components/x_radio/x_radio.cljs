@@ -5,7 +5,8 @@
             [baredom.components.x-radio.model :as model]))
 
 ;; ---------------------------------------------------------------------------
-;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
+;; Instance field keys (Closure-safe: stored on the host via du/setv! / du/getv
+;; so every mutation routes through the x-trace-history recorder hook)
 ;; ---------------------------------------------------------------------------
 (def ^:private k-refs      "__xRadioRefs")
 (def ^:private k-model     "__xRadioModel")
@@ -200,7 +201,7 @@
         first-r (when (pos? (.-length radios)) (aget radios 0))]
     (.forEach radios
               (fn [^js r]
-                (when-let [refs (gobj/get r k-refs)]
+                (when-let [refs (du/getv r k-refs)]
                   (let [^js ctrl (gobj/get refs "control")
                         tab      (cond
                                    checked (if (= r checked) 0 -1)
@@ -210,39 +211,55 @@
 ;; ---------------------------------------------------------------------------
 ;; Selection logic
 ;; ---------------------------------------------------------------------------
+;; try-select! orchestrates a phase list: read model → guard → dispatch the
+;; cancelable change-request → if allowed: apply selection, uncheck siblings,
+;; sync tabindexes, dispatch the final change event. Each phase is one named
+;; helper so the orchestrator stays short and each concern is testable on its
+;; own.
+
+(defn- dispatch-change-request!
+  "Fire the cancelable change-request and return whether listeners allowed
+  the transition to proceed."
+  [^js el value]
+  (du/dispatch-cancelable!
+   el
+   model/event-change-request
+   #js {:value           value
+        :previousChecked false
+        :nextChecked     true}))
+
+(defn- apply-selection! [^js el]
+  (du/set-attr! el model/attr-checked "")
+  (render! el))
+
+(defn- uncheck-siblings! [^js el]
+  (let [radios (group-radios el)]
+    (.forEach radios
+              (fn [^js r]
+                (when (and (not= r el) (du/has-attr? r model/attr-checked))
+                  (du/remove-attr! r model/attr-checked)
+                  (render! r))))))
+
+(defn- dispatch-change! [^js el value]
+  (du/dispatch! el model/event-change
+                #js {:value   value
+                     :checked true}))
+
 (defn- try-select! [^js el]
-  (let [m         (read-model el)
-        disabled? (:disabled? m)
-        readonly? (:readonly? m)
-        checked?  (:checked? m)]
-    (when-not (or disabled? readonly? checked?)
-      (let [value    (:value m)
-            allowed? (du/dispatch-cancelable!
-                      el
-                      model/event-change-request
-                      #js {:value           value
-                           :previousChecked false
-                           :nextChecked     true})]
-        (when allowed?
-          (du/set-attr! el model/attr-checked "")
-          (render! el)
-          ;; Silently uncheck siblings
-          (let [radios (group-radios el)]
-            (.forEach radios
-                      (fn [^js r]
-                        (when (and (not= r el) (du/has-attr? r model/attr-checked))
-                          (du/remove-attr! r model/attr-checked)
-                          (render! r)))))
-          (sync-tabindexes! el)
-          (du/dispatch! el model/event-change
-                     #js {:value   value
-                          :checked true}))))))
+  (let [m (read-model el)]
+    (when-not (or (:disabled? m) (:readonly? m) (:checked? m))
+      (let [value (:value m)]
+        (when (dispatch-change-request! el value)
+          (apply-selection!  el)
+          (uncheck-siblings! el)
+          (sync-tabindexes!  el)
+          (dispatch-change!  el value))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Keyboard handler
 ;; ---------------------------------------------------------------------------
 (defn- focus-control! [^js r]
-  (when-let [refs (gobj/get r k-refs)]
+  (when-let [refs (du/getv r k-refs)]
     (let [^js ctrl (gobj/get refs "control")]
       (.focus ctrl))))
 
