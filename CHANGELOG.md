@@ -2,6 +2,24 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.1.0] - 2026-05-16
+
+A full-library audit cycle against the `x-icon` golden sample (PRs #222–#231). All 99 components now conform to the Hickey-level architecture standard documented in `CLAUDE.md`. No public API or behavioural changes.
+
+### Changed
+
+- **`x-trace-history` recorder noise reduction** — rAF hot paths in x-kinetic-canvas, x-ripple-effect, x-scroll-parallax, x-scroll-stack, and x-particle-button now consistently route per-frame writes (`k-raf`, `k-last-frame`, `k-time` animation bookkeeping; per-frame attribute updates inside `animate!` loops) through `du/setv-untraced!` / `du/set-attr-untraced!`. The recorder no longer drowns in 60×/sec writes that carry no diagnostic value.
+- **`property-api` metadata consistency** — `:reflects-attribute` entries added across x-progress-circle, x-stepper, x-splash, x-table-cell, x-table-row, x-theme, x-timeline, x-timeline-item, and x-toaster. The React and Angular code generators (`generate_react.bb` / `generate_angular.bb`) and `metadata.bb` now see a complete property-to-attribute contract for every component.
+- **Render-pipeline decomposition** — oversized `apply-model!` / `init-dom!` / `make-shadow!` / `create-shadow!` / `start-transition!` / `build-refs!` functions split into named phase helpers across 10 components (x-button, x-dropdown, x-navbar, x-toast, x-select, x-kinetic-font, x-kinetic-typography, x-morph-stack, x-avatar-group, x-combobox).
+- **`du`-discipline sweep** — cleared 41 `gobj/get|set` calls on host elements in x-sidebar plus stray hits in x-radio. Broadened `scripts/check_du_discipline.bb` twice (to catch the `instance` host-variable name and the multi-line `(defn- make-el [tag] …)` shim) so the patterns can't regress in CI.
+- **Pipeline canonicalisation** — x-select moved its change-guard into `update-from-attrs!` and adopted the canonical `[el m]` `apply-model!` signature. x-card's `event-schema` switched to the canonical `{event-symbol {:detail {…}}}` shape. x-radio decomposed `try-select!` into named phase helpers.
+
+### Fixed
+
+- **x-progress-circle** — `variant`, `size`, and `label` are now exposed as JS properties. They were observed attributes without corresponding property installations, so `el.variant = "primary"` was a silent no-op.
+- **x-collapse** — `read-model` now routes through `model/normalize`. It was reconstructing the view-model inline and duplicating the duration-ms parsing/clamping logic the model layer already provides.
+- **x-date-picker** — Removed a forbidden multi-line `(defn- make-el [tag] …)` shim that the CI regex was missing; 13 call sites inlined to `.createElement js/document` directly.
+
 ## [3.0.0] - 2026-05-12
 
 ### Added
