@@ -198,7 +198,7 @@
             (du/setv! el k-last-prog progress)
             (du/dispatch! el model/event-progress
                        (clj->js (model/progress-detail progress stacked n))))))))
-  ;; Clear rAF handle
+  ;; Hot path: rAF-driven. k-raf is canonical animation bookkeeping.
   (du/setv-untraced! el k-raf nil))
 
 ;; ── Scroll handler ──────────────────────────────────────────────────────────
@@ -211,6 +211,7 @@
              (du/getv el k-visible)
              (not (disabled? el)))
     (when-not (du/getv el k-raf)
+      ;; Hot path: rAF-driven. Schedule one frame per scroll burst.
       (du/setv-untraced! el k-raf
                 (js/requestAnimationFrame
                  (fn [_] (update-scroll! el)))))))

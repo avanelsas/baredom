@@ -19,6 +19,9 @@ export class BaredomProgressCircle implements OnInit, OnDestroy {
 
   @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set max(v: string) { this.el.max = v as any; }
+  @Input() set variant(v: string) { this.el.variant = v as any; }
+  @Input() set size(v: string) { this.el.size = v as any; }
+  @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set indeterminate(v: boolean) { this.el.indeterminate = v as any; }
   @Input() set showValue(v: boolean) { this.el.showValue = v as any; }
 
