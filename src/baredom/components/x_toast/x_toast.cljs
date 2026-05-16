@@ -323,52 +323,66 @@
       (du/set-attr! el "aria-keyshortcuts" "Escape")
       (du/remove-attr! el "aria-keyshortcuts"))))
 
-(defn- apply-model! [^js el {:keys [type heading message icon-mode icon
-                                     dismissible? disabled? timeout-ms] :as m}]
-  (let [{:keys [container icon-wrap icon-slot default-icon
-                heading-el message-el dismiss-btn progress-el progress-bar]}
-        (ensure-refs! el)
-        ^js container    container
-        ^js icon-wrap    icon-wrap
-        ^js icon-slot    icon-slot
-        ^js default-icon default-icon
-        ^js heading-el   heading-el
-        ^js message-el   message-el
-        ^js dismiss-btn  dismiss-btn
-        ^js progress-el  progress-el
-        ^js progress-bar progress-bar
-        has-slot?    (slot-has-content? icon-slot)
-        fallback     (if (= icon-mode :custom) icon (model/default-icon-for-type type))
-        hide-icon?   (and (not has-slot?) (= icon-mode :hidden))
-        show-prog?   (model/progress-eligible? m)]
+;; ── DOM patching (render-orchestrator pattern) ──────────────────────────────
+;; Each `apply-*!` helper handles one slice of the rendered output. The
+;; orchestrator `apply-model!` reads as a phase list and caches the model
+;; at its tail so the diff guard in `update-from-attrs!` can skip work when
+;; nothing changed.
 
-    (du/set-attr! el "data-type" (model/type->attr type))
-    (du/set-attr! container "role" (model/role-for-type type))
+(defn- apply-host-type! [^js el ^js container type]
+  (du/set-attr! el "data-type" (model/type->attr type))
+  (du/set-attr! container "role" (model/role-for-type type)))
 
-    (set! (.-textContent heading-el) heading)
-    (set! (.. heading-el -style -display) (if (= heading "") "none" ""))
+(defn- apply-heading! [^js heading-el heading]
+  (set! (.-textContent heading-el) heading)
+  (set! (.. heading-el -style -display) (if (= heading "") "none" "")))
 
-    (set! (.-textContent message-el) message)
+(defn- apply-message! [^js message-el message]
+  (set! (.-textContent message-el) message))
 
-    (if hide-icon?
+(defn- resolve-icon-content
+  "Decide whether the icon wrapper is visible and what fallback glyph to
+  paint inside it. Returns `{:hide? bool :fallback string}`."
+  [type {:keys [icon-mode icon]} has-slot?]
+  (let [fallback (if (= icon-mode :custom) icon (model/default-icon-for-type type))
+        hide?    (and (not has-slot?) (= icon-mode :hidden))]
+    {:hide? hide? :fallback fallback}))
+
+(defn- apply-icon! [^js icon-wrap ^js default-icon ^js icon-slot type m]
+  (let [has-slot? (slot-has-content? icon-slot)
+        {:keys [hide? fallback]} (resolve-icon-content type m has-slot?)]
+    (if hide?
       (do (set! (.-textContent default-icon) "")
           (set! (.. icon-wrap -style -display) "none"))
       (do (set! (.-textContent default-icon) fallback)
-          (set! (.. icon-wrap -style -display) "inline")))
+          (set! (.. icon-wrap -style -display) "inline")))))
 
-    (if dismissible?
-      (do (set! (.-disabled dismiss-btn) (boolean disabled?))
-          (set! (.. dismiss-btn -style -display) "inline-flex"))
-      (do (set! (.-disabled dismiss-btn) true)
-          (set! (.. dismiss-btn -style -display) "none")))
+(defn- apply-dismiss! [^js dismiss-btn dismissible? disabled?]
+  (if dismissible?
+    (do (set! (.-disabled dismiss-btn) (boolean disabled?))
+        (set! (.. dismiss-btn -style -display) "inline-flex"))
+    (do (set! (.-disabled dismiss-btn) true)
+        (set! (.. dismiss-btn -style -display) "none"))))
 
-    (if show-prog?
-      (do (set! (.. progress-el -style -display) "block")
-          (.setProperty (.-style progress-bar) "--x-toast-timeout" (str timeout-ms "ms")))
-      (set! (.. progress-el -style -display) "none"))
+(defn- apply-progress! [^js progress-el ^js progress-bar show? timeout-ms]
+  (if show?
+    (do (set! (.. progress-el -style -display) "block")
+        (.setProperty (.-style progress-bar) "--x-toast-timeout" (str timeout-ms "ms")))
+    (set! (.. progress-el -style -display) "none")))
 
-    (set-host-a11y! el dismissible? disabled?)
-    (du/setv! el k-model m)))
+(defn- apply-model! [^js el {:keys [type heading message
+                                    dismissible? disabled? timeout-ms] :as m}]
+  (let [{:keys [container icon-wrap icon-slot default-icon
+                heading-el message-el dismiss-btn progress-el progress-bar]}
+        (ensure-refs! el)]
+    (apply-host-type! el container type)
+    (apply-heading!   heading-el heading)
+    (apply-message!   message-el message)
+    (apply-icon!      icon-wrap default-icon icon-slot type m)
+    (apply-dismiss!   dismiss-btn dismissible? disabled?)
+    (apply-progress!  progress-el progress-bar (model/progress-eligible? m) timeout-ms)
+    (set-host-a11y!   el dismissible? disabled?)
+    (du/setv!         el k-model m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
@@ -447,6 +461,30 @@
                     (after-enter! el)))]
           (.addEventListener container "animationend" on-end))))))
 
+(defn- run-exit-animation!
+  "Drive the exit animation: set `data-exiting`, listen for animationend on
+  the container, and race against a safety timeout (animation duration +
+  60ms) so a missed animationend never strands a toast on screen. The first
+  to fire wins; the other is cleaned up."
+  [^js el ^js container dur]
+  (letfn [(on-end [^js e]
+            (when (= (.-target e) container)
+              (.removeEventListener container "animationend" on-end)
+              (when-let [tid (du/getv el k-exit-timer)]
+                (js/clearTimeout tid)
+                (du/setv! el k-exit-timer nil))
+              (when (.-isConnected el) (.remove el))))]
+    (du/set-attr! el "data-exiting" "")
+    (.addEventListener container "animationend" on-end)
+    (du/setv! el k-exit-timer
+              (js/setTimeout
+               (fn []
+                 (when (and (.-isConnected el) (du/getv el k-exiting))
+                   (.removeEventListener container "animationend" on-end)
+                   (du/setv! el k-exit-timer nil)
+                   (.remove el)))
+               (+ dur 60)))))
+
 (defn- start-exit-and-remove! [^js el]
   (when-not (du/getv el k-exiting)
     (du/setv! el k-exiting true)
@@ -456,25 +494,8 @@
     (let [dur (exit-duration-ms el)]
       (if (or (zero? dur) (prefers-reduced-motion?))
         (.remove el)
-        (let [{:keys [container]} (ensure-refs! el)
-              ^js container container]
-          (letfn [(on-end [^js e]
-                    (when (= (.-target e) container)
-                      (.removeEventListener container "animationend" on-end)
-                      (when-let [tid (du/getv el k-exit-timer)]
-                        (js/clearTimeout tid)
-                        (du/setv! el k-exit-timer nil))
-                      (when (.-isConnected el) (.remove el))))]
-            (du/set-attr! el "data-exiting" "")
-            (.addEventListener container "animationend" on-end)
-            (du/setv! el k-exit-timer
-                      (js/setTimeout
-                       (fn []
-                         (when (and (.-isConnected el) (du/getv el k-exiting))
-                           (.removeEventListener container "animationend" on-end)
-                           (du/setv! el k-exit-timer nil)
-                           (.remove el)))
-                       (+ dur 60)))))))))
+        (let [{:keys [container]} (ensure-refs! el)]
+          (run-exit-animation! el container dur))))))
 
 ;; ── Event dispatch ───────────────────────────────────────────────────────────
 (defn- dispatch-dismiss! [^js el reason]

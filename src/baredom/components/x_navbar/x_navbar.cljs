@@ -4,10 +4,34 @@
             [goog.object :as gobj]
             [baredom.components.x-navbar.model :as model]))
 
-;; ── Instance-field keys (gobj/get, gobj/set) ────────────────────────────────
+;; ── Instance-field keys (du/setv!, du/getv) ─────────────────────────────────
 (def ^:private k-refs          "__xNavbarRefs")
 (def ^:private k-model         "__xNavbarModel")
 (def ^:private k-focus-visible "__xNavbarFocusVisible")
+
+;; ── Refs JS-object keys ──────────────────────────────────────────────────────
+(def ^:private rk-base         "base")
+(def ^:private rk-bar          "bar")
+(def ^:private rk-brand        "brand")
+(def ^:private rk-start        "start")
+(def ^:private rk-nav          "nav")
+(def ^:private rk-actions      "actions")
+(def ^:private rk-toggle       "toggle")
+(def ^:private rk-end          "end")
+(def ^:private rk-brand-slot   "brand-slot")
+(def ^:private rk-start-slot   "start-slot")
+(def ^:private rk-default-slot "default-slot")
+(def ^:private rk-actions-slot "actions-slot")
+(def ^:private rk-toggle-slot  "toggle-slot")
+(def ^:private rk-end-slot     "end-slot")
+
+;; ── Event-name constants ─────────────────────────────────────────────────────
+(def ^:private ev-click       "click")
+(def ^:private ev-focusin     "focusin")
+(def ^:private ev-focusout    "focusout")
+(def ^:private ev-slotchange  "slotchange")
+
+(def ^:private attr-data-focus-visible-within "data-focus-visible-within")
 
 ;; ── DOM helpers ──────────────────────────────────────────────────────────────
 
@@ -57,7 +81,7 @@
 
 (defn- target-in-brand-slot?
   [^js refs ^js target]
-  (node-in-assigned-nodes? target (assigned-nodes (gobj/get refs "brand-slot"))))
+  (node-in-assigned-nodes? target (assigned-nodes (gobj/get refs rk-brand-slot))))
 
 ;; ── Styles ───────────────────────────────────────────────────────────────────
 (def ^:private style-text
@@ -195,88 +219,84 @@
    "}"))
 
 ;; ── Shadow DOM construction ──────────────────────────────────────────────────
+;; Each per-section builder creates + decorates + assembles + returns its
+;; element(s). `make-bar-layout!` composes the six segment sections into the
+;; grid bar; `assemble-shadow!` wraps the bar in <nav>, attaches it to the
+;; host shadow, and returns the refs JS object.
 
-(defn- create-el
-  [tag]
-  (.createElement js/document tag))
+(defn- make-style-section! []
+  (let [el (.createElement js/document "style")]
+    (set! (.-textContent el) style-text)
+    el))
 
-(defn- create-shadow!
-  [^js el]
-  (let [root       (.attachShadow el #js {:mode "open"})
-        style-el   (create-el "style")
-        nav-el     (create-el "nav")
-        bar-el     (create-el "div")
-        brand-el   (create-el "div")
-        start-el   (create-el "div")
-        nav-wrap   (create-el "div")
-        actions-el (create-el "div")
-        toggle-el  (create-el "div")
-        end-el     (create-el "div")
-        brand-slot   (create-el "slot")
-        start-slot   (create-el "slot")
-        default-slot (create-el "slot")
-        actions-slot (create-el "slot")
-        toggle-slot  (create-el "slot")
-        end-slot     (create-el "slot")]
+(defn- make-slot-section!
+  "Generic builder for a slotted wrapper. Returns
+  `{:wrapper <div> :slot <slot>}`. `slot-name` may be nil for the default
+  (unnamed) slot — used by the central `nav` section."
+  [part-name slot-name]
+  (let [wrapper (.createElement js/document "div")
+        slot    (.createElement js/document "slot")]
+    (du/set-attr! wrapper "part" part-name)
+    (when slot-name
+      (du/set-attr! slot "name" slot-name))
+    (.appendChild wrapper slot)
+    {:wrapper wrapper :slot slot}))
 
-    (set! (.-textContent style-el) style-text)
+(defn- make-bar-layout!
+  "Build the grid bar containing the six segment sections in left-to-right
+  order. Returns the bar element together with every segment's wrapper and
+  slot, so the caller can build the refs object."
+  []
+  (let [bar-el (.createElement js/document "div")
+        brand   (make-slot-section! "brand"   model/slot-brand)
+        start   (make-slot-section! "start"   model/slot-start)
+        nav     (make-slot-section! "nav"     nil)
+        actions (make-slot-section! "actions" model/slot-actions)
+        toggle  (make-slot-section! "toggle"  model/slot-toggle)
+        end     (make-slot-section! "end"     model/slot-end)]
+    (du/set-attr! bar-el "part" "bar")
+    (.appendChild bar-el (:wrapper brand))
+    (.appendChild bar-el (:wrapper start))
+    (.appendChild bar-el (:wrapper nav))
+    (.appendChild bar-el (:wrapper actions))
+    (.appendChild bar-el (:wrapper toggle))
+    (.appendChild bar-el (:wrapper end))
+    {:bar     bar-el
+     :brand   brand   :start   start   :nav     nav
+     :actions actions :toggle  toggle  :end     end}))
 
-    (du/set-attr! nav-el     "part" "base")
-    (du/set-attr! bar-el     "part" "bar")
-    (du/set-attr! brand-el   "part" "brand")
-    (du/set-attr! start-el   "part" "start")
-    (du/set-attr! nav-wrap   "part" "nav")
-    (du/set-attr! actions-el "part" "actions")
-    (du/set-attr! toggle-el  "part" "toggle")
-    (du/set-attr! end-el     "part" "end")
-
-    (du/set-attr! brand-slot   "name" model/slot-brand)
-    (du/set-attr! start-slot   "name" model/slot-start)
-    (du/set-attr! actions-slot "name" model/slot-actions)
-    (du/set-attr! toggle-slot  "name" model/slot-toggle)
-    (du/set-attr! end-slot     "name" model/slot-end)
-
-    (.appendChild brand-el   brand-slot)
-    (.appendChild start-el   start-slot)
-    (.appendChild nav-wrap   default-slot)
-    (.appendChild actions-el actions-slot)
-    (.appendChild toggle-el  toggle-slot)
-    (.appendChild end-el     end-slot)
-
-    (.appendChild bar-el brand-el)
-    (.appendChild bar-el start-el)
-    (.appendChild bar-el nav-wrap)
-    (.appendChild bar-el actions-el)
-    (.appendChild bar-el toggle-el)
-    (.appendChild bar-el end-el)
-
-    (.appendChild nav-el bar-el)
-
+(defn- assemble-shadow! [^js el]
+  (let [root     (.attachShadow el #js {:mode "open"})
+        style-el (make-style-section!)
+        nav-el   (.createElement js/document "nav")
+        {:keys [bar brand start nav actions toggle end]} (make-bar-layout!)
+        refs     #js {}]
+    (du/set-attr! nav-el "part" "base")
+    (.appendChild nav-el bar)
     (.appendChild root style-el)
     (.appendChild root nav-el)
-
-    #js {:root         root
-         :base         nav-el
-         :bar          bar-el
-         :brand        brand-el
-         :start        start-el
-         :nav          nav-wrap
-         :actions      actions-el
-         :toggle       toggle-el
-         :end          end-el
-         :brand-slot   brand-slot
-         :start-slot   start-slot
-         :default-slot default-slot
-         :actions-slot actions-slot
-         :toggle-slot  toggle-slot
-         :end-slot     end-slot}))
+    (gobj/set refs rk-base         nav-el)
+    (gobj/set refs rk-bar          bar)
+    (gobj/set refs rk-brand        (:wrapper brand))
+    (gobj/set refs rk-start        (:wrapper start))
+    (gobj/set refs rk-nav          (:wrapper nav))
+    (gobj/set refs rk-actions      (:wrapper actions))
+    (gobj/set refs rk-toggle       (:wrapper toggle))
+    (gobj/set refs rk-end          (:wrapper end))
+    (gobj/set refs rk-brand-slot   (:slot brand))
+    (gobj/set refs rk-start-slot   (:slot start))
+    (gobj/set refs rk-default-slot (:slot nav))
+    (gobj/set refs rk-actions-slot (:slot actions))
+    (gobj/set refs rk-toggle-slot  (:slot toggle))
+    (gobj/set refs rk-end-slot     (:slot end))
+    refs))
 
 ;; ── Ensure refs (lazy init) ──────────────────────────────────────────────────
 
 (defn- ensure-refs!
   [^js el]
   (or (du/getv el k-refs)
-      (let [refs (create-shadow! el)]
+      (let [refs (assemble-shadow! el)]
         (du/setv! el k-refs refs)
         refs)))
 
@@ -286,8 +306,8 @@
   "Apply DOM state derived from the host attributes (aria-label,
   data-variant, data-orientation, data-breakpoint, data-alignment)."
   [^js refs m]
-  (let [^js base-el (gobj/get refs "base")
-        ^js bar-el  (gobj/get refs "bar")
+  (let [^js base-el (gobj/get refs rk-base)
+        ^js bar-el  (gobj/get refs rk-bar)
         label       (model/landmark-label m)]
     (if label
       (du/set-attr! base-el "aria-label" label)
@@ -302,16 +322,16 @@
   from apply-model! and from the slotchange handler — slot state isn't in
   the cached model, so the diff guard cannot gate this path."
   [^js refs]
-  (let [^js brand-el   (gobj/get refs "brand")
-        ^js start-el   (gobj/get refs "start")
-        ^js actions-el (gobj/get refs "actions")
-        ^js toggle-el  (gobj/get refs "toggle")
-        ^js end-el     (gobj/get refs "end")]
-    (du/set-attr! brand-el   "data-has-brand"   (if (slot-has-content? (gobj/get refs "brand-slot"))   "true" "false"))
-    (du/set-attr! start-el   "data-has-start"   (if (slot-has-content? (gobj/get refs "start-slot"))   "true" "false"))
-    (du/set-attr! actions-el "data-has-actions" (if (slot-has-content? (gobj/get refs "actions-slot")) "true" "false"))
-    (du/set-attr! toggle-el  "data-has-toggle"  (if (slot-has-content? (gobj/get refs "toggle-slot"))  "true" "false"))
-    (du/set-attr! end-el     "data-has-end"     (if (slot-has-content? (gobj/get refs "end-slot"))     "true" "false"))))
+  (let [^js brand-el   (gobj/get refs rk-brand)
+        ^js start-el   (gobj/get refs rk-start)
+        ^js actions-el (gobj/get refs rk-actions)
+        ^js toggle-el  (gobj/get refs rk-toggle)
+        ^js end-el     (gobj/get refs rk-end)]
+    (du/set-attr! brand-el   "data-has-brand"   (if (slot-has-content? (gobj/get refs rk-brand-slot))   "true" "false"))
+    (du/set-attr! start-el   "data-has-start"   (if (slot-has-content? (gobj/get refs rk-start-slot))   "true" "false"))
+    (du/set-attr! actions-el "data-has-actions" (if (slot-has-content? (gobj/get refs rk-actions-slot)) "true" "false"))
+    (du/set-attr! toggle-el  "data-has-toggle"  (if (slot-has-content? (gobj/get refs rk-toggle-slot))  "true" "false"))
+    (du/set-attr! end-el     "data-has-end"     (if (slot-has-content? (gobj/get refs rk-end-slot))     "true" "false"))))
 
 (defn- apply-model! [^js el ^js refs m]
   (apply-attr-state! refs m)
@@ -325,70 +345,75 @@
       (when (not= new-m old-m)
         (apply-model! el refs new-m)))))
 
-;; ── Event wiring ─────────────────────────────────────────────────────────────
+;; ── Event handlers (named — listener-spec style) ────────────────────────────
+;; Each handler takes `[^js el ^js event]` and is referenced from
+;; `listener-spec` below. Slot listeners and base-delegated listeners both
+;; bind to shadow-DOM nodes whose lifetime matches the host element, so no
+;; explicit remove path is needed across disconnect/reconnect.
 
-(defn- setup-delegated-events!
-  [^js el ^js base-el]
-  (.addEventListener
-   base-el
-   "click"
-   (fn [^js event]
-     (let [refs   (du/getv el k-refs)
-           target (.-target event)
-           anchor (closest-anchor target)
-           source (source-from-event event)]
-       (when anchor
-         (du/dispatch! el
+(defn- on-base-click [^js el ^js event]
+  (let [refs   (du/getv el k-refs)
+        target (.-target event)
+        anchor (closest-anchor target)
+        source (source-from-event event)]
+    (when anchor
+      (du/dispatch! el
                     model/event-navigate
                     #js {:href   (or (.getAttribute ^js anchor "href") "")
                          :source source}))
-       (when (target-in-brand-slot? refs target)
-         (du/dispatch! el
+    (when (target-in-brand-slot? refs target)
+      (du/dispatch! el
                     model/event-brand-activate
-                    #js {:source source})))))
+                    #js {:source source}))))
 
-  (.addEventListener
-   base-el
-   "focusin"
-   (fn [^js event]
-     (let [target (.-target event)]
-       (when (and target (.matches ^js target ":focus-visible"))
-         (when-not (du/getv el k-focus-visible)
-           (du/setv! el k-focus-visible true)
-           (du/set-attr! el "data-focus-visible-within" "true")
-           (du/dispatch! el model/event-focus-visible #js {}))))))
+(defn- on-base-focusin [^js el ^js event]
+  (let [target (.-target event)]
+    (when (and target (.matches ^js target ":focus-visible"))
+      (when-not (du/getv el k-focus-visible)
+        (du/setv! el k-focus-visible true)
+        (du/set-attr! el attr-data-focus-visible-within "true")
+        (du/dispatch! el model/event-focus-visible #js {})))))
 
-  (.addEventListener
-   base-el
-   "focusout"
-   (fn [^js event]
-     (let [related (.-relatedTarget event)]
-       (when-not (and related (.contains el ^js related))
-         (du/setv! el k-focus-visible false)
-         (du/remove-attr! el "data-focus-visible-within"))))))
+(defn- on-base-focusout [^js el ^js event]
+  (let [related (.-relatedTarget event)]
+    (when-not (and related (.contains el ^js related))
+      (du/setv! el k-focus-visible false)
+      (du/remove-attr! el attr-data-focus-visible-within))))
 
-;; ── Slot change wiring ───────────────────────────────────────────────────────
+(defn- on-slotchange [^js el _event]
+  (when-let [refs (du/getv el k-refs)]
+    (apply-slot-state! refs)))
 
-(defn- setup-slots!
-  [^js _el ^js refs]
-  (let [on-slotchange (fn handle-slotchange [_] (apply-slot-state! refs))]
-    (.addEventListener (gobj/get refs "brand-slot")   "slotchange" on-slotchange)
-    (.addEventListener (gobj/get refs "start-slot")   "slotchange" on-slotchange)
-    (.addEventListener (gobj/get refs "default-slot") "slotchange" on-slotchange)
-    (.addEventListener (gobj/get refs "actions-slot") "slotchange" on-slotchange)
-    (.addEventListener (gobj/get refs "toggle-slot")  "slotchange" on-slotchange)
-    (.addEventListener (gobj/get refs "end-slot")     "slotchange" on-slotchange)))
+;; ── Listener installation (listener-spec named pattern) ─────────────────────
+;; Each entry: `[refs-key event-name handler-fn]`. install-listeners! iterates
+;; this once at first-connect; the spec covers both the three base-delegated
+;; listeners and the six slotchange listeners under one uniform path.
+(def ^:private listener-spec
+  [[rk-base         ev-click      on-base-click]
+   [rk-base         ev-focusin    on-base-focusin]
+   [rk-base         ev-focusout   on-base-focusout]
+   [rk-brand-slot   ev-slotchange on-slotchange]
+   [rk-start-slot   ev-slotchange on-slotchange]
+   [rk-default-slot ev-slotchange on-slotchange]
+   [rk-actions-slot ev-slotchange on-slotchange]
+   [rk-toggle-slot  ev-slotchange on-slotchange]
+   [rk-end-slot     ev-slotchange on-slotchange]])
+
+(defn- install-listeners! [^js el]
+  (let [^js refs (du/getv el k-refs)]
+    (doseq [[refs-key event-name handler] listener-spec]
+      (let [^js target (gobj/get refs refs-key)]
+        (.addEventListener target event-name (fn [event] (handler el event)))))))
 
 ;; ── Lifecycle callbacks ──────────────────────────────────────────────────────
 
 (defn- connected!
   [^js el]
-  (let [first? (nil? (du/getv el k-refs))
-        refs   (ensure-refs! el)]
+  (let [first? (nil? (du/getv el k-refs))]
+    (ensure-refs! el)
     (when first?
       (du/setv! el k-focus-visible false)
-      (setup-delegated-events! el (gobj/get refs "base"))
-      (setup-slots! el refs))
+      (install-listeners! el))
     ;; On initial mount k-model is nil so the diff guard fires apply-model!
     ;; once; subsequent reconnects with unchanged attrs skip the DOM work.
     (update-from-attrs! el)))

@@ -23,19 +23,21 @@
   (:require [clojure.string :as str]
             [babashka.fs :as fs]))
 
-;; Matches `(gobj/get el …)` and `(gobj/set this …)` and similar — any
-;; gobj read/write whose first argument is `el` or `this` (the project's
-;; two conventional names for the host element). The previous narrow
+;; Matches `(gobj/get el …)`, `(gobj/set this …)`, `(gobj/set instance …)`
+;; and similar — any gobj read/write whose first argument is one of the
+;; three conventional names for the host element. The previous narrow
 ;; form (`\(gobj/(set|get) el k-`) missed:
 ;;   • `gobj/get this k-X` in property accessors (host binding is `this`)
 ;;   • `gobj/get el "X"` and `gobj/get el model/k-X` — non-`k-` keys
 ;;   • `gobj/get this field-key` — helper-function parameter
+;;   • `gobj/get instance "_X"` — components that pass the host as
+;;     `instance` (x_sidebar, etc.); the regex now covers this too.
 ;; Each form bypasses the trace-recorder hook. Lines tagged with
 ;; `;; allow-gobj:` (same line or any of the two lines above) are
 ;; exempt — reserved for the recorder's own bootstrap, where routing
 ;; through `du/setv!` would either recurse on the hook or fire it before
 ;; the internal-host filter is in place.
-(def ^:private gobj-pattern  #"\(gobj/(?:set|get) (?:el|this)\b")
+(def ^:private gobj-pattern  #"\(gobj/(?:set|get) (?:el|this|instance)\b")
 (def ^:private allow-marker  "allow-gobj:")
 (def ^:private shim-pattern  #"\(defn-? make-el \[(?:\^js )?tag\]")
 

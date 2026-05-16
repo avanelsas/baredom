@@ -220,77 +220,82 @@
     :name-raw          (du/get-attr el model/attr-name)}))
 
 ;; ---------------------------------------------------------------------------
-;; Render
+;; Render (render-orchestrator: apply-model! reads as a phase list, caches
+;; the model at the tail; update-from-attrs! gates the work behind a diff)
 ;; ---------------------------------------------------------------------------
-(defn- apply-model! [^js _el refs m]
-  (let [^js wrapper-el (gobj/get refs "wrapper")
-        ^js select-el  (gobj/get refs "select")
-        ^js ph-opt-el  (gobj/get refs "placeholder-opt")
-        disabled?      (:disabled? m)
-        required?      (:required? m)
-        size           (:size m)
-        placeholder    (:placeholder m)
-        value          (:value m)
-        name-val       (:name m)]
 
-    ;; Sync disabled to internal select. <select>.disabled is a reflecting
-    ;; property, so the attribute path is functionally equivalent and stays
-    ;; visible to the trace recorder.
-    (if disabled?
-      (du/set-attr!    select-el model/attr-disabled "")
-      (du/remove-attr! select-el model/attr-disabled))
+(defn- apply-disabled! [^js select-el disabled?]
+  (if disabled?
+    (du/set-attr!    select-el model/attr-disabled "")
+    (du/remove-attr! select-el model/attr-disabled)))
 
-    ;; Sync required
-    (if required?
-      (du/set-attr!    select-el model/attr-required "")
-      (du/remove-attr! select-el model/attr-required))
+(defn- apply-required! [^js select-el required?]
+  (if required?
+    (du/set-attr!    select-el model/attr-required "")
+    (du/remove-attr! select-el model/attr-required)))
 
-    ;; Sync name
-    (if (and (string? name-val) (not= name-val ""))
-      (du/set-attr!    select-el model/attr-name name-val)
-      (du/remove-attr! select-el model/attr-name))
+(defn- apply-name! [^js select-el name-val]
+  (if (and (string? name-val) (not= name-val ""))
+    (du/set-attr!    select-el model/attr-name name-val)
+    (du/remove-attr! select-el model/attr-name)))
 
-    ;; Placeholder option visibility. `hidden` reflects via attribute on
-    ;; HTMLElement, so the attribute path is equivalent to .hidden = bool.
-    (if (and (string? placeholder) (not= placeholder ""))
-      (do
-        (set! (.-textContent ph-opt-el) placeholder)
+(defn- apply-placeholder! [^js ph-opt-el placeholder]
+  ;; Placeholder option visibility. `hidden` reflects via attribute on
+  ;; HTMLElement, so the attribute path is equivalent to .hidden = bool.
+  (if (and (string? placeholder) (not= placeholder ""))
+    (do (set! (.-textContent ph-opt-el) placeholder)
         (du/remove-attr! ph-opt-el attr-hidden))
-      (du/set-attr! ph-opt-el attr-hidden ""))
+    (du/set-attr! ph-opt-el attr-hidden "")))
 
-    ;; Sync value to internal select — only when the host has an
-    ;; explicit `value` attribute. Without the some? guard we'd write
-    ;; "" on every render, which deselects whatever <option selected>
-    ;; the user provided in markup and falls back to the hidden
-    ;; placeholder (display: empty). The slotted `selected` cloned in
-    ;; by sync-options! is the source of truth when the host has no
-    ;; value attr; an explicit attribute still overrides it.
-    ;;
-    ;; <select>.value is property-only (no `value` attribute on <select>),
-    ;; so this stays as a property write rather than going through du/.
-    (when (some? value)
-      (set! (.-value select-el) value))
+(defn- apply-value! [^js select-el value]
+  ;; <select>.value is property-only (no `value` attribute on <select>), so
+  ;; this stays a property write. some? guard: writing "" on every render
+  ;; would deselect the slotted <option selected> the user provided in
+  ;; markup and fall back to the hidden placeholder.
+  (when (some? value)
+    (set! (.-value select-el) value)))
 
-    ;; data-size on wrapper for CSS size selectors
-    (du/set-attr! wrapper-el attr-data-size size)
+(defn- apply-wrapper-state! [^js wrapper-el size disabled?]
+  (du/set-attr! wrapper-el attr-data-size size)
+  (if disabled?
+    (du/set-attr!    wrapper-el attr-data-disabled "")
+    (du/remove-attr! wrapper-el attr-data-disabled)))
 
-    ;; data-disabled on wrapper for CSS disabled styles
-    (if disabled?
-      (du/set-attr!    wrapper-el attr-data-disabled "")
-      (du/remove-attr! wrapper-el attr-data-disabled))
+(defn- apply-aria-label! [^js select-el name-val placeholder]
+  (if (or (nil? name-val) (= name-val ""))
+    (du/set-attr!    select-el attr-aria-label (or placeholder default-aria-label))
+    (du/remove-attr! select-el attr-aria-label)))
 
-    ;; aria-label on internal select when no name attr present
-    (if (or (nil? name-val) (= name-val ""))
-      (du/set-attr!    select-el attr-aria-label (or placeholder default-aria-label))
-      (du/remove-attr! select-el attr-aria-label))))
-
-(defn- render! [^js el]
+(defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
-    (let [m     (read-model el)
-          old-m (du/getv el k-model)]
-      (when (not= m old-m)
-        (apply-model! el refs m)
-        (du/setv! el k-model m)))))
+    (let [^js wrapper-el (gobj/get refs "wrapper")
+          ^js select-el  (gobj/get refs "select")
+          ^js ph-opt-el  (gobj/get refs "placeholder-opt")
+          disabled?      (:disabled? m)
+          name-val       (:name m)
+          placeholder    (:placeholder m)]
+      (apply-disabled!       select-el disabled?)
+      (apply-required!       select-el (:required? m))
+      (apply-name!           select-el name-val)
+      (apply-placeholder!    ph-opt-el placeholder)
+      (apply-value!          select-el (:value m))
+      (apply-wrapper-state!  wrapper-el (:size m) disabled?)
+      (apply-aria-label!     select-el name-val placeholder)
+      (du/setv! el k-model m))))
+
+;; Unconditional re-render — `sync-options!` invalidates non-attribute state
+;; (the option list inside <select>) and must re-apply the model regardless
+;; of whether the attribute-derived model has changed.
+(defn- render! [^js el]
+  (apply-model! el (read-model el)))
+
+;; Guarded entry point for attribute changes — diff against the cached
+;; model so a no-op attributeChangedCallback does no DOM work.
+(defn- update-from-attrs! [^js el]
+  (let [new-m (read-model el)
+        old-m (du/getv el k-model)]
+    (when (not= old-m new-m)
+      (apply-model! el new-m))))
 
 ;; ---------------------------------------------------------------------------
 ;; Option sync from slot
@@ -384,7 +389,7 @@
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
-    (render! el)))
+    (update-from-attrs! el)))
 
 ;; ---------------------------------------------------------------------------
 ;; Property helpers
