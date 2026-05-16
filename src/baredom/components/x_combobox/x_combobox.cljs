@@ -538,47 +538,58 @@
     (render-panel! el)
     (du/dispatch! el model/event-input #js {:query q})))
 
+;; on-input-keydown orchestrates dispatch to per-key handlers. Each handler
+;; is a small `defn-` that already knows whether it needs the panel open and
+;; calls preventDefault when it acts; the dispatcher stays a phase list.
+
+(defn- handle-arrow-down! [^js el ^js evt]
+  (.preventDefault evt)
+  (if (du/has-attr? el model/attr-open)
+    (navigate!    el :next)
+    (open-panel!  el src-keyboard)))
+
+(defn- handle-arrow-up! [^js el ^js evt]
+  (.preventDefault evt)
+  (if (du/has-attr? el model/attr-open)
+    (navigate!    el :prev)
+    (open-panel!  el src-keyboard)))
+
+(defn- handle-enter! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (select-active! el)))
+
+(defn- handle-escape! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (close-panel! el src-escape)
+    (when-let [refs (du/getv el k-refs)]
+      (.focus (gobj/get refs rk-input)))))
+
+(defn- handle-home! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (du/setv! el k-active-idx 0)
+    (render-panel! el)))
+
+(defn- handle-end! [^js el ^js evt]
+  (when (du/has-attr? el model/attr-open)
+    (.preventDefault evt)
+    (let [options (du/getv el k-options)
+          query   (or (du/getv el k-query) "")
+          n       (count (model/filter-options options query))]
+      (du/setv! el k-active-idx (max 0 (dec n)))
+      (render-panel! el))))
+
 (defn- on-input-keydown [^js el ^js evt]
   (let [k (.-key evt)]
     (cond
-      (= k key-arrow-down)
-      (do (.preventDefault evt)
-          (if (du/has-attr? el model/attr-open)
-            (navigate! el :next)
-            (open-panel! el src-keyboard)))
-
-      (= k key-arrow-up)
-      (do (.preventDefault evt)
-          (if (du/has-attr? el model/attr-open)
-            (navigate! el :prev)
-            (open-panel! el src-keyboard)))
-
-      (= k key-enter)
-      (do (.preventDefault evt)
-          (when (du/has-attr? el model/attr-open)
-            (select-active! el)))
-
-      (= k key-escape)
-      (when (du/has-attr? el model/attr-open)
-        (.preventDefault evt)
-        (close-panel! el src-escape)
-        (when-let [refs (du/getv el k-refs)]
-          (.focus (gobj/get refs rk-input))))
-
-      (= k key-home)
-      (when (du/has-attr? el model/attr-open)
-        (.preventDefault evt)
-        (du/setv! el k-active-idx 0)
-        (render-panel! el))
-
-      (= k key-end)
-      (when (du/has-attr? el model/attr-open)
-        (.preventDefault evt)
-        (let [options (du/getv el k-options)
-              query   (or (du/getv el k-query) "")
-              n       (count (model/filter-options options query))]
-          (du/setv! el k-active-idx (max 0 (dec n)))
-          (render-panel! el))))))
+      (= k key-arrow-down) (handle-arrow-down! el evt)
+      (= k key-arrow-up)   (handle-arrow-up!   el evt)
+      (= k key-enter)      (handle-enter!      el evt)
+      (= k key-escape)     (handle-escape!     el evt)
+      (= k key-home)       (handle-home!       el evt)
+      (= k key-end)        (handle-end!        el evt))))
 
 (defn- on-clear-click [^js el ^js _evt]
   (let [prev-value (or (du/get-attr el model/attr-value) "")
