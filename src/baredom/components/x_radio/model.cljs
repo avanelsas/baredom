@@ -83,4 +83,4 @@
      :aria-labelledby  aria-labelledby-raw
      :aria-checked     (if checked? "true" "false")}))
 
-(def method-api nil)
+(def method-api {})
