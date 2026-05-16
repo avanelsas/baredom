@@ -733,17 +733,25 @@
         (emit-particle! el ptype sx sy vx vy)))))
 
 ;; ── Animation loop ──────────────────────────────────────────────────────────
+;; k-raf and k-last-time are the canonical animation-bookkeeping fields
+;; per CLAUDE.md: they are stamped 60×/sec from animate! and have no
+;; diagnostic value at that frequency. All writes use du/setv-untraced!
+;; directly (bypassing the traced `sp!` helper) so the x-trace-history
+;; recorder isn't flooded.
+
 (defn- stop-animation! [^js el]
   (when-let [raf (gp el k-raf)]
     (js/cancelAnimationFrame raf)
-    (sp! el k-raf nil)))
+    ;; Hot path: rAF-driven.
+    (du/setv-untraced! el k-raf nil)))
 
 (declare animate!)
 
 (defn- start-animation! [^js el]
   (when-not (gp el k-raf)
-    (sp! el k-last-time (js/performance.now))
-    (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el))))))
+    ;; Hot path: rAF-driven — first-frame seed for the animation trio.
+    (du/setv-untraced! el k-last-time (js/performance.now))
+    (du/setv-untraced! el k-raf (js/requestAnimationFrame (fn [_] (animate! el))))))
 
 (defn- count-alive [^js particles]
   (let [len (alength particles)]
@@ -971,11 +979,12 @@
   "Reschedule the rAF loop while the animation is still active."
   [^js el phase alive]
   (let [emitting? (#{:hover-emit :press-burst} phase)]
+    ;; Hot path: rAF-driven.
     (when (and (not= :idle phase)
                (or emitting? (> alive 0)))
-      (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))
+      (du/setv-untraced! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))
     (when (and (= :settling phase) (> alive 0) (not (gp el k-raf)))
-      (sp! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))))
+      (du/setv-untraced! el k-raf (js/requestAnimationFrame (fn [_] (animate! el)))))))
 
 (defn- advance-phase!
   "Run all post-update phase transitions, then reschedule rAF if the
@@ -991,14 +1000,16 @@
   (schedule-next-frame! el phase alive))
 
 (defn- animate! [^js el]
-  (sp! el k-raf nil)
+  ;; Hot path: rAF-driven. k-raf / k-last-time are stamped 60×/sec; route
+  ;; around the traced `sp!` helper so the recorder stays readable.
+  (du/setv-untraced! el k-raf nil)
   (when (.-isConnected el)
     (let [phase     (get-phase el)
           now       (js/performance.now)
           last-time (or (gp el k-last-time) now)
           dt-ms     (js/Math.min 100.0 (- now last-time))
           particles (gp el k-particles)]
-      (sp! el k-last-time now)
+      (du/setv-untraced! el k-last-time now)
       (emit-for-phase! el phase now dt-ms)
       (update-particles! el dt-ms)
       (draw-particles!   el)
