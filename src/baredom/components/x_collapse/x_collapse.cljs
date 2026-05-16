@@ -219,12 +219,13 @@
 ;; ---------------------------------------------------------------------------
 ;; Duration helper
 ;; ---------------------------------------------------------------------------
-(defn- get-duration-ms [^js el]
-  (let [d (du/get-attr el model/attr-duration-ms)]
-    (if d
-      (let [n (js/parseInt d 10)]
-        (if (js/isNaN n) model/default-duration-ms (max 0 (min 2000 n))))
-      model/default-duration-ms)))
+(defn- model-duration-ms
+  "Read the canonical duration from the cached model. Falls back to the
+  model's default only when called before the first apply-model! (e.g. an
+  animation kicked off during very early lifecycle); read-model →
+  model/normalize is the single source of truth for parsing/clamping."
+  [^js el]
+  (or (:duration-ms (du/getv el k-model)) model/default-duration-ms))
 
 ;; ---------------------------------------------------------------------------
 ;; Height animation
@@ -258,22 +259,24 @@
     (let [target-h (do (set! (.-style.height content) "0px")
                        (.-offsetHeight content)
                        (str (.-scrollHeight content) "px"))]
-      (animate-height! content "0px" target-h (get-duration-ms el)))))
+      (animate-height! content "0px" target-h (model-duration-ms el)))))
 
 (defn- start-close! [^js el ^js content]
   (if (prefers-reduced-motion?)
     (do (set! (.-style.height content) "0px")
         (set! (.-style.transition content) ""))
     (let [current-h (str (.-offsetHeight content) "px")]
-      (animate-height! content current-h "0px" (get-duration-ms el)))))
+      (animate-height! content current-h "0px" (model-duration-ms el)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Model reading
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
-  {:open?     (du/has-attr? el model/attr-open)
-   :disabled? (du/has-attr? el model/attr-disabled)
-   :header    (or (du/get-attr el model/attr-header) "")})
+  (model/normalize
+   {:open-present?     (du/has-attr? el model/attr-open)
+    :disabled-present? (du/has-attr? el model/attr-disabled)
+    :header-raw        (du/get-attr el model/attr-header)
+    :duration-ms-raw   (du/get-attr el model/attr-duration-ms)}))
 
 ;; ---------------------------------------------------------------------------
 ;; DOM patching
