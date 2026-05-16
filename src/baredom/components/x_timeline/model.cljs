@@ -21,9 +21,9 @@
 
 ;; ── Public API metadata ───────────────────────────────────────────────────────
 (def property-api
-  {:label    {:type 'string}
-   :position {:type 'string}
-   :striped  {:type 'boolean}})
+  {:label    {:type 'string  :reflects-attribute attr-label}
+   :position {:type 'string  :reflects-attribute attr-position}
+   :striped  {:type 'boolean :reflects-attribute attr-striped}})
 
 (def event-schema
   {event-select {:detail     {:index 'number :status 'string :label 'string}

@@ -19,10 +19,10 @@
 ;; ── Property API metadata ────────────────────────────────────────────────────
 
 (def property-api
-  {:selected    {:type 'boolean}
-   :disabled    {:type 'boolean}
-   :interactive {:type 'boolean}
-   :rowIndex    {:type 'number}})
+  {:selected    {:type 'boolean :reflects-attribute attr-selected}
+   :disabled    {:type 'boolean :reflects-attribute attr-disabled}
+   :interactive {:type 'boolean :reflects-attribute attr-interactive}
+   :rowIndex    {:type 'number  :reflects-attribute attr-row-index}})
 
 (def event-schema
   {event-click        {:detail     {:rowIndex 'number :selected 'boolean :disabled 'boolean}

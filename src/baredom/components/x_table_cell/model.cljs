@@ -30,17 +30,17 @@
 (def slot-sort-icon "sort-icon")
 
 (def property-api
-  {:type          {:type 'string}
-   :scope         {:type 'string}
-   :align         {:type 'string}
-   :valign        {:type 'string}
-   :colSpan       {:type 'number}
-   :rowSpan       {:type 'number}
-   :truncate      {:type 'boolean}
-   :sticky        {:type 'string}
-   :sortable      {:type 'boolean}
-   :sortDirection {:type 'string}
-   :disabled      {:type 'boolean}})
+  {:type          {:type 'string  :reflects-attribute attr-type}
+   :scope         {:type 'string  :reflects-attribute attr-scope}
+   :align         {:type 'string  :reflects-attribute attr-align}
+   :valign        {:type 'string  :reflects-attribute attr-valign}
+   :colSpan       {:type 'number  :reflects-attribute attr-col-span}
+   :rowSpan       {:type 'number  :reflects-attribute attr-row-span}
+   :truncate      {:type 'boolean :reflects-attribute attr-truncate}
+   :sticky        {:type 'string  :reflects-attribute attr-sticky}
+   :sortable      {:type 'boolean :reflects-attribute attr-sortable}
+   :sortDirection {:type 'string  :reflects-attribute attr-sort-direction}
+   :disabled      {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
   {event-sort       {:detail     {:direction 'string :previousDirection 'string}

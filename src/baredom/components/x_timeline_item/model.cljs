@@ -28,13 +28,13 @@
 
 ;; ── Public API metadata ───────────────────────────────────────────────────────
 (def property-api
-  {:label     {:type 'string}
-   :title     {:type 'string}
-   :status    {:type 'string}
-   :icon      {:type 'string}
-   :connector {:type 'string}
-   :position  {:type 'string}
-   :disabled  {:type 'boolean}})
+  {:label     {:type 'string  :reflects-attribute attr-label}
+   :title     {:type 'string  :reflects-attribute attr-title}
+   :status    {:type 'string  :reflects-attribute attr-status}
+   :icon      {:type 'string  :reflects-attribute attr-icon}
+   :connector {:type 'string  :reflects-attribute attr-connector}
+   :position  {:type 'string  :reflects-attribute attr-position}
+   :disabled  {:type 'boolean :reflects-attribute attr-disabled}})
 
 (def event-schema
   {event-connected    {:detail     {:status 'string :label 'string :position 'string :disabled 'boolean}
