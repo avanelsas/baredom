@@ -220,70 +220,81 @@
 (defn- prefers-reduced-motion? []
   (.-matches (.matchMedia js/window "(prefers-reduced-motion: reduce)")))
 
-;; ── DOM initialisation ───────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root            (.attachShadow el #js {:mode "open"})
-        style-el        (.createElement js/document "style")
-        container       (.createElement js/document "div")
-        svg             (svg-el "svg")
-        defs            (svg-el "defs")
-        path-el         (svg-el "path")
-        path-line       (svg-el "path")
-        text-el         (svg-el "text")
-        text-path       (svg-el "textPath")
-        sr-only         (.createElement js/document "span")
-        crawl-viewport  (.createElement js/document "div")
-        crawl-text      (.createElement js/document "div")
-        path-id         (str "xkt-" (random-uuid))]
+;; ── DOM initialisation (shadow-builders pattern) ─────────────────────────
+;; Each per-section builder creates + decorates + assembles + returns its
+;; element(s). `init-dom!` composes them, attaches them to the host shadow,
+;; and stashes all the refs.
 
+(defn- make-svg-section!
+  "Build the SVG-on-path section: <svg> containing <defs> with the curve
+  path, a decorative path line, and <text> wrapping <textPath>. Returns
+  `{:svg ... :path-el ... :path-line ... :text-el ... :text-path ... :path-id ...}`."
+  []
+  (let [svg       (svg-el "svg")
+        defs      (svg-el "defs")
+        path-el   (svg-el "path")
+        path-line (svg-el "path")
+        text-el   (svg-el "text")
+        text-path (svg-el "textPath")
+        path-id   (str "xkt-" (random-uuid))]
+    (du/set-attr! svg       attr-part        "svg")
+    (du/set-attr! svg       attr-aria-hidden val-true)
+    (du/set-attr! svg       "focusable"      "false")
+    (du/set-attr! path-el   "id"             path-id)
+    (du/set-attr! path-line attr-part        "path-line")
+    (du/set-attr! text-el   attr-part        "text")
+    (du/set-attr! text-path "href"           (str "#" path-id))
+    (.appendChild defs    path-el)
+    (.appendChild text-el text-path)
+    (.appendChild svg     path-line)
+    (.appendChild svg     defs)
+    (.appendChild svg     text-el)
+    {:svg svg :path-el path-el :path-line path-line
+     :text-el text-el :text-path text-path :path-id path-id}))
+
+(defn- make-crawl-section!
+  "Build the marquee/crawl section: <div part=crawl-viewport> containing
+  <div part=crawl-text>. Returns `{:viewport ... :text ...}`."
+  []
+  (let [viewport (.createElement js/document "div")
+        text     (.createElement js/document "div")]
+    (du/set-attr! viewport attr-part "crawl-viewport")
+    (du/set-attr! text     attr-part "crawl-text")
+    (.appendChild viewport text)
+    {:viewport viewport :text text}))
+
+(defn- make-sr-section!
+  "Build the screen-reader-only mirror span (.sr-only)."
+  []
+  (let [el (.createElement js/document "span")]
+    (.add (.-classList el) "sr-only")
+    (du/set-attr! el attr-part "sr-only")
+    el))
+
+(defn- init-dom! [^js el]
+  (let [root      (.attachShadow el #js {:mode "open"})
+        style-el  (.createElement js/document "style")
+        container (.createElement js/document "div")
+        svg-refs  (make-svg-section!)
+        crawl     (make-crawl-section!)
+        sr-only   (make-sr-section!)]
     (set! (.-textContent style-el) style-text)
     (du/set-attr! container attr-part "container")
-    (du/set-attr! svg       attr-part "svg")
-    (du/set-attr! svg       attr-aria-hidden val-true)
-    (du/set-attr! svg       "focusable" "false")
-
-    ;; Path definition in <defs>
-    (du/set-attr! path-el "id" path-id)
-    (.appendChild defs path-el)
-
-    ;; Decorative path line (for optional visible path)
-    (du/set-attr! path-line attr-part "path-line")
-    (.appendChild svg path-line)
-
-    ;; Text on path
-    (du/set-attr! text-el   attr-part "text")
-    (du/set-attr! text-path "href" (str "#" path-id))
-    (.appendChild text-el text-path)
-
-    (.appendChild svg defs)
-    (.appendChild svg text-el)
-
-    ;; Crawl mode elements
-    (du/set-attr! crawl-viewport attr-part "crawl-viewport")
-    (du/set-attr! crawl-text     attr-part "crawl-text")
-    (.appendChild crawl-viewport crawl-text)
-
-    ;; SR-only text
-    (.add (.-classList sr-only) "sr-only")
-    (du/set-attr! sr-only attr-part "sr-only")
-
-    (.appendChild container svg)
-    (.appendChild container crawl-viewport)
+    (.appendChild container (:svg svg-refs))
+    (.appendChild container (:viewport crawl))
     (.appendChild container sr-only)
     (.appendChild root style-el)
     (.appendChild root container)
-
-    ;; Store refs
     (du/setv! el k-container      container)
-    (du/setv! el k-svg            svg)
-    (du/setv! el k-path-el        path-el)
-    (du/setv! el k-path-line      path-line)
-    (du/setv! el k-text-el        text-el)
-    (du/setv! el k-text-path      text-path)
+    (du/setv! el k-svg            (:svg svg-refs))
+    (du/setv! el k-path-el        (:path-el svg-refs))
+    (du/setv! el k-path-line      (:path-line svg-refs))
+    (du/setv! el k-text-el        (:text-el svg-refs))
+    (du/setv! el k-text-path      (:text-path svg-refs))
     (du/setv! el k-sr-only        sr-only)
-    (du/setv! el k-path-id        path-id)
-    (du/setv! el k-crawl-viewport crawl-viewport)
-    (du/setv! el k-crawl-text     crawl-text)
+    (du/setv! el k-path-id        (:path-id svg-refs))
+    (du/setv! el k-crawl-viewport (:viewport crawl))
+    (du/setv! el k-crawl-text     (:text crawl))
     (du/setv! el k-echo-els       #js [])
     (du/setv! el k-initialized    true)))
 

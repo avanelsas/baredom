@@ -248,7 +248,10 @@
           w     (du/getv el k-width)
           h     (du/getv el k-height)]
 
-      (du/setv! el k-lf now)
+      ;; Hot path: rAF-driven. k-lf / k-time / k-raf are the canonical
+      ;; animation-bookkeeping trio — they fire 60×/sec with no diagnostic
+      ;; value for the trace recorder.
+      (du/setv-untraced! el k-lf now)
       (du/setv-untraced! el k-time (+ (or (du/getv el k-time) 0.0) dt))
 
       ;; Update entities
@@ -264,7 +267,8 @@
 
 (defn- start-animation! [^js el]
   (when-not (du/getv el k-raf)
-    (du/setv! el k-lf (js/performance.now))
+    ;; First-frame seed for the canonical animation trio (see animate!).
+    (du/setv-untraced! el k-lf (js/performance.now))
     (du/setv-untraced! el k-raf
               (js/requestAnimationFrame (fn on-first-frame [_] (animate! el))))))
 
