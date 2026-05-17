@@ -1604,18 +1604,30 @@
             line that the .error class styles distinctly. The error
             wiring sits in the dock's import-file path; here we
             simulate the reject directly via recorder/import-trace!,
-            since the input/drop paths route through it identically."
+            since the input/drop paths route through it identically.
+
+            Silence console.warn for the duration of the rejected
+            call — same pattern as recorder_test's
+            import-trace!-invalid-rejects-test. The recorder's
+            warn-on-reject contract is covered there; here we only
+            care about the dock-level consequences (no chip, imports
+            slot unchanged)."
     (let [^js dock (mount-dock!)
-          ^js env  (mk-test-envelope (array))]
+          ^js env  (mk-test-envelope (array))
+          orig     (.-warn js/console)]
       (gobj/set env "schemaVersion" 999)
-      (let [imports-before (.-length (recorder/imports))
-            id             (recorder/import-trace! env)
-            imports-after  (.-length (recorder/imports))]
-        (is (nil? id) "rejected envelope returns nil — no chip added")
-        (is (= imports-before imports-after)
-            "recorder :imports unchanged on rejection")
-        (is (= 0 (.-length (query-all dock "[data-x-th-import-close]")))
-            "no import chip rendered for the failed envelope")))))
+      (try
+        (set! (.-warn js/console) (fn [& _] nil))
+        (let [imports-before (.-length (recorder/imports))
+              id             (recorder/import-trace! env)
+              imports-after  (.-length (recorder/imports))]
+          (is (nil? id) "rejected envelope returns nil — no chip added")
+          (is (= imports-before imports-after)
+              "recorder :imports unchanged on rejection")
+          (is (= 0 (.-length (query-all dock "[data-x-th-import-close]")))
+              "no import chip rendered for the failed envelope"))
+        (finally
+          (set! (.-warn js/console) orig))))))
 
 (deftest import-survives-recorder-clear-test
   (testing "clicking Clear empties the live buffer but the import
@@ -2929,7 +2941,7 @@
    it with a componentId. A plain div has no custom-element lifecycle,
    so the dispatch produces exactly ONE record — predictable enough
    that tests can read records[0] and seed selection deterministically.
-   Returns [div record-id]."
+   Returns the div (tests are responsible for `.remove`-ing it)."
   []
   (let [^js div (.createElement js/document "div")]
     (set! (.. div -style -position) "absolute")

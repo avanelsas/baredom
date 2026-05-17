@@ -943,6 +943,35 @@
         (.setAttribute    causality-el "hidden" "")
         (.remove (.-classList host) "causality-mode"))))
 
+(defn- clear-highlight!
+  "Hide the outline and forget which component it was on. Idempotent."
+  [^js el]
+  (highlight/hide! el)
+  (du/setv-untraced! el model/k-highlight-cid nil))
+
+(defn- show-highlight-for-cid!
+  "Resolve `cid` to a live element and outline it. On lookup miss
+   (originating component disconnected since the record was emitted),
+   clear the cached cid so future renders short-circuit through
+   clear-highlight! instead of re-walking the DOM each time."
+  [^js el cid]
+  (if-let [^js target (recorder/find-element-by-component-id
+                       (.-body js/document) cid)]
+    (do
+      (du/setv-untraced! el model/k-highlight-cid cid)
+      (highlight/show! el target))
+    (clear-highlight! el)))
+
+(defn- highlightable?
+  "True when `sel-rec` should produce a visible outline. False for nil
+   selection, document-target records (no element to outline), and
+   records whose componentId is nil (defensive — should imply
+   tag === \"document\")."
+  [^js sel-rec]
+  (and (some? sel-rec)
+       (some? (.-componentId sel-rec))
+       (not= "document" (.-tag sel-rec))))
+
 (defn- apply-highlight!
   "Reflect the dock's current selection onto the page by drawing an
    outline around the live element that emitted the selected record.
@@ -952,43 +981,23 @@
    effective-selection!) automatically flows through here without
    duplicating logic in each call-site.
 
-   No-highlight cases:
-   - nil sel-rec (nothing selected)
-   - tag === \"document\" (page-level events are not tied to an element)
-   - componentId is nil (defensive — should imply tag === \"document\")
-   - find-element-by-component-id returns nil (originating component
-     was disconnected since the record was emitted)
-
-   k-highlight-cid memoises the component currently being outlined so
-   re-selecting the same record (or re-rendering the same selection
-   on every recorder tick) doesn't re-trigger maybe-scroll-into-view!.
-   The plain reposition path stays cheap."
+   Phase-list: classify the selection, then route to one of three
+   helpers:
+   - clear-highlight!         — nothing to outline (no/document record)
+   - highlight/reposition!    — same component as before; skip the
+                                find-element walk + scroll-into-view
+   - show-highlight-for-cid!  — new component; resolve cid → element
+                                and pulse the outline"
   [^js el ^js sel-rec]
-  (if (nil? sel-rec)
-    (do
-      (highlight/hide! el)
-      (du/setv-untraced! el model/k-highlight-cid nil))
-    (let [cid     (.-componentId sel-rec)
-          tag     (.-tag sel-rec)
-          doc-rec (or (nil? cid) (= "document" tag))]
-      (cond
-        doc-rec
-        (do
-          (highlight/hide! el)
-          (du/setv-untraced! el model/k-highlight-cid nil))
+  (cond
+    (not (highlightable? sel-rec))
+    (clear-highlight! el)
 
-        (= cid (du/getv el model/k-highlight-cid))
-        (highlight/reposition! el)
+    (= (.-componentId sel-rec) (du/getv el model/k-highlight-cid))
+    (highlight/reposition! el)
 
-        :else
-        (if-let [^js target (recorder/find-element-by-component-id
-                             (.-body js/document) cid)]
-          (do
-            (du/setv-untraced! el model/k-highlight-cid cid)
-            (highlight/show! el target))
-          (do
-            (highlight/hide! el)
-            (du/setv-untraced! el model/k-highlight-cid nil)))))))
+    :else
+    (show-highlight-for-cid! el (.-componentId sel-rec))))
 
 (defn- render!
   "Repaint timeline, count, hint, detail pane, pause-button, record-button
