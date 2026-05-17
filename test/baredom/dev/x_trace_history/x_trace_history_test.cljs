@@ -2839,3 +2839,270 @@
                  (is (some? marker)
                      "selected record marker drawn inside the band"))
                (done)))))))))
+
+;; ---------------------------------------------------------------------------
+;; Live-element highlight
+;;
+;; When the user selects a record, the dock outlines the live DOM
+;; element that emitted it via a fixed-position overlay layer. These
+;; tests cover the tree walk that resolves componentId → element, the
+;; render-driven show/hide flow, and the no-pollution guarantee.
+;; ---------------------------------------------------------------------------
+
+(def ^:private highlight-component-id-key "__xTraceHistoryId")
+(def ^:private highlight-internal-marker  "__xTraceHistoryInternal")
+
+(defn- highlight-layer [^js dock-el]
+  (gobj/get dock-el model/k-highlight-layer))
+
+(defn- highlight-box [^js dock-el]
+  (when-let [^js layer (highlight-layer dock-el)]
+    (.querySelector (.-shadowRoot layer) ".outline")))
+
+(defn- highlight-visible? [^js dock-el]
+  (when-let [^js box (highlight-box dock-el)]
+    (= "block" (.. box -style -display))))
+
+(deftest find-element-by-component-id-finds-match-test
+  (testing "find-element-by-component-id returns the element bearing
+            the matching component-id marker; nil for an unknown id."
+    (let [^js root  (.createElement js/document "div")
+          ^js a     (.createElement js/document "span")
+          ^js b     (.createElement js/document "em")]
+      (gobj/set a highlight-component-id-key 11)
+      (gobj/set b highlight-component-id-key 22)
+      (.appendChild root a)
+      (.appendChild root b)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (identical? a (recorder/find-element-by-component-id root 11)))
+        (is (identical? b (recorder/find-element-by-component-id root 22)))
+        (is (nil? (recorder/find-element-by-component-id root 99))
+            "no element has cid 99")
+        (is (nil? (recorder/find-element-by-component-id root nil))
+            "nil cid returns nil without walking")
+        (finally
+          (.remove root))))))
+
+(deftest find-element-by-component-id-skips-internal-host-test
+  (testing "subtrees marked __xTraceHistoryInternal are skipped — the
+            dock and other dev tools never highlight themselves."
+    (let [^js root     (.createElement js/document "div")
+          ^js internal (.createElement js/document "section")
+          ^js inside   (.createElement js/document "span")
+          ^js outside  (.createElement js/document "em")]
+      (gobj/set internal highlight-internal-marker  true)
+      (gobj/set inside   highlight-component-id-key 7)
+      (gobj/set outside  highlight-component-id-key 8)
+      (.appendChild internal inside)
+      (.appendChild root     internal)
+      (.appendChild root     outside)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (nil? (recorder/find-element-by-component-id root 7))
+            "cid 7 is inside the internal-marked subtree — must be skipped")
+        (is (identical? outside (recorder/find-element-by-component-id root 8))
+            "cid 8 lives outside the marked subtree and is returned")
+        (finally
+          (.remove root))))))
+
+(deftest find-element-by-component-id-descends-into-shadow-test
+  (testing "the walk descends into open shadow roots so a component
+            nested inside another component's shadow is still found."
+    (let [^js root  (.createElement js/document "div")
+          ^js host  (.createElement js/document "section")
+          ^js inner (.createElement js/document "span")]
+      (gobj/set inner highlight-component-id-key 42)
+      (let [^js shadow (.attachShadow host #js {:mode "open"})]
+        (.appendChild shadow inner))
+      (.appendChild root host)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (identical? inner (recorder/find-element-by-component-id root 42))
+            "element inside an open shadow root is found")
+        (finally
+          (.remove root))))))
+
+(deftest selecting-record-shows-highlight-test
+  (testing "clicking a dot resolves the record's componentId to the
+            live element and shows the outline box over it. The btn
+            is positioned with explicit pixel coordinates so the box
+            rect is non-trivial — appending btn to body triggers its
+            connect lifecycle, which generates several records, but
+            they all share the same componentId so any selected dot
+            still resolves to the same target element."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (set! (.. btn -style -position) "absolute")
+        (set! (.. btn -style -top)      "100px")
+        (set! (.. btn -style -left)     "50px")
+        (set! (.. btn -style -width)    "80px")
+        (set! (.. btn -style -height)   "30px")
+        (.appendChild (.-body js/document) btn)
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js dot (query dock "circle.dot")]
+              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (is (highlight-visible? dock)
+                    "outline becomes visible after dot click")
+                (let [^js box (highlight-box dock)
+                      rect   (.getBoundingClientRect btn)]
+                  (is (= (str (.-top rect) "px")    (.. box -style -top)))
+                  (is (= (str (.-left rect) "px")   (.. box -style -left)))
+                  (is (= (str (.-width rect) "px") (.. box -style -width)))
+                  (is (= (str (.-height rect) "px") (.. box -style -height))))
+                (.remove btn)
+                (done)))))))))
+
+(defn- force-render-via-filter-toggle!
+  "Trigger a render by toggling the 'all' tag filter on and back. Used
+   when a test seeds selection state directly on the host and needs
+   apply-highlight! to run without dispatching a fresh click. Pure
+   filter-toggle leaves the records and selection unchanged after the
+   round-trip — a no-op for everything except the render cycle."
+  [^js dock]
+  (let [^js sel (query dock "[data-x-th-tag]")]
+    (dispatch-select-change! sel "all")))
+
+(deftest deselecting-record-hides-highlight-test
+  (testing "after the user deselects the record (selection cleared),
+            apply-highlight! hides the outline and clears the cached
+            highlight cid. Seeds selection programmatically because
+            appending the target to body generates many lifecycle
+            records — re-querying \"circle.dot\" between clicks would
+            return different records and not deselect."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.appendChild (.-body js/document) btn)
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            ;; Seed the selection to the most recent record so apply-
+            ;; highlight! sees a non-nil sel-rec on next render.
+            (let [^js recs (recorder/records)
+                  ^js rec  (aget recs (dec (.-length recs)))
+                  rec-id   (.-id rec)
+                  ^js m    (or (gobj/get dock model/k-view-selected) (js-obj))]
+              (gobj/set m "live" rec-id)
+              (gobj/set dock model/k-view-selected m))
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (is (highlight-visible? dock)
+                    "outline visible after seeded selection")
+                ;; Now clear the selection and re-render — the
+                ;; deselect path under test.
+                (gobj/remove ^js (gobj/get dock model/k-view-selected) "live")
+                (force-render-via-filter-toggle! dock)
+                (after-frames 1
+                  (fn []
+                    (is (nil? (live-selected-id dock))
+                        "live-selected-id cleared")
+                    (is (false? (boolean (highlight-visible? dock)))
+                        "outline hidden after deselect")
+                    (is (nil? (gobj/get dock model/k-highlight-cid))
+                        "k-highlight-cid cleared")
+                    (.remove btn)
+                    (done)))))))))))
+
+(deftest document-record-does-not-highlight-test
+  (testing "records with tag=\"document\" (page-level events) do not
+            produce a highlight — there is no element to outline."
+    (async done
+      (let [^js dock (mount-dock!)]
+        ;; A document-target dispatch produces a record with tag = "document"
+        ;; and componentId = nil.
+        (du/dispatch! js/document "x-some-doc-event" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js dot (query dock "circle.dot")]
+              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (is (false? (boolean (highlight-visible? dock)))
+                    "no outline visible for a document-tag record")
+                (done)))))))))
+
+(deftest detached-element-clears-highlight-test
+  (testing "when the originating element has been disconnected since
+            the record was emitted, the highlight stays hidden and
+            k-highlight-cid is cleared."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.appendChild (.-body js/document) btn)
+        (du/dispatch! btn "x-button:click" #js {})
+        ;; Disconnect BEFORE selecting — apply-highlight! must treat the
+        ;; missing element as expected and clear the slot.
+        (.remove btn)
+        (after-frames 2
+          (fn []
+            (let [^js dot (query dock "circle.dot")]
+              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (is (false? (boolean (highlight-visible? dock)))
+                    "outline hidden when target is gone")
+                (is (nil? (gobj/get dock model/k-highlight-cid))
+                    "k-highlight-cid cleared after lookup miss")
+                (done)))))))))
+
+(deftest highlight-machinery-does-not-pollute-records-test
+  (testing "selecting / deselecting a dot does not introduce new
+            records — the overlay creation, positioning, and slot
+            writes must be invisible to the recorder."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.appendChild (.-body js/document) btn)
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (let [before (.-length (recorder/records))]
+              (.dispatchEvent ^js (query dock "circle.dot")
+                              (js/MouseEvent. "click" #js {:bubbles true}))
+              (after-frames 2
+                (fn []
+                  (.dispatchEvent ^js (query dock "circle.dot")
+                                  (js/MouseEvent. "click" #js {:bubbles true}))
+                  (after-frames 2
+                    (fn []
+                      (is (= before (.-length (recorder/records)))
+                          "no new records produced by highlight show + hide")
+                      (.remove btn)
+                      (done))))))))))))
+
+(deftest unmount-removes-highlight-layer-test
+  (testing "disconnecting the dock tears down the overlay layer and
+            clears every highlight slot on the host."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js btn  (.createElement js/document "x-button")]
+        (.appendChild (.-body js/document) btn)
+        (du/dispatch! btn "x-button:click" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js dot (query dock "circle.dot")]
+              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (after-frames 1
+              (fn []
+                (let [^js layer-before (highlight-layer dock)]
+                  (is (some? layer-before) "layer exists while dock is mounted")
+                  (.remove dock)
+                  (after-frames 1
+                    (fn []
+                      (is (nil? (gobj/get dock model/k-highlight-layer))
+                          "k-highlight-layer cleared on unmount")
+                      (is (nil? (gobj/get dock model/k-highlight-box))
+                          "k-highlight-box cleared on unmount")
+                      (is (nil? (gobj/get dock model/k-highlight-cid))
+                          "k-highlight-cid cleared on unmount")
+                      (is (false? (.contains (.-body js/document) layer-before))
+                          "the layer element is no longer in the document")
+                      (.remove btn)
+                      (done))))))))))))
