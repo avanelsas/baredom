@@ -1547,15 +1547,30 @@
 (deftest import-trace!-invalid-rejects-test
   (testing "import-trace! returns nil and logs to console.warn when
             the envelope is malformed. The recorder's :imports slot
-            stays unchanged so a bad drop doesn't corrupt the dock."
+            stays unchanged so a bad drop doesn't corrupt the dock.
+
+            Silence console.warn for the duration of the call so the
+            expected rejection log doesn't pollute the test page's
+            console — same pattern as back-to-back-start-auto-stops-
+            prior-test. We still verify the rejection contract (nil
+            return + unchanged imports), and additionally capture the
+            warn arguments to confirm the message shape."
     (clear-imports!)
-    (let [^js env (mk-import-envelope)]
+    (let [^js env  (mk-import-envelope)
+          orig     (.-warn js/console)
+          captured (atom nil)]
       (gobj/set env "schemaVersion" 999)
-      (let [before (.-length (recorder/imports))
-            id     (recorder/import-trace! env)
-            after  (.-length (recorder/imports))]
-        (is (nil? id))
-        (is (= before after) ":imports unchanged on rejection")))))
+      (try
+        (set! (.-warn js/console) (fn [& args] (reset! captured args)))
+        (let [before (.-length (recorder/imports))
+              id     (recorder/import-trace! env)
+              after  (.-length (recorder/imports))]
+          (is (nil? id))
+          (is (= before after) ":imports unchanged on rejection")
+          (is (= "[x-trace-history] import rejected:" (first @captured))
+              "captured the expected warn prefix"))
+        (finally
+          (set! (.-warn js/console) orig))))))
 
 (deftest import-trace!-monotonic-ids-test
   (testing "ids are monotonically increasing across imports — the
