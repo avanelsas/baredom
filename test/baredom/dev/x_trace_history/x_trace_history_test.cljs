@@ -2979,23 +2979,33 @@
           (fn []
             (let [^js recs (recorder/records)]
               (is (pos? (.-length recs))
-                  "the dispatch produced at least one record"))
-            (let [^js rec (aget (recorder/records) 0)]
-              (seed-live-selection! dock (.-id rec)))
-            (force-render-via-filter-toggle! dock)
-            (after-frames 1
-              (fn []
-                (is (highlight-visible? dock)
-                    "outline becomes visible after seeded selection")
-                (when (highlight-visible? dock)
-                  (let [^js box (highlight-box dock)
-                        rect   (.getBoundingClientRect div)]
-                    (is (= (str (.-top rect) "px")    (.. box -style -top)))
-                    (is (= (str (.-left rect) "px")   (.. box -style -left)))
-                    (is (= (str (.-width rect) "px") (.. box -style -width)))
-                    (is (= (str (.-height rect) "px") (.. box -style -height)))))
-                (.remove div)
-                (done)))))))))
+                  "the dispatch produced at least one record")
+              (when (pos? (.-length recs))
+                (let [^js rec (aget recs 0)
+                      cid    (.-componentId rec)]
+                  (is (some? cid)
+                      "the record carries a non-nil componentId")
+                  (is (identical? div
+                                  (recorder/find-element-by-component-id
+                                   (.-body js/document) cid))
+                      "find-element-by-component-id can locate the div in body")
+                  (seed-live-selection! dock (.-id rec))
+                  (force-render-via-filter-toggle! dock)
+                  (after-frames 1
+                    (fn []
+                      (is (= cid (gobj/get dock model/k-highlight-cid))
+                          "k-highlight-cid was cached on the dock host")
+                      (is (highlight-visible? dock)
+                          "outline becomes visible after seeded selection")
+                      (when (highlight-visible? dock)
+                        (let [^js box (highlight-box dock)
+                              rect   (.getBoundingClientRect div)]
+                          (is (= (str (.-top rect) "px")    (.. box -style -top)))
+                          (is (= (str (.-left rect) "px")   (.. box -style -left)))
+                          (is (= (str (.-width rect) "px") (.. box -style -width)))
+                          (is (= (str (.-height rect) "px") (.. box -style -height)))))
+                      (.remove div)
+                      (done))))))))))))
 
 (deftest deselecting-record-hides-highlight-test
   (testing "clearing the dock's selection hides the outline and clears
