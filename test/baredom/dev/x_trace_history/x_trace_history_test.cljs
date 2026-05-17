@@ -2998,12 +2998,24 @@
                       (is (highlight-visible? dock)
                           "outline becomes visible after seeded selection")
                       (when (highlight-visible? dock)
+                        ;; Position assertions use a 1px tolerance —
+                        ;; Chrome's getBoundingClientRect returns
+                        ;; sub-pixel values for elements at integer CSS
+                        ;; coordinates (e.g. top "100px" reads back as
+                        ;; 100.00000762939453), and the browser may
+                        ;; normalise style writes. The functional check
+                        ;; that matters is "outline is laid down over
+                        ;; the target's rect to ~pixel accuracy", not
+                        ;; an exact string match.
                         (let [^js box (highlight-box dock)
-                              rect   (.getBoundingClientRect div)]
-                          (is (= (str (.-top rect) "px")    (.. box -style -top)))
-                          (is (= (str (.-left rect) "px")   (.. box -style -left)))
-                          (is (= (str (.-width rect) "px") (.. box -style -width)))
-                          (is (= (str (.-height rect) "px") (.. box -style -height)))))
+                              rect   (.getBoundingClientRect div)
+                              close? (fn [px-str expected]
+                                       (< (Math/abs (- (js/parseFloat px-str) expected))
+                                          1.0))]
+                          (is (close? (.. box -style -top)    (.-top rect)))
+                          (is (close? (.. box -style -left)   (.-left rect)))
+                          (is (close? (.. box -style -width)  (.-width rect)))
+                          (is (close? (.. box -style -height) (.-height rect)))))
                       (.remove div)
                       (done))))))))))))
 
