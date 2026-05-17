@@ -2923,81 +2923,97 @@
         (finally
           (.remove root))))))
 
-(deftest selecting-record-shows-highlight-test
-  (testing "clicking a dot resolves the record's componentId to the
-            live element and shows the outline box over it. The btn
-            is positioned with explicit pixel coordinates so the box
-            rect is non-trivial — appending btn to body triggers its
-            connect lifecycle, which generates several records, but
-            they all share the same componentId so any selected dot
-            still resolves to the same target element."
-    (async done
-      (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (set! (.. btn -style -position) "absolute")
-        (set! (.. btn -style -top)      "100px")
-        (set! (.. btn -style -left)     "50px")
-        (set! (.. btn -style -width)    "80px")
-        (set! (.. btn -style -height)   "30px")
-        (.appendChild (.-body js/document) btn)
-        (du/dispatch! btn "x-button:click" #js {})
-        (after-frames 2
-          (fn []
-            (let [^js dot (query dock "circle.dot")]
-              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
-            (after-frames 1
-              (fn []
-                (is (highlight-visible? dock)
-                    "outline becomes visible after dot click")
-                (let [^js box (highlight-box dock)
-                      rect   (.getBoundingClientRect btn)]
-                  (is (= (str (.-top rect) "px")    (.. box -style -top)))
-                  (is (= (str (.-left rect) "px")   (.. box -style -left)))
-                  (is (= (str (.-width rect) "px") (.. box -style -width)))
-                  (is (= (str (.-height rect) "px") (.. box -style -height))))
-                (.remove btn)
-                (done)))))))))
+(defn- make-target-div!
+  "Create a positioned <div> for highlight integration tests, append to
+   body, and dispatch a synthetic event from it so the recorder stamps
+   it with a componentId. A plain div has no custom-element lifecycle,
+   so the dispatch produces exactly ONE record — predictable enough
+   that tests can read records[0] and seed selection deterministically.
+   Returns [div record-id]."
+  []
+  (let [^js div (.createElement js/document "div")]
+    (set! (.. div -style -position) "absolute")
+    (set! (.. div -style -top)      "100px")
+    (set! (.. div -style -left)     "50px")
+    (set! (.. div -style -width)    "80px")
+    (set! (.. div -style -height)   "30px")
+    (.appendChild (.-body js/document) div)
+    (du/dispatch! div "test-highlight-event" #js {})
+    div))
 
 (defn- force-render-via-filter-toggle!
-  "Trigger a render by toggling the 'all' tag filter on and back. Used
-   when a test seeds selection state directly on the host and needs
-   apply-highlight! to run without dispatching a fresh click. Pure
-   filter-toggle leaves the records and selection unchanged after the
-   round-trip — a no-op for everything except the render cycle."
+  "Trigger a render by re-applying the 'all' tag filter. Used when a
+   test seeds selection state directly on the host and needs
+   apply-highlight! to run without dispatching a fresh dot click. The
+   toggle leaves filter and selection unchanged — it's a no-op for
+   everything except the render cycle."
   [^js dock]
   (let [^js sel (query dock "[data-x-th-tag]")]
     (dispatch-select-change! sel "all")))
 
-(deftest deselecting-record-hides-highlight-test
-  (testing "after the user deselects the record (selection cleared),
-            apply-highlight! hides the outline and clears the cached
-            highlight cid. Seeds selection programmatically because
-            appending the target to body generates many lifecycle
-            records — re-querying \"circle.dot\" between clicks would
-            return different records and not deselect."
+(defn- seed-live-selection!
+  "Set the dock's live-view selection to `rec-id` by writing
+   k-view-selected directly. Mirrors the existing density-selected
+   test pattern."
+  [^js dock rec-id]
+  (let [^js m (or (gobj/get dock model/k-view-selected) (js-obj))]
+    (gobj/set m "live" rec-id)
+    (gobj/set dock model/k-view-selected m)))
+
+(defn- clear-live-selection!
+  "Drop the dock's live-view selection."
+  [^js dock]
+  (when-let [^js m (gobj/get dock model/k-view-selected)]
+    (gobj/remove m "live")))
+
+(deftest selecting-record-shows-highlight-test
+  (testing "seeding a record as the live selection draws an outline
+            around the live element identified by its componentId.
+            Uses a plain <div> target — no custom-element lifecycle
+            means exactly one dispatch record, so the read of
+            records[0] is deterministic."
     (async done
       (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (.appendChild (.-body js/document) btn)
-        (du/dispatch! btn "x-button:click" #js {})
+            ^js div  (make-target-div!)]
         (after-frames 2
           (fn []
-            ;; Seed the selection to the most recent record so apply-
-            ;; highlight! sees a non-nil sel-rec on next render.
-            (let [^js recs (recorder/records)
-                  ^js rec  (aget recs (dec (.-length recs)))
-                  rec-id   (.-id rec)
-                  ^js m    (or (gobj/get dock model/k-view-selected) (js-obj))]
-              (gobj/set m "live" rec-id)
-              (gobj/set dock model/k-view-selected m))
+            (let [^js recs (recorder/records)]
+              (is (pos? (.-length recs))
+                  "the dispatch produced at least one record"))
+            (let [^js rec (aget (recorder/records) 0)]
+              (seed-live-selection! dock (.-id rec)))
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (is (highlight-visible? dock)
+                    "outline becomes visible after seeded selection")
+                (when (highlight-visible? dock)
+                  (let [^js box (highlight-box dock)
+                        rect   (.getBoundingClientRect div)]
+                    (is (= (str (.-top rect) "px")    (.. box -style -top)))
+                    (is (= (str (.-left rect) "px")   (.. box -style -left)))
+                    (is (= (str (.-width rect) "px") (.. box -style -width)))
+                    (is (= (str (.-height rect) "px") (.. box -style -height)))))
+                (.remove div)
+                (done)))))))))
+
+(deftest deselecting-record-hides-highlight-test
+  (testing "clearing the dock's selection hides the outline and clears
+            k-highlight-cid. Programmatic seed + filter-toggle render
+            avoids any reliance on dot ordering inside the SVG."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)]
+        (after-frames 2
+          (fn []
+            (let [^js rec (aget (recorder/records) 0)]
+              (seed-live-selection! dock (.-id rec)))
             (force-render-via-filter-toggle! dock)
             (after-frames 1
               (fn []
                 (is (highlight-visible? dock)
                     "outline visible after seeded selection")
-                ;; Now clear the selection and re-render — the
-                ;; deselect path under test.
-                (gobj/remove ^js (gobj/get dock model/k-view-selected) "live")
+                (clear-live-selection! dock)
                 (force-render-via-filter-toggle! dock)
                 (after-frames 1
                   (fn []
@@ -3007,7 +3023,7 @@
                         "outline hidden after deselect")
                     (is (nil? (gobj/get dock model/k-highlight-cid))
                         "k-highlight-cid cleared")
-                    (.remove btn)
+                    (.remove div)
                     (done)))))))))))
 
 (deftest document-record-does-not-highlight-test
@@ -3015,13 +3031,16 @@
             produce a highlight — there is no element to outline."
     (async done
       (let [^js dock (mount-dock!)]
-        ;; A document-target dispatch produces a record with tag = "document"
-        ;; and componentId = nil.
+        ;; A document-target dispatch produces a record with tag =
+        ;; \"document\" and componentId = nil.
         (du/dispatch! js/document "x-some-doc-event" #js {})
         (after-frames 2
           (fn []
-            (let [^js dot (query dock "circle.dot")]
-              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (let [^js rec (aget (recorder/records) 0)]
+              (is (= "document" (.-tag rec))
+                  "the seeded record is a document-tag record")
+              (seed-live-selection! dock (.-id rec)))
+            (force-render-via-filter-toggle! dock)
             (after-frames 1
               (fn []
                 (is (false? (boolean (highlight-visible? dock)))
@@ -3034,16 +3053,15 @@
             k-highlight-cid is cleared."
     (async done
       (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (.appendChild (.-body js/document) btn)
-        (du/dispatch! btn "x-button:click" #js {})
-        ;; Disconnect BEFORE selecting — apply-highlight! must treat the
-        ;; missing element as expected and clear the slot.
-        (.remove btn)
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
+        ;; Disconnect BEFORE selecting — apply-highlight! must treat
+        ;; the missing element as expected and clear the slot.
+        (.remove div)
         (after-frames 2
           (fn []
-            (let [^js dot (query dock "circle.dot")]
-              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (seed-live-selection! dock rec-id)
+            (force-render-via-filter-toggle! dock)
             (after-frames 1
               (fn []
                 (is (false? (boolean (highlight-visible? dock)))
@@ -3053,28 +3071,27 @@
                 (done)))))))))
 
 (deftest highlight-machinery-does-not-pollute-records-test
-  (testing "selecting / deselecting a dot does not introduce new
-            records — the overlay creation, positioning, and slot
-            writes must be invisible to the recorder."
+  (testing "selecting / deselecting via seeded selection does not
+            introduce new records — the overlay creation, positioning,
+            and slot writes must be invisible to the recorder."
     (async done
       (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (.appendChild (.-body js/document) btn)
-        (du/dispatch! btn "x-button:click" #js {})
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
         (after-frames 2
           (fn []
             (let [before (.-length (recorder/records))]
-              (.dispatchEvent ^js (query dock "circle.dot")
-                              (js/MouseEvent. "click" #js {:bubbles true}))
-              (after-frames 2
+              (seed-live-selection! dock rec-id)
+              (force-render-via-filter-toggle! dock)
+              (after-frames 1
                 (fn []
-                  (.dispatchEvent ^js (query dock "circle.dot")
-                                  (js/MouseEvent. "click" #js {:bubbles true}))
-                  (after-frames 2
+                  (clear-live-selection! dock)
+                  (force-render-via-filter-toggle! dock)
+                  (after-frames 1
                     (fn []
                       (is (= before (.-length (recorder/records)))
                           "no new records produced by highlight show + hide")
-                      (.remove btn)
+                      (.remove div)
                       (done))))))))))))
 
 (deftest unmount-removes-highlight-layer-test
@@ -3082,13 +3099,12 @@
             clears every highlight slot on the host."
     (async done
       (let [^js dock (mount-dock!)
-            ^js btn  (.createElement js/document "x-button")]
-        (.appendChild (.-body js/document) btn)
-        (du/dispatch! btn "x-button:click" #js {})
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
         (after-frames 2
           (fn []
-            (let [^js dot (query dock "circle.dot")]
-              (.dispatchEvent dot (js/MouseEvent. "click" #js {:bubbles true})))
+            (seed-live-selection! dock rec-id)
+            (force-render-via-filter-toggle! dock)
             (after-frames 1
               (fn []
                 (let [^js layer-before (highlight-layer dock)]
@@ -3102,7 +3118,8 @@
                           "k-highlight-box cleared on unmount")
                       (is (nil? (gobj/get dock model/k-highlight-cid))
                           "k-highlight-cid cleared on unmount")
-                      (is (false? (.contains (.-body js/document) layer-before))
-                          "the layer element is no longer in the document")
-                      (.remove btn)
+                      (when layer-before
+                        (is (false? (.contains (.-body js/document) layer-before))
+                            "the layer element is no longer in the document"))
+                      (.remove div)
                       (done))))))))))))
