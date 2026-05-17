@@ -1367,6 +1367,22 @@
 ;; reads clientWidth / clientHeight from for fit-to-view math.
 (def k-dock-mode             "__xTraceHistoryDockMode")
 (def k-causality-el          "__xTraceHistoryCausalityEl")
+;; Live-element highlight: when a record is selected the dock draws an
+;; outline around the originating component on the page. The layer +
+;; box are cached so creation cost is paid once per dock lifetime;
+;; k-highlight-cid remembers which component is currently outlined so
+;; re-selection of the same record can skip the scroll-into-view step;
+;; k-highlight-listeners + k-highlight-raf are the scroll/resize wiring
+;; that keeps the box aligned as the page moves. All five slots are
+;; written via du/setv-untraced! — they're highlight bookkeeping with
+;; no diagnostic value and the dock is already inside its own marked-
+;; internal subtree, but the untraced variant makes the no-pollution
+;; contract explicit.
+(def k-highlight-layer       "__xTraceHistoryHighlightLayer")
+(def k-highlight-box         "__xTraceHistoryHighlightBox")
+(def k-highlight-cid         "__xTraceHistoryHighlightCid")
+(def k-highlight-listeners   "__xTraceHistoryHighlightListeners")
+(def k-highlight-raf         "__xTraceHistoryHighlightRaf")
 
 ;; ---------------------------------------------------------------------------
 ;; Transient UI state

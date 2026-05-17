@@ -12,10 +12,10 @@ set -euo pipefail
 # PER_MODULE_BUDGETS overrides the default for specific modules that
 # legitimately need more headroom — currently only x-trace-history,
 # the dev-only debugger dock. It ships an SVG timeline, scrubber,
-# detail pane, sessions strip, import/export UI, and the PR 17
-# causality DAG tree view, so 15 KB is the wrong ceiling for it. The
-# dock is opt-in via ?baredom-trace-history and never runs in
-# production builds where the flag stays off.
+# detail pane, sessions strip, import/export UI, the PR 17 causality
+# DAG tree view, and the live-element highlight overlay, so 15 KB is
+# the wrong ceiling for it. The dock is opt-in via ?baredom-trace-
+# history and never runs in production builds where the flag stays off.
 BASE_BUDGET=57344       # 56 KB for base.js
 COMPONENT_BUDGET=15360  # 15 KB default for any x-*.js component
 
@@ -25,7 +25,7 @@ COMPONENT_BUDGET=15360  # 15 KB default for any x-*.js component
 module_budget() {
   case "$1" in
     base.js)             echo "$BASE_BUDGET" ;;
-    x-trace-history.js)  echo 23552 ;;  # 23 KB for the dev-tool dock
+    x-trace-history.js)  echo 24576 ;;  # 24 KB for the dev-tool dock
     *)                   echo "$COMPONENT_BUDGET" ;;
   esac
 }

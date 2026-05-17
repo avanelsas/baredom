@@ -13,6 +13,7 @@
    [baredom.utils.component :as comp]
    [baredom.utils.dom :as du]
    [baredom.dev.x-trace-history.dock-css :as dock-css]
+   [baredom.dev.x-trace-history.highlight :as highlight]
    [baredom.dev.x-trace-history.model :as model]
    [baredom.dev.x-trace-history.recorder :as recorder]
    ;; Require the component implementations directly rather than the
@@ -942,6 +943,62 @@
         (.setAttribute    causality-el "hidden" "")
         (.remove (.-classList host) "causality-mode"))))
 
+(defn- clear-highlight!
+  "Hide the outline and forget which component it was on. Idempotent."
+  [^js el]
+  (highlight/hide! el)
+  (du/setv-untraced! el model/k-highlight-cid nil))
+
+(defn- show-highlight-for-cid!
+  "Resolve `cid` to a live element and outline it. On lookup miss
+   (originating component disconnected since the record was emitted),
+   clear the cached cid so future renders short-circuit through
+   clear-highlight! instead of re-walking the DOM each time."
+  [^js el cid]
+  (if-let [^js target (recorder/find-element-by-component-id
+                       (.-body js/document) cid)]
+    (do
+      (du/setv-untraced! el model/k-highlight-cid cid)
+      (highlight/show! el target))
+    (clear-highlight! el)))
+
+(defn- highlightable?
+  "True when `sel-rec` should produce a visible outline. False for nil
+   selection, document-target records (no element to outline), and
+   records whose componentId is nil (defensive — should imply
+   tag === \"document\")."
+  [^js sel-rec]
+  (and (some? sel-rec)
+       (some? (.-componentId sel-rec))
+       (not= "document" (.-tag sel-rec))))
+
+(defn- apply-highlight!
+  "Reflect the dock's current selection onto the page by drawing an
+   outline around the live element that emitted the selected record.
+
+   Single source of truth: called from render!, so every selection
+   change (set-selected!, clear-selection!, filter-driven drop in
+   effective-selection!) automatically flows through here without
+   duplicating logic in each call-site.
+
+   Phase-list: classify the selection, then route to one of three
+   helpers:
+   - clear-highlight!         — nothing to outline (no/document record)
+   - highlight/reposition!    — same component as before; skip the
+                                find-element walk + scroll-into-view
+   - show-highlight-for-cid!  — new component; resolve cid → element
+                                and pulse the outline"
+  [^js el ^js sel-rec]
+  (cond
+    (not (highlightable? sel-rec))
+    (clear-highlight! el)
+
+    (= (.-componentId sel-rec) (du/getv el model/k-highlight-cid))
+    (highlight/reposition! el)
+
+    :else
+    (show-highlight-for-cid! el (.-componentId sel-rec))))
+
 (defn- render!
   "Repaint timeline, count, hint, detail pane, pause-button, record-button
    and session strip from current recorder + filter + view + selection state."
@@ -992,7 +1049,12 @@
     ;; clientWidth/Height. apply-causality-fit! is a no-op unless the
     ;; pane is visible, the needs-fit flag is set, and a selection
     ;; resolves to a laid-out node.
-    (apply-causality-fit! el)))
+    (apply-causality-fit! el)
+    ;; Mirror the dock's current selection onto the page with an
+    ;; outline around the originating live element. Runs after every
+    ;; other refresh so the dock's own DOM is settled before we read
+    ;; bounding rects from outside elements.
+    (apply-highlight! el sel-rec)))
 
 ;; ---------------------------------------------------------------------------
 ;; Click + tooltip + filter handlers
@@ -1850,6 +1912,60 @@
     (remove-listeners! tuples)
     (du/setv! el model/k-listeners nil)))
 
+;; ---------------------------------------------------------------------------
+;; Highlight listeners — keep the outline aligned as the page moves
+;; ---------------------------------------------------------------------------
+;; These are a separate spec from the dock's main listener tuples
+;; because they use capture + passive options (scroll events don't
+;; bubble — capture phase is the only way to see scroll inside nested
+;; scroll containers) and because the rAF-coalescing handler reads /
+;; writes the k-highlight-raf slot. Keeping them out of
+;; build-listener-tuples avoids extending the tuple shape with a
+;; fourth options slot just for two entries.
+
+(defn- request-highlight-reframe!
+  "Schedule (or join an existing schedule for) a single highlight
+   reposition on the next animation frame. Multiple scroll / resize
+   events within the same frame collapse to one — keeps high-frequency
+   input from issuing one getBoundingClientRect read per event."
+  [^js el]
+  (when-not (du/getv el model/k-highlight-raf)
+    (let [id (js/requestAnimationFrame
+              (fn []
+                (du/setv-untraced! el model/k-highlight-raf nil)
+                (highlight/reposition! el)))]
+      (du/setv-untraced! el model/k-highlight-raf id))))
+
+(defn- bind-highlight-listeners!
+  "Attach window scroll + resize listeners that keep the highlight
+   outline aligned to its target as the page moves. scroll uses
+   capture: true so it fires for scroll events inside any nested
+   scroll container; both use passive: true since the handler only
+   schedules an rAF and never preventDefaults."
+  [^js el]
+  (let [handler     (fn [_e] (request-highlight-reframe! el))
+        scroll-opts #js {:capture true  :passive true}
+        resize-opts #js {:capture false :passive true}
+        tuples      #js [#js [js/window "scroll" handler scroll-opts]
+                         #js [js/window "resize" handler resize-opts]]]
+    (du/setv-untraced! el model/k-highlight-listeners tuples)
+    (dotimes [i (.-length tuples)]
+      (let [^js t (aget tuples i)]
+        (.addEventListener (aget t 0) (aget t 1) (aget t 2) (aget t 3))))))
+
+(defn- unbind-highlight-listeners!
+  "Symmetric tear-down for bind-highlight-listeners! Cancels any
+   pending rAF so it doesn't fire against a removed overlay layer."
+  [^js el]
+  (when-let [^js tuples (du/getv el model/k-highlight-listeners)]
+    (dotimes [i (.-length tuples)]
+      (let [^js t (aget tuples i)]
+        (.removeEventListener (aget t 0) (aget t 1) (aget t 2) (aget t 3))))
+    (du/setv-untraced! el model/k-highlight-listeners nil))
+  (when-let [raf (du/getv el model/k-highlight-raf)]
+    (js/cancelAnimationFrame raf)
+    (du/setv-untraced! el model/k-highlight-raf nil)))
+
 (defn- initialize-filter-state!
   "Set up k-filter / k-view / k-view-selected / k-axis-mode on the
    first mount only. On re-mount these slots persist from the
@@ -1913,6 +2029,7 @@
             (cache-refs! el shadow)
             (initialize-filter-state! el cats)
             (bind-listeners! el shadow)
+            (bind-highlight-listeners! el)
             (let [tok (recorder/subscribe!
                        (fn []
                          (maybe-auto-switch-import! el)
@@ -1948,6 +2065,8 @@
     (when (number? err-tok)
       (js/clearTimeout err-tok)))
   (unbind-listeners! el)
+  (unbind-highlight-listeners! el)
+  (highlight/remove! el)
   (du/setv! el model/k-sub-token nil)
   (model/set-ui-state! el :import-error nil)
   (du/setv! el model/k-mounted nil))

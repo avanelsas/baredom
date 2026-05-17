@@ -298,6 +298,65 @@
         (gobj/get node internal-host-marker)           true
         :else                                          (recur (ancestor-up node))))))
 
+;; ---------------------------------------------------------------------------
+;; cid → live element lookup (descending counterpart to inside-internal-host?)
+;; ---------------------------------------------------------------------------
+
+(def ^:private find-element-max-visits
+  "Defensive upper bound on the DFS in find-element-by-component-id.
+   DOM trees are acyclic so this isn't strictly necessary, but it
+   guarantees the dev tool can't hang on a pathological page (e.g.
+   a hot-reloaded test page where cljs-test-display has materialised
+   tens of thousands of test-result elements before the walk reaches
+   the dock or its highlight targets). The cap is high enough that
+   any realistic DOM tree is fully traversed."
+  1000000)
+
+(defn find-element-by-component-id
+  "Iterative DFS from `root` returning the first element whose
+   component-id marker equals `target-cid`. Descends into open shadow
+   roots so components hosted inside another component's shadow tree
+   are found. Skips any subtree whose root bears the internal-host-
+   marker — the dock and other dev tools never highlight themselves.
+   Returns nil when target-cid is nil, no match is found, or the
+   visit cap fires.
+
+   The walk is iterative (JS-array stack) rather than a recursive
+   `some walk` over `array-seq` of children so that there is no
+   chance of a lazy-seq edge case truncating the search before a
+   stamped element is reached. Public so the dock UI can resolve a
+   selected record's componentId to a live element for highlight
+   purposes."
+  [^js root target-cid]
+  (when (and root (some? target-cid))
+    (let [^js stack #js [root]]
+      (loop [visits 0]
+        (if (or (zero? (.-length stack)) (>= visits find-element-max-visits))
+          nil
+          (let [^js node (.pop stack)]
+            (cond
+              (not (instance? js/Element node))
+              (recur visits)
+
+              (gobj/get node internal-host-marker)
+              (recur (inc visits))
+
+              (= target-cid (gobj/get node component-id-key))
+              node
+
+              :else
+              (do
+                (let [^js children (.-children node)
+                      n           (.-length children)]
+                  (dotimes [i n]
+                    (.push stack (aget children i))))
+                (when-let [^js sr (.-shadowRoot node)]
+                  (let [^js sr-children (.-children sr)
+                        n              (.-length sr-children)]
+                    (dotimes [i n]
+                      (.push stack (aget sr-children i)))))
+                (recur (inc visits))))))))))
+
 (def ^:private write-payload-types
   "Payload types representing writes that should be filtered when their
    `:el` IS the marked host itself, not just inside one. These all

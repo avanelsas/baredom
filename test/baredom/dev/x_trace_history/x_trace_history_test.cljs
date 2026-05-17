@@ -1604,18 +1604,30 @@
             line that the .error class styles distinctly. The error
             wiring sits in the dock's import-file path; here we
             simulate the reject directly via recorder/import-trace!,
-            since the input/drop paths route through it identically."
+            since the input/drop paths route through it identically.
+
+            Silence console.warn for the duration of the rejected
+            call — same pattern as recorder_test's
+            import-trace!-invalid-rejects-test. The recorder's
+            warn-on-reject contract is covered there; here we only
+            care about the dock-level consequences (no chip, imports
+            slot unchanged)."
     (let [^js dock (mount-dock!)
-          ^js env  (mk-test-envelope (array))]
+          ^js env  (mk-test-envelope (array))
+          orig     (.-warn js/console)]
       (gobj/set env "schemaVersion" 999)
-      (let [imports-before (.-length (recorder/imports))
-            id             (recorder/import-trace! env)
-            imports-after  (.-length (recorder/imports))]
-        (is (nil? id) "rejected envelope returns nil — no chip added")
-        (is (= imports-before imports-after)
-            "recorder :imports unchanged on rejection")
-        (is (= 0 (.-length (query-all dock "[data-x-th-import-close]")))
-            "no import chip rendered for the failed envelope")))))
+      (try
+        (set! (.-warn js/console) (fn [& _] nil))
+        (let [imports-before (.-length (recorder/imports))
+              id             (recorder/import-trace! env)
+              imports-after  (.-length (recorder/imports))]
+          (is (nil? id) "rejected envelope returns nil — no chip added")
+          (is (= imports-before imports-after)
+              "recorder :imports unchanged on rejection")
+          (is (= 0 (.-length (query-all dock "[data-x-th-import-close]")))
+              "no import chip rendered for the failed envelope"))
+        (finally
+          (set! (.-warn js/console) orig))))))
 
 (deftest import-survives-recorder-clear-test
   (testing "clicking Clear empties the live buffer but the import
@@ -2839,3 +2851,309 @@
                  (is (some? marker)
                      "selected record marker drawn inside the band"))
                (done)))))))))
+
+;; ---------------------------------------------------------------------------
+;; Live-element highlight
+;;
+;; When the user selects a record, the dock outlines the live DOM
+;; element that emitted it via a fixed-position overlay layer. These
+;; tests cover the tree walk that resolves componentId → element, the
+;; render-driven show/hide flow, and the no-pollution guarantee.
+;; ---------------------------------------------------------------------------
+
+(def ^:private highlight-component-id-key "__xTraceHistoryId")
+(def ^:private highlight-internal-marker  "__xTraceHistoryInternal")
+
+(defn- highlight-layer [^js dock-el]
+  (gobj/get dock-el model/k-highlight-layer))
+
+(defn- highlight-box [^js dock-el]
+  (when-let [^js layer (highlight-layer dock-el)]
+    (.querySelector (.-shadowRoot layer) ".outline")))
+
+(defn- highlight-visible? [^js dock-el]
+  (when-let [^js box (highlight-box dock-el)]
+    (= "block" (.. box -style -display))))
+
+(deftest find-element-by-component-id-finds-match-test
+  (testing "find-element-by-component-id returns the element bearing
+            the matching component-id marker; nil for an unknown id."
+    (let [^js root  (.createElement js/document "div")
+          ^js a     (.createElement js/document "span")
+          ^js b     (.createElement js/document "em")]
+      (gobj/set a highlight-component-id-key 11)
+      (gobj/set b highlight-component-id-key 22)
+      (.appendChild root a)
+      (.appendChild root b)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (identical? a (recorder/find-element-by-component-id root 11)))
+        (is (identical? b (recorder/find-element-by-component-id root 22)))
+        (is (nil? (recorder/find-element-by-component-id root 99))
+            "no element has cid 99")
+        (is (nil? (recorder/find-element-by-component-id root nil))
+            "nil cid returns nil without walking")
+        (finally
+          (.remove root))))))
+
+(deftest find-element-by-component-id-skips-internal-host-test
+  (testing "subtrees marked __xTraceHistoryInternal are skipped — the
+            dock and other dev tools never highlight themselves."
+    (let [^js root     (.createElement js/document "div")
+          ^js internal (.createElement js/document "section")
+          ^js inside   (.createElement js/document "span")
+          ^js outside  (.createElement js/document "em")]
+      (gobj/set internal highlight-internal-marker  true)
+      (gobj/set inside   highlight-component-id-key 7)
+      (gobj/set outside  highlight-component-id-key 8)
+      (.appendChild internal inside)
+      (.appendChild root     internal)
+      (.appendChild root     outside)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (nil? (recorder/find-element-by-component-id root 7))
+            "cid 7 is inside the internal-marked subtree — must be skipped")
+        (is (identical? outside (recorder/find-element-by-component-id root 8))
+            "cid 8 lives outside the marked subtree and is returned")
+        (finally
+          (.remove root))))))
+
+(deftest find-element-by-component-id-descends-into-shadow-test
+  (testing "the walk descends into open shadow roots so a component
+            nested inside another component's shadow is still found."
+    (let [^js root  (.createElement js/document "div")
+          ^js host  (.createElement js/document "section")
+          ^js inner (.createElement js/document "span")]
+      (gobj/set inner highlight-component-id-key 42)
+      (let [^js shadow (.attachShadow host #js {:mode "open"})]
+        (.appendChild shadow inner))
+      (.appendChild root host)
+      (.appendChild (.-body js/document) root)
+      (try
+        (is (identical? inner (recorder/find-element-by-component-id root 42))
+            "element inside an open shadow root is found")
+        (finally
+          (.remove root))))))
+
+(defn- make-target-div!
+  "Create a positioned <div> for highlight integration tests, append to
+   body, and dispatch a synthetic event from it so the recorder stamps
+   it with a componentId. A plain div has no custom-element lifecycle,
+   so the dispatch produces exactly ONE record — predictable enough
+   that tests can read records[0] and seed selection deterministically.
+   Returns the div (tests are responsible for `.remove`-ing it)."
+  []
+  (let [^js div (.createElement js/document "div")]
+    (set! (.. div -style -position) "absolute")
+    (set! (.. div -style -top)      "100px")
+    (set! (.. div -style -left)     "50px")
+    (set! (.. div -style -width)    "80px")
+    (set! (.. div -style -height)   "30px")
+    (.appendChild (.-body js/document) div)
+    (du/dispatch! div "test-highlight-event" #js {})
+    div))
+
+(defn- force-render-via-filter-toggle!
+  "Trigger a render by re-applying the 'all' tag filter. Used when a
+   test seeds selection state directly on the host and needs
+   apply-highlight! to run without dispatching a fresh dot click. The
+   toggle leaves filter and selection unchanged — it's a no-op for
+   everything except the render cycle."
+  [^js dock]
+  (let [^js sel (query dock "[data-x-th-tag]")]
+    (dispatch-select-change! sel "all")))
+
+(defn- seed-live-selection!
+  "Set the dock's live-view selection to `rec-id` by writing
+   k-view-selected directly. Mirrors the existing density-selected
+   test pattern."
+  [^js dock rec-id]
+  (let [^js m (or (gobj/get dock model/k-view-selected) (js-obj))]
+    (gobj/set m "live" rec-id)
+    (gobj/set dock model/k-view-selected m)))
+
+(defn- clear-live-selection!
+  "Drop the dock's live-view selection."
+  [^js dock]
+  (when-let [^js m (gobj/get dock model/k-view-selected)]
+    (gobj/remove m "live")))
+
+(deftest selecting-record-shows-highlight-test
+  (testing "seeding a record as the live selection draws an outline
+            around the live element identified by its componentId.
+            Uses a plain <div> target — no custom-element lifecycle
+            means exactly one dispatch record, so the read of
+            records[0] is deterministic."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)]
+        (after-frames 2
+          (fn []
+            (let [^js recs (recorder/records)]
+              (is (pos? (.-length recs))
+                  "the dispatch produced at least one record")
+              (when (pos? (.-length recs))
+                (let [^js rec (aget recs 0)
+                      cid    (.-componentId rec)]
+                  (is (some? cid)
+                      "the record carries a non-nil componentId")
+                  (is (identical? div
+                                  (recorder/find-element-by-component-id
+                                   (.-body js/document) cid))
+                      "find-element-by-component-id can locate the div in body")
+                  (seed-live-selection! dock (.-id rec))
+                  (force-render-via-filter-toggle! dock)
+                  (after-frames 1
+                    (fn []
+                      (is (= cid (gobj/get dock model/k-highlight-cid))
+                          "k-highlight-cid was cached on the dock host")
+                      (is (highlight-visible? dock)
+                          "outline becomes visible after seeded selection")
+                      (when (highlight-visible? dock)
+                        ;; Position assertions use a 1px tolerance —
+                        ;; Chrome's getBoundingClientRect returns
+                        ;; sub-pixel values for elements at integer CSS
+                        ;; coordinates (e.g. top "100px" reads back as
+                        ;; 100.00000762939453), and the browser may
+                        ;; normalise style writes. The functional check
+                        ;; that matters is "outline is laid down over
+                        ;; the target's rect to ~pixel accuracy", not
+                        ;; an exact string match.
+                        (let [^js box (highlight-box dock)
+                              rect   (.getBoundingClientRect div)
+                              close? (fn [px-str expected]
+                                       (< (Math/abs (- (js/parseFloat px-str) expected))
+                                          1.0))]
+                          (is (close? (.. box -style -top)    (.-top rect)))
+                          (is (close? (.. box -style -left)   (.-left rect)))
+                          (is (close? (.. box -style -width)  (.-width rect)))
+                          (is (close? (.. box -style -height) (.-height rect)))))
+                      (.remove div)
+                      (done))))))))))))
+
+(deftest deselecting-record-hides-highlight-test
+  (testing "clearing the dock's selection hides the outline and clears
+            k-highlight-cid. Programmatic seed + filter-toggle render
+            avoids any reliance on dot ordering inside the SVG."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)]
+        (after-frames 2
+          (fn []
+            (let [^js rec (aget (recorder/records) 0)]
+              (seed-live-selection! dock (.-id rec)))
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (is (highlight-visible? dock)
+                    "outline visible after seeded selection")
+                (clear-live-selection! dock)
+                (force-render-via-filter-toggle! dock)
+                (after-frames 1
+                  (fn []
+                    (is (nil? (live-selected-id dock))
+                        "live-selected-id cleared")
+                    (is (false? (boolean (highlight-visible? dock)))
+                        "outline hidden after deselect")
+                    (is (nil? (gobj/get dock model/k-highlight-cid))
+                        "k-highlight-cid cleared")
+                    (.remove div)
+                    (done)))))))))))
+
+(deftest document-record-does-not-highlight-test
+  (testing "records with tag=\"document\" (page-level events) do not
+            produce a highlight — there is no element to outline."
+    (async done
+      (let [^js dock (mount-dock!)]
+        ;; A document-target dispatch produces a record with tag =
+        ;; \"document\" and componentId = nil.
+        (du/dispatch! js/document "x-some-doc-event" #js {})
+        (after-frames 2
+          (fn []
+            (let [^js rec (aget (recorder/records) 0)]
+              (is (= "document" (.-tag rec))
+                  "the seeded record is a document-tag record")
+              (seed-live-selection! dock (.-id rec)))
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (is (false? (boolean (highlight-visible? dock)))
+                    "no outline visible for a document-tag record")
+                (done)))))))))
+
+(deftest detached-element-clears-highlight-test
+  (testing "when the originating element has been disconnected since
+            the record was emitted, the highlight stays hidden and
+            k-highlight-cid is cleared."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
+        ;; Disconnect BEFORE selecting — apply-highlight! must treat
+        ;; the missing element as expected and clear the slot.
+        (.remove div)
+        (after-frames 2
+          (fn []
+            (seed-live-selection! dock rec-id)
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (is (false? (boolean (highlight-visible? dock)))
+                    "outline hidden when target is gone")
+                (is (nil? (gobj/get dock model/k-highlight-cid))
+                    "k-highlight-cid cleared after lookup miss")
+                (done)))))))))
+
+(deftest highlight-machinery-does-not-pollute-records-test
+  (testing "selecting / deselecting via seeded selection does not
+            introduce new records — the overlay creation, positioning,
+            and slot writes must be invisible to the recorder."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
+        (after-frames 2
+          (fn []
+            (let [before (.-length (recorder/records))]
+              (seed-live-selection! dock rec-id)
+              (force-render-via-filter-toggle! dock)
+              (after-frames 1
+                (fn []
+                  (clear-live-selection! dock)
+                  (force-render-via-filter-toggle! dock)
+                  (after-frames 1
+                    (fn []
+                      (is (= before (.-length (recorder/records)))
+                          "no new records produced by highlight show + hide")
+                      (.remove div)
+                      (done))))))))))))
+
+(deftest unmount-removes-highlight-layer-test
+  (testing "disconnecting the dock tears down the overlay layer and
+            clears every highlight slot on the host."
+    (async done
+      (let [^js dock (mount-dock!)
+            ^js div  (make-target-div!)
+            rec-id   (.-id ^js (aget (recorder/records) 0))]
+        (after-frames 2
+          (fn []
+            (seed-live-selection! dock rec-id)
+            (force-render-via-filter-toggle! dock)
+            (after-frames 1
+              (fn []
+                (let [^js layer-before (highlight-layer dock)]
+                  (is (some? layer-before) "layer exists while dock is mounted")
+                  (.remove dock)
+                  (after-frames 1
+                    (fn []
+                      (is (nil? (gobj/get dock model/k-highlight-layer))
+                          "k-highlight-layer cleared on unmount")
+                      (is (nil? (gobj/get dock model/k-highlight-box))
+                          "k-highlight-box cleared on unmount")
+                      (is (nil? (gobj/get dock model/k-highlight-cid))
+                          "k-highlight-cid cleared on unmount")
+                      (when layer-before
+                        (is (false? (.contains (.-body js/document) layer-before))
+                            "the layer element is no longer in the document"))
+                      (.remove div)
+                      (done))))))))))))
