@@ -70,8 +70,8 @@
 
 (def property-api
   {:open  {:type 'boolean :reflects-attribute attr-open}
-   :size  {:type 'string  :reflects-attribute attr-size}
-   :label {:type 'string  :reflects-attribute attr-label}})
+   :size  {:type 'string  :reflects-attribute attr-size  :default default-size}
+   :label {:type 'string  :reflects-attribute attr-label :default default-label}})
 
 (def event-schema
   {event-toggle  {:cancelable false :detail {:open 'boolean}}
