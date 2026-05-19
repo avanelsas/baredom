@@ -6305,6 +6305,24 @@
         }
       }, {
         "kind" : "field",
+        "name" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "indeterminate",
         "type" : {
           "text" : "boolean"
@@ -6562,6 +6580,36 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "method",
+        "name" : "next",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "previous",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "goTo",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "index",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
       } ],
       "events" : [ {
         "name" : "x-carousel-change",
@@ -6936,7 +6984,7 @@
         }
       } ],
       "events" : [ {
-        "name" : ":press",
+        "name" : "press",
         "type" : {
           "text" : "CustomEvent"
         }
