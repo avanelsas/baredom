@@ -60,7 +60,7 @@
     v
     default-row-height))
 
-(defn derive-state
+(defn normalize
   [{:keys [columns gap row-gap column-gap row-height]}]
   (let [cols    (normalize-columns columns)
         gap*    (normalize-gap gap)

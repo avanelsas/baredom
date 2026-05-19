@@ -47,7 +47,7 @@
 (defn normalize-variant [v]
   (valid-enum v variant-values "default"))
 
-(defn derive-state
+(defn normalize
   [{:keys [selected disabled orientation size variant label controls]}]
 
   (let [selected* (boolean selected)

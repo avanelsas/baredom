@@ -133,9 +133,9 @@
     (let [v (.trim s)]
       (when-not (= v "") v))))
 
-;; ── derive-state ────────────────────────────────────────────────────────────
+;; ── normalize ────────────────────────────────────────────────────────────
 
-(defn derive-state
+(defn normalize
   "Normalise raw attribute inputs into a stable view-model map.
 
   Input keys:

@@ -188,11 +188,11 @@
     (let [blobs (model/blob-layout ["red"] 8 50)]
       (is (= [0 1 2 3 0 1 2 3] (mapv :anim-index blobs))))))
 
-;; ── derive-state ─────────────────────────────────────────────────────────
+;; ── normalize ─────────────────────────────────────────────────────────
 
-(deftest derive-state-test
+(deftest normalize-test
   (testing "defaults with all nil inputs"
-    (let [s (model/derive-state {})]
+    (let [s (model/normalize {})]
       (is (= 4 (count (:colors s))))
       (is (= model/default-blur (:blur s)))
       (is (= model/default-speed-s (:speed-s s)))
@@ -205,7 +205,7 @@
       (is (= model/default-count (count (:blobs s))))))
 
   (testing "custom values"
-    (let [s (model/derive-state {:colors "red, blue"
+    (let [s (model/normalize {:colors "red, blue"
                                  :blur "40"
                                  :speed "fast"
                                  :count "3"

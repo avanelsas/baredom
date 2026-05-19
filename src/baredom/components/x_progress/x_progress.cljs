@@ -130,7 +130,7 @@
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:value         (du/get-attr el model/attr-value)
     :max           (du/get-attr el model/attr-max)
     :variant       (du/get-attr el model/attr-variant)

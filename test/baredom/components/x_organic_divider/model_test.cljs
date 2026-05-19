@@ -109,9 +109,9 @@
     (is (= {:x-offset 20 :y-offset 8}  (nth ts 1)))
     (is (= {:x-offset 40 :y-offset 16} (nth ts 2)))))
 
-;; ── derive-state ─────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize ─────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "wave"  (:shape s)))
     (is (nil?      (:path s)))
     (is (some?     (:path-d s)))
@@ -122,28 +122,28 @@
     (is (false?    (:flip s)))
     (is (false?    (:mirror s)))))
 
-(deftest derive-state-morph-disabled-for-custom-path-test
-  (let [s (model/derive-state {:animation "morph" :path "M0,0 L100,100"})]
+(deftest normalize-morph-disabled-for-custom-path-test
+  (let [s (model/normalize {:animation "morph" :path "M0,0 L100,100"})]
     (is (= "none" (:animation s)))
     (is (nil?     (:path-alt s)))))
 
-(deftest derive-state-drift-works-with-custom-path-test
-  (let [s (model/derive-state {:animation "drift" :path "M0,0 L100,100"})]
+(deftest normalize-drift-works-with-custom-path-test
+  (let [s (model/normalize {:animation "drift" :path "M0,0 L100,100"})]
     (is (= "drift" (:animation s)))))
 
-(deftest derive-state-explicit-values-test
-  (let [s (model/derive-state {:shape "cloud" :layers "3" :height "80px"})]
+(deftest normalize-explicit-values-test
+  (let [s (model/normalize {:shape "cloud" :layers "3" :height "80px"})]
     (is (= "cloud" (:shape s)))
     (is (= 3       (:layers s)))
     (is (= "80px"  (:height s)))))
 
-(deftest derive-state-flip-mirror-test
-  (let [s (model/derive-state {:flip "" :mirror ""})]
+(deftest normalize-flip-mirror-test
+  (let [s (model/normalize {:flip "" :mirror ""})]
     (is (true? (:flip s)))
     (is (true? (:mirror s)))))
 
-(deftest derive-state-invalid-shape-falls-back-test
-  (let [s (model/derive-state {:shape "zigzag"})]
+(deftest normalize-invalid-shape-falls-back-test
+  (let [s (model/normalize {:shape "zigzag"})]
     (is (= "wave" (:shape s)))))
 
 ;; ── shape-presets completeness ───────────────────────────────────────────

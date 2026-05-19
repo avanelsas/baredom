@@ -8,7 +8,6 @@
 (def ^:private k-refs       "__xModalRefs")
 (def ^:private k-model      "__xModalModel")
 (def ^:private k-handlers   "__xModalHandlers")
-(def ^:private k-prev-open  "__xModalPrevOpen")
 (def ^:private k-restore    "__xModalRestore")
 (def ^:private k-tabbables  "__xModalTabbables")
 (def ^:private k-dialog-tab "__xModalDialogTab")
@@ -154,49 +153,54 @@
    "[part=dialog],[part=backdrop]{transition:none;}"
    "}"))
 
-;; ── DOM helpers ───────────────────────────────────────────────────────────────
-
 ;; ── Shadow DOM initialisation ─────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root     (.attachShadow el #js {:mode "open"})
-        style    (.createElement js/document "style")
-        backdrop (.createElement js/document "div")
-        dialog   (.createElement js/document "div")
-        header   (.createElement js/document "div")
-        hslot    (.createElement js/document "slot")
-        body     (.createElement js/document "div")
-        bslot    (.createElement js/document "slot")
-        footer   (.createElement js/document "div")
-        fslot    (.createElement js/document "slot")
-        refs     #js {}]
-
+(defn- make-style! []
+  (let [style (.createElement js/document "style")]
     (set! (.-textContent style) style-text)
+    style))
 
+(defn- make-backdrop! []
+  (let [backdrop (.createElement js/document "div")]
     (du/set-attr! backdrop attr-part model/part-backdrop)
+    backdrop))
 
-    (du/set-attr! dialog attr-part model/part-dialog)
-    (du/set-attr! dialog attr-role model/role-dialog)
-    (du/set-attr! dialog model/aria-modal val-true)
+(defn- make-slot-section! [part-name slot-name]
+  (let [section (.createElement js/document "div")
+        slot    (.createElement js/document "slot")]
+    (du/set-attr! section attr-part part-name)
+    (du/set-attr! slot    attr-name slot-name)
+    (.appendChild section slot)
+    section))
 
-    (du/set-attr! header attr-part model/part-header)
-    (du/set-attr! hslot  attr-name slot-header)
-
+(defn- make-body-section! []
+  (let [body (.createElement js/document "div")
+        slot (.createElement js/document "slot")]
     (du/set-attr! body attr-part model/part-body)
+    (.appendChild body slot)
+    body))
 
-    (du/set-attr! footer attr-part model/part-footer)
-    (du/set-attr! fslot  attr-name slot-footer)
-
-    (.appendChild header hslot)
-    (.appendChild body bslot)
-    (.appendChild footer fslot)
+(defn- make-dialog-section! [^js header ^js body ^js footer]
+  (let [dialog (.createElement js/document "div")]
+    (du/set-attr! dialog attr-part    model/part-dialog)
+    (du/set-attr! dialog attr-role    model/role-dialog)
+    (du/set-attr! dialog model/aria-modal val-true)
     (.appendChild dialog header)
     (.appendChild dialog body)
     (.appendChild dialog footer)
+    dialog))
 
+(defn- init-dom! [^js el]
+  (let [root     (.attachShadow el #js {:mode "open"})
+        style    (make-style!)
+        backdrop (make-backdrop!)
+        header   (make-slot-section! model/part-header slot-header)
+        body     (make-body-section!)
+        footer   (make-slot-section! model/part-footer slot-footer)
+        dialog   (make-dialog-section! header body footer)
+        refs     #js {}]
     (.appendChild root style)
     (.appendChild root backdrop)
     (.appendChild root dialog)
-
     (gobj/set refs rk-root     root)
     (gobj/set refs rk-backdrop backdrop)
     (gobj/set refs rk-dialog   dialog)
@@ -217,7 +221,6 @@
     :size-raw      (du/get-attr el model/attr-size)
     :label-raw     (du/get-attr el model/attr-label)}))
 
-;; ── Event dispatch ────────────────────────────────────────────────────────────
 ;; ── Focus trap ────────────────────────────────────────────────────────────────
 (defn- collect-tabbables [^js refs]
   (let [sel      (str "a[href],button:not([disabled]),input:not([disabled]),"
@@ -311,11 +314,13 @@
     (do-show! el)))
 
 ;; ── Transition detection ──────────────────────────────────────────────────────
-(defn- handle-open-transition! [^js el open?]
-  (let [prev-open (du/getv el k-prev-open)]
-    (when (not= prev-open open?)
-      (du/setv! el k-prev-open open?)
-      (du/dispatch! el model/event-toggle (model/toggle-event-detail open?))
+(defn- handle-open-transition! [^js el old-m new-m]
+  (let [open? (:open? new-m)
+        prev? (some-> old-m :open?)]
+    (when (not= prev? open?)
+      ;; No event on initial mount (no prior state); focus trap still toggles.
+      (when (some? old-m)
+        (du/dispatch! el model/event-toggle (model/toggle-event-detail open?)))
       (if open?
         (js/setTimeout (fn delayed-focus-trap [] (activate-focus-trap! el)) 0)
         (deactivate-focus-trap! el)))))
@@ -328,19 +333,19 @@
 (defn- apply-dialog-aria! [^js dialog {:keys [label]}]
   (du/set-attr! dialog model/aria-label label))
 
-(defn- apply-model! [^js el m]
+(defn- apply-model! [^js el old-m new-m]
   (let [refs       (ensure-refs! el)
         ^js dialog (gobj/get refs rk-dialog)]
-    (apply-host-data!   el m)
-    (apply-dialog-aria! dialog m)
-    (handle-open-transition! el (:open? m))
-    (du/setv! el k-model m)))
+    (apply-host-data!        el new-m)
+    (apply-dialog-aria!      dialog new-m)
+    (handle-open-transition! el old-m new-m)
+    (du/setv! el k-model new-m)))
 
 (defn- update-from-attrs! [^js el]
   (let [new-m (read-model el)
         old-m (du/getv el k-model)]
     (when (not= new-m old-m)
-      (apply-model! el new-m))))
+      (apply-model! el old-m new-m))))
 
 ;; ── Listener management ───────────────────────────────────────────────────────
 (defn- on-keydown! [^js el ^js e]
@@ -393,41 +398,20 @@
   (when (not= old-val new-val)
     (update-from-attrs! el)))
 
-;; ── Property accessors ────────────────────────────────────────────────────────
+;; ── Property and method accessors ─────────────────────────────────────────────
+(defn- define-method! [^js proto js-name f]
+  (.defineProperty js/Object proto js-name
+                   #js {:value f
+                        :enumerable   true
+                        :configurable true
+                        :writable     true}))
+
 (defn- install-properties! [^js proto]
-  ;; Boolean property: open
-  (.defineProperty js/Object proto "open"
-                   #js {:get (fn []
-                               (this-as ^js this
-                                        (.hasAttribute this model/attr-open)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                        (if v
-                                          (do-show! this)
-                                          (do-hide! this))))
-                        :enumerable true :configurable true})
+  (du/install-properties! proto model/property-api)
+  (define-method! proto "show"   (fn [] (this-as ^js this (do-show! this))))
+  (define-method! proto "hide"   (fn [] (this-as ^js this (do-hide! this))))
+  (define-method! proto "toggle" (fn [] (this-as ^js this (do-toggle! this)))))
 
-  ;; String properties with defaults
-  (du/define-string-prop! proto "size"  model/attr-size  model/default-size)
-  (du/define-string-prop! proto "label" model/attr-label model/default-label)
-
-  ;; Public methods
-  (.defineProperty js/Object proto "show"
-                   #js {:value (fn []
-                                 (this-as ^js this (do-show! this)))
-                        :enumerable true :configurable true :writable true})
-
-  (.defineProperty js/Object proto "hide"
-                   #js {:value (fn []
-                                 (this-as ^js this (do-hide! this)))
-                        :enumerable true :configurable true :writable true})
-
-  (.defineProperty js/Object proto "toggle"
-                   #js {:value (fn []
-                                 (this-as ^js this (do-toggle! this)))
-                        :enumerable true :configurable true :writable true}))
-
-;; ── Element class ─────────────────────────────────────────────────────────────
 ;; ── Public API ────────────────────────────────────────────────────────────────
 
 (defn init! []

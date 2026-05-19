@@ -68,7 +68,7 @@
 (defn normalize-min-size [v]
   (if (and v (not= "" v)) v default-min-column-size))
 
-(defn derive-state
+(defn normalize
   [{:keys [columns min-column-size gap row-gap column-gap
            align-items justify-items auto-flow inline]}]
 

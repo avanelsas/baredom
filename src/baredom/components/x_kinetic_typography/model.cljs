@@ -189,7 +189,7 @@
   (let [base 10.0]
     (/ base (max speed 0.01))))
 
-(defn derive-state
+(defn normalize
   "Master normalisation: raw attribute map -> stable view-model."
   [{:keys [text path preset animation speed direction effect
            font-size start-size end-size repeat

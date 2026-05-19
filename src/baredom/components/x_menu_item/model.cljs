@@ -33,7 +33,7 @@
 (defn normalize-type [v]
   (valid-enum (or v "") type-values ""))
 
-(defn derive-state
+(defn normalize
   [{:keys [value disabled variant type]}]
   {:value (or value "")
    :disabled (boolean disabled)

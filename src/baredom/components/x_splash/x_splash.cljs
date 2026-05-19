@@ -184,7 +184,7 @@
 
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:active-present? (du/has-attr? el model/attr-active)
     :variant-raw     (du/get-attr el model/attr-variant)
     :progress-raw    (du/get-attr el model/attr-progress)

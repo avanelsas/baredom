@@ -140,7 +140,7 @@
                  :y-offset (* i layer-y-offset)})
         (range n)))
 
-(defn derive-state [{:keys [shape layers height flip mirror animation path]}]
+(defn normalize [{:keys [shape layers height flip mirror animation path]}]
   (let [norm-path      (normalize-path path)
         norm-shape     (normalize-shape shape)
         norm-layers    (normalize-layers layers)

@@ -466,7 +466,7 @@
 ;; Read state from element attributes
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:value    (du/get-attr el model/attr-value)
     :alpha    (du/get-attr el model/attr-alpha)
     :swatches (du/get-attr el model/attr-swatches)

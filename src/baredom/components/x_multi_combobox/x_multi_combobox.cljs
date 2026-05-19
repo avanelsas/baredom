@@ -15,7 +15,6 @@
 (def ^:private k-options    "__xMultiComboboxOptions")
 (def ^:private k-active-idx "__xMultiComboboxActiveIdx")
 (def ^:private k-query      "__xMultiComboboxQuery")
-(def ^:private k-listbox-id "__xMultiComboboxListboxId")
 (def ^:private k-model      "__xMultiComboboxModel")
 (def ^:private k-doc-deferral "__xMultiComboboxDocDeferral")
 (def ^:private opt-id-prefix "x-mcb-opt-")
@@ -349,8 +348,7 @@
     (du/set-attr! panel-el attr-data-placement       model/default-placement)
     panel-el))
 
-(defn- init-instance-fields! [^js el lb-id]
-  (du/setv! el k-listbox-id lb-id)
+(defn- init-instance-fields! [^js el _lb-id]
   (du/setv! el k-options [])
   (du/setv! el k-query "")
   (du/setv! el k-active-idx 0))

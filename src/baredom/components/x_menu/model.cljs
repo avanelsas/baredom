@@ -33,7 +33,7 @@
 (defn normalize-placement [v]
   (valid-enum (or v "") placement-values "bottom-start"))
 
-(defn derive-state
+(defn normalize
   [{:keys [open placement label]}]
   {:open (boolean open)
    :placement (normalize-placement placement)

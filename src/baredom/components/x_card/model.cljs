@@ -31,11 +31,6 @@
 
 (def event-press "press")
 
-;; Canonical event-schema shape (matches x-button, x-alert, x-modal, …):
-;; key is the event-name symbol, value carries `:detail` and optional
-;; `:cancelable`. The dispatch site (`du/dispatch!` in x_card.cljs) controls
-;; bubbles/composed; `:event-name` is redundant because the symbol key is
-;; resolved by the type-generator helpers.
 (def event-schema
   {event-press {:detail {}}})
 
@@ -64,7 +59,7 @@
   (when (and (string? value) (not= "" value))
     value))
 
-(defn derive-state
+(defn normalize
   [{:keys [variant padding radius interactive disabled label]}]
   (let [variant* (normalize-variant variant)
         padding* (normalize-padding padding)
@@ -85,5 +80,9 @@
      :tabindex tabindex
      :aria-label (normalize-label label)
      :aria-disabled (when disabled* "true")}))
+
+(defn interactive-active?
+  [m]
+  (and (:interactive m) (not (:disabled m))))
 
 (def method-api {})

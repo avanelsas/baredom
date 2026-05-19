@@ -128,7 +128,7 @@
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:stiffness-raw   (du/get-attr el model/attr-stiffness)
     :damping-raw     (du/get-attr el model/attr-damping)
     :radius-raw      (du/get-attr el model/attr-radius)

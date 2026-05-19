@@ -138,7 +138,7 @@
 ;; ── Render ────────────────────────────────────────────────────────────────
 (defn- render! [^js el]
   (let [{:keys [clip clip-alt animation ratio width height]}
-        (model/derive-state (read-inputs el))
+        (model/normalize (read-inputs el))
         ^js base (du/getv el k-base)
         ^js slot-el (du/getv el k-slot)]
 

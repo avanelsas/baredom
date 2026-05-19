@@ -94,7 +94,7 @@
   [size]
   (get size->px size (get size->px default-size)))
 
-(defn derive-state
+(defn normalize
   "Pure transform from raw attribute inputs to a complete view-model.
    `static?` collapses the explicit `static` attribute and reduced-motion preference
    so the DOM layer does not need to repeat that logic."

@@ -73,8 +73,8 @@
   (is (= "column" (model/flow->css "column")))
   (is (= "dense" (model/flow->css "dense"))))
 
-(deftest derive-state-defaults-test
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults-test
+  (let [state (model/normalize {})]
     (is (= "repeat(auto-fit,minmax(16rem,1fr))" (:columns state)))
     (is (= "md" (:gap state)))
     (is (= "16px" (:row-gap state)))
@@ -84,16 +84,16 @@
     (is (= "row" (:auto-flow state)))
     (is (= false (:inline state)))))
 
-(deftest derive-state-explicit-columns-test
-  (let [state (model/derive-state {:columns "1fr 2fr 1fr"})]
+(deftest normalize-explicit-columns-test
+  (let [state (model/normalize {:columns "1fr 2fr 1fr"})]
     (is (= "1fr 2fr 1fr" (:columns state)))))
 
-(deftest derive-state-gap-overrides-test
-  (let [state (model/derive-state {:gap "lg" :row-gap "xl" :column-gap "sm"})]
+(deftest normalize-gap-overrides-test
+  (let [state (model/normalize {:gap "lg" :row-gap "xl" :column-gap "sm"})]
     (is (= "lg" (:gap state)))
     (is (= "32px" (:row-gap state)))
     (is (= "8px" (:column-gap state)))))
 
-(deftest derive-state-inline-test
-  (let [state (model/derive-state {:inline true})]
+(deftest normalize-inline-test
+  (let [state (model/normalize {:inline true})]
     (is (= true (:inline state)))))

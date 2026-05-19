@@ -5,8 +5,9 @@
    [baredom.components.x-card.model :as model]))
 
 ;; ── Instance-field keys ───────────────────────────────────────────────────
-(def ^:private k-refs  "__xCardRefs")
-(def ^:private k-model "__xCardModel")
+(def ^:private k-refs      "__xCardRefs")
+(def ^:private k-model     "__xCardModel")
+(def ^:private k-installed "__xCardInstalled")
 
 ;; ── String-literal constants ──────────────────────────────────────────────
 (def ^:private attr-part         "part")
@@ -188,23 +189,13 @@
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:variant     (du/get-attr el model/attr-variant)
     :padding     (du/get-attr el model/attr-padding)
     :radius      (du/get-attr el model/attr-radius)
     :interactive (du/has-attr? el model/attr-interactive)
     :disabled    (du/has-attr? el model/attr-disabled)
     :label       (du/get-attr el model/attr-label)}))
-
-(defn- current-model
-  "Return the cached model, falling back to a fresh read.
-  Used by event handlers that must reflect the latest attribute state
-  even before the next attribute-changed callback has cached it."
-  [^js el]
-  (or (du/getv el k-model) (read-model el)))
-
-(defn- interactive-active? [m]
-  (and (:interactive m) (not (:disabled m))))
 
 ;; ── DOM patching ──────────────────────────────────────────────────────────
 (defn- set-or-remove-attr! [^js el name value]
@@ -242,11 +233,11 @@
   (du/dispatch! el model/event-press #js {}))
 
 (defn- on-click [^js el ^js _event]
-  (when (interactive-active? (current-model el))
+  (when (model/interactive-active? (du/getv el k-model))
     (dispatch-press! el)))
 
 (defn- on-keydown [^js el ^js event]
-  (when (interactive-active? (current-model el))
+  (when (model/interactive-active? (du/getv el k-model))
     (let [k (.-key event)]
       (cond
         (= k key-enter)
@@ -266,9 +257,10 @@
 
 ;; ── Element class ─────────────────────────────────────────────────────────
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs)
-    (ensure-refs! el)
-    (install-listeners! el))
+  (ensure-refs! el)
+  (when-not (du/getv el k-installed)
+    (install-listeners! el)
+    (du/setv! el k-installed true))
   (update-from-attrs! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]

@@ -49,10 +49,10 @@
   (is (= "default" (model/normalize-variant nil)))
   (is (= "default" (model/normalize-variant ""))))
 
-;; ---------- derive-state ----------
+;; ---------- normalize ----------
 
-(deftest derive-state-defaults
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults
+  (let [state (model/normalize {})]
     (is (= false (:selected state)))
     (is (= false (:disabled state)))
     (is (= "horizontal" (:orientation state)))
@@ -62,39 +62,39 @@
     (is (nil? (:label state)))
     (is (nil? (:controls state)))))
 
-(deftest derive-state-selected-sets-tabindex-0
-  (let [state (model/derive-state {:selected true})]
+(deftest normalize-selected-sets-tabindex-0
+  (let [state (model/normalize {:selected true})]
     (is (= true (:selected state)))
     (is (= "0" (:tabindex state)))))
 
-(deftest derive-state-disabled-forces-tabindex-neg1
-  (let [state (model/derive-state {:disabled true})]
+(deftest normalize-disabled-forces-tabindex-neg1
+  (let [state (model/normalize {:disabled true})]
     (is (= true (:disabled state)))
     (is (= "-1" (:tabindex state)))))
 
-(deftest derive-state-selected-and-disabled-tabindex-neg1
-  (let [state (model/derive-state {:selected true :disabled true})]
+(deftest normalize-selected-and-disabled-tabindex-neg1
+  (let [state (model/normalize {:selected true :disabled true})]
     (is (= true (:selected state)))
     (is (= true (:disabled state)))
     (is (= "-1" (:tabindex state)))))
 
-(deftest derive-state-normalizes-enums
-  (let [state (model/derive-state {:orientation "bad"
+(deftest normalize-normalizes-enums
+  (let [state (model/normalize {:orientation "bad"
                                    :size "bad"
                                    :variant "bad"})]
     (is (= "horizontal" (:orientation state)))
     (is (= "md" (:size state)))
     (is (= "default" (:variant state)))))
 
-(deftest derive-state-passes-through-valid-enums
-  (let [state (model/derive-state {:orientation "vertical"
+(deftest normalize-passes-through-valid-enums
+  (let [state (model/normalize {:orientation "vertical"
                                    :size "lg"
                                    :variant "pill"})]
     (is (= "vertical" (:orientation state)))
     (is (= "lg" (:size state)))
     (is (= "pill" (:variant state)))))
 
-(deftest derive-state-passes-through-label-and-controls
-  (let [state (model/derive-state {:label "My tab" :controls "panel-1"})]
+(deftest normalize-passes-through-label-and-controls
+  (let [state (model/normalize {:label "My tab" :controls "panel-1"})]
     (is (= "My tab" (:label state)))
     (is (= "panel-1" (:controls state)))))

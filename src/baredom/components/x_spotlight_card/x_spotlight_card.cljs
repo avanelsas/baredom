@@ -7,9 +7,7 @@
 
 ;; ── Instance-field keys ─────────────────────────────────────────────────────
 
-(def ^:private k-root        "__xSpotlightCardRoot")
 (def ^:private k-card        "__xSpotlightCardCard")
-(def ^:private k-style       "__xSpotlightCardStyle")
 (def ^:private k-model       "__xSpotlightCardModel")
 (def ^:private k-handlers    "__xSpotlightCardHandlers")
 (def ^:private k-mq          "__xSpotlightCardMq")
@@ -177,8 +175,6 @@
     (.appendChild card content)
     (.appendChild root style)
     (.appendChild root card)
-    (du/setv! el k-root  root)
-    (du/setv! el k-style style)
     (du/setv! el k-card  card)
     root))
 
@@ -273,7 +269,7 @@
   (du/setv! el k-model m))
 
 (defn- update-from-attrs! [^js el]
-  (let [new-m (model/derive-state (read-inputs el))
+  (let [new-m (model/normalize (read-inputs el))
         old-m (du/getv el k-model)]
     (when (not= old-m new-m)
       (apply-model! el new-m))))

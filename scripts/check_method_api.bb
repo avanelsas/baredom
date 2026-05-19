@@ -157,7 +157,10 @@
    #"\(aset\s+proto\s+\"([A-Za-z][A-Za-z0-9_]*)\""
    ;; .defineProperty js/Object proto "NAME" #js {:value ...}
    ;; The :value key only appears in METHOD installs (not get/set accessors).
-   #"\.defineProperty\s+js/Object\s+proto\s+\"([A-Za-z][A-Za-z0-9_]*)\"\s*\n?\s*#js\s*\{[^}]*:value"])
+   #"\.defineProperty\s+js/Object\s+proto\s+\"([A-Za-z][A-Za-z0-9_]*)\"\s*\n?\s*#js\s*\{[^}]*:value"
+   ;; Component-local helper that wraps .defineProperty with :value:
+   ;;   (define-method! proto "NAME" (fn ...))
+   #"\(define-method!\s+proto\s+\"([A-Za-z][A-Za-z0-9_]*)\""])
 
 (defn- strip-line-comments
   "Remove `;`-prefixed line comments so the install-pattern regexes

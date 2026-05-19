@@ -128,7 +128,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Derive state
 ;; ---------------------------------------------------------------------------
-(defn derive-state
+(defn normalize
   [{:keys [value min max step disabled readonly name label show-value size
            aria-label aria-labelledby aria-describedby]}]
   (let [norm-min   (normalize-min min)

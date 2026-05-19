@@ -12,7 +12,6 @@
 (def ^:private k-options    "__xComboboxOptions")
 (def ^:private k-active-idx "__xComboboxActiveIdx")
 (def ^:private k-query      "__xComboboxQuery")
-(def ^:private k-listbox-id "__xComboboxListboxId")
 
 ;; ── Refs-object keys ───────────────────────────────────────────────────────
 (def ^:private rk-wrapper "wrapper")
@@ -324,7 +323,6 @@
     (.appendChild root panel-el)
     (.appendChild root slot-el)
 
-    (du/setv! el k-listbox-id lb-id)
     (du/setv! el k-options [])
     (du/setv! el k-query "")
     (du/setv! el k-active-idx 0)

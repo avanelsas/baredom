@@ -45,7 +45,7 @@
     default-label))
 
 ;; ── Derived state ─────────────────────────────────────────────────────────
-(defn derive-state
+(defn normalize
   "Produce a stable view-model map from raw attribute strings.
 
   Input keys:

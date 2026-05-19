@@ -80,10 +80,10 @@
   (is (true? (model/parse-disabled "true")))
   (is (true? (model/parse-disabled "disabled"))))
 
-;; ── derive-state ────────────────────────────────────────────────────────────
+;; ── normalize ────────────────────────────────────────────────────────────
 
-(deftest derive-state-defaults-test
-  (let [m (model/derive-state {})]
+(deftest normalize-defaults-test
+  (let [m (model/normalize {})]
     (is (= 180.0 (:stiffness m)))
     (is (= 12.0 (:damping m)))
     (is (= 16.0 (:radius m)))
@@ -91,8 +91,8 @@
     (is (= 80.0 (:grab-radius m)))
     (is (false? (:disabled? m)))))
 
-(deftest derive-state-overrides-test
-  (let [m (model/derive-state {:stiffness-raw "300"
+(deftest normalize-overrides-test
+  (let [m (model/normalize {:stiffness-raw "300"
                                :damping-raw "20"
                                :radius-raw "32"
                                :intensity-raw "2"

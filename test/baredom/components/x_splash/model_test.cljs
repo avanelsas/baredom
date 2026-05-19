@@ -48,26 +48,26 @@
   (is (nil? (model/parse-progress "abc")))
   (is (nil? (model/parse-progress ""))))
 
-;; ── derive-state ─────────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [m (model/derive-state {})]
+;; ── normalize ─────────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [m (model/normalize {})]
     (is (false?  (:active? m)))
     (is (= "default" (:variant m)))
     (is (nil?    (:progress m)))
     (is (true?   (:spinner? m)))
     (is (= "solid" (:overlay m)))))
 
-(deftest derive-state-active-test
-  (is (true? (:active? (model/derive-state {:active-present? true})))))
+(deftest normalize-active-test
+  (is (true? (:active? (model/normalize {:active-present? true})))))
 
-(deftest derive-state-variant-test
-  (is (= "minimal" (:variant (model/derive-state {:variant-raw "minimal"})))))
+(deftest normalize-variant-test
+  (is (= "minimal" (:variant (model/normalize {:variant-raw "minimal"})))))
 
-(deftest derive-state-progress-test
-  (is (= 75 (:progress (model/derive-state {:progress-raw "75"})))))
+(deftest normalize-progress-test
+  (is (= 75 (:progress (model/normalize {:progress-raw "75"})))))
 
-(deftest derive-state-spinner-false-test
-  (is (false? (:spinner? (model/derive-state {:spinner-attr "false"})))))
+(deftest normalize-spinner-false-test
+  (is (false? (:spinner? (model/normalize {:spinner-attr "false"})))))
 
-(deftest derive-state-overlay-test
-  (is (= "blur" (:overlay (model/derive-state {:overlay-raw "blur"})))))
+(deftest normalize-overlay-test
+  (is (= "blur" (:overlay (model/normalize {:overlay-raw "blur"})))))

@@ -89,7 +89,7 @@
    "@media (prefers-reduced-motion:reduce){.base{transition:none;}}"))
 
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:value (du/get-attr el model/attr-value)
     :disabled (du/has-attr? el model/attr-disabled)
     :variant (du/get-attr el model/attr-variant)

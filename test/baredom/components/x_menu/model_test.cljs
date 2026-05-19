@@ -13,21 +13,21 @@
   (is (= "bottom-start" (model/normalize-placement nil)))
   (is (= "bottom-start" (model/normalize-placement ""))))
 
-(deftest derive-state-defaults
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults
+  (let [state (model/normalize {})]
     (is (= false (:open state)))
     (is (= "bottom-start" (:placement state)))
     (is (= "" (:label state)))))
 
-(deftest derive-state-open-flag
-  (is (= true  (:open (model/derive-state {:open true}))))
-  (is (= false (:open (model/derive-state {:open false}))))
-  (is (= false (:open (model/derive-state {:open nil})))))
+(deftest normalize-open-flag
+  (is (= true  (:open (model/normalize {:open true}))))
+  (is (= false (:open (model/normalize {:open false}))))
+  (is (= false (:open (model/normalize {:open nil})))))
 
-(deftest derive-state-label
-  (is (= "My Menu" (:label (model/derive-state {:label "My Menu"}))))
-  (is (= "" (:label (model/derive-state {:label nil})))))
+(deftest normalize-label
+  (is (= "My Menu" (:label (model/normalize {:label "My Menu"}))))
+  (is (= "" (:label (model/normalize {:label nil})))))
 
-(deftest derive-state-normalizes-placement
-  (is (= "top-end"      (:placement (model/derive-state {:placement "top-end"}))))
-  (is (= "bottom-start" (:placement (model/derive-state {:placement "invalid"})))))
+(deftest normalize-normalizes-placement
+  (is (= "top-end"      (:placement (model/normalize {:placement "top-end"}))))
+  (is (= "bottom-start" (:placement (model/normalize {:placement "invalid"})))))

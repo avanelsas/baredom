@@ -70,7 +70,7 @@
     value
     default-size))
 
-(defn derive-state
+(defn normalize
   [{:keys [value variant size label show-value indeterminate] max-attr :max}]
   (let [norm-max    (normalize-max max-attr)
         norm-value  (normalize-value value norm-max)

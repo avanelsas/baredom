@@ -8,7 +8,13 @@
 ;; ── Instance-field keys (shared `du/setv!` / `du/getv`) ─────────────────────
 (def ^:private k-refs                  "__xButtonRefs")
 (def ^:private k-model                 "__xButtonModel")
-(def ^:private k-hover                 "__xButtonHover")
+;; The three fields below survived the values-not-places sweep: each encodes
+;; transient interaction history with no DOM-attribute equivalent.
+;; - k-focus-visible: gates the custom `focus-visible` event. There is no
+;;   native `focusvisible` event, and `focus`/`blur` fire for mouse focus too.
+;; - k-active-source / k-last-activation-src: track which input source
+;;   ("pointer" | "keyboard") drove the current/last press, used for
+;;   press-start/-end pairing and for the `press` event's `:source` detail.
 (def ^:private k-focus-visible         "__xButtonFocusVisible")
 (def ^:private k-active-source         "__xButtonActiveSource")
 (def ^:private k-last-activation-src   "__xButtonLastActivationSource")
@@ -34,9 +40,7 @@
 (def ^:private attr-data-size            "data-size")
 (def ^:private attr-data-loading         "data-loading")
 (def ^:private attr-data-disabled        "data-disabled")
-(def ^:private attr-data-hover           "data-hover")
 (def ^:private attr-data-active          "data-active")
-(def ^:private attr-data-focus-visible   "data-focus-visible")
 (def ^:private attr-data-has-icon-start  "data-has-icon-start")
 (def ^:private attr-data-has-icon-end    "data-has-icon-end")
 (def ^:private attr-data-has-spinner     "data-has-spinner")
@@ -213,7 +217,7 @@
    "color:var(--x-button-fg);"
    "border-color:var(--x-button-border);"
    "}"
-   "button[data-variant='primary'][data-hover='true']:not([disabled]){"
+   "button[data-variant='primary']:hover:not([disabled]){"
    "background:var(--x-button-bg-hover);"
    "box-shadow:var(--x-button-shadow-hover);"
    "}"
@@ -228,7 +232,7 @@
    "color:var(--x-button-secondary-fg);"
    "border-color:var(--x-button-secondary-border);"
    "}"
-   "button[data-variant='secondary'][data-hover='true']:not([disabled]){"
+   "button[data-variant='secondary']:hover:not([disabled]){"
    "background:var(--x-button-secondary-bg-hover);"
    "border-color:var(--x-button-secondary-border);"
    "box-shadow:var(--x-button-shadow-hover);"
@@ -245,7 +249,7 @@
    "border-color:transparent;"
    "box-shadow:none;"
    "}"
-   "button[data-variant='tertiary'][data-hover='true']:not([disabled]){"
+   "button[data-variant='tertiary']:hover:not([disabled]){"
    "background:var(--x-button-tertiary-bg-hover);"
    "}"
    "button[data-variant='tertiary'][data-active='true']:not([disabled]){"
@@ -259,7 +263,7 @@
    "border-color:transparent;"
    "box-shadow:none;"
    "}"
-   "button[data-variant='ghost'][data-hover='true']:not([disabled]){"
+   "button[data-variant='ghost']:hover:not([disabled]){"
    "background:var(--x-button-ghost-bg-hover);"
    "}"
    "button[data-variant='ghost'][data-active='true']:not([disabled]){"
@@ -272,7 +276,7 @@
    "color:var(--x-button-danger-fg);"
    "border-color:transparent;"
    "}"
-   "button[data-variant='danger'][data-hover='true']:not([disabled]){"
+   "button[data-variant='danger']:hover:not([disabled]){"
    "background:var(--x-button-danger-bg-hover);"
    "box-shadow:var(--x-button-shadow-hover);"
    "}"
@@ -445,10 +449,11 @@
     :label    (du/get-attr el model/attr-label)}))
 
 (defn- read-model
-  "Compose the cached model from attributes + UI state + slot-content
-  flags. When the button isn't interactive, UI hover/active flags are
-  forced to their idle values so a non-interactive button never appears
-  hovered or pressed in the DOM."
+  "Compose the cached model from attributes + active-press state + slot-
+  content flags. Hover is no longer cached — the CSS `:hover:not([disabled])`
+  selectors paint hover styling directly. Focus-visible state is tracked in
+  `k-focus-visible` for event dispatch but is not part of the cached model
+  because nothing in `apply-model!` consumes it."
   [^js el]
   (let [^js refs            (du/getv el k-refs)
         ^js label-slot      (gobj/get refs rk-label-slot)
@@ -460,9 +465,7 @@
         active-source       (when interactive? (du/getv el k-active-source))
         has-default-text?   (slot-has-meaningful-text? label-slot)]
     {:public           public
-     :hover?           (boolean (and interactive? (du/getv el k-hover)))
      :active?          (some? active-source)
-     :focus-visible?   (boolean (du/getv el k-focus-visible))
      :has-icon-start?  (slot-has-content? icon-start-slot)
      :has-icon-end?    (slot-has-content? icon-end-slot)
      :has-spinner?     (slot-has-content? spinner-slot)
@@ -502,9 +505,7 @@
   (du/set-attr! button-el attr-data-size           (:size    public-state))
   (du/set-attr! button-el attr-data-loading        (bool-attr (:loading  public-state)))
   (du/set-attr! button-el attr-data-disabled       (bool-attr (:disabled public-state)))
-  (du/set-attr! button-el attr-data-hover          (bool-attr (:hover?          m)))
   (du/set-attr! button-el attr-data-active         (bool-attr (:active?         m)))
-  (du/set-attr! button-el attr-data-focus-visible  (bool-attr (:focus-visible?  m)))
   (du/set-attr! button-el attr-data-has-icon-start (bool-attr (:has-icon-start? m)))
   (du/set-attr! button-el attr-data-has-icon-end   (bool-attr (:has-icon-end?   m)))
   (du/set-attr! button-el attr-data-has-spinner    (bool-attr (:has-spinner?    m))))
@@ -554,9 +555,9 @@
     auto-repeat, but a keyboard press DOES override an in-progress
     pointer press to match the existing behaviour)."
   [^js el source]
-  (case source
-    "pointer"  (not (du/getv el k-active-source))
-    "keyboard" (not= src-keyboard (du/getv el k-active-source))))
+  (condp = source
+    src-pointer  (not (du/getv el k-active-source))
+    src-keyboard (not= src-keyboard (du/getv el k-active-source))))
 
 (defn- start-press!
   "Begin a press from `source` (\"pointer\" | \"keyboard\") if the
@@ -568,9 +569,7 @@
     (update! el)
     (du/dispatch! el model/event-press-start #js {:source source})))
 
-(defn- end-press-if-source!
-  "End the active press only when the active source matches `source`."
-  [^js el source]
+(defn- end-press-if-source! [^js el source]
   (when (= source (du/getv el k-active-source))
     (end-active-press! el)))
 
@@ -584,63 +583,65 @@
       (= btn-type btn-type-reset)  (.reset form))))
 
 ;; ── Event handlers (named — listener-spec style) ────────────────────────────
-(defn- on-pointer-enter [^js el _e]
-  (when (and (interactive-el? el) (not (du/getv el k-hover)))
-    (du/setv! el k-hover true)
-    (update! el)
+;; Handlers end in `!` per the transparency rule: each performs side effects
+;; (`du/setv!`, `du/dispatch!`, `update!`).
+
+(defn- on-pointer-enter! [^js el _e]
+  (when (interactive-el? el)
     (du/dispatch! el model/event-hover-start #js {})))
 
-(defn- on-pointer-leave [^js el _e]
-  (when (du/getv el k-hover)
-    (du/setv! el k-hover false)
-    (update! el)
-    (when (interactive-el? el)
-      (du/dispatch! el model/event-hover-end #js {})))
+(defn- emit-hover-end-if-interactive! [^js el]
+  (when (interactive-el? el)
+    (du/dispatch! el model/event-hover-end #js {})))
+
+(defn- cancel-pointer-press-if-active! [^js el]
   (when (= src-pointer (du/getv el k-active-source))
     (end-active-press! el)))
 
-(defn- on-pointer-down [^js el _e]
+(defn- on-pointer-leave! [^js el _e]
+  (emit-hover-end-if-interactive!  el)
+  (cancel-pointer-press-if-active! el))
+
+(defn- on-pointer-down! [^js el _e]
   (start-press! el src-pointer))
 
-(defn- on-pointer-up [^js el _e]
+(defn- on-pointer-up! [^js el _e]
   (end-press-if-source! el src-pointer))
 
-(defn- on-pointer-cancel [^js el _e]
+(defn- on-pointer-cancel! [^js el _e]
   (end-press-if-source! el src-pointer))
 
-(defn- on-keydown [^js el ^js event]
+(defn- on-keydown! [^js el ^js event]
   (when (activation-key? event)
     (start-press! el src-keyboard)))
 
-(defn- on-keyup [^js el ^js event]
+(defn- on-keyup! [^js el ^js event]
   (when (activation-key? event)
     (end-press-if-source! el src-keyboard)))
 
-(defn- on-focus [^js el ^js _e]
+(defn- on-focus! [^js el ^js _e]
   (let [^js refs   (du/getv el k-refs)
         ^js button (gobj/get refs rk-button)
         visible    (.matches button selector-focus-visible)]
     (du/setv! el k-focus-visible visible)
-    (update! el)
     (when visible
       (du/dispatch! el model/event-focus-visible #js {}))))
 
-(defn- on-blur
+(defn- on-blur!
   "Combined blur handler: end any keyboard press and clear focus-visible."
   [^js el _e]
   (when (du/getv el k-active-source)
     (end-active-press! el))
-  (du/setv! el k-focus-visible false)
-  (update! el))
+  (du/setv! el k-focus-visible false))
 
-(defn- on-click [^js el _e]
+(defn- on-click! [^js el _e]
   (when (interactive-el? el)
     (let [source (or (du/getv el k-last-activation-src) val-programmatic)]
       (du/dispatch! el model/event-press #js {:source source})
       (du/setv! el k-last-activation-src nil)
       (maybe-submit-or-reset! el (:type (read-public-state el))))))
 
-(defn- on-slotchange [^js el _e]
+(defn- on-slotchange! [^js el _e]
   (update! el))
 
 ;; ── Listener installation (listener-spec named pattern) ─────────────────────
@@ -649,20 +650,20 @@
 ;; shadow-DOM nodes that persist with the element, so no explicit remove path
 ;; is needed across disconnect/reconnect cycles.
 (def ^:private listener-spec
-  [[rk-button          ev-pointerenter  on-pointer-enter]
-   [rk-button          ev-pointerleave  on-pointer-leave]
-   [rk-button          ev-pointerdown   on-pointer-down]
-   [rk-button          ev-pointerup     on-pointer-up]
-   [rk-button          ev-pointercancel on-pointer-cancel]
-   [rk-button          ev-keydown       on-keydown]
-   [rk-button          ev-keyup         on-keyup]
-   [rk-button          ev-focus         on-focus]
-   [rk-button          ev-blur          on-blur]
-   [rk-button          ev-click         on-click]
-   [rk-label-slot      ev-slotchange    on-slotchange]
-   [rk-icon-start-slot ev-slotchange    on-slotchange]
-   [rk-icon-end-slot   ev-slotchange    on-slotchange]
-   [rk-spinner-slot    ev-slotchange    on-slotchange]])
+  [[rk-button          ev-pointerenter  on-pointer-enter!]
+   [rk-button          ev-pointerleave  on-pointer-leave!]
+   [rk-button          ev-pointerdown   on-pointer-down!]
+   [rk-button          ev-pointerup     on-pointer-up!]
+   [rk-button          ev-pointercancel on-pointer-cancel!]
+   [rk-button          ev-keydown       on-keydown!]
+   [rk-button          ev-keyup         on-keyup!]
+   [rk-button          ev-focus         on-focus!]
+   [rk-button          ev-blur          on-blur!]
+   [rk-button          ev-click         on-click!]
+   [rk-label-slot      ev-slotchange    on-slotchange!]
+   [rk-icon-start-slot ev-slotchange    on-slotchange!]
+   [rk-icon-end-slot   ev-slotchange    on-slotchange!]
+   [rk-spinner-slot    ev-slotchange    on-slotchange!]])
 
 (defn- install-listeners! [^js el]
   (let [^js refs (du/getv el k-refs)]
@@ -674,7 +675,6 @@
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
     (du/setv! el k-refs (build-refs! el))
-    (du/setv! el k-hover               false)
     (du/setv! el k-focus-visible       false)
     (du/setv! el k-active-source       nil)
     (du/setv! el k-last-activation-src nil)
@@ -682,8 +682,7 @@
   (update! el))
 
 (defn- disconnected! [^js el]
-  ;; Reset transient UI state so a reconnect starts clean.
-  (du/setv! el k-hover               false)
+  ;; Reset transient interaction history so a reconnect starts clean.
   (du/setv! el k-focus-visible       false)
   (du/setv! el k-active-source       nil)
   (du/setv! el k-last-activation-src nil))

@@ -3,9 +3,7 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-tabs.model :as model]))
 
-(def ^:private key-root "__xTabsRoot")
 (def ^:private key-base "__xTabsBase")
-(def ^:private key-slot "__xTabsSlot")
 (def ^:private key-init "__xTabsInitialized")
 (def ^:private key-model "__xTabsModel")
 (def ^:private key-on-tab-select "__xTabsOnTabSelect")
@@ -156,7 +154,7 @@
 
 (defn- handle-arrow [^js el ^js e]
   (let [tabs (vec (filter enabled-tab? (get-tabs el)))
-        state (model/derive-state (read-inputs el))
+        state (model/normalize (read-inputs el))
         orientation (:orientation state)
         activation (:activation state)
         loop? (:loop state)
@@ -205,7 +203,7 @@
     (du/setv! el key-model state)))
 
 (defn- update-from-attrs! [^js el]
-  (let [new-m (model/derive-state (read-inputs el))
+  (let [new-m (model/normalize (read-inputs el))
         old-m (du/getv el key-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
@@ -257,9 +255,7 @@
     (.appendChild base slot)
     (.appendChild root style)
     (.appendChild root base)
-    (du/setv! el key-root root)
-    (du/setv! el key-base base)
-    (du/setv! el key-slot slot)))
+    (du/setv! el key-base base)))
 
 (defn- init-element! [^js el]
   (when-not (du/initialized? el key-init)

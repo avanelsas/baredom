@@ -803,7 +803,7 @@
   (du/define-bool-default-true-prop! proto "showControls" model/attr-show-controls)
 
   ;; label uses strict-empty setter semantics — setting "" removes the
-  ;; attribute (so derive-state falls back to the default landmark name).
+  ;; attribute (so normalize falls back to the default landmark name).
   ;; define-string-prop! would store "" as an explicit empty attribute.
   (.defineProperty js/Object proto model/attr-label
     #js {:get (fn xs-get-label []

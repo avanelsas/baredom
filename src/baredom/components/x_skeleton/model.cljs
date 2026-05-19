@@ -35,7 +35,7 @@
 (defn normalize-css-value [v]
   (when (and (string? v) (not= "" v)) v))
 
-(defn derive-state [{:keys [variant animation width height]}]
+(defn normalize [{:keys [variant animation width height]}]
   {:variant   (normalize-variant variant)
    :animation (normalize-animation animation)
    :width     (normalize-css-value width)

@@ -68,7 +68,7 @@
 (defn normalize-text [v]
   (when (and v (not= "" v)) v))
 
-(defn derive-state
+(defn normalize
   [{:keys [variant align size emphasis trend loading label value hint]}]
 
   (let [variant* (normalize-variant variant)

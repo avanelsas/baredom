@@ -97,7 +97,7 @@
   (when (nil? path)
     (get-in shape-presets [(normalize-shape shape) :clip-alt])))
 
-(defn derive-state [{:keys [shape path animation ratio width height]}]
+(defn normalize [{:keys [shape path animation ratio width height]}]
   (let [norm-path      (normalize-path path)
         norm-shape     (normalize-shape shape)
         norm-animation (normalize-animation animation)

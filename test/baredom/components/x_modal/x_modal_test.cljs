@@ -216,6 +216,24 @@
     (.setAttribute el model/attr-label "New label")
     (is (= 0 (count @events)))))
 
+;; ── toggle event not fired on initial mount (no prior state) ─────────────────
+(deftest no-spurious-toggle-on-mount-closed-test
+  (let [^js el (make-el)
+        events (atom [])]
+    (.addEventListener el model/event-toggle
+                       (fn [^js e] (swap! events conj e)))
+    (append! el)
+    (is (= 0 (count @events)))))
+
+(deftest no-spurious-toggle-on-mount-with-open-attr-test
+  (let [^js el (make-el)
+        events (atom [])]
+    (.addEventListener el model/event-toggle
+                       (fn [^js e] (swap! events conj e)))
+    (.setAttribute el model/attr-open "")
+    (append! el)
+    (is (= 0 (count @events)))))
+
 ;; ── Escape key dismissal ──────────────────────────────────────────────────────
 (deftest escape-key-dismiss-test
   (let [^js el (append! (make-el))

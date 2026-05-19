@@ -68,9 +68,9 @@
   (is (= "none" (model/normalize-animation "bounce")))
   (is (= "none" (model/normalize-animation 42))))
 
-;; ── derive-state ─────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize ─────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "blob-1" (:shape s)))
     (is (nil?       (:path s)))
     (is (some?      (:clip s)))
@@ -78,28 +78,28 @@
     (is (= "none"   (:animation s)))
     (is (= "1/1"    (:ratio s)))))
 
-(deftest derive-state-with-animation-test
+(deftest normalize-with-animation-test
   (doseq [anim ["morph" "pulse" "float" "spin"]]
-    (let [s (model/derive-state {:animation anim :shape "leaf"})]
+    (let [s (model/normalize {:animation anim :shape "leaf"})]
       (is (= anim (:animation s))))))
 
-(deftest derive-state-morph-disabled-for-custom-path-test
-  (let [s (model/derive-state {:animation "morph" :path "circle(50%)"})]
+(deftest normalize-morph-disabled-for-custom-path-test
+  (let [s (model/normalize {:animation "morph" :path "circle(50%)"})]
     (is (= "none" (:animation s)))
     (is (nil?     (:clip-alt s)))))
 
-(deftest derive-state-non-morph-animations-work-with-custom-path-test
+(deftest normalize-non-morph-animations-work-with-custom-path-test
   (doseq [anim ["pulse" "float" "spin"]]
-    (let [s (model/derive-state {:animation anim :path "circle(50%)"})]
+    (let [s (model/normalize {:animation anim :path "circle(50%)"})]
       (is (= anim (:animation s))))))
 
-(deftest derive-state-explicit-values-test
-  (let [s (model/derive-state {:shape "cloud" :ratio "16/9"})]
+(deftest normalize-explicit-values-test
+  (let [s (model/normalize {:shape "cloud" :ratio "16/9"})]
     (is (= "cloud" (:shape s)))
     (is (= "16/9"  (:ratio s)))))
 
-(deftest derive-state-invalid-shape-falls-back-test
-  (let [s (model/derive-state {:shape "pentagon"})]
+(deftest normalize-invalid-shape-falls-back-test
+  (let [s (model/normalize {:shape "pentagon"})]
     (is (= "blob-1" (:shape s)))))
 
 ;; ── normalize-css-value ───────────────────────────────────────────────────
@@ -113,19 +113,19 @@
   (is (nil? (model/normalize-css-value "")))
   (is (nil? (model/normalize-css-value 0))))
 
-;; ── derive-state with width/height ───────────────────────────────────────
-(deftest derive-state-width-height-test
-  (let [s (model/derive-state {:width "200px" :height "150px"})]
+;; ── normalize with width/height ───────────────────────────────────────
+(deftest normalize-width-height-test
+  (let [s (model/normalize {:width "200px" :height "150px"})]
     (is (= "200px" (:width s)))
     (is (= "150px" (:height s)))))
 
-(deftest derive-state-empty-width-height-become-nil-test
-  (let [s (model/derive-state {:width "" :height ""})]
+(deftest normalize-empty-width-height-become-nil-test
+  (let [s (model/normalize {:width "" :height ""})]
     (is (nil? (:width s)))
     (is (nil? (:height s)))))
 
-(deftest derive-state-defaults-have-nil-width-height-test
-  (let [s (model/derive-state {})]
+(deftest normalize-defaults-have-nil-width-height-test
+  (let [s (model/normalize {})]
     (is (nil? (:width s)))
     (is (nil? (:height s)))))
 
