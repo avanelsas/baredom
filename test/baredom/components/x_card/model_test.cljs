@@ -19,7 +19,7 @@
     (is (= "lg" (model/normalize-radius "bad")))
     (is (= "xl" (model/normalize-radius "xl")))))
 
-(deftest derive-state-test
+(deftest normalize-test
   (testing "default state"
     (is (= {:variant "elevated"
             :padding "md"
@@ -30,19 +30,26 @@
             :tabindex nil
             :aria-label nil
             :aria-disabled nil}
-           (model/derive-state {}))))
+           (model/normalize {}))))
 
   (testing "interactive enabled state"
-    (is (= "button" (:role (model/derive-state {:interactive true}))))
-    (is (= "0" (:tabindex (model/derive-state {:interactive true}))))
-    (is (nil? (:aria-disabled (model/derive-state {:interactive true})))))
+    (is (= "button" (:role (model/normalize {:interactive true}))))
+    (is (= "0" (:tabindex (model/normalize {:interactive true}))))
+    (is (nil? (:aria-disabled (model/normalize {:interactive true})))))
 
   (testing "interactive disabled state"
-    (let [state (model/derive-state {:interactive true :disabled true :label "Card"})]
+    (let [state (model/normalize {:interactive true :disabled true :label "Card"})]
       (is (= "button" (:role state)))
       (is (= "-1" (:tabindex state)))
       (is (= "true" (:aria-disabled state)))
       (is (= "Card" (:aria-label state)))))
 
   (testing "empty label is omitted"
-    (is (nil? (:aria-label (model/derive-state {:label ""}))))))
+    (is (nil? (:aria-label (model/normalize {:label ""}))))))
+
+(deftest interactive-active?-test
+  (testing "true only when interactive and not disabled"
+    (is (false? (boolean (model/interactive-active? {:interactive false :disabled false}))))
+    (is (false? (boolean (model/interactive-active? {:interactive false :disabled true}))))
+    (is (false? (boolean (model/interactive-active? {:interactive true  :disabled true}))))
+    (is (true?  (boolean (model/interactive-active? {:interactive true  :disabled false}))))))

@@ -178,6 +178,19 @@
 
     (is (= 1 @calls))))
 
+;; Regression: when an observed attribute is set BEFORE the element is
+;; connected, attributeChangedCallback runs first and initialises the shadow
+;; via apply-model!. The listener-install path must not be conflated with
+;; the refs-init path, or click handlers never get attached.
+(deftest listeners-installed-when-attribute-set-before-connect-test
+  (let [el (make-el)
+        calls (atom 0)]
+    (.setAttribute el model/attr-interactive "")
+    (.addEventListener el "press" (fn [_] (swap! calls inc)))
+    (append! el)
+    (.click el)
+    (is (= 1 @calls))))
+
 (deftest press-event-dispatches-on-enter-when-interactive-test
   (let [el (append! (make-el))
         calls (atom 0)
