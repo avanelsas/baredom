@@ -26,17 +26,14 @@
 (def ^:private val-true  "true")
 (def ^:private val-false "false")
 
-;; ── Helpers ────────────────────────────────────────────────────────────────
-(defn- get-default-true-bool [^js el attr-name]
-  (not= val-false (du/get-attr el attr-name)))
-
+;; ── Model reading ──────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/public-state
    {:as      (du/get-attr el model/attr-as)
     :size    (du/get-attr el model/attr-size)
     :padding (du/get-attr el model/attr-padding)
-    :center  (get-default-true-bool el model/attr-center)
-    :fluid   (du/has-attr? el model/attr-fluid)
+    :center  (.-center el)
+    :fluid   (.-fluid el)
     :label   (du/get-attr el model/attr-label)}))
 
 ;; ── Styles ─────────────────────────────────────────────────────────────────
@@ -142,9 +139,7 @@
 
 ;; ── DOM patching ───────────────────────────────────────────────────────────
 (defn- swap-base!
-  "Replace the [part=base] element with a fresh one of `tag`. Re-parents
-  the persistent slot into the new base and updates refs.base. Used when
-  the host's `:as` attribute changes the desired root tag."
+  "Replace [part=base] with a fresh element of `tag`; re-parent the slot."
   [^js refs tag]
   (let [^js root     (gobj/get refs rk-root)
         ^js old-base (gobj/get refs rk-base)
@@ -190,31 +185,14 @@
         (apply-model! el new-m)))))
 
 ;; ── Property accessors ─────────────────────────────────────────────────────
-(defn- define-default-true-bool-prop! [^js proto prop attr]
-  ;; Tier 2: the absent attribute resolves to `true`, so du/define-bool-prop!
-  ;; (which treats absence as `false`) would invert the default. Setting v=true
-  ;; removes the attribute; setting v=false writes the literal "false" string.
-  (.defineProperty js/Object proto prop
-                   #js {:configurable true
-                        :enumerable   true
-                        :get (fn []
-                               (this-as ^js this
-                                 (get-default-true-bool this attr)))
-                        :set (fn [v]
-                               (this-as ^js this
-                                 (if (boolean v)
-                                   (du/remove-attr! this attr)
-                                   (du/set-attr! this attr val-false))))}))
-
 (defn- install-property-accessors! [^js proto]
-  (define-default-true-bool-prop! proto "center" model/attr-center)
-  (du/define-bool-prop! proto "fluid" model/attr-fluid))
+  (du/define-bool-default-true-prop! proto "center" model/attr-center)
+  (du/define-bool-prop!              proto "fluid"  model/attr-fluid))
 
 ;; ── Lifecycle ──────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
-    ;; Initial tag comes from a fresh read so the shadow's [part=base] is
-    ;; created with the right element type from the start.
+    ;; Read :as first so [part=base] is created with the right tag from the start.
     (init-dom! el (:as (read-model el))))
   (update-from-attrs! el))
 

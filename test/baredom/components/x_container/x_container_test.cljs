@@ -117,6 +117,18 @@
     (is (not (.hasAttribute el model/attr-center)))
     (is (= "true" (.getAttribute base "data-center")))))
 
+;; Regression: property and rendered data-center must agree on case-insensitive "false".
+(deftest center-attribute-case-insensitive-test
+  (let [el (append! (make-el))
+        base (shadow-part el "[part='base']")]
+    (.setAttribute el model/attr-center "False")
+    (is (= false (get-js-prop el "center")))
+    (is (= "false" (.getAttribute base "data-center")))
+
+    (.setAttribute el model/attr-center "  FALSE  ")
+    (is (= false (get-js-prop el "center")))
+    (is (= "false" (.getAttribute base "data-center")))))
+
 (deftest fluid-property-reflection-test
   (let [el (append! (make-el))
         base (shadow-part el "[part='base']")]
