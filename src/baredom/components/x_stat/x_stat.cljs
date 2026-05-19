@@ -3,7 +3,6 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-stat.model :as model]))
 
-(def ^:private key-root "__xStatRoot")
 (def ^:private key-base "__xStatBase")
 (def ^:private key-label "__xStatLabel")
 (def ^:private key-value "__xStatValue")
@@ -12,7 +11,7 @@
 (def ^:private key-model "__xStatModel")
 
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:variant (du/get-attr el model/attr-variant)
     :align (du/get-attr el model/attr-align)
     :size (du/get-attr el model/attr-size)
@@ -185,7 +184,6 @@
     (.appendChild root style-el)
     (.appendChild root base)
 
-    (du/setv! el key-root root)
     (du/setv! el key-base base)
     (du/setv! el key-label label-span)
     (du/setv! el key-value value-span)

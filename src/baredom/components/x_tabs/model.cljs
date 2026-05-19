@@ -37,7 +37,7 @@
 (defn normalize-activation [v]
   (valid-enum v activation-values "auto"))
 
-(defn derive-state
+(defn normalize
   [{:keys [value orientation activation label loop]}]
   {:value value
    :orientation (normalize-orientation orientation)

@@ -56,8 +56,8 @@
     (is (= "200px" (model/size-css-value "md")))
     (is (= "360px" (model/size-css-value "xl")))))
 
-(deftest derive-state-default-test
-  (let [state (model/derive-state {:motion-ok? true})]
+(deftest normalize-default-test
+  (let [state (model/normalize {:motion-ok? true})]
     (is (= "elevated" (:variant state)))
     (is (= "lg"       (:radius state)))
     (is (= "md"       (:padding state)))
@@ -69,18 +69,18 @@
     (is (= "0.18"  (:intensity-css state)))
     (is (= "200px" (:size-css state)))))
 
-(deftest derive-state-static-flag-test
+(deftest normalize-static-flag-test
   (testing "explicit static attribute forces static spotlight"
-    (is (true? (:static? (model/derive-state {:static? true :motion-ok? true})))))
+    (is (true? (:static? (model/normalize {:static? true :motion-ok? true})))))
 
   (testing "reduced motion forces static spotlight even without the attribute"
-    (is (true? (:static? (model/derive-state {:static? false :motion-ok? false})))))
+    (is (true? (:static? (model/normalize {:static? false :motion-ok? false})))))
 
   (testing "no static attribute and motion ok → not static"
-    (is (false? (:static? (model/derive-state {:static? false :motion-ok? true}))))))
+    (is (false? (:static? (model/normalize {:static? false :motion-ok? true}))))))
 
-(deftest derive-state-resolves-css-strings-test
-  (let [state (model/derive-state {:color "danger"
+(deftest normalize-resolves-css-strings-test
+  (let [state (model/normalize {:color "danger"
                                    :intensity "strong"
                                    :size "lg"
                                    :motion-ok? true})]

@@ -300,7 +300,7 @@
 
 ;; ── Read model ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:text         (du/get-attr el model/attr-text)
     :path         (du/get-attr el model/attr-path)
     :preset       (du/get-attr el model/attr-preset)

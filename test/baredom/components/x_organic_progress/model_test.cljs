@@ -95,10 +95,10 @@
   (is (nil? (model/parse-color "")))
   (is (nil? (model/parse-color "   "))))
 
-;; ── derive-state ────────────────────────────────────────────────────────────
+;; ── normalize ────────────────────────────────────────────────────────────
 
-(deftest derive-state-defaults-test
-  (let [m (model/derive-state {})]
+(deftest normalize-defaults-test
+  (let [m (model/normalize {})]
     (is (nil? (:progress m)))
     (is (true? (:indeterminate? m)))
     (is (false? (:complete? m)))
@@ -108,15 +108,15 @@
     (is (= 42 (:seed m)))
     (is (= "Loading..." (:aria-valuetext m)))))
 
-(deftest derive-state-determinate-test
-  (let [m (model/derive-state {:progress-raw "75"})]
+(deftest normalize-determinate-test
+  (let [m (model/normalize {:progress-raw "75"})]
     (is (= 75.0 (:progress m)))
     (is (false? (:indeterminate? m)))
     (is (false? (:complete? m)))
     (is (= "75%" (:aria-valuetext m)))))
 
-(deftest derive-state-complete-test
-  (let [m (model/derive-state {:progress-raw "100"})]
+(deftest normalize-complete-test
+  (let [m (model/normalize {:progress-raw "100"})]
     (is (true? (:complete? m)))
     (is (= "100%" (:aria-valuetext m)))))
 

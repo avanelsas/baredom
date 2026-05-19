@@ -222,9 +222,9 @@
   (testing "invalid entries are filtered"
     (is (= ["#ff0000"] (model/parse-swatches "#ff0000,bad,#zzzzzz")))))
 
-;; ── derive-state defaults ───────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize defaults ───────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "#000000" (:hex s)))
     (is (= "inline"  (:mode s)))
     (is (false? (:disabled? s)))
@@ -233,13 +233,13 @@
     (is (false? (:open? s)))
     (is (= 1.0 (:a s)))))
 
-(deftest derive-state-popover-open-test
-  (let [s (model/derive-state {:mode "popover" :open ""})]
+(deftest normalize-popover-open-test
+  (let [s (model/normalize {:mode "popover" :open ""})]
     (is (= "popover" (:mode s)))
     (is (true? (:open? s)))))
 
-(deftest derive-state-popover-open-requires-popover-mode-test
-  (let [s (model/derive-state {:mode "inline" :open ""})]
+(deftest normalize-popover-open-requires-popover-mode-test
+  (let [s (model/normalize {:mode "inline" :open ""})]
     (is (false? (:open? s)))))
 
 ;; ── color-value-text ────────────────────────────────────────────────────────
@@ -279,13 +279,13 @@
   (is (= "#ff0000" (model/rgb->hex 300 -10 0)))
   (is (= "#000000" (model/rgb->hex 0 0 0))))
 
-;; ── derive-state with swatches ──────────────────────────────────────────────
-(deftest derive-state-with-swatches-test
-  (let [s (model/derive-state {:swatches "#ff0000,#00ff00"})]
+;; ── normalize with swatches ──────────────────────────────────────────────
+(deftest normalize-with-swatches-test
+  (let [s (model/normalize {:swatches "#ff0000,#00ff00"})]
     (is (= ["#ff0000" "#00ff00"] (:swatches s))))
   (testing "invalid swatches filtered"
-    (let [s (model/derive-state {:swatches "#ff0000,bad"})]
+    (let [s (model/normalize {:swatches "#ff0000,bad"})]
       (is (= ["#ff0000"] (:swatches s)))))
   (testing "nil swatches → empty"
-    (let [s (model/derive-state {})]
+    (let [s (model/normalize {})]
       (is (= [] (:swatches s))))))

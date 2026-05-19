@@ -105,7 +105,7 @@
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:text-raw        (du/get-attr el model/attr-text)
     :trigger-raw     (du/get-attr el model/attr-trigger)
     :mode-raw        (du/get-attr el model/attr-mode)

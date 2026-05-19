@@ -43,7 +43,7 @@
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:col-span (du/get-attr el model/attr-col-span)
     :row-span (du/get-attr el model/attr-row-span)
     :order    (du/get-attr el model/attr-order)}))

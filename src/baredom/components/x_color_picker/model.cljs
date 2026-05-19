@@ -326,7 +326,7 @@
 ;; ---------------------------------------------------------------------------
 ;; Derive state — central normalization
 ;; ---------------------------------------------------------------------------
-(defn derive-state
+(defn normalize
   "Transform raw attribute values into a normalized state map."
   [{:keys [value alpha disabled readonly name mode open label swatches]}]
   (let [hex       (normalize-value value)

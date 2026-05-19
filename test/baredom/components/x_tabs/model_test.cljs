@@ -39,34 +39,34 @@
   (is (= "auto" (model/normalize-activation nil)))
   (is (= "auto" (model/normalize-activation ""))))
 
-;; ---------- derive-state ----------
+;; ---------- normalize ----------
 
-(deftest derive-state-defaults
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults
+  (let [state (model/normalize {})]
     (is (nil? (:value state)))
     (is (= "horizontal" (:orientation state)))
     (is (= "auto" (:activation state)))
     (is (nil? (:label state)))
     (is (= false (:loop state)))))
 
-(deftest derive-state-passes-through-value-and-label
-  (let [state (model/derive-state {:value "overview" :label "Main tabs"})]
+(deftest normalize-passes-through-value-and-label
+  (let [state (model/normalize {:value "overview" :label "Main tabs"})]
     (is (= "overview" (:value state)))
     (is (= "Main tabs" (:label state)))))
 
-(deftest derive-state-normalizes-enums
-  (let [state (model/derive-state {:orientation "bad" :activation "bad"})]
+(deftest normalize-normalizes-enums
+  (let [state (model/normalize {:orientation "bad" :activation "bad"})]
     (is (= "horizontal" (:orientation state)))
     (is (= "auto" (:activation state)))))
 
-(deftest derive-state-passes-through-valid-enums
-  (let [state (model/derive-state {:orientation "vertical" :activation "manual"})]
+(deftest normalize-passes-through-valid-enums
+  (let [state (model/normalize {:orientation "vertical" :activation "manual"})]
     (is (= "vertical" (:orientation state)))
     (is (= "manual" (:activation state)))))
 
-(deftest derive-state-coerces-loop-to-boolean
-  (is (= true (:loop (model/derive-state {:loop true}))))
-  (is (= true (:loop (model/derive-state {:loop "yes"}))))
-  (is (= false (:loop (model/derive-state {:loop nil}))))
-  (is (= false (:loop (model/derive-state {:loop false}))))
-  (is (= false (:loop (model/derive-state {})))))
+(deftest normalize-coerces-loop-to-boolean
+  (is (= true (:loop (model/normalize {:loop true}))))
+  (is (= true (:loop (model/normalize {:loop "yes"}))))
+  (is (= false (:loop (model/normalize {:loop nil}))))
+  (is (= false (:loop (model/normalize {:loop false}))))
+  (is (= false (:loop (model/normalize {})))))

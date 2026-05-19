@@ -133,7 +133,7 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:colors    (du/get-attr el model/attr-colors)
     :blur      (du/get-attr el model/attr-blur)
     :speed     (du/get-attr el model/attr-speed)

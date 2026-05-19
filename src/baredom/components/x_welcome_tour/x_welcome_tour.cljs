@@ -19,7 +19,6 @@
 (def ^:private k-raf        "__xWelcomeTourRaf")
 (def ^:private k-resize-obs "__xWelcomeTourResizeObs")
 (def ^:private k-restore    "__xWelcomeTourRestore")
-(def ^:private k-prev-open  "__xWelcomeTourPrevOpen")
 
 ;; ── SVG namespace ───────────────────────────────────────────────────────────
 (def ^:private svg-ns "http://www.w3.org/2000/svg")
@@ -853,7 +852,6 @@
   (install-mutation-observer! el)
   (let [m (read-model el)]
     (du/setv! el k-model m)
-    (du/setv! el k-prev-open (:open? m))
     (when (:open? m)
       (open-tour! el))))
 

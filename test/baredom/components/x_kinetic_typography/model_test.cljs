@@ -159,9 +159,9 @@
 (deftest compute-duration-slow-test
   (is (= 20.0 (model/compute-duration-s 0.5))))
 
-;; ── derive-state ─────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize ─────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "" (:text s)))
     (is (= "wave" (:preset s)))
     (is (= false (:crawl? s)))
@@ -174,27 +174,27 @@
     (is (some? (:path-d s)))
     (is (some? (:view-box s)))))
 
-(deftest derive-state-size-gradient-overrides-size-pulse-test
-  (let [s (model/derive-state {:effect "size-gradient size-pulse"
+(deftest normalize-size-gradient-overrides-size-pulse-test
+  (let [s (model/normalize {:effect "size-gradient size-pulse"
                                :start-size "12px"
                                :end-size "48px"})]
     (is (contains? (:effects s) "size-gradient"))
     (is (not (contains? (:effects s) "size-pulse")))))
 
-(deftest derive-state-color-wave-overrides-color-shift-test
-  (let [s (model/derive-state {:effect "color-wave color-shift"})]
+(deftest normalize-color-wave-overrides-color-shift-test
+  (let [s (model/normalize {:effect "color-wave color-shift"})]
     (is (contains? (:effects s) "color-wave"))
     (is (not (contains? (:effects s) "color-shift")))))
 
-(deftest derive-state-crawl-test
-  (let [s (model/derive-state {:preset "crawl"})]
+(deftest normalize-crawl-test
+  (let [s (model/normalize {:preset "crawl"})]
     (is (= true (:crawl? s)))
     (is (nil? (:path-d s)))
     (is (nil? (:view-box s)))
     (is (= 0 (:echo-count s)))))
 
-(deftest derive-state-echo-defaults-test
-  (let [s (model/derive-state {:echo-count "2"})]
+(deftest normalize-echo-defaults-test
+  (let [s (model/normalize {:echo-count "2"})]
     (is (= 2 (:echo-count s)))
     (is (= 0.3 (:echo-delay s)))
     (is (= 0.5 (:echo-opacity s)))

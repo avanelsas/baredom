@@ -59,8 +59,8 @@
   (is (= "32px" (model/gap->css "xl")))
   (is (= "16px" (model/gap->css "unknown"))))
 
-(deftest derive-state-defaults-test
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults-test
+  (let [state (model/normalize {})]
     (is (= 4 (:columns state)))
     (is (= "repeat(4,minmax(0,1fr))" (:template state)))
     (is (= "md" (:gap state)))
@@ -68,8 +68,8 @@
     (is (= "16px" (:column-gap state)))
     (is (= "auto" (:row-height state)))))
 
-(deftest derive-state-custom-test
-  (let [state (model/derive-state {:columns "3" :gap "lg" :row-height "100px"})]
+(deftest normalize-custom-test
+  (let [state (model/normalize {:columns "3" :gap "lg" :row-height "100px"})]
     (is (= 3 (:columns state)))
     (is (= "repeat(3,minmax(0,1fr))" (:template state)))
     (is (= "lg" (:gap state)))
@@ -77,8 +77,8 @@
     (is (= "24px" (:column-gap state)))
     (is (= "100px" (:row-height state)))))
 
-(deftest derive-state-gap-overrides-test
-  (let [state (model/derive-state {:gap "lg" :row-gap "xl" :column-gap "sm"})]
+(deftest normalize-gap-overrides-test
+  (let [state (model/normalize {:gap "lg" :row-gap "xl" :column-gap "sm"})]
     (is (= "lg" (:gap state)))
     (is (= "32px" (:row-gap state)))
     (is (= "8px" (:column-gap state)))))

@@ -61,11 +61,11 @@
   (is (nil? (model/normalize-text nil)))
   (is (nil? (model/normalize-text ""))))
 
-;; ── derive-state ────────────────────────────────────────────────────────────
+;; ── normalize ────────────────────────────────────────────────────────────
 
-(deftest derive-state-defaults-test
+(deftest normalize-defaults-test
   (testing "all nil inputs produce defaults"
-    (let [state (model/derive-state {})]
+    (let [state (model/normalize {})]
       (is (= "default" (:variant state)))
       (is (= "start" (:align state)))
       (is (= "md" (:size state)))
@@ -77,9 +77,9 @@
       (is (nil? (:value state)))
       (is (nil? (:hint state))))))
 
-(deftest derive-state-valid-inputs-test
+(deftest normalize-valid-inputs-test
   (testing "valid inputs are preserved"
-    (let [state (model/derive-state
+    (let [state (model/normalize
                  {:variant "positive"
                   :align "center"
                   :size "lg"
@@ -100,9 +100,9 @@
       (is (= "$128K" (:value state)))
       (is (= "QTD" (:hint state))))))
 
-(deftest derive-state-invalid-enums-fallback-test
+(deftest normalize-invalid-enums-fallback-test
   (testing "invalid enums fall back to defaults"
-    (let [state (model/derive-state
+    (let [state (model/normalize
                  {:variant "nope"
                   :align "nope"
                   :size "nope"
@@ -114,15 +114,15 @@
       (is (= "normal" (:emphasis state)))
       (is (= "neutral" (:trend state))))))
 
-(deftest derive-state-loading-aria-busy-test
+(deftest normalize-loading-aria-busy-test
   (testing "loading false produces nil aria-busy"
-    (is (nil? (:aria-busy (model/derive-state {:loading false})))))
+    (is (nil? (:aria-busy (model/normalize {:loading false})))))
   (testing "loading true produces aria-busy 'true'"
-    (is (= "true" (:aria-busy (model/derive-state {:loading true}))))))
+    (is (= "true" (:aria-busy (model/normalize {:loading true}))))))
 
-(deftest derive-state-text-normalization-test
+(deftest normalize-text-normalization-test
   (testing "empty strings become nil"
-    (let [state (model/derive-state {:label "" :value "" :hint ""})]
+    (let [state (model/normalize {:label "" :value "" :hint ""})]
       (is (nil? (:label state)))
       (is (nil? (:value state)))
       (is (nil? (:hint state))))))

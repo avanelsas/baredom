@@ -149,7 +149,7 @@
 
 ;; ── Attribute readers ───────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:progress-raw (du/get-attr el model/attr-progress)
     :variant-raw  (du/get-attr el model/attr-variant)
     :color-raw    (du/get-attr el model/attr-color)

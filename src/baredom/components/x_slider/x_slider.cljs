@@ -207,7 +207,7 @@
 ;; Read element state from attributes
 ;; ---------------------------------------------------------------------------
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:value            (du/get-attr el model/attr-value)
     :min              (du/get-attr el model/attr-min)
     :max              (du/get-attr el model/attr-max)

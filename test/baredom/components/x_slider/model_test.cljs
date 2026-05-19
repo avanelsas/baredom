@@ -107,12 +107,12 @@
     (is (= 0.0 (model/fill-percent 50 50 50)))))
 
 ;; ---------------------------------------------------------------------------
-;; derive-state
+;; normalize
 ;; ---------------------------------------------------------------------------
 
-(deftest derive-state-defaults-test
+(deftest normalize-defaults-test
   (testing "all nil inputs produce defaults"
-    (let [m (model/derive-state {})]
+    (let [m (model/normalize {})]
       (is (= model/default-value (:value m)))
       (is (= model/default-min   (:min m)))
       (is (= model/default-max   (:max m)))
@@ -125,43 +125,43 @@
       (is (nil?                  (:name m)))
       (is (= 0.0                 (:fill-percent m))))))
 
-(deftest derive-state-value-clamping-test
+(deftest normalize-value-clamping-test
   (testing "value is clamped within min/max"
-    (let [m (model/derive-state {:value "150" :min "0" :max "100"})]
+    (let [m (model/normalize {:value "150" :min "0" :max "100"})]
       (is (= 100.0 (:value m)))
       (is (= 100.0 (:fill-percent m)))))
   (testing "value below min is clamped to min"
-    (let [m (model/derive-state {:value "-5" :min "0" :max "100"})]
+    (let [m (model/normalize {:value "-5" :min "0" :max "100"})]
       (is (= 0.0 (:value m)))
       (is (= 0.0 (:fill-percent m))))))
 
-(deftest derive-state-fill-percent-test
+(deftest normalize-fill-percent-test
   (testing "fill-percent is calculated correctly"
-    (let [m (model/derive-state {:value "50" :min "0" :max "100"})]
+    (let [m (model/normalize {:value "50" :min "0" :max "100"})]
       (is (= 50.0 (:fill-percent m))))))
 
-(deftest derive-state-booleans-test
+(deftest normalize-booleans-test
   (testing "disabled and readonly flags"
-    (let [m (model/derive-state {:disabled true :readonly true})]
+    (let [m (model/normalize {:disabled true :readonly true})]
       (is (= true (:disabled? m)))
       (is (= true (:readonly? m))))))
 
-(deftest derive-state-label-test
+(deftest normalize-label-test
   (testing "empty string label is nil"
-    (let [m (model/derive-state {:label ""})]
+    (let [m (model/normalize {:label ""})]
       (is (nil? (:label m)))))
   (testing "non-empty label is preserved"
-    (let [m (model/derive-state {:label "Volume"})]
+    (let [m (model/normalize {:label "Volume"})]
       (is (= "Volume" (:label m))))))
 
-(deftest derive-state-aria-test
+(deftest normalize-aria-test
   (testing "aria attributes are forwarded"
-    (let [m (model/derive-state {:aria-label       "Volume"
+    (let [m (model/normalize {:aria-label       "Volume"
                                  :aria-labelledby  "lbl-1"
                                  :aria-describedby "hint-1"})]
       (is (= "Volume" (:aria-label m)))
       (is (= "lbl-1"  (:aria-labelledby m)))
       (is (= "hint-1" (:aria-describedby m)))))
   (testing "empty aria strings become nil"
-    (let [m (model/derive-state {:aria-label ""})]
+    (let [m (model/normalize {:aria-label ""})]
       (is (nil? (:aria-label m))))))

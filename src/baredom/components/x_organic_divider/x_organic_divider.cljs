@@ -120,7 +120,7 @@
 
 ;; ── Read inputs ───────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:shape     (du/get-attr el model/attr-shape)
     :layers    (du/get-attr el model/attr-layers)
     :height    (du/get-attr el model/attr-height)

@@ -165,7 +165,7 @@
 
 ;; ── Derive state ─────────────────────────────────────────────────────────
 
-(defn derive-state
+(defn normalize
   [{:keys [colors blur speed count size opacity animation blend paused]}]
   (let [parsed-colors (parse-colors colors)
         parsed-count  (parse-count count)

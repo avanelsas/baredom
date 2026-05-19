@@ -34,21 +34,21 @@
   (is (= "Loading" (model/normalize-label "")))
   (is (= "Loading" (model/normalize-label "   "))))
 
-;; ── derive-state ──────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize ──────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "md"      (:size s)))
     (is (= "default" (:variant s)))
     (is (= "Loading" (:label s)))))
 
-(deftest derive-state-explicit-values-test
-  (let [s (model/derive-state {:size "lg" :variant "primary" :label "Uploading"})]
+(deftest normalize-explicit-values-test
+  (let [s (model/normalize {:size "lg" :variant "primary" :label "Uploading"})]
     (is (= "lg"        (:size s)))
     (is (= "primary"   (:variant s)))
     (is (= "Uploading" (:label s)))))
 
-(deftest derive-state-invalid-values-fall-back-test
-  (let [s (model/derive-state {:size "huge" :variant "info" :label ""})]
+(deftest normalize-invalid-values-fall-back-test
+  (let [s (model/normalize {:size "huge" :variant "info" :label ""})]
     (is (= "md"      (:size s)))
     (is (= "default" (:variant s)))
     (is (= "Loading" (:label s)))))

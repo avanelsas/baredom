@@ -32,7 +32,7 @@
       (when (and (number? n) (not (js/isNaN n)))
         n))))
 
-(defn derive-state
+(defn normalize
   [{:keys [col-span row-span order]}]
   (let [cs (normalize-span col-span)
         rs (normalize-span row-span)

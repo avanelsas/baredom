@@ -62,7 +62,7 @@
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:columns         (du/get-attr el model/attr-columns)
     :min-column-size (du/get-attr el model/attr-min-column-size)
     :gap             (du/get-attr el model/attr-gap)

@@ -35,28 +35,28 @@
   (is (nil? (model/normalize-css-value "")))
   (is (nil? (model/normalize-css-value 0))))
 
-;; ── derive-state ──────────────────────────────────────────────────────────
-(deftest derive-state-defaults-test
-  (let [s (model/derive-state {})]
+;; ── normalize ──────────────────────────────────────────────────────────
+(deftest normalize-defaults-test
+  (let [s (model/normalize {})]
     (is (= "rect"  (:variant s)))
     (is (= "pulse" (:animation s)))
     (is (nil?      (:width s)))
     (is (nil?      (:height s)))))
 
-(deftest derive-state-explicit-values-test
-  (let [s (model/derive-state {:variant "circle" :animation "wave"
+(deftest normalize-explicit-values-test
+  (let [s (model/normalize {:variant "circle" :animation "wave"
                                 :width "40px" :height "40px"})]
     (is (= "circle" (:variant s)))
     (is (= "wave"   (:animation s)))
     (is (= "40px"   (:width s)))
     (is (= "40px"   (:height s)))))
 
-(deftest derive-state-invalid-variant-falls-back-test
-  (let [s (model/derive-state {:variant "oval" :animation "bounce"})]
+(deftest normalize-invalid-variant-falls-back-test
+  (let [s (model/normalize {:variant "oval" :animation "bounce"})]
     (is (= "rect"  (:variant s)))
     (is (= "pulse" (:animation s)))))
 
-(deftest derive-state-empty-width-height-become-nil-test
-  (let [s (model/derive-state {:width "" :height ""})]
+(deftest normalize-empty-width-height-become-nil-test
+  (let [s (model/normalize {:width "" :height ""})]
     (is (nil? (:width s)))
     (is (nil? (:height s)))))

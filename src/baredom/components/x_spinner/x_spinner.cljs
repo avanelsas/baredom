@@ -74,7 +74,7 @@
 
 ;; ── Read model ────────────────────────────────────────────────────────────
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:size    (du/get-attr el model/attr-size)
     :variant (du/get-attr el model/attr-variant)
     :label   (du/get-attr el model/attr-label)}))

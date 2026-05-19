@@ -65,7 +65,7 @@
    ".popup[data-placement='top-end']{bottom:100%;right:0;margin-bottom:4px;}"))
 
 (defn- read-model [^js el]
-  (model/derive-state
+  (model/normalize
    {:open (du/has-attr? el model/attr-open)
     :placement (du/get-attr el model/attr-placement)
     :label (du/get-attr el model/attr-label)}))

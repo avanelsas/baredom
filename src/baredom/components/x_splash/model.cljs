@@ -51,7 +51,7 @@
       (when-not (js/isNaN n)
         (max 0 (min 100 n))))))
 
-(defn derive-state
+(defn normalize
   "Derive a stable view-model from raw attribute inputs.
 
   Input keys:

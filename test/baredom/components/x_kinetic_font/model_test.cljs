@@ -134,10 +134,10 @@
   (is (= "Inter Variable" (model/normalize-font-family "Inter Variable")))
   (is (= "Inter Variable" (model/normalize-font-family "  Inter Variable  "))))
 
-;; ── derive-state ────────────────────────────────────────────────────────────
+;; ── normalize ────────────────────────────────────────────────────────────
 
-(deftest derive-state-defaults-test
-  (let [m (model/derive-state {})]
+(deftest normalize-defaults-test
+  (let [m (model/normalize {})]
     (is (= "" (:text m)))
     (is (= "cursor" (:trigger m)))
     (is (= #{"bulge"} (:modes m)))
@@ -149,8 +149,8 @@
     (is (= 200.0 (:radius m)))
     (is (nil? (:font-family m)))))
 
-(deftest derive-state-overrides-test
-  (let [m (model/derive-state {:text-raw "Hello"
+(deftest normalize-overrides-test
+  (let [m (model/normalize {:text-raw "Hello"
                                :trigger-raw "scroll"
                                :mode-raw "lean stretch"
                                :per-char-attr ""

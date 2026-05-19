@@ -3,7 +3,6 @@
             [baredom.utils.dom :as du]
             [baredom.components.x-tab.model :as model]))
 
-(def ^:private key-root "__xTabRoot")
 (def ^:private key-base "__xTabBase")
 (def ^:private key-initialized "__xTabInitialized")
 (def ^:private key-model "__xTabModel")
@@ -90,7 +89,7 @@
     (du/setv! el key-model state)))
 
 (defn- update-from-attrs! [^js el]
-  (let [new-m (model/derive-state (read-inputs el))
+  (let [new-m (model/normalize (read-inputs el))
         old-m (du/getv el key-model)]
     (when (not= new-m old-m)
       (apply-model! el new-m))))
@@ -107,7 +106,7 @@
 (defn- activate! [^js el]
 
   (let [{:keys [selected disabled]}
-        (model/derive-state (read-inputs el))]
+        (model/normalize (read-inputs el))]
 
     (when (and (not disabled) (not selected))
       (dispatch-select! el))))
@@ -145,7 +144,6 @@
     (.appendChild root style)
     (.appendChild root base)
 
-    (du/setv! el key-root root)
     (du/setv! el key-base base)))
 
 (defn- init-element! [^js el]

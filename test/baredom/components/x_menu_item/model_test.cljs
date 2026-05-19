@@ -20,22 +20,22 @@
   (is (= "" (model/normalize-type "separator")))
   (is (= "" (model/normalize-type "hr"))))
 
-(deftest derive-state-defaults
-  (let [state (model/derive-state {})]
+(deftest normalize-defaults
+  (let [state (model/normalize {})]
     (is (= "" (:value state)))
     (is (= false (:disabled state)))
     (is (= "" (:variant state)))
     (is (= "" (:type state)))))
 
-(deftest derive-state-disabled-flag
-  (is (= true (:disabled (model/derive-state {:disabled true}))))
-  (is (= false (:disabled (model/derive-state {:disabled false}))))
-  (is (= false (:disabled (model/derive-state {:disabled nil})))))
+(deftest normalize-disabled-flag
+  (is (= true (:disabled (model/normalize {:disabled true}))))
+  (is (= false (:disabled (model/normalize {:disabled false}))))
+  (is (= false (:disabled (model/normalize {:disabled nil})))))
 
-(deftest derive-state-normalizes-variant
-  (is (= "danger" (:variant (model/derive-state {:variant "danger"}))))
-  (is (= "" (:variant (model/derive-state {:variant "invalid"})))))
+(deftest normalize-normalizes-variant
+  (is (= "danger" (:variant (model/normalize {:variant "danger"}))))
+  (is (= "" (:variant (model/normalize {:variant "invalid"})))))
 
-(deftest derive-state-normalizes-type
-  (is (= "divider" (:type (model/derive-state {:type "divider"}))))
-  (is (= "" (:type (model/derive-state {:type "separator"})))))
+(deftest normalize-normalizes-type
+  (is (= "divider" (:type (model/normalize {:type "divider"}))))
+  (is (= "" (:type (model/normalize {:type "separator"})))))
