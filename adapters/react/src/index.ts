@@ -14,6 +14,7 @@ export { XCarousel, type XCarouselProps } from "./x-carousel";
 export { XChart, type XChartProps } from "./x-chart";
 export { XCheckbox, type XCheckboxProps } from "./x-checkbox";
 export { XChip, type XChipProps } from "./x-chip";
+export { XCode, type XCodeProps } from "./x-code";
 export { XCollapse, type XCollapseProps } from "./x-collapse";
 export { XColorPicker, type XColorPickerProps } from "./x-color-picker";
 export { XCombobox, type XComboboxProps } from "./x-combobox";

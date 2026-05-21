@@ -24,6 +24,7 @@
    [baredom.exports.x-chart               :as x-chart]
    [baredom.exports.x-checkbox            :as x-checkbox]
    [baredom.exports.x-chip                :as x-chip]
+   [baredom.exports.x-code                :as x-code]
    [baredom.exports.x-collapse            :as x-collapse]
    [baredom.exports.x-color-picker        :as x-color-picker]
    [baredom.exports.x-combobox            :as x-combobox]
@@ -128,6 +129,7 @@
    x-chart/register!
    x-checkbox/register!
    x-chip/register!
+   x-code/register!
    x-collapse/register!
    x-color-picker/register!
    x-combobox/register!

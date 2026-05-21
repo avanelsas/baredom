@@ -87,6 +87,10 @@
       "import" : "./dist/x-chip.js",
       "types" : "./dist/x-chip.d.ts"
     },
+    "./x-code" : {
+      "import" : "./dist/x-code.js",
+      "types" : "./dist/x-code.d.ts"
+    },
     "./x-collapse" : {
       "import" : "./dist/x-collapse.js",
       "types" : "./dist/x-collapse.d.ts"

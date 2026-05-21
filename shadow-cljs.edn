@@ -176,6 +176,11 @@
      {init baredom.exports.x-command-palette/init}
      :depends-on #{:base}}
 
+    :x-code
+    {:exports
+     {init baredom.exports.x-code/init}
+     :depends-on #{:base}}
+
     :x-copy
     {:exports
      {init baredom.exports.x-copy/init}

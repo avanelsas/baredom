@@ -15,6 +15,7 @@ export { BaredomCarousel } from './directives/x-carousel.directive';
 export { BaredomChart } from './directives/x-chart.directive';
 export { BaredomCheckbox } from './directives/x-checkbox.directive';
 export { BaredomChip } from './directives/x-chip.directive';
+export { BaredomCode } from './directives/x-code.directive';
 export { BaredomCollapse } from './directives/x-collapse.directive';
 export { BaredomColorPicker } from './directives/x-color-picker.directive';
 export { BaredomCombobox } from './directives/x-combobox.directive';

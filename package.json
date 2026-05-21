@@ -96,6 +96,11 @@
       "import": "./dist/x-command-palette.js",
       "default": "./dist/x-command-palette.js"
     },
+    "./x-code": {
+      "types": "./dist/x-code.d.ts",
+      "import": "./dist/x-code.js",
+      "default": "./dist/x-code.js"
+    },
     "./x-tooltip": {
       "types": "./dist/x-tooltip.d.ts",
       "import": "./dist/x-tooltip.js",
