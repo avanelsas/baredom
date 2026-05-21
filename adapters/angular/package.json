@@ -60,6 +60,10 @@
       "import" : "./dist/directives/x-button.directive.js",
       "types" : "./dist/directives/x-button.directive.d.ts"
     },
+    "./x-calendar" : {
+      "import" : "./dist/directives/x-calendar.directive.js",
+      "types" : "./dist/directives/x-calendar.directive.d.ts"
+    },
     "./x-cancel-dialogue" : {
       "import" : "./dist/directives/x-cancel-dialogue.directive.js",
       "types" : "./dist/directives/x-cancel-dialogue.directive.d.ts"

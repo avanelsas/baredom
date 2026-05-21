@@ -346,6 +346,11 @@
       "import": "./dist/x-button.js",
       "default": "./dist/x-button.js"
     },
+    "./x-calendar": {
+      "types": "./dist/x-calendar.d.ts",
+      "import": "./dist/x-calendar.js",
+      "default": "./dist/x-calendar.js"
+    },
     "./x-theme": {
       "types": "./dist/x-theme.d.ts",
       "import": "./dist/x-theme.js",

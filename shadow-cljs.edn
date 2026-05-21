@@ -51,6 +51,11 @@
      {init baredom.exports.x-button/init}
      :depends-on #{:base}}
 
+    :x-calendar
+    {:exports
+     {init baredom.exports.x-calendar/init}
+     :depends-on #{:base}}
+
     :x-card
     {:exports
      {init baredom.exports.x-card/init}

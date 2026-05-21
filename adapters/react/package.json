@@ -63,6 +63,10 @@
       "import" : "./dist/x-button.js",
       "types" : "./dist/x-button.d.ts"
     },
+    "./x-calendar" : {
+      "import" : "./dist/x-calendar.js",
+      "types" : "./dist/x-calendar.d.ts"
+    },
     "./x-cancel-dialogue" : {
       "import" : "./dist/x-cancel-dialogue.js",
       "types" : "./dist/x-cancel-dialogue.d.ts"
