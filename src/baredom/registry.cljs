@@ -91,6 +91,7 @@
    [baredom.exports.x-spacer              :as x-spacer]
    [baredom.exports.x-spinner             :as x-spinner]
    [baredom.exports.x-splash              :as x-splash]
+   [baredom.exports.x-split-pane          :as x-split-pane]
    [baredom.exports.x-spotlight-card      :as x-spotlight-card]
    [baredom.exports.x-stat                :as x-stat]
    [baredom.exports.x-stepper             :as x-stepper]
@@ -194,6 +195,7 @@
    x-spacer/register!
    x-spinner/register!
    x-splash/register!
+   x-split-pane/register!
    x-spotlight-card/register!
    x-stat/register!
    x-stepper/register!

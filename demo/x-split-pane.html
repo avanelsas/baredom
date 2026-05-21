@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-split-pane demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 760px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; margin: 8px 0; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .label { font-size: 13px; color: var(--muted); min-width: 80px; }
+
+      /* Each split-pane needs a definite size along the split axis. */
+      x-split-pane.demo-split {
+        height: 220px;
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+      }
+
+      /* Slotted content lives in light DOM, so page CSS applies. */
+      .panel {
+        height: 100%;
+        padding: 12px;
+        font-size: 13px;
+        overflow: auto;
+      }
+      .panel.a { background: var(--surface-bg); }
+      .panel.b { background: transparent; }
+
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 16px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-split-pane demo</x-typography>
+
+    <!-- ── Horizontal (default) ───────────────────────────────── -->
+    <x-typography variant="overline">Horizontal split (default)</x-typography>
+    <x-split-pane class="demo-split">
+      <div slot="start" class="panel a">Start panel — drag the divider to resize.</div>
+      <div slot="end" class="panel b">End panel — fills the remaining space.</div>
+    </x-split-pane>
+
+    <!-- ── Vertical ───────────────────────────────────────────── -->
+    <x-typography variant="overline">Vertical split</x-typography>
+    <x-split-pane class="demo-split" orientation="vertical" position="40">
+      <div slot="start" class="panel a">Top panel (40%)</div>
+      <div slot="end" class="panel b">Bottom panel</div>
+    </x-split-pane>
+
+    <!-- ── Minimum panel sizes ────────────────────────────────── -->
+    <x-typography variant="overline">Minimum panel sizes (min-start=180, min-end=200)</x-typography>
+    <x-split-pane class="demo-split" position="25" min-start="180" min-end="200">
+      <nav slot="start" class="panel a">Sidebar — never narrower than 180px.</nav>
+      <main slot="end" class="panel b">Content — never narrower than 200px.</main>
+    </x-split-pane>
+
+    <!-- ── Disabled ───────────────────────────────────────────── -->
+    <x-typography variant="overline">Disabled (fixed at 60%)</x-typography>
+    <x-split-pane class="demo-split" position="60" disabled>
+      <div slot="start" class="panel a">Start panel</div>
+      <div slot="end" class="panel b">End panel — divider cannot be dragged.</div>
+    </x-split-pane>
+
+    <!-- ── Three panels via nesting ───────────────────────────── -->
+    <x-typography variant="overline">Three panels — nested x-split-pane</x-typography>
+    <x-split-pane class="demo-split" position="25" min-start="120">
+      <nav slot="start" class="panel a">Sidebar</nav>
+      <x-split-pane slot="end" position="65" style="height:100%;">
+        <main slot="start" class="panel b">Editor</main>
+        <aside slot="end" class="panel a">Inspector</aside>
+      </x-split-pane>
+    </x-split-pane>
+
+    <!-- ── Custom theme ───────────────────────────────────────── -->
+    <x-typography variant="overline">Custom divider theme</x-typography>
+    <div class="theme-demo">
+      <x-split-pane class="demo-split"
+        style="--x-split-pane-divider-size:0.875rem;--x-split-pane-divider-line-size:3px;--x-split-pane-divider-color:#22c55e;--x-split-pane-divider-hover-color:#16a34a;--x-split-pane-divider-focus-color:#86efac;">
+        <div slot="start" class="panel a">Thicker green divider</div>
+        <div slot="end" class="panel b">Drag or focus it with the keyboard</div>
+      </x-split-pane>
+    </div>
+
+    <!-- ── Live control panel ─────────────────────────────────── -->
+    <x-typography variant="overline">Live control panel</x-typography>
+    <x-split-pane id="live-split" class="demo-split">
+      <div slot="start" class="panel a">Start panel</div>
+      <div slot="end" class="panel b">End panel</div>
+    </x-split-pane>
+
+    <div class="controls" style="margin-top:16px;">
+      <label for="ctrl-orientation">orientation</label>
+      <x-select id="ctrl-orientation" value="horizontal">
+        <option value="horizontal" selected>horizontal</option>
+        <option value="vertical">vertical</option>
+      </x-select>
+
+      <label>position</label>
+      <x-slider id="ctrl-position" value="50" min="0" max="100" step="1" show-value></x-slider>
+
+      <label>disabled</label>
+      <label><x-switch id="ctrl-disabled"></x-switch> enabled</label>
+    </div>
+
+    <!-- ── Event log ──────────────────────────────────────────── -->
+    <x-typography variant="overline">Event log</x-typography>
+    <div class="log" id="event-log">Waiting for events…</div>
+
+    <script>
+      const liveSplit = document.getElementById('live-split');
+
+      document.getElementById('ctrl-orientation').addEventListener('change', (e) => {
+        liveSplit.setAttribute('orientation', e.detail ? e.detail.value : e.target.value);
+      });
+      document.getElementById('ctrl-position').addEventListener('x-slider-input', (e) => {
+        liveSplit.setAttribute('position', e.detail.value);
+      });
+      document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+        // A disabled split-pane blocks resizing — so the position control
+        // that drives it is disabled in lock-step.
+        const ctrlPosition = document.getElementById('ctrl-position');
+        if (e.target.checked) {
+          liveSplit.setAttribute('disabled', '');
+          ctrlPosition.setAttribute('disabled', '');
+        } else {
+          liveSplit.removeAttribute('disabled');
+          ctrlPosition.removeAttribute('disabled');
+        }
+      });
+
+      // Event log
+      const log = document.getElementById('event-log');
+      let logLines = [];
+      function appendLog(msg) {
+        logLines.push(msg);
+        if (logLines.length > 12) logLines = logLines.slice(-12);
+        log.textContent = logLines.join('\n');
+      }
+      liveSplit.addEventListener('x-split-pane-resize', (e) => {
+        appendLog(`x-split-pane-resize      position=${e.detail.position.toFixed(1)}  orientation=${e.detail.orientation}`);
+        document.getElementById('ctrl-position').setAttribute('value', Math.round(e.detail.position));
+      });
+      liveSplit.addEventListener('x-split-pane-resize-end', (e) => {
+        appendLog(`x-split-pane-resize-end  position=${e.detail.position.toFixed(1)}  orientation=${e.detail.orientation}`);
+      });
+    </script>
+  </body>
+</html>
