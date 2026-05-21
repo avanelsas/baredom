@@ -81,6 +81,7 @@ export { XSoftBody, type XSoftBodyProps } from "./x-soft-body";
 export { XSpacer, type XSpacerProps } from "./x-spacer";
 export { XSpinner, type XSpinnerProps } from "./x-spinner";
 export { XSplash, type XSplashProps } from "./x-splash";
+export { XSplitPane, type XSplitPaneProps } from "./x-split-pane";
 export { XSpotlightCard, type XSpotlightCardProps } from "./x-spotlight-card";
 export { XStat, type XStatProps } from "./x-stat";
 export { XStepper, type XStepperProps } from "./x-stepper";

@@ -206,6 +206,11 @@
       "import": "./dist/x-slider.js",
       "default": "./dist/x-slider.js"
     },
+    "./x-split-pane": {
+      "types": "./dist/x-split-pane.d.ts",
+      "import": "./dist/x-split-pane.js",
+      "default": "./dist/x-split-pane.js"
+    },
     "./x-particle-button": {
       "types": "./dist/x-particle-button.d.ts",
       "import": "./dist/x-particle-button.js",

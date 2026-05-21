@@ -355,6 +355,10 @@
       "import" : "./dist/x-splash.js",
       "types" : "./dist/x-splash.d.ts"
     },
+    "./x-split-pane" : {
+      "import" : "./dist/x-split-pane.js",
+      "types" : "./dist/x-split-pane.d.ts"
+    },
     "./x-spotlight-card" : {
       "import" : "./dist/x-spotlight-card.js",
       "types" : "./dist/x-spotlight-card.d.ts"

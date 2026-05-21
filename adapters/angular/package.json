@@ -380,6 +380,10 @@
       "import" : "./dist/directives/x-splash.directive.js",
       "types" : "./dist/directives/x-splash.directive.d.ts"
     },
+    "./x-split-pane" : {
+      "import" : "./dist/directives/x-split-pane.directive.js",
+      "types" : "./dist/directives/x-split-pane.directive.d.ts"
+    },
     "./x-spotlight-card" : {
       "import" : "./dist/directives/x-spotlight-card.directive.js",
       "types" : "./dist/directives/x-spotlight-card.directive.d.ts"

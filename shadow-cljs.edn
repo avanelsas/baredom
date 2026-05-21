@@ -306,6 +306,11 @@
      {init baredom.exports.x-slider/init}
      :depends-on #{:base}}
 
+    :x-split-pane
+    {:exports
+     {init baredom.exports.x-split-pane/init}
+     :depends-on #{:base}}
+
     :x-spacer
     {:exports
      {init baredom.exports.x-spacer/init}
