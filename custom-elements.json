@@ -735,6 +735,83 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-split-pane.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XSplitPane",
+      "tagName" : "x-split-pane",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "position",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "minStart",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "minEnd",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "dividerLabel",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-split-pane-resize",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-split-pane-resize-end",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : "start"
+      }, {
+        "name" : "end"
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-split-pane",
+      "declaration" : {
+        "name" : "XSplitPane"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-confetti.js",
     "declarations" : [ {
       "kind" : "class",
@@ -4972,6 +5049,109 @@
       "name" : "x-toast",
       "declaration" : {
         "name" : "XToast"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-code.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCode",
+      "tagName" : "x-code",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "language",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "filename",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showCopy",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "lineNumbers",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "wrap",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxLines",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "expanded",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "code",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "expand",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "collapse",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-code-copy",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-code-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-code",
+      "declaration" : {
+        "name" : "XCode"
       }
     } ]
   }, {

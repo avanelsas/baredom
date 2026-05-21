@@ -88,6 +88,10 @@
       "import" : "./dist/directives/x-chip.directive.js",
       "types" : "./dist/directives/x-chip.directive.d.ts"
     },
+    "./x-code" : {
+      "import" : "./dist/directives/x-code.directive.js",
+      "types" : "./dist/directives/x-code.directive.d.ts"
+    },
     "./x-collapse" : {
       "import" : "./dist/directives/x-collapse.directive.js",
       "types" : "./dist/directives/x-collapse.directive.d.ts"

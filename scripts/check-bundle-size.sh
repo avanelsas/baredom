@@ -4,7 +4,11 @@ set -euo pipefail
 # Bundle size budget check (gzipped bytes).
 #
 # BASE_BUDGET covers base.js — the shared runtime promoted by shadow-cljs
-# whenever code is reachable from more than one module entry.
+# whenever code is reachable from more than one module entry. x-copy's
+# implementation lives here: x-code composes the x-copy button, so x-copy
+# is reachable from two module entries and shadow-cljs deduplicates it into
+# base.js (x-copy.js itself shrinks to a tiny entry shim). That promotion
+# is the intended outcome — it is why the base budget exceeds 56 KB.
 #
 # COMPONENT_BUDGET is the default ceiling for an individual x-*.js
 # module. It is calibrated for a single UI component.
@@ -16,7 +20,7 @@ set -euo pipefail
 # DAG tree view, and the live-element highlight overlay, so 15 KB is
 # the wrong ceiling for it. The dock is opt-in via ?baredom-trace-
 # history and never runs in production builds where the flag stays off.
-BASE_BUDGET=57344       # 56 KB for base.js
+BASE_BUDGET=61440       # 60 KB for base.js (includes promoted x-copy)
 COMPONENT_BUDGET=15360  # 15 KB default for any x-*.js component
 
 # Per-module overrides. Looked up in module_budget() below — case

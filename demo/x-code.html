@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-code demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 760px; }
+      x-code { display: block; margin: 8px 0 4px; }
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 16px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-code demo</x-typography>
+
+    <!-- ── JavaScript ─────────────────────────────────────────── -->
+    <x-typography variant="overline">JavaScript</x-typography>
+    <x-code language="js">
+      // Fibonacci sequence
+      function fib(n) {
+        const seq = [0, 1];
+        for (let i = 2; i < n; i++) {
+          seq.push(seq[i - 1] + seq[i - 2]);
+        }
+        return seq;
+      }
+    </x-code>
+
+    <!-- ── Line numbers + copy button + filename ──────────────── -->
+    <x-typography variant="overline">Line numbers, filename &amp; copy button</x-typography>
+    <x-code language="js" filename="greet.js" line-numbers show-copy>
+      function greet(name) {
+        return `Hello, ${name}!`;
+      }
+    </x-code>
+
+    <!-- ── JSON ───────────────────────────────────────────────── -->
+    <x-typography variant="overline">JSON</x-typography>
+    <x-code language="json">
+      {
+        "name": "baredom",
+        "private": true,
+        "version": 4,
+        "tags": ["web-components", "clojurescript"]
+      }
+    </x-code>
+
+    <!-- ── CSS ────────────────────────────────────────────────── -->
+    <x-typography variant="overline">CSS</x-typography>
+    <x-code language="css">
+      @media (prefers-color-scheme: dark) {
+        .card {
+          background: #161b22;
+          border-radius: 8px;
+        }
+      }
+    </x-code>
+
+    <!-- ── HTML (entities escaped in the page source) ─────────── -->
+    <x-typography variant="overline">HTML</x-typography>
+    <x-code language="html">
+      &lt;nav class="menu"&gt;
+        &lt;a href="/"&gt;Home&lt;/a&gt;
+        &lt;a href="/about"&gt;About &amp; more&lt;/a&gt;
+      &lt;/nav&gt;
+    </x-code>
+
+    <!-- ── Soft-wrap ──────────────────────────────────────────── -->
+    <x-typography variant="overline">Soft-wrap (wrap)</x-typography>
+    <x-code language="json" wrap>
+      { "description": "A deliberately long single line of JSON that would otherwise scroll horizontally — the wrap attribute folds it instead." }
+    </x-code>
+
+    <!-- ── Collapsible ────────────────────────────────────────── -->
+    <x-typography variant="overline">Collapsible (max-lines="6")</x-typography>
+    <x-code language="js" max-lines="6">
+      function quicksort(arr) {
+        if (arr.length <= 1) return arr;
+        const pivot = arr[0];
+        const rest = arr.slice(1);
+        const left = rest.filter((x) => x < pivot);
+        const right = rest.filter((x) => x >= pivot);
+        return [...quicksort(left), pivot, ...quicksort(right)];
+      }
+
+      const sorted = quicksort([5, 2, 8, 1, 9, 3]);
+      console.log(sorted);
+    </x-code>
+
+    <!-- ── Custom theme ───────────────────────────────────────── -->
+    <x-typography variant="overline">Custom token theme</x-typography>
+    <div class="theme-demo">
+      <x-code language="js"
+        style="--x-code-token-keyword:#c026d3;--x-code-token-string:#0891b2;--x-code-token-number:#ea580c;">
+        const answer = 42;
+        let label = "ultimate";
+      </x-code>
+    </div>
+
+    <!-- ── Live control panel ─────────────────────────────────── -->
+    <x-typography variant="overline">Live control panel</x-typography>
+    <x-code id="live-code" language="js">
+      async function load(url) {
+        const res = await fetch(url);
+        return res.json();
+      }
+    </x-code>
+
+    <div class="controls" style="margin-top:16px;">
+      <label for="ctrl-language">language</label>
+      <x-select id="ctrl-language" value="js">
+        <option value="js" selected>js</option>
+        <option value="json">json</option>
+        <option value="css">css</option>
+        <option value="html">html</option>
+        <option value="text">text</option>
+      </x-select>
+
+      <label>line-numbers</label>
+      <label><x-switch id="ctrl-line-numbers"></x-switch> show gutter</label>
+
+      <label>wrap</label>
+      <label><x-switch id="ctrl-wrap"></x-switch> soft-wrap</label>
+
+      <label>show-copy</label>
+      <label><x-switch id="ctrl-show-copy"></x-switch> copy button</label>
+    </div>
+
+    <!-- ── Event log ──────────────────────────────────────────── -->
+    <x-typography variant="overline">Event log</x-typography>
+    <div class="log" id="event-log">Waiting for events…</div>
+
+    <script>
+      const liveCode = document.getElementById('live-code');
+
+      function setBool(attr, on) {
+        if (on) liveCode.setAttribute(attr, '');
+        else liveCode.removeAttribute(attr);
+      }
+
+      document.getElementById('ctrl-language').addEventListener('change', (e) => {
+        liveCode.setAttribute('language', e.detail ? e.detail.value : e.target.value);
+      });
+      document.getElementById('ctrl-line-numbers').addEventListener('change', (e) => {
+        setBool('line-numbers', e.target.checked);
+      });
+      document.getElementById('ctrl-wrap').addEventListener('change', (e) => {
+        setBool('wrap', e.target.checked);
+      });
+      document.getElementById('ctrl-show-copy').addEventListener('change', (e) => {
+        setBool('show-copy', e.target.checked);
+      });
+
+      // Event log
+      const log = document.getElementById('event-log');
+      let logLines = [];
+      function appendLog(msg) {
+        logLines.push(msg);
+        if (logLines.length > 12) logLines = logLines.slice(-12);
+        log.textContent = logLines.join('\n');
+      }
+      document.body.addEventListener('x-code-copy', (e) => {
+        appendLog('x-code-copy    ' + e.detail.code.length + ' chars copied');
+      });
+      document.body.addEventListener('x-code-toggle', (e) => {
+        appendLog('x-code-toggle  expanded=' + e.detail.expanded);
+      });
+    </script>
+  </body>
+</html>
