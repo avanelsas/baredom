@@ -2,6 +2,33 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.2.0] - 2026-05-22
+
+Five new components, an element-highlight feature for the `x-trace-history` dev tool, two notable bug fixes, and an internal naming-consistency cleanup.
+
+### Added
+
+- **x-split-pane** — Resizable two-panel layout. A draggable divider re-proportions a `start` and an `end` panel along a horizontal or vertical axis. The divider position is a percentage held in the `position` attribute — the single source of truth — so layouts are fully serialisable and the component stays stateless. Nest panes for three or more panels.
+- **x-code** — Code-display component. Reads source code from its own light-DOM text content, tokenizes it with a built-in syntax highlighter, and renders a themable code block with optional line numbers, soft-wrapping, a header bar with a copy button, and a collapsible long-snippet mode.
+- **x-calendar** — Standalone, always-visible inline month calendar — a companion to `x-date-picker`. Supports single-date and date-range selection, localized weekday/month names, configurable first-day-of-week, a month/year quick-jump header, and an optional ISO week-number column. Dates are ISO 8601 strings.
+- **x-range-slider** — Dual-handle, form-associated, accessible range slider. Two draggable thumbs select a numeric `[start, end]` sub-range within `[min, max]`.
+- **x-rating** — Discrete, form-associated, accessible star-rating component. A row of star (or heart) icons selects a numeric rating, optionally in half-star increments; `readonly` mode displays an average rating such as `3.5`.
+- **`x-trace-history` element highlight** — Selecting a record in the dock now outlines the live web component that emitted it with a magenta accent overlay. The outline tracks the target through scroll/resize, smoothly scrolls offscreen targets into view (respecting `prefers-reduced-motion`), and clears when selection clears, when the dock unmounts, or when the originating element has been disconnected since the record was emitted. `document`-tag records produce no outline. The highlight machinery emits zero trace records, and the dock remains opt-in via `?baredom-trace-history` — never shipped in production.
+
+### Fixed
+
+- **x-card** — Interactive cards declared in HTML with an observed attribute set at upgrade time silently never installed their listeners, so `<x-card interactive>` never responded to clicks. `connected!`'s install guard conflated refs-init with listener-install; the install epoch now lives on its own `k-installed` field, gated independently of refs init.
+- **x-modal** — `x-modal-toggle` was dispatched on every connect because the open-transition epoch started at `nil` and always differed from the initial open state. The toggle decision is now folded into the main render-pipeline epoch and gated on `(some? old-m)`.
+
+### Changed
+
+- **Shared date utilities** — Date math extracted into a shared `baredom.utils.dates` namespace, consumed by `x-calendar` and `x-date-picker`.
+- **Internal naming consistency** — The top-level model transformer was renamed from `derive-state` to `normalize` across 23 component model layers and their tests, so every component uses the same name. No behaviour change.
+- **Dead-code removal** — Write-only instance fields (set but never read) removed from x-combobox, x-multi-combobox, x-welcome-tour, x-spotlight-card, x-stat, x-tab, and x-tabs.
+- **`x-trace-history` highlight refactor** — `apply-highlight!` decomposed into a phase-list dispatcher per the `render-orchestrator` pattern; `reposition!` now clears the stale cached component id when the target has been disconnected; the reduced-motion probe caches the live `MediaQueryList` instead of re-invoking `matchMedia` on every show.
+- **Angular adapter** — `@vanelsas/baredom-angular` dev dependencies bumped from Angular 17 to 21; `custom-elements.json` refreshed.
+- **CI** — `check_method_api.bb` taught about the `define-method!` helper introduced by the x-modal refactor, so wrapped method installations are no longer flagged as "declared but not installed".
+
 ## [3.1.0] - 2026-05-16
 
 A full-library audit cycle against the `x-icon` golden sample (PRs #222–#231). All 99 components now conform to the Hickey-level architecture standard documented in `CLAUDE.md`. No public API or behavioural changes.
