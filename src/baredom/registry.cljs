@@ -77,6 +77,7 @@
    [baredom.exports.x-progress-circle     :as x-progress-circle]
    [baredom.exports.x-proximity-list      :as x-proximity-list]
    [baredom.exports.x-radio               :as x-radio]
+   [baredom.exports.x-range-slider        :as x-range-slider]
    [baredom.exports.x-ripple-effect       :as x-ripple-effect]
    [baredom.exports.x-scroll              :as x-scroll]
    [baredom.exports.x-scroll-parallax     :as x-scroll-parallax]
@@ -183,6 +184,7 @@
    x-progress-circle/register!
    x-proximity-list/register!
    x-radio/register!
+   x-range-slider/register!
    x-ripple-effect/register!
    x-scroll/register!
    x-scroll-parallax/register!

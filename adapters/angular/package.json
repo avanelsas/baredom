@@ -316,6 +316,10 @@
       "import" : "./dist/cva/x-radio-cva.directive.js",
       "types" : "./dist/cva/x-radio-cva.directive.d.ts"
     },
+    "./x-range-slider" : {
+      "import" : "./dist/directives/x-range-slider.directive.js",
+      "types" : "./dist/directives/x-range-slider.directive.d.ts"
+    },
     "./x-ripple-effect" : {
       "import" : "./dist/directives/x-ripple-effect.directive.js",
       "types" : "./dist/directives/x-ripple-effect.directive.d.ts"
