@@ -6284,6 +6284,110 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-rating.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XRating",
+      "tagName" : "x-rating",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "allowClear",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "precision",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-rating-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-rating-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-rating-hover",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-rating",
+      "declaration" : {
+        "name" : "XRating"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-bento-item.js",
     "declarations" : [ {
       "kind" : "class",

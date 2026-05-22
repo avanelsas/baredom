@@ -111,6 +111,11 @@
       "import": "./dist/x-radio.js",
       "default": "./dist/x-radio.js"
     },
+    "./x-rating": {
+      "types": "./dist/x-rating.d.ts",
+      "import": "./dist/x-rating.js",
+      "default": "./dist/x-rating.js"
+    },
     "./x-range-slider": {
       "types": "./dist/x-range-slider.d.ts",
       "import": "./dist/x-range-slider.js",

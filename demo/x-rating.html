@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-rating demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 680px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .label { font-size: 13px; color: var(--muted); min-width: 80px; }
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-rating demo</x-typography>
+
+    <!-- ── Sizes ─────────────────────────────────────────────── -->
+    <x-typography variant="overline">Sizes</x-typography>
+    <div class="stack">
+      <div class="row">
+        <span class="label">sm</span>
+        <x-rating size="sm" value="3"></x-rating>
+      </div>
+      <div class="row">
+        <span class="label">md (default)</span>
+        <x-rating size="md" value="3"></x-rating>
+      </div>
+      <div class="row">
+        <span class="label">lg</span>
+        <x-rating size="lg" value="3"></x-rating>
+      </div>
+    </div>
+
+    <!-- ── Precision ─────────────────────────────────────────── -->
+    <x-typography variant="overline">Precision</x-typography>
+    <div class="stack">
+      <div class="row">
+        <span class="label">full</span>
+        <x-rating precision="full" value="3"></x-rating>
+      </div>
+      <div class="row">
+        <span class="label">half</span>
+        <x-rating precision="half" value="3.5"></x-rating>
+      </div>
+    </div>
+
+    <!-- ── Shapes ────────────────────────────────────────────── -->
+    <x-typography variant="overline">Shapes</x-typography>
+    <div class="stack">
+      <div class="row">
+        <span class="label">star</span>
+        <x-rating shape="star" value="4"></x-rating>
+      </div>
+      <div class="row">
+        <span class="label">heart</span>
+        <x-rating shape="heart" value="4"></x-rating>
+      </div>
+    </div>
+
+    <!-- ── Label ─────────────────────────────────────────────── -->
+    <x-typography variant="overline">Label</x-typography>
+    <div class="stack">
+      <x-rating label="Rate your experience" value="4"></x-rating>
+    </div>
+
+    <!-- ── Read-only average ─────────────────────────────────── -->
+    <x-typography variant="overline">Read-only average</x-typography>
+    <div class="stack">
+      <x-rating readonly precision="half" value="3.5"
+                label="Average rating (3.5 of 5)"></x-rating>
+    </div>
+
+    <!-- ── Allow clear ───────────────────────────────────────── -->
+    <x-typography variant="overline">Allow clear</x-typography>
+    <div class="stack">
+      <x-rating allow-clear value="2"
+                label="Click the selected star again — or press Delete — to clear"></x-rating>
+    </div>
+
+    <!-- ── Disabled ──────────────────────────────────────────── -->
+    <x-typography variant="overline">Disabled</x-typography>
+    <div class="stack">
+      <x-rating disabled value="3" label="Disabled rating"></x-rating>
+    </div>
+
+    <!-- ── Custom theme ──────────────────────────────────────── -->
+    <x-typography variant="overline">Custom theme</x-typography>
+    <div class="theme-demo stack">
+      <x-rating value="4"
+                style="--x-rating-active-color:#ec4899;--x-rating-focus-ring:#f9a8d4;"
+                label="Pink theme"></x-rating>
+      <x-rating shape="heart" value="3"
+                style="--x-rating-active-color:#ef4444;--x-rating-focus-ring:#fca5a5;"
+                label="Red hearts"></x-rating>
+    </div>
+
+    <!-- ── Live control panel ────────────────────────────────── -->
+    <x-typography variant="overline">Live control panel</x-typography>
+    <x-rating id="live-rating" label="Live rating" value="3"></x-rating>
+
+    <div class="controls" style="margin-top:16px;">
+      <label for="ctrl-value">value</label>
+      <x-form-field type="number" id="ctrl-value" value="3"></x-form-field>
+
+      <label for="ctrl-max">max</label>
+      <x-select id="ctrl-max" value="5">
+        <option value="3">3</option>
+        <option value="5" selected>5</option>
+        <option value="8">8</option>
+        <option value="10">10</option>
+      </x-select>
+
+      <label for="ctrl-precision">precision</label>
+      <x-select id="ctrl-precision" value="full">
+        <option value="full" selected>full</option>
+        <option value="half">half</option>
+      </x-select>
+
+      <label for="ctrl-shape">shape</label>
+      <x-select id="ctrl-shape" value="star">
+        <option value="star" selected>star</option>
+        <option value="heart">heart</option>
+      </x-select>
+
+      <label for="ctrl-size">size</label>
+      <x-select id="ctrl-size" value="md">
+        <option value="sm">sm</option>
+        <option value="md" selected>md</option>
+        <option value="lg">lg</option>
+      </x-select>
+
+      <label>allow-clear</label>
+      <label><x-switch id="ctrl-allow-clear"></x-switch> enabled</label>
+
+      <label>disabled</label>
+      <label><x-switch id="ctrl-disabled"></x-switch> enabled</label>
+
+      <label>readonly</label>
+      <label><x-switch id="ctrl-readonly"></x-switch> enabled</label>
+
+      <label>veto zero</label>
+      <label><x-switch id="ctrl-veto"></x-switch> reject clearing to 0</label>
+    </div>
+
+    <!-- ── Event log ─────────────────────────────────────────── -->
+    <x-typography variant="overline">Event log</x-typography>
+    <div class="log" id="event-log">Waiting for events…</div>
+
+    <!-- ── Form integration ──────────────────────────────────── -->
+    <x-typography variant="overline">Form integration</x-typography>
+    <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;">
+      <x-rating name="quality" value="4" label="Quality"></x-rating>
+      <x-rating name="value-for-money" precision="half" value="3.5"
+                label="Value for money"></x-rating>
+      <div style="display:flex;gap:8px;">
+        <x-button type="submit">Submit</x-button>
+        <x-button type="reset" variant="secondary">Reset</x-button>
+      </div>
+    </form>
+    <div class="log" id="form-log" style="margin-top:8px;">Form output will appear here…</div>
+
+    <script>
+      const liveRating = document.getElementById('live-rating');
+
+      // Control panel wiring
+      document.getElementById('ctrl-value').addEventListener('input', (e) => {
+        liveRating.setAttribute('value', e.target.value);
+      });
+      document.getElementById('ctrl-max').addEventListener('change', (e) => {
+        liveRating.setAttribute('max', e.target.value);
+      });
+      document.getElementById('ctrl-precision').addEventListener('change', (e) => {
+        liveRating.setAttribute('precision', e.target.value);
+      });
+      document.getElementById('ctrl-shape').addEventListener('change', (e) => {
+        liveRating.setAttribute('shape', e.target.value);
+      });
+      document.getElementById('ctrl-size').addEventListener('change', (e) => {
+        liveRating.setAttribute('size', e.target.value);
+      });
+      document.getElementById('ctrl-allow-clear').addEventListener('change', (e) => {
+        if (e.target.checked) liveRating.setAttribute('allow-clear', '');
+        else liveRating.removeAttribute('allow-clear');
+      });
+      document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+        if (e.target.checked) liveRating.setAttribute('disabled', '');
+        else liveRating.removeAttribute('disabled');
+      });
+      document.getElementById('ctrl-readonly').addEventListener('change', (e) => {
+        if (e.target.checked) liveRating.setAttribute('readonly', '');
+        else liveRating.removeAttribute('readonly');
+      });
+
+      // Controlled mode — veto clearing to 0
+      let veto = false;
+      document.getElementById('ctrl-veto').addEventListener('change', (e) => {
+        veto = e.target.checked;
+      });
+      liveRating.addEventListener('x-rating-change-request', (e) => {
+        if (veto && e.detail.value === 0) {
+          e.preventDefault();
+          appendLog(`change-request VETOED  value=${e.detail.value}`);
+        }
+      });
+
+      // Event log
+      const log = document.getElementById('event-log');
+      let logLines = [];
+      function appendLog(msg) {
+        logLines.push(msg);
+        if (logLines.length > 12) logLines = logLines.slice(-12);
+        log.textContent = logLines.join('\n');
+      }
+      liveRating.addEventListener('x-rating-change', (e) => {
+        appendLog(`change  value=${e.detail.value}  max=${e.detail.max}`);
+        document.getElementById('ctrl-value').value = e.detail.value;
+      });
+      liveRating.addEventListener('x-rating-hover', (e) => {
+        appendLog(`hover   value=${e.detail.value}`);
+      });
+
+      // Form submission
+      const formLog = document.getElementById('form-log');
+      document.getElementById('demo-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const entries = [...data.entries()].map(([k, v]) => `${k}=${v}`).join('  ');
+        formLog.textContent = `Submitted: ${entries}`;
+      });
+    </script>
+  </body>
+</html>
