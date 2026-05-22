@@ -14,16 +14,17 @@
 (def ^:private k-model        "__xCalendarModel")
 (def ^:private k-refs         "__xCalendarRefs")
 (def ^:private k-grid-focus   "__xCalendarGridFocus")
-(def ^:private k-range-step   "__xCalendarRangeStep")
 (def ^:private k-jump-open?   "__xCalendarJumpOpen")
 (def ^:private k-jump-year    "__xCalendarJumpYear")
+(def ^:private k-doc-handler  "__xCalendarDocHandler")
 (def ^:private k-listeners?   "__xCalendarListeners")
 
 ;; ── String-literal constants (Closure-Advanced safe) ─────────────────────────
 (def ^:private tag-button "button")
 (def ^:private tag-div    "div")
-(def ^:private ev-click   "click")
-(def ^:private ev-keydown "keydown")
+(def ^:private ev-click       "click")
+(def ^:private ev-keydown     "keydown")
+(def ^:private ev-pointerdown "pointerdown")
 
 (def ^:private attr-part        "part")
 (def ^:private attr-type        "type")
@@ -45,6 +46,7 @@
 (def ^:private val-false "false")
 
 ;; ── Refs-object keys ─────────────────────────────────────────────────────────
+(def ^:private rk-calendar       "calendar")
 (def ^:private rk-month-label    "month-label")
 (def ^:private rk-jump           "jump")
 (def ^:private rk-jump-year-lbl  "jump-year-label")
@@ -174,103 +176,105 @@
       (du/set-attr! btn attr-data-month (str i))
       (.appendChild container btn))))
 
-(defn- init-dom! [^js el]
-  (let [^js root      (.attachShadow el #js {:mode "open"})
-        ^js style     (.createElement js/document "style")
-        ^js calendar  (.createElement js/document tag-div)
-        ^js header    (.createElement js/document tag-div)
-        ^js nav-prev  (.createElement js/document tag-button)
-        ^js label     (.createElement js/document tag-button)
-        ^js nav-next  (.createElement js/document tag-button)
-        ^js jump      (.createElement js/document tag-div)
-        ^js jump-year (.createElement js/document tag-div)
-        ^js jy-prev   (.createElement js/document tag-button)
-        ^js jy-label  (.createElement js/document tag-div)
-        ^js jy-next   (.createElement js/document tag-button)
-        ^js jump-mons (.createElement js/document tag-div)
-        ^js weekdays  (.createElement js/document tag-div)
-        ^js grid      (.createElement js/document tag-div)]
-    (set! (.-textContent style) style-text)
+(defn- make-arrow-button!
+  "A ‹ / › arrow button shared by the month header and the year stepper."
+  [part dir aria-label glyph]
+  (let [^js btn (.createElement js/document tag-button)]
+    (du/set-attr! btn attr-part part)
+    (du/set-attr! btn attr-type tag-button)
+    (du/set-attr! btn attr-data-dir dir)
+    (du/set-attr! btn attr-aria-label aria-label)
+    (set! (.-textContent btn) glyph)
+    btn))
 
-    (du/set-attr! calendar attr-part "calendar")
-    (du/set-attr! header   attr-part "header")
-
-    (du/set-attr! nav-prev attr-part "navbtn")
-    (du/set-attr! nav-prev attr-type tag-button)
-    (du/set-attr! nav-prev attr-data-dir "prev")
-    (du/set-attr! nav-prev attr-aria-label "Previous month")
-    (set! (.-textContent nav-prev) "‹")
-
-    (du/set-attr! label attr-part "monthlabel")
-    (du/set-attr! label attr-type tag-button)
-    (du/set-attr! label "aria-haspopup" val-true)
-    (du/set-attr! label attr-aria-expanded val-false)
-    (du/set-attr! label "aria-live" "polite")
-
-    (du/set-attr! nav-next attr-part "navbtn")
-    (du/set-attr! nav-next attr-type tag-button)
-    (du/set-attr! nav-next attr-data-dir "next")
-    (du/set-attr! nav-next attr-aria-label "Next month")
-    (set! (.-textContent nav-next) "›")
-
-    (du/set-attr! jump attr-part "jump")
-    (du/set-attr! jump attr-hidden "")
-    (du/set-attr! jump-year attr-part "jump-year")
-
-    (du/set-attr! jy-prev attr-part "jump-yearbtn")
-    (du/set-attr! jy-prev attr-type tag-button)
-    (du/set-attr! jy-prev attr-data-dir "prev")
-    (du/set-attr! jy-prev attr-aria-label "Previous year")
-    (set! (.-textContent jy-prev) "‹")
-
-    (du/set-attr! jy-label attr-part "jump-yearlabel")
-
-    (du/set-attr! jy-next attr-part "jump-yearbtn")
-    (du/set-attr! jy-next attr-type tag-button)
-    (du/set-attr! jy-next attr-data-dir "next")
-    (du/set-attr! jy-next attr-aria-label "Next year")
-    (set! (.-textContent jy-next) "›")
-
-    (du/set-attr! jump-mons attr-part "jump-months")
-    (make-month-buttons! jump-mons)
-
-    (du/set-attr! weekdays attr-part "weekdays")
-    (du/set-attr! weekdays attr-aria-hidden val-true)
-
-    (du/set-attr! grid attr-part "grid")
-    (du/set-attr! grid attr-role "grid")
-    (du/set-attr! grid attr-aria-label "Calendar")
-
+(defn- make-header!
+  "Month header section: prev arrow, clickable month label, next arrow."
+  []
+  (let [^js header   (.createElement js/document tag-div)
+        ^js nav-prev (make-arrow-button! "navbtn" "prev" "Previous month" "‹")
+        ^js label    (.createElement js/document tag-button)
+        ^js nav-next (make-arrow-button! "navbtn" "next" "Next month" "›")]
+    (du/set-attr! header attr-part "header")
+    (du/set-attr! label  attr-part "monthlabel")
+    (du/set-attr! label  attr-type tag-button)
+    (du/set-attr! label  "aria-haspopup" val-true)
+    (du/set-attr! label  attr-aria-expanded val-false)
+    (du/set-attr! label  "aria-live" "polite")
     (.appendChild header nav-prev)
     (.appendChild header label)
     (.appendChild header nav-next)
+    {:header header :nav-prev nav-prev :month-label label :nav-next nav-next}))
 
+(defn- make-jump-section!
+  "Quick-jump panel section: a year stepper above a 12-month grid."
+  []
+  (let [^js jump      (.createElement js/document tag-div)
+        ^js jump-year (.createElement js/document tag-div)
+        ^js jy-prev   (make-arrow-button! "jump-yearbtn" "prev" "Previous year" "‹")
+        ^js jy-label  (.createElement js/document tag-div)
+        ^js jy-next   (make-arrow-button! "jump-yearbtn" "next" "Next year" "›")
+        ^js jump-mons (.createElement js/document tag-div)]
+    (du/set-attr! jump      attr-part "jump")
+    (du/set-attr! jump      attr-hidden "")
+    (du/set-attr! jump-year attr-part "jump-year")
+    (du/set-attr! jy-label  attr-part "jump-yearlabel")
+    (du/set-attr! jump-mons attr-part "jump-months")
+    (make-month-buttons! jump-mons)
     (.appendChild jump-year jy-prev)
     (.appendChild jump-year jy-label)
     (.appendChild jump-year jy-next)
     (.appendChild jump jump-year)
     (.appendChild jump jump-mons)
+    {:jump jump :jump-year-prev jy-prev :jump-year-label jy-label
+     :jump-year-next jy-next :jump-months jump-mons}))
 
-    (.appendChild calendar header)
-    (.appendChild calendar jump)
-    (.appendChild calendar weekdays)
-    (.appendChild calendar grid)
+(defn- make-weekday-row!
+  "Localized weekday-name header row (populated on each render)."
+  []
+  (let [^js weekdays (.createElement js/document tag-div)]
+    (du/set-attr! weekdays attr-part "weekdays")
+    (du/set-attr! weekdays attr-aria-hidden val-true)
+    {:weekdays weekdays}))
 
+(defn- make-grid-section!
+  "Day-cell grid (populated on each render)."
+  []
+  (let [^js grid (.createElement js/document tag-div)]
+    (du/set-attr! grid attr-part "grid")
+    (du/set-attr! grid attr-role "grid")
+    (du/set-attr! grid attr-aria-label "Calendar")
+    {:grid grid}))
+
+(defn- init-dom!
+  "Compose the shadow tree from the per-section builders and stash refs."
+  [^js el]
+  (let [^js root     (.attachShadow el #js {:mode "open"})
+        ^js style    (.createElement js/document "style")
+        ^js calendar (.createElement js/document tag-div)
+        header       (make-header!)
+        jump         (make-jump-section!)
+        weekdays     (make-weekday-row!)
+        grid         (make-grid-section!)]
+    (set! (.-textContent style) style-text)
+    (du/set-attr! calendar attr-part "calendar")
+    (.appendChild calendar (:header header))
+    (.appendChild calendar (:jump jump))
+    (.appendChild calendar (:weekdays weekdays))
+    (.appendChild calendar (:grid grid))
     (.appendChild root style)
     (.appendChild root calendar)
-
     (du/setv! el k-refs
               #js {"calendar"        calendar
-                   "nav-prev"        nav-prev
-                   "month-label"     label
-                   "nav-next"        nav-next
-                   "jump"            jump
-                   "jump-year-prev"  jy-prev
-                   "jump-year-label" jy-label
-                   "jump-year-next"  jy-next
-                   "jump-months"     jump-mons
-                   "weekdays"        weekdays
-                   "grid"            grid})))
+                   "nav-prev"        (:nav-prev header)
+                   "month-label"     (:month-label header)
+                   "nav-next"        (:nav-next header)
+                   "jump"            (:jump jump)
+                   "jump-year-prev"  (:jump-year-prev jump)
+                   "jump-year-label" (:jump-year-label jump)
+                   "jump-year-next"  (:jump-year-next jump)
+                   "jump-months"     (:jump-months jump)
+                   "weekdays"        (:weekdays weekdays)
+                   "grid"            (:grid grid)})))
 
 ;; ── DOM patching ─────────────────────────────────────────────────────────────
 
@@ -314,6 +318,16 @@
         (du/set-attr! cell attr-part "weekday")
         (set! (.-textContent cell) nm)
         (.appendChild wd cell)))))
+
+(defn- row-thursday
+  "The Thursday Date in a 7-cell calendar row. ISO week numbers are
+   Monday-anchored, so numbering a row from its Thursday is correct for any
+   `first-day-of-week` — numbering from the first cell is off by one whenever
+   the week does not start on Monday."
+  [row-cells]
+  (some (fn [{:keys [^js date]}]
+          (when (= 4 (.getUTCDay date)) date))
+        row-cells))
 
 (defn- make-weeknum-cell! [^js d]
   (let [^js cell (.createElement js/document tag-div)]
@@ -361,9 +375,12 @@
                 (present? today-iso)
                 (:view-iso m))]
     (du/setv! el k-grid-focus iso)
-    (when-let [^js btn (.querySelector grid
-                                       (str "[" attr-data-iso "=\"" iso "\"]"))]
-      (du/set-attr! btn attr-tabindex "0"))))
+    ;; A disabled calendar exposes no tab-reachable cell — every cell keeps
+    ;; the tabindex=-1 set in `make-day-cell!`.
+    (when-not (:disabled? m)
+      (when-let [^js btn (.querySelector grid
+                                         (str "[" attr-data-iso "=\"" iso "\"]"))]
+        (du/set-attr! btn attr-tabindex "0")))))
 
 (defn- apply-grid! [^js el m]
   (let [^js grid  (gobj/get (du/getv el k-refs) rk-grid)
@@ -379,37 +396,40 @@
     (dotimes [row 6]
       (let [row-cells (subvec cells (* row 7) (+ (* row 7) 7))]
         (when wk?
-          (.appendChild grid (make-weeknum-cell! (:date (first row-cells)))))
+          (.appendChild grid (make-weeknum-cell! (row-thursday row-cells))))
         (doseq [{:keys [^js date in-month?]} row-cells]
           (let [iso   (dates/date->iso date)
                 flags (model/compute-cell-flags m iso in-month? today-iso)]
             (.appendChild grid (make-day-cell! date flags day-fmt))))))
     (resolve-grid-focus! el grid m today-iso)))
 
+(defn- apply-jump-contents! [^js el m ^js refs]
+  (let [^js ylabel  (gobj/get refs rk-jump-year-lbl)
+        ^js months  (gobj/get refs rk-jump-months)
+        view        (dates/iso->date (:view-iso m))
+        view-year   (.getUTCFullYear view)
+        view-month  (.getUTCMonth view)
+        jump-year   (or (du/getv el k-jump-year) view-year)
+        opts        (model/month-options (:locale m))
+        ^js kids    (.-children months)]
+    (set! (.-textContent ylabel) (str jump-year))
+    (dotimes [i (.-length kids)]
+      (let [^js btn (.item kids i)]
+        (set! (.-textContent btn) (:label (nth opts i)))
+        (du/set-attr! btn attr-data-current
+                      (bool-attr (and (= jump-year view-year)
+                                      (= i view-month))))))))
+
 (defn- apply-jump-panel! [^js el m]
-  (let [^js refs   (du/getv el k-refs)
-        ^js label  (gobj/get refs rk-month-label)
-        ^js jump   (gobj/get refs rk-jump)
-        ^js ylabel (gobj/get refs rk-jump-year-lbl)
-        ^js months (gobj/get refs rk-jump-months)
-        open?      (boolean (du/getv el k-jump-open?))
-        view       (dates/iso->date (:view-iso m))
-        view-year  (.getUTCFullYear view)
-        view-month (.getUTCMonth view)
-        jump-year  (or (du/getv el k-jump-year) view-year)
-        opts       (model/month-options (:locale m))]
+  (let [^js refs  (du/getv el k-refs)
+        ^js label (gobj/get refs rk-month-label)
+        ^js jump  (gobj/get refs rk-jump)
+        open?     (boolean (du/getv el k-jump-open?))]
     (du/set-attr! label attr-aria-expanded (bool-attr open?))
     (if open?
-      (du/remove-attr! jump attr-hidden)
-      (du/set-attr! jump attr-hidden ""))
-    (set! (.-textContent ylabel) (str jump-year))
-    (let [^js kids (.-children months)]
-      (dotimes [i (.-length kids)]
-        (let [^js btn (.item kids i)]
-          (set! (.-textContent btn) (:label (nth opts i)))
-          (du/set-attr! btn attr-data-current
-                        (bool-attr (and (= jump-year view-year)
-                                        (= i view-month)))))))))
+      (do (du/remove-attr! jump attr-hidden)
+          (apply-jump-contents! el m refs))
+      (du/set-attr! jump attr-hidden ""))))
 
 (defn- apply-model! [^js el m]
   (apply-host-state! el m)
@@ -418,6 +438,38 @@
   (apply-grid!       el m)
   (apply-jump-panel! el m)
   (du/setv! el k-model m))
+
+;; ── Quick-jump panel open / close ────────────────────────────────────────────
+;; The panel is dismissed by Escape, by a pointerdown outside the component,
+;; by picking a month, and by selecting a day. Outside-pointer detection uses
+;; a document listener installed only while the panel is open; it walks the
+;; event's composedPath so it stays correct inside nested shadow trees.
+
+(defn- remove-doc-dismiss! [^js el]
+  (when-let [handler (du/getv el k-doc-handler)]
+    (.removeEventListener js/document ev-pointerdown handler)
+    (du/setv! el k-doc-handler nil)))
+
+(defn- close-jump-panel! [^js el]
+  (du/setv! el k-jump-open? false)
+  (remove-doc-dismiss! el)
+  (apply-jump-panel! el (du/getv el k-model)))
+
+(defn- install-doc-dismiss! [^js el]
+  (when-not (du/getv el k-doc-handler)
+    (let [handler (fn [^js e]
+                    (when-not (.includes (.composedPath e) el)
+                      (close-jump-panel! el)))]
+      (du/setv! el k-doc-handler handler)
+      (.addEventListener js/document ev-pointerdown handler))))
+
+(defn- open-jump-panel! [^js el]
+  (let [m (du/getv el k-model)]
+    (du/setv! el k-jump-open? true)
+    (du/setv! el k-jump-year
+              (.getUTCFullYear (dates/iso->date (:view-iso m))))
+    (install-doc-dismiss! el)
+    (apply-jump-panel! el m)))
 
 (defn- ensure-shadow! [^js el]
   (when-not (du/initialized? el k-initialized?)
@@ -455,11 +507,16 @@
                        :start (or (du/get-attr el model/attr-start) "")
                        :end   (or (du/get-attr el model/attr-end) "")})))
 
-(defn- select-range! [^js el iso m]
+(defn- select-range!
+  "Range-mode selection. Whether a click sets the start or completes the
+   range is derived from the current `start`/`end` attributes — not from
+   instance state — so an externally-set `start` is honoured as a pending
+   range that the next click completes."
+  [^js el iso m]
   (let [clicked (dates/iso->date iso)
         start-d (dates/iso->date (:start m))
-        step    (or (du/getv el k-range-step) 0)]
-    (if (and (= step 1) start-d)
+        end-d   (dates/iso->date (:end m))]
+    (if (and start-d (nil? end-d))
       (let [cmp    (dates/compare-date clicked start-d)
             valid? (cond
                      (pos? cmp)  true
@@ -469,19 +526,18 @@
           (do (du/set-attr! el model/attr-start
                             (dates/date->iso (dates/min-date start-d clicked)))
               (du/set-attr! el model/attr-end
-                            (dates/date->iso (dates/max-date start-d clicked)))
-              (du/setv! el k-range-step 0))
+                            (dates/date->iso (dates/max-date start-d clicked))))
           (do (du/set-attr! el model/attr-start iso)
-              (du/remove-attr! el model/attr-end)
-              (du/setv! el k-range-step 1))))
+              (du/remove-attr! el model/attr-end))))
       (do (du/set-attr! el model/attr-start iso)
-          (du/remove-attr! el model/attr-end)
-          (du/setv! el k-range-step 1)))
+          (du/remove-attr! el model/attr-end)))
     (dispatch-change! el)))
 
 (defn- select-date! [^js el iso]
   (let [m (du/getv el k-model)]
     (when-not (:disabled? m)
+      (when (du/getv el k-jump-open?)
+        (close-jump-panel! el))
       (du/setv! el k-grid-focus iso)
       (if (= :range (:mode m))
         (select-range! el iso m)
@@ -491,9 +547,11 @@
 ;; ── Navigation ───────────────────────────────────────────────────────────────
 
 (defn- navigate-to-month! [^js el ^js month-date]
-  (let [ym (model/date->year-month month-date)]
-    (du/set-attr! el model/attr-month ym)
-    (du/dispatch! el model/event-navigate #js {:month ym})))
+  (let [ym  (model/date->year-month month-date)
+        cur (du/get-attr el model/attr-month)]
+    (when (not= cur ym)
+      (du/set-attr! el model/attr-month ym)
+      (du/dispatch! el model/event-navigate #js {:month ym}))))
 
 (defn- focus-grid-date! [^js el iso]
   (du/setv! el k-grid-focus iso)
@@ -573,12 +631,9 @@
 (defn- on-label-click! [^js el ^js _e]
   (let [m (du/getv el k-model)]
     (when-not (:disabled? m)
-      (let [open? (not (du/getv el k-jump-open?))]
-        (du/setv! el k-jump-open? open?)
-        (when open?
-          (du/setv! el k-jump-year
-                    (.getUTCFullYear (dates/iso->date (:view-iso m)))))
-        (apply-jump-panel! el m)))))
+      (if (du/getv el k-jump-open?)
+        (close-jump-panel! el)
+        (open-jump-panel! el)))))
 
 (defn- step-jump-year! [^js el delta]
   (let [m    (du/getv el k-model)
@@ -597,8 +652,17 @@
             m    (du/getv el k-model)
             year (or (du/getv el k-jump-year)
                      (.getUTCFullYear (dates/iso->date (:view-iso m))))]
-        (du/setv! el k-jump-open? false)
+        ;; Close directly: picking the already-displayed month is a no-op
+        ;; attribute write, so we cannot rely on a re-render to hide the panel.
+        (close-jump-panel! el)
         (navigate-to-month! el (js/Date. (js/Date.UTC year idx 1)))))))
+
+(defn- on-calendar-keydown! [^js el ^js e]
+  (when (and (= "Escape" (.-key e)) (du/getv el k-jump-open?))
+    (.preventDefault e)
+    (close-jump-panel! el)
+    (let [^js label (gobj/get (du/getv el k-refs) rk-month-label)]
+      (.focus label))))
 
 (defn- on-grid-click! [^js el ^js e]
   (let [m (du/getv el k-model)]
@@ -611,14 +675,15 @@
 ;; Each entry: [refs-key event-name handler-fn]. Listeners bind to shadow-DOM
 ;; nodes that persist with the element, so no explicit remove path is needed.
 (def ^:private listener-spec
-  [[rk-nav-prev       ev-click   on-prev-click!]
-   [rk-nav-next       ev-click   on-next-click!]
-   [rk-month-label    ev-click   on-label-click!]
-   [rk-jump-year-prev ev-click   on-jump-year-prev!]
-   [rk-jump-year-next ev-click   on-jump-year-next!]
-   [rk-jump-months    ev-click   on-jump-month-click!]
-   [rk-grid           ev-click   on-grid-click!]
-   [rk-grid           ev-keydown on-grid-keydown!]])
+  [[rk-nav-prev       ev-click     on-prev-click!]
+   [rk-nav-next       ev-click     on-next-click!]
+   [rk-month-label    ev-click     on-label-click!]
+   [rk-jump-year-prev ev-click     on-jump-year-prev!]
+   [rk-jump-year-next ev-click     on-jump-year-next!]
+   [rk-jump-months    ev-click     on-jump-month-click!]
+   [rk-grid           ev-click     on-grid-click!]
+   [rk-grid           ev-keydown   on-grid-keydown!]
+   [rk-calendar       ev-keydown   on-calendar-keydown!]])
 
 (defn- install-listeners! [^js el]
   (let [^js refs (du/getv el k-refs)]
@@ -644,8 +709,7 @@
 (defn- xcal-clear! [^js this]
   (du/remove-attr! this model/attr-value)
   (du/remove-attr! this model/attr-start)
-  (du/remove-attr! this model/attr-end)
-  (du/setv! this k-range-step 0))
+  (du/remove-attr! this model/attr-end))
 
 (defn- define-methods! [^js proto]
   (.defineProperty js/Object proto "focus"
@@ -674,6 +738,11 @@
     (du/mark-initialized! el k-listeners?))
   (update-from-attrs! el))
 
+(defn- disconnected! [^js el]
+  ;; Drop the document-level outside-pointer listener so a removed calendar
+  ;; leaves nothing behind on `document`.
+  (close-jump-panel! el))
+
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
     (update-from-attrs! el)))
@@ -682,5 +751,6 @@
   (component/register! model/tag-name
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
+                        :disconnected-fn      disconnected!
                         :attribute-changed-fn attribute-changed!
                         :setup-prototype-fn   install-property-accessors!}))

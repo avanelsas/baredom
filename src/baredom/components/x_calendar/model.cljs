@@ -29,9 +29,10 @@
 (def event-navigate "x-calendar-navigate")
 
 (def observed-attributes
-  #js ["mode" "value" "start" "end" "min" "max" "disabled-dates"
-       "first-day-of-week" "locale" "month" "show-week-numbers"
-       "disabled" "range-allow-same-day" "auto-swap"])
+  #js [attr-mode attr-value attr-start attr-end attr-min attr-max
+       attr-disabled-dates attr-first-day-of-week attr-locale attr-month
+       attr-show-week-numbers attr-disabled attr-range-allow-same
+       attr-auto-swap])
 
 (def property-api
   {:mode              {:type 'string  :reflects-attribute attr-mode}
@@ -68,6 +69,25 @@
   (when (string? s)
     (let [t (.trim s)]
       (when (not= t "") t))))
+
+(defn- valid-locale?
+  "True when `Intl.DateTimeFormat` accepts s. A malformed BCP-47 tag such as
+   \"en_US\" (underscore instead of hyphen) makes the constructor throw
+   RangeError."
+  [s]
+  (try
+    (js/Intl.DateTimeFormat. s)
+    true
+    (catch :default _ false)))
+
+(defn safe-locale
+  "Normalize a raw `locale` attribute and return it only when it is a tag
+   `Intl.DateTimeFormat` accepts; otherwise nil so callers fall back to the
+   runtime default. Guards every Intl call site from a RangeError that would
+   otherwise crash the render."
+  [s]
+  (let [t (normalize-str s)]
+    (when (and t (valid-locale? t)) t)))
 
 (defn parse-mode
   "Returns :single or :range. Default is :single."
@@ -148,7 +168,7 @@
                                   :today     today})]
     {:mode                  m
      :fdow                  fdow
-     :locale                (normalize-str locale)
+     :locale                (safe-locale locale)
      :value                 (dates/date->iso value-d)
      :start                 (dates/date->iso start-d)
      :end                   (dates/date->iso end-d)

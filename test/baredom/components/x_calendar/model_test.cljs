@@ -37,6 +37,16 @@
     (is (= #{} (model/parse-disabled-dates "   ")))
     (is (= #{} (model/parse-disabled-dates nil)))))
 
+(deftest safe-locale-test
+  (testing "valid BCP-47 tags pass through, trimmed"
+    (is (= "en-US" (model/safe-locale "en-US")))
+    (is (= "de-DE" (model/safe-locale "  de-DE  "))))
+  (testing "malformed tags fall back to nil so callers use the default"
+    (is (nil? (model/safe-locale "en_US")))
+    (is (nil? (model/safe-locale "!!bogus")))
+    (is (nil? (model/safe-locale "")))
+    (is (nil? (model/safe-locale nil)))))
+
 (deftest parse-year-month-test
   (is (= "2026-03-01" (dates/date->iso (model/parse-year-month "2026-03"))))
   (testing "full ISO date snaps to start-of-month"

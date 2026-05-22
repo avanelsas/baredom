@@ -140,9 +140,11 @@ All consume shared `x-theme` tokens with fallbacks.
 | `Home`          | First day of the week           |
 | `End`           | Last day of the week            |
 | `Enter`/`Space` | Select the focused date         |
+| `Escape`        | Close the open quick-jump panel |
 
 Navigation is clamped to `[min, max]`; crossing a month boundary shifts the
-displayed month.
+displayed month. The quick-jump panel is also dismissed by a pointer press
+outside the calendar or by selecting a day.
 
 ---
 

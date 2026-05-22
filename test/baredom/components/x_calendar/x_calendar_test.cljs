@@ -32,6 +32,16 @@
                   (js/KeyboardEvent. "keydown"
                                      #js {:key key :bubbles true :cancelable true})))
 
+(defn calendar-key-down! [^js el key]
+  (.dispatchEvent (shadow-part el "[part=calendar]")
+                  (js/KeyboardEvent. "keydown"
+                                     #js {:key key :bubbles true :cancelable true})))
+
+(defn week-num-texts [^js el]
+  (let [^js nl (shadow-all el "[part=weeknum]")]
+    (mapv (fn [i] (.-textContent (.item nl i)))
+          (range (.-length nl)))))
+
 ;; ---------------------------------------------------------------------------
 
 (deftest registration-test
@@ -188,6 +198,71 @@
       (is (= "2026-01" (.getAttribute el model/attr-month))
           "picking a month jumps the calendar")
       (is (.hasAttribute jump "hidden") "panel closes after a jump"))))
+
+(deftest quick-jump-current-month-closes-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-month "2026-05")
+    (let [^js jump (shadow-part el "[part=jump]")]
+      (.click (shadow-part el "[part=monthlabel]"))
+      (is (not (.hasAttribute jump "hidden")) "panel opens")
+      ;; May is month index 4 — the already-displayed month. Picking it is a
+      ;; no-op attribute write, so the panel must close without a re-render.
+      (.click (shadow-part el "[data-month-index=\"4\"]"))
+      (is (.hasAttribute jump "hidden")
+          "picking the already-displayed month still closes the panel"))))
+
+(deftest quick-jump-escape-closes-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-month "2026-05")
+    (let [^js jump (shadow-part el "[part=jump]")]
+      (.click (shadow-part el "[part=monthlabel]"))
+      (is (not (.hasAttribute jump "hidden")) "panel opens")
+      (calendar-key-down! el "Escape")
+      (is (.hasAttribute jump "hidden") "Escape closes the quick-jump panel"))))
+
+(deftest navigate-event-not-fired-when-month-unchanged-test
+  (let [el    (append! (make-el))
+        count (atom 0)]
+    (.setAttribute el model/attr-month "2026-05")
+    (.addEventListener el model/event-navigate (fn [_] (swap! count inc)))
+    (.click (shadow-part el "[part=monthlabel]"))
+    (.click (shadow-part el "[data-month-index=\"4\"]"))
+    (is (zero? @count)
+        "jumping to the already-displayed month fires no x-calendar-navigate")))
+
+(deftest range-external-start-completes-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-mode "range")
+    (.setAttribute el model/attr-month "2026-05")
+    (.setAttribute el model/attr-start "2026-05-10")
+    (testing "a click after an externally-set start completes the range"
+      (.click (day-cell el "2026-05-20"))
+      (is (= "2026-05-10" (.getAttribute el model/attr-start)))
+      (is (= "2026-05-20" (.getAttribute el model/attr-end))))))
+
+(deftest disabled-calendar-has-no-tabbable-cell-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-month "2026-05")
+    (.setAttribute el model/attr-disabled "")
+    (is (nil? (shadow-part el "[part=day][tabindex=\"0\"]"))
+        "a disabled calendar exposes no tab-reachable day cell")))
+
+(deftest invalid-locale-does-not-crash-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-month "2026-05")
+    (.setAttribute el model/attr-locale "en_US")
+    (is (= 42 (.-length (shadow-all el "[part=day]")))
+        "a malformed locale falls back to the default instead of throwing")))
+
+(deftest week-numbers-first-day-independent-test
+  (let [sun (append! (make-el))
+        mon (append! (make-el))]
+    (doseq [^js el [sun mon]]
+      (.setAttribute el model/attr-month "2026-05")
+      (.setAttribute el model/attr-show-week-numbers ""))
+    (.setAttribute mon model/attr-first-day-of-week "monday")
+    (is (= (week-num-texts sun) (week-num-texts mon))
+        "ISO week numbers are identical regardless of first-day-of-week")))
 
 (deftest change-event-test
   (let [el   (append! (make-el))
