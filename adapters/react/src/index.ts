@@ -8,6 +8,7 @@ export { XBentoGrid, type XBentoGridProps } from "./x-bento-grid";
 export { XBentoItem, type XBentoItemProps } from "./x-bento-item";
 export { XBreadcrumbs, type XBreadcrumbsProps } from "./x-breadcrumbs";
 export { XButton, type XButtonProps } from "./x-button";
+export { XCalendar, type XCalendarProps } from "./x-calendar";
 export { XCancelDialogue, type XCancelDialogueProps } from "./x-cancel-dialogue";
 export { XCard, type XCardProps } from "./x-card";
 export { XCarousel, type XCarouselProps } from "./x-carousel";

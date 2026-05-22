@@ -9,6 +9,7 @@ export { BaredomBentoGrid } from './directives/x-bento-grid.directive';
 export { BaredomBentoItem } from './directives/x-bento-item.directive';
 export { BaredomBreadcrumbs } from './directives/x-breadcrumbs.directive';
 export { BaredomButton } from './directives/x-button.directive';
+export { BaredomCalendar } from './directives/x-calendar.directive';
 export { BaredomCancelDialogue } from './directives/x-cancel-dialogue.directive';
 export { BaredomCard } from './directives/x-card.directive';
 export { BaredomCarousel } from './directives/x-carousel.directive';

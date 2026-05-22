@@ -1,6 +1,7 @@
 (ns baredom.components.x-date-picker.x-date-picker
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.dates :as dates]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
@@ -48,7 +49,7 @@
         cur-month (when existing (gobj/get existing "month"))
         anchor    (or (:value-d canon) (:start-d canon)
                       (js/Date. (js/Date.now)))
-        month     (or cur-month (model/start-of-month anchor))
+        month     (or cur-month (dates/start-of-month anchor))
         state     #js {:canon  canon
                        :cfg    cfg
                        :disp   disp
@@ -62,23 +63,23 @@
 
 (defn- day-out-of-range?
   [^js d canon]
-  (or (and (:min-d canon) (neg? (model/compare-date d (:min-d canon))))
-      (and (:max-d canon) (pos? (model/compare-date d (:max-d canon))))))
+  (or (and (:min-d canon) (neg? (dates/compare-date d (:min-d canon))))
+      (and (:max-d canon) (pos? (dates/compare-date d (:max-d canon))))))
 
 (defn- compute-flags
   [^js d canon]
   (if (= (:mode canon) :single)
     {:selected? (and (:value-d canon)
-                     (= 0 (model/compare-date d (:value-d canon))))
+                     (= 0 (dates/compare-date d (:value-d canon))))
      :in-range? false
      :edge?     false}
     (let [start (:start-d canon)
           end   (:end-d canon)
-          sel?  (or (and start (= 0 (model/compare-date d start)))
-                    (and end   (= 0 (model/compare-date d end))))
-          in-r? (and start end (model/in-range? d start end))
-          edge? (or (and start (= 0 (model/compare-date d start)))
-                    (and end   (= 0 (model/compare-date d end))))]
+          sel?  (or (and start (= 0 (dates/compare-date d start)))
+                    (and end   (= 0 (dates/compare-date d end))))
+          in-r? (and start end (dates/in-range? d start end))
+          edge? (or (and start (= 0 (dates/compare-date d start)))
+                    (and end   (= 0 (dates/compare-date d end))))]
       {:selected? sel? :in-range? in-r? :edge? edge?})))
 
 ;; ---------------------------------------------------------------------------
@@ -90,10 +91,10 @@
   (set! (.-textContent grid) "")
   (let [state (du/getv el k-state)
         ^js month (when state (gobj/get state "month"))
-        items (model/month-grid month)]
+        items (dates/month-grid month)]
     (doseq [{:keys [date in-month?]} items]
       (let [^js btn  (.createElement js/document "button")
-            iso      (model/date->iso date)
+            iso      (dates/date->iso date)
             day      (.getUTCDate date)
             disabled? (day-out-of-range? date canon)
             {:keys [selected? in-range? edge?]} (compute-flags date canon)]
@@ -241,7 +242,7 @@
 (defn- set-single-value!
   [^js el ^js d]
   (if d
-    (du/set-attr! el model/attr-value (model/date->iso d))
+    (du/set-attr! el model/attr-value (dates/date->iso d))
     (du/remove-attr! el model/attr-value)))
 
 (defn- do-select-date!
@@ -253,12 +254,12 @@
           mode   (when canon (:mode canon))
           mode-s (if (= mode :range) "range" "single")
           req-detail (if (= mode :single)
-                       #js {:value (model/date->iso d) :mode mode-s :reason reason}
-                       #js {:date (model/date->iso d) :mode mode-s :reason reason})
+                       #js {:value (dates/date->iso d) :mode mode-s :reason reason}
+                       #js {:date (dates/date->iso d) :mode mode-s :reason reason})
           allowed? (du/dispatch-cancelable! el model/event-change-request req-detail)]
       (when allowed?
         (if (= mode :single)
-          (let [iso (model/date->iso d)]
+          (let [iso (dates/date->iso d)]
             (set-single-value! el d)
             (read-state! el)
             (render! el)
@@ -275,47 +276,47 @@
               ;; Step 0: no selection yet — set start
               (= step 0)
               (do
-                (du/set-attr! el model/attr-start (model/date->iso d))
+                (du/set-attr! el model/attr-start (dates/date->iso d))
                 (du/remove-attr! el model/attr-end)
                 (du/setv! el k-range-step 1))
 
               ;; Step 1: start selected, pick end
               (= step 1)
               (let [allow-same? (:allow-same-day? canon)
-                    cmp         (model/compare-date d cur-start)
+                    cmp         (dates/compare-date d cur-start)
                     valid?      (or (pos? cmp)
                                     (and allow-same? (zero? cmp)))]
                 (if valid?
                   (let [final-start (if (:auto-swap? canon)
-                                     (model/min-date cur-start d)
+                                     (dates/min-date cur-start d)
                                      cur-start)
                         final-end   (if (:auto-swap? canon)
-                                     (model/max-date cur-start d)
+                                     (dates/max-date cur-start d)
                                      d)]
-                    (du/set-attr! el model/attr-start (model/date->iso final-start))
-                    (du/set-attr! el model/attr-end (model/date->iso final-end))
+                    (du/set-attr! el model/attr-start (dates/date->iso final-start))
+                    (du/set-attr! el model/attr-end (dates/date->iso final-end))
                     (du/setv! el k-range-step 0)
                     (when (and (du/has-attr? el model/attr-close-on-select)
                                (some? final-start) (some? final-end))
                       (du/remove-attr! el "open")))
                   ;; Restart: treat as new start
                   (do
-                    (du/set-attr! el model/attr-start (model/date->iso d))
+                    (du/set-attr! el model/attr-start (dates/date->iso d))
                     (du/remove-attr! el model/attr-end)
                     (du/setv! el k-range-step 1))))
 
               ;; Step 2+: reset and start fresh
               :else
               (do
-                (du/set-attr! el model/attr-start (model/date->iso d))
+                (du/set-attr! el model/attr-start (dates/date->iso d))
                 (du/remove-attr! el model/attr-end)
                 (du/setv! el k-range-step 1)))
             (read-state! el)
             (render! el)
             (let [new-state (du/getv el k-state)
                   new-canon (when new-state (gobj/get new-state "canon"))
-                  s-iso     (when (:start-d new-canon) (model/date->iso (:start-d new-canon)))
-                  e-iso     (when (:end-d new-canon) (model/date->iso (:end-d new-canon)))
+                  s-iso     (when (:start-d new-canon) (dates/date->iso (:start-d new-canon)))
+                  e-iso     (when (:end-d new-canon) (dates/date->iso (:end-d new-canon)))
                   chg-detail (cond-> #js {:mode mode-s :reason reason}
                                s-iso (doto (gobj/set "start" s-iso))
                                e-iso (doto (gobj/set "end" e-iso)))]
@@ -338,7 +339,7 @@
     (if (= mode :single)
       (let [{:keys [ok? date]} (model/parse-display->single val)]
         (when ok?
-          (let [iso (model/date->iso date)]
+          (let [iso (dates/date->iso date)]
             ;; du/dispatch-cancelable! returns a boolean (true = proceed,
             ;; false = preventDefault'd). The previous code bound the return
             ;; to ^js ev and read (.-defaultPrevented ev), which is undefined
@@ -352,8 +353,8 @@
                          #js {:value iso :mode mode-s :reason reason})))))
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
         (when ok?
-          (let [s-iso (model/date->iso start)
-                e-iso (model/date->iso end)]
+          (let [s-iso (dates/date->iso start)
+                e-iso (dates/date->iso end)]
             (when (du/dispatch-cancelable! el model/event-change-request
                                            #js {:start s-iso :end e-iso
                                                 :mode mode-s :reason reason})
@@ -395,7 +396,7 @@
     (let [state  (du/getv el k-state)
           canon  (when state (gobj/get state "canon"))
           anchor (or (:value-d canon) (:start-d canon) (js/Date. (js/Date.now)))
-          iso    (model/date->iso anchor)]
+          iso    (dates/date->iso anchor)]
       (focus-grid-date! el iso))))
 
 (defn- close-popover!
@@ -694,7 +695,7 @@
           ^js btn    (.closest target "button[data-iso]")]
       (when (and btn (not= "true" (.getAttribute btn "data-disabled")))
         (let [iso (. btn getAttribute "data-iso")
-              ^js d (model/iso->date iso)]
+              ^js d (dates/iso->date iso)]
           (when d (do-select-date! el d "click")))))))
 
 (defn- on-grid-keydown!
@@ -702,32 +703,32 @@
   (when-not (du/has-attr? el model/attr-disabled)
     (let [key     (.-key e)
           cur-iso (du/getv el k-grid-focus)
-          ^js cur (when cur-iso (model/iso->date cur-iso))
+          ^js cur (when cur-iso (dates/iso->date cur-iso))
           state   (du/getv el k-state)
           canon   (when state (gobj/get state "canon"))
           ^js month (when state (gobj/get state "month"))
           nav-date
           (when cur
             (case key
-              "ArrowLeft"  (model/add-days cur -1)
-              "ArrowRight" (model/add-days cur 1)
-              "ArrowUp"    (model/add-days cur -7)
-              "ArrowDown"  (model/add-days cur 7)
-              "PageUp"     (model/add-months cur -1)
-              "PageDown"   (model/add-months cur 1)
-              "Home"       (model/start-of-week cur)
-              "End"        (model/end-of-week cur)
+              "ArrowLeft"  (dates/add-days cur -1)
+              "ArrowRight" (dates/add-days cur 1)
+              "ArrowUp"    (dates/add-days cur -7)
+              "ArrowDown"  (dates/add-days cur 7)
+              "PageUp"     (dates/add-months cur -1)
+              "PageDown"   (dates/add-months cur 1)
+              "Home"       (dates/start-of-week cur)
+              "End"        (dates/end-of-week cur)
               nil))]
       (cond
         ;; Arrow / page / home / end navigation
         (some? nav-date)
         (do
           (.preventDefault e)
-          (let [clamped (model/clamp-to-range nav-date (:min-d canon) (:max-d canon))
-                nav-iso (model/date->iso clamped)]
+          (let [clamped (dates/clamp-to-range nav-date (:min-d canon) (:max-d canon))
+                nav-iso (dates/date->iso clamped)]
             ;; If navigated outside current month, shift month view
             (when (and month (not= (.getUTCMonth clamped) (.getUTCMonth month)))
-              (gobj/set state "month" (model/start-of-month clamped))
+              (gobj/set state "month" (dates/start-of-month clamped))
               (render-calendar! el))
             (focus-grid-date! el nav-iso)))
 

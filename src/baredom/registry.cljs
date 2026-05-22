@@ -18,6 +18,7 @@
    [baredom.exports.x-bento-item          :as x-bento-item]
    [baredom.exports.x-breadcrumbs         :as x-breadcrumbs]
    [baredom.exports.x-button              :as x-button]
+   [baredom.exports.x-calendar            :as x-calendar]
    [baredom.exports.x-cancel-dialogue     :as x-cancel-dialogue]
    [baredom.exports.x-card                :as x-card]
    [baredom.exports.x-carousel            :as x-carousel]
@@ -123,6 +124,7 @@
    x-bento-item/register!
    x-breadcrumbs/register!
    x-button/register!
+   x-calendar/register!
    x-cancel-dialogue/register!
    x-card/register!
    x-carousel/register!

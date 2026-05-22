@@ -5674,6 +5674,159 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-calendar.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XCalendar",
+      "tagName" : "x-calendar",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoSwap",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "month",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showWeekNumbers",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabledDates",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "firstDayOfWeek",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "rangeAllowSameDay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "focus",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "goToMonth",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "month",
+          "type" : {
+            "text" : "string"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "clear",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-calendar-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-calendar-navigate",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-calendar",
+      "declaration" : {
+        "name" : "XCalendar"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-chip.js",
     "declarations" : [ {
       "kind" : "class",

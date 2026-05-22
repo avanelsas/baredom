@@ -1,6 +1,7 @@
 (ns baredom.components.x-date-picker.x-date-picker-test
   (:require [cljs.test :refer-macros [deftest is testing use-fixtures async]]
             [goog.object :as gobj]
+            [baredom.utils.dates :as dates]
             [baredom.components.x-date-picker.x-date-picker :as x]
             [baredom.components.x-date-picker.model :as model]))
 
@@ -203,9 +204,9 @@
 
 (deftest iso->date-roundtrip-test
   (testing "model-level: iso->date followed by date->iso is identity"
-    (let [dates ["2024-01-01" "2024-02-29" "2024-12-31" "2026-03-18"]]
-      (doseq [iso dates]
-        (is (= iso (model/date->iso (model/iso->date iso)))
+    (let [iso-strings ["2024-01-01" "2024-02-29" "2024-12-31" "2026-03-18"]]
+      (doseq [iso iso-strings]
+        (is (= iso (dates/date->iso (dates/iso->date iso)))
             (str "Round-trip for " iso))))))
 
 (deftest change-request-cancelable-test

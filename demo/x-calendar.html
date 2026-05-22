@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-calendar demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      .row { display: flex; flex-wrap: wrap; gap: 24px; }
+      .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+      .controls label { font-size: 13px; }
+      .controls input[type=text] {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border); background: var(--input-bg); color: var(--input-fg);
+      }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 72px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-calendar demo</x-typography>
+
+    <div class="row">
+      <div>
+        <x-typography variant="overline">Single date</x-typography>
+        <x-calendar id="cal-single"></x-calendar>
+      </div>
+
+      <div>
+        <x-typography variant="overline">Date range</x-typography>
+        <x-calendar id="cal-range" mode="range"></x-calendar>
+      </div>
+
+      <div>
+        <x-typography variant="overline">Pre-selected value</x-typography>
+        <x-calendar id="cal-preset" value="2026-03-18"></x-calendar>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <x-typography variant="overline">Bounded + disabled dates</x-typography>
+        <x-calendar id="cal-bounded"
+          month="2026-03"
+          min="2026-03-05"
+          max="2026-03-27"
+          disabled-dates="2026-03-12 2026-03-19">
+        </x-calendar>
+      </div>
+
+      <div>
+        <x-typography variant="overline">Monday start, localized</x-typography>
+        <x-calendar id="cal-locale" first-day-of-week="monday" locale="de-DE"></x-calendar>
+      </div>
+
+      <div>
+        <x-typography variant="overline">Week numbers</x-typography>
+        <x-calendar id="cal-weeks" show-week-numbers></x-calendar>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <x-typography variant="overline">Disabled</x-typography>
+        <x-calendar id="cal-disabled" value="2026-03-18" disabled></x-calendar>
+      </div>
+    </div>
+
+    <x-typography variant="overline">Live controls</x-typography>
+    <div class="controls">
+      <label>mode
+        <x-select id="ctrl-mode" value="single">
+          <option value="single" selected>single</option>
+          <option value="range">range</option>
+        </x-select>
+      </label>
+      <label>first-day-of-week
+        <x-select id="ctrl-fdow" value="0">
+          <option value="0" selected>Sunday</option>
+          <option value="1">Monday</option>
+        </x-select>
+      </label>
+      <label>locale
+        <x-form-field type="text" id="ctrl-locale" value="" placeholder="default" style="width:90px"></x-form-field>
+      </label>
+      <label>min
+        <x-form-field type="text" id="ctrl-min" placeholder="YYYY-MM-DD" style="width:120px"></x-form-field>
+      </label>
+      <label>max
+        <x-form-field type="text" id="ctrl-max" placeholder="YYYY-MM-DD" style="width:120px"></x-form-field>
+      </label>
+      <label>week numbers <x-switch id="ctrl-weeks"></x-switch></label>
+      <label>disabled <x-switch id="ctrl-disabled"></x-switch></label>
+      <label>auto-swap <x-switch id="ctrl-autoswap"></x-switch></label>
+    </div>
+    <x-calendar id="cal-live"></x-calendar>
+
+    <div class="log" id="log">Event log will appear here.</div>
+
+    <script>
+      const log = document.getElementById("log");
+      function logEvent(id, name, detail) {
+        log.textContent = `${id}:${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+      }
+
+      ["cal-single","cal-range","cal-preset","cal-bounded","cal-locale","cal-weeks","cal-live"]
+        .forEach(id => {
+          const el = document.getElementById(id);
+          ["x-calendar-change", "x-calendar-navigate"].forEach(evt =>
+            el.addEventListener(evt, e => logEvent(id, evt, e.detail)));
+        });
+
+      const live = document.getElementById("cal-live");
+      function setOrRemove(attr, val) {
+        if (val) live.setAttribute(attr, val); else live.removeAttribute(attr);
+      }
+      function setFlag(attr, on) {
+        if (on) live.setAttribute(attr, ""); else live.removeAttribute(attr);
+      }
+      function updateLive() {
+        live.setAttribute("mode", document.getElementById("ctrl-mode").value);
+        live.setAttribute("first-day-of-week", document.getElementById("ctrl-fdow").value);
+        setOrRemove("locale", document.getElementById("ctrl-locale").value.trim());
+        setOrRemove("min", document.getElementById("ctrl-min").value.trim());
+        setOrRemove("max", document.getElementById("ctrl-max").value.trim());
+        setFlag("show-week-numbers", document.getElementById("ctrl-weeks").checked);
+        setFlag("disabled", document.getElementById("ctrl-disabled").checked);
+        setFlag("auto-swap", document.getElementById("ctrl-autoswap").checked);
+      }
+      document.querySelectorAll(".controls x-switch, .controls x-select, .controls x-form-field")
+        .forEach(el => {
+          el.addEventListener("change", updateLive);
+          el.addEventListener("input", updateLive);
+        });
+    </script>
+  </body>
+</html>

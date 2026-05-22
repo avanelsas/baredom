@@ -1,4 +1,5 @@
-(ns baredom.components.x-date-picker.model)
+(ns baredom.components.x-date-picker.model
+  (:require [baredom.utils.dates :as dates]))
 
 (def tag-name "x-date-picker")
 
@@ -73,116 +74,6 @@
     default-v))
 
 ;; ---------------------------------------------------------------------------
-;; UTC date primitives
-;; ---------------------------------------------------------------------------
-
-(defn pad2
-  "Zero-pad integer n to 2 digits."
-  [n]
-  (if (< n 10) (str "0" n) (str n)))
-
-(defn date->iso
-  "JS Date → \"YYYY-MM-DD\" using UTC fields."
-  [^js d]
-  (when d
-    (str (.getUTCFullYear d)
-         "-" (pad2 (inc (.getUTCMonth d)))
-         "-" (pad2 (.getUTCDate d)))))
-
-(defn iso->date
-  "\"YYYY-MM-DD\" → JS Date at UTC midnight, or nil on parse failure."
-  [s]
-  (when (and (string? s) (re-matches #"\d{4}-\d{2}-\d{2}" s))
-    (let [^js d (js/Date. (str s "T00:00:00.000Z"))]
-      (when-not (js/isNaN (.getTime d)) d))))
-
-(defn compare-date
-  "Returns -1, 0, or 1 comparing two UTC dates by day only."
-  [^js a ^js b]
-  (cond
-    (and (nil? a) (nil? b)) 0
-    (nil? a) -1
-    (nil? b) 1
-    :else
-    (let [at (.getTime a)
-          bt (.getTime b)]
-      (cond (< at bt) -1
-            (> at bt) 1
-            :else 0))))
-
-(defn min-date
-  [^js a ^js b]
-  (if (neg? (compare-date a b)) a b))
-
-(defn max-date
-  [^js a ^js b]
-  (if (pos? (compare-date a b)) a b))
-
-(defn add-days
-  "Return a new Date that is d + n days (UTC)."
-  [^js d n]
-  (when d
-    (let [t (.getTime d)]
-      (js/Date. (+ t (* n 86400000))))))
-
-(defn start-of-month
-  "Return UTC midnight on the 1st of d's month."
-  [^js d]
-  (when d
-    (js/Date. (js/Date.UTC (.getUTCFullYear d) (.getUTCMonth d) 1))))
-
-(defn days-in-month
-  "Number of days in d's UTC month."
-  [^js d]
-  (when d
-    (.getUTCDate (js/Date. (js/Date.UTC (.getUTCFullYear d)
-                                        (inc (.getUTCMonth d))
-                                        0)))))
-
-(defn weekday-0-sun
-  "Day of week 0=Sunday..6=Saturday for d's UTC date."
-  [^js d]
-  (when d (.getUTCDay d)))
-
-(defn add-months
-  "Return a new Date that is d +/- n months (UTC). Clamps day to target month's
-   last day when overflow would occur (e.g. Jan 31 + 1 → Feb 28)."
-  [^js d n]
-  (when d
-    (let [y   (.getUTCFullYear d)
-          m   (.getUTCMonth d)
-          day (.getUTCDate d)
-          tm  (+ m n)
-          last-day (.getUTCDate (js/Date. (js/Date.UTC y (inc tm) 0)))]
-      (js/Date. (js/Date.UTC y tm (min day last-day))))))
-
-(defn start-of-week
-  "Return the Sunday of d's week (UTC)."
-  [^js d]
-  (when d (add-days d (- (weekday-0-sun d)))))
-
-(defn end-of-week
-  "Return the Saturday of d's week (UTC)."
-  [^js d]
-  (when d (add-days d (- 6 (weekday-0-sun d)))))
-
-(defn clamp-to-range
-  "Clamp d to [min-d, max-d]. Either bound may be nil (unbounded)."
-  [^js d ^js min-d ^js max-d]
-  (let [d1 (if (and min-d d (neg? (compare-date d min-d))) min-d d)
-        d2 (if (and max-d d1 (pos? (compare-date d1 max-d))) max-d d1)]
-    d2))
-
-(defn in-range?
-  "True if d is between a and b inclusive (either order)."
-  [^js d ^js a ^js b]
-  (when (and d a b)
-    (let [lo (if (neg? (compare-date a b)) a b)
-          hi (if (neg? (compare-date a b)) b a)]
-      (and (not (neg? (compare-date d lo)))
-           (not (pos? (compare-date d hi)))))))
-
-;; ---------------------------------------------------------------------------
 ;; Formatting
 ;; ---------------------------------------------------------------------------
 
@@ -195,7 +86,7 @@
                       :timeZone "UTC"}
             loc  (or locale "default")]
         (.format (js/Intl.DateTimeFormat. loc opts) d))
-      (date->iso d))))
+      (dates/date->iso d))))
 
 ;; ---------------------------------------------------------------------------
 ;; Display string parsing
@@ -206,7 +97,7 @@
    Accepts ISO \"YYYY-MM-DD\". Returns {:ok? boolean :date js/Date|nil}."
   [display]
   (let [s    (normalize-str display)
-        date (when s (iso->date s))]
+        date (when s (dates/iso->date s))]
     {:ok? (some? date) :date date}))
 
 (defn parse-display->range
@@ -224,8 +115,8 @@
             {:ok? ok? :start date :end nil})
           (let [s1 (.trim (.substring s 0 idx))
                 s2 (.trim (.substring s (+ idx (.-length sep))))
-                d1 (iso->date s1)
-                d2 (iso->date s2)]
+                d1 (dates/iso->date s1)
+                d2 (dates/iso->date s2)]
             {:ok? (and (some? d1) (some? d2)) :start d1 :end d2}))))))
 
 ;; ---------------------------------------------------------------------------
@@ -240,12 +131,12 @@
         fmt       (parse-format format)
         loc       (normalize-str locale)
         sep       (or (normalize-str separator) " - ")
-        min-d     (iso->date min)
-        max-d     (iso->date max)
+        min-d     (dates/iso->date min)
+        max-d     (dates/iso->date max)
         auto-swap? (boolean auto-swap?)
         allow-same? (boolean range-allow-same-day?)]
     (if (= m :single)
-      (let [value-d (iso->date value)
+      (let [value-d (dates/iso->date value)
             complete? (some? value-d)]
         {:mode       :single
          :format     fmt
@@ -258,8 +149,8 @@
          :value-d    value-d
          :value-str  (or (normalize-str value) "")
          :complete?  complete?})
-      (let [start-d  (iso->date start)
-            end-d    (iso->date end)
+      (let [start-d  (dates/iso->date start)
+            end-d    (dates/iso->date end)
             complete? (and (some? start-d) (some? end-d))]
         {:mode       :range
          :format     fmt
@@ -274,24 +165,6 @@
          :start-str  (or (normalize-str start) "")
          :end-str    (or (normalize-str end) "")
          :complete?  complete?}))))
-
-;; ---------------------------------------------------------------------------
-;; Month grid
-;; ---------------------------------------------------------------------------
-
-(defn month-grid
-  "Return a 42-item vector for a calendar view of the month containing d.
-   Each entry is {:date jsDate :in-month? boolean}."
-  [^js d]
-  (when d
-    (let [som      (start-of-month d)
-          dow      (weekday-0-sun som)
-          grid-start (add-days som (- dow))]
-      (mapv (fn [i]
-              (let [^js cell-date (add-days grid-start i)
-                    in-month?    (= (.getUTCMonth cell-date) (.getUTCMonth d))]
-                {:date cell-date :in-month? in-month?}))
-            (range 42)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Display value helper
