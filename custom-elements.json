@@ -431,6 +431,122 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-range-slider.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XRangeSlider",
+      "tagName" : "x-range-slider",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "minGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "step",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-range-slider-change-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-range-slider-input",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-range-slider-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-range-slider",
+      "declaration" : {
+        "name" : "XRangeSlider"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-pagination.js",
     "declarations" : [ {
       "kind" : "class",

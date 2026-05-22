@@ -111,6 +111,11 @@
       "import": "./dist/x-radio.js",
       "default": "./dist/x-radio.js"
     },
+    "./x-range-slider": {
+      "types": "./dist/x-range-slider.d.ts",
+      "import": "./dist/x-range-slider.js",
+      "default": "./dist/x-range-slider.js"
+    },
     "./x-table-cell": {
       "types": "./dist/x-table-cell.d.ts",
       "import": "./dist/x-table-cell.js",

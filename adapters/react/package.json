@@ -299,6 +299,10 @@
       "import" : "./dist/x-radio.js",
       "types" : "./dist/x-radio.d.ts"
     },
+    "./x-range-slider" : {
+      "import" : "./dist/x-range-slider.js",
+      "types" : "./dist/x-range-slider.d.ts"
+    },
     "./x-ripple-effect" : {
       "import" : "./dist/x-ripple-effect.js",
       "types" : "./dist/x-ripple-effect.d.ts"

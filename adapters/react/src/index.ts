@@ -67,6 +67,7 @@ export { XProgress, type XProgressProps } from "./x-progress";
 export { XProgressCircle, type XProgressCircleProps } from "./x-progress-circle";
 export { XProximityList, type XProximityListProps } from "./x-proximity-list";
 export { XRadio, type XRadioProps } from "./x-radio";
+export { XRangeSlider, type XRangeSliderProps } from "./x-range-slider";
 export { XRippleEffect, type XRippleEffectProps } from "./x-ripple-effect";
 export { XScroll, type XScrollProps } from "./x-scroll";
 export { XScrollParallax, type XScrollParallaxProps } from "./x-scroll-parallax";

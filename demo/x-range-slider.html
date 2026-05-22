@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-range-slider demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--page-bg); color: var(--page-fg); }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; max-width: 680px; }
+      .stack { display: flex; flex-direction: column; gap: 16px; margin: 8px 0; }
+      .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+      .label { font-size: 13px; color: var(--muted); min-width: 80px; }
+      .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 13px;
+      }
+      .controls input[type=text],
+      .controls input[type=number],
+      .controls select {
+        font-size: 13px; padding: 4px 8px; border-radius: 6px;
+        border: 1px solid var(--surface-border);
+        background: var(--input-bg); color: var(--input-fg);
+        width: 160px;
+      }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 80px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .theme-demo {
+        padding: 16px; border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-bg);
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-range-slider demo</x-typography>
+
+    <!-- ── Sizes ─────────────────────────────────────────────── -->
+    <x-typography variant="overline">Sizes</x-typography>
+    <div class="stack">
+      <div class="row">
+        <span class="label">sm</span>
+        <x-range-slider size="sm" start="20" end="60" style="flex:1"></x-range-slider>
+      </div>
+      <div class="row">
+        <span class="label">md (default)</span>
+        <x-range-slider size="md" start="30" end="70" style="flex:1"></x-range-slider>
+      </div>
+      <div class="row">
+        <span class="label">lg</span>
+        <x-range-slider size="lg" start="40" end="80" style="flex:1"></x-range-slider>
+      </div>
+    </div>
+
+    <!-- ── Label and value ────────────────────────────────────── -->
+    <x-typography variant="overline">Label &amp; show-value</x-typography>
+    <div class="stack">
+      <x-range-slider label="Price range" show-value start="200" end="800"
+                      min="0" max="1000" step="50"></x-range-slider>
+      <x-range-slider label="Temperature" start="18" end="24"
+                      min="10" max="30"></x-range-slider>
+    </div>
+
+    <!-- ── Minimum gap ────────────────────────────────────────── -->
+    <x-typography variant="overline">Minimum gap (min-gap)</x-typography>
+    <div class="stack">
+      <x-range-slider label="At least 10 apart" show-value
+                      start="30" end="70" min="0" max="100" min-gap="10"></x-range-slider>
+      <x-range-slider label="At least 200 apart (step 50)" show-value
+                      start="200" end="600" min="0" max="1000"
+                      step="50" min-gap="200"></x-range-slider>
+    </div>
+
+    <!-- ── Custom range and step ─────────────────────────────── -->
+    <x-typography variant="overline">Custom range &amp; step</x-typography>
+    <div class="stack">
+      <div class="row">
+        <span class="label">step=10</span>
+        <x-range-slider min="0" max="100" step="10" start="20" end="80"
+                        show-value style="flex:1"></x-range-slider>
+      </div>
+      <div class="row">
+        <span class="label">step=any</span>
+        <x-range-slider min="-50" max="50" step="any" start="-20" end="20"
+                        label="Offset" show-value style="flex:1"></x-range-slider>
+      </div>
+    </div>
+
+    <!-- ── Disabled ───────────────────────────────────────────── -->
+    <x-typography variant="overline">Disabled</x-typography>
+    <div class="stack">
+      <x-range-slider disabled start="25" end="75" label="Disabled range"></x-range-slider>
+    </div>
+
+    <!-- ── Readonly ───────────────────────────────────────────── -->
+    <x-typography variant="overline">Readonly</x-typography>
+    <div class="stack">
+      <x-range-slider readonly start="40" end="60"
+                      label="Readonly (focusable, not draggable)"></x-range-slider>
+    </div>
+
+    <!-- ── Custom theme ───────────────────────────────────────── -->
+    <x-typography variant="overline">Custom theme</x-typography>
+    <div class="theme-demo stack">
+      <x-range-slider
+        style="--x-range-slider-fill-color:#22c55e;--x-range-slider-thumb-border:2px solid #22c55e;--x-range-slider-focus-ring:#86efac;"
+        start="30" end="70" label="Green theme" show-value>
+      </x-range-slider>
+      <x-range-slider
+        style="--x-range-slider-fill-color:#f59e0b;--x-range-slider-thumb-border:2px solid #f59e0b;--x-range-slider-focus-ring:#fcd34d;"
+        start="20" end="55" label="Amber theme" show-value>
+      </x-range-slider>
+    </div>
+
+    <!-- ── Live control panel ────────────────────────────────── -->
+    <x-typography variant="overline">Live control panel</x-typography>
+    <x-range-slider id="live-slider" label="Live range" show-value
+                    start="25" end="75" min="0" max="100"
+                    step="1" min-gap="0"></x-range-slider>
+
+    <div class="controls" style="margin-top:16px;">
+      <label>start
+        <x-form-field type="number" id="ctrl-start" value="25"></x-form-field>
+      </label>
+
+      <label>end
+        <x-form-field type="number" id="ctrl-end" value="75"></x-form-field>
+      </label>
+
+      <label>min
+        <x-form-field type="number" id="ctrl-min" value="0"></x-form-field>
+      </label>
+
+      <label>max
+        <x-form-field type="number" id="ctrl-max" value="100"></x-form-field>
+      </label>
+
+      <label>step
+        <x-form-field type="text" id="ctrl-step" value="1"></x-form-field>
+      </label>
+
+      <label>min-gap
+        <x-form-field type="number" id="ctrl-min-gap" value="0"></x-form-field>
+      </label>
+
+      <label for="ctrl-size">size</label>
+      <x-select id="ctrl-size" value="md">
+        <option value="sm">sm</option>
+        <option value="md" selected>md</option>
+        <option value="lg">lg</option>
+      </x-select>
+
+      <label>show-value</label>
+      <label><x-switch id="ctrl-show-value" checked></x-switch> enabled</label>
+
+      <label>disabled</label>
+      <label><x-switch id="ctrl-disabled"></x-switch> enabled</label>
+
+      <label>readonly</label>
+      <label><x-switch id="ctrl-readonly"></x-switch> enabled</label>
+
+      <label>veto small ranges</label>
+      <label><x-switch id="ctrl-veto"></x-switch> reject end - start &lt; 10</label>
+    </div>
+
+    <!-- ── Event log ─────────────────────────────────────────── -->
+    <x-typography variant="overline">Event log</x-typography>
+    <div class="log" id="event-log">Waiting for events…</div>
+
+    <!-- ── Form integration ──────────────────────────────────── -->
+    <x-typography variant="overline">Form integration</x-typography>
+    <form id="demo-form" style="display:flex;flex-direction:column;gap:12px;">
+      <x-range-slider name="price" start="200" end="800" min="0" max="1000"
+                      label="Price range" show-value></x-range-slider>
+      <x-range-slider name="age" start="25" end="45" min="18" max="80"
+                      label="Age range" show-value></x-range-slider>
+      <div style="display:flex;gap:8px;">
+        <x-button type="submit">Submit</x-button>
+        <x-button type="reset" variant="secondary">Reset</x-button>
+      </div>
+    </form>
+    <div class="log" id="form-log" style="margin-top:8px;">Form output will appear here…</div>
+
+    <script>
+      const liveSlider = document.getElementById('live-slider');
+
+      // Control panel wiring
+      document.getElementById('ctrl-start').addEventListener('input', (e) => {
+        liveSlider.setAttribute('start', e.target.value);
+      });
+      document.getElementById('ctrl-end').addEventListener('input', (e) => {
+        liveSlider.setAttribute('end', e.target.value);
+      });
+      document.getElementById('ctrl-min').addEventListener('input', (e) => {
+        liveSlider.setAttribute('min', e.target.value);
+      });
+      document.getElementById('ctrl-max').addEventListener('input', (e) => {
+        liveSlider.setAttribute('max', e.target.value);
+      });
+      document.getElementById('ctrl-step').addEventListener('input', (e) => {
+        liveSlider.setAttribute('step', e.target.value);
+      });
+      document.getElementById('ctrl-min-gap').addEventListener('input', (e) => {
+        liveSlider.setAttribute('min-gap', e.target.value);
+      });
+      document.getElementById('ctrl-size').addEventListener('change', (e) => {
+        liveSlider.setAttribute('size', e.target.value);
+      });
+      document.getElementById('ctrl-show-value').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('show-value', '');
+        else liveSlider.removeAttribute('show-value');
+      });
+      document.getElementById('ctrl-disabled').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('disabled', '');
+        else liveSlider.removeAttribute('disabled');
+      });
+      document.getElementById('ctrl-readonly').addEventListener('change', (e) => {
+        if (e.target.checked) liveSlider.setAttribute('readonly', '');
+        else liveSlider.removeAttribute('readonly');
+      });
+
+      // Controlled mode — veto ranges narrower than 10
+      let veto = false;
+      document.getElementById('ctrl-veto').addEventListener('change', (e) => {
+        veto = e.target.checked;
+      });
+      liveSlider.addEventListener('x-range-slider-change-request', (e) => {
+        if (veto && e.detail.end - e.detail.start < 10) {
+          e.preventDefault();
+          appendLog(`change-request VETOED  start=${e.detail.start}  end=${e.detail.end}`);
+        }
+      });
+
+      // Event log
+      const log = document.getElementById('event-log');
+      let logLines = [];
+      function appendLog(msg) {
+        logLines.push(msg);
+        if (logLines.length > 12) logLines = logLines.slice(-12);
+        log.textContent = logLines.join('\n');
+      }
+      liveSlider.addEventListener('x-range-slider-input', (e) => {
+        appendLog(`input   start=${e.detail.start}  end=${e.detail.end}`);
+        document.getElementById('ctrl-start').value = e.detail.start;
+        document.getElementById('ctrl-end').value = e.detail.end;
+      });
+      liveSlider.addEventListener('x-range-slider-change', (e) => {
+        appendLog(`change  start=${e.detail.start}  end=${e.detail.end}`);
+      });
+
+      // Form submission
+      const formLog = document.getElementById('form-log');
+      document.getElementById('demo-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const entries = [...data.entries()].map(([k, v]) => `${k}=${v}`).join('  ');
+        formLog.textContent = `Submitted: ${entries}`;
+      });
+    </script>
+  </body>
+</html>
