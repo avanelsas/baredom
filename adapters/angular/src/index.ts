@@ -69,6 +69,7 @@ export { BaredomProgressCircle } from './directives/x-progress-circle.directive'
 export { BaredomProximityList } from './directives/x-proximity-list.directive';
 export { BaredomRadio } from './directives/x-radio.directive';
 export { BaredomRangeSlider } from './directives/x-range-slider.directive';
+export { BaredomRating } from './directives/x-rating.directive';
 export { BaredomRippleEffect } from './directives/x-ripple-effect.directive';
 export { BaredomScroll } from './directives/x-scroll.directive';
 export { BaredomScrollParallax } from './directives/x-scroll-parallax.directive';

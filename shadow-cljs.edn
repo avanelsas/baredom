@@ -296,6 +296,11 @@
      {init baredom.exports.x-radio/init}
      :depends-on #{:base}}
 
+    :x-rating
+    {:exports
+     {init baredom.exports.x-rating/init}
+     :depends-on #{:base}}
+
     :x-range-slider
     {:exports
      {init baredom.exports.x-range-slider/init}
