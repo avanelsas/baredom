@@ -57,6 +57,20 @@ BareDOM event names are exposed as **kebab-case** emit keys, matching the underl
 
 Volar normalizes `@hover-start` ↔ `@hoverStart` in templates — both type-check against the same emit declaration.
 
+## Reserved prop names
+
+Vue 3 reserves `key`, `ref`, and `is` as VNode-level identifiers — a component prop with one of these names is silently dropped (`[Vue warn]: Invalid prop name`). The generator detects such collisions and renames the prop with an `Attr` suffix; the underlying attribute is written imperatively.
+
+Currently only **`x-i18n`** is affected. Use `key-attr` (kebab) / `keyAttr` (camel) instead of `key`:
+
+```vue
+<!-- Wrong — Vue treats `key` as a VNode identifier, not a prop -->
+<XI18n :key="welcome.title" />
+
+<!-- Right — wrapper aliases `key` → `keyAttr` -->
+<XI18n :key-attr="welcome.title" />
+```
+
 ## v-model
 
 Form-aware components support Vue's `v-model` directive:

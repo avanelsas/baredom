@@ -1,4 +1,3 @@
-import { watchEffect } from "vue";
 import { registerPreset } from "@vanelsas/baredom/x-theme";
 
 /**
@@ -20,9 +19,15 @@ export interface PresetData {
  * Register a custom BareDOM theme preset. The preset becomes available
  * to any `<XTheme preset="name">` in the tree.
  *
- * The registration runs on setup and re-runs reactively when `name`
- * or `data` change. Partial presets are supported — any tokens you
- * omit automatically fall back to the default preset.
+ * Runs once when called (typically inside `<script setup>` or `setup()`).
+ * To re-register on reactive change, wrap the call in `watchEffect`:
+ *
+ * ```ts
+ * watchEffect(() => useRegisterPreset(presetName.value, tokens.value));
+ * ```
+ *
+ * Partial presets are supported — any tokens you omit automatically
+ * fall back to the default preset.
  *
  * @example
  * ```ts
@@ -44,7 +49,5 @@ export interface PresetData {
  * ```
  */
 export function useRegisterPreset(name: string, data: PresetData): void {
-  watchEffect(() => {
-    registerPreset(name, data as any);
-  });
+  registerPreset(name, data as any);
 }

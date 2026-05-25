@@ -83,6 +83,32 @@
     "number"  "Number"
     "Object"))
 
+;; Vue 3 reserves these names as VNode-level identifiers. A prop with
+;; one of these names is silently dropped by Vue ("Invalid prop name:
+;; ... is a reserved property") and the value never reaches the element.
+;; Affected props are renamed in the generated wrapper (suffix "Attr")
+;; and the underlying attribute is written imperatively. Only x-i18n's
+;; `key` (its translation key — the component's primary attribute)
+;; currently hits this; the set guards against future collisions too.
+(def vue-reserved-prop-names #{"key" "ref" "is"})
+
+(defn build-reserved-prop-entries
+  "For each writable prop whose camelCased name collides with a Vue
+   reserved VNode identifier, return an entry describing the rename
+   and the imperative-write strategy."
+  [writable-props]
+  (when writable-props
+    (->> writable-props
+         (keep (fn [[k m]]
+                 (let [camel (kebab->camel (name k))]
+                   (when (contains? vue-reserved-prop-names camel)
+                     {:original-camel camel
+                      :renamed        (str camel "Attr")
+                      :ts-type        (prop-type->ts m)
+                      :attr-name      (name k)
+                      :runtime-ctor   (prop-type->vue-runtime m)}))))
+         vec)))
+
 (defn event-detail->ts
   "TypeScript type for a CustomEvent detail. kebab keys -> camelCase."
   [detail]
@@ -105,19 +131,49 @@
 ;; ── Component generation ────────────────────────────────────────────────────
 
 (defn build-prop-decls
-  "Generate the `props: { ... }` entries."
+  "Generate the `props: { ... }` entries. Reserved-name props
+   (key/ref/is) are emitted under their `Attr`-suffixed alias."
   [writable-props v-model-cfg]
   (concat
     (when writable-props
       (map (fn [[k m]]
-             (str "    " (kebab->camel (name k))
-                  ": { type: " (prop-type->vue-runtime m)
-                  " as PropType<" (prop-type->ts m) " | undefined>, default: undefined },"))
+             (let [camel (kebab->camel (name k))
+                   prop-name (if (contains? vue-reserved-prop-names camel)
+                               (str camel "Attr")
+                               camel)]
+               (str "    " prop-name
+                    ": { type: " (prop-type->vue-runtime m)
+                    " as PropType<" (prop-type->ts m) " | undefined>, default: undefined },")))
            writable-props))
     (when v-model-cfg
       [(str "    modelValue: { type: "
             (vue-runtime-for-type (:value-type v-model-cfg))
             " as PropType<" (:value-type v-model-cfg) " | undefined>, default: undefined },")])))
+
+(defn build-reserved-write-helpers
+  "TypeScript writeX helper functions for reserved-name props.
+   These run imperatively because h() refuses to set reserved keys
+   as element attributes."
+  [reserved-entries]
+  (when (seq reserved-entries)
+    (map (fn [{:keys [renamed ts-type attr-name]}]
+           (let [helper-name (str "write" (str/upper-case (subs renamed 0 1)) (subs renamed 1))
+                 body (if (= ts-type "boolean")
+                        (str "      if (v) el.setAttribute(\"" attr-name "\", \"\");\n"
+                             "      else el.removeAttribute(\"" attr-name "\");\n")
+                        (str "      if (v != null) el.setAttribute(\"" attr-name "\", String(v));\n"
+                             "      else el.removeAttribute(\"" attr-name "\");\n"))]
+             (str "    const " helper-name " = (v: " ts-type " | undefined) => {\n"
+                  "      const el = elRef.value;\n"
+                  "      if (!el) return;\n"
+                  body
+                  "    };")))
+         reserved-entries)))
+
+(defn reserved-helper-name
+  "writeKeyAttr from a {:renamed \"keyAttr\"} entry."
+  [{:keys [renamed]}]
+  (str "write" (str/upper-case (subs renamed 0 1)) (subs renamed 1)))
 
 (defn build-event-entries
   "Resolve events to {:dom-name :emit-name :detail-ts :is-model}."
@@ -182,26 +238,31 @@
 (defn generate-component
   "Generate the .ts wrapper file content for a component."
   [{:keys [tag-name properties events string-defs]}]
-  (let [interface-name  (tag->interface-name tag-name)
-        sdefs           (or string-defs {})
-        v-model-cfg     (get v-model-components tag-name)
-        has-v-model     (boolean v-model-cfg)
-        writable-props  (when properties
-                          (->> properties
-                               (remove (fn [[_ m]] (:readonly m)))
-                               (remove (fn [[_ m]] (:read-only m)))))
-        prop-decls      (build-prop-decls writable-props v-model-cfg)
-        event-entries   (build-event-entries events sdefs tag-name v-model-cfg)
-        emit-decls      (build-emit-decls event-entries v-model-cfg)
-        bind-blocks     (build-bind-blocks event-entries v-model-cfg)
+  (let [interface-name   (tag->interface-name tag-name)
+        sdefs            (or string-defs {})
+        v-model-cfg      (get v-model-components tag-name)
+        has-v-model      (boolean v-model-cfg)
+        writable-props   (when properties
+                           (->> properties
+                                (remove (fn [[_ m]] (:readonly m)))
+                                (remove (fn [[_ m]] (:read-only m)))))
+        reserved-entries (build-reserved-prop-entries writable-props)
+        has-reserved     (boolean (seq reserved-entries))
+        prop-decls       (build-prop-decls writable-props v-model-cfg)
+        event-entries    (build-event-entries events sdefs tag-name v-model-cfg)
+        emit-decls       (build-emit-decls event-entries v-model-cfg)
+        bind-blocks      (build-bind-blocks event-entries v-model-cfg)
         write-value-body (when has-v-model (build-write-value-body v-model-cfg))
-        has-events      (boolean (seq event-entries))
-        has-props       (boolean (or (seq writable-props) has-v-model))
-        vue-imports     (cond-> ["defineComponent" "h" "ref"]
-                          has-events  (conj "onMounted" "onBeforeUnmount")
-                          (and has-v-model (not has-events)) (conj "onMounted")
-                          has-v-model (conj "watch")
-                          has-props   (conj "type PropType"))]
+        reserved-helpers (build-reserved-write-helpers reserved-entries)
+        has-events       (boolean (seq event-entries))
+        has-props        (boolean (or (seq writable-props) has-v-model))
+        needs-on-mounted (or has-events has-v-model has-reserved)
+        vue-imports      (cond-> ["defineComponent" "h" "ref"]
+                           has-events       (conj "onMounted" "onBeforeUnmount")
+                           (and (or has-v-model has-reserved)
+                                (not has-events)) (conj "onMounted")
+                           (or has-v-model has-reserved) (conj "watch")
+                           has-props        (conj "type PropType"))]
 
     (str "// " tag-name ".ts — auto-generated by generate_vue.bb, do not edit\n\n"
          "import { " (str/join ", " vue-imports) " } from \"vue\";\n"
@@ -235,12 +296,19 @@
                 "      if (!el || v === undefined) return;\n"
                 write-value-body
                 "    };\n\n"))
-         (if (or has-events has-v-model)
+         (when has-reserved
+           (str (str/join "\n\n" reserved-helpers) "\n\n"))
+         (if needs-on-mounted
            (str "    onMounted(() => {\n"
                 "      const el = elRef.value;\n"
                 "      if (!el) return;\n"
                 (when has-v-model
                   "      writeValue(props.modelValue);\n")
+                (when has-reserved
+                  (str/join (map (fn [entry]
+                                   (str "      " (reserved-helper-name entry)
+                                        "(props." (:renamed entry) ");\n"))
+                                 reserved-entries)))
                 (when has-events
                   (str "\n" (str/join "\n" bind-blocks) "\n"))
                 "    });\n\n")
@@ -251,13 +319,23 @@
                 "    });\n\n"))
          (when has-v-model
            "    watch(() => props.modelValue, writeValue);\n\n")
+         (when has-reserved
+           (str (str/join "\n" (map (fn [entry]
+                                      (str "    watch(() => props." (:renamed entry)
+                                           ", " (reserved-helper-name entry) ");"))
+                                    reserved-entries))
+                "\n\n"))
          "    expose({ el: elRef });\n\n"
          "    return () => {\n"
-         (if has-v-model
-           (str "      const { modelValue: _modelValue, ...elProps } = props;\n"
-                "      void _modelValue;\n"
-                "      return h(\"" tag-name "\" as any, { ...attrs, ref: elRef, ...elProps }, slots.default?.());\n")
-           (str "      return h(\"" tag-name "\" as any, { ...attrs, ref: elRef, ...props }, slots.default?.());\n"))
+         (let [excluded (concat (when has-v-model ["modelValue"])
+                                (map :renamed reserved-entries))]
+           (if (seq excluded)
+             (str "      const { "
+                  (str/join ", " (map #(str % ": _" %) excluded))
+                  ", ...elProps } = props;\n"
+                  (str/join (map #(str "      void _" % ";\n") excluded))
+                  "      return h(\"" tag-name "\" as any, { ...attrs, ref: elRef, ...elProps }, slots.default?.());\n")
+             (str "      return h(\"" tag-name "\" as any, { ...attrs, ref: elRef, ...props }, slots.default?.());\n")))
          "    };\n"
          "  },\n"
          "});\n\n"
