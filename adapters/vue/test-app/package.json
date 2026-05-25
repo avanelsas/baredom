@@ -7,7 +7,7 @@
     "build": "vue-tsc --noEmit && vite build"
   },
   "dependencies": {
-    "vue": "^3.4.0",
+    "vue": "^3.5.0",
     "@vanelsas/baredom": "file:../../..",
     "@vanelsas/baredom-vue": "file:.."
   },
