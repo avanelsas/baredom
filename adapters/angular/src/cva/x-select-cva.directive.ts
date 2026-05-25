@@ -34,8 +34,8 @@ export class BaredomSelectCva implements ControlValueAccessor, OnInit, OnDestroy
       const detail = (e as CustomEvent).detail;
       this.zone.run(() => this.onChange(detail.value));
     };
-    this.el.addEventListener('x-select-change', handler);
-    this.listeners.push(() => this.el.removeEventListener('x-select-change', handler));
+    this.el.addEventListener('select-change', handler);
+    this.listeners.push(() => this.el.removeEventListener('select-change', handler));
 
     const blur = () => this.zone.run(() => this.onTouched());
     this.el.addEventListener('focusout', blur);
