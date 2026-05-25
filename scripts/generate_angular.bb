@@ -25,7 +25,7 @@
    "x-radio"          {:value-type "boolean" :change-event "x-radio-change"          :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
    "x-slider"         {:value-type "string"  :change-event "x-slider-change"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-text-area"      {:value-type "string"  :change-event "x-text-area-change"      :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-select"         {:value-type "string"  :change-event "x-select-change"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
+   "x-select"         {:value-type "string"  :change-event "select-change"           :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-combobox"       {:value-type "string"  :change-event "x-combobox-change"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-currency-field" {:value-type "string"  :change-event "x-currency-field-change" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-tabs"           {:value-type "string"  :change-event "value-change"            :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
