@@ -6,6 +6,8 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared codegen helpers (resolve-event-name, prop-type->ts, event-detail->ts)
+(load-file "scripts/codegen_shared.bb")
 ;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
 (load-file "scripts/form-control-metadata.bb")
 
@@ -16,14 +18,6 @@
 (def angular-pkg          "adapters/angular/package.json")
 
 ;; ── Angular-specific helpers ────────────────────────────────────────────────
-
-(defn resolve-event-name
-  "Resolve the actual DOM event name from an event-schema entry."
-  [event-key event-info string-defs]
-  (cond
-    (symbol? event-key) (resolve-sym event-key (or string-defs {}))
-    (keyword? event-key) (or (:event-name event-info) (name event-key))
-    :else (str event-key)))
 
 (defn event->angular-output
   "Convert a DOM event name to an Angular @Output() name.
@@ -37,36 +31,6 @@
                   (subs event-str (count prefix))
                   event-str)]
     (kebab->camel stripped)))
-
-(defn prop-type->ts
-  "Convert a property metadata type to TypeScript type."
-  [prop-meta]
-  (let [t (normalize-type-sym (:type prop-meta))]
-    (case t
-      "boolean" "boolean"
-      "string"  "string"
-      "number"  "number"
-      "object"  "Record<string, any>"
-      "any")))
-
-(defn event-detail->ts
-  "Generate TypeScript type for a CustomEvent detail."
-  [detail]
-  (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
-
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
-
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
 
 (defn tag->directive-class
   "Convert 'x-button' to 'BaredomButton'.

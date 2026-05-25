@@ -6,6 +6,8 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared codegen helpers (resolve-event-name, prop-type->ts, event-detail->ts)
+(load-file "scripts/codegen_shared.bb")
 ;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
 (load-file "scripts/form-control-metadata.bb")
 
@@ -21,14 +23,6 @@
                     :import "./dist/composables/index.js"}})
 
 ;; ── Svelte-specific helpers ─────────────────────────────────────────────────
-
-(defn resolve-event-name
-  "Resolve the actual DOM event name from an event-schema entry."
-  [event-key event-info string-defs]
-  (cond
-    (symbol? event-key) (resolve-sym event-key (or string-defs {}))
-    (keyword? event-key) (or (:event-name event-info) (name event-key))
-    :else (str event-key)))
 
 (defn event->svelte-prop
   "Convert a DOM event name to a Svelte 5 `on<event>` prop name.
@@ -46,36 +40,6 @@
                      (subs event-str (count prefix))
                      event-str)]
     (str "on" (str/lower-case (str/replace unprefixed "-" "")))))
-
-(defn prop-type->ts
-  "TypeScript type for a property metadata entry."
-  [prop-meta]
-  (let [t (normalize-type-sym (:type prop-meta))]
-    (case t
-      "boolean" "boolean"
-      "string"  "string"
-      "number"  "number"
-      "object"  "Record<string, any>"
-      "any")))
-
-(defn event-detail->ts
-  "TypeScript type for a CustomEvent detail. kebab keys -> camelCase."
-  [detail]
-  (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
-
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
-
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
 
 ;; ── Field classification ────────────────────────────────────────────────────
 
