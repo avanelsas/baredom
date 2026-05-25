@@ -6,6 +6,8 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared codegen helpers (resolve-event-name, prop-type->ts, event-detail->ts)
+(load-file "scripts/codegen_shared.bb")
 ;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
 (load-file "scripts/form-control-metadata.bb")
 
@@ -14,14 +16,6 @@
 (def vue-pkg     "adapters/vue/package.json")
 
 ;; ── Vue-specific helpers ────────────────────────────────────────────────────
-
-(defn resolve-event-name
-  "Resolve the actual DOM event name from an event-schema entry."
-  [event-key event-info string-defs]
-  (cond
-    (symbol? event-key) (resolve-sym event-key (or string-defs {}))
-    (keyword? event-key) (or (:event-name event-info) (name event-key))
-    :else (str event-key)))
 
 (defn event->vue-emit
   "Strip tag-name prefix from a DOM event name; Vue uses kebab-case emit keys.
@@ -33,17 +27,6 @@
     (if (str/starts-with? event-str prefix)
       (subs event-str (count prefix))
       event-str)))
-
-(defn prop-type->ts
-  "TypeScript type for a property metadata entry."
-  [prop-meta]
-  (let [t (normalize-type-sym (:type prop-meta))]
-    (case t
-      "boolean" "boolean"
-      "string"  "string"
-      "number"  "number"
-      "object"  "Record<string, any>"
-      "any")))
 
 (defn prop-type->vue-runtime
   "Vue 3 runtime prop constructor for a property metadata entry."
@@ -90,25 +73,6 @@
                       :attr-name      (name k)
                       :runtime-ctor   (prop-type->vue-runtime m)}))))
          vec)))
-
-(defn event-detail->ts
-  "TypeScript type for a CustomEvent detail. kebab keys -> camelCase."
-  [detail]
-  (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
-
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
-
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
 
 ;; ── Component generation ────────────────────────────────────────────────────
 

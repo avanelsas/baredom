@@ -6,49 +6,35 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared codegen helpers (resolve-event-name, prop-type->ts, event-detail->ts)
+(load-file "scripts/codegen_shared.bb")
+;; Load shared form-control metadata (single source of truth across all adapters)
+(load-file "scripts/form-control-metadata.bb")
 
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def react-src-dir "adapters/react/src")
 (def react-pkg    "adapters/react/package.json")
 
-;; Components that support controlled mode.
-;; :control-prop — the React prop that activates controlled mode
-;; :default-prop — the uncontrolled initial-value prop
-;; :change-request-event — the DOM event to intercept with preventDefault()
-;; :prop-type — TypeScript type for the control/default props
+;; Components that support controlled mode, derived from the shared
+;; form-control metadata so adding a form control to BareDOM updates one
+;; file and all four adapters pick it up.
+;;
+;; Mapping from form-controls schema to React's controlled shape:
+;;   :control-prop          ← kebab->camel(:attr-name)
+;;   :default-prop          ← "default" + capitalize(kebab->camel(:attr-name))
+;;   :change-request-event  ← :change-request-event   (verbatim — names don't follow a derivable convention)
+;;   :prop-type             ← :value-type
 (def controlled-components
-  {"x-checkbox"       {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-checkbox-change-request"       :prop-type "boolean"}
-   "x-switch"         {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-switch-change-request"         :prop-type "boolean"}
-   "x-radio"          {:control-prop "checked"  :default-prop "defaultChecked" :change-request-event "x-radio-change-request"          :prop-type "boolean"}
-   "x-slider"         {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-slider-change-request"         :prop-type "string"}
-   "x-text-area"      {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-text-area-change-request"      :prop-type "string"}
-   "x-select"         {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-select-change-request"         :prop-type "string"}
-   "x-combobox"       {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-combobox-change-request"       :prop-type "string"}
-   "x-currency-field" {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "x-currency-field-change-request" :prop-type "string"}
-   "x-tabs"           {:control-prop "value"    :default-prop "defaultValue"   :change-request-event "value-change-request"            :prop-type "string"}
-   "x-pagination"     {:control-prop "page"     :default-prop "defaultPage"    :change-request-event "page-change-request"             :prop-type "number"}})
+  (into {}
+        (map (fn [[tag {:keys [attr-name change-request-event value-type]}]]
+               (let [camel (kebab->camel attr-name)]
+                 [tag {:control-prop         camel
+                       :default-prop         (str "default" (str/capitalize camel))
+                       :change-request-event change-request-event
+                       :prop-type            value-type}])))
+        form-controls))
 
 ;; ── React-specific helpers ──────────────────────────────────────────────────
-
-(defn kebab->camel
-  "Convert kebab-case to camelCase.
-   e.g. 'max-items' -> 'maxItems', 'timeout-ms' -> 'timeoutMs'"
-  [s]
-  (let [parts (str/split s #"-")]
-    (str (first parts)
-         (str/join (map str/capitalize (rest parts))))))
-
-(defn resolve-event-name
-  "Resolve the actual DOM event name from an event-schema entry.
-   Handles both patterns:
-   - Symbol key: resolved via string-defs (e.g. event-press -> 'press')
-   - Keyword key with :event-name: uses :event-name field
-   - Keyword key without :event-name: uses (name key)"
-  [event-key event-info string-defs]
-  (cond
-    (symbol? event-key) (resolve-sym event-key (or string-defs {}))
-    (keyword? event-key) (or (:event-name event-info) (name event-key))
-    :else (str event-key)))
 
 (defn event->react-prop
   "Convert a DOM event name to a React callback prop name.
@@ -63,37 +49,6 @@
                   event-str)
         parts   (str/split stripped #"-")]
     (str "on" (str/join (map str/capitalize parts)))))
-
-(defn prop-type->ts
-  "Convert a property metadata type to TypeScript prop type."
-  [prop-meta]
-  (let [t (normalize-type-sym (:type prop-meta))]
-    (case t
-      "boolean" "boolean"
-      "string"  "string"
-      "number"  "number"
-      "object"  "Record<string, any>"
-      "any")))
-
-(defn event-detail->ts
-  "Generate TypeScript type for a CustomEvent detail.
-   Converts kebab-case keys to camelCase for valid TypeScript."
-  [detail]
-  (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
-
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
-
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
 
 ;; ── Code generation ─────────────────────────────────────────────────────────
 
