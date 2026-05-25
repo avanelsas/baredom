@@ -1,0 +1,19 @@
+{
+  "name": "baredom-solid-test-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.0",
+    "@vanelsas/baredom": "file:../../..",
+    "@vanelsas/baredom-solid": "file:.."
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>BareDOM Solid Adapter Test</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: system-ui, sans-serif;
+      background: light-dark(#f8fafc, #0f172a);
+      color: light-dark(#0f172a, #f1f5f9);
+    }
+    h1, h2 { margin-top: 0; }
+    h2 { font-size: 1rem; color: light-dark(#475569, #94a3b8); }
+    section { margin-bottom: 2rem; padding: 1rem; border-radius: 8px; background: light-dark(#ffffff, #1e293b); }
+    pre { font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
