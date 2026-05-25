@@ -1,0 +1,20 @@
+{
+  "name": "baredom-vue-test-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "@vanelsas/baredom": "file:../../..",
+    "@vanelsas/baredom-vue": "file:.."
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vue-tsc": "^2.1.0"
+  }
+}
