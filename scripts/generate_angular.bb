@@ -6,30 +6,14 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
+(load-file "scripts/form-control-metadata.bb")
 
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def angular-src-dir      "adapters/angular/src")
 (def angular-directives-dir "adapters/angular/src/directives")
 (def angular-cva-dir      "adapters/angular/src/cva")
 (def angular-pkg          "adapters/angular/package.json")
-
-;; Components that need ControlValueAccessor directives for Angular forms.
-;; :value-type    — TypeScript type for the form control value
-;; :change-event  — DOM event fired on committed value change
-;; :detail-field  — field in event.detail that carries the new value
-;; :write-mode    — :boolean-attr (set/remove attribute) or :string-attr (setAttribute)
-;; :attr-name     — attribute name for writeValue (only for :string-attr)
-(def cva-components
-  {"x-checkbox"       {:value-type "boolean" :change-event "x-checkbox-change"       :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-switch"         {:value-type "boolean" :change-event "x-switch-change"         :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-radio"          {:value-type "boolean" :change-event "x-radio-change"          :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-slider"         {:value-type "string"  :change-event "x-slider-change"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-text-area"      {:value-type "string"  :change-event "x-text-area-change"      :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-select"         {:value-type "string"  :change-event "select-change"           :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-combobox"       {:value-type "string"  :change-event "x-combobox-change"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-currency-field" {:value-type "string"  :change-event "x-currency-field-change" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-tabs"           {:value-type "string"  :change-event "value-change"            :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-pagination"     {:value-type "number"  :change-event "page-change"             :detail-field "page"    :write-mode :string-attr  :attr-name "page"}})
 
 ;; ── Angular-specific helpers ────────────────────────────────────────────────
 
@@ -331,7 +315,7 @@
 
         cva-exports
         (->> models
-             (filter #(contains? cva-components (:tag-name %)))
+             (filter #(contains? form-controls (:tag-name %)))
              (sort-by :tag-name)
              (map (fn [{:keys [tag-name]}]
                     (let [cls (str (tag->directive-class tag-name) "Cva")]
@@ -361,7 +345,7 @@
                                 :types  (str "./dist/directives/" tag-name ".directive.d.ts")}])
                             (sort-by :tag-name models))
                        (->> models
-                            (filter #(contains? cva-components (:tag-name %)))
+                            (filter #(contains? form-controls (:tag-name %)))
                             (sort-by :tag-name)
                             (map (fn [{:keys [tag-name]}]
                                    [(str "./" tag-name "-cva")
@@ -389,7 +373,7 @@
 
     ;; Generate CVA directives for form components
     (doseq [model exported-models
-            :let [cva-config (get cva-components (:tag-name model))]
+            :let [cva-config (get form-controls (:tag-name model))]
             :when cva-config]
       (let [ts-content (generate-cva-directive model cva-config)
             ts-file    (io/file angular-cva-dir (str (:tag-name model) "-cva.directive.ts"))]
@@ -402,7 +386,7 @@
     ;; Update package.json exports
     (update-package-exports exported-models)
 
-    (let [cva-count (count (filter #(contains? cva-components (:tag-name %)) exported-models))]
+    (let [cva-count (count (filter #(contains? form-controls (:tag-name %)) exported-models))]
       (println (str "Generated " (count exported-models) " directives + "
                     cva-count " CVA directives + index.ts")))))
 

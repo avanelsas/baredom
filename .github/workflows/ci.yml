@@ -104,6 +104,19 @@ jobs:
           bb scripts/generate_vue.bb
           git diff --exit-code adapters/vue/src/ adapters/vue/package.json || (echo "Vue adapter is out of date. Run: bb scripts/generate_vue.bb" && exit 1)
 
+      - name: Build Svelte adapter
+        run: |
+          bb scripts/generate_svelte.bb
+          cd adapters/svelte && npm install && npx svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && npx svelte-package -i src -o dist
+
+      - name: Build Svelte adapter test app
+        run: cd adapters/svelte/test-app && npm install && npm run build
+
+      - name: Check Svelte adapter is up to date
+        run: |
+          bb scripts/generate_svelte.bb
+          git diff --exit-code adapters/svelte/src/ adapters/svelte/package.json || (echo "Svelte adapter is out of date. Run: bb scripts/generate_svelte.bb" && exit 1)
+
       - name: Run tests
         run: npm test
         env:

@@ -6,30 +6,12 @@
 
 ;; Load shared metadata utilities
 (load-file "scripts/metadata.bb")
+;; Load shared form-control metadata (Vue v-model / Angular CVA / Svelte $bindable)
+(load-file "scripts/form-control-metadata.bb")
 
 ;; ── Configuration ───────────────────────────────────────────────────────────
 (def vue-src-dir "adapters/vue/src")
 (def vue-pkg     "adapters/vue/package.json")
-
-;; Components that have v-model bridging. Copy of cva-components from
-;; generate_angular.bb — identical metadata serves both Vue v-model and
-;; Angular ControlValueAccessor.
-;; :value-type    — TypeScript type for the v-model value
-;; :change-event  — DOM event fired on committed change
-;; :detail-field  — field in event.detail that carries the new value
-;; :write-mode    — :boolean-attr (set/remove attribute) or :string-attr (setAttribute)
-;; :attr-name     — attribute name to write/remove
-(def v-model-components
-  {"x-checkbox"       {:value-type "boolean" :change-event "x-checkbox-change"       :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-switch"         {:value-type "boolean" :change-event "x-switch-change"         :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-radio"          {:value-type "boolean" :change-event "x-radio-change"          :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
-   "x-slider"         {:value-type "string"  :change-event "x-slider-change"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-text-area"      {:value-type "string"  :change-event "x-text-area-change"      :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-select"         {:value-type "string"  :change-event "select-change"           :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-combobox"       {:value-type "string"  :change-event "x-combobox-change"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-currency-field" {:value-type "string"  :change-event "x-currency-field-change" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-tabs"           {:value-type "string"  :change-event "value-change"            :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-pagination"     {:value-type "number"  :change-event "page-change"             :detail-field "page"    :write-mode :string-attr  :attr-name "page"}})
 
 ;; ── Vue-specific helpers ────────────────────────────────────────────────────
 
@@ -240,7 +222,7 @@
   [{:keys [tag-name properties events string-defs]}]
   (let [interface-name   (tag->interface-name tag-name)
         sdefs            (or string-defs {})
-        v-model-cfg      (get v-model-components tag-name)
+        v-model-cfg      (get form-controls tag-name)
         has-v-model      (boolean v-model-cfg)
         writable-props   (when properties
                            (->> properties

@@ -587,6 +587,7 @@
     "test:types": "npx tsc -p test/types/tsconfig.json",
     "build:react": "bb scripts/generate_react.bb && cd adapters/react && npx tsc",
     "build:vue": "bb scripts/generate_vue.bb && cd adapters/vue && npx tsc",
+    "build:svelte": "bb scripts/generate_svelte.bb && cd adapters/svelte && npx svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && npx svelte-package -i src -o dist",
     "lint:method-api": "bb scripts/check_method_api.bb",
     "lint:require-style": "bb scripts/check_require_style.bb"
   }
