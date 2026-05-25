@@ -43,4 +43,6 @@ vanelsas-baredom-*.tgz
 adapters/*/dist/
 adapters/*/node_modules/
 adapters/*/test-app/node_modules/
+adapters/*/test-app/dist/
 adapters/*/test-app/.angular/
+adapters/*/.svelte-kit/

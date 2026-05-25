@@ -1,0 +1,465 @@
+{
+  "description" : "Svelte 5 wrapper components for BareDOM — auto-generated from component metadata.",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/avanelsas/baredom.git",
+    "directory" : "adapters/svelte"
+  },
+  "license" : "MIT",
+  "peerDependencies" : {
+    "@vanelsas/baredom" : ">=2.6.0",
+    "svelte" : ">=5.0.0"
+  },
+  "svelte" : "./dist/index.js",
+  "name" : "@vanelsas/baredom-svelte",
+  "scripts" : {
+    "generate" : "cd ../.. && bb scripts/generate_svelte.bb",
+    "package" : "svelte-package -i src -o dist",
+    "check" : "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "build" : "npm run generate && npm run check && npm run package"
+  },
+  "publishConfig" : {
+    "access" : "public"
+  },
+  "type" : "module",
+  "types" : "./dist/index.d.ts",
+  "author" : "Alexander van Elsas",
+  "exports" : {
+    "." : {
+      "types" : "./dist/index.d.ts",
+      "svelte" : "./dist/index.js",
+      "import" : "./dist/index.js"
+    },
+    "./composables" : {
+      "types" : "./dist/composables/index.d.ts",
+      "import" : "./dist/composables/index.js"
+    },
+    "./x-alert" : {
+      "types" : "./dist/x-alert.d.ts",
+      "import" : "./dist/x-alert.js"
+    },
+    "./x-avatar" : {
+      "types" : "./dist/x-avatar.d.ts",
+      "import" : "./dist/x-avatar.js"
+    },
+    "./x-avatar-group" : {
+      "types" : "./dist/x-avatar-group.d.ts",
+      "import" : "./dist/x-avatar-group.js"
+    },
+    "./x-badge" : {
+      "types" : "./dist/x-badge.d.ts",
+      "import" : "./dist/x-badge.js"
+    },
+    "./x-bento-grid" : {
+      "types" : "./dist/x-bento-grid.d.ts",
+      "import" : "./dist/x-bento-grid.js"
+    },
+    "./x-bento-item" : {
+      "types" : "./dist/x-bento-item.d.ts",
+      "import" : "./dist/x-bento-item.js"
+    },
+    "./x-breadcrumbs" : {
+      "types" : "./dist/x-breadcrumbs.d.ts",
+      "import" : "./dist/x-breadcrumbs.js"
+    },
+    "./x-button" : {
+      "types" : "./dist/x-button.d.ts",
+      "import" : "./dist/x-button.js"
+    },
+    "./x-calendar" : {
+      "types" : "./dist/x-calendar.d.ts",
+      "import" : "./dist/x-calendar.js"
+    },
+    "./x-cancel-dialogue" : {
+      "types" : "./dist/x-cancel-dialogue.d.ts",
+      "import" : "./dist/x-cancel-dialogue.js"
+    },
+    "./x-card" : {
+      "types" : "./dist/x-card.d.ts",
+      "import" : "./dist/x-card.js"
+    },
+    "./x-carousel" : {
+      "types" : "./dist/x-carousel.d.ts",
+      "import" : "./dist/x-carousel.js"
+    },
+    "./x-chart" : {
+      "types" : "./dist/x-chart.d.ts",
+      "import" : "./dist/x-chart.js"
+    },
+    "./x-checkbox" : {
+      "types" : "./dist/x-checkbox.d.ts",
+      "import" : "./dist/x-checkbox.js"
+    },
+    "./x-chip" : {
+      "types" : "./dist/x-chip.d.ts",
+      "import" : "./dist/x-chip.js"
+    },
+    "./x-code" : {
+      "types" : "./dist/x-code.d.ts",
+      "import" : "./dist/x-code.js"
+    },
+    "./x-collapse" : {
+      "types" : "./dist/x-collapse.d.ts",
+      "import" : "./dist/x-collapse.js"
+    },
+    "./x-color-picker" : {
+      "types" : "./dist/x-color-picker.d.ts",
+      "import" : "./dist/x-color-picker.js"
+    },
+    "./x-combobox" : {
+      "types" : "./dist/x-combobox.d.ts",
+      "import" : "./dist/x-combobox.js"
+    },
+    "./x-command-palette" : {
+      "types" : "./dist/x-command-palette.d.ts",
+      "import" : "./dist/x-command-palette.js"
+    },
+    "./x-confetti" : {
+      "types" : "./dist/x-confetti.d.ts",
+      "import" : "./dist/x-confetti.js"
+    },
+    "./x-container" : {
+      "types" : "./dist/x-container.d.ts",
+      "import" : "./dist/x-container.js"
+    },
+    "./x-context-menu" : {
+      "types" : "./dist/x-context-menu.d.ts",
+      "import" : "./dist/x-context-menu.js"
+    },
+    "./x-copy" : {
+      "types" : "./dist/x-copy.d.ts",
+      "import" : "./dist/x-copy.js"
+    },
+    "./x-currency-field" : {
+      "types" : "./dist/x-currency-field.d.ts",
+      "import" : "./dist/x-currency-field.js"
+    },
+    "./x-date-picker" : {
+      "types" : "./dist/x-date-picker.d.ts",
+      "import" : "./dist/x-date-picker.js"
+    },
+    "./x-divider" : {
+      "types" : "./dist/x-divider.d.ts",
+      "import" : "./dist/x-divider.js"
+    },
+    "./x-drawer" : {
+      "types" : "./dist/x-drawer.d.ts",
+      "import" : "./dist/x-drawer.js"
+    },
+    "./x-dropdown" : {
+      "types" : "./dist/x-dropdown.d.ts",
+      "import" : "./dist/x-dropdown.js"
+    },
+    "./x-fieldset" : {
+      "types" : "./dist/x-fieldset.d.ts",
+      "import" : "./dist/x-fieldset.js"
+    },
+    "./x-file-download" : {
+      "types" : "./dist/x-file-download.d.ts",
+      "import" : "./dist/x-file-download.js"
+    },
+    "./x-file-upload" : {
+      "types" : "./dist/x-file-upload.d.ts",
+      "import" : "./dist/x-file-upload.js"
+    },
+    "./x-form" : {
+      "types" : "./dist/x-form.d.ts",
+      "import" : "./dist/x-form.js"
+    },
+    "./x-form-field" : {
+      "types" : "./dist/x-form-field.d.ts",
+      "import" : "./dist/x-form-field.js"
+    },
+    "./x-gaussian-blur" : {
+      "types" : "./dist/x-gaussian-blur.d.ts",
+      "import" : "./dist/x-gaussian-blur.js"
+    },
+    "./x-grid" : {
+      "types" : "./dist/x-grid.d.ts",
+      "import" : "./dist/x-grid.js"
+    },
+    "./x-i18n" : {
+      "types" : "./dist/x-i18n.d.ts",
+      "import" : "./dist/x-i18n.js"
+    },
+    "./x-i18n-provider" : {
+      "types" : "./dist/x-i18n-provider.d.ts",
+      "import" : "./dist/x-i18n-provider.js"
+    },
+    "./x-icon" : {
+      "types" : "./dist/x-icon.d.ts",
+      "import" : "./dist/x-icon.js"
+    },
+    "./x-image" : {
+      "types" : "./dist/x-image.d.ts",
+      "import" : "./dist/x-image.js"
+    },
+    "./x-kbd" : {
+      "types" : "./dist/x-kbd.d.ts",
+      "import" : "./dist/x-kbd.js"
+    },
+    "./x-kinetic-canvas" : {
+      "types" : "./dist/x-kinetic-canvas.d.ts",
+      "import" : "./dist/x-kinetic-canvas.js"
+    },
+    "./x-kinetic-font" : {
+      "types" : "./dist/x-kinetic-font.d.ts",
+      "import" : "./dist/x-kinetic-font.js"
+    },
+    "./x-kinetic-typography" : {
+      "types" : "./dist/x-kinetic-typography.d.ts",
+      "import" : "./dist/x-kinetic-typography.js"
+    },
+    "./x-liquid-dock" : {
+      "types" : "./dist/x-liquid-dock.d.ts",
+      "import" : "./dist/x-liquid-dock.js"
+    },
+    "./x-liquid-fill" : {
+      "types" : "./dist/x-liquid-fill.d.ts",
+      "import" : "./dist/x-liquid-fill.js"
+    },
+    "./x-liquid-glass" : {
+      "types" : "./dist/x-liquid-glass.d.ts",
+      "import" : "./dist/x-liquid-glass.js"
+    },
+    "./x-menu" : {
+      "types" : "./dist/x-menu.d.ts",
+      "import" : "./dist/x-menu.js"
+    },
+    "./x-menu-item" : {
+      "types" : "./dist/x-menu-item.d.ts",
+      "import" : "./dist/x-menu-item.js"
+    },
+    "./x-metaball-cursor" : {
+      "types" : "./dist/x-metaball-cursor.d.ts",
+      "import" : "./dist/x-metaball-cursor.js"
+    },
+    "./x-modal" : {
+      "types" : "./dist/x-modal.d.ts",
+      "import" : "./dist/x-modal.js"
+    },
+    "./x-morph-stack" : {
+      "types" : "./dist/x-morph-stack.d.ts",
+      "import" : "./dist/x-morph-stack.js"
+    },
+    "./x-multi-combobox" : {
+      "types" : "./dist/x-multi-combobox.d.ts",
+      "import" : "./dist/x-multi-combobox.js"
+    },
+    "./x-navbar" : {
+      "types" : "./dist/x-navbar.d.ts",
+      "import" : "./dist/x-navbar.js"
+    },
+    "./x-neural-glow" : {
+      "types" : "./dist/x-neural-glow.d.ts",
+      "import" : "./dist/x-neural-glow.js"
+    },
+    "./x-notification-center" : {
+      "types" : "./dist/x-notification-center.d.ts",
+      "import" : "./dist/x-notification-center.js"
+    },
+    "./x-organic-divider" : {
+      "types" : "./dist/x-organic-divider.d.ts",
+      "import" : "./dist/x-organic-divider.js"
+    },
+    "./x-organic-progress" : {
+      "types" : "./dist/x-organic-progress.d.ts",
+      "import" : "./dist/x-organic-progress.js"
+    },
+    "./x-organic-shape" : {
+      "types" : "./dist/x-organic-shape.d.ts",
+      "import" : "./dist/x-organic-shape.js"
+    },
+    "./x-otp-input" : {
+      "types" : "./dist/x-otp-input.d.ts",
+      "import" : "./dist/x-otp-input.js"
+    },
+    "./x-pagination" : {
+      "types" : "./dist/x-pagination.d.ts",
+      "import" : "./dist/x-pagination.js"
+    },
+    "./x-particle-button" : {
+      "types" : "./dist/x-particle-button.d.ts",
+      "import" : "./dist/x-particle-button.js"
+    },
+    "./x-popover" : {
+      "types" : "./dist/x-popover.d.ts",
+      "import" : "./dist/x-popover.js"
+    },
+    "./x-progress" : {
+      "types" : "./dist/x-progress.d.ts",
+      "import" : "./dist/x-progress.js"
+    },
+    "./x-progress-circle" : {
+      "types" : "./dist/x-progress-circle.d.ts",
+      "import" : "./dist/x-progress-circle.js"
+    },
+    "./x-proximity-list" : {
+      "types" : "./dist/x-proximity-list.d.ts",
+      "import" : "./dist/x-proximity-list.js"
+    },
+    "./x-radio" : {
+      "types" : "./dist/x-radio.d.ts",
+      "import" : "./dist/x-radio.js"
+    },
+    "./x-range-slider" : {
+      "types" : "./dist/x-range-slider.d.ts",
+      "import" : "./dist/x-range-slider.js"
+    },
+    "./x-rating" : {
+      "types" : "./dist/x-rating.d.ts",
+      "import" : "./dist/x-rating.js"
+    },
+    "./x-ripple-effect" : {
+      "types" : "./dist/x-ripple-effect.d.ts",
+      "import" : "./dist/x-ripple-effect.js"
+    },
+    "./x-scroll" : {
+      "types" : "./dist/x-scroll.d.ts",
+      "import" : "./dist/x-scroll.js"
+    },
+    "./x-scroll-parallax" : {
+      "types" : "./dist/x-scroll-parallax.d.ts",
+      "import" : "./dist/x-scroll-parallax.js"
+    },
+    "./x-scroll-stack" : {
+      "types" : "./dist/x-scroll-stack.d.ts",
+      "import" : "./dist/x-scroll-stack.js"
+    },
+    "./x-scroll-story" : {
+      "types" : "./dist/x-scroll-story.d.ts",
+      "import" : "./dist/x-scroll-story.js"
+    },
+    "./x-scroll-timeline" : {
+      "types" : "./dist/x-scroll-timeline.d.ts",
+      "import" : "./dist/x-scroll-timeline.js"
+    },
+    "./x-search-field" : {
+      "types" : "./dist/x-search-field.d.ts",
+      "import" : "./dist/x-search-field.js"
+    },
+    "./x-select" : {
+      "types" : "./dist/x-select.d.ts",
+      "import" : "./dist/x-select.js"
+    },
+    "./x-sidebar" : {
+      "types" : "./dist/x-sidebar.d.ts",
+      "import" : "./dist/x-sidebar.js"
+    },
+    "./x-skeleton" : {
+      "types" : "./dist/x-skeleton.d.ts",
+      "import" : "./dist/x-skeleton.js"
+    },
+    "./x-skeleton-group" : {
+      "types" : "./dist/x-skeleton-group.d.ts",
+      "import" : "./dist/x-skeleton-group.js"
+    },
+    "./x-slider" : {
+      "types" : "./dist/x-slider.d.ts",
+      "import" : "./dist/x-slider.js"
+    },
+    "./x-soft-body" : {
+      "types" : "./dist/x-soft-body.d.ts",
+      "import" : "./dist/x-soft-body.js"
+    },
+    "./x-spacer" : {
+      "types" : "./dist/x-spacer.d.ts",
+      "import" : "./dist/x-spacer.js"
+    },
+    "./x-spinner" : {
+      "types" : "./dist/x-spinner.d.ts",
+      "import" : "./dist/x-spinner.js"
+    },
+    "./x-splash" : {
+      "types" : "./dist/x-splash.d.ts",
+      "import" : "./dist/x-splash.js"
+    },
+    "./x-split-pane" : {
+      "types" : "./dist/x-split-pane.d.ts",
+      "import" : "./dist/x-split-pane.js"
+    },
+    "./x-spotlight-card" : {
+      "types" : "./dist/x-spotlight-card.d.ts",
+      "import" : "./dist/x-spotlight-card.js"
+    },
+    "./x-stat" : {
+      "types" : "./dist/x-stat.d.ts",
+      "import" : "./dist/x-stat.js"
+    },
+    "./x-stepper" : {
+      "types" : "./dist/x-stepper.d.ts",
+      "import" : "./dist/x-stepper.js"
+    },
+    "./x-switch" : {
+      "types" : "./dist/x-switch.d.ts",
+      "import" : "./dist/x-switch.js"
+    },
+    "./x-tab" : {
+      "types" : "./dist/x-tab.d.ts",
+      "import" : "./dist/x-tab.js"
+    },
+    "./x-table" : {
+      "types" : "./dist/x-table.d.ts",
+      "import" : "./dist/x-table.js"
+    },
+    "./x-table-cell" : {
+      "types" : "./dist/x-table-cell.d.ts",
+      "import" : "./dist/x-table-cell.js"
+    },
+    "./x-table-row" : {
+      "types" : "./dist/x-table-row.d.ts",
+      "import" : "./dist/x-table-row.js"
+    },
+    "./x-tabs" : {
+      "types" : "./dist/x-tabs.d.ts",
+      "import" : "./dist/x-tabs.js"
+    },
+    "./x-text-area" : {
+      "types" : "./dist/x-text-area.d.ts",
+      "import" : "./dist/x-text-area.js"
+    },
+    "./x-theme" : {
+      "types" : "./dist/x-theme.d.ts",
+      "import" : "./dist/x-theme.js"
+    },
+    "./x-timeline" : {
+      "types" : "./dist/x-timeline.d.ts",
+      "import" : "./dist/x-timeline.js"
+    },
+    "./x-timeline-item" : {
+      "types" : "./dist/x-timeline-item.d.ts",
+      "import" : "./dist/x-timeline-item.js"
+    },
+    "./x-toast" : {
+      "types" : "./dist/x-toast.d.ts",
+      "import" : "./dist/x-toast.js"
+    },
+    "./x-toaster" : {
+      "types" : "./dist/x-toaster.d.ts",
+      "import" : "./dist/x-toaster.js"
+    },
+    "./x-tooltip" : {
+      "types" : "./dist/x-tooltip.d.ts",
+      "import" : "./dist/x-tooltip.js"
+    },
+    "./x-typography" : {
+      "types" : "./dist/x-typography.d.ts",
+      "import" : "./dist/x-typography.js"
+    },
+    "./x-welcome-tour" : {
+      "types" : "./dist/x-welcome-tour.d.ts",
+      "import" : "./dist/x-welcome-tour.js"
+    }
+  },
+  "devDependencies" : {
+    "svelte" : "^5.0.0",
+    "@sveltejs/package" : "^2.3.0",
+    "svelte-check" : "^4.0.0",
+    "typescript" : "^5.7.0",
+    "@vanelsas/baredom" : "file:../../"
+  },
+  "files" : [ "dist", "README.md", "LICENSE" ],
+  "version" : "0.1.0",
+  "main" : "./dist/index.js",
+  "sideEffects" : [ "./dist/*.svelte", "./dist/*.js" ]
+}

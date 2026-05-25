@@ -5,7 +5,7 @@
 set -e
 
 # Only run if relevant files are staged
-if git diff --cached --name-only | grep -qE '(components/.*/model\.cljs|exports/x_|generate_(react|angular|vue)\.bb|metadata\.bb|^package\.json$)'; then
+if git diff --cached --name-only | grep -qE '(components/.*/model\.cljs|exports/x_|generate_(react|angular|vue|svelte)\.bb|metadata\.bb|form-control-metadata\.bb|^package\.json$)'; then
   echo "[pre-commit] Regenerating React adapter..."
   bb scripts/generate_react.bb || { echo "[pre-commit] Failed to generate React adapter"; exit 1; }
   git add adapters/react/src/ adapters/react/package.json
@@ -20,4 +20,9 @@ if git diff --cached --name-only | grep -qE '(components/.*/model\.cljs|exports/
   bb scripts/generate_vue.bb || { echo "[pre-commit] Failed to generate Vue adapter"; exit 1; }
   git add adapters/vue/src/ adapters/vue/package.json
   echo "[pre-commit] Vue adapter updated"
+
+  echo "[pre-commit] Regenerating Svelte adapter..."
+  bb scripts/generate_svelte.bb || { echo "[pre-commit] Failed to generate Svelte adapter"; exit 1; }
+  git add adapters/svelte/src/ adapters/svelte/package.json
+  echo "[pre-commit] Svelte adapter updated"
 fi

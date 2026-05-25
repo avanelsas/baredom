@@ -1,0 +1,20 @@
+{
+  "name": "baredom-svelte-test-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && vite build"
+  },
+  "dependencies": {
+    "svelte": "^5.0.0",
+    "@vanelsas/baredom": "file:../../..",
+    "@vanelsas/baredom-svelte": "file:.."
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}
