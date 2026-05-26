@@ -3,7 +3,10 @@ name: release
 on:
   push:
     tags:
-      - 'v*'
+      # Match only core-library semver tags (v1.2.3, v3.3.0-rc.1, …).
+      # Adapter tags like 'vue-v0.1.0' start with 'v' too — the [0-9]
+      # guard prevents them from triggering the core release workflow.
+      - 'v[0-9]*'
 
 permissions:
   contents: write
