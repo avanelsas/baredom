@@ -2,6 +2,38 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.3.0] - 2026-05-26
+
+Three new framework adapters ship alongside the existing React and Angular adapters: **Vue 3**, **Svelte 5**, and **SolidJS** are now officially supported. BareDOM users of every major JS framework can now install a typed wrapper package that adds framework-idiomatic props, events, and ref handling on top of the same underlying web components.
+
+The core library itself is functionally unchanged from 3.2.0 — `dist/` is byte-identical. This release ships an updated `README.md` (and an additional `CHANGELOG.md` entry) so the npm-registry view reflects the now-complete five-adapter ecosystem.
+
+### Added — framework adapters
+
+- **`@vanelsas/baredom-vue`** — Vue 3.4+ wrapper components. v-model bridging via the shared `form-control-metadata` single-source-of-truth, typed events, ref forwarding through `expose()`. Install: `npm install @vanelsas/baredom-vue`.
+- **`@vanelsas/baredom-svelte`** — Svelte 5+ wrapper components. `$bindable()` for form controls, `$effect()` for event binding, per-component `.svelte` + `.ts` shim files for named exports. Install: `npm install @vanelsas/baredom-svelte`.
+- **`@vanelsas/baredom-solid`** — Solid 1.9+ wrapper components. Function components with `splitProps`, `onMount`, `onCleanup`, `createEffect`. JSX is preserved for the consumer's Solid bundler. Install: `npm install @vanelsas/baredom-solid`.
+
+All three adapters auto-generate one typed component per BareDOM custom element (103 components total). Per-component bundles, controlled-input support via Vue v-model / Svelte `$bindable()` / Solid signals, typed `CustomEvent` payloads — all driven by the same Custom Elements Manifest that already powered the React and Angular adapters.
+
+### Changed
+
+- **`README.md`** — Restructured for the five-adapter era. New "Framework adapters" comparison table. "Why web components?" and "Design Principles" sections merged into a single "Why BareDOM?". Theming section trimmed (full guide lives in [`docs/x-theme.md`](docs/x-theme.md)). Quick-start replaced with a working HTML example. New top-level "Time-Travel Debugger" section surfacing [`x-trace-history`](docs/x-trace-history.md) — previously buried inside a value-prop bullet.
+- **[`docs/components.md`](docs/components.md)** — Full per-component catalogue (103 components across 11 categories) split out from the README. The previous README listed only 58 of the 103 components; the kinetics, organic, effects, and scroll clusters are now properly catalogued.
+- **`scripts/codegen_shared.bb`** (new) — Shared codegen module housing `resolve-event-name`, `prop-type->ts`, and `event-detail->ts`, previously copy-pasted across all four adapter generators (~270 lines of duplication eliminated). React's `controlled-components` map now derives from `scripts/form-control-metadata.bb`, closing a silent drift trap for new form controls.
+- **`CLAUDE.md`** — Registration checklist for new components now requires updating both `docs/components.md` and the `README.md` Components overview.
+- **CI** — New `.github/workflows/release-solid.yml` matching the per-adapter release pattern. [`docs/RELEASING.md`](docs/RELEASING.md) extended to cover the per-adapter release process and first-publish `NPM_TOKEN` permission considerations.
+
+### Fixed — adapter bugs
+
+- **`@vanelsas/baredom-angular`** — `x-select` CVA used the wrong change-event name. Shipped via PR #242.
+- **`@vanelsas/baredom-vue`** — Vue-reserved prop names (`key`, `ref`, `is`) were silently dropped by Vue. Reserved props are now renamed in the generated wrapper (e.g. `keyAttr`) and the underlying attribute is written imperatively. Shipped via PR #243.
+
+### Notes
+
+- Adapter packages are versioned independently and live at `@vanelsas/baredom-{react,angular,vue,svelte,solid}`. See [`docs/RELEASING.md`](docs/RELEASING.md) for the per-adapter release process.
+- The five published adapter versions at the time of this release: `react@2.1.0`, `angular@2.7.0`, `vue@0.1.0`, `svelte@0.1.0`, `solid@0.1.0`.
+
 ## [3.2.0] - 2026-05-22
 
 Five new components, an element-highlight feature for the `x-trace-history` dev tool, two notable bug fixes, and an internal naming-consistency cleanup.
