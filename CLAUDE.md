@@ -267,6 +267,8 @@ Follow these stages in order. **Do not skip or merge stages.**
    - `package.json` — add `"./x-<name>"` entry under `"exports"`
    - `src/baredom/registry.cljs` — require the export namespace and add `<alias>/register!` to `all-registers` (single source of truth; `baredom.core/start!` and `baredom.exports.all/init` both consume this vector)
    - `public/index.html` — add an entry to the `components` array in the `<script>` block (name, tag, file, category)
+   - `docs/components.md` — add a row in the appropriate category table (Form / Feedback / Navigation / Layout / Data / Overlay / Display / Animation / Effects / Scroll / Utility). If no existing category fits, flag the gap to the user before inventing a new one — taxonomy decisions affect the README overview too.
+   - `README.md` — bump the count in the Components overview table for that category and, if the new component is a flagship for its category, add it to the Examples column.
 4. **Verification** — run these checks:
    - `clj-kondo --lint src test` — zero warnings/errors
    - `npx shadow-cljs release lib` — confirms Closure Advanced passes
