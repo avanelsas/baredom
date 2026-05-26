@@ -1,0 +1,93 @@
+name: release-solid
+
+on:
+  push:
+    tags:
+      - 'solid-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Solid Adapter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
+      - run: npm ci
+
+      - name: Build core library
+        run: npm run build
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#solid-v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./adapters/solid/package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "Tag version (${{ steps.version.outputs.version }}) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Generate Solid wrappers
+        run: bb scripts/generate_solid.bb
+
+      - name: Check generated files are up to date
+        run: git diff --exit-code adapters/solid/src/ adapters/solid/package.json
+
+      - name: Install adapter dependencies
+        run: cd adapters/solid && npm install
+
+      - name: Build adapter
+        run: cd adapters/solid && npx tsc
+
+      - name: Publish to npm
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
+          npm publish --workspace adapters/solid --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "@vanelsas/baredom-solid v${{ steps.version.outputs.version }}"
+          body: |
+            Solid 1.x adapter for BareDOM web components.
+
+            ```bash
+            npm install @vanelsas/baredom-solid
+            ```
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
