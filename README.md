@@ -38,15 +38,7 @@ All components can be explored in the [live demo](https://avanelsas.github.io/ba
 
 ---
 
-## Why BareDOM?
-
-Like most Clojure/ClojureScript developers starting out with UIs, I went through the common phases of using Reagent and Re-frame—which are great utilities in their own right. However, as my UIs became larger and more complex, bundle sizes increased, and I found myself spending too much time rebuilding generic, reusable components from scratch.
-
-I started looking for a different approach and discovered Web Components. I built a few, but didn't have the spare time to develop a comprehensive set that could be used in any project. Then AI arrived. While experimenting with Claude Code, I realised that 1 + 1 could be 3. That is how BareDOM, my first open-source project, was born.
-
-I first built the usual suspects for web components, a basis to create a UI. I then thought about trying something more exciting, with animations, shapes, colours, and a whole range of web components that deal with morphing, kinetics and organic styles were born. I hope it brings you joy when using them in your web application!
-
-# Why web components?
+## Why web components?
 
 **Works in any stack.** Because components are native HTML elements, they work wherever HTML works — vanilla JavaScript, React, Vue, Svelte, Angular, server-rendered HTML, or a static page. No adapter layer, no wrapper library.
 
@@ -64,62 +56,9 @@ I first built the usual suspects for web components, a basis to create a UI. I t
 
 **Open Shadow DOM.** Shadow roots are `mode: "open"` — inspectable in DevTools, styleable via `::part()`, and testable with standard DOM APIs.
 
-**First-class TypeScript support.** Every component ships with auto-generated `.d.ts` type declarations and a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest). TypeScript consumers get typed element interfaces, typed custom events with detail payloads, and `HTMLElementTagNameMap` augmentation for `querySelector` type narrowing — all without installing a separate `@types` package.
+**First-class TypeScript support.** Every component ships with auto-generated `.d.ts` type declarations. TypeScript consumers get typed element interfaces, typed custom events with detail payloads, and `HTMLElementTagNameMap` augmentation for `querySelector` type narrowing — all without installing a separate `@types` package.
 
----
-
-## BareForge — Visual Page Builder
-
-[![GitHub](https://img.shields.io/github/stars/avanelsas/bareforge?style=social)](https://github.com/avanelsas/bareforge)
-
-[BareForge](https://github.com/avanelsas/bareforge) is a companion visual landing-page builder for BareDOM. Drag-and-drop BareDOM components onto a canvas, configure them in the inspector, and export a complete project.
-
-- **Drag-and-drop canvas** with snap-aware placement
-- **Inspector** with type-aware editors for every BareDOM component
-- **Theme editor** with all 8 BareDOM presets and per-token overrides
-- **Four export modes** — CDN, bundle, ClojureScript, and JavaScript
-
-Try the [live editor](https://avanelsas.github.io/bareforge/) or see the [repository](https://github.com/avanelsas/bareforge) for details.
-
----
-
-## Theming
-
-Wrap any subtree in `<x-theme>` to apply a consistent palette across all components:
-
-```html
-<x-theme preset="ocean">
-  <x-button>Themed button</x-button>
-  <x-alert type="info" text="Themed alert"></x-alert>
-</x-theme>
-```
-
-Ships with **8 built-in presets**: `default`, `ocean`, `forest`, `sunset`, `neo-brutalist`, `aurora`, `mono-ai`, `warm-mineral`. All presets include both light and dark mode values that work with `prefers-color-scheme`.
-
-For custom themes, register your own preset via JavaScript:
-
-```js
-import { registerPreset } from '@vanelsas/baredom/x-theme';
-
-registerPreset('acme', {
-  light: { '--x-color-primary': '#e11d48', '--x-color-surface': '#fff' },
-  dark:  { '--x-color-primary': '#fb7185', '--x-color-surface': '#1a1a2e' }
-});
-```
-
-```html
-<x-theme preset="acme">...</x-theme>
-```
-
-Or override individual tokens via CSS:
-
-```html
-<x-theme preset="default" style="--x-color-primary: #e11d48;">
-  ...
-</x-theme>
-```
-
-See [docs/x-theme.md](./docs/x-theme.md) for the full token list, preset details, and API reference.
+**Standards-based metadata.** Every component also ships a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) — the same machine-readable interface description used by Storybook, VS Code Custom Data, and the BareDOM framework adapters themselves to generate typed wrappers. If you build tooling on top of BareDOM, the manifest is the source of truth.
 
 ---
 
@@ -129,24 +68,42 @@ See [docs/x-theme.md](./docs/x-theme.md) for the full token list, preset details
 npm install @vanelsas/baredom
 ```
 
-```js
-import { init } from '@vanelsas/baredom/x-button';
-init();
+Also available via [Clojars](./docs/installation.md#clojurescript-via-clojars) and [standalone ES modules](./docs/installation.md#vanilla-htmljs-via-es-modules). See the [full installation guide](./docs/installation.md).
+
+### Quick start
+
+A minimal page that renders a themed button and alert — no build step required:
+
+```html
+<x-theme preset="ocean">
+  <x-button>Click me</x-button>
+  <x-alert type="info" text="It works!"></x-alert>
+</x-theme>
+<script type="module">
+  import { init as initTheme }  from '@vanelsas/baredom/x-theme';
+  import { init as initButton } from '@vanelsas/baredom/x-button';
+  import { init as initAlert }  from '@vanelsas/baredom/x-alert';
+  initTheme(); initButton(); initAlert();
+</script>
 ```
 
-Also available via [Clojars](./docs/installation.md#clojurescript-via-clojars) and [standalone ES modules](./docs/installation.md#vanilla-htmljs-via-es-modules). See the [full installation guide](./docs/installation.md).
+For deeper usage by stack, see the [JavaScript Developer Guide](./docs/javascript-guide.md), [TypeScript Guide](./docs/typescript.md), or [ClojureScript Guide](./docs/clojurescript-guide.md).
 
 ---
 
-## Usage
+## Framework adapters
 
-BareDOM components are native HTML elements. Import, register, and use them in any framework or vanilla HTML.
+BareDOM components are native HTML elements — they work natively in any framework, with no adapter required. The published adapters below add typed props, typed custom events, and framework-idiomatic ergonomics on top of the same underlying components.
 
-- **JavaScript / TypeScript** — see the [JavaScript Developer Guide](./docs/javascript-guide.md)
-- **TypeScript types** — see the [TypeScript Guide](./docs/typescript.md)
-- **ClojureScript** — see the [ClojureScript Guide](./docs/clojurescript-guide.md)
-- **React** — see [`@vanelsas/baredom-react`](https://www.npmjs.com/package/@vanelsas/baredom-react)
-- **Angular** — see [`@vanelsas/baredom-angular`](https://www.npmjs.com/package/@vanelsas/baredom-angular)
+| Framework | Package | Minimum version | Docs |
+|-----------|---------|-----------------|------|
+| React 19+   | `@vanelsas/baredom-react`   | 2.6.0 | [README](./adapters/react/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-react) |
+| Vue 3.4+    | `@vanelsas/baredom-vue`     | 2.6.0 | [README](./adapters/vue/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-vue) |
+| Angular 17+ | `@vanelsas/baredom-angular` | 2.6.0 | [README](./adapters/angular/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-angular) |
+| Svelte 5+   | `@vanelsas/baredom-svelte`  | 2.6.0 | [README](./adapters/svelte/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-svelte) |
+| Solid 1.9+  | `@vanelsas/baredom-solid`   | 2.6.0 | [README](./adapters/solid/README.md) · [npm](https://www.npmjs.com/package/@vanelsas/baredom-solid) |
+
+All adapters are auto-generated from the same Custom Elements Manifest, so adding a new BareDOM component updates every adapter in lockstep.
 
 ---
 
@@ -242,6 +199,29 @@ BareDOM components are native HTML elements. Import, register, and use them in a
 
 ---
 
+## Theming
+
+Wrap any subtree in `<x-theme>` to apply a coordinated palette across every BareDOM component inside it. Eight presets ship in the box — `default`, `ocean`, `forest`, `sunset`, `neo-brutalist`, `aurora`, `mono-ai`, `warm-mineral` — each with light and dark variants that follow `prefers-color-scheme`.
+
+Register your own preset, override individual tokens via CSS, or nest themes for per-section palettes. See [`docs/x-theme.md`](./docs/x-theme.md) for the full API (presets, `registerPreset`, CSS overrides) and [`docs/THEMING.md`](./docs/THEMING.md) for the token catalogue.
+
+---
+
+## BareForge — Visual Page Builder
+
+[![GitHub](https://img.shields.io/github/stars/avanelsas/bareforge?style=social)](https://github.com/avanelsas/bareforge)
+
+[BareForge](https://github.com/avanelsas/bareforge) is a companion visual landing-page builder for BareDOM. Drag-and-drop BareDOM components onto a canvas, configure them in the inspector, and export a complete project.
+
+- **Drag-and-drop canvas** with snap-aware placement
+- **Inspector** with type-aware editors for every BareDOM component
+- **Theme editor** with all 8 BareDOM presets and per-token overrides
+- **Four export modes** — CDN, bundle, ClojureScript, and JavaScript
+
+Try the [live editor](https://avanelsas.github.io/bareforge/) or see the [repository](https://github.com/avanelsas/bareforge) for details.
+
+---
+
 ## Design Principles
 
 **Stateless.** No `atom`, no signal, no reactive state container lives inside a component. Every render is a pure function of the current attributes and properties. Debugging a component means inspecting attributes in DevTools — no hidden state to hunt for. For deeper investigations, the optional [`x-trace-history`](./docs/x-trace-history.md) dev tool ships as a separate ESM module and records every dispatch, attribute change, and lifecycle callback as a navigable timeline with cause→effect chains. Load it with `<script type="module" src="…/x-trace-history.js">` and activate via `?baredom-trace-history`; zero cost when the flag is absent.
@@ -292,6 +272,16 @@ No polyfills are included or required for these targets.
 ## Development
 
 See the [development guide](./docs/development.md) for setting up the dev server, using [debug mode](./docs/development.md#debug-mode), and building from source.
+
+---
+
+## About
+
+Like most Clojure/ClojureScript developers starting out with UIs, I went through the common phases of using Reagent and Re-frame—which are great utilities in their own right. However, as my UIs became larger and more complex, bundle sizes increased, and I found myself spending too much time rebuilding generic, reusable components from scratch.
+
+I started looking for a different approach and discovered Web Components. I built a few, but didn't have the spare time to develop a comprehensive set that could be used in any project. Then AI arrived. While experimenting with Claude Code, I realised that 1 + 1 could be 3. That is how BareDOM, my first open-source project, was born.
+
+I first built the usual suspects for web components, a basis to create a UI. I then thought about trying something more exciting, with animations, shapes, colours, and a whole range of web components that deal with morphing, kinetics and organic styles were born. I hope it brings you joy when using them in your web application!
 
 ---
 
