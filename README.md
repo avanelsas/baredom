@@ -38,27 +38,21 @@ All components can be explored in the [live demo](https://avanelsas.github.io/ba
 
 ---
 
-## Why web components?
+## Why BareDOM?
 
-**Works in any stack.** Because components are native HTML elements, they work wherever HTML works — vanilla JavaScript, React, Vue, Svelte, Angular, server-rendered HTML, or a static page. No adapter layer, no wrapper library.
+**Works in any stack.** Components are native HTML elements — they work wherever HTML works (vanilla JS, React, Vue, Svelte, Angular, server-rendered HTML, static pages). Your components are not tied to the framework you build with today; migrate your app, keep your components.
 
-**No framework lock-in.** Your components are not tied to the framework you are building with today. Migrate your app, keep your components.
+**Stateless.** Every render is a pure function of attributes and properties — no hidden state, no signals, no virtual DOM. Inspect attributes in DevTools and you see the truth. (And when you need deeper traces, BareDOM ships a time-travel debugger — see below.)
 
-**Tree-shakeable by design.** Each component is a separate ES module. Import only what you use; bundle tools eliminate the rest automatically.
+**Zero runtime, tree-shakeable.** Each component is a self-contained ES module compiled with Google Closure Advanced. The only JavaScript in your bundle is the components you import — no framework, no utility belt, no runtime library.
 
-**Full theming with CSS custom properties.** Every visual detail — colours, spacing, radius, shadows, typography — is exposed as a `--x-<component>-<property>` CSS custom property. Override at any scope: globally, per-page, per-instance. Use [`<x-theme>`](./docs/x-theme.md) for centralised theming with built-in presets.
+**Predictable theming.** Every visual detail is exposed as a `--x-<component>-<property>` CSS custom property — override at any scope, or wrap in [`<x-theme>`](./docs/x-theme.md) for coordinated palettes with built-in presets. Light/dark mode adapts automatically via `prefers-color-scheme`.
 
-**Light and dark mode included.** All components adapt automatically to `prefers-color-scheme`. No JavaScript required, no class toggling.
-
-**Accessibility built in.** ARIA roles, live regions, keyboard navigation, focus management, and `prefers-reduced-motion` support are part of the component, not an afterthought. You do not need to layer accessibility on top.
-
-**Mobile-ready.** All components are tested on viewports from 320px up. Overlay panels cap their width to avoid overflow. Touch targets meet the 44px minimum on coarse-pointer devices. Pointer events are used throughout for unified mouse and touch input.
+**Accessible & mobile-first.** ARIA roles, keyboard navigation, focus management, and `prefers-reduced-motion` support are part of every component. All components are tested on viewports from 320px up; touch targets meet the 44px minimum on coarse-pointer devices, and pointer events handle mouse + touch uniformly.
 
 **Open Shadow DOM.** Shadow roots are `mode: "open"` — inspectable in DevTools, styleable via `::part()`, and testable with standard DOM APIs.
 
-**First-class TypeScript support.** Every component ships with auto-generated `.d.ts` type declarations. TypeScript consumers get typed element interfaces, typed custom events with detail payloads, and `HTMLElementTagNameMap` augmentation for `querySelector` type narrowing — all without installing a separate `@types` package.
-
-**Standards-based metadata.** Every component also ships a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) — the same machine-readable interface description used by Storybook, VS Code Custom Data, and the BareDOM framework adapters themselves to generate typed wrappers. If you build tooling on top of BareDOM, the manifest is the source of truth.
+**TypeScript + Custom Elements Manifest.** Auto-generated `.d.ts` declarations ship with every component: typed element interfaces, typed custom events with detail payloads, and `HTMLElementTagNameMap` augmentation for `querySelector` narrowing. A standards-based [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) drives Storybook, VS Code Custom Data, and the BareDOM framework adapters themselves — if you build tooling on top of BareDOM, the manifest is the source of truth.
 
 ---
 
@@ -109,93 +103,36 @@ All adapters are auto-generated from the same Custom Elements Manifest, so addin
 
 ## Components
 
-### Form (17)
+**103 web components across 11 categories** — from foundational UI controls to morphing animations, organic effects, and scroll-driven storytelling.
 
-| Tag | Description |
-|-----|-------------|
-| [`<x-button>`](./docs/x-button.md) | Action control. Variants: `primary`, `secondary`, `tertiary`, `ghost`, `danger`. Sizes: `sm`, `md`, `lg`. States: `disabled`, `loading`, `pressed`. Icon slots. |
-| [`<x-checkbox>`](./docs/x-checkbox.md) | Boolean input. Reflects `checked` and `indeterminate` states to attributes. |
-| [`<x-color-picker>`](./docs/x-color-picker.md) | Colour picker with 2D saturation/brightness area, hue strip, optional alpha, preset swatches, eyedropper, and clipboard copy. Inline or popover mode. |
-| [`<x-copy>`](./docs/x-copy.md) | Copy-to-clipboard utility button with success feedback. |
-| [`<x-currency-field>`](./docs/x-currency-field.md) | Formatted currency input with locale-aware masking. |
-| [`<x-date-picker>`](./docs/x-date-picker.md) | Calendar-based date selection with keyboard navigation. |
-| [`<x-fieldset>`](./docs/x-fieldset.md) | Groups related form controls with a styled legend. |
-| [`<x-file-download>`](./docs/x-file-download.md) | Download trigger that initiates a file transfer. |
-| [`<x-form>`](./docs/x-form.md) | Form wrapper with coordinated validation state. |
-| [`<x-form-field>`](./docs/x-form-field.md) | Label + input wrapper with error and hint text slots. |
-| [`<x-radio>`](./docs/x-radio.md) | Single-choice input within a radio group. |
-| [`<x-search-field>`](./docs/x-search-field.md) | Search input with integrated clear button and search icon. |
-| [`<x-select>`](./docs/x-select.md) | Dropdown select control with custom styling. |
-| [`<x-slider>`](./docs/x-slider.md) | Range slider with step, min/max, and value display. |
-| [`<x-stepper>`](./docs/x-stepper.md) | Multi-step form progress indicator with navigation. |
-| [`<x-switch>`](./docs/x-switch.md) | Toggle switch for boolean settings. |
-| [`<x-text-area>`](./docs/x-text-area.md) | Multi-line text input with auto-resize option. |
+| Category | Count | Examples |
+|----------|------:|----------|
+| **Form**       | 23 | Button · Checkbox · Slider · Combobox · OTP Input · Color Picker |
+| **Feedback**   | 11 | Alert · Toast · Spinner · Progress · Skeleton · Notification Center |
+| **Navigation** | 8  | Navbar · Sidebar · Breadcrumbs · Tabs · Pagination · Menu |
+| **Layout**     | 10 | Card · Grid · Bento Grid · Split Pane · Container · Collapse |
+| **Data**       | 11 | Avatar · Table · Chart · Timeline · Calendar · Stat |
+| **Overlay**    | 9  | Modal · Drawer · Popover · Tooltip · Welcome Tour · Command Palette |
+| **Display**    | 6  | Icon · Image · Typography · Code · Kbd · Spotlight Card |
+| **Animation**  | 6  | Kinetic Canvas · Kinetic Typography · Morph Stack · Soft Body · Splash |
+| **Effects**    | 12 | Liquid Glass · Confetti · Neural Glow · Metaball Cursor · Organic Shape |
+| **Scroll**     | 5  | Scroll · Scroll Parallax · Scroll Stack · Scroll Story · Scroll Timeline |
+| **Utility**    | 2  | i18n · i18n Provider |
 
-### Feedback (10)
+See [**docs/components.md**](./docs/components.md) for the full per-component catalogue with one-line descriptions and links to each component's API documentation.
 
-| Tag | Description |
-|-----|-------------|
-| [`<x-alert>`](./docs/x-alert.md) | Semantic alert banner. Types: `info`, `success`, `warning`, `error`. Auto-dismiss with `timeout-ms`. Fires `x-alert-dismiss`. |
-| [`<x-badge>`](./docs/x-badge.md) | Small inline label for counts, states, and categories. |
-| [`<x-chip>`](./docs/x-chip.md) | Compact tag component, optionally removable. |
-| [`<x-notification-center>`](./docs/x-notification-center.md) | Notification hub for aggregating and managing in-app notifications. |
-| [`<x-progress>`](./docs/x-progress.md) | Linear progress bar with determinate and indeterminate modes. |
-| [`<x-progress-circle>`](./docs/x-progress-circle.md) | Circular progress indicator for compact spaces. |
-| [`<x-skeleton>`](./docs/x-skeleton.md) | Animated loading placeholder that mirrors content shape. |
-| [`<x-spinner>`](./docs/x-spinner.md) | Inline loading spinner with size and colour variants. |
-| [`<x-toast>`](./docs/x-toast.md) | Single transient notification with enter/exit animations and auto-dismiss. |
-| [`<x-toaster>`](./docs/x-toaster.md) | Toast manager. Positions a queue of `<x-toast>` elements, enforces `max-toasts`, and fires `x-toaster-dismiss`. |
+---
 
-### Navigation (8)
+## Time-Travel Debugger
 
-| Tag | Description |
-|-----|-------------|
-| [`<x-breadcrumbs>`](./docs/x-breadcrumbs.md) | Hierarchical path trail with separator customisation. |
-| [`<x-menu>`](./docs/x-menu.md) | Vertical menu container coordinating `<x-menu-item>` children. |
-| [`<x-menu-item>`](./docs/x-menu-item.md) | Individual menu entry with icon, label, description, and keyboard support. |
-| [`<x-navbar>`](./docs/x-navbar.md) | Top navigation bar with responsive slot layout. |
-| [`<x-pagination>`](./docs/x-pagination.md) | Page navigation controls with first/previous/next/last and page-size selection. |
-| [`<x-sidebar>`](./docs/x-sidebar.md) | Collapsible side navigation panel with collapse/expand animation. |
-| [`<x-tab>`](./docs/x-tab.md) | Individual tab within an `<x-tabs>` container. |
-| [`<x-tabs>`](./docs/x-tabs.md) | Tab container that coordinates `<x-tab>` children, manages active state, and fires change events. |
+[`x-trace-history`](./docs/x-trace-history.md) is BareDOM's dev-only debugger. It records every CustomEvent dispatch, observed attribute change, instance-field write, and lifecycle callback as a navigable timeline with cause→effect navigation — so when a bug appears, you can step back to the exact event that caused it.
 
-### Layout (6)
+- **Zero production cost.** When inactive, the recorder pays a single nil-check per hook site and no per-event overhead.
+- **One-line activation.** `import "@vanelsas/baredom/x-trace-history"` and append `?baredom-trace-history` to the URL — a floating dock attaches to the viewport.
+- **Bug-share via URL.** Record a session, copy the URL, and the recipient sees the same timeline.
+- **Adapter-aware.** Works alongside the React, Vue, Angular, Svelte, and Solid adapters.
 
-| Tag | Description |
-|-----|-------------|
-| [`<x-card>`](./docs/x-card.md) | Surface container. Variants: `elevated`, `outlined`, `filled`, `ghost`. Interactive mode available. |
-| [`<x-collapse>`](./docs/x-collapse.md) | Expandable/collapsible section with animated height transition. |
-| [`<x-container>`](./docs/x-container.md) | Responsive max-width container with configurable padding. |
-| [`<x-divider>`](./docs/x-divider.md) | Horizontal or vertical visual separator. |
-| [`<x-grid>`](./docs/x-grid.md) | CSS Grid layout component with responsive column configuration. |
-| [`<x-spacer>`](./docs/x-spacer.md) | Flexible spacing element for flexbox and grid layouts. |
-
-### Data (10)
-
-| Tag | Description |
-|-----|-------------|
-| [`<x-avatar>`](./docs/x-avatar.md) | User photo or initials display. Shape, size, and status dot variants. |
-| [`<x-avatar-group>`](./docs/x-avatar-group.md) | Overlapping avatar stack for representing multiple users. |
-| [`<x-carousel>`](./docs/x-carousel.md) | Accessible carousel with swipe/drag, arrows, dot indicators, autoplay, slide/fade transitions, and horizontal/vertical orientation. |
-| [`<x-chart>`](./docs/x-chart.md) | Data visualisation component for common chart types. |
-| [`<x-stat>`](./docs/x-stat.md) | KPI / metric card with value, label, trend, and icon slots. |
-| [`<x-table>`](./docs/x-table.md) | Data grid using CSS subgrid. Supports sorting, single/multi-select, striping, and accessible captions. |
-| [`<x-table-cell>`](./docs/x-table-cell.md) | Table cell for header and data modes, with sort indicator and alignment control. |
-| [`<x-table-row>`](./docs/x-table-row.md) | Table row with interactive selection and `x-table-row-select` event. |
-| [`<x-timeline>`](./docs/x-timeline.md) | Vertical timeline container that coordinates `<x-timeline-item>` children. |
-| [`<x-timeline-item>`](./docs/x-timeline-item.md) | Individual timeline event with time, icon, heading, and body slots. |
-
-### Overlay (7)
-
-| Tag | Description |
-|-----|-------------|
-| [`<x-cancel-dialogue>`](./docs/x-cancel-dialogue.md) | Confirmation modal for destructive cancel actions. |
-| [`<x-command-palette>`](./docs/x-command-palette.md) | Keyboard-accessible global search and command interface. |
-| [`<x-context-menu>`](./docs/x-context-menu.md) | Right-click / long-press contextual action menu. |
-| [`<x-drawer>`](./docs/x-drawer.md) | Off-canvas sliding panel, configurable from any edge. |
-| [`<x-dropdown>`](./docs/x-dropdown.md) | Positioned dropdown container for menus and selection. |
-| [`<x-modal>`](./docs/x-modal.md) | Centred dialog with backdrop, focus trap, and `Escape` to close. |
-| [`<x-popover>`](./docs/x-popover.md) | Anchored popover for tooltips, help text, and contextual UI. |
+See [`docs/x-trace-history.md`](./docs/x-trace-history.md) for the full guide — search, console API, recording sessions, import/export, and the JSON schema.
 
 ---
 
@@ -219,22 +156,6 @@ Register your own preset, override individual tokens via CSS, or nest themes for
 - **Four export modes** — CDN, bundle, ClojureScript, and JavaScript
 
 Try the [live editor](https://avanelsas.github.io/bareforge/) or see the [repository](https://github.com/avanelsas/bareforge) for details.
-
----
-
-## Design Principles
-
-**Stateless.** No `atom`, no signal, no reactive state container lives inside a component. Every render is a pure function of the current attributes and properties. Debugging a component means inspecting attributes in DevTools — no hidden state to hunt for. For deeper investigations, the optional [`x-trace-history`](./docs/x-trace-history.md) dev tool ships as a separate ESM module and records every dispatch, attribute change, and lifecycle callback as a navigable timeline with cause→effect chains. Load it with `<script type="module" src="…/x-trace-history.js">` and activate via `?baredom-trace-history`; zero cost when the flag is absent.
-
-**Standards-only.** BareDOM relies on Custom Elements v1, Shadow DOM v1, and ES modules — all natively supported in modern browsers. There are no polyfills required and no proprietary APIs to learn.
-
-**Zero runtime dependency.** Components are compiled to self-contained ES modules. The only JavaScript in your bundle is the component itself. No framework, no runtime library, no utility belt.
-
-**Accessible by default.** ARIA roles, live regions, keyboard interaction patterns, focus indicators, and `prefers-reduced-motion` support are written into every component that needs them — not optional add-ons.
-
-**Predictable theming.** CSS custom properties follow a single naming convention: `--x-<component>-<property>`. Tokens are set on `:host` and cascade normally. You override them the same way you override any CSS property.
-
-**Mobile-first.** Components use `dvh` viewport units, `calc(100vw - ...)` width caps, and `@media (pointer:coarse)` rules for touch-friendly sizing. No component overflows on a 320px screen.
 
 ---
 
