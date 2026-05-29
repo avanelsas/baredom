@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.model :as mu]
    [baredom.components.barebuild-data.model :as model]))
 
 ;; Effect shell for barebuild-data. The element owns no authoritative state —
@@ -81,7 +82,7 @@
   same value) or dispatching refresh re-reads."
   [^js el]
   (let [src (du/get-attr el model/attr-src)]
-    (when (and (some? src) (not= "" src))
+    (when (mu/non-empty-string? src)
       (abort-inflight! el)
       (let [ctrl   (js/AbortController.)
             signal (.-signal ctrl)]
@@ -103,14 +104,14 @@
   (when-not (du/getv el k-refresh-handler)
     (add-refresh-listener! el))
   (when-not (du/getv el k-state)
-    (du/setv! el k-state (model/idle-state)))   ; resting value; not a transition, no event
+    (du/setv! el k-state default-idle))          ; resting value; not a transition, no event
   (fetch! el))                                   ; re-fetch on (re)connect when src present
 
 (defn- disconnected! [^js el]
   ;; The element owns no cache — the server is the truth. Abort and reset to idle;
   ;; reconnect re-fetches rather than replaying the stale :loaded value.
   (abort-inflight! el)
-  (du/setv! el k-state (model/idle-state)))
+  (du/setv! el k-state default-idle))
 
 (defn- attribute-changed! [^js el _name _old-val _new-val]
   ;; No value-change guard: re-setting `src` is an explicit "read now" request.

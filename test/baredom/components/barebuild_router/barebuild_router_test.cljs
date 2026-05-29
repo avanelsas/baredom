@@ -1,6 +1,7 @@
 (ns baredom.components.barebuild-router.barebuild-router-test
   (:require
    [cljs.test :refer-macros [deftest is use-fixtures]]
+   [goog.object :as gobj]
    [baredom.components.barebuild-router.barebuild-router :as router]
    [baredom.components.barebuild-route.barebuild-route :as route]
    [baredom.components.barebuild-router.model :as model]
@@ -131,9 +132,9 @@
     (.appendChild inner b)
     (.appendChild outer inner)               ; inner router nested inside outer
     (append-body! outer)
-    (is (= 1 (count (aget outer k-routes)))
+    (is (= 1 (count (gobj/get outer k-routes)))
         "outer router registers only its own route, not the inner router's (stopPropagation)")
-    (is (= 1 (count (aget inner k-routes)))
+    (is (= 1 (count (gobj/get inner k-routes)))
         "inner router registers its own route")))
 
 ;; ── Anchor interception (happy path, end-to-end) ───────────────────────────────
