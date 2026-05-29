@@ -16,6 +16,7 @@
 ;; ── Instance-field keys ────────────────────────────────────────────────────────
 (def ^:private k-initialized?   "__barebuildRouteInit")
 (def ^:private k-pattern        "__barebuildRoutePattern")        ; parsed path pattern (value)
+(def ^:private k-visible?       "__barebuildRouteVisible")        ; last-applied visibility (change-guard)
 (def ^:private k-change-handler "__barebuildRouteChangeHandler")  ; stashed self-listener
 
 ;; ── String-literal constants ───────────────────────────────────────────────────
@@ -38,8 +39,17 @@
     (init-dom! el)))
 
 ;; ── Visibility (the route's own effect, gated by a received value) ─────────────
-(defn- set-visible! [^js el visible?]
-  (set! (.. el -style -display) (if visible? display-default display-none)))
+(defn- set-visible!
+  "Toggle the route's own display, applying only the delta (epochal change-guard).
+  The router pushes a match to every route on every resolution, so without this
+  guard a hidden route would re-write `display:none` (and the active one `\"\"`)
+  on each event. Guarding also keeps the trace recorder's signal to real
+  activation transitions, and pre-empts spurious effects if an activation event
+  or transition is ever added."
+  [^js el visible?]
+  (when (not= (du/getv el k-visible?) visible?)
+    (du/setv! el k-visible? visible?)
+    (set! (.. el -style -display) (if visible? display-default display-none))))
 
 (defn- parse-own-pattern! [^js el]
   (du/setv! el k-pattern (router-model/parse-path-pattern (du/get-attr el model/attr-path))))

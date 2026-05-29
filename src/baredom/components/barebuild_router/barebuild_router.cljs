@@ -88,17 +88,34 @@
                   (js/CustomEvent. model/event-route-change
                                    #js {:detail detail :bubbles false :composed false})))
 
-(defn- resolve! [^js el]
+(defn- current-detail
+  "Recompute the current match against the live URL and the registered routes,
+  caching it on the host (.path / .params), and return the detail value that
+  route-change carries. Pure projection apart from refreshing the two caches."
+  [^js el]
   (let [base      (or (du/get-attr el model/attr-base) model/default-base)
         stripped  (model/strip-base base (.. js/location -pathname))
-        js-params (clj->js (or (active-params el stripped) {}))
-        detail    #js {:path stripped :params js-params}]
+        js-params (clj->js (or (active-params el stripped) {}))]
     (du/setv! el k-path stripped)
     (du/setv! el k-params js-params)
+    #js {:path stripped :params js-params}))
+
+(defn- announce!
+  "One bubbling dispatch on self for external observers (analytics, a title
+  updater). Routes do not listen to this — they receive a targeted push."
+  [^js el ^js detail]
+  (du/dispatch! el model/event-route-change detail))
+
+(defn- resolve!
+  "Full resolution: push the current match to EVERY registered route, then
+  announce. Used when the URL changes (navigate / popstate) — any route may flip
+  visibility, so the fan-out to all routes is required. This is O(n) per discrete
+  navigation, not a per-mount loop (see on-route-mounted)."
+  [^js el]
+  (let [detail (current-detail el)]
     (doseq [^js route (read-routes el)]
       (push-match! route detail))
-    ;; One additional dispatch on self (bubbling) for external observers.
-    (du/dispatch! el model/event-route-change detail)))
+    (announce! el detail)))
 
 ;; ── Navigation ──────────────────────────────────────────────────────────────────
 (defn- navigate! [^js el path]
@@ -117,13 +134,24 @@
   ;; stopPropagation so an OUTER router never also registers an inner router's
   ;; route — registration stops at the nearest ancestor router.
   (.stopPropagation e)
-  (register-route! el (.-target e))
-  (resolve! el))   ; pushes the current match to the new route → late-mount activates
+  (let [^js route (.-target e)]
+    (register-route! el route)
+    ;; The URL has not changed, so every already-registered route still shows the
+    ;; right thing. Push the current match to ONLY the new route — O(1) per mount,
+    ;; so building an n-route app is O(n), not O(n²). A late-mounted matching route
+    ;; therefore activates on registration without waiting for a navigation.
+    (let [detail (current-detail el)]
+      (push-match! route detail)
+      (announce! el detail))))
 
 (defn- on-route-unmounted [^js el ^js e]
   (.stopPropagation e)
+  ;; Symmetric with mount: the leaving route is gone and the URL is unchanged, so
+  ;; the surviving routes keep correct visibility. Just refresh the cached match
+  ;; (the leaving route may have been the active one) and announce — no fan-out,
+  ;; so tearing down an n-route app is O(n), not O(n²).
   (deregister-route! el (.-target e))
-  (resolve! el))
+  (announce! el (current-detail el)))
 
 ;; ── Anchor interception (document capture) ──────────────────────────────────────
 (defn- anchor-node? [^js node]
