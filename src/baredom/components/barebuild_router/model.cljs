@@ -77,10 +77,10 @@
   (let [segs  (split-segments path)
         pairs (map vector pattern segs)]
     (when (and (= (count pattern) (count segs))
-               (every? (fn [[{:keys [kind v]} seg]] (or (= :param kind) (= v seg)))
+               (every? (fn [[{:keys [kind v]} seg]] (or (= kind :param) (= v seg)))
                        pairs))
       {:params (into {} (for [[{:keys [kind] pname :name} seg] pairs
-                              :when (= :param kind)]
+                              :when (= kind :param)]
                           [pname seg]))})))
 
 (defn strip-base

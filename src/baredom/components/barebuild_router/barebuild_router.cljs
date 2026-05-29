@@ -39,7 +39,6 @@
 (def ^:private handler-key-popstate  "popstate")
 (def ^:private handler-key-navigate  "navigate")
 (def ^:private handler-key-mounted   "mounted")
-(def ^:private handler-key-unmounted "unmounted")
 
 ;; ── Shadow DOM (layout-transparent; the router renders no box of its own) ───────
 (defn- init-dom! [^js el]
@@ -56,6 +55,11 @@
     (init-dom! el)))
 
 ;; ── Route registry (immutable succession; never an in-place mutation) ──────────
+;; The registry is a CACHE of DOM truth, validated lazily against `isConnected`.
+;; Routes self-register on connect (mounted bubbles while attached). Removal is
+;; NOT signalled — `barebuild-route-unmounted` fires from disconnectedCallback,
+;; when the element is already detached, so it cannot bubble to this router.
+;; Instead, disconnected handles are skipped on read and pruned on each resolve.
 (defn- read-routes [^js el]
   (or (du/getv el k-routes) []))
 
@@ -64,20 +68,28 @@
     (when-not (some #(identical? % route) routes)
       (du/setv! el k-routes (conj routes route)))))
 
-(defn- deregister-route! [^js el ^js route]
-  (du/setv! el k-routes (vec (remove #(identical? % route) (read-routes el)))))
+(defn- prune-disconnected!
+  "Drop handles for routes no longer in the DOM. Keeps the cache bounded; the
+  active-match read already ignores disconnected routes, so this is housekeeping."
+  [^js el]
+  (let [routes (read-routes el)
+        live   (filterv (fn [^js r] (.-isConnected r)) routes)]
+    (when (< (count live) (count routes))
+      (du/setv! el k-routes live))))
 
 ;; ── Resolution: pure projection of (routes, URL) published as a value ───────────
 (defn- active-params
   "Params (CLJS map) of the first registered route whose pattern matches
-  `stripped`, or nil when none match. Reads each route's public `path`
-  attribute — a held handle, not a tree walk; no write to the route."
+  `stripped`, or nil when none match. Skips disconnected routes (the registry is
+  a lazily-validated cache). Reads each route's public `path` attribute — a held
+  handle, not a tree walk; no write to the route."
   [^js el stripped]
   (some (fn [^js route]
-          (some-> (du/get-attr route route-model/attr-path)
-                  (model/parse-path-pattern)
-                  (model/match-path stripped)
-                  (:params)))
+          (when (.-isConnected route)
+            (some-> (du/get-attr route route-model/attr-path)
+                    model/parse-path-pattern
+                    (model/match-path stripped)
+                    :params)))
         (read-routes el)))
 
 (defn- push-match!
@@ -88,17 +100,22 @@
                   (js/CustomEvent. model/event-route-change
                                    #js {:detail detail :bubbles false :composed false})))
 
-(defn- current-detail
-  "Recompute the current match against the live URL and the registered routes,
-  caching it on the host (.path / .params), and return the detail value that
-  route-change carries. Pure projection apart from refreshing the two caches."
+(defn- compute-detail
+  "Project (registered routes, current URL) → the route-change detail value
+  `{:path :params}`. Reads `location` and route attributes, like a `read-model`;
+  performs no mutation, so it stays the pure read phase (no `!`)."
   [^js el]
   (let [base      (or (du/get-attr el model/attr-base) model/default-base)
         stripped  (model/strip-base base (.. js/location -pathname))
         js-params (clj->js (or (active-params el stripped) {}))]
-    (du/setv! el k-path stripped)
-    (du/setv! el k-params js-params)
     #js {:path stripped :params js-params}))
+
+(defn- cache-detail!
+  "Cache the resolved match on the host so the read-only `.path` / `.params`
+  getters reflect the current value. The one mutation in the resolve path."
+  [^js el ^js detail]
+  (du/setv! el k-path (.-path detail))
+  (du/setv! el k-params (.-params detail)))
 
 (defn- announce!
   "One bubbling dispatch on self for external observers (analytics, a title
@@ -112,7 +129,9 @@
   visibility, so the fan-out to all routes is required. This is O(n) per discrete
   navigation, not a per-mount loop (see on-route-mounted)."
   [^js el]
-  (let [detail (current-detail el)]
+  (prune-disconnected! el)                 ; validate the cache against the DOM
+  (let [detail (compute-detail el)]
+    (cache-detail! el detail)
     (doseq [^js route (read-routes el)]
       (push-match! route detail))
     (announce! el detail)))
@@ -140,18 +159,10 @@
     ;; right thing. Push the current match to ONLY the new route — O(1) per mount,
     ;; so building an n-route app is O(n), not O(n²). A late-mounted matching route
     ;; therefore activates on registration without waiting for a navigation.
-    (let [detail (current-detail el)]
+    (let [detail (compute-detail el)]
+      (cache-detail! el detail)
       (push-match! route detail)
       (announce! el detail))))
-
-(defn- on-route-unmounted [^js el ^js e]
-  (.stopPropagation e)
-  ;; Symmetric with mount: the leaving route is gone and the URL is unchanged, so
-  ;; the surviving routes keep correct visibility. Just refresh the cached match
-  ;; (the leaving route may have been the active one) and announce — no fan-out,
-  ;; so tearing down an n-route app is O(n), not O(n²).
-  (deregister-route! el (.-target e))
-  (announce! el (current-detail el)))
 
 ;; ── Anchor interception (document capture) ──────────────────────────────────────
 (defn- anchor-node? [^js node]
@@ -174,7 +185,7 @@
   (let [path        (array-seq (.composedPath e))
         from-anchor (drop-while (complement anchor-node?) path)
         anchor      (first from-anchor)
-        nearest     (some #(when (router-node? %) %) (rest from-anchor))]
+        nearest     (first (filter router-node? (rest from-anchor)))]
     {:anchor                  anchor
      :anchor-present?         (some? anchor)
      :nearest-router-is-this? (identical? nearest el)
@@ -195,29 +206,27 @@
         popstate  (fn router-popstate [e] (on-popstate el e))
         navigate  (fn router-navigate [e] (on-navigate el e))
         mounted   (fn router-mounted [e] (on-route-mounted el e))
-        unmounted (fn router-unmounted [e] (on-route-unmounted el e))
         handlers  #js {}]
     ;; Build the stash with the same key consts the remove path reads back —
     ;; #js map literals require literal keys, so we set them explicitly here.
+    ;; No `unmounted` listener: route removal cannot bubble here (detached element),
+    ;; so deregistration is by isConnected pruning, not an event.
     (gobj/set handlers handler-key-doc-click doc-click)
     (gobj/set handlers handler-key-popstate  popstate)
     (gobj/set handlers handler-key-navigate  navigate)
     (gobj/set handlers handler-key-mounted   mounted)
-    (gobj/set handlers handler-key-unmounted unmounted)
     (du/setv! el k-handlers handlers)
     (.addEventListener js/document event-click doc-click true)   ; capture phase
     (.addEventListener js/window   event-popstate popstate)
-    (.addEventListener el model/event-navigate        navigate)
-    (.addEventListener el model/event-route-mounted   mounted)
-    (.addEventListener el model/event-route-unmounted unmounted)))
+    (.addEventListener el model/event-navigate      navigate)
+    (.addEventListener el model/event-route-mounted mounted)))
 
 (defn- remove-listeners! [^js el]
   (when-let [^js h (du/getv el k-handlers)]
     (.removeEventListener js/document event-click (gobj/get h handler-key-doc-click) true)
     (.removeEventListener js/window   event-popstate (gobj/get h handler-key-popstate))
-    (.removeEventListener el model/event-navigate        (gobj/get h handler-key-navigate))
-    (.removeEventListener el model/event-route-mounted   (gobj/get h handler-key-mounted))
-    (.removeEventListener el model/event-route-unmounted (gobj/get h handler-key-unmounted))
+    (.removeEventListener el model/event-navigate      (gobj/get h handler-key-navigate))
+    (.removeEventListener el model/event-route-mounted (gobj/get h handler-key-mounted))
     (du/setv! el k-handlers nil)))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────────

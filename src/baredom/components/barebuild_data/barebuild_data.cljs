@@ -14,7 +14,12 @@
 ;; ── Instance-field keys ────────────────────────────────────────────────────────
 (def ^:private k-initialized?   "__barebuildDataInit")
 (def ^:private k-state          "__barebuildDataState")          ; cached CLJS state map
-(def ^:private k-abort          "__barebuildDataAbort")          ; in-flight AbortController
+;; k-abort holds the in-flight AbortController and is written via du/setv-untraced!
+;; (sites below). The value is an opaque, non-cloneable controller with no
+;; diagnostic display value; the meaningful fetch lifecycle (idle→loading→loaded/
+;; error) is already on the trace recorder via k-state + the dispatched
+;; barebuild-data-state event, so tracing this handle would add noise, not signal.
+(def ^:private k-abort          "__barebuildDataAbort")          ; in-flight AbortController (untraced)
 (def ^:private k-refresh-handler "__barebuildDataRefreshHandler") ; stashed self-listener
 
 ;; Shared resting value so pre-connect `.state` reads return a stable reference.

@@ -1,7 +1,6 @@
 (ns baredom.components.barebuild-router.barebuild-router-test
   (:require
    [cljs.test :refer-macros [deftest is use-fixtures]]
-   [goog.object :as gobj]
    [baredom.components.barebuild-router.barebuild-router :as router]
    [baredom.components.barebuild-route.barebuild-route :as route]
    [baredom.components.barebuild-router.model :as model]
@@ -9,10 +8,6 @@
 
 (router/init!)
 (route/init!)
-
-;; White-box probe of the router's private registry (mirrors the k-routes key in
-;; barebuild_router.cljs) — used only to assert nested-router registration scoping.
-(def ^:private k-routes "__barebuildRouterRoutes")
 
 (def ^:private original-path (.. js/location -pathname))
 
@@ -122,20 +117,28 @@
       (is (= "typed text" (.-value (.querySelector form "input")))
           "input value survives the toggle (state lives on the surviving node)"))))
 
-;; ── Nested-router registration scoping (stopPropagation) ───────────────────────
-(deftest nested-router-registration-scoping-test
-  (let [outer    (make-router)
-        inner    (make-router)
-        a        (make-route "/a")
-        b        (make-route "/b")]
-    (.appendChild outer a)
-    (.appendChild inner b)
+;; ── Nested-router scoping (stopPropagation), asserted behaviourally ─────────────
+;; A param route lives under the INNER router, nested inside the OUTER router. If
+;; the inner route's bubbling `mounted` were not stopped at the inner router, the
+;; outer would also register it and would then match the param URL — exposing the
+;; param on its public `.params`. Asserting on `.params` (values-out) instead of
+;; the private registry keeps the test honest across a registry-representation change.
+(deftest nested-router-scoping-test
+  (let [outer (make-router)
+        inner (make-router)
+        route (make-route "/users/:id")]
+    (.appendChild inner route)
     (.appendChild outer inner)               ; inner router nested inside outer
     (append-body! outer)
-    (is (= 1 (count (gobj/get outer k-routes)))
-        "outer router registers only its own route, not the inner router's (stopPropagation)")
-    (is (= 1 (count (gobj/get inner k-routes)))
-        "inner router registers its own route")))
+    ;; Navigate the whole page; popstate makes both routers (window listeners) resolve.
+    (.pushState js/history nil "" "/users/42")
+    (.dispatchEvent js/window (js/Event. "popstate"))
+    (is (= "42" (.. inner -params -id))
+        "the nearest (inner) router owns the route and exposes its param")
+    (is (visible? route)
+        "the inner route activates under its own router")
+    (is (nil? (.. outer -params -id))
+        "the outer router never registered the inner route (stopPropagation) — no match, no param")))
 
 ;; ── Anchor interception (happy path, end-to-end) ───────────────────────────────
 (deftest anchor-interception-happy-path-test
