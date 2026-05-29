@@ -21,6 +21,18 @@
     "url": "https://github.com/avanelsas/baredom.git"
   },
   "exports": {
+    "./barebuild-router": {
+      "import": "./dist/barebuild-router.js",
+      "default": "./dist/barebuild-router.js"
+    },
+    "./barebuild-route": {
+      "import": "./dist/barebuild-route.js",
+      "default": "./dist/barebuild-route.js"
+    },
+    "./barebuild-data": {
+      "import": "./dist/barebuild-data.js",
+      "default": "./dist/barebuild-data.js"
+    },
     "./x-avatar": {
       "types": "./dist/x-avatar.d.ts",
       "import": "./dist/x-avatar.js",

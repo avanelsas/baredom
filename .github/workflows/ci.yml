@@ -59,6 +59,9 @@ jobs:
       - name: Check du discipline (no gobj on host, no make-el shim)
         run: bb scripts/check_du_discipline.bb
 
+      - name: Check barebuild boundary (BareDOM <-> BareBuild)
+        run: bb scripts/check-barebuild-boundary.bb
+
       - name: Build ESM library
         run: npm run build
 
