@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BareBuild dist-ESM smoke</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Import the PUBLISHED per-component ESM (dist/*.js) through the real
+         package export specifiers, exactly as a consumer of @vanelsas/baredom
+         would. The dist entries `import { $APP } from "./base.js"`, which resolves
+         to /dist/base.js (shared, loaded once). Serve the repo root so /dist/*
+         resolves. This exercises the :advanced/:esm artifact — the one bundle the
+         dev-app demos and the karma suite do NOT run. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@vanelsas/baredom/barebuild-router": "/dist/barebuild-router.js",
+          "@vanelsas/baredom/barebuild-route":  "/dist/barebuild-route.js",
+          "@vanelsas/baredom/barebuild-data":   "/dist/barebuild-data.js"
+        }
+      }
+    </script>
+
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 24px; line-height: 1.5; }
+      h1 { font-size: 20px; }
+      nav { display: flex; gap: 12px; margin: 12px 0; }
+      #results { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+      #results li { margin: 2px 0; }
+      .summary { font-size: 18px; margin: 12px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>BareBuild dist-ESM smoke</h1>
+    <p>Imports the published per-component ESM via the real export specifiers and
+       self-checks router/route/data against the <code>:advanced</code> artifact.</p>
+
+    <div id="summary" class="summary">running…</div>
+    <ol id="results"></ol>
+
+    <barebuild-router id="router">
+      <nav>
+        <a href="/" data-barebuild-route>Home</a>
+        <a href="/users" data-barebuild-route>Users</a>
+        <a href="/users?q=foo#h" data-barebuild-route id="q-link">Users?q=foo#h</a>
+      </nav>
+      <barebuild-route path="/"><div>Home</div></barebuild-route>
+      <barebuild-route path="/users">
+        <barebuild-data id="data"></barebuild-data>
+        <div>Users</div>
+      </barebuild-route>
+      <barebuild-route path="/users/:id"><div>User detail</div></barebuild-route>
+    </barebuild-router>
+
+    <script type="module">
+      import { init as initRouter } from "@vanelsas/baredom/barebuild-router";
+      import { init as initRoute }  from "@vanelsas/baredom/barebuild-route";
+      import { init as initData }   from "@vanelsas/baredom/barebuild-data";
+
+      // ── tiny self-checking harness ──────────────────────────────────────────
+      const results = document.getElementById("results");
+      let pass = 0, fail = 0;
+      const check = (name, ok, detail = "") => {
+        const li = document.createElement("li");
+        li.textContent = `${ok ? "✅" : "❌"} ${name}${detail ? "  — " + detail : ""}`;
+        li.style.color = ok ? "green" : "crimson";
+        results.appendChild(li);
+        ok ? pass++ : fail++;
+      };
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const router  = document.getElementById("router");
+      const dataEl  = document.getElementById("data");
+      const route   = (p) => router.querySelector(`barebuild-route[path='${p}']`);
+      const visible = (el) => el && getComputedStyle(el).display !== "none";
+      const nav = (path) =>
+        router.dispatchEvent(new CustomEvent("barebuild-navigate", { detail: { path }, bubbles: true }));
+
+      // fetch stub + counters — installed before init so data's fetch is captured
+      let fetchCalls = 0, stateEvents = 0;
+      const realFetch = window.fetch.bind(window);
+      window.fetch = (url, opts) => {
+        if (String(url).startsWith("/smoke-api/")) {
+          fetchCalls++;
+          return Promise.resolve(new Response(JSON.stringify([{ id: 1, name: "Ada" }]),
+                                              { status: 200, headers: { "Content-Type": "application/json" } }));
+        }
+        return realFetch(url, opts);
+      };
+      // canonical activation-driven wiring: set src only when /users is the match
+      route("/users").addEventListener("barebuild-route-change", (e) => {
+        if (e.detail.path === "/users") dataEl.src = "/smoke-api/users";
+      });
+      dataEl.addEventListener("barebuild-data-state", () => { stateEvents++; });
+
+      // the published-consumer entrypoint: call each module's init()
+      initRouter(); initRoute(); initData();
+
+      async function run() {
+        await sleep(0); // let upgrades + initial connectedCallbacks settle
+
+        check("router/route/data custom elements defined",
+              !!customElements.get("barebuild-router") &&
+              !!customElements.get("barebuild-route") &&
+              !!customElements.get("barebuild-data"));
+        check(".path / .params getters present (JS-readable)",
+              typeof router.path === "string" && typeof router.params === "object");
+
+        nav("/"); await sleep(0);
+        check("home route visible at /, /users hidden",
+              visible(route("/")) && !visible(route("/users")));
+
+        // anchor interception + query/hash preservation (the bug we fixed)
+        const before = fetchCalls;
+        document.getElementById("q-link").click(); await sleep(0);
+        check("marked anchor intercepted → pathname /users", location.pathname === "/users");
+        check("query string preserved", location.search === "?q=foo", JSON.stringify(location.search));
+        check("hash preserved", location.hash === "#h", JSON.stringify(location.hash));
+        check("/users route visible (matched on pathname)", visible(route("/users")));
+
+        await sleep(50); // let the fetch microtasks drain
+        check("barebuild-data fetched on activation", fetchCalls > before, `${fetchCalls - before} call(s)`);
+        check("barebuild-data-state event fired", stateEvents >= 1, `${stateEvents} event(s)`);
+
+        // params are clj->js'd → JS-readable in the :advanced build
+        nav("/users/42"); await sleep(0);
+        check("router.path = /users/42", router.path === "/users/42", router.path);
+        check("router.params.id = 42 (JS-readable)",
+              router.params && router.params.id === "42", JSON.stringify(router.params));
+        check("/users/:id visible, / hidden",
+              visible(route("/users/:id")) && !visible(route("/")));
+
+        // documented CLJS-first boundary: .state is a raw CLJS map, so in the
+        // :advanced build (cljs.core not global) its fields are NOT JS-readable.
+        const st = dataEl.state;
+        check("data.state is an object but .phase is NOT JS-readable (CLJS-first boundary holds)",
+              st && typeof st === "object" && st.phase === undefined,
+              `st.phase=${st && st.phase}`);
+
+        const s = document.getElementById("summary");
+        s.textContent = fail === 0 ? `ALL ${pass} CHECKS PASS` : `${fail} FAILED, ${pass} passed`;
+        s.style.color = fail === 0 ? "green" : "crimson";
+      }
+      run().catch((e) => {
+        check("harness threw", false, String(e));
+        const s = document.getElementById("summary");
+        s.textContent = "HARNESS ERROR"; s.style.color = "crimson";
+      });
+    </script>
+  </body>
+</html>
