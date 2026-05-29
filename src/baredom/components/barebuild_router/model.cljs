@@ -14,8 +14,6 @@
 
 (def observed-attributes #js [attr-base])
 
-(def default-base "")
-
 ;; ── Events ───────────────────────────────────────────────────────────────────
 (def event-route-change    "barebuild-route-change")
 (def event-navigate        "barebuild-navigate")

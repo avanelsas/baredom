@@ -43,8 +43,11 @@
 (defn- set-state!
   "Cache `new-state` and dispatch `barebuild-data-state` ONLY when it differs
   from the current value. A refetch while already `:loading` re-enters with the
-  same `:loading` value, so no duplicate event fires — the invariant 'no
-  transition without an event, no event without a transition' holds for free."
+  same `:loading` value, so no duplicate event fires — every transition *on the
+  fetch lifecycle path* emits exactly one event, and never a duplicate.
+  The idle resets in connected!/disconnected! deliberately bypass this path:
+  they re-establish a resting value, not a fetch-lifecycle transition, and so
+  emit no event (a disconnected element has no listeners to inform anyway)."
   [^js el new-state]
   (when (not= (du/getv el k-state) new-state)
     (du/setv! el k-state new-state)
@@ -108,8 +111,10 @@
   (ensure-shadow! el)
   (when-not (du/getv el k-refresh-handler)
     (add-refresh-listener! el))
-  (when-not (du/getv el k-state)
-    (du/setv! el k-state default-idle))          ; resting value; not a transition, no event
+  ;; No explicit idle seed: the `.state` getter defaults a nil cache to
+  ;; `default-idle`, and the first `set-state!` transition fires regardless of
+  ;; whether the prior cached value was nil or idle. disconnected! owns the
+  ;; loaded→idle reset that actually matters (no stale replay on reconnect).
   (fetch! el))                                   ; re-fetch on (re)connect when src present
 
 (defn- disconnected! [^js el]

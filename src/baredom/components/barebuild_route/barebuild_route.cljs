@@ -59,16 +59,21 @@
         pattern (du/getv el k-pattern)]
     (set-visible! el (some? (router-model/match-path pattern path)))))
 
-;; ── Self-listener (GC'd with the element; nothing foreign to tear down) ─────────
+;; ── Self-listener (on self, GC'd with the element; nothing foreign to tear
+;; down, so it is added once and never removed — reconnect re-uses it via the
+;; guard in connected!, mirroring barebuild-data's refresh listener). ──────────
 (defn- add-self-listener! [^js el]
   (let [h (fn route-on-change [e] (on-route-change el e))]
     (du/setv! el k-change-handler h)
     (.addEventListener el model/event-route-change h)))
 
-(defn- remove-self-listener! [^js el]
-  (when-let [h (du/getv el k-change-handler)]
-    (.removeEventListener el model/event-route-change h)
-    (du/setv! el k-change-handler nil)))
+;; ── Registration ────────────────────────────────────────────────────────────────
+(defn- dispatch-mounted!
+  "Announce registration to the ancestor router, carrying this route's
+  already-parsed pattern so the router caches it instead of re-parsing the
+  `path` string on every resolution."
+  [^js el]
+  (du/dispatch! el model/event-route-mounted #js {:pattern (du/getv el k-pattern)}))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -79,18 +84,21 @@
   (set-visible! el false)
   (when-not (du/getv el k-change-handler)
     (add-self-listener! el))
-  (du/dispatch! el model/event-route-mounted #js {}))
+  (dispatch-mounted! el))
 
 (defn- disconnected! [^js el]
-  (du/dispatch! el model/event-route-unmounted #js {})
-  (remove-self-listener! el))
+  ;; The change listener is on self and GC'd with the element — nothing to tear
+  ;; down. Just announce departure (the router can't hear this — see the route's
+  ;; docstring — but a direct observer can).
+  (du/dispatch! el model/event-route-unmounted #js {}))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (and (not= old-val new-val) (du/initialized? el k-initialized?))
     (parse-own-pattern! el)
-    ;; Re-register: the router's mounted handler is idempotent and re-resolves,
-    ;; pushing the current match back so visibility reflects the new pattern.
-    (du/dispatch! el model/event-route-mounted #js {})))
+    ;; Re-register with the new pattern: the router refreshes its cached pattern
+    ;; for this route and re-resolves, pushing the current match back so visibility
+    ;; reflects the new pattern.
+    (dispatch-mounted! el)))
 
 ;; ── Property accessors ───────────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]

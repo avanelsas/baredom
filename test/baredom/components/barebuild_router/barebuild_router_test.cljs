@@ -71,6 +71,22 @@
     (is (= "/users/42" (.-path r)) "router .path reflects the active path")
     (is (= "42" (.. r -params -id)) "router .params reflects the active params")))
 
+;; ── Base prefix stripping (component-level) ─────────────────────────────────────
+;; The model's strip-base is unit-tested; this asserts the router actually wires
+;; the `base` attribute into resolution, stripping it before matching routes.
+(deftest base-prefix-strips-before-matching-test
+  (let [r     (make-router)
+        users (make-route "/users")]
+    (.setAttribute r "base" "/app")
+    (.appendChild r users)
+    (append-body! r)
+    (nav! r "/app/users")
+    (is (visible? users) "with base=/app, /app/users matches the /users route")
+    (is (= "/users" (.-path r)) "router .path reflects the base-stripped path")
+    (nav! r "/app/other")
+    (is (not (visible? users)) "a different sub-path under the base does not match /users")
+    (is (= "/other" (.-path r)) "a non-matching path still has its base stripped for .path")))
+
 ;; ── Late mount ────────────────────────────────────────────────────────────────────
 (deftest late-mount-activates-immediately-test
   (let [r    (make-router)
@@ -153,6 +169,21 @@
     (.click link)                            ; capture handler intercepts + preventDefault (no reload)
     (is (= "/users" (.. js/location -pathname)) "marked anchor click navigates via pushState")
     (is (visible? users) "the target route activates after the intercepted click")))
+
+(deftest anchor-interception-preserves-query-and-hash-test
+  (let [r     (make-router)
+        users (make-route "/users")
+        link  (.createElement js/document "a")]
+    (.setAttribute link "href" "/users?q=foo#top")
+    (.setAttribute link "data-barebuild-route" "")
+    (.appendChild r link)
+    (.appendChild r users)
+    (append-body! r)
+    (.click link)
+    (is (= "/users" (.. js/location -pathname)) "pathname is used for matching")
+    (is (= "?q=foo" (.. js/location -search)) "query string is preserved in the URL bar")
+    (is (= "#top" (.. js/location -hash)) "hash is preserved in the URL bar")
+    (is (visible? users) "the route still matches on pathname")))
 
 ;; ── Anchor scoping: only the anchor's nearest router intercepts ─────────────────
 ;; Two SIBLING routers, each with a matching `/scoping-x` route. The marked anchor

@@ -163,6 +163,54 @@
                 "refresh during loading aborts + restarts but emits no duplicate :loading")
             (done))))))))
 
+;; ── Stale response cannot overwrite fresher state ────────────────────────────────
+;; The settle! identity guard: when fetch A is superseded by fetch B (a refresh
+;; mid-flight), A's late-arriving response must be a no-op even if it lands AFTER
+;; B has already settled. Manually-resolved promises let A resolve last.
+(deftest stale-response-does-not-overwrite-fresher-state-test
+  (async done
+    (let [resolvers (atom [])]
+      (set! (.-fetch js/window)
+            (fn [_url _opts]
+              (js/Promise. (fn [resolve _reject] (swap! resolvers conj resolve)))))
+      (let [el (make-data "/api/x")]
+        (append-body! el)                                          ; fetch A pending, :loading
+        (after-settle
+         (fn []
+           (.dispatchEvent el (js/CustomEvent. model/event-data-refresh)) ; aborts A, fetch B pending
+           (after-settle
+            (fn []
+              (let [[resolve-a resolve-b] @resolvers]
+                (is (= 2 (count @resolvers)) "two fetches issued: superseded A and active B")
+                (resolve-b (json-response #js {:which "B"} 200 true))   ; B settles first → :loaded B
+                (resolve-a (json-response #js {:which "A"} 200 true))   ; A lands LAST, must no-op
+                (after-settle
+                 (fn []
+                   (let [st (.-state el)]
+                     (is (= :loaded (:phase st)))
+                     (is (= "B" (.-which ^js (:data st)))
+                         "the superseded fetch A's later response is ignored — B's state stands"))
+                   (done))))))))))))
+
+;; ── Invalid JSON body settles into :error ────────────────────────────────────────
+(deftest invalid-json-becomes-error-test
+  (async done
+    (set! (.-fetch js/window)
+          (fn [_ _]
+            (js/Promise.resolve
+             #js {:ok     true
+                  :status 200
+                  :json   (fn [] (js/Promise.reject (js/Error. "Unexpected token")))})))
+    (let [el (make-data "/api/x")]
+      (append-body! el)
+      (after-settle
+       (fn []
+         (let [st (.-state el)]
+           (is (= :error (:phase st)) "an ok response with an unparseable body is an error")
+           (is (= "Invalid JSON: Unexpected token" (:error st)))
+           (is (= 200 (:http-status st)) "the status that carried the bad body is preserved"))
+         (done))))))
+
 ;; ── Reconnect re-fetches, no stale replay ────────────────────────────────────────
 (deftest reconnect-refetches-test
   (async done

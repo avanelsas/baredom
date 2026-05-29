@@ -58,6 +58,15 @@
     (is (some #{router-model/event-route-unmounted} @events)
         "dispatches the symmetric barebuild-route-unmounted on disconnect")))
 
+;; ── Passive child with no router ancestor ───────────────────────────────────────
+;; A route with nothing above it to push a match owns its own visibility and
+;; starts hidden — it never flashes its slotted content waiting for a router.
+(deftest route-without-router-stays-hidden-test
+  (let [el (make-route "/x")]
+    (append-body! el)
+    (is (not (visible? el))
+        "a route with no router ancestor stays hidden (no all-routes-visible flash)")))
+
 ;; ── Runtime path change re-registers and re-evaluates visibility ────────────────
 (deftest runtime-path-change-flips-visibility-test
   (let [r     (make-router)
@@ -87,6 +96,12 @@
     (nav! r "/users/42")
     (is (= "42" (.. r -params -id)) "the router matches the route while it is present")
     (.remove route)
+    ;; Lazy-validation contract: removal is NOT eagerly reconciled. With no
+    ;; intervening resolution, the cached .params still reflects the removed route.
+    ;; (Documented V1 limitation — see barebuild-router.md. Asserted so a future
+    ;; switch to eager deregistration is a deliberate test change, not a silent one.)
+    (is (= "42" (.. r -params -id))
+        "immediately after removal, before any navigation, .params is still stale")
     (nav! r "/users/99")   ; next resolution prunes the detached route
     (is (nil? (.. r -params -id))
-        "after removal the route no longer participates in resolution")))
+        "the next resolution drops the removed route — it no longer participates")))
