@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>barebuild-router demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 20px; }
+      nav { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+      nav a {
+        padding: 6px 12px; border-radius: 8px; text-decoration: none;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.15));
+        color: var(--page-fg, #222);
+      }
+      nav a:hover { background: rgba(0,0,0,.05); }
+      .view {
+        padding: 18px; border-radius: 10px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.12));
+        margin: 8px 0;
+      }
+      .note { font-size: 13px; color: var(--page-fg, #555); }
+      #log {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px; white-space: pre-wrap; margin-top: 16px;
+        padding: 12px; border-radius: 8px; background: rgba(0,0,0,.04);
+        max-height: 220px; overflow: auto;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>&lt;barebuild-router&gt;</h1>
+    <p class="note">
+      Opt-in anchors (<code>data-barebuild-route</code>) navigate without a reload;
+      plain anchors are left to the browser. Each route owns its own visibility.
+    </p>
+
+    <barebuild-router>
+      <nav>
+        <a href="/" data-barebuild-route>Home</a>
+        <a href="/users" data-barebuild-route>Users</a>
+        <a href="/users/42" data-barebuild-route>User 42</a>
+        <a href="https://example.com">External (native)</a>
+      </nav>
+
+      <barebuild-route path="/">
+        <div class="view"><strong>Home.</strong> Click a link above.</div>
+      </barebuild-route>
+
+      <barebuild-route path="/users">
+        <div class="view"><strong>Users.</strong> The collection route.</div>
+      </barebuild-route>
+
+      <barebuild-route path="/users/:id">
+        <div class="view"><strong>User detail.</strong> <span id="uid">id = ?</span></div>
+      </barebuild-route>
+    </barebuild-router>
+
+    <div id="log"></div>
+
+    <script>
+      const router = document.querySelector("barebuild-router");
+      const log = document.getElementById("log");
+      const uid = document.getElementById("uid");
+
+      function line(msg) {
+        log.textContent = `${new Date().toLocaleTimeString()}  ${msg}\n` + log.textContent;
+      }
+
+      // External observers listen on the router itself (bubbling route-change).
+      router.addEventListener("barebuild-route-change", (e) => {
+        const { path, params } = e.detail;
+        line(`route-change → path="${path}" params=${JSON.stringify(params)}`);
+        if (params && params.id != null) uid.textContent = `id = ${params.id}`;
+      });
+
+      // Programmatic navigation uses the same event channel as the anchors.
+      line("Tip: window.dispatchEvent below also works:");
+      line('router.dispatchEvent(new CustomEvent("barebuild-navigate",{detail:{path:"/users"},bubbles:true}))');
+    </script>
+  </body>
+</html>
