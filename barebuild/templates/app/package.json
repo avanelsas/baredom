@@ -1,0 +1,16 @@
+{
+  "name": "APP_NAME",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "shadow-cljs watch app",
+    "build": "shadow-cljs release app"
+  },
+  "dependencies": {
+    "@vanelsas/baredom": "^3.4.0"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^3.4.7"
+  }
+}

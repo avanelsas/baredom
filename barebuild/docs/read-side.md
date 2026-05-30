@@ -156,6 +156,7 @@ V1 defaults to *no client store* because in the server-state-first shape there u
 
 ## See also
 
+- [`getting-started.md`](getting-started.md) — scaffold a runnable read-side app with `barebuild new`.
 - Per-component reference: [`barebuild-router`](../../docs/barebuild-router.md), [`barebuild-route`](../../docs/barebuild-route.md), [`barebuild-data`](../../docs/barebuild-data.md).
 - [`server-state-first.md`](server-state-first.md) — the full target architecture and *why* (vision doc; V1.1 end-state).
 - [`state-recipes.md`](state-recipes.md) — ephemeral state, teardown, re-frame compat.

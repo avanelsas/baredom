@@ -1,0 +1,7 @@
+{:tasks
+ {dev   {:doc  "Install deps and start the dev server on http://localhost:8000"
+         :task (do (shell "npm install")
+                   (shell "npx shadow-cljs watch app"))}
+  build {:doc  "Production build to public/js"
+         :task (do (shell "npm install")
+                   (shell "npx shadow-cljs release app"))}}}
