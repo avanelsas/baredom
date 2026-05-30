@@ -1,0 +1,12 @@
+{:paths ["cli" "test"]
+ :tasks
+ {new  {:doc     "Scaffold a new BareBuild app: bb new <app-name> [parent-dir]"
+        :requires ([barebuild-new])
+        :task    (apply barebuild-new/-main *command-line-args*)}
+  test {:doc     "Run BareBuild platform tests (fast; no shadow compile)"
+        :requires ([barebuild-new-test])
+        :task    (barebuild-new-test/-main)}
+  smoke-build {:doc     "E2E: scaffold an app and compile it against a local pack of barebuild-*"
+               :requires ([smoke-build])
+               :task    (smoke-build/-main)}}}
+
