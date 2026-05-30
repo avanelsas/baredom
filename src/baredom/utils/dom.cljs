@@ -35,6 +35,26 @@
 (defn mark-initialized! [^js el key]
   (setv! el key true))
 
+(defn ensure-shadow-with-style!
+  "Idempotently attach an open shadow root holding a single <style> (CSS text
+   `css`) and, when `slot?` is true, a <slot>. Guards on `init-key` so re-entry
+   is a no-op, then marks the element initialized. Returns the new shadow root,
+   or nil when already initialized.
+
+   Centralises the attach-shadow + <style>/<slot> bootstrap that layout-only
+   and non-visual components (e.g. the barebuild-* orchestration elements)
+   otherwise hand-roll identically."
+  [^js el css init-key slot?]
+  (when-not (initialized? el init-key)
+    (let [root  (.attachShadow el #js {:mode "open"})
+          style (.createElement js/document "style")]
+      (set! (.-textContent style) css)
+      (.appendChild root style)
+      (when slot?
+        (.appendChild root (.createElement js/document "slot")))
+      (mark-initialized! el init-key)
+      root)))
+
 ;; ---------------------------------------------------------------------------
 ;; Attribute helpers
 ;; ---------------------------------------------------------------------------
@@ -318,6 +338,20 @@
                        (if-let [s (normalize-prop-val v)]
                          (set-attr! this attr-name s)
                          (remove-attr! this attr-name))))}))
+
+(defn define-readonly-prop!
+  "Install a read-only, enumerable JS property whose getter is `get-fn` — a
+   1-arg function receiving the element (`this`). Use for computed or
+   instance-backed read-only properties that `install-properties!` deliberately
+   skips (it only wires reflecting accessors). Centralises the
+   enumerable/configurable descriptor boilerplate the Tier-2 readonly pattern
+   would otherwise hand-roll per property."
+  [^js proto prop-name get-fn]
+  (.defineProperty
+   js/Object proto prop-name
+   #js {:configurable true
+        :enumerable   true
+        :get (fn [] (this-as ^js this (get-fn this)))}))
 
 (defn install-properties!
   "Install JS property accessors on a prototype, driven by a property-api map.

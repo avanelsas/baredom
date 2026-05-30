@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>barebuild-route demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 20px; }
+      nav { display: flex; gap: 12px; margin: 16px 0; }
+      nav a {
+        padding: 6px 12px; border-radius: 8px; text-decoration: none;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.15)); color: var(--page-fg, #222);
+      }
+      .view {
+        padding: 18px; border-radius: 10px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.12)); margin: 8px 0;
+      }
+      input { padding: 8px; font-size: 14px; width: 260px; }
+      .note { font-size: 13px; color: var(--page-fg, #555); }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>&lt;barebuild-route&gt; — identity preservation</h1>
+    <p class="note">
+      Type into the field on the <em>Form</em> route, navigate away and back. The same
+      DOM node survives (the route toggles <code>display</code>, it never rebuilds its
+      body) so the typed value is still there.
+    </p>
+
+    <barebuild-router>
+      <nav>
+        <a href="/form" data-barebuild-route>Form</a>
+        <a href="/other" data-barebuild-route>Other</a>
+      </nav>
+
+      <barebuild-route path="/form">
+        <div class="view">
+          <strong>Form route.</strong>
+          <p><input id="field" type="text" placeholder="Type something, then navigate away…" /></p>
+        </div>
+      </barebuild-route>
+
+      <barebuild-route path="/other">
+        <div class="view"><strong>Other route.</strong> Now go back to Form.</div>
+      </barebuild-route>
+    </barebuild-router>
+
+    <script>
+      // Start on the form route so the field is visible on load.
+      const router = document.querySelector("barebuild-router");
+      router.dispatchEvent(new CustomEvent("barebuild-navigate",
+        { detail: { path: "/form" }, bubbles: true }));
+    </script>
+  </body>
+</html>

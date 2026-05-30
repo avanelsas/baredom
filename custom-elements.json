@@ -208,6 +208,65 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/barebuild-router.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "BarebuildRouter",
+      "tagName" : "barebuild-router",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "base",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "path",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "params",
+        "type" : {
+          "text" : "Record<string, any>"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "barebuild-route-change",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "barebuild-navigate",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "barebuild-router",
+      "declaration" : {
+        "name" : "BarebuildRouter"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-search-field.js",
     "declarations" : [ {
       "kind" : "class",
@@ -5169,6 +5228,53 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/barebuild-data.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "BarebuildData",
+      "tagName" : "barebuild-data",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "state",
+        "type" : {
+          "text" : "Record<string, any>"
+        },
+        "readonly" : true
+      } ],
+      "events" : [ {
+        "name" : "barebuild-data-state",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "barebuild-data",
+      "declaration" : {
+        "name" : "BarebuildData"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-code.js",
     "declarations" : [ {
       "kind" : "class",
@@ -5939,6 +6045,51 @@
       "name" : "x-calendar",
       "declaration" : {
         "name" : "XCalendar"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/barebuild-route.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "BarebuildRoute",
+      "tagName" : "barebuild-route",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "events" : [ {
+        "name" : "event-route-mounted",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "event-route-unmounted",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "barebuild-route",
+      "declaration" : {
+        "name" : "BarebuildRoute"
       }
     } ]
   }, {

@@ -438,6 +438,7 @@
     <button class="filter-chip" data-cat="layout">Layout</button>
     <button class="filter-chip" data-cat="data">Data</button>
     <button class="filter-chip" data-cat="overlay">Overlay</button>
+    <button class="filter-chip" data-cat="orchestration">Orchestration</button>
   </div>
   <div class="filter-chips" id="style-chips"></div>
   <div class="filter-chips" id="theme-chips">
@@ -465,6 +466,9 @@
 
 <script>
   const components = [
+    { name: "Router",              tag: "barebuild-router",      file: "barebuild-router",      cat: "orchestration"                },
+    { name: "Route",               tag: "barebuild-route",       file: "barebuild-route",       cat: "orchestration"                },
+    { name: "Data Broker",         tag: "barebuild-data",        file: "barebuild-data",        cat: "orchestration"                },
     { name: "Alert",               tag: "x-alert",               file: "x-alert",               cat: "feedback"                     },
     { name: "Avatar",              tag: "x-avatar",              file: "x-avatar",              cat: "data"                         },
     { name: "Avatar Group",        tag: "x-avatar-group",        file: "x-avatar-group",        cat: "data"                         },
@@ -578,6 +582,7 @@
     layout:     `<svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>`,
     data:       `<svg viewBox="0 0 16 16"><ellipse cx="8" cy="4" rx="6" ry="2"/><path d="M2 4v3c0 1.105 2.686 2 6 2s6-.895 6-2V4"/><path d="M2 7v4c0 1.105 2.686 2 6 2s6-.895 6-2V7"/></svg>`,
     overlay:    `<svg viewBox="0 0 16 16"><rect x="1" y="1" width="9" height="9" rx="1" opacity=".4"/><rect x="6" y="6" width="9" height="9" rx="1"/></svg>`,
+    orchestration: `<svg viewBox="0 0 16 16"><rect x="5.5" y="1" width="5" height="4" rx="1"/><rect x="1" y="11" width="5" height="4" rx="1"/><rect x="10" y="11" width="5" height="4" rx="1"/><rect x="7.5" y="5" width="1" height="2.5" rx=".5"/><rect x="3" y="7" width="10" height="1" rx=".5"/><rect x="3" y="7.5" width="1" height="3.5" rx=".5"/><rect x="12" y="7.5" width="1" height="3.5" rx=".5"/></svg>`,
   };
 
   let activeCategory = "all";

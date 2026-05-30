@@ -10,6 +10,9 @@
    Order is alphabetical-by-tag for diff legibility. Registration order
    is irrelevant: `customElements.define` is independent per tag."
   (:require
+   [baredom.exports.barebuild-data        :as barebuild-data]
+   [baredom.exports.barebuild-route       :as barebuild-route]
+   [baredom.exports.barebuild-router      :as barebuild-router]
    [baredom.exports.x-alert               :as x-alert]
    [baredom.exports.x-avatar              :as x-avatar]
    [baredom.exports.x-avatar-group        :as x-avatar-group]
@@ -223,3 +226,12 @@
    x-trace-history/register!
    x-typography/register!
    x-welcome-tour/register!])
+
+(def barebuild-registers
+  "BareBuild orchestration components, kept SEPARATE from `all-registers` so the
+   kitchen-sink `baredom.exports.all/init` stays pure UI. Consumers opt in by
+   importing the per-component ESM entry (`@vanelsas/baredom/barebuild-router`);
+   the dev demo (`baredom.core/start!`) registers them explicitly."
+  [barebuild-router/register!
+   barebuild-route/register!
+   barebuild-data/register!])
