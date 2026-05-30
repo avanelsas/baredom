@@ -42,6 +42,25 @@
 (defn- visible? [^js route-el]
   (not= "none" (.. route-el -style -display)))
 
+(defn- click-left-to-browser?
+  "Dispatch click `ev` on `link` and return whether the router LEFT it to the
+  browser (did not preventDefault). A last-registered capture listener neutralises
+  the browser's own default action — without it, a non-intercepted modifier-click
+  would actually open a background tab in headless CI, which hides the page and
+  pauses `requestAnimationFrame` for every later test (the carousel suite then
+  hangs). The router's document-capture listener runs first (registered on
+  connect), so the `defaultPrevented` we observe is the router's own decision; we
+  then preventDefault ourselves to stop the real navigation."
+  [^js link ^js ev]
+  (let [intercepted? (atom nil)
+        stop         (fn [^js e]
+                       (reset! intercepted? (.-defaultPrevented e))
+                       (.preventDefault e))]
+    (.addEventListener js/document "click" stop true)
+    (.dispatchEvent link ev)
+    (.removeEventListener js/document "click" stop true)
+    (not @intercepted?)))
+
 ;; ── Navigation + visibility ─────────────────────────────────────────────────────
 (deftest navigate-shows-matching-route-test
   (let [r     (make-router)
@@ -215,8 +234,9 @@
 
 ;; ── Click-gesture gate (candidate-click?) ───────────────────────────────────────
 ;; A modifier-held click (ctrl/cmd/shift/alt) must be left to the browser so the
-;; user can open the link in a new tab. The href is a same-page hash so a stray
-;; default action cannot navigate the test page away.
+;; user can open the link in a new tab. `click-left-to-browser?` neutralises the
+;; real default action so the un-intercepted ctrl-click cannot actually open a
+;; background tab in headless CI (which would pause rAF for the rest of the run).
 (deftest modifier-click-not-intercepted-test
   (let [r    (make-router)
         link (.createElement js/document "a")]
@@ -224,11 +244,10 @@
     (.setAttribute link "data-barebuild-route" "")
     (.appendChild r link)
     (append-body! r)
-    (let [ev (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true
-                                          :button 0 :ctrlKey true})]
-      (.dispatchEvent link ev)
-      (is (false? (.-defaultPrevented ev))
-          "a ctrl/cmd-click is left to the browser — the router does not preventDefault"))))
+    (is (true? (click-left-to-browser?
+                link (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true
+                                                  :button 0 :ctrlKey true})))
+        "a ctrl/cmd-click is left to the browser — the router does not preventDefault")))
 
 ;; ── In-page hash link is not intercepted (native scroll, no junk history) ───────
 ;; A marked anchor whose href is a same-page `#fragment` (same pathname+query)
@@ -242,12 +261,11 @@
     (.setAttribute link "data-barebuild-route" "")
     (.appendChild r link)
     (append-body! r)
-    (let [ev (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true :button 0})]
-      (.dispatchEvent link ev)
-      (is (false? (.-defaultPrevented ev))
-          "an in-page hash link is left to the browser — no preventDefault, native scroll survives")
-      (is (= original-path (.. js/location -pathname))
-          "no pushState over the same route for a pure hash change"))))
+    (is (true? (click-left-to-browser?
+                link (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true :button 0})))
+        "an in-page hash link is left to the browser — no preventDefault, native scroll survives")
+    (is (= original-path (.. js/location -pathname))
+        "no pushState over the same route for a pure hash change")))
 
 ;; ── Nested-router navigate scoping (on-navigate stopPropagation) ─────────────────
 ;; `barebuild-navigate` bubbles + is composed. Dispatched at the INNER router it
