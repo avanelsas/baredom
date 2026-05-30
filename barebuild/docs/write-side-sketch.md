@@ -90,7 +90,7 @@ Things to look for:
 These remain useful priors even though the elements are deferred:
 
 - **No CSS selectors anywhere.** Containment for one end of the wire; name-in-event-detail for the other end; URL/pathname for invalidation matching.
-- **`.state` returns the persistent CLJS map directly.** Same as `<barebuild-data>` — no `clj->js`, no JS-view accessor in V1.1's first cut.
+- **`.state` is a plain JS object `{ phase, data, error, httpStatus }` (string phase).** Same as `<barebuild-data>` — it is **not** a CLJS persistent map, because a consumer's app is compiled with its own `cljs.core` and could not read this module's `Keyword`/map classes (BAREBUILD-V1-PLAN Decision #6). This is now a load-bearing prior, not a convenience: any write-side element exposing `.state` must do the same, and the `path`/`get-in` mechanism below has to be reconciled with a JS-keyed object (string keys, `goog.object/getValueByKeys` rather than `get-in` over keywords) when these elements are actually designed.
 - **`path` is a literal EDN vector** parsed via `cljs.reader/read-string` and resolved via `get-in`. JSON arrays parse identically. No dotted-string DSL.
 - **`values-path` is a literal EDN vector** with the same semantics. Default `[:values]` covers `<x-form>` unconfigured.
 - **Exact-pathname URL match** for invalidation; no pattern DSL.

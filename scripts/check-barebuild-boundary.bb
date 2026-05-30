@@ -34,8 +34,12 @@
 
 ;; ── Check 1: cross-boundary relative references ─────────────────────────────────
 (defn- check-relative-boundary! []
+  ;; Two patterns per extension: babashka's `**` requires >=1 intermediate dir,
+  ;; so it alone misses files sitting directly in barebuild/ (e.g. barebuild/bb.edn).
+  ;; The flat `*.ext` pattern covers those — same workaround check 2 uses.
   (doseq [ext ["clj" "cljs" "cljc" "bb" "edn"]
-          [f content] (slurp-glob "barebuild" (str "**/*." ext))]
+          pat [(str "*." ext) (str "**/*." ext)]
+          [f content] (slurp-glob "barebuild" pat)]
     (when (re-find #"\.\./" content)
       (fail! (str "barebuild/ file reaches outside via a relative path: " f))))
   (doseq [dir ["src" "scripts"]

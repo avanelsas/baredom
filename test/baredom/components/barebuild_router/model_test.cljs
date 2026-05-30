@@ -50,6 +50,18 @@
            (model/match-path (model/parse-path-pattern "/posts/:postId/comments/:commentId")
                              "/posts/7/comments/3")))))
 
+(deftest match-segments-takes-presplit-segs-test
+  (testing "match-segments matches a pattern against already-split segments"
+    (is (= {:params {"id" "42"}}
+           (model/match-segments (model/parse-path-pattern "/users/:id")
+                                 (model/split-segments "/users/42"))))
+    (is (nil? (model/match-segments (model/parse-path-pattern "/users")
+                                    (model/split-segments "/posts")))))
+  (testing "match-path is the split-then-match-segments wrapper (same result)"
+    (let [pat (model/parse-path-pattern "/users/:id")]
+      (is (= (model/match-path pat "/users/42")
+             (model/match-segments pat (model/split-segments "/users/42")))))))
+
 (deftest match-path-arity-mismatch-test
   (testing "too few path segments"
     (is (nil? (model/match-path (model/parse-path-pattern "/users/:id") "/users"))))
@@ -75,12 +87,16 @@
     (is (= "/other" (model/strip-base "/app" "/other")))))
 
 ;; ── should-intercept? ──────────────────────────────────────────────────────────
+;; The pure predicate now decides only the ANCHOR-OWNERSHIP question; the
+;; click-gesture gate (primary button / modifier / defaultPrevented) lives in the
+;; effect shell's `candidate-click?` and is exercised at the component level.
 (def ^:private happy
   {:anchor-present?         true
    :nearest-router-is-this? true
-   :primary-button?         true
-   :modifier?               false
-   :default-prevented?      false})
+   :same-origin?            true
+   :same-frame?             true
+   :download?               false
+   :hash-only?              false})
 
 (deftest should-intercept-happy-test
   (testing "all conditions met → intercept"
@@ -99,14 +115,18 @@
     ;; For the OUTER router of a nested pair, nearest-router-is-this? is false.
     (is (false? (model/should-intercept? (assoc happy :nearest-router-is-this? false))))))
 
-(deftest should-intercept-modifier-test
-  (testing "modifier key held → no intercept (let the browser open a tab)"
-    (is (false? (model/should-intercept? (assoc happy :modifier? true))))))
+(deftest should-intercept-cross-origin-test
+  (testing "external/cross-origin anchor → no intercept (let the browser navigate away)"
+    (is (false? (model/should-intercept? (assoc happy :same-origin? false))))))
 
-(deftest should-intercept-non-primary-button-test
-  (testing "right/middle click → no intercept"
-    (is (false? (model/should-intercept? (assoc happy :primary-button? false))))))
+(deftest should-intercept-new-tab-target-test
+  (testing "target=_blank / named target → no intercept (the browser opens the other frame)"
+    (is (false? (model/should-intercept? (assoc happy :same-frame? false))))))
 
-(deftest should-intercept-default-prevented-test
-  (testing "preventDefault already called → no intercept"
-    (is (false? (model/should-intercept? (assoc happy :default-prevented? true))))))
+(deftest should-intercept-download-test
+  (testing "download anchor → no intercept (let the browser download the file)"
+    (is (false? (model/should-intercept? (assoc happy :download? true))))))
+
+(deftest should-intercept-hash-only-test
+  (testing "pure in-page hash link → no intercept (native scroll, no junk history)"
+    (is (false? (model/should-intercept? (assoc happy :hash-only? true))))))

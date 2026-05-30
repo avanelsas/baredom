@@ -70,28 +70,30 @@ Registration is idempotent.
 
 | Property | Type | Read-only | Description |
 |---|---|---|---|
-| `.state` | persistent CLJS map | yes | Current HTTP-result state. Returns the underlying persistent CLJS map directly — `(= (.-state el) (.-state el))` is `true` between phase transitions; no `clj->js` walk per read. See [State Shape](#state-shape); JS/CLJS boundary semantics are identical to [`<barebuild-data>`'s](barebuild-data.md#js--cljs-boundary). |
+| `.state` | JS object | yes | Current HTTP-result state — a plain JS object `{ phase, response, error, httpStatus }` with a string `phase`, returned by reference (`(identical? (.-state el) (.-state el))` is `true` between phase transitions; no allocation per read). See [State Shape](#state-shape); the JS-object contract (and *why* it is not a CLJS map) is identical to [`<barebuild-data>`'s](barebuild-data.md#why-a-js-object-not-a-cljs-map). |
 | `.name` | string | reflects `name` attribute | |
 | `.action` | string | reflects `action` attribute | |
 | `.method` | string | reflects attribute | |
 | `.submitEvent` | string | reflects `submit-event` attribute | |
 | `.valuesPath` | string | reflects `values-path` attribute | |
 
-**No `.stateJs` in V1.** CLJS-only contract (plan Decision #9). V2 candidate (Deferred #18).
+**No `.stateJs`.** None is needed — `.state` is already a plain JS object readable by any consumer (vanilla JS or a separately-compiled CLJS app), for the same cross-`cljs.core`-runtime reason `<barebuild-data>` is JS-shaped (plan Decision #6).
 
 ---
 
 ## State Shape
 
-```clj
-{:name           <action's name attribute, echoed for symmetry>
- :phase          :idle | :submitting | :success | :error
- :response       <parsed body, present in :success>
- :error          <error message, present in :error>
- :http-status    <number, present in :success and :error>}
+A plain JS object (string `phase`), mirroring `<barebuild-data>`'s `.state`:
+
+```js
+{ name:       /* action's name attribute, echoed for symmetry */,
+  phase:      "idle" | "submitting" | "success" | "error",
+  response:   /* parsed body, present in "success" */,
+  error:      /* error message, present in "error" */,
+  httpStatus: /* number, present in "success" and "error" */ }
 ```
 
-One read-only property, fully transparent. No `.response` / `.error` / `.submitting?` convenience accessors in V1.
+Keys are present only when meaningful for the phase (absent → `undefined`, not null-valued). One read-only property, fully transparent. No `.response` / `.error` / `.submitting?` convenience accessors in V1.
 
 ---
 

@@ -178,14 +178,21 @@
          (vec))))
 
 (defn load-package-exports
-  "Read package.json and return the set of exported component names (e.g. #{\"x-button\" ...})."
-  []
-  (let [pkg (json/parse-string (slurp package-json) true)]
-    (->> (:exports pkg)
-         keys
-         (map name)
-         (filter #(str/starts-with? % "x-"))
-         set)))
+  "Read package.json and return the set of exported component names (e.g. #{\"x-button\" ...}).
+
+   `prefixes` selects which export names to keep; defaults to [\"x-\"] so the
+   framework-adapter generators (which call this with no args) only ever see the
+   x- components — barebuild-* orchestration elements must NOT be wrapped by
+   adapters (enforced by check-barebuild-boundary.bb). The .d.ts/CEM generator
+   opts barebuild-* in explicitly by passing [\"x-\" \"barebuild-\"]."
+  ([] (load-package-exports ["x-"]))
+  ([prefixes]
+   (let [pkg (json/parse-string (slurp package-json) true)]
+     (->> (:exports pkg)
+          keys
+          (map name)
+          (filter (fn [n] (some #(str/starts-with? n %) prefixes)))
+          set))))
 
 ;; ── Symbol resolution ────────────────────────────────────────────────────────
 (defn resolve-sym

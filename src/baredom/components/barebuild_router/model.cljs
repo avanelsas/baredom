@@ -26,7 +26,11 @@
    :params {:type 'object :readonly true}})
 
 (def event-schema
-  {event-route-change {:detail {:path 'string :params 'object}}})
+  {event-route-change {:detail {:path 'string :params 'object}}
+   ;; The public programmatic-navigation event: dispatch it AT a router (it bubbles
+   ;; + is composed) to drive a pushState navigation without a click. Declared here
+   ;; so adapters / the CEM / .d.ts surface it as part of the router's API.
+   event-navigate     {:detail {:path 'string}}})
 
 (def method-api {})
 
@@ -62,24 +66,31 @@
             {:kind :literal :v seg}))
         (split-segments pattern)))
 
-(defn match-path
-  "Match a parsed `pattern` (from `parse-path-pattern`) against a stripped `path`
-  string. Returns `{:params {…}}` on a full match (params empty when the pattern
-  has no `:name` segments), or `nil` when the pattern does not match.
+(defn match-segments
+  "Match a parsed `pattern` (from `parse-path-pattern`) against pre-split path
+  `segs` (from `split-segments`). Returns `{:params {…}}` on a full match (params
+  empty when the pattern has no `:name` segments), or `nil` when it does not
+  match. Takes segments rather than a path string so a caller matching many
+  patterns against one URL segments it ONCE rather than per pattern.
 
-  Pure projection: the same `(pattern, path)` always yields the same value.
   Decomplected into two folds over the zipped segments — `every?` decides whether
   the pattern matches, `for`/`into` projects the param bindings — so neither
   question is smuggled through the other."
-  [pattern path]
-  (let [segs  (split-segments path)
-        pairs (map vector pattern segs)]
+  [pattern segs]
+  (let [pairs (map vector pattern segs)]
     (when (and (= (count pattern) (count segs))
                (every? (fn [[{:keys [kind v]} seg]] (or (= kind :param) (= v seg)))
                        pairs))
       {:params (into {} (for [[{:keys [kind] pname :name} seg] pairs
                               :when (= kind :param)]
                           [pname seg]))})))
+
+(defn match-path
+  "Match a parsed `pattern` against a stripped `path` string — a convenience
+  wrapper that splits `path` and delegates to `match-segments`. Pure projection:
+  the same `(pattern, path)` always yields the same value."
+  [pattern path]
+  (match-segments pattern (split-segments path)))
 
 (defn strip-base
   "Strip a router `base` prefix from a `url-path` before matching.
@@ -102,21 +113,28 @@
       url-path)))
 
 (defn should-intercept?
-  "Pure predicate deciding whether the router intercepts an anchor click. The
-  effect shell extracts these facts from the event (`composedPath` walk + this
-  router's identity); the decision is a plain conjunction so each branch is
-  independently testable.
+  "Pure predicate deciding whether the router SPA-navigates for an anchor click.
+  The effect shell extracts these anchor facts from the event (`composedPath`
+  walk + this router's identity); the decision is a plain conjunction so each
+  branch is independently testable. The click-gesture gate (primary button, no
+  modifier, not already defaultPrevented) lives in the shell's `candidate-click?`
+  — it needs no composedPath walk and is checked before facts are built.
 
   Intercept only when: the click path contains an `<a data-barebuild-route>`
   ancestor, *this* router is that anchor's nearest `<barebuild-router>` ancestor
   (no other router lies between them — nearest router wins for nested/sibling
-  routers), it is a primary-button click, no modifier key is held, and
-  `preventDefault` has not already been called."
+  routers), the anchor targets the same origin, navigates THIS frame (no
+  `target=\"_blank\"`/named target), is not a `download`, and is not a pure
+  in-page hash link (`hash-only?` — same pathname+query, only the `#fragment`
+  differs). Intercepting an in-page hash link would pushState a redundant history
+  entry and `preventDefault` the browser's native scroll-to-anchor; letting it
+  through preserves both."
   [{:keys [anchor-present? nearest-router-is-this?
-           primary-button? modifier? default-prevented?]}]
+           same-origin? same-frame? download? hash-only?]}]
   (every? identity
           [anchor-present?
            nearest-router-is-this?
-           primary-button?
-           (not modifier?)
-           (not default-prevented?)]))
+           same-origin?
+           same-frame?
+           (not download?)
+           (not hash-only?)]))

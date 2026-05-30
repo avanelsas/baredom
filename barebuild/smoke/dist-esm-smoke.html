@@ -129,12 +129,13 @@
         check("/users/:id visible, / hidden",
               visible(route("/users/:id")) && !visible(route("/")));
 
-        // documented CLJS-first boundary: .state is a raw CLJS map, so in the
-        // :advanced build (cljs.core not global) its fields are NOT JS-readable.
+        // .state is a plain JS object { phase, data, ... } — its fields ARE
+        // JS-readable, even in the :advanced build and across the cljs.core boundary.
+        // (This is the contract that makes the read side usable by real consumers.)
         const st = dataEl.state;
-        check("data.state is an object but .phase is NOT JS-readable (CLJS-first boundary holds)",
-              st && typeof st === "object" && st.phase === undefined,
-              `st.phase=${st && st.phase}`);
+        check("data.state is JS-readable: .phase is a string, .data is the JSON array",
+              st && st.phase === "loaded" && Array.isArray(st.data) && st.data.length >= 1,
+              `phase=${st && st.phase} data=${st && JSON.stringify(st.data)}`);
 
         const s = document.getElementById("summary");
         s.textContent = fail === 0 ? `ALL ${pass} CHECKS PASS` : `${fail} FAILED, ${pass} passed`;

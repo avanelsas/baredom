@@ -73,22 +73,15 @@
       const log  = document.getElementById("log");
       const line = (m) => { log.textContent = `${new Date().toLocaleTimeString()}  ${m}\n` + log.textContent; };
 
-      // e.detail.state is a ClojureScript persistent map (V1 is CLJS-first; the
-      // JS-view .stateJs is deferred). A *compiled CLJS* consumer reads it directly:
-      //     (let [{:keys [phase data]} (.. e -detail -state)] ...)
-      // This demo is plain HTML/JS, so it reaches the map via cljs.core interop.
-      // The dev build exposes cljs.core globally; a real CLJS app never needs this.
-      const core   = window.cljs && window.cljs.core;
-      const getK   = (m, k) => core.get(m, core.keyword(k));
-      const kwName = (v) => (v == null ? v : core.name(v)); // :loaded -> "loaded"
-
-      // Read the delivered value from event.detail.state (event.target is identity only).
+      // e.detail.state is a plain JS object { phase, data, error, httpStatus } with
+      // a string phase — readable directly from JS (and from any consumer). Read the
+      // delivered value from event.detail.state (event.target is identity only).
       data.addEventListener("barebuild-data-state", (e) => {
         const state  = e.detail.state;
-        const phase  = kwName(getK(state, "phase"));
-        const rows   = getK(state, "data");        // parsed JSON body (a JS array)
-        const error  = getK(state, "error");
-        const status = getK(state, "http-status");
+        const phase  = state.phase;
+        const rows   = state.data;                 // parsed JSON body (a JS array)
+        const error  = state.error;
+        const status = state.httpStatus;
         line(`state → phase=${phase}` +
              (status != null ? ` http=${status}` : "") +
              (error ? ` error=${JSON.stringify(error)}` : ""));

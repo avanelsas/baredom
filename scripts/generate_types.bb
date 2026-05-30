@@ -427,7 +427,10 @@ declare global {
   (.mkdirs (io/file dist-dir))
 
   (let [all-models      (discover-models)
-        exported-names   (load-package-exports)
+        ;; Type the barebuild-* orchestration elements too (their .state/.params
+        ;; are JS-shaped → genuinely TS-consumable). Adapters still get x- only
+        ;; via the no-arg default — barebuild-* must not be wrapped by a framework.
+        exported-names   (load-package-exports ["x-" "barebuild-"])
         exported-models  (filter #(contains? exported-names (:tag-name %)) all-models)
         child-tag-names  (set (mapcat val compound-children))
         cem-modules      (atom [])

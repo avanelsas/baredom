@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.model :as mu]
    [baredom.components.barebuild-route.model :as model]
    [baredom.components.barebuild-router.model :as router-model]))
 
@@ -25,18 +26,8 @@
 (def ^:private display-default "")   ; clears the inline override → reverts to :host{display:contents}
 
 ;; ── Shadow DOM ──────────────────────────────────────────────────────────────────
-(defn- init-dom! [^js el]
-  (let [root  (.attachShadow el #js {:mode "open"})
-        style (.createElement js/document "style")
-        slot  (.createElement js/document "slot")]
-    (set! (.-textContent style) styles)
-    (.appendChild root style)
-    (.appendChild root slot)
-    (du/mark-initialized! el k-initialized?)))
-
 (defn- ensure-shadow! [^js el]
-  (when-not (du/initialized? el k-initialized?)
-    (init-dom! el)))
+  (du/ensure-shadow-with-style! el styles k-initialized? true))
 
 ;; ── Visibility (the route's own effect, gated by a received value) ─────────────
 (defn- set-visible!
@@ -51,13 +42,23 @@
     (du/setv! el k-visible? visible?)
     (set! (.. el -style -display) (if visible? display-default display-none))))
 
-(defn- parse-own-pattern! [^js el]
-  (du/setv! el k-pattern (router-model/parse-path-pattern (du/get-attr el model/attr-path))))
+(defn- parse-own-pattern!
+  "Parse the `path` attribute into a pattern value, or `nil` when the attribute
+  is absent/blank. A nil pattern is INERT: it never matches (not even `/`), so a
+  route with no `path` stays hidden instead of silently becoming a catch-all for
+  the root — `parse-path-pattern \"\"` and `parse-path-pattern \"/\"` both yield
+  `[]`, so the absent-vs-root distinction must be drawn here, on the raw attr."
+  [^js el]
+  (let [raw (du/get-attr el model/attr-path)]
+    (du/setv! el k-pattern
+              (when (mu/non-empty-string? raw)
+                (router-model/parse-path-pattern raw)))))
 
 (defn- on-route-change [^js el ^js e]
   (let [path    (.. e -detail -path)
         pattern (du/getv el k-pattern)]
-    (set-visible! el (some? (router-model/match-path pattern path)))))
+    (set-visible! el (and (some? pattern)
+                          (some? (router-model/match-path pattern path))))))
 
 ;; ── Self-listener (on self, GC'd with the element; nothing foreign to tear
 ;; down, so it is added once and never removed — reconnect re-uses it via the

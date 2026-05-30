@@ -212,3 +212,80 @@
         "the containing router's matching route activates")
     (is (not (visible? b-route))
         "the sibling router does NOT intercept — its route stays hidden")))
+
+;; ── Click-gesture gate (candidate-click?) ───────────────────────────────────────
+;; A modifier-held click (ctrl/cmd/shift/alt) must be left to the browser so the
+;; user can open the link in a new tab. The href is a same-page hash so a stray
+;; default action cannot navigate the test page away.
+(deftest modifier-click-not-intercepted-test
+  (let [r    (make-router)
+        link (.createElement js/document "a")]
+    (.setAttribute link "href" "#mod")
+    (.setAttribute link "data-barebuild-route" "")
+    (.appendChild r link)
+    (append-body! r)
+    (let [ev (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true
+                                          :button 0 :ctrlKey true})]
+      (.dispatchEvent link ev)
+      (is (false? (.-defaultPrevented ev))
+          "a ctrl/cmd-click is left to the browser — the router does not preventDefault"))))
+
+;; ── In-page hash link is not intercepted (native scroll, no junk history) ───────
+;; A marked anchor whose href is a same-page `#fragment` (same pathname+query)
+;; must fall through to the browser so it scrolls to the anchor and adds no
+;; redundant history entry. The router intercepting it would preventDefault the
+;; scroll and pushState the current route over itself.
+(deftest hash-only-link-not-intercepted-test
+  (let [r    (make-router)
+        link (.createElement js/document "a")]
+    (.setAttribute link "href" "#section-3")     ; same pathname+query, only the fragment differs
+    (.setAttribute link "data-barebuild-route" "")
+    (.appendChild r link)
+    (append-body! r)
+    (let [ev (js/MouseEvent. "click" #js {:bubbles true :composed true :cancelable true :button 0})]
+      (.dispatchEvent link ev)
+      (is (false? (.-defaultPrevented ev))
+          "an in-page hash link is left to the browser — no preventDefault, native scroll survives")
+      (is (= original-path (.. js/location -pathname))
+          "no pushState over the same route for a pure hash change"))))
+
+;; ── Nested-router navigate scoping (on-navigate stopPropagation) ─────────────────
+;; `barebuild-navigate` bubbles + is composed. Dispatched at the INNER router it
+;; must NOT also reach the OUTER router, or the outer would double-pushState and
+;; resolve against a URL its anchor-scoping excluded. on-navigate stops it.
+(deftest nested-router-navigate-does-not-bubble-to-outer-test
+  (let [outer         (make-router)
+        inner         (make-router)
+        route         (make-route "/n/:id")
+        reached-outer (atom false)]
+    (.appendChild inner route)
+    (.appendChild outer inner)
+    (append-body! outer)
+    (.addEventListener outer model/event-navigate (fn [_] (reset! reached-outer true)))
+    (.dispatchEvent inner (js/CustomEvent. model/event-navigate
+                                           #js {:detail #js {:path "/n/7"} :bubbles true :composed true}))
+    (is (= "/n/7" (.. js/location -pathname)) "the inner (nearest) router navigates")
+    (is (false? @reached-outer)
+        "navigate stopped at the nearest router — it did not bubble to the outer")))
+
+;; ── Registry cleared on disconnect (no stale ownership across a router move) ─────
+;; A router removed from the DOM clears its route registry. Otherwise a route
+;; reparented under a new router would stay in the old router's cache (it is still
+;; isConnected, so lazy pruning never drops it) and the old router would fight the
+;; new owner over the route's visibility once it reconnects.
+(deftest reconnected-router-does-not-retain-moved-routes-test
+  (let [r1    (make-router)
+        r2    (make-router)
+        route (make-route "/shared")]
+    (.appendChild r1 route)
+    (append-body! r1)
+    (append-body! r2)
+    (nav! r1 "/shared")
+    (is (visible? route) "route is visible under its first router")
+    (.remove r1)                 ; disconnect clears r1's registry
+    (.appendChild r2 route)      ; reparent: route connects under r2 → mounted → r2 registers
+    (append-body! r1)            ; r1 reconnects with an empty registry; the route is no longer its child
+    (nav! r2 "/shared")
+    (nav! r1 "/other")           ; if r1 still owned the route, this would hide it
+    (is (visible? route)
+        "the moved route stays controlled by its new router — the old one no longer touches it")))

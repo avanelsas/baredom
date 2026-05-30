@@ -61,7 +61,7 @@ There is one trigger concept (a fetch happens), not several attribute-named vari
 
 | Property | Type | Read-only | Description |
 |---|---|---|---|
-| `.state` | persistent CLJS map | yes | Current state. **The underlying persistent CLJS map**, returned by reference (cached, not rebuilt per read). `(identical? (.-state el) (.-state el))` is `true` between phase transitions — and therefore `=`; there is no allocation per read. Shape: `{:phase :data :error :http-status}` (`:data`/`:error`/`:http-status` present only when meaningful for the phase). See [State Shape](#state-shape) and [JS / CLJS Boundary](#js--cljs-boundary). |
+| `.state` | JS object | yes | Current state — a plain JS object `{ phase, data, error, httpStatus }` with a **string** `phase`, returned by reference (cached, not rebuilt per read). `(identical? (.-state el) (.-state el))` is `true` between phase transitions; there is no allocation per read. `data`/`error`/`httpStatus` present only when meaningful for the phase. See [State Shape](#state-shape) and [Why a JS object](#why-a-js-object-not-a-cljs-map). |
 | `.src` | string | reflects `src` attribute | Setting via the property triggers a fetch (when connected). |
 
 No `refresh!` method. Manual refetch is event-driven:
@@ -76,41 +76,39 @@ One mechanism (events) used everywhere, not two (events for some interactions, m
 
 ## State Shape
 
-```clj
-{:phase          :idle | :loading | :loaded | :error
- :data           <parsed response body, present in :loaded>
- :error          <error message string, present in :error>
- :http-status    <number, present in :loaded and :error>}
+A plain JS object (TypeScript-style):
+
+```ts
+{ phase:       "idle" | "loading" | "loaded" | "error"
+  data?:       any      // parsed response body, present when loaded
+  error?:      string   // error message, present when error
+  httpStatus?: number } // present when a response carried a status
 ```
 
-**Schema-open.** New keys may be added in future versions without breaking existing consumers; consumers should destructure the keys they need and ignore the rest. There is no closed type on this map.
+Read it with JS interop — `state.phase` from JS, `(.-phase state)` from CLJS:
 
-**One read-only property, fully transparent.** Convenience accessors (`.data`, `.error`, `.loading?`) are not shipped in V1 — consumers destructure the state map (`(:data state)` / `(:phase state)` in CLJS). One value, one source of truth; accessors can be added later as derived views without breaking the primary contract.
+```clojure
+(let [^js state (.-state el)]
+  (when (= "loaded" (.-phase state)) (.-data state)))
+```
+
+**Schema-open.** New keys may be added in future versions without breaking existing consumers; read the keys you need and ignore the rest. No closed type.
+
+**One read-only property.** Convenience accessors (`.data`, `.error`, `.loading`) are not shipped in V1 — read the fields off `.state`. One value, one source of truth; accessors can be added later as derived views without breaking the primary contract.
+
+**Treat `.state` as read-only.** It is a value, not a mutable place. The resting `idle` object is a shared singleton (frozen), and the live object is returned by reference between transitions — mutating it would corrupt what other reads (and other brokers) observe. Read the fields; never assign to them.
 
 ---
 
-## JS / CLJS Boundary
+## Why a JS object, not a CLJS map
 
-`.state` returns **the underlying persistent CLJS map** directly. The audience is CLJS; the primary contract is the CLJS value.
+`.state` and the `barebuild-data-state` detail are a **plain JS object** — this is load-bearing, not a convenience.
 
-```clojure
-;; CLJS — read the map; equality is preserved.
-(let [{:keys [phase data]} (.-state el)]
-  (when (= :loaded phase) data))
+The components ship as per-component ESM. A consuming app is shadow-compiled with its **own `cljs.core`**, separate from this module's (bundled `base.js`). A ClojureScript persistent map would carry *this module's* `Keyword` and `PersistentArrayMap` classes; the consumer's `cljs.core` has different classes, so `Keyword/-equiv` (`(instance? Keyword other)`) fails and **every key lookup returns nil** — the map is structurally present but unreadable. (This is invisible only when the consumer is compiled into the *same* build, e.g. the dev demos.)
 
-;; The same value across reads (until a phase transition):
-(identical? (.-state el) (.-state el))   ; => true between transitions — the map is cached,
-                                         ;    returned by reference, never rebuilt per read
-(= (.-state el) (.-state el))            ; => therefore also true
-```
+A JS object has no such boundary: `state.phase` / `(.-phase state)` work for any consumer — vanilla JS, or a separately-compiled CLJS app. `data` is the parsed JSON (already a JS value); `phase` is a string; `httpStatus` a number. The cached object is returned by reference, so `(identical? (.-state el) (.-state el))` holds between transitions — no per-read allocation.
 
-**Why CLJS-first.** The V1 audience is CLJS. Returning a fresh `clj->js`-then-frozen object on every `.state` read would defeat structural sharing and break `=` across reads — that's the "easy at the boundary, broken in the middle" trade Hickey criticises. The persistent map is the value.
-
-**Schema-open vs. format-portable.** The "all payloads are open data" pillar in [`BAREBUILD-V1-PLAN.md`](../barebuild/docs/BAREBUILD-V1-PLAN.md) means **schema-open** (extensible map, no closed type), not **format-portable across host languages**. V1 commits to one audience (CLJS) and ships the persistent map as the leaf value. A JS-view accessor (`.stateJs`) and a JS-shaped event detail are deferred to a later version when a real JS-only consumer surfaces.
-
-**Vanilla-JS consumers in V1** read fields via CLJS interop helpers (`cljs.core/get`, keyword-as-function). If a real JS-only V1 consumer surfaces and CLJS interop is insufficient, the V2 `.stateJs` accessor is the answer.
-
-**Hot-path note.** Persistent map reads are O(log n); `=` across two reads is constant-time (identical handle) when no transition has occurred. There is no per-read allocation.
+> **History.** V1 initially shipped `.state` as a CLJS persistent map (CLJS-first, with a JS view deferred). A runtime test of a real npm-consuming app proved it unreadable across the `cljs.core` boundary, so the contract was corrected to a JS object.
 
 ---
 
@@ -120,7 +118,7 @@ One mechanism (events) used everywhere, not two (events for some interactions, m
 
 | Event | Bubbles | Detail | When |
 |---|---|---|---|
-| `barebuild-data-state` | yes (composed) | `{state}` — the full state map at the leaf | Every phase transition: `idle → loading`, `loading → loaded`, `loading → error`, and on any refetch. |
+| `barebuild-data-state` | yes (composed) | `{state}` — the full state object (`event.detail.state`) | Every phase transition: `idle → loading`, `loading → loaded`, `loading → error`, and on any refetch. |
 
 The event **bubbles** (and is composed) so a single listener at the natural composition boundary — typically the enclosing `<barebuild-route>` — receives state from any `<barebuild-data>` inside it, without holding a handle to each broker. This is the "listen at a scoping ancestor" pattern; `event.target` identifies **which** broker fired. The detail carries `state` only — deliberately not a place-coupled identifier (`id`, `name`) — so disambiguation is by composition (target), not by lookup-by-name.
 
@@ -182,13 +180,18 @@ Omit `src` in markup; set it when the route activates. This is the recommended f
       table (.querySelector route "x-table")]
   ;; WHEN to read is an explicit value-in-time decision, not a side effect of mounting.
   ;; Re-setting src on each activation re-reads — a read is an observation in time.
+  ;; route-change fires at every route on every resolution — gate on the path.
   (.addEventListener route "barebuild-route-change"
-    (fn [_] (set! (.-src data) "/api/users")))
+    (fn [^js e]
+      (when (= "/users" (.. e -detail -path))
+        (set! (.-src data) "/api/users"))))
   (.addEventListener route "barebuild-data-state"
     (fn [^js e]
-      (let [{:keys [phase data]} (.. e -detail -state)]
-        (when (= :loaded phase)
-          (set! (.-items table) data))))))
+      (let [^js state (.. e -detail -state)]
+        (when (= "loaded" (.-phase state))
+          ;; render (.-data state) into your view — see read-side.md for a full
+          ;; x-table example (build x-table-row/x-table-cell children from the rows)
+          (render! table (.-data state)))))))
 ```
 
 (This hand-roll is exactly what Phase 4 asks early users to do, so the V1.1 `barebuild-bind` contract can be designed from what they actually built.)
@@ -214,9 +217,9 @@ A static `src` fetches once on `connectedCallback` and again only on `src` chang
 ### Read current state at any time
 
 ```clojure
-;; CLJS consumer reading the persistent map directly:
-(let [{:keys [phase data error]} (.-state el)]
-  ...)
+;; Read the JS state object directly (interop):
+(let [^js state (.-state el)]
+  [(.-phase state) (.-data state) (.-error state)])
 ```
 
 ### Reacting to a route param change
@@ -238,7 +241,7 @@ A static `src` fetches once on `connectedCallback` and again only on `src` chang
 ## Manual Verification
 
 1. Mount `<barebuild-data src="/api/users">`. `barebuild-data-state` fires twice: once with `{state: {phase: "loading", ...}}`, once with `{state: {phase: "loaded", ...}}`. The event detail contains **no** `id` or `name` field.
-2. `.state` reflects the current map at all times. `(= (.-state el) (.-state el))` is `true` between transitions.
+2. `.state` reflects the current state object at all times. `(identical? (.-state el) (.-state el))` is `true` between transitions.
 3. Disconnect mid-flight. Network panel shows the fetch aborted.
 4. `el.dispatchEvent(new CustomEvent('barebuild-data-refresh'))` — broker refetches.
 5. Change `.src` via property write — broker aborts in-flight and refetches against the new URL.

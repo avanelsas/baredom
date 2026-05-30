@@ -57,6 +57,8 @@ No `name` attribute. Listeners disambiguate routers via `event.target` or DOM co
 | `.path` | string | yes | Current resolved path (after `base` stripping). |
 | `.params` | object | yes | Path parameters from the active route's pattern (e.g. `{id: "42"}` for `/users/:id`). |
 
+> **`.params` returns a shared object — treat it as immutable.** The same object backs the `.params` getter and every `barebuild-route-change` detail, and the router reuses it until the match changes. Mutating it (or `event.detail.params`) corrupts the value the next route push reads. Clone before mutating: `{ ...router.params }`.
+
 ---
 
 ## Events

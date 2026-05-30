@@ -58,6 +58,22 @@
     (is (some #{router-model/event-route-unmounted} @events)
         "dispatches the symmetric barebuild-route-unmounted on disconnect")))
 
+;; ── A route with no `path` is inert (never matches, not even `/`) ───────────────
+;; `parse-path-pattern ""` and `parse-path-pattern "/"` both yield `[]`, so an
+;; absent `path` must be drawn as a distinct nil pattern — otherwise a route the
+;; author forgot to give a `path` would silently become a catch-all for the root.
+(deftest route-without-path-is-inert-test
+  (let [r       (make-router)
+        no-path (.createElement js/document model/tag-name)   ; NO path attribute
+        root    (make-route "/")]
+    (.appendChild r no-path)
+    (.appendChild r root)
+    (append-body! r)
+    (nav! r "/")
+    (is (visible? root) "the explicit `/` route matches the root")
+    (is (not (visible? no-path))
+        "a route with no `path` stays hidden at `/` — it is inert, not a root catch-all")))
+
 ;; ── Passive child with no router ancestor ───────────────────────────────────────
 ;; A route with nothing above it to push a match owns its own visibility and
 ;; starts hidden — it never flashes its slotted content waiting for a router.

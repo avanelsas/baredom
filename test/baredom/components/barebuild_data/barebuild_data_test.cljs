@@ -16,6 +16,7 @@
 (use-fixtures :each {:before cleanup! :after cleanup!})
 
 ;; ── Helpers ──────────────────────────────────────────────────────────────────
+;; .state is a plain JS object { phase, data, error, httpStatus }; phase a string.
 (defn- make-data [src]
   (let [el (.createElement js/document model/tag-name)]
     (.setAttribute el "src" src)
@@ -25,8 +26,13 @@
   (.appendChild (.-body js/document) el)
   el)
 
+;; The component reads the body via `.text` (then JSON.parse), so an empty/204
+;; body is a load-with-no-value rather than a parse error. The stub mirrors that:
+;; it serves the JSON text of `data` (or an empty string when `data` is nil).
 (defn- json-response [data status ok?]
-  #js {:ok ok? :status status :json (fn [] (js/Promise.resolve data))})
+  #js {:ok   ok?
+       :status status
+       :text (fn [] (js/Promise.resolve (if (some? data) (js/JSON.stringify data) "")))})
 
 (defn- stub-fetch-ok! [data status]
   (set! (.-fetch js/window)
@@ -39,7 +45,7 @@
 
 (defn- collect-phases! [^js el a]
   (.addEventListener el model/event-data-state
-                     (fn [^js e] (swap! a conj (:phase (.. e -detail -state))))))
+                     (fn [^js e] (swap! a conj (.-phase (.. e -detail -state))))))
 
 ;; ── Mount → load ────────────────────────────────────────────────────────────────
 (deftest mount-fetches-and-loads-test
@@ -51,11 +57,11 @@
       (append-body! el)
       (after-settle
        (fn []
-         (is (= [:loading :loaded] @phases) "emits loading then loaded, in order")
-         (let [st (.-state el)]
-           (is (= :loaded (:phase st)))
-           (is (= "world" (.-hello ^js (:data st))) "data carries the parsed body")
-           (is (= 200 (:http-status st))))
+         (is (= ["loading" "loaded"] @phases) "emits loading then loaded, in order")
+         (let [^js st (.-state el)]
+           (is (= "loaded" (.-phase st)))
+           (is (= "world" (.-hello ^js (.-data st))) "data carries the parsed body")
+           (is (= 200 (.-httpStatus st))))
          (done))))))
 
 (deftest state-identical-between-reads-test
@@ -66,7 +72,7 @@
       (after-settle
        (fn []
          (is (identical? (.-state el) (.-state el))
-             "the cached map is returned by reference (no per-read allocation)")
+             "the cached JS object is returned by reference (no per-read allocation)")
          (done))))))
 
 ;; ── Detail shape ──────────────────────────────────────────────────────────────────
@@ -79,9 +85,24 @@
       (append-body! el)
       (after-settle
        (fn []
-         (is (some? (.-state ^js @detail)) "detail carries :state")
+         (is (some? (.-state ^js @detail)) "detail carries state")
          (is (nil? (.-id ^js @detail)) "no place-coupled id in detail")
          (is (nil? (.-name ^js @detail)) "no place-coupled name in detail")
+         (done))))))
+
+;; ── Cross-runtime readability: .state is plain JS (the bug this contract fixes) ──
+(deftest state-is-plain-js-readable-test
+  (async done
+    (stub-fetch-ok! #js {:hello "world"} 200)
+    (let [el (make-data "/api/x")]
+      (append-body! el)
+      (after-settle
+       (fn []
+         (let [^js st (.-state el)]
+           ;; A consumer with a DIFFERENT cljs.core reads these via JS interop only.
+           (is (string? (.-phase st)) "phase is a JS string, not a keyword")
+           (is (= "loaded" (.-phase st)))
+           (is (= "world" (.-hello ^js (.-data st)))))
          (done))))))
 
 ;; ── Manual refresh ────────────────────────────────────────────────────────────────
@@ -109,10 +130,10 @@
       (append-body! el)
       (after-settle
        (fn []
-         (let [st (.-state el)]
-           (is (= :error (:phase st)))
-           (is (= "HTTP 500" (:error st)))
-           (is (= 500 (:http-status st)) "http status surfaced on error"))
+         (let [^js st (.-state el)]
+           (is (= "error" (.-phase st)))
+           (is (= "HTTP 500" (.-error st)))
+           (is (= 500 (.-httpStatus st)) "http status surfaced on error"))
          (done))))))
 
 (deftest network-error-test
@@ -122,10 +143,10 @@
       (append-body! el)
       (after-settle
        (fn []
-         (let [st (.-state el)]
-           (is (= :error (:phase st)))
-           (is (= "boom" (:error st)))
-           (is (not (contains? st :http-status)) "no http-status for a transport failure"))
+         (let [^js st (.-state el)]
+           (is (= "error" (.-phase st)))
+           (is (= "boom" (.-error st)))
+           (is (nil? (.-httpStatus st)) "no http-status for a transport failure"))
          (done))))))
 
 ;; ── Abort on disconnect ───────────────────────────────────────────────────────────
@@ -143,7 +164,7 @@
            (is (false? (.-aborted ^js @captured)) "not aborted while in-flight")
            (.remove el)
            (is (true? (.-aborted ^js @captured)) "in-flight fetch aborted on disconnect")
-           (is (= :idle (:phase (.-state el))) "state reset to idle on disconnect")
+           (is (= "idle" (.-phase (.-state el))) "state reset to idle on disconnect")
            (done)))))))
 
 ;; ── Refresh during loading: no duplicate loading event ──────────────────────────
@@ -153,14 +174,14 @@
     (let [el     (make-data "/api/x")
           phases (atom [])]
       (collect-phases! el phases)
-      (append-body! el)                                              ; → :loading (one event)
+      (append-body! el)                                              ; → loading (one event)
       (after-settle
        (fn []
-         (.dispatchEvent el (js/CustomEvent. model/event-data-refresh))   ; aborts + re-enters :loading
+         (.dispatchEvent el (js/CustomEvent. model/event-data-refresh))   ; aborts + re-enters loading
          (after-settle
           (fn []
-            (is (= [:loading] @phases)
-                "refresh during loading aborts + restarts but emits no duplicate :loading")
+            (is (= ["loading"] @phases)
+                "refresh during loading aborts + restarts but emits no duplicate loading")
             (done))))))))
 
 ;; ── Stale response cannot overwrite fresher state ────────────────────────────────
@@ -174,7 +195,7 @@
             (fn [_url _opts]
               (js/Promise. (fn [resolve _reject] (swap! resolvers conj resolve)))))
       (let [el (make-data "/api/x")]
-        (append-body! el)                                          ; fetch A pending, :loading
+        (append-body! el)                                          ; fetch A pending, loading
         (after-settle
          (fn []
            (.dispatchEvent el (js/CustomEvent. model/event-data-refresh)) ; aborts A, fetch B pending
@@ -182,17 +203,17 @@
             (fn []
               (let [[resolve-a resolve-b] @resolvers]
                 (is (= 2 (count @resolvers)) "two fetches issued: superseded A and active B")
-                (resolve-b (json-response #js {:which "B"} 200 true))   ; B settles first → :loaded B
+                (resolve-b (json-response #js {:which "B"} 200 true))   ; B settles first → loaded B
                 (resolve-a (json-response #js {:which "A"} 200 true))   ; A lands LAST, must no-op
                 (after-settle
                  (fn []
-                   (let [st (.-state el)]
-                     (is (= :loaded (:phase st)))
-                     (is (= "B" (.-which ^js (:data st)))
+                   (let [^js st (.-state el)]
+                     (is (= "loaded" (.-phase st)))
+                     (is (= "B" (.-which ^js (.-data st)))
                          "the superseded fetch A's later response is ignored — B's state stands"))
                    (done))))))))))))
 
-;; ── Invalid JSON body settles into :error ────────────────────────────────────────
+;; ── Invalid JSON body settles into error ──────────────────────────────────────────
 (deftest invalid-json-becomes-error-test
   (async done
     (set! (.-fetch js/window)
@@ -200,16 +221,65 @@
             (js/Promise.resolve
              #js {:ok     true
                   :status 200
-                  :json   (fn [] (js/Promise.reject (js/Error. "Unexpected token")))})))
+                  :text   (fn [] (js/Promise.resolve "{not valid json"))})))
     (let [el (make-data "/api/x")]
       (append-body! el)
       (after-settle
        (fn []
-         (let [st (.-state el)]
-           (is (= :error (:phase st)) "an ok response with an unparseable body is an error")
-           (is (= "Invalid JSON: Unexpected token" (:error st)))
-           (is (= 200 (:http-status st)) "the status that carried the bad body is preserved"))
+         (let [^js st (.-state el)]
+           (is (= "error" (.-phase st)) "an ok response with a non-empty unparseable body is an error")
+           (is (.startsWith (.-error st) "Invalid JSON:") "the error message names the parse failure")
+           (is (= 200 (.-httpStatus st)) "the status that carried the bad body is preserved"))
          (done))))))
+
+;; ── 204 / empty body is a success, not a parse error (#3) ──────────────────────
+(deftest empty-body-loads-with-nil-data-test
+  (async done
+    (set! (.-fetch js/window)
+          (fn [_ _]
+            (js/Promise.resolve
+             #js {:ok true :status 204 :text (fn [] (js/Promise.resolve ""))})))
+    (let [el (make-data "/api/x")]
+      (append-body! el)
+      (after-settle
+       (fn []
+         (let [^js st (.-state el)]
+           (is (= "loaded" (.-phase st)) "a 204/empty body is a successful load, never an error")
+           (is (nil? (.-data st)) "an empty body carries nil data")
+           (is (= 204 (.-httpStatus st)) "the status is still surfaced"))
+         (done))))))
+
+;; ── Whitespace-only src is blank → idle, no fetch (#9) ─────────────────────────
+(deftest whitespace-src-does-not-fetch-test
+  (async done
+    (let [calls (atom 0)]
+      (set! (.-fetch js/window)
+            (fn [_ _] (swap! calls inc) (js/Promise.resolve (json-response #js {} 200 true))))
+      (let [el (make-data "   ")]                      ; whitespace-only src
+        (append-body! el)
+        (after-settle
+         (fn []
+           (is (= 0 @calls) "a whitespace-only src is treated as blank — no fetch issued")
+           (is (= "idle" (.-phase (.-state el))) "state stays idle for a blank src")
+           (done)))))))
+
+;; ── Removing src resets to idle (no stale loaded left published) ──────────────────
+(deftest removing-src-resets-to-idle-test
+  (async done
+    (stub-fetch-ok! #js {:v 1} 200)
+    (let [el     (make-data "/api/x")
+          phases (atom [])]
+      (append-body! el)
+      (after-settle
+       (fn []
+         (is (= "loaded" (.-phase (.-state el))) "loaded while src is present")
+         (collect-phases! el phases)
+         (.removeAttribute el "src")                  ; drop the source
+         (after-settle
+          (fn []
+            (is (= "idle" (.-phase (.-state el))) "state falls back to idle when src is removed")
+            (is (= ["idle"] @phases) "exactly one idle transition event fires")
+            (done))))))))
 
 ;; ── Reconnect re-fetches, no stale replay ────────────────────────────────────────
 (deftest reconnect-refetches-test
@@ -219,14 +289,14 @@
       (append-body! el)
       (after-settle
        (fn []
-         (is (= :loaded (:phase (.-state el))))
+         (is (= "loaded" (.-phase (.-state el))))
          (.remove el)
-         (is (= :idle (:phase (.-state el))) "idle after disconnect")
+         (is (= "idle" (.-phase (.-state el))) "idle after disconnect")
          (let [phases (atom [])]
            (collect-phases! el phases)
            (append-body! el)                       ; reconnect
            (after-settle
             (fn []
-              (is (= [:loading :loaded] @phases)
-                  "reconnect yields one :idle→:loading→:loaded, no stale replay of the prior :loaded")
+              (is (= ["loading" "loaded"] @phases)
+                  "reconnect yields one idle→loading→loaded, no stale replay of the prior loaded")
               (done)))))))))
