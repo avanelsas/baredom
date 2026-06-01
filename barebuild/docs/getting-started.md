@@ -82,7 +82,10 @@ all visible as plain code at the **route** (the natural composition boundary):
 
 1. **Register** each imported module's custom element (`init()`), *after* wiring
    the listeners — so a deep load straight to `/users` still delivers the initial
-   `barebuild-route-change` the listener depends on.
+   `barebuild-route-change` the listener depends on. (The order of the `init()`
+   calls themselves does not matter: the router defers its initial route-change
+   push to a microtask, so every element is upgraded before any cross-component
+   cascade fires.)
 2. **When to read** — set the broker's `src` on `barebuild-route-change`, gated
    on the active path (`/users`). A read is an observation in time, so returning
    to the route re-reads. `barebuild-route-change` is pushed to *every* route on

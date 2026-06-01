@@ -9,7 +9,11 @@
    ["@vanelsas/baredom/x-table-cell"     :as x-table-cell]))
 
 (defn- register-components!
-  "Each imported module's init() calls customElements.define for its tag."
+  "Each imported module's init() calls customElements.define for its tag. Order
+  among them does not matter — the router defers its initial route-change push to a
+  microtask, so every element is upgraded before any cross-component cascade fires.
+  What matters is that init! wires the listeners BEFORE calling this, so a deep load
+  still delivers that initial push."
   []
   (.init barebuild-router)
   (.init barebuild-route)

@@ -1,6 +1,6 @@
 (ns baredom.components.barebuild-route.barebuild-route-test
   (:require
-   [cljs.test :refer-macros [deftest is use-fixtures]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.barebuild-router.barebuild-router :as router]
    [baredom.components.barebuild-route.barebuild-route :as route]
    [baredom.components.barebuild-router.model :as router-model]
@@ -92,13 +92,18 @@
     (nav! r "/a")
     (is (visible? route) "route is visible at its initial path")
     ;; Change `path` at runtime: re-parses the pattern and re-dispatches mounted,
-    ;; so the router re-pushes the current match against the NEW pattern.
+    ;; so the router re-pushes the current match against the NEW pattern — on a
+    ;; microtask (see on-route-mounted), so the visibility flip is awaited.
     (.setAttribute route "path" "/b")
-    (is (not (visible? route))
-        "after path → /b, the route hides (the URL is still /a, no longer a match)")
-    (nav! r "/b")
-    (is (visible? route)
-        "navigating to the new path shows it again — re-registration took effect")))
+    (async done
+      (js/queueMicrotask
+       (fn []
+         (is (not (visible? route))
+             "after path → /b, the route hides (the URL is still /a, no longer a match)")
+         (nav! r "/b")
+         (is (visible? route)
+             "navigating to the new path shows it again — re-registration took effect")
+         (done))))))
 
 ;; ── Removal drops the route from the router's resolution (isConnected pruning) ──
 ;; The router can't hear a bubbling unmounted (the route is detached by the time

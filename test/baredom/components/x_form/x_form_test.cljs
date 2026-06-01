@@ -177,6 +177,22 @@
       (is (.-cancelable @received)
           "x-form-submit should be cancelable"))))
 
+(deftest x-button-submit-click-fires-submit-test
+  ;; Regression: sel-button matches <x-button type=submit>, but x-button exposes
+  ;; `type` only as an attribute (no property accessor). on-click must read the
+  ;; attribute as a fallback, else the click never reaches requestSubmit and the
+  ;; form never submits. An un-upgraded <x-button type=submit> reproduces the
+  ;; property-less condition without coupling this test to x-button's module.
+  (let [el       (append! (make-el))
+        btn      (.createElement js/document "x-button")
+        received (atom nil)]
+    (.setAttribute btn "type" "submit")
+    (.appendChild el btn)
+    (.addEventListener el model/event-submit (fn [^js e] (reset! received e)))
+    (.click btn)
+    (is (some? @received)
+        "clicking an x-button[type=submit] (type as attribute only) should fire x-form-submit")))
+
 ;; ---------------------------------------------------------------------------
 ;; x-form-reset event
 ;; ---------------------------------------------------------------------------

@@ -241,7 +241,7 @@ For each new component, create the full BareDOM three-layer triplet under `src/b
 - Did anyone reach for re-frame? At what point?
 - **Did users ask for a Hiccup renderer?** What shape did they sketch? (This is the gate for promoting the deferred `bb.render` work into V1.1.)
 
-Output: `barebuild/docs/write-side-design-notes.md`, the gate for V1.1. Compare findings against the existing best-guess design in `barebuild/docs/write-side-sketch.md`.
+Output: [`write-side-design-notes.md`](write-side-design-notes.md), the gate for V1.1. Compare findings against the existing best-guess design in [`write-side-sketch.md`](write-side-sketch.md).
 
 A Playwright smoke spec boots the stack, drives the read paths, asserts DOM matches server state. **Identity-preservation assertion**: `<x-table>` element handle captured at page load is the same handle across navigation events (proves no destructive re-render).
 
@@ -265,7 +265,7 @@ CI: one job per top-level command (`npm test`, `cd barebuild && bb test`, `cd ba
 - `barebuild/docs/read-side.md` (1b) — **the shippable V1 canonical pattern**: three elements (router/route/data) wired by containment + `event.target`; no trigger attribute, no `#selector`/`id` wiring, no write-side elements. This is the doc the 1b DoD cites and whose code matches the grep gates.
 - `barebuild/docs/server-state-first.md` — **vision doc** (target six-element architecture, V1.1 end-state); banner-marked as not-a-V1-contract and pointing at `read-side.md`. Explains *why* the architecture is shaped this way and when to reach for re-frame.
 - `barebuild/docs/write-side-sketch.md` — best-guess design for the deferred V1.1 elements (action / bind / invalidate-on).
-- `barebuild/docs/write-side-design-notes.md` (Phase 4 output) — what users built by hand; gates V1.1.
+- [`write-side-design-notes.md`](write-side-design-notes.md) (Phase 4 output) — what users built by hand; gates V1.1.
 - `barebuild/docs/cli.md`, `barebuild/docs/getting-started.md`, `barebuild/README.md` — Phase 2+.
 
 **Operational doc:** [`barebuild/docs/RELEASES-BAREBUILD.md`](RELEASES-BAREBUILD.md) — release management for both products.

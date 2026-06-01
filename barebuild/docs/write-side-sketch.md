@@ -4,6 +4,8 @@
 
 The V1 plan ([`BAREBUILD-V1-PLAN.md`](BAREBUILD-V1-PLAN.md)) deliberately omits these elements. Users wire their write paths by hand during Phase 5; we read what they wrote; **then** we decide whether the shapes below survive contact with use.
 
+> This file is the **PRIOR**. Its **EVIDENCE** companion — what users actually wrote, recorded against each prior below — is [`write-side-design-notes.md`](write-side-design-notes.md), the Phase 4 output that gates V1.1. (The plan's Phase Map calls the telemetry step "Phase 4"; this sketch calls it "Phase 5" — same step.)
+
 If you are reading this looking for the V1 contract — there isn't one for these elements. Use `addEventListener` + `fetch`.
 
 ---

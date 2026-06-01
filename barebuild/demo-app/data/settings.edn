@@ -1,0 +1,5 @@
+;; Seed settings for the demo backend (server/serve.clj). One JSON object served
+;; at GET /api/settings; PUT /api/settings merges. Ephemeral (reset on restart).
+{:theme "system"
+ :page-size 25
+ :default-status "todo"}

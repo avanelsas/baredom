@@ -1,6 +1,6 @@
 (ns baredom.components.barebuild-router.barebuild-router-test
   (:require
-   [cljs.test :refer-macros [deftest is use-fixtures]]
+   [cljs.test :refer-macros [deftest is use-fixtures async]]
    [baredom.components.barebuild-router.barebuild-router :as router]
    [baredom.components.barebuild-route.barebuild-route :as route]
    [baredom.components.barebuild-router.model :as model]
@@ -107,16 +107,24 @@
     (is (= "/other" (.-path r)) "a non-matching path still has its base stripped for .path")))
 
 ;; ── Late mount ────────────────────────────────────────────────────────────────────
+;; The router pushes the current match to a newly-mounted route on a microtask (so
+;; consumer registration order is not load-bearing — see on-route-mounted), so the
+;; activation is asserted after awaiting one microtask. A microtask resolves before
+;; paint, so this is still "no empty-flash"; it is just not synchronous.
 (deftest late-mount-activates-immediately-test
-  (let [r    (make-router)
-        root (make-route "/")]
-    (.appendChild r root)
-    (append-body! r)
-    (nav! r "/users")                       ; resolve before the matching route exists
-    (let [users (make-route "/users")]
-      (.appendChild r users)                ; appended AFTER resolution
-      (is (visible? users)
-          "a late-mounted matching route activates on registration, no extra navigation"))))
+  (async done
+    (let [r    (make-router)
+          root (make-route "/")]
+      (.appendChild r root)
+      (append-body! r)
+      (nav! r "/users")                       ; resolve before the matching route exists
+      (let [users (make-route "/users")]
+        (.appendChild r users)                ; appended AFTER resolution
+        (js/queueMicrotask
+         (fn []
+           (is (visible? users)
+               "a late-mounted matching route activates on registration, no extra navigation")
+           (done)))))))
 
 ;; ── Route owns its visibility; router writes no attrs/styles to routes ─────────
 (deftest router-does-not-write-attributes-to-routes-test

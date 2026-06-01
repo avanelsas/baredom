@@ -173,11 +173,25 @@
   (let [^js route (.-target e)
         pattern   (.. e -detail -pattern)]   ; the route's already-parsed pattern
     (register-route! el route pattern)
-    ;; publish! pushes the current match to ONLY the new route (the URL is
-    ;; unchanged, so the others already show the right thing), and announces only
-    ;; if the match actually changed. A late-mounted matching route activates on
-    ;; registration without waiting for a navigation.
-    (publish! el [route])))
+    ;; Push the current match to the newly-mounted route on a MICROTASK, not
+    ;; synchronously — this is what keeps a consumer's registration order from
+    ;; being load-bearing. The mount fires inside customElements.define() while a
+    ;; consumer is registering its components; a synchronous push would run the
+    ;; consumer's route-change listener — which typically sets `.src` on a sibling
+    ;; <barebuild-data> — before that sibling has upgraded, so correctness would
+    ;; depend on the textual order of the consumer's init() calls (a deep-load is
+    ;; the only thing that exposes a wrong order). Order is a complecting construct:
+    ;; "what is defined" braided with "when the cross-component cascade fires."
+    ;; Deferring lets the whole define() batch finish first, so every element is
+    ;; upgraded before any cross-component event fires and order stops mattering.
+    ;; A microtask resolves before paint, so a matching route still activates with
+    ;; no visible flash — the only observable difference is that activation is one
+    ;; microtask late (tests await it). publish! recomputes the match against ALL
+    ;; registered routes (every synchronously-mounted route is registered by the
+    ;; time any microtask runs) and announces once via the change-guard. Only the
+    ;; PUSH defers; registration (and the stopPropagation above) stay synchronous,
+    ;; and navigate/popstate resolution is unchanged.
+    (js/queueMicrotask (fn deferred-push [] (publish! el [route])))))
 
 ;; ── Anchor interception (document capture) ──────────────────────────────────────
 (defn- anchor-node? [^js node]
