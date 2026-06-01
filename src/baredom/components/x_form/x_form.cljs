@@ -158,9 +158,18 @@
           (.formResetCallback field)))))
   (du/dispatch! el model/event-reset #js {}))
 
+(defn- button-type
+  "The submit/reset role of a clicked button. Native <button>/<input> expose a
+  `.type` property; x-button is a custom element that carries `type` only as an
+  attribute (its property-api reflects disabled/loading/pressed, not type), so
+  fall back to the attribute. Without this, an <x-button type=\"submit\"> — which
+  `sel-button` explicitly matches — reads `.-type` as undefined and never submits."
+  [^js btn]
+  (or (.-type btn) (.getAttribute btn "type")))
+
 (defn- on-click [^js el ^js e]
   (when-let [^js btn (.closest (.-target e) sel-button)]
-    (let [btn-type (.-type btn)]
+    (let [btn-type (button-type btn)]
       (when-let [refs (du/getv el k-refs)]
         (let [^js form-el (gobj/get refs rk-form)]
           (cond
