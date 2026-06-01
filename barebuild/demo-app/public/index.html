@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BareBuild Tasks</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0 0 64px; line-height: 1.5; }
+      main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+      .nav-link { text-decoration: none; padding: 6px 12px; border-radius: 8px; color: inherit; }
+      .nav-link:hover { background: rgba(127,127,127,.12); }
+      .toolbar { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 16px 0; }
+      .toolbar .grow { flex: 1 1 220px; }
+      .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+      .row-actions { display: flex; gap: 8px; align-items: center; }
+      .skeleton-rows { display: grid; gap: 10px; margin: 16px 0; }
+      h1 { margin: 8px 0 4px; }
+      dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 16px; margin: 0; }
+      dt { color: var(--x-color-text-muted, #777); }
+      dd { margin: 0; font-weight: 500; }
+    </style>
+    <!-- defer: shadow-cljs :init-fn runs after the markup below is parsed, so the
+         read-side wiring can querySelector the router/routes/data/surfaces. -->
+    <script defer src="/js/main.js"></script>
+  </head>
+  <body>
+    <barebuild-router>
+      <x-navbar label="BareBuild Tasks" sticky elevated>
+        <a class="nav-link" href="/tasks" data-barebuild-route>Board</a>
+        <a class="nav-link" href="/settings" data-barebuild-route>Settings</a>
+      </x-navbar>
+
+      <main>
+        <!-- ── Home ───────────────────────────────────────────────────────── -->
+        <barebuild-route path="/">
+          <h1>BareBuild Tasks</h1>
+          <p>A read-only demo built from the three V1 orchestration elements
+             (<code>&lt;barebuild-router&gt;</code>, <code>&lt;barebuild-route&gt;</code>,
+             <code>&lt;barebuild-data&gt;</code>) plus BareDOM <code>x-*</code> components.
+             Open the <strong>Board</strong> to see the read-side path; the write
+             surfaces are deliberately left unwired for Phase-4 telemetry.</p>
+          <p>Run with <code>bb serve</code> so the <code>/api</code> backend is live.</p>
+        </barebuild-route>
+
+        <!-- ── Board: /tasks ──────────────────────────────────────────────── -->
+        <barebuild-route path="/tasks">
+          <!-- Dormant: core/board sets src on activation (read-side pattern). -->
+          <barebuild-data id="tasks-data"></barebuild-data>
+
+          <h1>Board</h1>
+
+          <div class="toolbar">
+            <x-search-field id="task-search" class="grow"
+                            label="Filter tasks" placeholder="Filter by title…"></x-search-field>
+            <x-select id="status-filter" name="status-filter" placeholder="All statuses">
+              <option value="">All statuses</option>
+              <option value="todo">To do</option>
+              <option value="doing">Doing</option>
+              <option value="done">Done</option>
+            </x-select>
+            <x-button id="new-task-btn" variant="primary">New task</x-button>
+          </div>
+
+          <div class="stats">
+            <x-stat data-status="todo"  label="To do" value="0"></x-stat>
+            <x-stat data-status="doing" label="Doing" value="0" variant="warning"></x-stat>
+            <x-stat data-status="done"  label="Done"  value="0" variant="positive"></x-stat>
+          </div>
+
+          <!-- Error surface (shown only on the data broker's error phase). -->
+          <x-alert id="board-error" type="error" style="display:none" dismissible></x-alert>
+
+          <!-- Loading surface (shown only while the broker is in its loading phase). -->
+          <div id="board-skeleton" class="skeleton-rows" style="display:none">
+            <x-skeleton height="40px"></x-skeleton>
+            <x-skeleton height="40px"></x-skeleton>
+            <x-skeleton height="40px"></x-skeleton>
+          </div>
+
+          <x-table id="tasks-table" columns="56px 2fr 96px 1fr 120px 150px"
+                   bordered caption="Tasks"></x-table>
+
+          <!-- New-task surface: built here, submit wiring is the Phase-4 stub seam. -->
+          <x-modal id="new-task-modal" label="New task" size="md">
+            <span slot="header">New task</span>
+            <x-form id="new-task-form">
+              <x-form-field name="title" label="Title" type="text" required></x-form-field>
+              <x-text-area name="description" label="Description" rows="3"></x-text-area>
+              <x-select name="status" placeholder="Status">
+                <option value="todo">To do</option>
+                <option value="doing">Doing</option>
+                <option value="done">Done</option>
+              </x-select>
+              <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
+              <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
+              <div class="row-actions" style="margin-top:12px">
+                <x-button type="submit" variant="primary">Create</x-button>
+              </div>
+            </x-form>
+          </x-modal>
+        </barebuild-route>
+
+        <!-- ── Detail: /tasks/:id ─────────────────────────────────────────── -->
+        <barebuild-route path="/tasks/:id">
+          <barebuild-data id="detail-data"></barebuild-data>
+
+          <p><a class="nav-link" href="/tasks" data-barebuild-route>← Back to board</a></p>
+
+          <x-alert id="detail-error" type="error" style="display:none" dismissible></x-alert>
+
+          <x-card id="detail-card" variant="outlined" padding="lg">
+            <h1 id="detail-title">Task</h1>
+            <dl id="detail-fields"></dl>
+
+            <!-- Inline edit surface: built here, submit/delete wiring is the stub seam. -->
+            <x-form id="edit-task-form" style="margin-top:16px">
+              <x-form-field name="title" label="Title" type="text" required></x-form-field>
+              <x-text-area name="description" label="Description" rows="3"></x-text-area>
+              <x-select name="status" placeholder="Status">
+                <option value="todo">To do</option>
+                <option value="doing">Doing</option>
+                <option value="done">Done</option>
+              </x-select>
+              <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
+              <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
+              <div class="row-actions" style="margin-top:12px">
+                <x-button type="submit" variant="primary">Save</x-button>
+                <x-button id="delete-task-btn" variant="danger" type="button">Delete</x-button>
+              </div>
+            </x-form>
+          </x-card>
+
+          <x-cancel-dialogue id="delete-confirm"
+                             headline="Delete this task?"
+                             message="This cannot be undone."
+                             confirm-text="Delete" cancel-text="Keep" danger></x-cancel-dialogue>
+        </barebuild-route>
+
+        <!-- ── Settings: /settings ────────────────────────────────────────── -->
+        <barebuild-route path="/settings">
+          <barebuild-data id="settings-data"></barebuild-data>
+
+          <h1>Settings</h1>
+          <x-alert id="settings-error" type="error" style="display:none" dismissible></x-alert>
+
+          <x-form id="settings-form">
+            <x-select name="theme" placeholder="Theme">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </x-select>
+            <x-form-field name="page-size" label="Page size" type="number"></x-form-field>
+            <x-select name="default-status" placeholder="Default status">
+              <option value="todo">To do</option>
+              <option value="doing">Doing</option>
+              <option value="done">Done</option>
+            </x-select>
+            <div class="row-actions" style="margin-top:12px">
+              <x-button type="submit" variant="primary">Save settings</x-button>
+            </div>
+          </x-form>
+        </barebuild-route>
+      </main>
+    </barebuild-router>
+
+    <!-- Global toast region (persists across routes). Write outcomes surface here. -->
+    <x-toaster id="toaster" position="bottom-end"></x-toaster>
+  </body>
+</html>

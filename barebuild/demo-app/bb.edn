@@ -1,0 +1,18 @@
+{:paths ["server"]
+ :tasks
+ {dev   {:doc  "Install deps and start the dev server on http://localhost:8000"
+         :task (do (shell "npm install")
+                   (shell "npx shadow-cljs watch app"))}
+  build {:doc  "Production build to public/js"
+         :task (do (shell "npm install")
+                   (shell "npx shadow-cljs release app"))}
+  serve {:doc      "Build the app, then serve public/ + JSON API on http://localhost:3000"
+         :requires ([serve])
+         :task     (do (shell "npm install")
+                       (shell "npx shadow-cljs release app")
+                       (apply serve/-main *command-line-args*))}
+  e2e   {:doc  "Run the Playwright read-path smoke. playwright.config boots `bb serve`."
+         :task (do (shell "npm install")
+                   ;; Browsers for a portable / CI run; cached after first install.
+                   (shell "npx playwright install chromium")
+                   (shell "npx playwright test"))}}}

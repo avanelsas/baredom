@@ -8,5 +8,9 @@
         :task    (barebuild-new-test/-main)}
   smoke-build {:doc     "E2E: scaffold an app and compile it against a local pack of barebuild-*"
                :requires ([smoke-build])
-               :task    (smoke-build/-main)}}}
+               :task    (smoke-build/-main)}
+  demo-e2e    {:doc     "Run the demo-app Playwright e2e from the platform root"
+               ;; :dir keeps this boundary-clean (no parent-relative path); runs
+               ;; the demo-app's own `bb e2e`, whose playwright.config boots `bb serve`.
+               :task    (shell {:dir "demo-app"} "bb" "e2e")}}}
 
