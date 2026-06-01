@@ -92,6 +92,17 @@
     (is (= "b" (.-value el))
         "reading value property should return the attribute value")))
 
+(deftest string-property-name-test
+  ;; A form control must expose `name` as a property (not attribute-only), so
+  ;; consumers and x-form can read el.name like a native <select>.
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-name "status")
+    (is (= "status" (.-name el))
+        "reading name property returns the attribute value")
+    (set! (.-name el) "category")
+    (is (= "category" (.getAttribute el model/attr-name))
+        "setting name property reflects to the attribute")))
+
 ;; ---------------------------------------------------------------------------
 ;; Enum size normalization
 ;; ---------------------------------------------------------------------------

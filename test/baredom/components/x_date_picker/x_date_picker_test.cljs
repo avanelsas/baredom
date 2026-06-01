@@ -73,6 +73,17 @@
     (is (= "2024-03-01" (.getAttribute el model/attr-value)))
     (is (= "2024-03-01" (.-value el)))))
 
+(deftest name-property-test
+  ;; A form control must expose `name` as a property (not attribute-only), so
+  ;; consumers and x-form can read el.name like a native form input.
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-name "due")
+    (is (= "due" (.-name el))
+        "reading name property returns the attribute value")
+    (set! (.-name el) "deadline")
+    (is (= "deadline" (.getAttribute el model/attr-name))
+        "setting name property reflects to the attribute")))
+
 (deftest start-end-properties-test
   (let [el (append! (make-el))]
     (.setAttribute el model/attr-mode "range")

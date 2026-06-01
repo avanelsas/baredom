@@ -7,6 +7,7 @@
   export interface XSelectProps {
     disabled?: boolean;
     required?: boolean;
+    name?: string;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onchangerequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
@@ -23,6 +24,7 @@
   let {
     disabled,
     required,
+    name,
     value = $bindable(undefined),
     onchangerequest,
     onselectchange,
@@ -62,6 +64,7 @@
   bind:this={el}
   {disabled}
   {required}
+  {name}
   class={className}
   {id}
   {...rest}

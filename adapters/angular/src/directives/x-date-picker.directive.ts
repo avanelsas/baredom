@@ -17,14 +17,15 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set mode(v: string) { this.el.mode = v as any; }
-  @Input() set value(v: string) { this.el.value = v as any; }
-  @Input() set start(v: string) { this.el.start = v as any; }
-  @Input() set end(v: string) { this.el.end = v as any; }
-  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set open(v: boolean) { this.el.open = v as any; }
+  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set mode(v: string) { this.el.mode = v as any; }
+  @Input() set start(v: string) { this.el.start = v as any; }
+  @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
+  @Input() set end(v: string) { this.el.end = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() input = new EventEmitter<CustomEvent<{ value: string; mode: string }>>();
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; mode: string; reason: string }>>();

@@ -11,6 +11,7 @@ export interface XSelectProps {
   disabled?: boolean;
   required?: boolean;
   value?: string;
+  name?: string;
   defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onSelectChange?: (e: CustomEvent<{ value: string; label: string }>) => void;
