@@ -5,14 +5,15 @@
   init();
   export type { XDatePickerElement };
   export interface XDatePickerProps {
-    mode?: string;
-    value?: string;
-    start?: string;
-    end?: string;
-    disabled?: boolean;
-    readOnly?: boolean;
-    required?: boolean;
     open?: boolean;
+    disabled?: boolean;
+    name?: string;
+    value?: string;
+    mode?: string;
+    start?: string;
+    readOnly?: boolean;
+    end?: string;
+    required?: boolean;
     oninput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
     onchangerequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
     onchange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
@@ -26,14 +27,15 @@
 
 <script lang="ts">
   let {
-    mode,
-    value,
-    start,
-    end,
-    disabled,
-    readOnly,
-    required,
     open,
+    disabled,
+    name,
+    value,
+    mode,
+    start,
+    readOnly,
+    end,
+    required,
     oninput,
     onchangerequest,
     onchange,
@@ -63,14 +65,15 @@
 
 <x-date-picker
   bind:this={el}
-  {mode}
-  {value}
-  {start}
-  {end}
-  {disabled}
-  {readOnly}
-  {required}
   {open}
+  {disabled}
+  {name}
+  {value}
+  {mode}
+  {start}
+  {readOnly}
+  {end}
+  {required}
   class={className}
   {id}
   {...rest}

@@ -118,6 +118,15 @@
     (aget result "ok")))
 
 ;; ── Value collection ──────────────────────────────────────────────────────
+(defn- name-of
+  "The form name of a control — from the `name` property when present, else the
+  `name` attribute (the basis of the `[name]` selector that matched it). Form
+  controls like x-select / x-date-picker expose `name` only as an attribute, no
+  property accessor — reading `.-name` alone returns undefined and silently drops
+  them from collected values and from setFieldError matching."
+  [^js field]
+  (or (.-name field) (.getAttribute field "name")))
+
 (defn- collect-values [^js el]
   ;; Use a null-prototype object so consumer-supplied field names like
   ;; "toString" or "__proto__" don't shadow Object.prototype methods on
@@ -127,7 +136,7 @@
         result (js/Object.create nil)]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)
-            field-name (.-name field)]
+            field-name (name-of field)]
         (when (and field-name (not= field-name ""))
           (let [tag-lower  (.toLowerCase (.-tagName field))
                 type-attr  (.getAttribute field "type")
@@ -232,7 +241,7 @@
         clear? (or (nil? msg) (= msg "") (= msg js/undefined))]
     (dotimes [i (.-length fields)]
       (let [^js field (aget fields i)]
-        (when (= (.-name field) field-name)
+        (when (= (name-of field) field-name)
           (if clear?
             (du/remove-attr! field attr-error)
             (du/set-attr! field attr-error msg)))))))

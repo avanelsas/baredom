@@ -29,7 +29,10 @@
 (def property-api
   {:disabled {:type 'boolean :reflects-attribute attr-disabled}
    :required {:type 'boolean :reflects-attribute attr-required}
-   :value    {:type 'string  :reflects-attribute attr-value}})
+   :value    {:type 'string  :reflects-attribute attr-value}
+   ;; `name` reflects the attribute like every other form control (and native
+   ;; <select>), so `el.name` works and x-form can collect this field by name.
+   :name     {:type 'string  :reflects-attribute attr-name}})
 
 (def event-schema
   {event-change-request {:cancelable true

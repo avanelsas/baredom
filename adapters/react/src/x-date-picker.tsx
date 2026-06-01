@@ -8,14 +8,15 @@ import { init } from "@vanelsas/baredom/x-date-picker";
 init();
 
 export interface XDatePickerProps {
-  mode?: string;
-  value?: string;
-  start?: string;
-  end?: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
   open?: boolean;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
+  mode?: string;
+  start?: string;
+  readOnly?: boolean;
+  end?: string;
+  required?: boolean;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
   onChangeRequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;

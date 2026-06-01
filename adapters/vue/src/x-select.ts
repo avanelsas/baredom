@@ -18,6 +18,7 @@ export const XSelect = defineComponent({
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     value: { type: String as PropType<string | undefined>, default: undefined },
+    name: { type: String as PropType<string | undefined>, default: undefined },
     modelValue: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {

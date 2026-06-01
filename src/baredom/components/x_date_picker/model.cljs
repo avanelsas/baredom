@@ -42,7 +42,10 @@
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly    {:type 'boolean :reflects-attribute attr-readonly}
    :required    {:type 'boolean :reflects-attribute attr-required}
-   :open        {:type 'boolean :reflects-attribute "open"}})
+   :open        {:type 'boolean :reflects-attribute "open"}
+   ;; `name` reflects the attribute like every other form control (and native
+   ;; form inputs), so `el.name` works and x-form can collect this field by name.
+   :name        {:type 'string  :reflects-attribute attr-name}})
 
 ;; ---------------------------------------------------------------------------
 ;; String / parsing helpers

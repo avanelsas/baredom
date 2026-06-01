@@ -384,7 +384,19 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "mode",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
         "type" : {
           "text" : "string"
         }
@@ -396,21 +408,15 @@
         }
       }, {
         "kind" : "field",
+        "name" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "start",
         "type" : {
           "text" : "string"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "end",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
         }
       }, {
         "kind" : "field",
@@ -420,13 +426,13 @@
         }
       }, {
         "kind" : "field",
-        "name" : "required",
+        "name" : "end",
         "type" : {
-          "text" : "boolean"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
-        "name" : "open",
+        "name" : "required",
         "type" : {
           "text" : "boolean"
         }
@@ -3352,6 +3358,12 @@
       }, {
         "kind" : "field",
         "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "name",
         "type" : {
           "text" : "string"
         }

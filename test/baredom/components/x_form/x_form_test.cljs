@@ -193,6 +193,24 @@
     (is (some? @received)
         "clicking an x-button[type=submit] (type as attribute only) should fire x-form-submit")))
 
+(deftest collects-control-whose-name-is-attribute-only-test
+  ;; Regression: x-select / x-date-picker expose `name` as an attribute but not a
+  ;; property, so collect-values must read the field name from the attribute (the
+  ;; [name] selector's basis), not only from `.name` — else those controls are
+  ;; silently dropped from the submitted values. Reproduced with a plain element
+  ;; carrying a `name` attribute + a `value` property but no `name` property.
+  (let [el       (append! (make-el))
+        field    (.createElement js/document "x-fake-control")
+        received (atom nil)]
+    (.setAttribute el model/attr-novalidate "")   ; the fake control has no validity API
+    (.setAttribute field "name" "due")
+    (set! (.-value field) "2026-06-15")
+    (.appendChild el field)
+    (.addEventListener el model/event-submit (fn [^js e] (reset! received (.-detail e))))
+    (.submit el)
+    (is (= "2026-06-15" (aget (.-values @received) "due"))
+        "a control whose `name` is attribute-only is still collected into values")))
+
 ;; ---------------------------------------------------------------------------
 ;; x-form-reset event
 ;; ---------------------------------------------------------------------------

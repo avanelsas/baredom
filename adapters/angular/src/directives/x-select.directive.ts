@@ -20,6 +20,7 @@ export class BaredomSelect implements OnInit, OnDestroy {
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set name(v: string) { this.el.name = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; label: string; previousValue: string }>>();
   @Output() selectChange = new EventEmitter<CustomEvent<{ value: string; label: string }>>();
