@@ -30,13 +30,57 @@
 
   Until you fill these in, every stub just shows a toast and changes nothing, so the
   demo stays read-only-correct."
-  (:require [demo-app.wiring :as w]))
+  (:require [demo-app.wiring :as w]
+            [demo-app.api :as demo-app.api]))
+
+(def ^:private api-tasks    "/api/tasks")
+(def ^:private api-settings "/api/settings")
+
+(defn- api-task
+  "The single-task endpoint. The id is the last URL segment on the detail route."
+  [id]
+  (str api-tasks "/" id))
+
+(defn- task-id-from-url
+  "The id of the task on the current /tasks/:id detail URL — its last segment."
+  []
+  (last (.split js/location.pathname "/")))
+
+(defn- refresh-data!
+  "Ask a <barebuild-data> broker (by id selector) to re-run its current src fetch."
+  [selector]
+  (when-let [^js el (.querySelector js/document selector)]
+    (.dispatchEvent el (js/CustomEvent. w/ev-data-refresh))))
+
+(defn- navigate!
+  "Programmatic SPA navigation: dispatch the router's `barebuild-navigate` AT the
+   router element, which pushState's `path` and re-resolves. Re-resolving /tasks
+   re-reads the board (its on-route-change re-sets src), so a delete needs no
+   separate refresh — the activation read replaces the stale list."
+  [path]
+  (when-let [^js router (.querySelector js/document w/tag-router)]
+    (.dispatchEvent router (js/CustomEvent. w/ev-navigate
+                                            #js {:bubbles true :composed true
+                                                 :detail  #js {:path path}}))))
+
+(defn- without-blanks
+  "Drop name→value pairs whose value is a blank string. x-form reports every
+   named control, defaulting an unset one to \"\" — and a present-but-blank key
+   shadows server-side defaults (a blank `status` would override the API's
+   {:status \"todo\"}). Omitting blanks lets those defaults apply."
+  [^js values]
+  (let [out #js {}]
+    (doseq [k (js/Object.keys values)]
+      (let [v (aget values k)]
+        (when-not (and (string? v) (= "" (.trim v)))
+          (aset out k v))))
+    out))
 
 (defn- toaster [] (.querySelector js/document "#toaster"))
 
 (defn- notify!
-  "Surface that a seam fired but is unwired. Replace these calls with your real
-  result handling (success/error toasts are fine — keep them if you like)."
+  "Show a result toast (success/error) for a completed write. The toaster is a
+  shared #toaster element; each seam reports its own outcome through here."
   [msg]
   (when-let [^js t (toaster)]
     (.toast t #js {:type "info" :message msg})))
@@ -44,48 +88,69 @@
 ;; ── 1. CREATE — New-task modal form submit ────────────────────────────────────
 (defn- on-create-submit! [^js e]
   (.preventDefault e)
-  ;; AVAILABLE: (.. e -detail -values) → #js {title, description, status, assignee, due}
-  ;;            (the modal is #new-task-modal; close it with (.hide modal) on success)
-  ;; YOUR CODE: POST /api/tasks with that payload, then make the board reflect it
-  ;;            (re-set src on #tasks-data to re-read, or splice the new row), then
-  ;;            close the modal. ▼▼▼ write it here ▼▼▼
-
-  ;; ▲▲▲ write it here ▲▲▲
-  (notify! "Create is unwired — fill on-create-submit! in write_side.cljs"))
+  (-> (demo-app.api/request "POST" api-tasks (without-blanks (.. e -detail -values)))
+      (.then (fn [_created]
+               (refresh-data! w/id-tasks-data)   ;; board re-reads /api/tasks → re-renders
+               (when-let [^js m (.querySelector js/document "#new-task-modal")]
+                 (.hide m))                       ;; x-modal :hide closes the dialog
+               (notify! "Task created")))
+      (.catch (fn [err]
+                (js/console.error err)
+                (notify! "Create failed")))))
 
 ;; ── 2. UPDATE — detail inline edit form submit ────────────────────────────────
 (defn- on-edit-submit! [^js e]
   (.preventDefault e)
-  ;; AVAILABLE: (.. e -detail -values) → the edited fields.
-  ;;            The task id is the last URL segment: (last (.split js/location.pathname "/"))
-  ;; YOUR CODE: PUT /api/tasks/:id, then re-read the detail (and/or the board).
-
-  (notify! "Update is unwired — fill on-edit-submit! in write_side.cljs"))
+  ;; PUT the edited fields, then refresh the detail broker so the card + form
+  ;; re-render from the server's value. The board isn't mounted on this route; it
+  ;; re-reads on its next activation, so refreshing the detail alone is enough.
+  (-> (demo-app.api/request "PUT" (api-task (task-id-from-url))
+                            (without-blanks (.. e -detail -values)))
+      (.then (fn [_updated]
+               (refresh-data! w/id-detail-data)   ;; detail re-reads /api/tasks/:id → re-renders
+               (notify! "Task updated")))
+      (.catch (fn [err]
+                (js/console.error err)
+                (notify! "Update failed")))))
 
 ;; ── 3. DELETE (detail) — confirm dialogue confirmed ───────────────────────────
 (defn- on-delete-confirm! [^js _e]
-  ;; AVAILABLE: the task id is the last URL segment (see above). Close the dialogue
-  ;;            with (.close (.querySelector js/document "#delete-confirm")).
-  ;; YOUR CODE: DELETE /api/tasks/:id, then navigate back to /tasks and re-read.
-
-  (notify! "Delete is unwired — fill on-delete-confirm! in write_side.cljs"))
+  ;; The dialogue closes itself on confirm (x-cancel-dialogue do-confirm! → close),
+  ;; so we only DELETE, then navigate back to /tasks — which re-reads the board.
+  (-> (demo-app.api/request "DELETE" (api-task (task-id-from-url)) nil)
+      (.then (fn [_deleted]
+               (navigate! w/path-tasks)           ;; /tasks activation re-reads the board
+               (notify! "Task deleted")))
+      (.catch (fn [err]
+                (js/console.error err)
+                (notify! "Delete failed")))))
 
 ;; ── 4. DELETE (board row) — per-row Delete button ─────────────────────────────
 (defn- on-row-delete! [^js e]
   (when-let [^js btn (some-> (.-target e) (.closest (str "[" w/attr-delete-id "]")))]
     (let [id (.getAttribute btn w/attr-delete-id)]
-      ;; YOUR CODE: DELETE /api/tasks/<id>, then refresh the board read so the row
-      ;;            disappears (re-set src on #tasks-data, or remove the row node).
-
-      (notify! (str "Row delete (#" id ") is unwired — fill on-row-delete! in write_side.cljs")))))
+      ;; Already on /tasks → no navigation; just DELETE and refresh the board read
+      ;; so the row disappears (DOM = f(broker value, filters), untouched by hand).
+      (-> (demo-app.api/request "DELETE" (api-task id) nil)
+          (.then (fn [_deleted]
+                   (refresh-data! w/id-tasks-data)
+                   (notify! (str "Task #" id " deleted"))))
+          (.catch (fn [err]
+                    (js/console.error err)
+                    (notify! "Delete failed")))))))
 
 ;; ── 5. SETTINGS — settings form submit ────────────────────────────────────────
 (defn- on-settings-save! [^js e]
   (.preventDefault e)
-  ;; AVAILABLE: (.. e -detail -values) → #js {theme, page-size, default-status}
-  ;; YOUR CODE: PUT /api/settings, then confirm (toast) and/or re-read.
-
-  (notify! "Save settings is unwired — fill on-settings-save! in write_side.cljs"))
+  ;; PUT the settings, then refresh the settings broker so the form reflects the
+  ;; PERSISTED value (server is truth — catches any server-side normalization).
+  (-> (demo-app.api/request "PUT" api-settings (without-blanks (.. e -detail -values)))
+      (.then (fn [_saved]
+               (refresh-data! w/id-settings-data)  ;; re-read /api/settings → re-fill form
+               (notify! "Settings saved")))
+      (.catch (fn [err]
+                (js/console.error err)
+                (notify! "Save failed")))))
 
 (defn attach-stubs!
   "Attach the inert write-side seams. Called from core/init! alongside the

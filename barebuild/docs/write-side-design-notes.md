@@ -1,12 +1,14 @@
 # BareBuild Write-Side Design Notes (Phase 4 output — the V1.1 gate)
 
-> **STATUS: TEMPLATE — not yet filled.** This document is the *evidence* side of the
-> write-side design decision. It is filled from telemetry collected when real users
-> hand-wire create/update/delete against the [demo app](../demo-app/) (the unwired
-> seams in [`write_side.cljs`](../demo-app/src/demo_app/write_side.cljs)). When it is
-> populated, it **gates V1.1**: the deferred elements `<barebuild-action>` /
-> `<barebuild-bind>` / `<barebuild-invalidate-on>` are designed *from* what is recorded
-> here, not from a guess.
+> **STATUS: PARTIALLY FILLED — reference implementation only (N=1, biased).** This
+> document is the *evidence* side of the write-side design decision. It is filled from
+> telemetry collected when real users hand-wire create/update/delete against the
+> [demo app](../demo-app/) (the seams in
+> [`write_side.cljs`](../demo-app/src/demo_app/write_side.cljs)). When it holds **≥2
+> independent, prior-blind implementations** that converge, it **gates V1.1**: the
+> deferred elements `<barebuild-action>` / `<barebuild-bind>` /
+> `<barebuild-invalidate-on>` are designed *from* what is recorded here, not from a
+> guess. **The gate is NOT yet met** — see "Convergence analysis."
 >
 > [`write-side-sketch.md`](write-side-sketch.md) is the **PRIOR** (our best guess).
 > This file is the **EVIDENCE**. Every finding below is recorded against the sketch's
@@ -21,12 +23,17 @@
 
 ## How this was collected
 
-- **Participants:** _N_ of the target 3–5 CLJS developers. _(list / anonymize)_
+- **Participants:** 1 of the target 3–5 CLJS developers — and that one is the
+  **BareBuild author** (Participant A below). This is the **reference implementation**:
+  it proves the five seams are wireable with V1's read-side surface alone, and it
+  records what the author reached for. It is **not unbiased telemetry**.
 - **Task given:** wire create, update, and delete against `bb serve` by filling the
-  five inert seams in `write_side.cljs`, "however feels natural." The backend already
-  implements the write endpoints, so each participant's `fetch` round-trips.
-- **Blind to the prior:** participants did **not** see `write-side-sketch.md` until
-  after they finished, so their shapes are unbiased by our guess.
+  five seams in `write_side.cljs`, "however feels natural." The backend already
+  implements the write endpoints, so each `fetch` round-trips.
+- **Blind to the prior:** **No** for Participant A. The author had seen
+  `write-side-sketch.md` and knows the read side intimately. Per the bias note below,
+  treat A's shape choices as a *lower bound on discoverability* (if the author reached
+  for it, it exists), **not** as a convergence signal.
 
 > **Bias to control for.** The demo hands participants an `x-form` that emits
 > `x-form-submit {:values …}` — exactly the sketch's `<barebuild-action>` default
@@ -36,12 +43,9 @@
 > `fetch` — only the reshaping (or the friction they reported with `{:values}`) is
 > real signal about the contract.
 
-_(One short subsection per participant, or a table: who, what they built, links to
-their wiring code.)_
-
 | Participant | Create | Update | Delete | Used `{:values}` as-is? | Notes |
 |---|---|---|---|---|---|
-| _A_ | | | | | |
+| **A** (author — reference, **biased**) | `POST /api/tasks` → `barebuild-data-refresh` on `#tasks-data` + `.hide` modal | `PUT /api/tasks/:id` → `barebuild-data-refresh` on `#detail-data` | detail: `DELETE` → `barebuild-navigate` to `/tasks`; row: `DELETE` → `barebuild-data-refresh` on `#tasks-data` | **No — reshaped** (`without-blanks`) | Refetch-and-reproject for every seam; never touched `.state`, never spliced DOM, never reached for re-frame. |
 | _B_ | | | | | |
 | _C_ | | | | | |
 
@@ -50,73 +54,117 @@ their wiring code.)_
 ## Findings against the five telemetry questions
 
 Mirrors the five questions in [`write-side-sketch.md` → "What we are watching for"](write-side-sketch.md).
-Record the observed behaviour and whether it matched the sketch's prior.
 
 ### Q1 — Submit → fetch wiring
 *Sketch prior:* `<barebuild-action submit-event="x-form-submit" values-path="[:values]">`
 reads `event.detail.values`, `preventDefault`s, JSON-encodes, fetches.
 
-- Did they hook `x-form-submit`, intercept at button click, or use a separate emitter?
-- Payload shape: `{:values}` as-is, or reshaped to what? (see bias note)
-- _findings:_ _…_
+- **Hooked `x-form-submit`** on the form element (not a button-click intercept, not a
+  separate emitter). `preventDefault`, then `fetch`. Matches the sketch's submit-event hook.
+- **Payload reshaped, not as-is.** The author passed `event.detail.values` through a
+  `without-blanks` helper before encoding, because `x-form` reports *every* named
+  control and defaults an unset one to `""`. A present-but-blank key (`status: ""`)
+  **shadows the server's default** (`{:status "todo"}`), so blanks had to be stripped
+  for create/update to behave. This is the one real Q1 signal: the values *path* fit,
+  but the values themselves needed massaging the sketch's `<barebuild-action>` does not
+  currently do.
+- One method-aware `request` primitive (`api.cljs`) served all four verbs; create
+  POSTs, update/settings PUT, delete DELETEs (no body).
 
 ### Q2 — Response → DOM update
 *Sketch prior:* `<barebuild-bind from-name=… path="[:state :data]" prop=…>` writes the
 value to `parentNode[prop]`; consumers read the broker's `.state`.
 
-- `querySelector`, handles captured at boot, a refs map, or `getElementById`?
-- Read the broker's `.state` via the property, the dispatched event, or both?
-- Did anyone reach for re-frame to mediate? At what point, and for what?
-- _findings:_ _…_
+- **Did not read the response payload into the DOM at all.** The author never read the
+  broker's `.state`, never bound a value, never spliced a row. Instead each handler
+  **asked the relevant broker to re-read from the server** and let the existing
+  read-side pipeline (`barebuild-data-state` → `render-*!`) reproject. So the
+  `<barebuild-bind>` mechanism (write a value into a prop) was **not exercised** —
+  the response was discarded; the *server* was re-read as the source of truth.
+- Element handles resolved via `document.querySelector` by id each time (no refs map,
+  no boot-time capture, no `getElementById`).
+- **re-frame:** not reached for, at any point.
 
 ### Q3 — Invalidation after a write
 *Sketch prior:* `<barebuild-invalidate-on when-phase="success" src=…>` dispatches
 `barebuild-invalidate {:src}`; matching `<barebuild-data>` refetches.
 
-- Re-set `src` to itself? dispatch `barebuild-data-refresh`? build a new broker?
-  splice the DOM directly? roll their own pub/sub?
-- _findings:_ _…_
+- **Dispatched `barebuild-data-refresh` AT the broker element** (the read-side's own
+  purpose-built "read now" event — `barebuild_data` listens for it on `:self`). Not
+  `src`-to-itself, not a new broker, not a roll-your-own pub/sub.
+- For delete-from-detail, invalidation was **implicit in navigation**: dispatching
+  `barebuild-navigate` to `/tasks` re-activates the board route, whose `on-route-change`
+  re-sets `src` → fresh read. No explicit invalidate needed when you're changing route.
+- Decision of *staleness* was trivial/hardcoded: the author knew which broker backed
+  the view being written and refreshed exactly that one (`#tasks-data`, `#detail-data`,
+  `#settings-data`). No matching-by-URL was needed because the writer already knows its
+  reader by id.
 
 ### Q4 — Identity (who absorbs the new value)
 *Sketch prior:* bind mutates `parentNode[prop]`; the component's own setter absorbs it.
 
-- Direct `parentNode[prop]` mutation vs. dispatching a custom event for their own
-  component to absorb vs. rebuilding child DOM (the `x-table` row-composition shape)?
-- _findings:_ _…_
+- **None of the above.** The new value was absorbed by **re-fetching the server**, so
+  the broker re-emitted `barebuild-data-state` and the existing render path rebuilt the
+  child DOM. No `parentNode[prop]` mutation, no custom event for a component to absorb,
+  no manual row composition. The "identity" question dissolved: nobody had to own the
+  new value locally because the server stayed the single owner.
 
 ### Q5 — Shape of the data passed
 *Sketch prior:* `path` default `[:state :data]` fits the response.
 
-- Did `[:state :data]` actually fit, or did real APIs nest the payload differently?
-- _findings:_ _…_
+- **Not exercised on the write side** — the response body was discarded (see Q2), so
+  the author never navigated into the response shape. On the *read* side `[:state :data]`
+  already fit (the broker's `.state.data` is the array the render functions project).
+  The 204 from DELETE *did* force a body-parse guard (`parse-body` reads `.text` first,
+  yields `nil` for an empty body) — a real shape edge the sketch's JSON-only assumption
+  glosses over.
 
 ---
 
 ## Convergence analysis
 
-- **Clusters (≥2 independent implementations agree):** _candidate contracts_ — _…_
-- **Divergence (one-offs / disagreement):** _defer; do not ossify_ — _…_
-- **Sketch priors that SURVIVED contact with use:** _…_
-- **Sketch priors that were CONTRADICTED:** _…_
+- **Clusters (≥2 independent implementations agree):** **NONE YET.** N=1, and that one
+  is biased. No convergence can be claimed.
+- **Strongest single-impl candidate (record, do not ossify):** *refetch-and-reproject
+  via `barebuild-data-refresh`*. The author never used a bind/value-write at all —
+  every write path ended in "re-read the server, let the read pipeline reproject."
+  If independent participants land here too, the V1.1 lesson may be that
+  `<barebuild-bind>` is unnecessary and only an *invalidation* primitive
+  (`<barebuild-invalidate-on>` / a refresh event) is worth shipping.
+- **Sketch priors that look SHAKY against this impl:** `<barebuild-bind>` (write a
+  response value into a prop) — not exercised; the author discarded the response and
+  re-read instead. Needs independent confirmation before concluding bind is dead weight.
+- **Sketch priors that this impl SUPPORTED:** the `x-form-submit` submit hook (Q1);
+  the no-selectors / values-not-places / refresh-by-event spine (held cleanly).
+- **New friction the sketch did not anticipate:** (a) `x-form` blank-default shadowing
+  (`without-blanks`); (b) empty-204 body parsing on DELETE.
 
 ---
 
 ## Load-bearing priors check
 
 From [`write-side-sketch.md` → "Decisions … carried forward"](write-side-sketch.md).
-These are the *non-negotiable* simplicity commitments — element shapes are negotiable,
-this spine is not. Record whether real use respected or fought each one.
+Recorded against Participant A only.
 
-- [ ] **No CSS selectors anywhere** — containment + name-in-detail + URL match. _Held?_ _…_
-- [ ] **Values, not places** — wiring by containment/URL, value read from `event.detail`
-      not the live element place. _Held?_ _…_
-- [ ] **`.state` is a plain JS object** `{ phase, data, error, httpStatus }`, not a CLJS
-      map (Decision #6). Did any write-side `.state` read hit the `cljs.core` boundary
-      (keyword lookups returning nil)? How did `path`/`get-in` reconcile with string
-      keys? _…_
-- [ ] **`path` / `values-path` are literal EDN vectors**, not a dotted-string DSL. Did
-      anyone want a string DSL instead? _…_
-- [ ] **Exact-pathname URL match** for invalidation, no pattern DSL. _Sufficient?_ _…_
+- [x] **No CSS selectors anywhere** — _Partially._ The *coordination* primitives used
+      no selectors (refresh was a `dispatchEvent` AT the broker; navigation a
+      `dispatchEvent` AT the router). But the demo glue **did** use
+      `document.querySelector` by id to *find* the broker/router/modal to dispatch at.
+      The wire (event) is selector-free; locating the dispatch target was not. A real
+      `<barebuild-invalidate-on>` (containment/name) would remove that querySelector.
+- [x] **Values, not places** — _Held._ No app-level place-state. The board/detail/
+      settings views stayed `DOM = f(broker value, filters)`; writes re-read the server
+      rather than mutating a cached copy.
+- [x] **`.state` is a plain JS object** — _Not stressed._ The write side never read
+      `.state` (it re-fetched instead), so the CLJS-keyword-vs-string-key boundary was
+      never hit on the write path. The read side already treats it as a JS object.
+- [x] **`path` / `values-path` are literal EDN vectors** — _N/A._ No `path`/`values-path`
+      machinery was used; the author read `event.detail.values` directly and discarded
+      responses. No demand for a string DSL surfaced.
+- [x] **Exact-pathname URL match for invalidation** — _Not needed._ The writer knew its
+      reader by id and refreshed it directly, so no URL-matching invalidation was
+      exercised. (The implicit route-activation refetch on delete *did* rely on exact
+      pathname `/tasks`, and that sufficed.)
 
 ---
 
@@ -125,28 +173,41 @@ this spine is not. Record whether real use respected or fought each one.
 Not one of the five questions, but the gate for promoting the deferred `bb.render`
 work into V1.1 ([`BAREBUILD-V1-PLAN.md` → Deferred #1](BAREBUILD-V1-PLAN.md)).
 
-- Did participants ask for a Hiccup renderer? What shape did they sketch?
-- Did the row-composition / property-setter rebuild feel sufficient without one?
-- _findings:_ _…_
+- **No demand.** Because every write re-read the server and the *existing* render
+  functions (`render-board!`, `render-detail!`) reprojected, the author never hand-built
+  result DOM on the write side — so no Hiccup renderer was wished for. This is a
+  refetch-strategy artifact: an *optimistic* implementation (splice the returned row)
+  would have hand-built DOM and is where the renderer demand would show up. Watch for it
+  in any participant who goes optimistic instead of refetching.
 
 ---
 
 ## V1.1 recommendation
 
-_Filled once the above is populated._
+_Provisional — N=1, biased. Do not act until the gate is met._
 
-- [ ] Ship `<barebuild-action>` / `<barebuild-bind>` / `<barebuild-invalidate-on>` **as
-      sketched** (priors held, shapes converged).
-- [ ] Ship **modified** shapes — describe the deltas from the sketch: _…_
-- [ ] **Defer further** — collect more implementations before committing (why: _…_).
-- [ ] **Promote the Hiccup renderer** into V1.1? Y / N + rationale: _…_
+- [ ] Ship `<barebuild-action>` / `<barebuild-bind>` / `<barebuild-invalidate-on>` as sketched.
+- [ ] Ship modified shapes.
+- [x] **Defer further — collect ≥2 independent, prior-blind implementations.** The
+      reference impl converged on *refetch-and-reproject + refresh-by-event* and never
+      used `<barebuild-bind>`, which is a strong hint but **cannot** be acted on from a
+      single biased data point. Next action: recruit 2–4 CLJS developers who have **not**
+      seen the sketch, reset the seams to stubs on a throwaway branch, and collect.
+- [ ] **Promote the Hiccup renderer into V1.1?** **No (provisional)** — zero demand from a
+      refetch-style impl. Re-evaluate against any optimistic-update participant.
 
 ---
 
 ## Raw artifacts
 
-Verbatim copies / links of each participant's wiring code (the primary evidence —
-mirrors how [`validation-responses.md`](validation-responses.md) keeps Phase 0 responses
-verbatim). Prefer pasting the actual code over summarizing it.
+Verbatim copies of the reference implementation (primary evidence). The wired demo
+lives on branch `feat/barebuild-write-side-telemetry`.
 
-_(paste here)_
+- **`demo-app/src/demo_app/write_side.cljs`** — the five wired seams + `without-blanks`,
+  `refresh-data!`, `navigate!`, `task-id-from-url`.
+- **`demo-app/src/demo_app/api.cljs`** — the method-aware `request` primitive with the
+  204-safe `parse-body`.
+- **`demo-app/src/demo_app/wiring.cljs`** — added `ev-navigate`, `tag-router`, and the
+  promoted broker ids `id-detail-data` / `id-settings-data`.
+
+See the files on that branch rather than duplicating them here; they are the contract.

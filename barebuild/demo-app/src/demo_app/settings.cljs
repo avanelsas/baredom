@@ -19,7 +19,7 @@
 (defn- on-route-change [^js e]
   (when (= w/path-settings (.. e -detail -path))
     (let [^js route (.-currentTarget e)]
-      (set! (.-src (.querySelector route "#settings-data")) "/api/settings"))))
+      (set! (.-src (.querySelector route w/id-settings-data)) "/api/settings"))))
 
 (defn- on-data-state [^js e]
   (let [^js route (.-currentTarget e)

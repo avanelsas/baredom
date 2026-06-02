@@ -47,7 +47,7 @@
   (let [id (gobj/get (.. e -detail -params) "id")]
     (when (and id (= (str w/path-tasks "/" id) (.. e -detail -path)))
       (let [^js route (.-currentTarget e)]
-        (set! (.-src (.querySelector route "#detail-data")) (str "/api/tasks/" id))))))
+        (set! (.-src (.querySelector route w/id-detail-data)) (str "/api/tasks/" id))))))
 
 (defn- on-data-state [^js e]
   (let [^js route (.-currentTarget e)

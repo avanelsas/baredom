@@ -11,6 +11,8 @@
 ;; Orchestration (barebuild-*) — listened for on the route element.
 (def ev-route-change "barebuild-route-change")
 (def ev-data-state   "barebuild-data-state")
+(def ev-data-refresh "barebuild-data-refresh")  ; dispatched AT a <barebuild-data> to refetch its src
+(def ev-navigate     "barebuild-navigate")      ; dispatched AT the router to SPA-navigate without a click
 ;; Component events the demo reacts to.
 (def ev-search-input  "x-search-field-input")
 (def ev-select-change "select-change")
@@ -23,7 +25,8 @@
 (def path-task     "/tasks/:id")
 (def path-settings "/settings")
 
-(def tag-route "barebuild-route")
+(def tag-route  "barebuild-route")
+(def tag-router "barebuild-router")
 
 (defn route-selector
   "The querySelector that finds the <barebuild-route> declaring `path`."
@@ -34,8 +37,11 @@
 (def attr-delete-id "data-delete-id")
 
 ;; ── Element ids referenced from more than one place ──────────────────────────
-;; Board read surface.
+;; Read-side brokers (set their `src` from the read ns; refreshed from write_side).
 (def id-tasks-data    "#tasks-data")
+(def id-detail-data   "#detail-data")
+(def id-settings-data "#settings-data")
+;; Board read surface.
 (def id-tasks-table   "#tasks-table")
 (def id-task-search   "#task-search")
 (def id-status-filter "#status-filter")
