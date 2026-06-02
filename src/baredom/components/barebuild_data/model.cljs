@@ -23,7 +23,8 @@
 
 ;; ── Events ───────────────────────────────────────────────────────────────────
 (def event-data-state   "barebuild-data-state")    ; emitted on every phase transition
-(def event-data-refresh "barebuild-data-refresh")  ; listened for; user-driven manual refetch
+(def event-data-refresh "barebuild-data-refresh")  ; listened for on self; user-driven manual refetch
+(def event-invalidate   "barebuild-invalidate")    ; listened for at document; refetch when detail.src matches our src
 
 ;; ── Phases ───────────────────────────────────────────────────────────────────
 ;; The closed set of phase STRINGS, published so a consumer comparing `.phase`

@@ -10,7 +10,9 @@
    Order is alphabetical-by-tag for diff legibility. Registration order
    is irrelevant: `customElements.define` is independent per tag."
   (:require
+   [baredom.exports.barebuild-action      :as barebuild-action]
    [baredom.exports.barebuild-data        :as barebuild-data]
+   [baredom.exports.barebuild-invalidate-on :as barebuild-invalidate-on]
    [baredom.exports.barebuild-route       :as barebuild-route]
    [baredom.exports.barebuild-router      :as barebuild-router]
    [baredom.exports.x-alert               :as x-alert]
@@ -234,4 +236,7 @@
    the dev demo (`baredom.core/start!`) registers them explicitly."
   [barebuild-router/register!
    barebuild-route/register!
-   barebuild-data/register!])
+   barebuild-data/register!
+   ;; Write-side (ALPHA, 4.0.0-alpha — explicitly unstable).
+   barebuild-action/register!
+   barebuild-invalidate-on/register!])

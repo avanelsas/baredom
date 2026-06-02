@@ -36,6 +36,16 @@
       "import": "./dist/barebuild-data.js",
       "default": "./dist/barebuild-data.js"
     },
+    "./barebuild-action": {
+      "types": "./dist/barebuild-action.d.ts",
+      "import": "./dist/barebuild-action.js",
+      "default": "./dist/barebuild-action.js"
+    },
+    "./barebuild-invalidate-on": {
+      "types": "./dist/barebuild-invalidate-on.d.ts",
+      "import": "./dist/barebuild-invalidate-on.js",
+      "default": "./dist/barebuild-invalidate-on.js"
+    },
     "./x-avatar": {
       "types": "./dist/x-avatar.d.ts",
       "import": "./dist/x-avatar.js",

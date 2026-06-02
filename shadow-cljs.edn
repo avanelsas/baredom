@@ -589,4 +589,16 @@
      {init baredom.exports.barebuild-data/init}
      :depends-on #{:base}}
 
+    ;; Write-side coordination (ALPHA, 4.0.0-alpha — explicitly unstable). Shipped
+    ;; on the `alpha` npm dist-tag only; shapes may change before stable.
+    :barebuild-action
+    {:exports
+     {init baredom.exports.barebuild-action/init}
+     :depends-on #{:base}}
+
+    :barebuild-invalidate-on
+    {:exports
+     {init baredom.exports.barebuild-invalidate-on/init}
+     :depends-on #{:base}}
+
     }}}}

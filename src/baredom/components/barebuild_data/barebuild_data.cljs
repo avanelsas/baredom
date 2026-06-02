@@ -22,6 +22,11 @@
 ;; barebuild-data-state event, so tracing this handle would add noise, not signal.
 (def ^:private k-abort          "__barebuildDataAbort")          ; in-flight AbortController (untraced)
 (def ^:private k-refresh-handler "__barebuildDataRefreshHandler") ; stashed self-listener
+;; k-invalidate-handler holds the document-level `barebuild-invalidate` listener.
+;; Unlike the refresh handler (on self, GC'd with the element), this sits on
+;; `document`, so it MUST be removed on disconnect or it leaks and keeps firing for
+;; a detached broker. Added on connect, removed on disconnect.
+(def ^:private k-invalidate-handler "__barebuildDataInvalidateHandler")
 
 ;; Shared resting value so pre-connect `.state` reads return a stable reference.
 ;; This is a SINGLETON returned by reference from every instance's `.state` idle
@@ -134,11 +139,36 @@
     (du/setv! el k-refresh-handler h)
     (.addEventListener el model/event-data-refresh h)))
 
+;; ── Invalidate listener (on document; matched by URL.pathname) ───────────────────
+(defn- url-pathname
+  "The pathname of `s` resolved against the page origin, or nil for a blank/invalid
+  src. Invalidation matches on pathname so a relative `src` and an absolute one to
+  the same path are equal."
+  [s]
+  (when (mu/non-empty-string? s)
+    (try (.-pathname (js/URL. s (.. js/location -origin))) (catch :default _ nil))))
+
+(defn- on-invalidate [^js el ^js e]
+  ;; A read is an observation in time: when an invalidation names our src (exact
+  ;; pathname equality), re-read. A blank/mismatched src is ignored.
+  (let [own (url-pathname (du/get-attr el model/attr-src))]
+    (when (and own (= own (url-pathname (.. e -detail -src))))
+      (fetch! el))))
+
+(defn- ensure-invalidate-handler! [^js el]
+  (or (du/getv el k-invalidate-handler)
+      (let [h (fn data-on-invalidate [^js e] (on-invalidate el e))]
+        (du/setv! el k-invalidate-handler h)
+        h)))
+
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-shadow! el)
   (when-not (du/getv el k-refresh-handler)
     (add-refresh-listener! el))
+  ;; Re-add each connect (a no-op if the same listener ref is already attached);
+  ;; balanced by the removeEventListener in disconnected! so it cannot leak.
+  (.addEventListener js/document model/event-invalidate (ensure-invalidate-handler! el))
   ;; Seed the cache to the resting idle value (a direct write, no event — it is
   ;; the default the `.state` getter already reports). This keeps a bare connect
   ;; with no `src` silent (fetch!'s idle fallback sees idle already cached → no
@@ -150,6 +180,8 @@
   ;; The element owns no cache — the server is the truth. Abort and reset to idle;
   ;; reconnect re-fetches rather than replaying the stale :loaded value.
   (abort-inflight! el)
+  (when-let [^js h (du/getv el k-invalidate-handler)]
+    (.removeEventListener js/document model/event-invalidate h))
   (du/setv! el k-state default-idle))
 
 (defn- attribute-changed! [^js el _name _old-val _new-val]
