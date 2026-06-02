@@ -182,6 +182,78 @@ work into V1.1 ([`BAREBUILD-V1-PLAN.md` → Deferred #1](BAREBUILD-V1-PLAN.md)).
 
 ---
 
+## Decision: defer `<barebuild-bind>` (additively — it is an extension point, not a fork)
+
+**Decision (2026-06-02):** the next write-side step (a stable subset and/or an
+explicitly-unstable alpha — see "V1.1 recommendation") ships **`<barebuild-action>` +
+`<barebuild-invalidate-on>` only. `<barebuild-bind>` is deferred — *not killed*.** This
+records *why* the deferral is safe and *what* it would cost to add bind later, so a future
+reader doesn't re-litigate it from scratch.
+
+### Why bind is the odd one out
+`<barebuild-action>` (submit→fetch) and `<barebuild-invalidate-on>` (refresh) are pure
+*coordination* — they assume nothing about a consumer's internals. **bind reaches *into*
+the consumer:** it writes `parentNode[prop]` and relies on that property's setter to
+*render* the value. That only works for a component that owns a self-rendering data
+property — which most BareDOM components, by design, do **not** have:
+- **Already bind-capable:** `x-command-palette` exposes `:items` (an array prop that
+  renders the list). bind works for it **today**. Existence proof that the pattern is
+  philosophy-compatible — it is simply not universal.
+- **Composition containers:** `x-table` (rows are composed children, no `rows`/`items`
+  data prop), forms (`fill-form!` fills named controls by hand). No sink for bind.
+- **Styled primitives:** `x-badge`, `x-icon`, `x-button` — nothing to bind.
+
+So "use bind everywhere" is gated on a **projection** (data→DOM), which is the deferred
+Hiccup renderer ([Deferred #1](BAREBUILD-V1-PLAN.md)). bind is the easy half (transport a
+value into a prop); the projection is the hard, philosophically-loaded half. bind without
+a projection just moves a value into a prop that *still* needs hand-written rendering.
+
+### The legibility cost bind introduces (and hand-wiring doesn't)
+bind's `parentNode[prop]` write is an **invisible contract**: nothing in the markup tells a
+dev that `x-command-palette` accepts `items` but `x-table` accepts nothing, and a wrong
+target **fails silently** (the exact failure class the project rails against). The
+hand-wired alternative — `(set! (.-items el) data)` — has *no* such problem: the property
+is at the call site, and a missing one fails locally and immediately. **bind's value
+(declarative) and bind's cost (a hidden, silently-failing contract) are the same coin.**
+If bind ships, it must ship *with* a legibility layer: a data-driven **`:bindable` marker**
+on `property-api` → propagated to the CEM and a "Bindable property" column in
+`docs/components.md` → plus a **runtime guard** in bind that logs loudly when its parent is
+not a marked target (with the same upgrade-timing `queueMicrotask` deferral the router uses).
+
+### Forward-compat: adding bind later breaks nothing
+Confirmed against shipped code. Introducing bind later is **fully additive**:
+- A **new element** (`<barebuild-bind>`), the **`:bindable` marker** (metadata only), and
+  any **new data-input props** (property-only, not attribute-reflected) — all additive.
+- **Substrate gap:** bind matches its source broker by name, but V1's `barebuild-data`
+  ships **`observed-attributes #js [attr-src]`** (no `name`) and a **`barebuild-data-state`
+  detail of `{:state}` only** (no `:name`). So bind also needs the read side to gain a
+  `name` attribute + `:name` in the event detail. **Both additions are non-breaking:**
+  existing `<barebuild-data src=…>` and existing `.state` listeners are unaffected; the
+  generated event-detail type merely *widens* `{state}`→`{state, name}` (a superset, still
+  compiles). Caveat: regenerate the CEM + adapter types (the standing CEM-drift rule).
+- **The expensive-to-retrofit foundation is already shipped and bind-ready:** the spine
+  (broker holds `.state` by reference = values-not-places; the event-driven read pipeline;
+  `.state` as a plain JS object) is V1-stable and bind rides it *without change*. Deferring
+  bind forecloses nothing.
+- **The only standing constraint** is one already owed to the read side: do not change the
+  `barebuild-data-state` event shape incompatibly. Deferring bind adds no new lock-in.
+
+### Do NOT pre-ship the `name` substrate now
+Tempting to add `barebuild-data`'s `name` in V1 "to be bind-ready." **No** — because adding
+it later is non-breaking, waiting costs nothing, and a `name` attribute that does nothing
+until bind exists is exactly the speculative paper-by-gravity surface this whole exercise
+resists. Add `name` *with* bind, when something consumes it.
+
+### If/when bind does ship — the tiered path (cheap → loaded)
+1. **Forms / single-record views:** an `x-form` `values` property (name→value fill, no
+   templating) — the cheapest, safest first bind target. Promotes the demo's hand-written
+   `fill-form!` into a property.
+2. **Fixed-shape lists:** copy the `x-command-palette` `:items` pattern per component
+   willing to commit to a documented row/item shape.
+3. **Arbitrary structure:** needs the Hiccup renderer — the genuinely deferred call.
+
+---
+
 ## V1.1 recommendation
 
 _Provisional — N=1, biased. Do not act until the gate is met._
@@ -193,8 +265,13 @@ _Provisional — N=1, biased. Do not act until the gate is met._
       used `<barebuild-bind>`, which is a strong hint but **cannot** be acted on from a
       single biased data point. Next action: recruit 2–4 CLJS developers who have **not**
       seen the sketch, reset the seams to stubs on a throwaway branch, and collect.
+- [x] **`<barebuild-bind>` deferred (additively).** Ship `action` + `invalidate-on`
+      first (stable subset and/or unstable alpha); add bind later as a non-breaking
+      extension. Full rationale + forward-compat proof in "Decision: defer
+      `<barebuild-bind>`" above.
 - [ ] **Promote the Hiccup renderer into V1.1?** **No (provisional)** — zero demand from a
-      refetch-style impl. Re-evaluate against any optimistic-update participant.
+      refetch-style impl, and it is the gate for bind's general case. Re-evaluate against any
+      optimistic-update participant.
 
 ---
 
