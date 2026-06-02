@@ -108,7 +108,8 @@
     (dom/show! skeleton (= "loading" phase))
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (.setAttribute err "text" (str "Couldn't load tasks (" (.-httpStatus state) ").")))
+      (let [status (.-httpStatus state)]
+        (.setAttribute err "text" (str "Couldn't load tasks" (when status (str " (" status ")")) "."))))
     ;; render-board! reads the value straight from the broker's .state — no stash.
     (when (= "loaded" phase)
       (render-board! route))))
@@ -121,7 +122,7 @@
 (defn- on-new-task
   "New-task button pressed → open the modal. The form's submit is the Phase-4 seam."
   [^js e]
-  (-> e .-currentTarget (.closest w/tag-route) (.querySelector "#new-task-modal") .show))
+  (-> e .-currentTarget (.closest w/tag-route) (.querySelector w/id-new-task-modal) .show))
 
 (defn init-board! []
   (let [^js route  (.querySelector js/document (w/route-selector w/path-tasks))

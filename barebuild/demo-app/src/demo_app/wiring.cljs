@@ -46,6 +46,7 @@
 (def id-task-search   "#task-search")
 (def id-status-filter "#status-filter")
 ;; Write-seam targets (built by board/detail/settings, wired by write_side).
+(def id-new-task-modal "#new-task-modal")
 (def id-new-task-form  "#new-task-form")
 (def id-edit-task-form "#edit-task-form")
 (def id-settings-form  "#settings-form")
