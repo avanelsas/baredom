@@ -9,17 +9,13 @@
   the Phase-4 stub seam, added in a later step."
   (:require [goog.object :as gobj]
             [demo-app.dom :as dom]
+            [demo-app.view :as view]
             [demo-app.wiring :as w]))
 
 (def ^:private detail-fields
   [["status" "Status"] ["assignee" "Assignee"] ["due" "Due"] ["description" "Description"]])
 
 (def ^:private form-fields ["title" "description" "status" "assignee" "due"])
-
-(defn- fill-form! [^js form ^js task]
-  (doseq [field form-fields]
-    (when-let [^js f (.querySelector form (str "[name='" field "']"))]
-      (set! (.-value f) (str (or (gobj/get task field) ""))))))
 
 (defn- render-detail! [^js route ^js task]
   (let [^js title (.querySelector route "#detail-title")
@@ -31,7 +27,7 @@
       (.appendChild dl (dom/text-el! "dt" label))
       (.appendChild dl (dom/text-el! "dd" (let [v (gobj/get task k)]
                                             (if (or (nil? v) (= "" v)) "—" v)))))
-    (fill-form! form task)))
+    (dom/fill-form! form task form-fields)))
 
 ;; ── Handlers ─────────────────────────────────────────────────────────────────
 ;; Named, event-only handlers (resolve handles from `currentTarget`), so
@@ -56,7 +52,7 @@
         ^js err   (.querySelector route "#detail-error")]
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (.setAttribute err "text" (str "Couldn't load task (" (.-httpStatus state) ").")))
+      (.setAttribute err "text" (view/load-error-text "task" (.-httpStatus state))))
     (when (= "loaded" phase)
       (render-detail! route (.-data state)))))
 

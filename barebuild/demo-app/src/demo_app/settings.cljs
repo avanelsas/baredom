@@ -1,16 +1,11 @@
 (ns demo-app.settings
   "Read-side wiring for the /settings route — a non-list read that fills a form
   from GET /api/settings. The Save submit is the Phase-4 stub seam."
-  (:require [goog.object :as gobj]
-            [demo-app.dom :as dom]
+  (:require [demo-app.dom :as dom]
+            [demo-app.view :as view]
             [demo-app.wiring :as w]))
 
 (def ^:private fields ["theme" "page-size" "default-status"])
-
-(defn- fill-form! [^js form ^js s]
-  (doseq [field fields]
-    (when-let [^js f (.querySelector form (str "[name='" field "']"))]
-      (set! (.-value f) (str (or (gobj/get s field) ""))))))
 
 ;; ── Handlers ─────────────────────────────────────────────────────────────────
 ;; Named, event-only handlers (resolve handles from `currentTarget`), so
@@ -29,9 +24,9 @@
         ^js form  (.querySelector route w/id-settings-form)]
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (.setAttribute err "text" (str "Couldn't load settings (" (.-httpStatus state) ").")))
+      (.setAttribute err "text" (view/load-error-text "settings" (.-httpStatus state))))
     (when (= "loaded" phase)
-      (fill-form! form (.-data state)))))
+      (dom/fill-form! form (.-data state) fields))))
 
 (defn init-settings! []
   (let [^js route (.querySelector js/document (w/route-selector w/path-settings))]

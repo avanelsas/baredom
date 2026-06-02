@@ -45,29 +45,12 @@
   (see barebuild-router's on-route-mounted). What matters is only that init! wires
   the listeners BEFORE calling this, so a deep-load still delivers that push."
   []
-  (.init barebuild-router)
-  (.init barebuild-route)
-  (.init barebuild-data)
-  (.init x-navbar)
-  (.init x-table)
-  (.init x-table-row)
-  (.init x-table-cell)
-  (.init x-stat)
-  (.init x-badge)
-  (.init x-button)
-  (.init x-search-field)
-  (.init x-select)
-  (.init x-modal)
-  (.init x-form)
-  (.init x-form-field)
-  (.init x-text-area)
-  (.init x-date-picker)
-  (.init x-card)
-  (.init x-alert)
-  (.init x-skeleton)
-  (.init x-cancel-dialogue)
-  (.init x-toast)
-  (.init x-toaster))
+  (doseq [^js m [barebuild-router barebuild-route barebuild-data
+                 x-navbar x-table x-table-row x-table-cell x-stat x-badge
+                 x-button x-search-field x-select x-modal x-form x-form-field
+                 x-text-area x-date-picker x-card x-alert x-skeleton
+                 x-cancel-dialogue x-toast x-toaster]]
+    (.init m)))
 
 (defn init! []
   (board/init-board!)

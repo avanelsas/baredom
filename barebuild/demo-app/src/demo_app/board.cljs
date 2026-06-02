@@ -14,18 +14,13 @@
   (:require [clojure.string :as str]
             [goog.object :as gobj]
             [demo-app.dom :as dom]
+            [demo-app.view :as view]
             [demo-app.wiring :as w]))
-
-(defn- status-variant [status]
-  (case status
-    "done"  "success"
-    "doing" "info"
-    "neutral"))
 
 (defn- header-row! []
   (dom/el! "x-table-row" nil
-           (mapv (fn [label] (let [c (dom/text-el! "x-table-cell" label)]
-                               (.setAttribute c "type" "header") c))
+           (mapv (fn [label] (doto (dom/text-el! "x-table-cell" label)
+                               (.setAttribute "type" "header")))
                  ["ID" "Title" "Status" "Assignee" "Due" ""])))
 
 (defn- view-link! [id]
@@ -39,7 +34,7 @@
     (dom/el! "x-table-row" {"row-index" id}
              [(dom/text-el! "x-table-cell" id)
               (dom/text-el! "x-table-cell" (gobj/get t "title"))
-              (dom/el! "x-table-cell" nil [(dom/el! "x-badge" {"variant" (status-variant status)
+              (dom/el! "x-table-cell" nil [(dom/el! "x-badge" {"variant" (view/status-variant status)
                                                                "text"    status})])
               (dom/text-el! "x-table-cell" (gobj/get t "assignee"))
               (dom/text-el! "x-table-cell" (gobj/get t "due"))
@@ -58,8 +53,13 @@
                        (str/includes? (str/lower-case (str (gobj/get t "title"))) needle))))
             tasks)))
 
+(defn- status-counts
+  "Pure: tally tasks by status string → {status count}."
+  [tasks]
+  (frequencies (map (fn [^js t] (gobj/get t "status")) tasks)))
+
 (defn- update-stats! [^js route tasks]
-  (let [counts (frequencies (map (fn [^js t] (gobj/get t "status")) tasks))]
+  (let [counts (status-counts tasks)]
     (doseq [^js s (array-seq (.querySelectorAll route "x-stat"))]
       (.setAttribute s "value" (str (get counts (.getAttribute s "data-status") 0))))))
 
@@ -69,8 +69,9 @@
   this is the same value the load event delivered. Empty until the first load
   (phase idle/loading/error have no `data`)."
   [^js route]
-  (let [^js st (.-state (.querySelector route w/id-tasks-data))]
-    (array-seq (or (some-> st .-data) #js []))))
+  (let [^js broker (.querySelector route w/id-tasks-data)
+        ^js state  (.-state broker)]
+    (some-> state .-data array-seq)))
 
 (defn- render-board! [^js route]
   (let [^js table  (.querySelector route w/id-tasks-table)
@@ -108,7 +109,7 @@
     (dom/show! skeleton (= "loading" phase))
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (.setAttribute err "text" (str "Couldn't load tasks (" (.-httpStatus state) ").")))
+      (.setAttribute err "text" (view/load-error-text "tasks" (.-httpStatus state))))
     ;; render-board! reads the value straight from the broker's .state — no stash.
     (when (= "loaded" phase)
       (render-board! route))))
@@ -121,7 +122,7 @@
 (defn- on-new-task
   "New-task button pressed → open the modal. The form's submit is the Phase-4 seam."
   [^js e]
-  (-> e .-currentTarget (.closest w/tag-route) (.querySelector "#new-task-modal") .show))
+  (.show (-> e .-currentTarget (.closest w/tag-route) (.querySelector w/id-new-task-modal))))
 
 (defn init-board! []
   (let [^js route  (.querySelector js/document (w/route-selector w/path-tasks))

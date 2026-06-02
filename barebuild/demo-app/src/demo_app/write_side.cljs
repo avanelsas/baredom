@@ -31,20 +31,26 @@
   Until you fill these in, every stub just shows a toast and changes nothing, so the
   demo stays read-only-correct."
   (:require [demo-app.wiring :as w]
-            [demo-app.api :as demo-app.api]))
+            [demo-app.api :as api]))
 
 (def ^:private api-tasks    "/api/tasks")
 (def ^:private api-settings "/api/settings")
 
 (defn- api-task
-  "The single-task endpoint. The id is the last URL segment on the detail route."
+  "The single-task endpoint for `id` — used by the board row delete, whose id comes
+   straight off the clicked button's attribute."
   [id]
   (str api-tasks "/" id))
 
-(defn- task-id-from-url
-  "The id of the task on the current /tasks/:id detail URL — its last segment."
-  []
-  (last (.split js/location.pathname "/")))
+(defn- detail-endpoint
+  "The /api/tasks/:id endpoint for the detail route the event `e` fired in — read
+   from the detail broker's already-resolved `src` (the value the read side set on
+   activation), not re-derived from js/location. The write stays a function of the
+   value in hand rather than reaching into the address bar (a place)."
+  [^js e]
+  (let [^js route  (.closest (.-currentTarget e) w/tag-route)
+        ^js broker (.querySelector route w/id-detail-data)]
+    (.-src broker)))
 
 (defn- refresh-data!
   "Ask a <barebuild-data> broker (by id selector) to re-run its current src fetch."
@@ -64,10 +70,11 @@
                                                  :detail  #js {:path path}}))))
 
 (defn- without-blanks
-  "Drop name→value pairs whose value is a blank string. x-form reports every
-   named control, defaulting an unset one to \"\" — and a present-but-blank key
-   shadows server-side defaults (a blank `status` would override the API's
-   {:status \"todo\"}). Omitting blanks lets those defaults apply."
+  "Drop name→value pairs whose value is a blank string. CREATE-ONLY. x-form reports
+   every named control, defaulting an unset one to \"\", and on a POST a present-but-blank
+   key shadows the server's default (a blank `status` would override {:status \"todo\"});
+   omitting blanks lets the defaults apply. Do NOT use on a PUT/merge endpoint — there a
+   blank is a deliberate \"clear this field\", and dropping it makes the clear silently fail."
   [^js values]
   (let [out #js {}]
     (doseq [k (js/Object.keys values)]
@@ -76,54 +83,72 @@
           (aset out k v))))
     out))
 
+(defn- with-number
+  "Return a shallow copy of `values` with key `k` parsed to an integer (left as-is if
+   unparseable). x-form reports a number control's value as a string; on a PUT/merge that
+   would otherwise flip the server field's type (e.g. page-size 25 → \"25\") on first save."
+  [^js values k]
+  (let [out (js/Object.assign #js {} values)
+        n   (js/parseInt (aget out k) 10)]
+    (when-not (js/isNaN n) (aset out k n))
+    out))
+
 (defn- toaster [] (.querySelector js/document "#toaster"))
 
 (defn- notify!
-  "Show a result toast (success/error) for a completed write. The toaster is a
-  shared #toaster element; each seam reports its own outcome through here."
+  "Show a result toast for a completed write through the shared #toaster. `type` is an
+  x-toast type — \"success\" / \"error\" / \"info\". \"error\" promotes the toast to
+  role=alert (assertive), so a failure is announced and reads as an error, not info."
+  ([msg] (notify! msg "info"))
+  ([msg type]
+   (when-let [^js t (toaster)]
+     (.toast t #js {:type type :message msg}))))
+
+(defn- on-failure
+  "Build a promise `.catch` handler that logs the error and shows an error toast.
+   One shape for all five seams, so the failure path cannot drift between them."
   [msg]
-  (when-let [^js t (toaster)]
-    (.toast t #js {:type "info" :message msg})))
+  (fn report-failure [^js err]
+    (js/console.error err)
+    (notify! msg "error")))
 
 ;; ── 1. CREATE — New-task modal form submit ────────────────────────────────────
 (defn- on-create-submit! [^js e]
   (.preventDefault e)
-  (-> (demo-app.api/request "POST" api-tasks (without-blanks (.. e -detail -values)))
-      (.then (fn [_created]
-               (refresh-data! w/id-tasks-data)   ;; board re-reads /api/tasks → re-renders
-               (when-let [^js m (.querySelector js/document "#new-task-modal")]
-                 (.hide m))                       ;; x-modal :hide closes the dialog
-               (notify! "Task created")))
-      (.catch (fn [err]
-                (js/console.error err)
-                (notify! "Create failed")))))
+  ;; Capture the form NOW: in the async .then, e.currentTarget is null (the event has
+  ;; finished dispatching), so a reset must hold the handle from sync time.
+  (let [^js form (.-currentTarget e)]
+    (-> (api/request "POST" api-tasks (without-blanks (.. e -detail -values)))
+        (.then (fn created [_created]
+                 (refresh-data! w/id-tasks-data)   ;; board re-reads /api/tasks → re-renders
+                 (when-let [^js m (.querySelector js/document w/id-new-task-modal)]
+                   (.hide m))                       ;; x-modal :hide closes the dialog
+                 (.reset form)                      ;; clear inputs so a reopen starts blank
+                 (notify! "Task created" "success")))
+        (.catch (on-failure "Create failed")))))
 
 ;; ── 2. UPDATE — detail inline edit form submit ────────────────────────────────
 (defn- on-edit-submit! [^js e]
   (.preventDefault e)
-  ;; PUT the edited fields, then refresh the detail broker so the card + form
-  ;; re-render from the server's value. The board isn't mounted on this route; it
-  ;; re-reads on its next activation, so refreshing the detail alone is enough.
-  (-> (demo-app.api/request "PUT" (api-task (task-id-from-url))
-                            (without-blanks (.. e -detail -values)))
-      (.then (fn [_updated]
+  ;; PUT the edited fields AS-IS (no blank-stripping): this is a merge endpoint, so a
+  ;; blank field is a deliberate "clear it" — dropping blanks would make that clear
+  ;; silently fail. Then refresh the detail broker so the card + form re-render from the
+  ;; server. The board isn't mounted on this route; it re-reads on its next activation.
+  (-> (api/request "PUT" (detail-endpoint e) (.. e -detail -values))
+      (.then (fn updated [_updated]
                (refresh-data! w/id-detail-data)   ;; detail re-reads /api/tasks/:id → re-renders
-               (notify! "Task updated")))
-      (.catch (fn [err]
-                (js/console.error err)
-                (notify! "Update failed")))))
+               (notify! "Task updated" "success")))
+      (.catch (on-failure "Update failed"))))
 
 ;; ── 3. DELETE (detail) — confirm dialogue confirmed ───────────────────────────
-(defn- on-delete-confirm! [^js _e]
+(defn- on-delete-confirm! [^js e]
   ;; The dialogue closes itself on confirm (x-cancel-dialogue do-confirm! → close),
   ;; so we only DELETE, then navigate back to /tasks — which re-reads the board.
-  (-> (demo-app.api/request "DELETE" (api-task (task-id-from-url)) nil)
-      (.then (fn [_deleted]
+  (-> (api/request "DELETE" (detail-endpoint e) nil)
+      (.then (fn deleted [_deleted]
                (navigate! w/path-tasks)           ;; /tasks activation re-reads the board
-               (notify! "Task deleted")))
-      (.catch (fn [err]
-                (js/console.error err)
-                (notify! "Delete failed")))))
+               (notify! "Task deleted" "success")))
+      (.catch (on-failure "Delete failed"))))
 
 ;; ── 4. DELETE (board row) — per-row Delete button ─────────────────────────────
 (defn- on-row-delete! [^js e]
@@ -131,26 +156,24 @@
     (let [id (.getAttribute btn w/attr-delete-id)]
       ;; Already on /tasks → no navigation; just DELETE and refresh the board read
       ;; so the row disappears (DOM = f(broker value, filters), untouched by hand).
-      (-> (demo-app.api/request "DELETE" (api-task id) nil)
-          (.then (fn [_deleted]
+      (-> (api/request "DELETE" (api-task id) nil)
+          (.then (fn row-deleted [_deleted]
                    (refresh-data! w/id-tasks-data)
-                   (notify! (str "Task #" id " deleted"))))
-          (.catch (fn [err]
-                    (js/console.error err)
-                    (notify! "Delete failed")))))))
+                   (notify! (str "Task #" id " deleted") "success")))
+          (.catch (on-failure "Delete failed"))))))
 
 ;; ── 5. SETTINGS — settings form submit ────────────────────────────────────────
 (defn- on-settings-save! [^js e]
   (.preventDefault e)
-  ;; PUT the settings, then refresh the settings broker so the form reflects the
-  ;; PERSISTED value (server is truth — catches any server-side normalization).
-  (-> (demo-app.api/request "PUT" api-settings (without-blanks (.. e -detail -values)))
-      (.then (fn [_saved]
+  ;; PUT the settings AS-IS but coerce page-size to a number: x-form reports it as a
+  ;; string, and the server merges, so an uncoerced save flips the stored field
+  ;; number→string. Then refresh the settings broker so the form reflects the PERSISTED
+  ;; value (server is truth — catches any server-side normalization).
+  (-> (api/request "PUT" api-settings (with-number (.. e -detail -values) "page-size"))
+      (.then (fn saved [_saved]
                (refresh-data! w/id-settings-data)  ;; re-read /api/settings → re-fill form
-               (notify! "Settings saved")))
-      (.catch (fn [err]
-                (js/console.error err)
-                (notify! "Save failed")))))
+               (notify! "Settings saved" "success")))
+      (.catch (on-failure "Save failed"))))
 
 (defn attach-stubs!
   "Attach the inert write-side seams. Called from core/init! alongside the
