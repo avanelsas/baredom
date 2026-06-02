@@ -2,6 +2,7 @@
   "Read-side wiring for the /settings route — a non-list read that fills a form
   from GET /api/settings. The Save submit is the Phase-4 stub seam."
   (:require [demo-app.dom :as dom]
+            [demo-app.view :as view]
             [demo-app.wiring :as w]))
 
 (def ^:private fields ["theme" "page-size" "default-status"])
@@ -23,8 +24,7 @@
         ^js form  (.querySelector route w/id-settings-form)]
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (let [status (.-httpStatus state)]
-        (.setAttribute err "text" (str "Couldn't load settings" (when status (str " (" status ")")) "."))))
+      (.setAttribute err "text" (view/load-error-text "settings" (.-httpStatus state))))
     (when (= "loaded" phase)
       (dom/fill-form! form (.-data state) fields))))
 

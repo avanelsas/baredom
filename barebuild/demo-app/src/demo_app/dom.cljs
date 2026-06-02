@@ -39,4 +39,4 @@
   [^js form ^js obj fields]
   (doseq [field fields]
     (when-let [^js f (.querySelector form (str "[name='" field "']"))]
-      (set! (.-value f) (str (or (gobj/get obj field) ""))))))
+      (set! (.-value f) (str (gobj/get obj field))))))

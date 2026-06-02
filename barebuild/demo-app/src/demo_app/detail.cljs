@@ -9,6 +9,7 @@
   the Phase-4 stub seam, added in a later step."
   (:require [goog.object :as gobj]
             [demo-app.dom :as dom]
+            [demo-app.view :as view]
             [demo-app.wiring :as w]))
 
 (def ^:private detail-fields
@@ -51,8 +52,7 @@
         ^js err   (.querySelector route "#detail-error")]
     (dom/show! err (= "error" phase))
     (when (= "error" phase)
-      (let [status (.-httpStatus state)]
-        (.setAttribute err "text" (str "Couldn't load task" (when status (str " (" status ")")) "."))))
+      (.setAttribute err "text" (view/load-error-text "task" (.-httpStatus state))))
     (when (= "loaded" phase)
       (render-detail! route (.-data state)))))
 
