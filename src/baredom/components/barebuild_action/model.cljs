@@ -57,6 +57,11 @@
    :method      {:type 'string :reflects-attribute attr-method       :default ""}
    :submitEvent {:type 'string :reflects-attribute attr-submit-event :default ""}
    :valuesPath  {:type 'string :reflects-attribute attr-values-path  :default ""}
+   ;; Imperative-only seam (no attribute): a `(fn [values] → values)` applied to the
+   ;; payload before JSON-encoding, for blank-stripping / coercion the action can't
+   ;; itself know. No reflects-attribute, so install-properties! installs no accessor
+   ;; — it is a plain public JS property the component reads via `.-valuesTransform`.
+   :valuesTransform {:type 'object}
    :state       {:type 'object :readonly true}})
 
 (def event-schema
@@ -79,7 +84,7 @@
   204 body); `status` the HTTP status code."
   [response status]
   (let [s #js {:phase phase-success :response response}]
-    (when (some? status) (gobj/set s "httpStatus" status))
+    (when (some? status) (gobj/set s protocol/field-http-status status))
     (js/Object.freeze s)))
 
 (defn error-state
@@ -87,5 +92,5 @@
   was received (nil for a transport-level failure)."
   [message status]
   (let [s #js {:phase phase-error :error message}]
-    (when (some? status) (gobj/set s "httpStatus" status))
+    (when (some? status) (gobj/set s protocol/field-http-status status))
     (js/Object.freeze s)))

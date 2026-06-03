@@ -10,6 +10,8 @@
 ;; abort-controller stale-callback guard, the 204/empty-body → success(nil)
 ;; parse, AbortError suppression, and the shallow value-equality change guard —
 ;; is identical and lives here so the read and write sides cannot drift.
+;; (Source-listener bind/detach mechanics shared by the write-side elements live
+;; in the sibling barebuild/listeners ns — a separate concern, kept separate.)
 ;;
 ;; `cfg` keys:
 ;;   :k-state     instance-field key caching the state object

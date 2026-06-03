@@ -335,6 +335,41 @@
                  (is (= 2 @calls) "an invalidate for the exact path+query refetches")
                  (done)))))))))))
 
+;; ── Cross-origin invalidate for the same path must NOT match (origin is in the key) ──
+(deftest invalidate-cross-origin-does-not-match-test
+  (async done
+    (let [calls (atom 0)]
+      (set! (.-fetch js/window)
+            (fn [_ _] (swap! calls inc) (js/Promise.resolve (json-response #js {} 200 true))))
+      (let [el (make-data "/api/items")]
+        (append-body! el)
+        (after-settle
+         (fn []
+           (is (= 1 @calls) "fetched once on connect")
+           (fire-invalidate! "https://other.example.com/api/items")  ; same path, other origin
+           (after-settle
+            (fn []
+              (is (= 1 @calls) "a cross-origin invalidate for the same path does not refetch")
+              (done)))))))))
+
+;; ── Public protocol: a detail-less barebuild-invalidate must not throw the listener ──
+(deftest invalidate-with-no-detail-does-not-throw-test
+  (async done
+    (let [calls (atom 0)]
+      (set! (.-fetch js/window)
+            (fn [_ _] (swap! calls inc) (js/Promise.resolve (json-response #js {} 200 true))))
+      (let [el (make-data "/api/items")]
+        (append-body! el)
+        (after-settle
+         (fn []
+           (is (= 1 @calls) "fetched once on connect")
+           ;; `new CustomEvent(type)` → detail===null; any code may dispatch this.
+           (.dispatchEvent js/document (js/CustomEvent. model/event-invalidate))
+           (after-settle
+            (fn []
+              (is (= 1 @calls) "a detail-less invalidate is ignored — no throw, no refetch")
+              (done)))))))))
+
 ;; ── Reconnect re-fetches, no stale replay ────────────────────────────────────────
 (deftest reconnect-refetches-test
   (async done

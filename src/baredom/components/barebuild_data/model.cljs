@@ -74,7 +74,7 @@
   204 body); `status` the HTTP status code."
   [data status]
   (let [s #js {:phase phase-loaded :data data}]
-    (when (some? status) (gobj/set s "httpStatus" status))
+    (when (some? status) (gobj/set s protocol/field-http-status status))
     (js/Object.freeze s)))
 
 (defn error-state
@@ -82,5 +82,5 @@
   when one was received (nil for a transport-level failure)."
   [message status]
   (let [s #js {:phase phase-error :error message}]
-    (when (some? status) (gobj/set s "httpStatus" status))
+    (when (some? status) (gobj/set s protocol/field-http-status status))
     (js/Object.freeze s)))

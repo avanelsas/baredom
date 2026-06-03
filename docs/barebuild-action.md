@@ -105,6 +105,7 @@ Registration is idempotent.
 | `.method` | string | reflects attribute | |
 | `.submitEvent` | string | reflects `submit-event` attribute | |
 | `.valuesPath` | string | reflects `values-path` attribute | |
+| `.valuesTransform` | function | no (imperative-only; no attribute) | Optional `(values) → values` applied to the payload **before** JSON-encoding. The seam for payload hygiene the action cannot itself know — blank-stripping (so an unset control's `""` doesn't shadow a server default on a POST) or numeric coercion (a number control reports a string). Absent / non-function → the payload is encoded as-is (the default). Set it imperatively: `el.valuesTransform = withoutBlanks;`. |
 
 **No `.stateJs`.** None is needed — `.state` is already a plain JS object readable by any consumer (vanilla JS or a separately-compiled CLJS app), for the same cross-`cljs.core`-runtime reason `<barebuild-data>` is JS-shaped (plan Decision #6).
 

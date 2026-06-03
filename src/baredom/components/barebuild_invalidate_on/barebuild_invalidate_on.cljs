@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.components.barebuild.listeners :as listeners]
    [baredom.components.barebuild-invalidate-on.model :as model]))
 
 ;; Effect shell for barebuild-invalidate-on. Holds only its attributes. Listens to
@@ -61,34 +62,28 @@
     (do-invalidate! el)))
 
 ;; ── Source wiring (containment; no selectors) ────────────────────────────────────
+;; Listener mechanics (stash/remove/rebind) are shared with barebuild-action via
+;; barebuild/listeners — here the target is parentNode (so :k-node is configured to
+;; stash it) and the event resolves to `event` (default barebuild-action-state).
+(def ^:private listener-cfg
+  {:k-handler k-handler :k-node k-source-node :k-bound-event k-bound-event})
+
 (defn- ensure-handler! [^js el]
   (or (du/getv el k-handler)
       (let [h (fn invalidate-on-source [^js ev] (on-source-event el ev))]
         (du/setv! el k-handler h)
         h)))
 
-(defn- detach! [^js el]
-  (let [^js h    (du/getv el k-handler)
-        ^js node (du/getv el k-source-node)
-        bound    (du/getv el k-bound-event)]
-    ;; `bound` is nil or a non-blank event name (set from get-attr-trimmed-or-default).
-    (when (and h node bound)
-      (.removeEventListener node bound h)
-      (du/setv! el k-source-node nil)
-      (du/setv! el k-bound-event nil))))
-
 (defn- bind-source!
   "(Re)bind the listener to parentNode for the current `event` name. An orphan
   (no parentNode) logs once and no-ops — the element is a child by construction."
   [^js el]
-  (detach! el)
+  (listeners/detach-listener! el listener-cfg)
   (let [^js parent (.-parentNode el)
         evt        (or (du/get-attr-trimmed el model/attr-event) model/default-source-event)]
     (if (nil? parent)
       (js/console.warn "barebuild-invalidate-on: no parentNode source; no-op")
-      (do (.addEventListener parent evt (ensure-handler! el))
-          (du/setv! el k-source-node parent)
-          (du/setv! el k-bound-event evt)))))
+      (listeners/bind-listener! el parent evt (ensure-handler! el) listener-cfg))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -97,7 +92,7 @@
   (bind-source! el))
 
 (defn- disconnected! [^js el]
-  (detach! el))
+  (listeners/detach-listener! el listener-cfg))
 
 (defn- attribute-changed! [^js el name _old-val _new-val]
   (when (and (du/initialized? el k-initialized?) (.-isConnected el)

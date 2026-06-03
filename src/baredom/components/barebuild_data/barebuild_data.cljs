@@ -80,24 +80,30 @@
     (du/setv! el k-refresh-handler h)
     (.addEventListener el model/event-data-refresh h)))
 
-;; ── Invalidate listener (on document; matched by URL pathname + query) ───────────
+;; ── Invalidate listener (on document; matched by URL origin + pathname + query) ──
 (defn- match-key
-  "The match key of `s` resolved against the page origin: `pathname + search`, or
-  nil for a blank/invalid src. Resolving against the origin makes a relative `src`
-  and an absolute one to the same path equal; including the query string keeps two
-  parameterised resources on the same path distinct (`/items?page=1` ≠
-  `/items?page=2`) — exactly the equality `<barebuild-invalidate-on>` documents."
+  "The match key of `s` resolved against the page origin: `origin + pathname +
+  search`, or nil for a blank/invalid src. Resolving against the origin makes a
+  relative `src` and an absolute same-origin one to the same path equal; KEEPING the
+  origin in the key keeps a cross-origin `https://other/api/x` distinct from the
+  page's own `/api/x` (dropping it would conflate same-path different-origin
+  resources). Including the query string keeps two parameterised resources on the
+  same path distinct (`/items?page=1` ≠ `/items?page=2`) — exactly the equality
+  `<barebuild-invalidate-on>` documents."
   [s]
   (when (mu/non-empty-string? s)
     (try (let [^js u (js/URL. s (.. js/location -origin))]
-           (str (.-pathname u) (.-search u)))
+           (str (.-origin u) (.-pathname u) (.-search u)))
          (catch :default _ nil))))
 
 (defn- on-invalidate [^js el ^js e]
   ;; A read is an observation in time: when an invalidation names our src (exact
-  ;; pathname+query equality), re-read. A blank/mismatched src is ignored.
+  ;; origin+pathname+query equality), re-read. A blank/mismatched src is ignored.
+  ;; `barebuild-invalidate` is a PUBLIC protocol any code may dispatch, so read the
+  ;; foreign src defensively (a detail-less CustomEvent must not throw in this
+  ;; document listener) — a nil src can never match a non-nil `own`.
   (let [own (match-key (du/get-attr el model/attr-src))]
-    (when (and own (= own (match-key (.. e -detail -src))))
+    (when (and own (= own (match-key (some-> e .-detail .-src))))
       (fetch! el))))
 
 (defn- ensure-invalidate-handler! [^js el]
@@ -123,7 +129,10 @@
 
 (defn- disconnected! [^js el]
   ;; The element owns no cache — the server is the truth. Abort and reset to idle;
-  ;; reconnect re-fetches rather than replaying the stale :loaded value.
+  ;; reconnect re-fetches rather than replaying the stale :loaded value. The idle
+  ;; reset is a DELIBERATE event-less write (raw du/setv!, not set-state!): teardown
+  ;; is not a fetch-lifecycle transition, so a detaching broker publishes no event.
+  ;; A consumer that tracks `phase` must treat disconnect as terminal on its own.
   (lifecycle/abort-inflight! el k-abort)
   (when-let [^js h (du/getv el k-invalidate-handler)]
     (.removeEventListener js/document model/event-invalidate h))

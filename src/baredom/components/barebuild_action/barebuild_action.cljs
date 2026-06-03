@@ -5,13 +5,15 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [baredom.components.barebuild.lifecycle :as lifecycle]
+   [baredom.components.barebuild.listeners :as listeners]
    [baredom.components.barebuild-action.model :as model]))
 
 ;; Effect shell for barebuild-action. Owns no authoritative state — the server
 ;; does. It listens for the configured `submit-event` on its HOST (catching
 ;; bubbling events from any descendant emitter — containment, no selectors),
 ;; fetches, caches the resulting state value (a plain JS object), and dispatches
-;; `barebuild-action-state {:name :state}` on every phase transition. No querySelector.
+;; `barebuild-action-state {:name :state}` on every phase transition. Containment
+;; only — it never reaches into the DOM by lookup.
 
 ;; ── Instance-field keys ────────────────────────────────────────────────────────
 (def ^:private k-initialized?   "__barebuildActionInit")
@@ -51,26 +53,52 @@
    :k-abort     k-abort
    :payload-fn  (fn action-payload [^js s] (.-response s))
    :event-name  model/event-action-state
+   ;; `name` is trimmed (get-attr-trimmed) so it applies the SAME whitespace policy
+   ;; as <barebuild-invalidate-on>'s `when-name` matcher (also trimmed) — otherwise a
+   ;; padded name=" x " would never equal a clean when-name="x" and silently disable
+   ;; name-scoped invalidation.
    :detail-fn   (fn action-detail [^js el ^js state]
-                  #js {:name (du/get-attr el model/attr-name) :state state})
+                  #js {:name (du/get-attr-trimmed el model/attr-name) :state state})
    :success-fn  model/success-state
    :error-fn    model/error-state})
 
-(defn- do-submit!
-  "Abort any in-flight request and POST/PUT/… `values` (JSON) to `action`. A blank
-  (or whitespace-only) `action` logs and no-ops (never an empty-target request —
-  an untrimmed whitespace `action` would otherwise resolve to the current page)."
+(defn- apply-values-transform
+  "Apply the consumer-supplied `valuesTransform` (a public JS property, `(fn [values]
+  → values)`) before JSON-encoding, when one is set. This is the seam for payload
+  hygiene the action cannot itself know — blank-stripping (so an unset control's \"\"
+  doesn't shadow a server default) or numeric coercion (a number control reports a
+  string). Absent / non-function → `values` unchanged, so the default is encode-as-is."
   [^js el values]
-  (let [action (du/get-attr-trimmed el model/attr-action)
-        method (or (du/get-attr-trimmed el model/attr-method) model/default-method)]
-    (if-not action
-      (js/console.error "barebuild-action: missing `action`; skipping submit")
-      (lifecycle/start-fetch! el action
-                              #js {:method  method
-                                   :headers #js {"Content-Type" "application/json"}
-                                   :body    (js/JSON.stringify values)}
-                              (model/submitting-state)
-                              lifecycle-cfg))))
+  (let [t (.-valuesTransform el)]
+    (if (fn? t) (t values) values)))
+
+(defn- action-url
+  "The submit target: the trimmed `action` URL, or nil when blank/absent (whitespace
+  = absent, so an untrimmed `\" \"` can't resolve to the current page). Single source
+  for 'is there a target?' — both the submit guard and the preventDefault decision
+  read it, so the precondition lives in one calculation, not two."
+  [^js el]
+  (du/get-attr-trimmed el model/attr-action))
+
+(defn- do-submit!
+  "Abort any in-flight request and POST/PUT/… `values` (JSON) to `action`. No-ops with a
+  diagnostic on a blank `action` OR a nil body — the body guard covers a `valuesTransform`
+  that returns nil AND a `.submit(nil)` imperative call, so neither path can send a
+  `null`-body or empty-target request. Sole owner of both guards; it is also the
+  `.submit()` entry point, so the checks cannot move entirely to the event path."
+  [^js el values]
+  (let [action (action-url el)
+        method (or (du/get-attr-trimmed el model/attr-method) model/default-method)
+        body   (apply-values-transform el values)]
+    (cond
+      (not action) (js/console.error "barebuild-action: missing `action`; skipping submit")
+      (nil? body)  (js/console.error "barebuild-action: nil body (values or valuesTransform result); skipping (no null-body request)")
+      :else        (lifecycle/start-fetch! el action
+                                            #js {:method  method
+                                                 :headers #js {"Content-Type" "application/json"}
+                                                 :body    (js/JSON.stringify body)}
+                                            (model/submitting-state)
+                                            lifecycle-cfg))))
 
 ;; ── Submit-event wiring (containment; no selectors) ──────────────────────────────
 (defn- parse-path
@@ -95,11 +123,23 @@
         (apply gobj/getValueByKeys detail keys)))))
 
 (defn- on-submit-event [^js el ^js ev]
-  (.preventDefault ev)
+  ;; Claim the emitter's event (preventDefault) ONLY when we can service the submit —
+  ;; otherwise a submit we skip would be silently swallowed (an emitter that branches
+  ;; on defaultPrevented would wrongly conclude we handled it). Values resolution is
+  ;; this path's own concern (the .submit() entry gets values explicitly), so it logs
+  ;; here; the missing-action guard + diagnostic belong to do-submit! alone, so we
+  ;; only gate preventDefault on `action-url` and delegate — no duplicated guard/log.
   (let [values (resolve-values (.-detail ev) (du/get-attr-trimmed el model/attr-values-path))]
-    (if (some? values)
-      (do-submit! el values)
-      (js/console.error "barebuild-action: no values at values-path; skipping (no empty-body request)"))))
+    (if (nil? values)
+      (js/console.error "barebuild-action: no values at values-path; skipping (no empty-body request)")
+      (do (when (action-url el) (.preventDefault ev))
+          (do-submit! el values)))))
+
+;; Listener mechanics (stash/remove/rebind the host submit listener) are shared with
+;; barebuild-invalidate-on via barebuild/listeners — only the target (the host `el`,
+;; no :k-node) and the required `submit-event` resolution live here.
+(def ^:private listener-cfg
+  {:k-handler k-submit-handler :k-bound-event k-bound-event})
 
 (defn- ensure-handler! [^js el]
   (or (du/getv el k-submit-handler)
@@ -107,24 +147,15 @@
         (du/setv! el k-submit-handler h)
         h)))
 
-(defn- detach-listener! [^js el]
-  (let [^js h (du/getv el k-submit-handler)
-        bound (du/getv el k-bound-event)]
-    ;; `bound` is nil or a non-blank event name (set from get-attr-trimmed).
-    (when (and h bound)
-      (.removeEventListener el bound h)
-      (du/setv! el k-bound-event nil))))
-
 (defn- bind-submit!
   "(Re)bind the host listener to the current `submit-event` name. Required: a missing
   `submit-event` logs an error and leaves the action inert (never fetches)."
   [^js el]
-  (detach-listener! el)
+  (listeners/detach-listener! el listener-cfg)
   (let [evt (du/get-attr-trimmed el model/attr-submit-event)]
     (if-not evt
       (js/console.error "barebuild-action: missing required `submit-event`; the action will not fetch")
-      (do (.addEventListener el evt (ensure-handler! el))
-          (du/setv! el k-bound-event evt)))))
+      (listeners/bind-listener! el el evt (ensure-handler! el) listener-cfg))))
 
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
@@ -133,8 +164,12 @@
   (bind-submit! el))
 
 (defn- disconnected! [^js el]
-  (detach-listener! el)
+  (listeners/detach-listener! el listener-cfg)
   (lifecycle/abort-inflight! el k-abort)
+  ;; DELIBERATE event-less idle reset (raw du/setv!, not set-state!): teardown is not
+  ;; a submit-lifecycle transition, so a detaching action publishes no event. A
+  ;; consumer driving UI off a mid-submit `submitting` phase must treat disconnect as
+  ;; terminal itself (mirrors barebuild-data's disconnect contract).
   (du/setv! el k-state default-idle))
 
 (defn- attribute-changed! [^js el name _old-val _new-val]

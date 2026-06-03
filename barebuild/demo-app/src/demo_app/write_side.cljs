@@ -34,7 +34,8 @@
 
   The backend (server/serve.clj, `bb serve`) implements the endpoints:
     POST /api/tasks · PUT /api/tasks/:id · DELETE /api/tasks/:id · PUT /api/settings"
-  (:require [demo-app.wiring :as w]
+  (:require [clojure.string :as str]
+            [demo-app.wiring :as w]
             [demo-app.api :as api]))
 
 (def ^:private api-tasks "/api/tasks")
@@ -56,14 +57,46 @@
     (.-src broker)))
 
 (defn- dispatch-invalidate!
-  "Dispatch the document-level `barebuild-invalidate {src}` protocol — the SAME signal
-   `<barebuild-invalidate-on>` emits for the declarative flows. Any <barebuild-data>
-   whose src matches refetches. Lets a hand-wired write (a delete the action can't drive)
-   invalidate exactly like the declarative ones, so the coordination stays uniform."
+  "Emit the document-level `barebuild-invalidate {src}` PUBLIC protocol — the SAME
+   contract `<barebuild-invalidate-on>` emits for the declarative flows, and which the
+   library documents as 'any code can dispatch' (the element is just sugar). Any
+   <barebuild-data> whose src matches refetches. The demo-app is a separate build, so
+   it cannot reuse the element's CLJS emitter; it dispatches the documented `{src}`
+   shape directly. That shape is the stable, versioned protocol — not an internal
+   detail — so a hand-wired write (a delete the action can't drive) coordinates
+   exactly like a declarative one."
   [src]
   (.dispatchEvent js/document
                   (js/CustomEvent. w/ev-invalidate
                                    #js {:bubbles true :composed true :detail #js {:src src}})))
+
+;; ── Payload hygiene (the action's `valuesTransform` seam) ─────────────────────────
+;; barebuild-action JSON-encodes event.detail.values as-is; these are the per-flow
+;; transforms x-form's reporting needs, installed on the actions as `.valuesTransform`.
+
+(defn- without-blanks
+  "Drop name→value pairs whose value is a blank string. CREATE-ONLY. x-form reports
+   every named control, defaulting an unset one to \"\", and on a POST a present-but-blank
+   key shadows the server's default (a blank `status` would override {:status \"todo\"});
+   omitting blanks lets the defaults apply. Do NOT use on a PUT/merge endpoint — there a
+   blank is a deliberate \"clear this field\", and dropping it makes the clear silently fail."
+  [^js values]
+  (let [out #js {}]
+    (doseq [k (js/Object.keys values)]
+      (let [v (aget values k)]
+        (when-not (and (string? v) (str/blank? v))
+          (aset out k v))))
+    out))
+
+(defn- with-number
+  "Return a shallow copy of `values` with key `k` parsed to an integer (left as-is if
+   unparseable). x-form reports a number control's value as a string; on a PUT/merge that
+   would otherwise flip the server field's type (e.g. page-size 25 → \"25\") on first save."
+  [^js values k]
+  (let [out (js/Object.assign #js {} values)
+        n   (js/parseInt (aget out k) 10)]
+    (when-not (js/isNaN n) (aset out k n))
+    out))
 
 (defn- navigate!
   "Programmatic SPA navigation: dispatch the router's `barebuild-navigate` AT the
@@ -162,6 +195,13 @@
     (.addEventListener create-action   w/ev-action-state on-create-state!)
     (.addEventListener edit-action     w/ev-action-state (toasting-state-handler "Task updated" "Update failed"))
     (.addEventListener settings-action w/ev-action-state (toasting-state-handler "Settings saved" "Save failed"))
+    ;; Restore payload hygiene the hand-wired flows had: CREATE blank-strips (so an unset
+    ;; status doesn't shadow the server default), SETTINGS coerces page-size to a number.
+    ;; UPDATE is a PUT/merge — values pass AS-IS (a blank is a deliberate field-clear), so
+    ;; the edit action gets no transform. Set before upgrade is fine: `.valuesTransform` is
+    ;; a plain public property (no shadowed accessor), read by the action at submit time.
+    (set! (.-valuesTransform create-action)   without-blanks)
+    (set! (.-valuesTransform settings-action) (fn settings-transform [^js v] (with-number v "page-size")))
     ;; Deletes: hand-wired triggers, protocol coordination.
     (.addEventListener confirm w/ev-confirm on-delete-confirm!)
     (.addEventListener table   w/ev-press   on-row-delete!)))

@@ -49,7 +49,7 @@ Registration is idempotent.
 | `event` | string | `barebuild-action-state` | Event name to listen for on `parentNode`. For binding to a data broker's state: `event="barebuild-data-state"`. For binding to the router: `event="barebuild-route-change"`. |
 | `when-phase` | string | (unset) | Optional matcher. When set, compared with string equality against `event.detail.state.phase`. |
 | `when-name` | string | (unset) | Optional matcher. When set, compared with string equality against `event.detail.name`. |
-| `src` | string | **required** | URL to invalidate. Dispatched as `event.detail.src` of the resulting `barebuild-invalidate` event. **Exact `pathname + query` equality** (resolved against the page origin) is used by `<barebuild-data>` to decide if it should refetch — so `/api/items?page=1` and `?page=2` stay distinct (no wildcards in V1). |
+| `src` | string | **required** | URL to invalidate. Dispatched as `event.detail.src` of the resulting `barebuild-invalidate` event. **Exact `origin + pathname + query` equality** (each side resolved against the page origin) is used by `<barebuild-data>` to decide if it should refetch — so `/api/items?page=1` and `?page=2` stay distinct, and a cross-origin `https://other/api/items` never matches the page's own `/api/items` (no wildcards in V1). |
 
 **At least one of `when-phase` / `when-name` is required.** Omitting both logs an error and the element no-ops on every event. Setting both ANDs — the invalidate dispatches only when *both* matchers fire on the same event.
 
@@ -141,13 +141,14 @@ Two lines, two named effects. No wildcards. (URL pattern matching is V2 if a rea
 
 ## URL Match Semantics (V1)
 
-A `<barebuild-data src="/api/users">` refetches when it sees a `barebuild-invalidate` event whose `event.detail.src` equals its own `src` by **exact `pathname + query` equality** (each resolved against the page origin):
+A `<barebuild-data src="/api/users">` refetches when it sees a `barebuild-invalidate` event whose `event.detail.src` equals its own `src` by **exact `origin + pathname + query` equality** (each side resolved against the page origin):
 
 | Invalidate `src` | Matches data `src` |
 |---|---|
 | `/api/users` | `/api/users` |
 | `/api/users?q=foo` | `/api/users?q=foo` (query strings must match exactly if present on both sides) |
 | `/api/users` | `/api/users/42` → **NO** |
+| `https://other.example/api/users` | `/api/users` → **NO** (different origin) |
 | `/api/users*` | `/api/users` → **NO** (no wildcards in V1) |
 
 If you need "invalidate this URL and everything under it," write multiple `<barebuild-invalidate-on>` children. Pattern matching is V2.

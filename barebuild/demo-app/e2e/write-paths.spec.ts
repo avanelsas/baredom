@@ -25,9 +25,11 @@ test('create: barebuild-action POSTs and invalidate-on refetches the board', asy
   const created = after.find((t: { title: string }) => t.title === 'E2E declarative task');
   expect(created).toBeTruthy();
   expect(after.length).toBe(before + 1);
-  // NOTE: created.status comes through "" — the action JSON-encodes the form values
-  // as-is and cannot blank-strip (the hand-wired version used without-blanks). A
-  // documented payload-cleanliness gap; see write-side-design-notes.md.
+  // Payload hygiene restored: write_side installs a `valuesTransform` (without-blanks)
+  // on #create-action, so an unset status no longer POSTs "" and the server default
+  // {status:"todo"} applies. (Earlier alpha shipped this as a gap; the transform seam
+  // on barebuild-action closed it — see write-side-design-notes.md.)
+  expect(created.status).toBe('todo');
 });
 
 test('update: barebuild-action PUTs the edit form (dynamic /api/tasks/:id)', async ({ page, request }) => {
@@ -47,10 +49,16 @@ test('settings: barebuild-action PUTs and invalidate-on refetches', async ({ pag
     .poll(() => page.evaluate(() => (document.querySelector('#settings-form [name="theme"]') as { value?: string })?.value))
     .toBe('system');
   await page.evaluate(() => { (document.querySelector('#settings-form [name="theme"]') as { value: string }).value = 'dark'; });
+  await page.fill('#settings-form x-form-field[name="page-size"] input', '25');
   await page.click('#settings-form x-button[type="submit"]');
   await expect
     .poll(async () => (await (await request.get('/api/settings')).json()).theme)
     .toBe('dark');
+  // Payload hygiene restored: #settings-action's valuesTransform (with-number) coerces
+  // page-size, so the merge endpoint stores a NUMBER, not the string the control reports.
+  const settings = await (await request.get('/api/settings')).json();
+  expect(settings['page-size']).toBe(25);
+  expect(typeof settings['page-size']).toBe('number');
 });
 
 test('delete (row): hand-wired DELETE + barebuild-invalidate refetches the board', async ({ page, request }) => {

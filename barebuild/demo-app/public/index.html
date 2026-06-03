@@ -152,9 +152,9 @@
           <x-alert id="settings-error" type="error" style="display:none" dismissible></x-alert>
 
           <!-- Write-side ALPHA: barebuild-action PUTs /api/settings (static URL) and
-               invalidate-on refetches it on success. write_side toasts via action-state.
-               NOTE: page-size persists as a string — the action encodes values as-is and
-               can't coerce (the hand-wired save used with-number). A documented gap. -->
+               invalidate-on refetches it on success. write_side toasts via action-state,
+               and installs a `valuesTransform` (with-number) on this action so page-size
+               persists as a number, not a string. -->
           <barebuild-action id="settings-action" name="save-settings"
                             action="/api/settings" method="PUT" submit-event="x-form-submit">
             <x-form id="settings-form">

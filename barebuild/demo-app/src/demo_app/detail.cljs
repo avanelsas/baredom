@@ -33,6 +33,17 @@
 ;; Named, event-only handlers (resolve handles from `currentTarget`), so
 ;; `init-detail!` reads as a wiring list — matching write_side.cljs.
 
+(defn- point-edit-at!
+  "Point all three /tasks/:id consumers at `endpoint` IN LOCKSTEP, from one call site so
+  they cannot drift to different ids: the detail read broker (re-read on activation), the
+  edit action's PUT target, and the edit invalidate-on's refetch src. The dynamic
+  /api/tasks/:id URL is the one imperative bit the declarative update needs — the action's
+  `action` attribute can't be a static literal for a param route."
+  [^js route endpoint]
+  (set! (.-src    (.querySelector route w/id-detail-data))   endpoint)
+  (set! (.-action (.querySelector route "#edit-action"))     endpoint)
+  (set! (.-src    (.querySelector route "#edit-invalidate")) endpoint))
+
 (defn- on-route-change
   "Activation → read /api/tasks/<id>. route-change is pushed to every route on each
   resolution carrying the GLOBAL match (resolved path + the active route's params),
@@ -42,14 +53,7 @@
   [^js e]
   (let [id (gobj/get (.. e -detail -params) "id")]
     (when (and id (= (str w/path-tasks "/" id) (.. e -detail -path)))
-      (let [^js route (.-currentTarget e)
-            endpoint  (str "/api/tasks/" id)]
-        (set! (.-src (.querySelector route w/id-detail-data)) endpoint)
-        ;; Write-side ALPHA: point the edit action (PUT) + its invalidate-on at this task's
-        ;; endpoint. The dynamic /api/tasks/:id URL is the one imperative bit the declarative
-        ;; update needs — the action's `action` attribute can't be a static literal here.
-        (set! (.-action (.querySelector route "#edit-action")) endpoint)
-        (set! (.-src (.querySelector route "#edit-invalidate")) endpoint)))))
+      (point-edit-at! (.-currentTarget e) (str "/api/tasks/" id)))))
 
 (defn- on-data-state
   ;; Renders straight from e.detail.state.data — unlike board, detail has no

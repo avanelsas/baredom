@@ -257,3 +257,55 @@
          (fn []
            (is (= "{\"imperative\":true}" (.-body ^js @captured)) ".submit(values) posts directly")
            (done)))))))
+
+;; ── valuesTransform applied before JSON-encode (payload-hygiene seam) ────────────
+(deftest values-transform-applied-test
+  (async done
+    (let [captured (atom nil)]
+      (set! (.-fetch js/window)
+            (fn [_ ^js opts] (reset! captured opts)
+              (js/Promise.resolve (json-response #js {} 200 true))))
+      (let [^js el (make-action {"name" "n" "action" "/api/x" "submit-event" submit-event})]
+        ;; A transform that drops blank-string values (the without-blanks job).
+        (set! (.-valuesTransform el)
+              (fn drop-blanks [^js v]
+                (let [out #js {}]
+                  (doseq [k (js/Object.keys v)]
+                    (when-not (= "" (aget v k)) (aset out k (aget v k))))
+                  out)))
+        (append-body! el)
+        (fire-submit! el #js {:title "hi" :status ""})
+        (after-settle
+         (fn []
+           (is (= "{\"title\":\"hi\"}" (.-body ^js @captured))
+               "valuesTransform runs before JSON-encode (blank status dropped)")
+           (done)))))))
+
+;; ── detail.name is trimmed (same whitespace policy as invalidate-on's when-name) ──
+(deftest detail-name-is-trimmed-test
+  (async done
+    (stub-ok! #js {} 200)
+    (let [el     (make-action {"name" "  add-task  " "action" "/api/x" "submit-event" submit-event})
+          detail (atom nil)]
+      (.addEventListener el model/event-action-state (fn [^js e] (reset! detail (.-detail e))))
+      (append-body! el)
+      (fire-submit! el #js {:a 1})
+      (after-settle
+       (fn []
+         (is (= "add-task" (.-name ^js @detail)) "detail.name is trimmed")
+         (done))))))
+
+;; ── A submit we won't service is not swallowed (default not prevented) ───────────
+(deftest unserviced-submit-does-not-prevent-default-test
+  (async done
+    (set! (.-fetch js/window) (fn [_ _] (js/Promise.resolve (json-response #js {} 200 true))))
+    (let [el (make-action {"name" "n" "action" "/api/x" "submit-event" submit-event})
+          ev (js/CustomEvent. submit-event
+                              #js {:bubbles true :cancelable true :detail #js {:other 1}})]
+      (append-body! el)
+      (.dispatchEvent el ev)                       ; no `values` at the path → not serviced
+      (after-settle
+       (fn []
+         (is (false? (.-defaultPrevented ev))
+             "no preventDefault when there are no values to submit (emitter's default proceeds)")
+         (done))))))

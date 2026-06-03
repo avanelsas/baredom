@@ -293,10 +293,14 @@ hand-wiring (a listener, no wrapper) never imposes.
 - **Stayed imperative** (a `barebuild-action-state` listener in `write_side`): close the
   modal, reset the form, success/error toast. The elements cover the *data* round-trip; every
   *UI* side-effect is still hand-wired.
-- **Payload-cleanliness gap (unresolved):** the action JSON-encodes `event.detail.values`
-  **as-is**. The hand-wired create used `without-blanks` so a blank `status` wouldn't shadow
-  the server default; the action can't, so the ported create writes `status: ""`. There is no
-  values-transform hook. (Settings' `with-number` coercion is the same class of gap.)
+- **Payload-cleanliness gap (RESOLVED — code review, 2026-06-03):** the action JSON-encodes
+  `event.detail.values`, but now through an optional `valuesTransform` property — a
+  `(fn [values] → values)` a consumer sets imperatively. `write_side` installs `without-blanks`
+  on `#create-action` and `with-number` (page-size) on `#settings-action`, restoring the
+  hand-wired hygiene: the ported create no longer writes `status: ""` (server default applies)
+  and settings persists `page-size` as a number. The e2e asserts both (`status === "todo"`,
+  `typeof page-size === "number"`). UPDATE intentionally sets no transform — its PUT/merge
+  endpoint treats a blank as a deliberate field-clear.
 
 ### The full port (all five flows) — what each became
 The whole write side was ported (Playwright e2e 14/14 against `bb serve`):
@@ -323,25 +327,45 @@ problem (no form, no values, navigate-or-remove). Its **trigger** is correctly h
 **coordination** is uniformly declarative. The demo ends coherent — every write
 invalidates-or-navigates identically; only the trigger varies, by necessity.
 
-### Residual gaps (real, unfixed by the port)
-- **Payload cleanliness.** The action JSON-encodes `event.detail.values` **as-is** — no
-  transform hook. So ported create writes `status: ""` (the `without-blanks` job) and ported
-  settings persists `page-size` as a **string** (the `with-number` coercion). Both regressions
-  vs. the hand-wired version; both need a values-transform hook the element lacks.
-- **Slotted-wrapper placement.** Mind where the wrapper goes (wrap the *modal*, not the form)
-  or `::slotted` layout breaks — a cost hand-wiring (a listener, no wrapper) never imposes.
+### Residual gaps
+- **Payload cleanliness — CLOSED (code review, 2026-06-03).** The action gained an optional
+  `valuesTransform` property (`(fn [values] → values)`, applied before JSON-encoding). The demo
+  installs `without-blanks` on create and `with-number` on settings, so neither regression
+  stands: create no longer writes `status: ""`, settings persists `page-size` as a number.
+- **Slotted-wrapper placement (still a structural cost).** Mind where the wrapper goes (wrap the
+  *modal*, not the form) or `::slotted` layout breaks — a cost hand-wiring (a listener, no
+  wrapper) never imposes. Unchanged by the review.
 
 ### Verdict
 The declarative path is **real and a genuine win for "form → server → refetch a list/record"**
 (create/update/settings), once the two element bugs are fixed. The **protocol reframe makes the
 whole surface coherent**, including the hand-wired deletes. What remains hybrid is intrinsic:
 the *trigger* is declarative only for forms (confirm dialogues and dynamic-list buttons are
-correctly hand-wired), and the *payload* still needs a transform the action can't do. The three
-concrete asks if these graduate: (a) **document `barebuild-invalidate` / `barebuild-navigate` as
-public protocols** with the elements as sugar (smallest, highest-value commitment — it's what
-made delete coherent); (b) a **values-transform hook** on the action (blanks/coercion); (c)
-accept that **non-form triggers stay hand-wired** and lean on (a) for their coordination rather
-than stretching the action to swallow them.
+correctly hand-wired). The earlier *payload* gap is now closed by the `valuesTransform` seam
+(ask (b), below). The three concrete asks if these graduate: (a) **document `barebuild-invalidate`
+/ `barebuild-navigate` as public protocols** with the elements as sugar (smallest, highest-value
+commitment — it's what made delete coherent); (b) ~~a **values-transform hook** on the action~~
+**DONE** — `valuesTransform` ships in the alpha (blanks/coercion); (c) accept that **non-form
+triggers stay hand-wired** and lean on (a) for their coordination rather than stretching the
+action to swallow them.
+
+### Code-review follow-up (2026-06-03) — what the review changed
+A high-effort code review of the branch surfaced ten findings; all were addressed:
+- **Crash hardening:** `<barebuild-data>`'s document `barebuild-invalidate` listener now reads
+  `detail.src` defensively — a detail-less event from foreign code (the protocol is public) is
+  ignored instead of throwing.
+- **Match key:** invalidation now compares `origin + pathname + query` (was pathname+query), so a
+  cross-origin `src` to the same path no longer false-matches.
+- **Name policy:** the action's `detail.name` is trimmed, matching `invalidate-on`'s `when-name`
+  whitespace policy (a padded name no longer silently disables name-scoped invalidation).
+- **No silent swallow:** the action defers `preventDefault()` until it actually services a submit,
+  so a submit it skips (no values / no action) isn't swallowed.
+- **Payload hygiene:** the `valuesTransform` seam (above).
+- **De-duplication:** the listener stash/rebind/detach mechanics shared by the action and
+  `invalidate-on` now live in `barebuild/lifecycle`.
+- **Demo lockstep:** detail's three `/api/tasks/:id` writes go through one `point-edit-at!` helper.
+- Plus documentation of the deliberate event-less disconnect reset and the public-protocol
+  emission in the demo's row-delete.
 
 ---
 
