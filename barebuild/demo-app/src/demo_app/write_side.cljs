@@ -128,31 +128,34 @@
     (js/console.error err)
     (notify! msg "error")))
 
-;; ── 1. CREATE — DECLARATIVE (barebuild-action + invalidate-on) ─────────────────
-;; The elements do submit→POST→refetch /api/tasks (see #create-action in index.html).
-;; write_side only reacts to the published barebuild-action-state for the UI side-
-;; effects the elements do NOT cover: close the modal, reset the form, toast.
-(defn- on-create-state! [^js e]
-  (case (.. e -detail -state -phase)
-    "success" (do (when-let [^js m (.querySelector js/document w/id-new-task-modal)] (.hide m))
-                  (when-let [^js f (.querySelector js/document w/id-new-task-form)] (.reset f))
-                  (notify! "Task created" "success"))
-    "error"   (notify! "Create failed" "error")
-    nil))
+;; ── CREATE / UPDATE / SETTINGS — DECLARATIVE (barebuild-action + invalidate-on) ──
+;; All three elements do submit→PUT/POST→refetch (see #create-action / #edit-action /
+;; #settings-action in index.html; the edit action's dynamic /api/tasks/:id URL is set in
+;; detail/on-route-change). They publish the SAME barebuild-action-state, so write_side
+;; reacts with ONE listener shape: toast by phase, plus an optional success-only effect the
+;; elements don't cover. Only CREATE has such an effect — its form lives in a modal the board
+;; refetch never touches, so on success it must close + blank for reopen. Edit/settings are
+;; inline forms their own invalidate-on refetch re-fills, so they need nothing but the toast.
+(defn- close-and-reset-new-task!
+  "CREATE's only uncovered side-effect: close the modal and blank the form so a reopen starts
+   clean (the board refetch re-renders the list, never this modal form)."
+  []
+  (when-let [^js m (.querySelector js/document w/id-new-task-modal)] (.hide m))
+  (when-let [^js f (.querySelector js/document w/id-new-task-form)]  (.reset f)))
 
-;; ── 2 + 5. UPDATE / SETTINGS — DECLARATIVE (barebuild-action + invalidate-on) ──
-;; The elements PUT and refetch (#edit-action / #settings-action in index.html; the edit
-;; action's dynamic /api/tasks/:id URL is set in detail/on-route-change). The only side-
-;; effect they don't cover is the result toast — so write_side just reacts to the state.
-(defn- toasting-state-handler
-  "A barebuild-action-state listener that toasts `success-msg` / `error-msg` by phase.
-   Shared by update + settings (their only uncovered side-effect is the toast)."
-  [success-msg error-msg]
-  (fn on-state [^js e]
-    (case (.. e -detail -state -phase)
-      "success" (notify! success-msg "success")
-      "error"   (notify! error-msg "error")
-      nil)))
+(defn- action-state-handler
+  "Build a barebuild-action-state listener shared by all three form flows: toast
+   `success-msg` / `error-msg` by phase, running optional `on-success!` (an extra UI effect
+   the elements don't cover) BEFORE the success toast. The data round-trip is the elements'
+   job; this is only the residual UI."
+  ([success-msg error-msg] (action-state-handler success-msg error-msg nil))
+  ([success-msg error-msg on-success!]
+   (fn on-state [^js e]
+     (case (.. e -detail -state -phase)
+       "success" (do (when on-success! (on-success!))
+                     (notify! success-msg "success"))
+       "error"   (notify! error-msg "error")
+       nil))))
 
 ;; ── 3. DELETE (detail) — imperative trigger + navigate protocol ───────────────
 ;; The trigger is a confirm dialogue (no values, two-step) → hand-wired. The deleted
@@ -192,9 +195,9 @@
         ^js settings-action (.querySelector js/document "#settings-action")
         ^js confirm         (.querySelector js/document w/id-delete-confirm)
         ^js table           (.querySelector js/document w/id-tasks-table)]
-    (.addEventListener create-action   w/ev-action-state on-create-state!)
-    (.addEventListener edit-action     w/ev-action-state (toasting-state-handler "Task updated" "Update failed"))
-    (.addEventListener settings-action w/ev-action-state (toasting-state-handler "Settings saved" "Save failed"))
+    (.addEventListener create-action   w/ev-action-state (action-state-handler "Task created"   "Create failed" close-and-reset-new-task!))
+    (.addEventListener edit-action     w/ev-action-state (action-state-handler "Task updated"   "Update failed"))
+    (.addEventListener settings-action w/ev-action-state (action-state-handler "Settings saved" "Save failed"))
     ;; Restore payload hygiene the hand-wired flows had: CREATE blank-strips (so an unset
     ;; status doesn't shadow the server default), SETTINGS coerces page-size to a number.
     ;; UPDATE is a PUT/merge — values pass AS-IS (a blank is a deliberate field-clear), so
