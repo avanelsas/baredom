@@ -40,3 +40,16 @@
   (doseq [field fields]
     (when-let [^js f (.querySelector form (str "[name='" field "']"))]
       (set! (.-value f) (str (gobj/get obj field))))))
+
+(defn fill-options!
+  "Replace `select`'s <option> children from `options` (each {:value :label}),
+  optionally prepending a leading empty-value option labelled `blank-label` (the
+  board filter's \"All statuses\"). Lets the status taxonomy live once in
+  demo-app.view instead of being re-spelled as static <option>s per <x-select>.
+  x-select re-syncs on slotchange, so adding options after upgrade is fine."
+  [^js select options blank-label]
+  (clear! select)
+  (when blank-label
+    (.appendChild select (doto (text-el! "option" blank-label) (.setAttribute "value" ""))))
+  (doseq [{:keys [value label]} options]
+    (.appendChild select (doto (text-el! "option" label) (.setAttribute "value" value)))))

@@ -1,6 +1,6 @@
 (ns demo-app.settings
   "Read-side wiring for the /settings route — a non-list read that fills a form
-  from GET /api/settings. The Save submit is the Phase-4 stub seam."
+  from GET /api/settings. The Save submit is wired live in write-side."
   (:require [demo-app.dom :as dom]
             [demo-app.view :as view]
             [demo-app.wiring :as w]))
@@ -30,5 +30,7 @@
 
 (defn init-settings! []
   (let [^js route (.querySelector js/document (w/route-selector w/path-settings))]
+    (when-let [^js ds (.querySelector route "[name='default-status']")]
+      (dom/fill-options! ds view/statuses nil))   ; data-driven status options
     (.addEventListener route w/ev-route-change on-route-change)
     (.addEventListener route w/ev-data-state   on-data-state)))

@@ -5,9 +5,9 @@ import { test, expect, type Page } from '@playwright/test';
 // projection of server state, that filtering never refetches, and that the
 // route's slotted body survives navigation (the identity-preservation invariant).
 //
-// The WRITE paths are deliberately NOT asserted — they ship unwired (the Phase-4
-// telemetry seams in src/demo_app/write_side.cljs), so the default demo is
-// read-only-correct and these assertions stay deterministic.
+// The WRITE paths (create/update/delete in src/demo_app/write_side.cljs) are wired
+// live, but these read-path assertions never trigger them, so the suite stays
+// deterministic against the seed data.
 
 type Task = { id: number; title: string; status: string; assignee: string; due: string };
 
@@ -41,6 +41,28 @@ test('stats reflect status counts', async ({ page, request }) => {
   for (const status of ['todo', 'doing', 'done']) {
     await expect(page.locator(`x-stat[data-status="${status}"]`)).toHaveAttribute('value', count(status));
   }
+});
+
+test('status filter options are data-driven from view/statuses', async ({ page }) => {
+  await page.goto('/tasks');
+  await page.waitForSelector('#tasks-table x-table-row');
+
+  // The <option>s are populated by board/init-board! from demo_app.view/statuses
+  // (index.html ships the <x-select> empty), so the taxonomy lives in one place.
+  // Read the LIGHT-DOM children natively — x-select clones options into its shadow
+  // <select>, which Playwright's selector engine would otherwise also match.
+  const options = await page.evaluate(() => {
+    const sel = document.querySelector('#status-filter')!;
+    return Array.from(sel.children)
+      .filter((c) => c.tagName === 'OPTION')
+      .map((o) => [(o as HTMLOptionElement).value, o.textContent?.trim()]);
+  });
+  expect(options).toEqual([
+    ['', 'All statuses'],
+    ['todo', 'To do'],
+    ['doing', 'Doing'],
+    ['done', 'Done'],
+  ]);
 });
 
 test('filtering is client-side and never refetches', async ({ page }) => {
