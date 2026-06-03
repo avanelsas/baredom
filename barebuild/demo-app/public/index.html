@@ -53,12 +53,8 @@
           <div class="toolbar">
             <x-search-field id="task-search" class="grow"
                             label="Filter tasks" placeholder="Filter by title…"></x-search-field>
-            <x-select id="status-filter" name="status-filter" placeholder="All statuses">
-              <option value="">All statuses</option>
-              <option value="todo">To do</option>
-              <option value="doing">Doing</option>
-              <option value="done">Done</option>
-            </x-select>
+            <!-- Options populated from demo_app.view/statuses (board/init-board!). -->
+            <x-select id="status-filter" name="status-filter" placeholder="All statuses"></x-select>
             <x-button id="new-task-btn" variant="primary">New task</x-button>
           </div>
 
@@ -87,16 +83,8 @@
             <x-form id="new-task-form">
               <x-form-field name="title" label="Title" type="text" required></x-form-field>
               <x-text-area name="description" label="Description" rows="3"></x-text-area>
-              <!-- NOTE: the todo/doing/done status set is repeated in the edit form,
-                   #status-filter, settings default-status, the x-stat row, and
-                   board/status-variant. Adding a status means updating ALL of them.
-                   Kept as explicit static markup on purpose: this is a demo whose value
-                   is readable, copy-pasteable HTML, not DRY generation. -->
-              <x-select name="status" placeholder="Status">
-                <option value="todo">To do</option>
-                <option value="doing">Doing</option>
-                <option value="done">Done</option>
-              </x-select>
+              <!-- Options populated from demo_app.view/statuses (board/init-board!). -->
+              <x-select name="status" placeholder="Status"></x-select>
               <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
               <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
               <div class="row-actions" style="margin-top:12px">
@@ -122,11 +110,8 @@
             <x-form id="edit-task-form" style="margin-top:16px">
               <x-form-field name="title" label="Title" type="text" required></x-form-field>
               <x-text-area name="description" label="Description" rows="3"></x-text-area>
-              <x-select name="status" placeholder="Status">
-                <option value="todo">To do</option>
-                <option value="doing">Doing</option>
-                <option value="done">Done</option>
-              </x-select>
+              <!-- Options populated from demo_app.view/statuses (detail/init-detail!). -->
+              <x-select name="status" placeholder="Status"></x-select>
               <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
               <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
               <div class="row-actions" style="margin-top:12px">
@@ -156,11 +141,8 @@
               <option value="dark">Dark</option>
             </x-select>
             <x-form-field name="page-size" label="Page size" type="number"></x-form-field>
-            <x-select name="default-status" placeholder="Default status">
-              <option value="todo">To do</option>
-              <option value="doing">Doing</option>
-              <option value="done">Done</option>
-            </x-select>
+            <!-- Options populated from demo_app.view/statuses (settings/init-settings!). -->
+            <x-select name="default-status" placeholder="Default status"></x-select>
             <div class="row-actions" style="margin-top:12px">
               <x-button type="submit" variant="primary">Save settings</x-button>
             </div>

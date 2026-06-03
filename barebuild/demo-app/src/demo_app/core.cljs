@@ -5,8 +5,8 @@
   read-side wiring (board / detail / settings). Registration happens AFTER wiring
   so a deep-load straight to a route still delivers the initial route-change the
   listeners depend on. The actual rendering and read logic lives in the per-route
-  namespaces; the write surfaces those namespaces build are wired by hand in a
-  later step (the Phase-4 telemetry seam)."
+  namespaces; the write surfaces those namespaces build are wired by hand in
+  write-side (the Phase-4 telemetry seam)."
   (:require
    [demo-app.board      :as board]
    [demo-app.detail     :as detail]
@@ -56,8 +56,8 @@
   (board/init-board!)
   (detail/init-detail!)
   (settings/init-settings!)
-  ;; Inert write-side seams — the Phase-4 telemetry surface (see write_side.cljs).
-  (write-side/attach-stubs!)
+  ;; Live write-side handlers — create / update / delete / settings (see write_side.cljs).
+  (write-side/attach-write-handlers!)
   (register-components!))
 
 (defn reload! []
