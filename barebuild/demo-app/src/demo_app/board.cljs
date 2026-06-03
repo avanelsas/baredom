@@ -9,8 +9,8 @@
   pure projection: DOM = f(broker value, live filter controls), with no app-level
   place-state of its own.
 
-  The WRITE surfaces (New-task modal + form, row Delete) are built but their
-  submit/delete glue is the Phase-4 stub seam, added in a later step."
+  The WRITE surfaces (New-task modal + form, row Delete) are wired live in
+  write-side (create + row-delete handlers)."
   (:require [clojure.string :as str]
             [goog.object :as gobj]
             [demo-app.dom :as dom]
@@ -99,7 +99,10 @@
 
 (defn- on-data-state
   "Toggle the loading/error surfaces from event.detail.state's phase; on `loaded`,
-  render from the broker value (render-board! reads the broker's .state — no stash)."
+  render from the broker value (render-board! reads the broker's .state — no stash).
+  The board reads the broker's RETAINED .state (not e.detail.state) because the
+  filter-change events also drive render-board! and carry no payload; detail, which
+  only renders on load, reads e.detail.state.data directly."
   [^js e]
   (let [^js route    (.-currentTarget e)
         ^js state    (.. e -detail -state)
@@ -129,6 +132,11 @@
         ^js search (.querySelector route w/id-task-search)
         ^js sel    (.querySelector route w/id-status-filter)
         ^js newbtn (.querySelector route "#new-task-btn")]
+    ;; Status options are data-driven (view/statuses) — populated here, not re-spelled
+    ;; as static <option>s. The filter carries an extra "All statuses" blank option.
+    (dom/fill-options! sel view/statuses "All statuses")
+    (when-let [^js create-status (.querySelector route "#new-task-form [name='status']")]
+      (dom/fill-options! create-status view/statuses nil))
     (.addEventListener route  w/ev-route-change  on-route-change)
     (.addEventListener route  w/ev-data-state    on-data-state)
     (.addEventListener search w/ev-search-input  on-filter-change)

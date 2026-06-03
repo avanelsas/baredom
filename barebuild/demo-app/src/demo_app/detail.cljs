@@ -5,8 +5,8 @@
   `barebuild-route-change` detail; we set the broker's `src` to /api/tasks/<id>.
   On `loaded` we project the task into the card and pre-fill the inline edit form.
 
-  The edit submit and the Delete action are built but inert — their fetch glue is
-  the Phase-4 stub seam, added in a later step."
+  The edit submit and the Delete action are wired live in write-side (update +
+  delete handlers)."
   (:require [goog.object :as gobj]
             [demo-app.dom :as dom]
             [demo-app.view :as view]
@@ -45,7 +45,11 @@
       (let [^js route (.-currentTarget e)]
         (set! (.-src (.querySelector route w/id-detail-data)) (str "/api/tasks/" id))))))
 
-(defn- on-data-state [^js e]
+(defn- on-data-state
+  ;; Renders straight from e.detail.state.data — unlike board, detail has no
+  ;; filter-change events that re-render with no payload, so it never needs to read
+  ;; the retained broker value.
+  [^js e]
   (let [^js route (.-currentTarget e)
         ^js state (.. e -detail -state)
         phase     (.-phase state)
@@ -57,7 +61,7 @@
       (render-detail! route (.-data state)))))
 
 (defn- on-delete-click
-  "Open the confirm dialogue. The DELETE fetch on confirm is the Phase-4 seam."
+  "Open the confirm dialogue. The DELETE fetch on confirm lives in write-side."
   [^js e]
   (let [^js route (-> e .-currentTarget (.closest w/tag-route))]
     (set! (.-open (.querySelector route w/id-delete-confirm)) true)))
@@ -65,6 +69,8 @@
 (defn init-detail! []
   (let [^js route  (.querySelector js/document (w/route-selector w/path-task))
         ^js delbtn (.querySelector route "#delete-task-btn")]
+    (when-let [^js edit-status (.querySelector route "#edit-task-form [name='status']")]
+      (dom/fill-options! edit-status view/statuses nil))   ; data-driven status options
     (.addEventListener route  w/ev-route-change on-route-change)
     (.addEventListener route  w/ev-data-state   on-data-state)
     (.addEventListener delbtn w/ev-press        on-delete-click)))

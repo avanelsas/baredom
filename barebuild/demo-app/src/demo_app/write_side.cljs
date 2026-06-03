@@ -1,35 +1,26 @@
 (ns demo-app.write-side
-  "★ THE PHASE-4 TELEMETRY SEAM — this is the file you (a Phase-4 participant) edit. ★
+  "Write-side wiring for the demo — the live create / update / delete / settings
+  handlers (create modal, detail edit, delete confirm, board-row delete, settings).
 
-  BareBuild V1 ships the READ side only (router / route / data). It ships NO
-  write-side elements: no <barebuild-action>, no <barebuild-bind>, no
-  <barebuild-invalidate-on>. That is deliberate. The write-side contracts will be
-  designed FROM what people actually write here — not guessed first. So the demo's
-  create / update / delete surfaces are built (forms, buttons, a confirm dialogue)
-  but their submit→fetch→DOM→invalidate glue is left as the five inert stubs below.
+  BareBuild V1 ships only the READ side (router / route / data); it ships NO
+  write-side elements (<barebuild-action> / <barebuild-bind> / <barebuild-invalidate-on>
+  are deferred). So this demo wires its writes BY HAND with addEventListener + fetch —
+  and that hand-wiring was the Phase-4 telemetry that informed the write-side design,
+  now recorded in barebuild/docs/write-side-design-notes.md. The five questions it
+  answered, for reference:
 
-  Your job: make these actually work, however feels natural to you. Then tell us
-  how you did it. The backend (server/serve.clj, `bb serve`) already implements the
-  write endpoints, so your fetch will round-trip:
+    1. submit → fetch: hook x-form-submit; POST/PUT/DELETE via api/request. Payload is
+       event.detail.values, blank-stripped on CREATE only (without-blanks).
+    2. response → DOM: the response is NOT read — the server is re-read. Each handler
+       dispatches barebuild-data-refresh at the backing broker (or navigates) and the
+       existing read pipeline reprojects. No DOM splicing, no app-level place-state.
+    3. invalidation: the writer knows its reader by id and refreshes exactly that broker
+       (#tasks-data / #detail-data / #settings-data); delete navigates, which re-reads.
+    4. re-frame: not reached for.
+    5. renderer: no Hiccup renderer wanted — refetch-and-reproject built no DOM by hand.
 
-    POST   /api/tasks            create   (body: JSON task)        → 201 task
-    PUT    /api/tasks/:id        update   (body: JSON partial)     → 200 task
-    DELETE /api/tasks/:id        delete                            → 204
-    PUT    /api/settings         save     (body: JSON partial)     → 200 settings
-
-  The five questions we are watching (also in barebuild/docs/write-side-design-notes.md):
-    1. submit → fetch: how did you turn the submit into a request? what payload shape?
-    2. response → DOM: how did you make the read reflect the write? re-set `src` to
-       re-read? splice the row directly? dispatch `barebuild-data-refresh`? a refs map?
-    3. invalidation: how did you decide the /api/tasks read was stale after a write?
-    4. re-frame: did you reach for it? at what point, and for what?
-    5. renderer: did you wish for a Hiccup renderer? what shape would you have wanted?
-
-  DON'T copy barebuild/docs/write-side-sketch.md — that is our PRIOR guess; we want
-  your unbiased version to compare against it. Write what you'd write in a real app.
-
-  Until you fill these in, every stub just shows a toast and changes nothing, so the
-  demo stays read-only-correct."
+  The backend (server/serve.clj, `bb serve`) implements the endpoints:
+    POST /api/tasks · PUT /api/tasks/:id · DELETE /api/tasks/:id · PUT /api/settings"
   (:require [demo-app.wiring :as w]
             [demo-app.api :as api]))
 
@@ -175,10 +166,10 @@
                (notify! "Settings saved" "success")))
       (.catch (on-failure "Save failed"))))
 
-(defn attach-stubs!
-  "Attach the inert write-side seams. Called from core/init! alongside the
+(defn attach-write-handlers!
+  "Attach the live write-side handlers. Called from core/init! alongside the
   read-side wiring (before component registration, so the listeners are live when
-  the elements upgrade). Each handler is a no-op + toast until you wire it."
+  the elements upgrade). Each handler performs its write, then re-reads the server."
   []
   (let [^js new-form      (.querySelector js/document w/id-new-task-form)
         ^js edit-form     (.querySelector js/document w/id-edit-task-form)
