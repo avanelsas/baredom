@@ -2,6 +2,16 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.0.0-alpha.0] - 2026-06-03
+
+**Pre-release — published on the npm `alpha` dist-tag (`npm install @vanelsas/baredom@alpha`). The stable `latest` line is unaffected, and `^3.x` ranges never resolve this version.** First preview of the BareBuild **write-side** coordination elements, designed-by-use from the Phase-4 demo port. These are **experimental — attribute shapes may change before 4.0.0** (the no-selectors / values-not-places spine will not). See `barebuild/docs/write-side-design-notes.md`.
+
+### Added — write-side ALPHA
+
+- **`<barebuild-action>`** — wraps a submit emitter by containment (a descendant dispatching the configured `submit-event`), JSON-POST/PUT/DELETEs the values, and publishes `.state` + a `barebuild-action-state {name, state}` event per phase transition. Optional `.valuesTransform` property for payload hygiene the action can't itself know (blank-stripping, numeric coercion).
+- **`<barebuild-invalidate-on>`** — placed as a child of a source; on a `when-phase`/`when-name` match it dispatches the document-level `barebuild-invalidate {src}` protocol.
+- **`<barebuild-data>`** now also listens at document for `barebuild-invalidate` and refetches when `detail.src` matches its own `src` by exact `URL.pathname` — the invalidation substrate (additive; the read-side contract is unchanged).
+
 ## [3.3.0] - 2026-05-26
 
 Three new framework adapters ship alongside the existing React and Angular adapters: **Vue 3**, **Svelte 5**, and **SolidJS** are now officially supported. BareDOM users of every major JS framework can now install a typed wrapper package that adds framework-idiomatic props, events, and ref handling on top of the same underlying web components.
