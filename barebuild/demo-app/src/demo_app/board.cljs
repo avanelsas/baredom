@@ -95,7 +95,7 @@
   [^js e]
   (when (= w/path-tasks (.. e -detail -path))
     (let [^js route (.-currentTarget e)]
-      (set! (.-src (.querySelector route w/id-tasks-data)) "/api/tasks"))))
+      (set! (.-src (.querySelector route w/id-tasks-data)) (w/api "/api/tasks")))))
 
 (defn- on-data-state
   "Toggle the loading/error surfaces from event.detail.state's phase; on `loaded`,

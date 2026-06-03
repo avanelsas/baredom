@@ -5,7 +5,35 @@
   just never fires, with no error — and the same risk applies here. Several ids
   and paths are also spelled in more than one place; keeping them here de-complects
   the spelling of a wire from the wiring. (File-local, single-use ids stay inline
-  in their namespace — they are not duplicated, and they read 1:1 with index.html.)")
+  in their namespace — they are not duplicated, and they read 1:1 with index.html.)"
+  (:require [clojure.string :as str]))
+
+;; ── API base (cross-origin / backend-swap switch) ─────────────────────────────
+;; API URLs are RELATIVE by default ("") → they resolve to the PAGE origin, exactly
+;; what single-origin `bb serve` needs. Pass `?api=<origin>` (e.g.
+;; ?api=http://localhost:3001) to drive a SEPARATE backend cross-origin — the
+;; independent `bb serve-api` server (see server/API-CONTRACT.md).
+;;
+;; This is the SINGLE place the base is read and normalized — there is no JS boot
+;; script and no `window` global. Read once at load (a backend swap is a page reload,
+;; not a live mutation). A trailing slash is stripped so `(str api-base "/api/x")` can
+;; never produce a double slash (which the server 404s — and which still origin-matches
+;; the invalidate, so the failure would be silent). Every API URL flows through `api`
+;; below, so read brokers, write actions, and invalidate-on srcs all prefix uniformly.
+(def api-base
+  (let [raw  (or (.get (js/URLSearchParams. (.. js/window -location -search)) "api") "")
+        base (str/replace raw #"/+$" "")]
+    (when (and (seq base) (not (str/includes? base "://")))
+      (js/console.warn (str "demo-app: ?api=\"" base "\" has no scheme; it resolves against the "
+                            "page origin, not a separate backend. Use e.g. http://localhost:3001")))
+    base))
+
+(defn api
+  "Prefix an API path with the configured base (empty default = relative URL → page
+  origin). The single home for API-URL construction so a cross-origin swap stays
+  uniform across the read brokers, the write actions, and the invalidate-on srcs."
+  [path]
+  (str api-base path))
 
 ;; ── Events ───────────────────────────────────────────────────────────────────
 ;; Orchestration (barebuild-*) — listened for on the route element.

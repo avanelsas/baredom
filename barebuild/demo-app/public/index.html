@@ -178,5 +178,13 @@
 
     <!-- Global toast region (persists across routes). Write outcomes surface here. -->
     <x-toaster id="toaster" position="bottom-end"></x-toaster>
+
+    <!-- Backend switch (demonstrates BareBuild is server-agnostic): pass ?api=<origin>
+         (e.g. ?api=http://localhost:3001) to drive a SEPARATE, cross-origin backend —
+         the independent `bb serve-api` server. No ?api → relative URLs → single-origin
+         `bb serve`. The base is read + normalized once in demo-app.wiring/api-base and
+         every API URL (read broker src, write action, invalidate-on src) flows through
+         w/api — so the static action/invalidate URLs below are the relative default and
+         write_side re-points them only when a cross-origin ?api is set. -->
   </body>
 </html>

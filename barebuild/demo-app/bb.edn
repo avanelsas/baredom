@@ -11,6 +11,9 @@
          :task     (do (shell "npm install")
                        (shell "npx shadow-cljs release app")
                        (apply serve/-main *command-line-args*))}
+  serve-api {:doc      "Independent API-ONLY backend (CORS) on http://localhost:3001 — demonstrates BareBuild is server-agnostic. Serves no static files; pair with a page on another origin via ?api=http://localhost:3001."
+             :requires ([serve-api])
+             :task     (apply serve-api/-main *command-line-args*)}
   e2e   {:doc  "Run the Playwright read-path smoke. playwright.config boots `bb serve`."
          :task (do (shell "npm install")
                    ;; Browsers for a portable / CI run; cached after first install.

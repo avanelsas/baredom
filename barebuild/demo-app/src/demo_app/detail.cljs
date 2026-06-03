@@ -53,7 +53,7 @@
   [^js e]
   (let [id (gobj/get (.. e -detail -params) "id")]
     (when (and id (= (str w/path-tasks "/" id) (.. e -detail -path)))
-      (point-edit-at! (.-currentTarget e) (str "/api/tasks/" id)))))
+      (point-edit-at! (.-currentTarget e) (w/api (str "/api/tasks/" id))))))
 
 (defn- on-data-state
   ;; Renders straight from e.detail.state.data — unlike board, detail has no

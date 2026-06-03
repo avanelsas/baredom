@@ -38,7 +38,7 @@
             [demo-app.wiring :as w]
             [demo-app.api :as api]))
 
-(def ^:private api-tasks "/api/tasks")
+(def ^:private api-tasks (w/api "/api/tasks"))
 
 (defn- api-task
   "The single-task endpoint for `id` — used by the board row delete, whose id comes
@@ -182,6 +182,17 @@
                    (notify! (str "Task #" id " deleted") "success")))
           (.catch (on-failure "Delete failed"))))))
 
+(defn- point-action-at!
+  "Re-point a declarative <barebuild-action> and its child <barebuild-invalidate-on> at
+   `endpoint` (set as attributes; read lazily by the elements after upgrade). Used only
+   in cross-origin mode so create/settings honour the ?api base through the SAME w/api
+   chokepoint as everything else — no separate JS prefixer. In the default single-origin
+   mode the HTML's relative literals stand as the declarative source, untouched."
+  [^js action endpoint]
+  (.setAttribute action "action" endpoint)
+  (when-let [^js inv (.querySelector action "barebuild-invalidate-on")]
+    (.setAttribute inv "src" endpoint)))
+
 (defn attach-write-handlers!
   "Attach the live write-side wiring. Called from core/init! alongside the read-side
   wiring (before component registration, so the listeners are live when the elements
@@ -205,6 +216,12 @@
     ;; a plain public property (no shadowed accessor), read by the action at submit time.
     (set! (.-valuesTransform create-action)   without-blanks)
     (set! (.-valuesTransform settings-action) (fn settings-transform [^js v] (with-number v "page-size")))
+    ;; Cross-origin only: re-point the declarative create/settings actions (+ their
+    ;; invalidate-on srcs) at the ?api base via w/api — the single prefixer. The default
+    ;; single-origin mode leaves the HTML's relative literals as-is.
+    (when (seq w/api-base)
+      (point-action-at! create-action   (w/api "/api/tasks"))
+      (point-action-at! settings-action (w/api "/api/settings")))
     ;; Deletes: hand-wired triggers, protocol coordination.
     (.addEventListener confirm w/ev-confirm on-delete-confirm!)
     (.addEventListener table   w/ev-press   on-row-delete!)))
