@@ -10,6 +10,35 @@ Non-visual element that wraps a *submit emitter* (any **descendant element** dis
 
 ---
 
+## Rendering & placement (alpha-port corrections)
+
+"Non-visual" is true of the *element itself* but it **wraps visible content**, so unlike the
+leaf brokers (`barebuild-data`, `barebuild-invalidate-on`) it must **render its slotted
+subtree**:
+
+- Its shadow root carries a **`<slot>`** (`ensure-shadow! slot? = true`). Without one the
+  wrapped form stays in the light DOM and *functions* (events, `.value`, submit all work) but
+  **never renders** — a 0×0 trap the alpha port hit. A content-wrapper cannot be cloned from a
+  childless broker.
+- `:host` is **`display:block`**, not `display:none` (which hides the content) and not
+  `display:contents` (which collapses the content when the action is a flex-item, e.g. inside a
+  modal's flex dialog).
+- **Placement:** when the emitter is slotted into a layout host that styles its slotted
+  children (e.g. `<x-modal>`), wrap the **host**, not the inner form — wrapping the form makes
+  the *action* the host's slotted child and breaks its `::slotted` layout. The composed submit
+  event still bubbles out of the host to the action. (`<barebuild-action><x-modal><x-form>…`)
+
+## Coordination is a protocol, not this element's job
+
+This element publishes `barebuild-action-state`; **invalidation and navigation are separate
+document-level protocols** — `barebuild-invalidate {src}` (a matching `<barebuild-data>`
+refetches) and `barebuild-navigate {path}`. `<barebuild-invalidate-on>` is one declarative
+emitter of the first, but **any code can dispatch them** — so a hand-wired write the action
+can't drive (a delete via a confirm dialogue, a delegated row button) coordinates *identically*
+to a declarative one. Treat the two protocols as the public contract; the elements are sugar.
+
+---
+
 ## Tag
 
 ```html

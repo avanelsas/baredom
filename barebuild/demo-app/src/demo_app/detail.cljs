@@ -42,8 +42,14 @@
   [^js e]
   (let [id (gobj/get (.. e -detail -params) "id")]
     (when (and id (= (str w/path-tasks "/" id) (.. e -detail -path)))
-      (let [^js route (.-currentTarget e)]
-        (set! (.-src (.querySelector route w/id-detail-data)) (str "/api/tasks/" id))))))
+      (let [^js route (.-currentTarget e)
+            endpoint  (str "/api/tasks/" id)]
+        (set! (.-src (.querySelector route w/id-detail-data)) endpoint)
+        ;; Write-side ALPHA: point the edit action (PUT) + its invalidate-on at this task's
+        ;; endpoint. The dynamic /api/tasks/:id URL is the one imperative bit the declarative
+        ;; update needs — the action's `action` attribute can't be a static literal here.
+        (set! (.-action (.querySelector route "#edit-action")) endpoint)
+        (set! (.-src (.querySelector route "#edit-invalidate")) endpoint)))))
 
 (defn- on-data-state
   ;; Renders straight from e.detail.state.data — unlike board, detail has no

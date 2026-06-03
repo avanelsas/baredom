@@ -298,26 +298,50 @@ hand-wiring (a listener, no wrapper) never imposes.
   the server default; the action can't, so the ported create writes `status: ""`. There is no
   values-transform hook. (Settings' `with-number` coercion is the same class of gap.)
 
-### Flows NOT ported, with the reason (the analysis held)
-- **Update / settings** (form flows): portable like create, but `action`/`src` are **dynamic**
-  (`/api/tasks/:id`) and must be set imperatively per route — and settings hits the number-coercion
-  gap.
-- **Delete (detail confirm)** and **delete (board row):** **poor fit.** The triggers carry **no
-  values** (a confirm event; a delegated row button), so the action's values-required submit
-  path skips; and the row case is dynamically-rendered per-id. Event delegation (hand-wired) is
-  the right tool; the containment-action is not.
+### The full port (all five flows) — what each became
+The whole write side was ported (Playwright e2e 14/14 against `bb serve`):
+- **Create / Update / Settings — DECLARATIVE.** Each is a `<barebuild-action>` wrapping the
+  form + a child `<barebuild-invalidate-on>`. `write_side` shrank to one
+  `barebuild-action-state` listener per flow doing only the uncovered side-effects (create:
+  close modal + reset + toast; update/settings: toast). **Update needs one imperative line**
+  — `detail/on-route-change` sets the action's dynamic `action`/`src` to `/api/tasks/:id`
+  (the action attribute can't be a static literal for a param route).
+- **Delete (detail) / Delete (board row) — HAND-WIRED TRIGGER, PROTOCOL COORDINATION.** The
+  action can't drive these (a confirm dialogue and N per-id row buttons carry no form values;
+  the row case is a dynamic list → event delegation). So the **trigger + DELETE stay
+  hand-wired**, but the **coordination goes through the same document protocols the
+  declarative flows use**: detail-delete dispatches `barebuild-navigate {path}`, row-delete
+  dispatches `barebuild-invalidate {src}` — the *identical* event `<barebuild-invalidate-on>`
+  emits. So the board refetches the same way whether the write was declarative or hand-wired.
 
-### Provisional verdict
-The declarative path is **real and worth it for the canonical "form POST → refetch a list"**
-— once the element bugs above are fixed. But across a real write surface it is **hybrid**:
-declarative for fetch+invalidate, imperative for side-effects (toast/modal/reset/navigate),
-dynamic URLs, payload cleaning, and non-form triggers. Whether the markup wrapper + the
-`barebuild-action-state` listener is *nicer to write* than the hand-wired `fetch`-then-refresh
-is a genuine toss-up for anything past the canonical flow. The strongest concrete asks the port
-surfaced, if these graduate: (a) a **values-transform hook** on the action (blanks/coercion),
-(b) first-class **dynamic `action`/`src`** ergonomics, (c) a **no-values / imperative trigger**
-path for deletes. Without those, the elements cover the easy half and leave the awkward half
-hand-wired.
+### The key reframe the port produced: invalidate/navigate are PROTOCOLS, the elements are sugar
+`barebuild-invalidate {src}` (document event; a matching `<barebuild-data>` self-matches by
+URL and refetches) and `barebuild-navigate {path}` are **public protocols any code can emit**.
+`<barebuild-invalidate-on>` is just a declarative emitter of the first. Once you see this,
+"DELETE doesn't fit `<barebuild-action>`" stops being a gap: DELETE was never an action-shaped
+problem (no form, no values, navigate-or-remove). Its **trigger** is correctly hand-wired; its
+**coordination** is uniformly declarative. The demo ends coherent — every write
+invalidates-or-navigates identically; only the trigger varies, by necessity.
+
+### Residual gaps (real, unfixed by the port)
+- **Payload cleanliness.** The action JSON-encodes `event.detail.values` **as-is** — no
+  transform hook. So ported create writes `status: ""` (the `without-blanks` job) and ported
+  settings persists `page-size` as a **string** (the `with-number` coercion). Both regressions
+  vs. the hand-wired version; both need a values-transform hook the element lacks.
+- **Slotted-wrapper placement.** Mind where the wrapper goes (wrap the *modal*, not the form)
+  or `::slotted` layout breaks — a cost hand-wiring (a listener, no wrapper) never imposes.
+
+### Verdict
+The declarative path is **real and a genuine win for "form → server → refetch a list/record"**
+(create/update/settings), once the two element bugs are fixed. The **protocol reframe makes the
+whole surface coherent**, including the hand-wired deletes. What remains hybrid is intrinsic:
+the *trigger* is declarative only for forms (confirm dialogues and dynamic-list buttons are
+correctly hand-wired), and the *payload* still needs a transform the action can't do. The three
+concrete asks if these graduate: (a) **document `barebuild-invalidate` / `barebuild-navigate` as
+public protocols** with the elements as sugar (smallest, highest-value commitment — it's what
+made delete coherent); (b) a **values-transform hook** on the action (blanks/coercion); (c)
+accept that **non-form triggers stay hand-wired** and lean on (a) for their coordination rather
+than stretching the action to swallow them.
 
 ---
 

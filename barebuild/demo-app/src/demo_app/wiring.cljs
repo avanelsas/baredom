@@ -14,6 +14,7 @@
 (def ev-data-refresh "barebuild-data-refresh")  ; dispatched AT a <barebuild-data> to refetch its src
 (def ev-navigate     "barebuild-navigate")      ; dispatched AT the router to SPA-navigate without a click
 (def ev-action-state "barebuild-action-state")  ; emitted by a <barebuild-action> on each phase transition
+(def ev-invalidate   "barebuild-invalidate")    ; document-level protocol: a matching <barebuild-data> refetches
 ;; Component events the demo reacts to.
 (def ev-search-input  "x-search-field-input")
 (def ev-select-change "select-change")

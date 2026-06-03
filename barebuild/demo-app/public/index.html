@@ -116,19 +116,26 @@
             <h1 id="detail-title">Task</h1>
             <dl id="detail-fields"></dl>
 
-            <!-- Inline edit surface: built here, submit/delete wiring is the stub seam. -->
-            <x-form id="edit-task-form" style="margin-top:16px">
-              <x-form-field name="title" label="Title" type="text" required></x-form-field>
-              <x-text-area name="description" label="Description" rows="3"></x-text-area>
-              <!-- Options populated from demo_app.view/statuses (detail/init-detail!). -->
-              <x-select name="status" placeholder="Status"></x-select>
-              <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
-              <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
-              <div class="row-actions" style="margin-top:12px">
-                <x-button type="submit" variant="primary">Save</x-button>
-                <x-button id="delete-task-btn" variant="danger" type="button">Delete</x-button>
-              </div>
-            </x-form>
+            <!-- Inline edit surface. Write-side ALPHA: barebuild-action PUTs the edited
+                 fields; its `action` + the invalidate-on `src` are DYNAMIC (/api/tasks/:id),
+                 set by detail/on-route-change. write_side toasts via barebuild-action-state.
+                 The Delete button (type=button) stays hand-wired (confirm → DELETE → navigate). -->
+            <barebuild-action id="edit-action" name="update-task"
+                              method="PUT" submit-event="x-form-submit">
+              <x-form id="edit-task-form" style="margin-top:16px">
+                <x-form-field name="title" label="Title" type="text" required></x-form-field>
+                <x-text-area name="description" label="Description" rows="3"></x-text-area>
+                <!-- Options populated from demo_app.view/statuses (detail/init-detail!). -->
+                <x-select name="status" placeholder="Status"></x-select>
+                <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
+                <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
+                <div class="row-actions" style="margin-top:12px">
+                  <x-button type="submit" variant="primary">Save</x-button>
+                  <x-button id="delete-task-btn" variant="danger" type="button">Delete</x-button>
+                </div>
+              </x-form>
+              <barebuild-invalidate-on id="edit-invalidate" when-phase="success"></barebuild-invalidate-on>
+            </barebuild-action>
           </x-card>
 
           <x-cancel-dialogue id="delete-confirm"
@@ -144,19 +151,27 @@
           <h1>Settings</h1>
           <x-alert id="settings-error" type="error" style="display:none" dismissible></x-alert>
 
-          <x-form id="settings-form">
-            <x-select name="theme" placeholder="Theme">
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </x-select>
-            <x-form-field name="page-size" label="Page size" type="number"></x-form-field>
-            <!-- Options populated from demo_app.view/statuses (settings/init-settings!). -->
-            <x-select name="default-status" placeholder="Default status"></x-select>
-            <div class="row-actions" style="margin-top:12px">
-              <x-button type="submit" variant="primary">Save settings</x-button>
-            </div>
-          </x-form>
+          <!-- Write-side ALPHA: barebuild-action PUTs /api/settings (static URL) and
+               invalidate-on refetches it on success. write_side toasts via action-state.
+               NOTE: page-size persists as a string — the action encodes values as-is and
+               can't coerce (the hand-wired save used with-number). A documented gap. -->
+          <barebuild-action id="settings-action" name="save-settings"
+                            action="/api/settings" method="PUT" submit-event="x-form-submit">
+            <x-form id="settings-form">
+              <x-select name="theme" placeholder="Theme">
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </x-select>
+              <x-form-field name="page-size" label="Page size" type="number"></x-form-field>
+              <!-- Options populated from demo_app.view/statuses (settings/init-settings!). -->
+              <x-select name="default-status" placeholder="Default status"></x-select>
+              <div class="row-actions" style="margin-top:12px">
+                <x-button type="submit" variant="primary">Save settings</x-button>
+              </div>
+            </x-form>
+            <barebuild-invalidate-on when-phase="success" src="/api/settings"></barebuild-invalidate-on>
+          </barebuild-action>
         </barebuild-route>
       </main>
     </barebuild-router>

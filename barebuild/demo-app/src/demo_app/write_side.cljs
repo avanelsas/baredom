@@ -2,13 +2,22 @@
   "Write-side wiring for the demo — the live create / update / delete / settings
   handlers (create modal, detail edit, delete confirm, board-row delete, settings).
 
-  ★ ALPHA-BRANCH HYBRID ★ This branch ships the experimental write-side elements, and
-  CREATE is ported onto them: <barebuild-action> (POST + submit→fetch) wraps the new-task
-  modal in index.html and <barebuild-invalidate-on> refetches /api/tasks on success — so
-  on-create-state! below only reacts to barebuild-action-state for the UI side-effects the
-  elements do NOT cover (close modal, reset, toast). UPDATE / DELETE / SETTINGS remain
-  hand-wired (addEventListener + fetch) — see the port evaluation in
-  barebuild/docs/write-side-design-notes.md for why (dynamic URLs, no-values triggers).
+  ★ ALPHA-BRANCH HYBRID ★ This branch ships the experimental write-side elements, and the
+  three FORM flows are ported onto them:
+    • CREATE   — <barebuild-action> wraps the new-task modal (POST /api/tasks).
+    • UPDATE   — <barebuild-action> wraps the edit form (PUT /api/tasks/:id; the dynamic
+                 URL is set in detail/on-route-change).
+    • SETTINGS — <barebuild-action> wraps the settings form (PUT /api/settings).
+  Each has a child <barebuild-invalidate-on> that refetches on success. So for these,
+  write_side only reacts to barebuild-action-state for the UI side-effects the elements
+  do NOT cover (close modal, reset, toast).
+
+  The two DELETES stay hand-wired — the action can't drive them (a confirm dialogue and N
+  per-id row buttons carry no form values) — but they COORDINATE through the same document
+  protocols the declarative flows use: detail-delete dispatches `barebuild-navigate`,
+  row-delete dispatches `barebuild-invalidate {src}`. So every write invalidates-or-navigates
+  the same way; only the trigger differs. See the port evaluation in
+  barebuild/docs/write-side-design-notes.md.
 
   The original (V1) hand-wiring was the Phase-4 telemetry that informed the design. The
   five questions it answered, for reference:
@@ -28,8 +37,7 @@
   (:require [demo-app.wiring :as w]
             [demo-app.api :as api]))
 
-(def ^:private api-tasks    "/api/tasks")
-(def ^:private api-settings "/api/settings")
+(def ^:private api-tasks "/api/tasks")
 
 (defn- api-task
   "The single-task endpoint for `id` — used by the board row delete, whose id comes
@@ -47,11 +55,15 @@
         ^js broker (.querySelector route w/id-detail-data)]
     (.-src broker)))
 
-(defn- refresh-data!
-  "Ask a <barebuild-data> broker (by id selector) to re-run its current src fetch."
-  [selector]
-  (when-let [^js el (.querySelector js/document selector)]
-    (.dispatchEvent el (js/CustomEvent. w/ev-data-refresh))))
+(defn- dispatch-invalidate!
+  "Dispatch the document-level `barebuild-invalidate {src}` protocol — the SAME signal
+   `<barebuild-invalidate-on>` emits for the declarative flows. Any <barebuild-data>
+   whose src matches refetches. Lets a hand-wired write (a delete the action can't drive)
+   invalidate exactly like the declarative ones, so the coordination stays uniform."
+  [src]
+  (.dispatchEvent js/document
+                  (js/CustomEvent. w/ev-invalidate
+                                   #js {:bubbles true :composed true :detail #js {:src src}})))
 
 (defn- navigate!
   "Programmatic SPA navigation: dispatch the router's `barebuild-navigate` AT the
@@ -63,16 +75,6 @@
     (.dispatchEvent router (js/CustomEvent. w/ev-navigate
                                             #js {:bubbles true :composed true
                                                  :detail  #js {:path path}}))))
-
-(defn- with-number
-  "Return a shallow copy of `values` with key `k` parsed to an integer (left as-is if
-   unparseable). x-form reports a number control's value as a string; on a PUT/merge that
-   would otherwise flip the server field's type (e.g. page-size 25 → \"25\") on first save."
-  [^js values k]
-  (let [out (js/Object.assign #js {} values)
-        n   (js/parseInt (aget out k) 10)]
-    (when-not (js/isNaN n) (aset out k n))
-    out))
 
 (defn- toaster [] (.querySelector js/document "#toaster"))
 
@@ -105,68 +107,61 @@
     "error"   (notify! "Create failed" "error")
     nil))
 
-;; ── 2. UPDATE — detail inline edit form submit ────────────────────────────────
-(defn- on-edit-submit! [^js e]
-  (.preventDefault e)
-  ;; PUT the edited fields AS-IS (no blank-stripping): this is a merge endpoint, so a
-  ;; blank field is a deliberate "clear it" — dropping blanks would make that clear
-  ;; silently fail. Then refresh the detail broker so the card + form re-render from the
-  ;; server. The board isn't mounted on this route; it re-reads on its next activation.
-  (-> (api/request "PUT" (detail-endpoint e) (.. e -detail -values))
-      (.then (fn updated [_updated]
-               (refresh-data! w/id-detail-data)   ;; detail re-reads /api/tasks/:id → re-renders
-               (notify! "Task updated" "success")))
-      (.catch (on-failure "Update failed"))))
+;; ── 2 + 5. UPDATE / SETTINGS — DECLARATIVE (barebuild-action + invalidate-on) ──
+;; The elements PUT and refetch (#edit-action / #settings-action in index.html; the edit
+;; action's dynamic /api/tasks/:id URL is set in detail/on-route-change). The only side-
+;; effect they don't cover is the result toast — so write_side just reacts to the state.
+(defn- toasting-state-handler
+  "A barebuild-action-state listener that toasts `success-msg` / `error-msg` by phase.
+   Shared by update + settings (their only uncovered side-effect is the toast)."
+  [success-msg error-msg]
+  (fn on-state [^js e]
+    (case (.. e -detail -state -phase)
+      "success" (notify! success-msg "success")
+      "error"   (notify! error-msg "error")
+      nil)))
 
-;; ── 3. DELETE (detail) — confirm dialogue confirmed ───────────────────────────
+;; ── 3. DELETE (detail) — imperative trigger + navigate protocol ───────────────
+;; The trigger is a confirm dialogue (no values, two-step) → hand-wired. The deleted
+;; task is gone, so the success effect is navigate-away (not refetch — that would 404);
+;; navigating to /tasks re-reads the board for free via route activation.
 (defn- on-delete-confirm! [^js e]
-  ;; The dialogue closes itself on confirm (x-cancel-dialogue do-confirm! → close),
-  ;; so we only DELETE, then navigate back to /tasks — which re-reads the board.
+  ;; The dialogue closes itself on confirm (x-cancel-dialogue do-confirm! → close).
   (-> (api/request "DELETE" (detail-endpoint e) nil)
       (.then (fn deleted [_deleted]
                (navigate! w/path-tasks)           ;; /tasks activation re-reads the board
                (notify! "Task deleted" "success")))
       (.catch (on-failure "Delete failed"))))
 
-;; ── 4. DELETE (board row) — per-row Delete button ─────────────────────────────
+;; ── 4. DELETE (board row) — imperative trigger + invalidate protocol ──────────
+;; Per-row Delete buttons are a dynamic list → event delegation (the action can't wrap
+;; N per-id buttons). The DELETE is hand-wired, but the refetch goes through the SAME
+;; `barebuild-invalidate` protocol the declarative flows use — so coordination is uniform.
 (defn- on-row-delete! [^js e]
   (when-let [^js btn (some-> (.-target e) (.closest (str "[" w/attr-delete-id "]")))]
     (let [id (.getAttribute btn w/attr-delete-id)]
-      ;; Already on /tasks → no navigation; just DELETE and refresh the board read
-      ;; so the row disappears (DOM = f(broker value, filters), untouched by hand).
       (-> (api/request "DELETE" (api-task id) nil)
           (.then (fn row-deleted [_deleted]
-                   (refresh-data! w/id-tasks-data)
+                   (dispatch-invalidate! api-tasks)   ;; board self-matches src → refetches
                    (notify! (str "Task #" id " deleted") "success")))
           (.catch (on-failure "Delete failed"))))))
 
-;; ── 5. SETTINGS — settings form submit ────────────────────────────────────────
-(defn- on-settings-save! [^js e]
-  (.preventDefault e)
-  ;; PUT the settings AS-IS but coerce page-size to a number: x-form reports it as a
-  ;; string, and the server merges, so an uncoerced save flips the stored field
-  ;; number→string. Then refresh the settings broker so the form reflects the PERSISTED
-  ;; value (server is truth — catches any server-side normalization).
-  (-> (api/request "PUT" api-settings (with-number (.. e -detail -values) "page-size"))
-      (.then (fn saved [_saved]
-               (refresh-data! w/id-settings-data)  ;; re-read /api/settings → re-fill form
-               (notify! "Settings saved" "success")))
-      (.catch (on-failure "Save failed"))))
-
 (defn attach-write-handlers!
-  "Attach the live write-side handlers. Called from core/init! alongside the
-  read-side wiring (before component registration, so the listeners are live when
-  the elements upgrade). Each handler performs its write, then re-reads the server."
+  "Attach the live write-side wiring. Called from core/init! alongside the read-side
+  wiring (before component registration, so the listeners are live when the elements
+  upgrade). CREATE / UPDATE / SETTINGS are DECLARATIVE — the barebuild-action elements
+  do the fetch + invalidation; we only react to barebuild-action-state for the UI side-
+  effects they don't cover. The two DELETES are hand-wired triggers (no values / dynamic
+  rows) that coordinate via the same navigate / invalidate protocols."
   []
-  (let [^js create-action (.querySelector js/document "#create-action")
-        ^js edit-form     (.querySelector js/document w/id-edit-task-form)
-        ^js confirm       (.querySelector js/document w/id-delete-confirm)
-        ^js table         (.querySelector js/document w/id-tasks-table)
-        ^js settings-form (.querySelector js/document w/id-settings-form)]
-    ;; CREATE is declarative — we only listen to the action's published state.
-    (.addEventListener create-action w/ev-action-state on-create-state!)
-    (.addEventListener edit-form     w/ev-form-submit on-edit-submit!)
-    (.addEventListener confirm       w/ev-confirm     on-delete-confirm!)
-    ;; Board row Delete buttons are delegated through the table (press bubbles).
-    (.addEventListener table         w/ev-press       on-row-delete!)
-    (.addEventListener settings-form w/ev-form-submit on-settings-save!)))
+  (let [^js create-action   (.querySelector js/document "#create-action")
+        ^js edit-action     (.querySelector js/document "#edit-action")
+        ^js settings-action (.querySelector js/document "#settings-action")
+        ^js confirm         (.querySelector js/document w/id-delete-confirm)
+        ^js table           (.querySelector js/document w/id-tasks-table)]
+    (.addEventListener create-action   w/ev-action-state on-create-state!)
+    (.addEventListener edit-action     w/ev-action-state (toasting-state-handler "Task updated" "Update failed"))
+    (.addEventListener settings-action w/ev-action-state (toasting-state-handler "Settings saved" "Save failed"))
+    ;; Deletes: hand-wired triggers, protocol coordination.
+    (.addEventListener confirm w/ev-confirm on-delete-confirm!)
+    (.addEventListener table   w/ev-press   on-row-delete!)))
