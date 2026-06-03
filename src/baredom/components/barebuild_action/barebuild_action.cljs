@@ -4,7 +4,7 @@
    [goog.object :as gobj]
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
-   [baredom.utils.model :as mu]
+   [baredom.components.barebuild.lifecycle :as lifecycle]
    [baredom.components.barebuild-action.model :as model]))
 
 ;; Effect shell for barebuild-action. Owns no authoritative state — the server
@@ -33,87 +33,38 @@
 (defn- ensure-shadow! [^js el]
   (du/ensure-shadow-with-style! el styles k-initialized? false))
 
-;; ── State transitions (one event per transition) ────────────────────────────────
-(defn- same-state?
-  "Shallow value-equality for two JS state objects (JS = is identity, so two
-  distinct-but-equal objects would re-fire). `response` is compared by reference."
-  [^js a ^js b]
-  (and (some? a) (some? b)
-       (= (.-phase a) (.-phase b))
-       (identical? (.-response a) (.-response b))
-       (= (.-error a) (.-error b))
-       (= (.-httpStatus a) (.-httpStatus b))))
-
-(defn- set-state!
-  "Cache `new-state` and dispatch `barebuild-action-state` only when it differs from
-  the current value (shallow). `name` echoes the action's `name` attribute at the
-  detail top level so matchers (`<barebuild-invalidate-on>`) need not traverse state."
-  [^js el ^js new-state]
-  (when-not (same-state? new-state (du/getv el k-state))
-    (du/setv! el k-state new-state)
-    (du/dispatch! el model/event-action-state
-                  #js {:name (du/get-attr el model/attr-name) :state new-state})))
-
-;; ── Fetch lifecycle ─────────────────────────────────────────────────────────────
-(defn- abort-inflight! [^js el]
-  (when-let [^js ctrl (du/getv el k-abort)]
-    (.abort ctrl)
-    (du/setv-untraced! el k-abort nil)))
-
-(defn- settle!
-  "Apply a terminal state, but only if `ctrl` is still the active request. A stale
-  callback (superseded by a newer submit) is a no-op, so an aborted-but-resolved
-  response can never overwrite fresher state."
-  [^js el ^js ctrl new-state]
-  (when (identical? ctrl (du/getv el k-abort))
-    (du/setv-untraced! el k-abort nil)
-    (set-state! el new-state)))
-
-(defn- settle-ok-body!
-  "Resolve the body as text first (a 204/empty body makes `.json` reject — that is a
-  success with no value → success(nil)); a non-empty body that fails to parse is a
-  genuine error."
-  [^js el ^js ctrl ^js resp status]
-  (-> (.text resp)
-      (.then  (fn on-text [^js text]
-                (settle! el ctrl
-                         (model/success-state
-                          (when (pos? (.-length (.trim text))) (js/JSON.parse text))
-                          status))))
-      (.catch (fn on-parse-error [^js err]
-                (settle! el ctrl (model/error-state (str "Invalid JSON: " (.-message err)) status))))))
-
-(defn- handle-response! [^js el ^js ctrl ^js resp]
-  (let [status (.-status resp)]
-    (if (.-ok resp)
-      (settle-ok-body! el ctrl resp status)
-      (settle! el ctrl (model/error-state (str "HTTP " status) status)))))
-
-(defn- handle-network-error! [^js el ^js ctrl ^js err]
-  ;; An aborted fetch rejects with AbortError — intentional teardown, not an error.
-  (when-not (= "AbortError" (.-name err))
-    (settle! el ctrl (model/error-state (.-message err) nil))))
+;; ── Fetch lifecycle (shared with barebuild-data — see barebuild/lifecycle) ──────
+;; All the fetch/settle/change-guard machinery lives in the shared lifecycle ns so
+;; the write and read sides cannot drift. This cfg names the three things the write
+;; side differs in: the by-reference payload field is `response`, the dispatched
+;; event is `barebuild-action-state` carrying `{name, state}` (name echoed at the
+;; detail top level so matchers need not traverse state), and success/error use
+;; the action-side constructors.
+(def ^:private lifecycle-cfg
+  {:k-state     k-state
+   :k-abort     k-abort
+   :payload-fn  (fn action-payload [^js s] (.-response s))
+   :event-name  model/event-action-state
+   :detail-fn   (fn action-detail [^js el ^js state]
+                  #js {:name (du/get-attr el model/attr-name) :state state})
+   :success-fn  model/success-state
+   :error-fn    model/error-state})
 
 (defn- do-submit!
   "Abort any in-flight request and POST/PUT/… `values` (JSON) to `action`. A blank
-  `action` logs and no-ops (never an empty-target request)."
+  (or whitespace-only) `action` logs and no-ops (never an empty-target request —
+  an untrimmed whitespace `action` would otherwise resolve to the current page)."
   [^js el values]
-  (let [action (du/get-attr el model/attr-action)
-        method (let [m (du/get-attr el model/attr-method)]
-                 (if (mu/non-empty-string? m) m model/default-method))]
-    (if-not (mu/non-empty-string? action)
+  (let [action (du/get-attr-trimmed el model/attr-action)
+        method (or (du/get-attr-trimmed el model/attr-method) model/default-method)]
+    (if-not action
       (js/console.error "barebuild-action: missing `action`; skipping submit")
-      (let [ctrl   (js/AbortController.)
-            signal (.-signal ctrl)]
-        (abort-inflight! el)
-        (du/setv-untraced! el k-abort ctrl)
-        (set-state! el (model/submitting-state))
-        (-> (js/fetch action #js {:method  method
-                                  :headers #js {"Content-Type" "application/json"}
-                                  :body    (js/JSON.stringify values)
-                                  :signal  signal})
-            (.then  (fn on-response [^js resp] (handle-response! el ctrl resp)))
-            (.catch (fn on-error [^js err] (handle-network-error! el ctrl err))))))))
+      (lifecycle/start-fetch! el action
+                              #js {:method  method
+                                   :headers #js {"Content-Type" "application/json"}
+                                   :body    (js/JSON.stringify values)}
+                              (model/submitting-state)
+                              lifecycle-cfg))))
 
 ;; ── Submit-event wiring (containment; no selectors) ──────────────────────────────
 (defn- parse-path
@@ -133,14 +84,13 @@
   `detail.values`. Returns nil on a blank path or a miss."
   [^js detail path-attr]
   (when (some? detail)
-    (let [raw  (if (mu/non-empty-string? path-attr) path-attr model/default-values-path)
-          keys (parse-path raw)]
+    (let [keys (parse-path (or path-attr model/default-values-path))]
       (when (seq keys)
         (apply gobj/getValueByKeys detail keys)))))
 
 (defn- on-submit-event [^js el ^js ev]
   (.preventDefault ev)
-  (let [values (resolve-values (.-detail ev) (du/get-attr el model/attr-values-path))]
+  (let [values (resolve-values (.-detail ev) (du/get-attr-trimmed el model/attr-values-path))]
     (if (some? values)
       (do-submit! el values)
       (js/console.error "barebuild-action: no values at values-path; skipping (no empty-body request)"))))
@@ -154,7 +104,8 @@
 (defn- detach-listener! [^js el]
   (let [^js h (du/getv el k-submit-handler)
         bound (du/getv el k-bound-event)]
-    (when (and h (mu/non-empty-string? bound))
+    ;; `bound` is nil or a non-blank event name (set from get-attr-trimmed).
+    (when (and h bound)
       (.removeEventListener el bound h)
       (du/setv! el k-bound-event nil))))
 
@@ -163,8 +114,8 @@
   `submit-event` logs an error and leaves the action inert (never fetches)."
   [^js el]
   (detach-listener! el)
-  (let [evt (du/get-attr el model/attr-submit-event)]
-    (if-not (mu/non-empty-string? evt)
+  (let [evt (du/get-attr-trimmed el model/attr-submit-event)]
+    (if-not evt
       (js/console.error "barebuild-action: missing required `submit-event`; the action will not fetch")
       (do (.addEventListener el evt (ensure-handler! el))
           (du/setv! el k-bound-event evt)))))
@@ -177,7 +128,7 @@
 
 (defn- disconnected! [^js el]
   (detach-listener! el)
-  (abort-inflight! el)
+  (lifecycle/abort-inflight! el k-abort)
   (du/setv! el k-state default-idle))
 
 (defn- attribute-changed! [^js el name _old-val _new-val]

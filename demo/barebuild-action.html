@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>barebuild-action demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 20px; }
+      .row { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; align-items: center; }
+      input {
+        padding: 8px 10px; border-radius: 8px; font-size: 14px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.15)); background: transparent;
+        color: var(--page-fg, #222);
+      }
+      button {
+        padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.15)); background: transparent;
+        color: var(--page-fg, #222);
+      }
+      button:hover { background: rgba(0,0,0,.05); }
+      ul { padding-left: 18px; }
+      .note { font-size: 13px; color: var(--page-fg, #555); }
+      #log {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px; white-space: pre-wrap; margin-top: 16px;
+        padding: 12px; border-radius: 8px; background: rgba(0,0,0,.04);
+        max-height: 220px; overflow: auto;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>&lt;barebuild-action&gt;</h1>
+    <p class="note">
+      Wraps a submit emitter (any descendant dispatching a cancelable, bubbling event
+      carrying values at <code>values-path</code> in <code>detail</code>), POSTs the
+      values as JSON to <code>action</code>, and publishes the HTTP result as
+      <code>.state</code> + a <code>barebuild-action-state</code> event per phase.
+      The contained <code>&lt;barebuild-invalidate-on&gt;</code> turns a successful
+      submit into a <code>barebuild-invalidate</code>; the <code>&lt;barebuild-data&gt;</code>
+      below self-matches on <code>src</code> and refetches. This demo stubs
+      <code>fetch</code> over an in-memory list, so the whole write→invalidate→read loop
+      runs with no backend.
+    </p>
+
+    <!-- Write side: a custom emitter ("demo-submit") drives the action; no x-form needed. -->
+    <barebuild-action name="add-task" action="/demo-api/tasks" method="POST" submit-event="demo-submit">
+      <div class="row">
+        <input id="title" placeholder="New task title" />
+        <button id="add">Add task</button>
+      </div>
+      <!-- Containment: invalidation lives inside its source. -->
+      <barebuild-invalidate-on when-phase="success" src="/demo-api/tasks"></barebuild-invalidate-on>
+    </barebuild-action>
+
+    <!-- Read side: refetches whenever a matching barebuild-invalidate reaches document. -->
+    <barebuild-data id="tasks" src="/demo-api/tasks"></barebuild-data>
+    <ul id="list"></ul>
+    <div id="log"></div>
+
+    <script>
+      // ── Self-contained fetch stub (no server). In-memory task list. ──
+      const realFetch = window.fetch.bind(window);
+      let tasks = [{ id: 1, title: "Read the BareBuild docs" }];
+      let nextId = 2;
+      window.fetch = (url, opts = {}) => {
+        const u = String(url);
+        if (u.startsWith("/demo-api/tasks")) {
+          const method = (opts.method || "GET").toUpperCase();
+          return new Promise((resolve) => setTimeout(() => {
+            if (method === "POST") {
+              const body = opts.body ? JSON.parse(opts.body) : {};
+              tasks = tasks.concat([{ id: nextId++, title: body.title || "(untitled)" }]);
+              resolve(new Response(JSON.stringify({ ok: true }),
+                                   { status: 201, headers: { "Content-Type": "application/json" } }));
+            } else {
+              resolve(new Response(JSON.stringify(tasks),
+                                   { status: 200, headers: { "Content-Type": "application/json" } }));
+            }
+          }, 350));
+        }
+        return realFetch(url, opts);
+      };
+
+      const action = document.querySelector("barebuild-action");
+      const title  = document.getElementById("title");
+      const data   = document.getElementById("tasks");
+      const list   = document.getElementById("list");
+      const log     = document.getElementById("log");
+      const line = (m) => { log.textContent = `${new Date().toLocaleTimeString()}  ${m}\n` + log.textContent; };
+
+      // Drive the action with a custom emitter: a cancelable, bubbling event whose
+      // detail.values is the JSON payload. (x-form would emit the same shape.)
+      document.getElementById("add").addEventListener("click", () => {
+        action.dispatchEvent(new CustomEvent("demo-submit", {
+          bubbles: true, cancelable: true,
+          detail: { values: { title: title.value || "Untitled task" } },
+        }));
+        title.value = "";
+      });
+
+      // Action result → log every phase transition (idle→submitting→success/error).
+      action.addEventListener("barebuild-action-state", (e) => {
+        const st = e.detail.state;
+        line(`action ${e.detail.name} → phase=${st.phase}` +
+             (st.httpStatus != null ? ` http=${st.httpStatus}` : "") +
+             (st.error ? ` error=${JSON.stringify(st.error)}` : ""));
+      });
+
+      // Read side: render the list on each (re)load. The refetch is triggered by the
+      // invalidate-on inside the action — no wiring here.
+      data.addEventListener("barebuild-data-state", (e) => {
+        const st = e.detail.state;
+        line(`data → phase=${st.phase}`);
+        if (st.phase === "loaded") {
+          list.innerHTML = "";
+          (st.data || []).forEach((t) => {
+            const li = document.createElement("li");
+            li.textContent = `#${t.id} — ${t.title}`;
+            list.appendChild(li);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

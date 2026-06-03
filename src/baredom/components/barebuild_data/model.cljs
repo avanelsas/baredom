@@ -1,5 +1,6 @@
 (ns baredom.components.barebuild-data.model
-  (:require [goog.object :as gobj]))
+  (:require [goog.object :as gobj]
+            [baredom.components.barebuild.protocol :as protocol]))
 
 ;; barebuild-data fetches a URL and publishes the response as ONE value (.state).
 ;; This namespace is the pure layer: the closed phase set and the state-value
@@ -22,9 +23,11 @@
 (def observed-attributes #js [attr-src])
 
 ;; ── Events ───────────────────────────────────────────────────────────────────
-(def event-data-state   "barebuild-data-state")    ; emitted on every phase transition
-(def event-data-refresh "barebuild-data-refresh")  ; listened for on self; user-driven manual refetch
-(def event-invalidate   "barebuild-invalidate")    ; listened for at document; refetch when detail.src matches our src
+;; The two cross-component names come from the shared protocol ns (single source
+;; of truth — see protocol.cljs); refresh is a self-only name, declared locally.
+(def event-data-state   protocol/event-data-state)   ; emitted on every phase transition
+(def event-data-refresh "barebuild-data-refresh")    ; listened for on self; user-driven manual refetch
+(def event-invalidate   protocol/event-invalidate)   ; listened for at document; refetch when detail.src matches our src
 
 ;; ── Phases ───────────────────────────────────────────────────────────────────
 ;; The closed set of phase STRINGS, published so a consumer comparing `.phase`

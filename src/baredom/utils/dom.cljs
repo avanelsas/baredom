@@ -67,6 +67,17 @@
   [^js el attr-name]
   (.getAttribute el attr-name))
 
+(defn get-attr-trimmed
+  "Like `get-attr`, but trims surrounding whitespace and returns nil for an
+  absent-or-blank attribute — one home for the 'whitespace = absent' policy the
+  server-state brokers each re-spelled. (`mu/non-empty-string?` deliberately does
+  NOT trim, so a `\" \"` attribute would otherwise read as present-but-useless.)"
+  [^js el attr-name]
+  (let [v (.getAttribute el attr-name)]
+    (when (string? v)
+      (let [t (.trim v)]
+        (when-not (= "" t) t)))))
+
 (defn set-attr!
   [^js el attr-name value]
   (.setAttribute el attr-name value)

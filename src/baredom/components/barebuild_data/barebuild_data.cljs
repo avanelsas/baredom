@@ -3,6 +3,7 @@
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [baredom.utils.model :as mu]
+   [baredom.components.barebuild.lifecycle :as lifecycle]
    [baredom.components.barebuild-data.model :as model]))
 
 ;; Effect shell for barebuild-data. The element owns no authoritative state —
@@ -42,72 +43,20 @@
 (defn- ensure-shadow! [^js el]
   (du/ensure-shadow-with-style! el styles k-initialized? false))
 
-;; ── State transitions (the epochal change-guard: one event per transition) ──────
-(defn- same-state?
-  "Shallow value-equality for two JS state objects. (We can't use `not=`/`=`: on
-  JS objects those are identity, so two distinct-but-equal `loading` objects would
-  read as different and re-fire the event.) `data` is compared by reference — a
-  fresh fetch yields a new array, which is a real new value worth an event."
-  [^js a ^js b]
-  (and (some? a) (some? b)
-       (= (.-phase a) (.-phase b))
-       (identical? (.-data a) (.-data b))
-       (= (.-error a) (.-error b))
-       (= (.-httpStatus a) (.-httpStatus b))))
-
-(defn- set-state!
-  "Cache `new-state` and dispatch `barebuild-data-state` ONLY when it differs from
-  the current value (shallow). A refetch while already `loading` re-enters with an
-  equal `loading` object, so no duplicate event fires — every transition on the
-  fetch lifecycle path emits exactly one event, never a duplicate. The idle resets
-  in connected!/disconnected! bypass this path (a direct write): they re-establish
-  a resting value, not a fetch-lifecycle transition, and emit no event."
-  [^js el ^js new-state]
-  (when-not (same-state? new-state (du/getv el k-state))
-    (du/setv! el k-state new-state)
-    (du/dispatch! el model/event-data-state #js {:state new-state})))
-
-;; ── Fetch lifecycle ─────────────────────────────────────────────────────────────
-(defn- abort-inflight! [^js el]
-  (when-let [^js ctrl (du/getv el k-abort)]
-    (.abort ctrl)
-    (du/setv-untraced! el k-abort nil)))
-
-(defn- settle!
-  "Apply a terminal state, but only if `ctrl` is still the active fetch. A stale
-  callback (its fetch was aborted/superseded by a newer one) is a no-op, so an
-  aborted-but-already-resolved response can never overwrite fresher state."
-  [^js el ^js ctrl new-state]
-  (when (identical? ctrl (du/getv el k-abort))
-    (du/setv-untraced! el k-abort nil)
-    (set-state! el new-state)))
-
-(defn- settle-ok-body! [^js el ^js ctrl ^js resp status]
-  ;; Resolve the body as text first, not via `(.json resp)` directly: a successful
-  ;; response with NO body (HTTP 204/205, or a Content-Length: 0 200) makes `.json`
-  ;; reject — surfacing a *success* as an `:error` \"Invalid JSON\". An empty (or
-  ;; whitespace-only) body is a load with no value → loaded(nil). A non-empty body
-  ;; that fails to parse is still a genuine error (JSON.parse throws → .catch).
-  (-> (.text resp)
-      (.then  (fn on-text [^js text]
-                (settle! el ctrl
-                         (if (pos? (.-length (.trim text)))
-                           (model/loaded-state (js/JSON.parse text) status)
-                           (model/loaded-state nil status)))))
-      (.catch (fn on-parse-error [^js err]
-                (settle! el ctrl (model/error-state (str "Invalid JSON: " (.-message err)) status))))))
-
-(defn- handle-response! [^js el ^js ctrl ^js resp]
-  (let [status (.-status resp)]
-    (if (.-ok resp)
-      (settle-ok-body! el ctrl resp status)
-      (settle! el ctrl (model/error-state (str "HTTP " status) status)))))
-
-(defn- handle-network-error! [^js el ^js ctrl ^js err]
-  ;; An aborted fetch rejects with AbortError — that is an intentional teardown,
-  ;; not an error state. Ignore it (settle! would no-op anyway: ctrl is stale).
-  (when-not (= "AbortError" (.-name err))
-    (settle! el ctrl (model/error-state (.-message err) nil))))
+;; ── Fetch lifecycle (shared with barebuild-action — see barebuild/lifecycle) ────
+;; All the fetch/settle/change-guard machinery lives in the shared lifecycle ns so
+;; the read and write sides cannot drift. This cfg names the three things the read
+;; side differs in: the by-reference payload field is `data`, the dispatched event
+;; is `barebuild-data-state` carrying only `{state}`, and success/error use the
+;; data-side constructors.
+(def ^:private lifecycle-cfg
+  {:k-state     k-state
+   :k-abort     k-abort
+   :payload-fn  (fn data-payload [^js s] (.-data s))
+   :event-name  model/event-data-state
+   :detail-fn   (fn data-detail [_el ^js state] #js {:state state})
+   :success-fn  model/loaded-state
+   :error-fn    model/error-state})
 
 (defn- fetch!
   "Read `src`: when present, abort any in-flight request and start a fresh fetch;
@@ -115,23 +64,15 @@
   a stale `:loaded` value published. A read is an observation in time: re-setting
   `src` (even to the same value) or dispatching refresh re-reads."
   [^js el]
-  (let [raw (du/get-attr el model/attr-src)
-        ;; Trim first: a whitespace-only `src` (" ") is blank, not a URL — without
-        ;; this it passes `non-empty-string?` and fetches the page itself. Trimming
-        ;; also strips accidental surrounding whitespace from a real URL.
-        src (when (string? raw) (.trim raw))]
-    ;; Aborting any in-flight request is unconditional — only what happens next
-    ;; (start a fresh fetch vs. fall back to idle) depends on `src`.
-    (abort-inflight! el)
-    (if (mu/non-empty-string? src)
-      (let [ctrl   (js/AbortController.)
-            signal (.-signal ctrl)]
-        (du/setv-untraced! el k-abort ctrl)
-        (set-state! el (model/loading-state))
-        (-> (js/fetch src #js {:signal signal})
-            (.then  (fn on-response [^js resp] (handle-response! el ctrl resp)))
-            (.catch (fn on-error [^js err] (handle-network-error! el ctrl err)))))
-      (set-state! el default-idle))))
+  ;; get-attr-trimmed centralizes "whitespace = absent": a whitespace-only `src`
+  ;; (" ") is blank, not a URL — untrimmed it would pass and fetch the page itself.
+  (let [src (du/get-attr-trimmed el model/attr-src)]
+    (if src
+      (lifecycle/start-fetch! el src #js {} (model/loading-state) lifecycle-cfg)
+      ;; Blank src: abort any in-flight request and fall back to idle (start-fetch!
+      ;; would have aborted; here we do it explicitly since no fetch follows).
+      (do (lifecycle/abort-inflight! el k-abort)
+          (lifecycle/set-state! el default-idle lifecycle-cfg)))))
 
 ;; ── Refresh listener (on self; GC'd with the element) ───────────────────────────
 (defn- add-refresh-listener! [^js el]
@@ -139,20 +80,24 @@
     (du/setv! el k-refresh-handler h)
     (.addEventListener el model/event-data-refresh h)))
 
-;; ── Invalidate listener (on document; matched by URL.pathname) ───────────────────
-(defn- url-pathname
-  "The pathname of `s` resolved against the page origin, or nil for a blank/invalid
-  src. Invalidation matches on pathname so a relative `src` and an absolute one to
-  the same path are equal."
+;; ── Invalidate listener (on document; matched by URL pathname + query) ───────────
+(defn- match-key
+  "The match key of `s` resolved against the page origin: `pathname + search`, or
+  nil for a blank/invalid src. Resolving against the origin makes a relative `src`
+  and an absolute one to the same path equal; including the query string keeps two
+  parameterised resources on the same path distinct (`/items?page=1` ≠
+  `/items?page=2`) — exactly the equality `<barebuild-invalidate-on>` documents."
   [s]
   (when (mu/non-empty-string? s)
-    (try (.-pathname (js/URL. s (.. js/location -origin))) (catch :default _ nil))))
+    (try (let [^js u (js/URL. s (.. js/location -origin))]
+           (str (.-pathname u) (.-search u)))
+         (catch :default _ nil))))
 
 (defn- on-invalidate [^js el ^js e]
   ;; A read is an observation in time: when an invalidation names our src (exact
-  ;; pathname equality), re-read. A blank/mismatched src is ignored.
-  (let [own (url-pathname (du/get-attr el model/attr-src))]
-    (when (and own (= own (url-pathname (.. e -detail -src))))
+  ;; pathname+query equality), re-read. A blank/mismatched src is ignored.
+  (let [own (match-key (du/get-attr el model/attr-src))]
+    (when (and own (= own (match-key (.. e -detail -src))))
       (fetch! el))))
 
 (defn- ensure-invalidate-handler! [^js el]
@@ -179,7 +124,7 @@
 (defn- disconnected! [^js el]
   ;; The element owns no cache — the server is the truth. Abort and reset to idle;
   ;; reconnect re-fetches rather than replaying the stale :loaded value.
-  (abort-inflight! el)
+  (lifecycle/abort-inflight! el k-abort)
   (when-let [^js h (du/getv el k-invalidate-handler)]
     (.removeEventListener js/document model/event-invalidate h))
   (du/setv! el k-state default-idle))

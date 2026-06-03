@@ -2,7 +2,7 @@
 
 The full catalogue of BareDOM components — 103 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
-A twelfth category, **Orchestration**, holds the [BareBuild](../barebuild/docs/read-side.md) read-side elements (router / route / data). They are native custom elements too, but they are *orchestration, not UI*: CLJS-first, **not** adapter-wrapped, and shipped as opt-in ESM entries.
+A twelfth category, **Orchestration**, holds the [BareBuild](../barebuild/docs/read-side.md) read-side elements (router / route / data) plus the **alpha** write-side pair (action / invalidate-on). They are native custom elements too, but they are *orchestration, not UI*: CLJS-first, **not** adapter-wrapped, and shipped as opt-in ESM entries.
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
@@ -179,15 +179,17 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-i18n>`](./x-i18n.md) | Inline translation element. Renders translated text for a key, resolved from the nearest `<x-i18n-provider>`. |
 | [`<x-i18n-provider>`](./x-i18n-provider.md) | Internationalization provider. Fetches translation JSON and supplies locale context to descendant `<x-i18n>`. |
 
-## Orchestration (3)
+## Orchestration (5)
 
-[BareBuild](../barebuild/docs/read-side.md) read-side elements. Non-visual; compose by containment and events with the UI components above. CLJS-first, not adapter-wrapped.
+[BareBuild](../barebuild/docs/read-side.md) read- and write-side elements. Non-visual; compose by containment and events with the UI components above. CLJS-first, not adapter-wrapped. The write-side pair (`barebuild-action` / `barebuild-invalidate-on`) is **ALPHA (4.0.0-alpha)** — shapes may change before stable.
 
 | Tag | Description |
 |-----|-------------|
 | [`<barebuild-router>`](./barebuild-router.md) | URL-as-data. Watches `popstate`, intercepts opt-in `<a data-barebuild-route>` clicks, and publishes the active route as a value. Owns no authoritative state. |
 | [`<barebuild-route>`](./barebuild-route.md) | Passive child of `<barebuild-router>`. Owns its own visibility (display toggle); self-registers by bubbling event. Identity-preserving — never rebuilds its body. |
 | [`<barebuild-data>`](./barebuild-data.md) | Fetches a URL and publishes the response as one value (`.state`), dispatching `barebuild-data-state` on every phase transition. GET/JSON, V1. |
+| [`<barebuild-action>`](./barebuild-action.md) | **(alpha)** Wraps a submit emitter by containment, POSTs the values as JSON to `action`, and publishes the HTTP result as `.state` + a `barebuild-action-state` event per phase. |
+| [`<barebuild-invalidate-on>`](./barebuild-invalidate-on.md) | **(alpha)** Child of a source element; on a `when-phase`/`when-name` match it dispatches a document-level `barebuild-invalidate {src}` that matching data brokers self-match and refetch. |
 
 ---
 

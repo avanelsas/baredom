@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>barebuild-invalidate-on demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      h1 { font-size: 20px; }
+      .row { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; align-items: center; }
+      button {
+        padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px;
+        border: 1px solid var(--surface-border, rgba(0,0,0,.15)); background: transparent;
+        color: var(--page-fg, #222);
+      }
+      button:hover { background: rgba(0,0,0,.05); }
+      .note { font-size: 13px; color: var(--page-fg, #555); }
+      .src { display: inline-block; padding: 8px 12px; border-radius: 8px;
+             border: 1px dashed var(--surface-border, rgba(0,0,0,.2)); }
+      #log {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px; white-space: pre-wrap; margin-top: 16px;
+        padding: 12px; border-radius: 8px; background: rgba(0,0,0,.04);
+        max-height: 220px; overflow: auto;
+      }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <h1>&lt;barebuild-invalidate-on&gt;</h1>
+    <p class="note">
+      Placed as a child of a source element, it listens to its <code>parentNode</code>
+      for the configured <code>event</code>; on a <code>when-phase</code> /
+      <code>when-name</code> match it dispatches a document-level
+      <code>barebuild-invalidate {src}</code>. This demo uses a plain source element
+      that emits a mock <code>barebuild-action-state</code>; the log shows when the
+      invalidate fires. Watch the difference between a matching and a non-matching phase,
+      and the manual <code>.invalidate()</code> trigger.
+    </p>
+
+    <!-- The source is the parent (containment, no selectors). It emits a mock action-state. -->
+    <div class="src" id="source">
+      source element (parent)
+      <barebuild-invalidate-on id="io" when-phase="success" src="/api/tasks"></barebuild-invalidate-on>
+    </div>
+
+    <div class="row">
+      <button id="ok">Emit success (matches)</button>
+      <button id="bad">Emit error (no match)</button>
+      <button id="manual">Manual .invalidate()</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+      const source = document.getElementById("source");
+      const io     = document.getElementById("io");
+      const log    = document.getElementById("log");
+      const line = (m) => { log.textContent = `${new Date().toLocaleTimeString()}  ${m}\n` + log.textContent; };
+
+      // Any <barebuild-data> on the page would self-match on src; here we just observe
+      // the document-level event so the matching behaviour is visible on its own.
+      document.addEventListener("barebuild-invalidate", (e) => {
+        line(`barebuild-invalidate → src=${JSON.stringify(e.detail.src)}`);
+      });
+
+      const emit = (phase) =>
+        source.dispatchEvent(new CustomEvent("barebuild-action-state", {
+          bubbles: true,
+          detail: { name: "demo", state: { phase } },
+        }));
+
+      document.getElementById("ok").onclick  = () => { line("source emits phase=success"); emit("success"); };
+      document.getElementById("bad").onclick = () => { line("source emits phase=error");  emit("error"); };
+      document.getElementById("manual").onclick = () => { line("manual .invalidate()"); io.invalidate(); };
+    </script>
+  </body>
+</html>

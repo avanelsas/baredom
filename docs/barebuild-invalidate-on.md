@@ -49,7 +49,7 @@ Registration is idempotent.
 | `event` | string | `barebuild-action-state` | Event name to listen for on `parentNode`. For binding to a data broker's state: `event="barebuild-data-state"`. For binding to the router: `event="barebuild-route-change"`. |
 | `when-phase` | string | (unset) | Optional matcher. When set, compared with string equality against `event.detail.state.phase`. |
 | `when-name` | string | (unset) | Optional matcher. When set, compared with string equality against `event.detail.name`. |
-| `src` | string | **required** | URL to invalidate. Dispatched as `event.detail.src` of the resulting `barebuild-invalidate` event. **Exact `URL.pathname` equality** is used by `<barebuild-data>` to decide if it should refetch (no wildcards in V1). |
+| `src` | string | **required** | URL to invalidate. Dispatched as `event.detail.src` of the resulting `barebuild-invalidate` event. **Exact `pathname + query` equality** (resolved against the page origin) is used by `<barebuild-data>` to decide if it should refetch — so `/api/items?page=1` and `?page=2` stay distinct (no wildcards in V1). |
 
 **At least one of `when-phase` / `when-name` is required.** Omitting both logs an error and the element no-ops on every event. Setting both ANDs — the invalidate dispatches only when *both* matchers fire on the same event.
 
@@ -119,7 +119,7 @@ The event bubbles to `document` so any `<barebuild-data>` anywhere on the page c
 
 | Method | Signature | Description |
 |---|---|---|
-| `invalidate!` | `()` → void | Manual trigger. Dispatches `barebuild-invalidate {src}` immediately, bypassing event listening. Useful for "user clicked refresh" buttons. |
+| `invalidate` | `()` → void | Manual trigger. Dispatches `barebuild-invalidate {src}` immediately, bypassing event listening. Useful for "user clicked refresh" buttons. |
 
 ---
 
@@ -141,7 +141,7 @@ Two lines, two named effects. No wildcards. (URL pattern matching is V2 if a rea
 
 ## URL Match Semantics (V1)
 
-A `<barebuild-data src="/api/users">` refetches when it sees a `barebuild-invalidate` event whose `event.detail.src` equals its own `src` by **exact `URL.pathname` equality**:
+A `<barebuild-data src="/api/users">` refetches when it sees a `barebuild-invalidate` event whose `event.detail.src` equals its own `src` by **exact `pathname + query` equality** (each resolved against the page origin):
 
 | Invalidate `src` | Matches data `src` |
 |---|---|
@@ -190,12 +190,12 @@ When the flaky action errors, refetch the health-check.
 <barebuild-invalidate-on id="manual-refresh" src="/api/tasks" when-name="never-matches"></barebuild-invalidate-on>
 <script>
   document.querySelector('#refresh-btn').addEventListener('x-button-click', () => {
-    document.querySelector('#manual-refresh').invalidate!();
+    document.querySelector('#manual-refresh').invalidate();
   });
 </script>
 ```
 
-`.invalidate!()` bypasses matchers and the listener entirely — it dispatches `barebuild-invalidate` unconditionally. The `when-name` is still required (every wire is named); use a sentinel that will never match, or place the element inside a source whose events it can safely ignore. The orphan-no-op warning fires once at connect if there's no `parentNode` event source; harmless.
+`.invalidate()` bypasses matchers and the listener entirely — it dispatches `barebuild-invalidate` unconditionally. The `when-name` is still required (every wire is named); use a sentinel that will never match, or place the element inside a source whose events it can safely ignore. The orphan-no-op warning fires once at connect if there's no `parentNode` event source; harmless.
 
 ### Reacting to data success (rare but legal)
 

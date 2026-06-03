@@ -122,6 +122,34 @@
               (is (= 2 @calls) "barebuild-data-refresh triggers a refetch")
               (done)))))))))
 
+;; ── Change guard: distinct payloads re-fire ──────────────────────────────────────
+(deftest distinct-payloads-refire-test
+  ;; The change guard compares the payload BY REFERENCE: two `loaded` values that
+  ;; share phase+httpStatus but carry DIFFERENT bodies are distinct and must each
+  ;; fire. This is the exact path a mis-addressed payload field would break — a
+  ;; loose string key reading `undefined` on both sides would compare them equal
+  ;; and silently suppress the second event. Guards the `:payload-fn` accessor.
+  (async done
+    (let [el     (make-data "/api/x")
+          loaded (atom [])]
+      (.addEventListener el model/event-data-state
+                         (fn [^js e]
+                           (let [^js st (.. e -detail -state)]
+                             (when (= "loaded" (.-phase st))
+                               (swap! loaded conj (.-data st))))))
+      (stub-fetch-ok! #js {:v "A"} 200)             ; first load: body A
+      (append-body! el)
+      (after-settle
+       (fn []
+         (stub-fetch-ok! #js {:v "B"} 200)          ; second load: DIFFERENT body, SAME status
+         (.dispatchEvent el (js/CustomEvent. model/event-data-refresh))
+         (after-settle
+          (fn []
+            (is (= 2 (count @loaded)) "two distinct payloads each fire a loaded event")
+            (is (= "A" (.-v ^js (first @loaded))))
+            (is (= "B" (.-v ^js (second @loaded))) "the second, distinct body re-fired (not deduped)")
+            (done))))))))
+
 ;; ── Errors ─────────────────────────────────────────────────────────────────────────
 (deftest http-error-test
   (async done
@@ -280,6 +308,32 @@
             (is (= "idle" (.-phase (.-state el))) "state falls back to idle when src is removed")
             (is (= ["idle"] @phases) "exactly one idle transition event fires")
             (done))))))))
+
+;; ── Invalidation matches on pathname + query, so paginated siblings stay distinct ──
+;; (Regression guard for the match key: `.pathname` alone collapses `?page=1` and
+;; `?page=2` to the same key and cross-invalidates; the key includes the query.)
+(defn- fire-invalidate! [src]
+  (.dispatchEvent js/document (js/CustomEvent. model/event-invalidate #js {:detail #js {:src src}})))
+
+(deftest invalidation-distinguishes-query-strings-test
+  (async done
+    (let [calls (atom 0)]
+      (set! (.-fetch js/window)
+            (fn [_ _] (swap! calls inc) (js/Promise.resolve (json-response #js {} 200 true))))
+      (let [el (make-data "/api/items?page=1")]
+        (append-body! el)
+        (after-settle
+         (fn []
+           (is (= 1 @calls) "fetched once on connect")
+           (fire-invalidate! "/api/items?page=2")          ; different query → must NOT match
+           (after-settle
+            (fn []
+              (is (= 1 @calls) "an invalidate for a different query string does not refetch")
+              (fire-invalidate! "/api/items?page=1")        ; same path+query → must match
+              (after-settle
+               (fn []
+                 (is (= 2 @calls) "an invalidate for the exact path+query refetches")
+                 (done)))))))))))
 
 ;; ── Reconnect re-fetches, no stale replay ────────────────────────────────────────
 (deftest reconnect-refetches-test

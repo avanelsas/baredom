@@ -1,4 +1,5 @@
-(ns baredom.components.barebuild-invalidate-on.model)
+(ns baredom.components.barebuild-invalidate-on.model
+  (:require [baredom.components.barebuild.protocol :as protocol]))
 
 ;; barebuild-invalidate-on is placed as a CHILD of a source element (typically
 ;; <barebuild-action>). It listens to the source via parentNode.addEventListener
@@ -22,11 +23,13 @@
   #js [attr-event attr-when-phase attr-when-name attr-src])
 
 ;; ── Events ───────────────────────────────────────────────────────────────────
-(def event-invalidate "barebuild-invalidate")  ; dispatched on a full matcher match
+;; Both names are part of the cross-component handshake, so they come from the
+;; shared protocol ns (single source of truth — see protocol.cljs).
+(def event-invalidate protocol/event-invalidate)  ; dispatched on a full matcher match
 
 ;; The default source event. Matches <barebuild-action>; override to
 ;; "barebuild-data-state" or "barebuild-route-change" for other sources.
-(def default-source-event "barebuild-action-state")
+(def default-source-event protocol/event-action-state)
 
 (def property-api
   {:event     {:type 'string :reflects-attribute attr-event      :default ""}

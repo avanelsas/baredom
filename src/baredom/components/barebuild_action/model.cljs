@@ -1,5 +1,6 @@
 (ns baredom.components.barebuild-action.model
-  (:require [goog.object :as gobj]))
+  (:require [goog.object :as gobj]
+            [baredom.components.barebuild.protocol :as protocol]))
 
 ;; barebuild-action wraps a SUBMIT EMITTER by containment: any descendant
 ;; dispatching a cancelable, bubbling event of the configured `submit-event`
@@ -29,7 +30,9 @@
   #js [attr-name attr-action attr-method attr-submit-event attr-values-path])
 
 ;; ── Events ───────────────────────────────────────────────────────────────────
-(def event-action-state "barebuild-action-state")  ; emitted on every phase transition
+;; The cross-component name comes from the shared protocol ns (single source of
+;; truth — see protocol.cljs), keeping the handshake compile-coupled.
+(def event-action-state protocol/event-action-state)  ; emitted on every phase transition
 
 ;; ── Defaults ───────────────────────────────────────────────────────────────────
 (def default-method      "POST")

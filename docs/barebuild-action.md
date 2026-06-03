@@ -56,7 +56,7 @@ Registration is idempotent.
 | `action` | string | **required** | URL to which the mutation is sent. **The identity of this mutation.** |
 | `method` | string | `POST` | HTTP method. Typical: `POST`, `PUT`, `PATCH`, `DELETE`. |
 | `submit-event` | string | **required** | Name of the cancelable event to listen for on the slotted subtree. Any **descendant** dispatching a cancelable bubbling event of this name with a values map at `values-path` in `detail` is a valid driver. **No default; no implicit coupling to any specific emitter.** The action contains no string literal `"x-form-submit"` anywhere in its source. Wiring to `<x-form>` looks like `submit-event="x-form-submit"`; wiring to anything else looks the same with a different value. |
-| `values-path` | string (EDN) | `[:values]` | EDN-literal vector indicating where in `event.detail` to find the values map. Parsed via `cljs.reader/read-string`, then `get-in`. Default `[:values]` so `<x-form>` works unconfigured. Examples: `values-path="[:payload]"`, `values-path="[:detail :form-data]"`. JSON arrays accepted (`values-path='["payload"]'`). |
+| `values-path` | string (EDN-shaped) | `[:values]` | EDN-vector-shaped string indicating where in `event.detail` to find the values map. Parsed by a small hand-rolled tokenizer (NOT `cljs.reader` — that would add ~40 KB to this per-component ESM module): the surrounding brackets are stripped, the inner tokens split on whitespace, and a leading `:` / surrounding quotes trimmed from each, then the JS object is walked by those string keys. Default `[:values]` so `<x-form>` works unconfigured. Examples: `values-path="[:payload]"`, `values-path="[:detail :form-data]"`. JSON-array form accepted (`values-path='["payload"]'`). |
 
 **V1 is JSON-only.** The request body is always `application/json`, encoded from the values map at `values-path`. There is no `enctype` attribute. Form-urlencoded and `multipart/form-data` (file uploads) are V2.
 
@@ -119,7 +119,7 @@ The top-level `name` is what `<barebuild-bind from-name="…">` and `<barebuild-
 
 | Method | Signature | Description |
 |---|---|---|
-| `submit!` | `(values)` → void | Programmatic trigger. Bypasses event listening. Useful when the action is wired to something other than a form-style emitter. |
+| `submit` | `(values)` → void | Programmatic trigger. Bypasses event listening. Useful when the action is wired to something other than a form-style emitter. |
 
 ---
 
@@ -214,12 +214,12 @@ On success, the contained `<barebuild-invalidate-on>` dispatches `barebuild-inva
 </barebuild-action>
 <script>
   document.querySelector('#delete-btn').addEventListener('x-button-click', (e) => {
-    e.currentTarget.closest('barebuild-action').submit!({});
+    e.currentTarget.closest('barebuild-action').submit({});
   });
 </script>
 ```
 
-`.submit!({})` bypasses event listening. The `submit-event` attribute is still required (the contract names what the action would listen for if not driven imperatively); pass `action-trigger` or any sentinel and never dispatch it.
+`.submit({})` bypasses event listening. The `submit-event` attribute is still required (the contract names what the action would listen for if not driven imperatively); pass `action-trigger` or any sentinel and never dispatch it.
 
 ### Custom emitter with `values-path`
 

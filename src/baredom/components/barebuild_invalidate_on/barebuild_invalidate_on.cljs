@@ -2,7 +2,6 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
-   [baredom.utils.model :as mu]
    [baredom.components.barebuild-invalidate-on.model :as model]))
 
 ;; Effect shell for barebuild-invalidate-on. Holds only its attributes. Listens to
@@ -21,26 +20,41 @@
 (defn- ensure-shadow! [^js el]
   (du/ensure-shadow-with-style! el styles k-initialized? false))
 
-;; ── Matching ────────────────────────────────────────────────────────────────────
+;; ── Matching (pure) ──────────────────────────────────────────────────────────────
 (defn- matches?
-  "True when the configured matchers all fire on `ev`. when-phase compares
-  detail.state.phase; when-name compares detail.name. At least one matcher must be
-  set (both unset → log + no-match); set matchers are AND-composed."
+  "Pure: do the configured matchers all fire on `ev`? when-phase compares
+  detail.state.phase; when-name compares detail.name; set matchers are AND-composed,
+  an unset one imposes no constraint. With NEITHER set the element can never match —
+  that misconfiguration is diagnosed once at connect (`warn-no-matcher!`), not here
+  per event, so this stays a clean predicate with no I/O."
   [^js el ^js ev]
-  (let [when-phase  (du/get-attr el model/attr-when-phase)
-        when-name   (du/get-attr el model/attr-when-name)
-        phase-set?  (mu/non-empty-string? when-phase)
-        name-set?   (mu/non-empty-string? when-name)]
-    (if-not (or phase-set? name-set?)
-      (do (js/console.error "barebuild-invalidate-on: needs at least one of when-phase / when-name; no-op")
-          false)
-      (let [^js detail (.-detail ev)
-            phase-ok   (or (not phase-set?) (= when-phase (some-> detail .-state .-phase)))
-            name-ok    (or (not name-set?)  (= when-name  (some-> detail .-name)))]
-        (and phase-ok name-ok)))))
+  (let [when-phase (du/get-attr-trimmed el model/attr-when-phase)
+        when-name  (du/get-attr-trimmed el model/attr-when-name)
+        ^js detail (.-detail ev)
+        phase-ok   (or (nil? when-phase) (= when-phase (some-> detail .-state .-phase)))
+        name-ok    (or (nil? when-name)  (= when-name  (some-> detail .-name)))]
+    (and (some? (or when-phase when-name))   ; at least one matcher configured
+         phase-ok name-ok)))
 
-(defn- do-invalidate! [^js el]
-  (du/dispatch! el model/event-invalidate #js {:src (du/get-attr el model/attr-src)}))
+(defn- warn-no-matcher!
+  "Config validation, logged ONCE at connect: an element with neither when-phase nor
+  when-name can never match. Hoisted out of the per-event `matches?` so the predicate
+  stays pure and the diagnostic doesn't spam on every source event."
+  [^js el]
+  (when-not (or (du/get-attr-trimmed el model/attr-when-phase)
+                (du/get-attr-trimmed el model/attr-when-name))
+    (js/console.warn "barebuild-invalidate-on: needs at least one of when-phase / when-name; it will never match")))
+
+(defn- do-invalidate!
+  "Dispatch `barebuild-invalidate {:src}`. A blank `src` is dispatched as-is (the
+  manual `.invalidate()` trigger is unconditional) but warned about: with no src
+  no `<barebuild-data>` can self-match, so a misconfigured wire would otherwise
+  fail silently."
+  [^js el]
+  (let [src (du/get-attr-trimmed el model/attr-src)]
+    (when (nil? src)
+      (js/console.warn "barebuild-invalidate-on: blank `src`; the dispatched barebuild-invalidate matches no broker"))
+    (du/dispatch! el model/event-invalidate #js {:src (or src "")})))
 
 (defn- on-source-event [^js el ^js ev]
   (when (matches? el ev)
@@ -57,7 +71,8 @@
   (let [^js h    (du/getv el k-handler)
         ^js node (du/getv el k-source-node)
         bound    (du/getv el k-bound-event)]
-    (when (and h node (mu/non-empty-string? bound))
+    ;; `bound` is nil or a non-blank event name (set from get-attr-trimmed-or-default).
+    (when (and h node bound)
       (.removeEventListener node bound h)
       (du/setv! el k-source-node nil)
       (du/setv! el k-bound-event nil))))
@@ -68,8 +83,7 @@
   [^js el]
   (detach! el)
   (let [^js parent (.-parentNode el)
-        evt        (let [e (du/get-attr el model/attr-event)]
-                     (if (mu/non-empty-string? e) e model/default-source-event))]
+        evt        (or (du/get-attr-trimmed el model/attr-event) model/default-source-event)]
     (if (nil? parent)
       (js/console.warn "barebuild-invalidate-on: no parentNode source; no-op")
       (do (.addEventListener parent evt (ensure-handler! el))
@@ -79,6 +93,7 @@
 ;; ── Lifecycle ─────────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (ensure-shadow! el)
+  (warn-no-matcher! el)
   (bind-source! el))
 
 (defn- disconnected! [^js el]
