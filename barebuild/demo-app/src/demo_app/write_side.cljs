@@ -2,12 +2,16 @@
   "Write-side wiring for the demo — the live create / update / delete / settings
   handlers (create modal, detail edit, delete confirm, board-row delete, settings).
 
-  BareBuild V1 ships only the READ side (router / route / data); it ships NO
-  write-side elements (<barebuild-action> / <barebuild-bind> / <barebuild-invalidate-on>
-  are deferred). So this demo wires its writes BY HAND with addEventListener + fetch —
-  and that hand-wiring was the Phase-4 telemetry that informed the write-side design,
-  now recorded in barebuild/docs/write-side-design-notes.md. The five questions it
-  answered, for reference:
+  ★ ALPHA-BRANCH HYBRID ★ This branch ships the experimental write-side elements, and
+  CREATE is ported onto them: <barebuild-action> (POST + submit→fetch) wraps the new-task
+  modal in index.html and <barebuild-invalidate-on> refetches /api/tasks on success — so
+  on-create-state! below only reacts to barebuild-action-state for the UI side-effects the
+  elements do NOT cover (close modal, reset, toast). UPDATE / DELETE / SETTINGS remain
+  hand-wired (addEventListener + fetch) — see the port evaluation in
+  barebuild/docs/write-side-design-notes.md for why (dynamic URLs, no-values triggers).
+
+  The original (V1) hand-wiring was the Phase-4 telemetry that informed the design. The
+  five questions it answered, for reference:
 
     1. submit → fetch: hook x-form-submit; POST/PUT/DELETE via api/request. Payload is
        event.detail.values, blank-stripped on CREATE only (without-blanks).
@@ -60,20 +64,6 @@
                                             #js {:bubbles true :composed true
                                                  :detail  #js {:path path}}))))
 
-(defn- without-blanks
-  "Drop name→value pairs whose value is a blank string. CREATE-ONLY. x-form reports
-   every named control, defaulting an unset one to \"\", and on a POST a present-but-blank
-   key shadows the server's default (a blank `status` would override {:status \"todo\"});
-   omitting blanks lets the defaults apply. Do NOT use on a PUT/merge endpoint — there a
-   blank is a deliberate \"clear this field\", and dropping it makes the clear silently fail."
-  [^js values]
-  (let [out #js {}]
-    (doseq [k (js/Object.keys values)]
-      (let [v (aget values k)]
-        (when-not (and (string? v) (= "" (.trim v)))
-          (aset out k v))))
-    out))
-
 (defn- with-number
   "Return a shallow copy of `values` with key `k` parsed to an integer (left as-is if
    unparseable). x-form reports a number control's value as a string; on a PUT/merge that
@@ -103,20 +93,17 @@
     (js/console.error err)
     (notify! msg "error")))
 
-;; ── 1. CREATE — New-task modal form submit ────────────────────────────────────
-(defn- on-create-submit! [^js e]
-  (.preventDefault e)
-  ;; Capture the form NOW: in the async .then, e.currentTarget is null (the event has
-  ;; finished dispatching), so a reset must hold the handle from sync time.
-  (let [^js form (.-currentTarget e)]
-    (-> (api/request "POST" api-tasks (without-blanks (.. e -detail -values)))
-        (.then (fn created [_created]
-                 (refresh-data! w/id-tasks-data)   ;; board re-reads /api/tasks → re-renders
-                 (when-let [^js m (.querySelector js/document w/id-new-task-modal)]
-                   (.hide m))                       ;; x-modal :hide closes the dialog
-                 (.reset form)                      ;; clear inputs so a reopen starts blank
-                 (notify! "Task created" "success")))
-        (.catch (on-failure "Create failed")))))
+;; ── 1. CREATE — DECLARATIVE (barebuild-action + invalidate-on) ─────────────────
+;; The elements do submit→POST→refetch /api/tasks (see #create-action in index.html).
+;; write_side only reacts to the published barebuild-action-state for the UI side-
+;; effects the elements do NOT cover: close the modal, reset the form, toast.
+(defn- on-create-state! [^js e]
+  (case (.. e -detail -state -phase)
+    "success" (do (when-let [^js m (.querySelector js/document w/id-new-task-modal)] (.hide m))
+                  (when-let [^js f (.querySelector js/document w/id-new-task-form)] (.reset f))
+                  (notify! "Task created" "success"))
+    "error"   (notify! "Create failed" "error")
+    nil))
 
 ;; ── 2. UPDATE — detail inline edit form submit ────────────────────────────────
 (defn- on-edit-submit! [^js e]
@@ -171,12 +158,13 @@
   read-side wiring (before component registration, so the listeners are live when
   the elements upgrade). Each handler performs its write, then re-reads the server."
   []
-  (let [^js new-form      (.querySelector js/document w/id-new-task-form)
+  (let [^js create-action (.querySelector js/document "#create-action")
         ^js edit-form     (.querySelector js/document w/id-edit-task-form)
         ^js confirm       (.querySelector js/document w/id-delete-confirm)
         ^js table         (.querySelector js/document w/id-tasks-table)
         ^js settings-form (.querySelector js/document w/id-settings-form)]
-    (.addEventListener new-form      w/ev-form-submit on-create-submit!)
+    ;; CREATE is declarative — we only listen to the action's published state.
+    (.addEventListener create-action w/ev-action-state on-create-state!)
     (.addEventListener edit-form     w/ev-form-submit on-edit-submit!)
     (.addEventListener confirm       w/ev-confirm     on-delete-confirm!)
     ;; Board row Delete buttons are delegated through the table (press bubbles).

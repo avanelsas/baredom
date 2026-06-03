@@ -254,6 +254,73 @@ resists. Add `name` *with* bind, when something consumes it.
 
 ---
 
+## Port evaluation: hand-wired → declarative (the "would I use it?" test)
+
+**Date 2026-06-03.** The alpha elements (`<barebuild-action>` + `<barebuild-invalidate-on>`)
+were built (branch `feat/barebuild-write-side`) and the demo's CREATE flow was ported off
+the hand-wired `write_side.cljs` onto them, as the solo-author graduation gate. Verdict so
+far: **the declarative fetch+invalidate works and is genuinely less code for the canonical
+flow — but the port found two real element bugs and confirmed the elements are not a clean
+drop-in.** Recorded against the gaps the analysis predicted.
+
+### Two element bugs the port found (both fixed in the alpha)
+1. **Missing `<slot>` (critical).** `barebuild-action` attached its shadow root via
+   `ensure-shadow-with-style! … slot? = false` (copied from the childless `barebuild-data`).
+   An element that *wraps* content needs a slot — without one the wrapped form stayed in the
+   light DOM and **functioned (events, `.value`, submit all worked) but never rendered**
+   (0×0). This is the trap of modelling a content-wrapper on a leaf broker. Fixed: `slot? = true`.
+2. **`:host{display:none}`.** Also copied from the leaf brokers; it would hide the wrapped
+   content. A wrapper needs a visible display — `display:block`. (`display:contents` is worse
+   here: it collapses the wrapped content when the action is a flex-item.)
+
+Both bugs share a root cause worth stating: **a containment-wrapper element is a different
+animal from a non-visual leaf broker, and cannot be cloned from one.** `barebuild-data` /
+`barebuild-invalidate-on` are leaves (no slot, display:none, correct); `barebuild-action`
+wraps visible content (slot, display:block).
+
+### Slot-displacement (a structural gotcha, not a bug)
+Wrapping the form *directly* (`<barebuild-action><x-form></barebuild-action>`) inside an
+`<x-modal>` makes the action — not the form — the modal's slotted child, which can break a
+host that styles its slotted children by selector. The fix is structural: **wrap the modal,
+not the form** (`<barebuild-action><x-modal><x-form>…`). The composed `x-form-submit` still
+bubbles out of the modal to the action. A real "mind where you put the wrapper" cost that
+hand-wiring (a listener, no wrapper) never imposes.
+
+### What the elements absorbed vs. what stayed imperative (CREATE)
+- **Absorbed declaratively:** submit→POST `/api/tasks`, and refetch the board on success
+  (`<barebuild-invalidate-on when-phase="success" src="/api/tasks">`). The hand-wired
+  `on-create-submit!` (fetch + `refresh-data!`) is gone.
+- **Stayed imperative** (a `barebuild-action-state` listener in `write_side`): close the
+  modal, reset the form, success/error toast. The elements cover the *data* round-trip; every
+  *UI* side-effect is still hand-wired.
+- **Payload-cleanliness gap (unresolved):** the action JSON-encodes `event.detail.values`
+  **as-is**. The hand-wired create used `without-blanks` so a blank `status` wouldn't shadow
+  the server default; the action can't, so the ported create writes `status: ""`. There is no
+  values-transform hook. (Settings' `with-number` coercion is the same class of gap.)
+
+### Flows NOT ported, with the reason (the analysis held)
+- **Update / settings** (form flows): portable like create, but `action`/`src` are **dynamic**
+  (`/api/tasks/:id`) and must be set imperatively per route — and settings hits the number-coercion
+  gap.
+- **Delete (detail confirm)** and **delete (board row):** **poor fit.** The triggers carry **no
+  values** (a confirm event; a delegated row button), so the action's values-required submit
+  path skips; and the row case is dynamically-rendered per-id. Event delegation (hand-wired) is
+  the right tool; the containment-action is not.
+
+### Provisional verdict
+The declarative path is **real and worth it for the canonical "form POST → refetch a list"**
+— once the element bugs above are fixed. But across a real write surface it is **hybrid**:
+declarative for fetch+invalidate, imperative for side-effects (toast/modal/reset/navigate),
+dynamic URLs, payload cleaning, and non-form triggers. Whether the markup wrapper + the
+`barebuild-action-state` listener is *nicer to write* than the hand-wired `fetch`-then-refresh
+is a genuine toss-up for anything past the canonical flow. The strongest concrete asks the port
+surfaced, if these graduate: (a) a **values-transform hook** on the action (blanks/coercion),
+(b) first-class **dynamic `action`/`src`** ergonomics, (c) a **no-values / imperative trigger**
+path for deletes. Without those, the elements cover the easy half and leave the awkward half
+hand-wired.
+
+---
+
 ## V1.1 recommendation
 
 _Provisional — N=1, biased. Do not act until the gate is met._

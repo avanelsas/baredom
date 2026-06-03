@@ -27,11 +27,17 @@
 ;; Frozen (every constructor freezes), so this singleton cannot be mutated.
 (def ^:private default-idle (model/idle-state))
 
-(def ^:private styles ":host{display:none}")
+;; The action WRAPS visible content (the submit emitter, e.g. an <x-form>) by
+;; containment, so its shadow root MUST carry a <slot> (ensure-shadow! slot? = true)
+;; or the wrapped content has nowhere to project and never renders — even though it
+;; stays in the light DOM and functions. display:block makes the host a transparent
+;; block wrapper around that slot. (invalidate-on is a childless leaf → no slot,
+;; display:none.)
+(def ^:private styles ":host{display:block}")
 
-;; ── Shadow DOM (non-visual; renders nothing) ────────────────────────────────────
+;; ── Shadow DOM (a transparent <slot> wrapper around the emitter) ─────────────────
 (defn- ensure-shadow! [^js el]
-  (du/ensure-shadow-with-style! el styles k-initialized? false))
+  (du/ensure-shadow-with-style! el styles k-initialized? true))
 
 ;; ── Fetch lifecycle (shared with barebuild-data — see barebuild/lifecycle) ──────
 ;; All the fetch/settle/change-guard machinery lives in the shared lifecycle ns so

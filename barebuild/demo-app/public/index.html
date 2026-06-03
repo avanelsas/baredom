@@ -77,21 +77,31 @@
           <x-table id="tasks-table" columns="56px 2fr 96px 1fr 120px 150px"
                    bordered caption="Tasks"></x-table>
 
-          <!-- New-task surface: built here, submit wiring is the Phase-4 stub seam. -->
-          <x-modal id="new-task-modal" label="New task" size="md">
-            <span slot="header">New task</span>
-            <x-form id="new-task-form">
-              <x-form-field name="title" label="Title" type="text" required></x-form-field>
-              <x-text-area name="description" label="Description" rows="3"></x-text-area>
-              <!-- Options populated from demo_app.view/statuses (board/init-board!). -->
-              <x-select name="status" placeholder="Status"></x-select>
-              <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
-              <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
-              <div class="row-actions" style="margin-top:12px">
-                <x-button type="submit" variant="primary">Create</x-button>
-              </div>
-            </x-form>
-          </x-modal>
+          <!-- New-task surface. Write-side ALPHA: barebuild-action wraps the MODAL (not the
+               form) so the form stays x-modal's direct slotted child and renders normally —
+               wrapping the form instead displaces it as the slotted child and breaks the
+               modal's ::slotted layout. The composed x-form-submit still bubbles out of the
+               modal to the action, which POSTs; the child invalidate-on refetches /api/tasks.
+               Modal-close / form-reset / toast are NOT covered by the elements — write_side
+               reacts to barebuild-action-state for those. -->
+          <barebuild-action id="create-action" name="create-task"
+                            action="/api/tasks" method="POST" submit-event="x-form-submit">
+            <x-modal id="new-task-modal" label="New task" size="md">
+              <span slot="header">New task</span>
+              <x-form id="new-task-form">
+                <x-form-field name="title" label="Title" type="text" required></x-form-field>
+                <x-text-area name="description" label="Description" rows="3"></x-text-area>
+                <!-- Options populated from demo_app.view/statuses (board/init-board!). -->
+                <x-select name="status" placeholder="Status"></x-select>
+                <x-form-field name="assignee" label="Assignee" type="text"></x-form-field>
+                <x-date-picker name="due" label="Due" mode="single" format="iso"></x-date-picker>
+                <div class="row-actions" style="margin-top:12px">
+                  <x-button type="submit" variant="primary">Create</x-button>
+                </div>
+              </x-form>
+            </x-modal>
+            <barebuild-invalidate-on when-phase="success" src="/api/tasks"></barebuild-invalidate-on>
+          </barebuild-action>
         </barebuild-route>
 
         <!-- ── Detail: /tasks/:id ─────────────────────────────────────────── -->

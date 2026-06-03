@@ -16,6 +16,9 @@
    ["@vanelsas/baredom/barebuild-router" :as barebuild-router]
    ["@vanelsas/baredom/barebuild-route"  :as barebuild-route]
    ["@vanelsas/baredom/barebuild-data"   :as barebuild-data]
+   ;; Write-side ALPHA (4.0.0-alpha) — declarative submit→fetch + invalidation
+   ["@vanelsas/baredom/barebuild-action"        :as barebuild-action]
+   ["@vanelsas/baredom/barebuild-invalidate-on" :as barebuild-invalidate-on]
    ;; UI components (dogfood)
    ["@vanelsas/baredom/x-navbar"          :as x-navbar]
    ["@vanelsas/baredom/x-table"           :as x-table]
@@ -46,6 +49,7 @@
   the listeners BEFORE calling this, so a deep-load still delivers that push."
   []
   (doseq [^js m [barebuild-router barebuild-route barebuild-data
+                 barebuild-action barebuild-invalidate-on
                  x-navbar x-table x-table-row x-table-cell x-stat x-badge
                  x-button x-search-field x-select x-modal x-form x-form-field
                  x-text-area x-date-picker x-card x-alert x-skeleton
