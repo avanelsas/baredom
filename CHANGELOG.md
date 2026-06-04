@@ -2,6 +2,14 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [4.0.0-alpha.1] - 2026-06-04
+
+**Pre-release — published on the npm `alpha` dist-tag (`npm install @vanelsas/baredom@alpha`). The stable `latest` line is unaffected, and `^3.x` ranges never resolve this version.** Patch over `4.0.0-alpha.0` carrying one core fix surfaced while dogfooding the write-side demo. The write-side element surface (`<barebuild-action>`, `<barebuild-invalidate-on>`, the `<barebuild-data>` invalidation substrate) is unchanged from `4.0.0-alpha.0`.
+
+### Fixed
+
+- **`x-select`** — `.value` now reflects the **current user selection** instead of the (never-updated) value *attribute*. Consumers reading `el.value` — `x-form`'s submission collection and any code reading the control directly (e.g. a status-filter dropdown) — got a stale value after the user picked an option. The getter now reads the live inner `<select>`, with a value set before its `<option>` loads (async options) reading back as pending from the attribute until the option arrives. Both pre-existing `.value` semantics tests pass unchanged; two regression tests added.
+
 ## [4.0.0-alpha.0] - 2026-06-03
 
 **Pre-release — published on the npm `alpha` dist-tag (`npm install @vanelsas/baredom@alpha`). The stable `latest` line is unaffected, and `^3.x` ranges never resolve this version.** First preview of the BareBuild **write-side** coordination elements, designed-by-use from the Phase-4 demo port. These are **experimental — attribute shapes may change before 4.0.0** (the no-selectors / values-not-places spine will not). See `barebuild/docs/write-side-design-notes.md`.
