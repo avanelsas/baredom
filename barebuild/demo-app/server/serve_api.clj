@@ -11,8 +11,9 @@
   that; a thin wrapper around serve.clj's handler would only show 'same server, new port'.
 
   Run from barebuild/demo-app/:  `bb serve-api [port]`  (default 3001).
-  Pair it with a page served on a DIFFERENT origin (e.g. `bb serve` on 3000) loaded as
-  `http://localhost:3000/?api=http://localhost:3001` to drive it cross-origin over CORS.
+  Pair it with a page served on a DIFFERENT origin (e.g. `bb serve` on 3000) and pick this
+  backend in the demo's navbar picker (or deep-link `?backend=bb-cors`) to drive it
+  cross-origin over CORS.
 
   State is two in-memory atoms seeded from data/*.edn, ephemeral per process (resets on
   restart) — matching serve.clj's 'the server holds truth' stance. Boundary note: like
@@ -141,6 +142,6 @@
     (println (str "BareBuild demo — INDEPENDENT API-only backend (CORS) → http://localhost:" port))
     (println "  read:  GET /api/tasks   GET /api/tasks/:id   GET /api/settings")
     (println "  write: POST /api/tasks  PUT|PATCH|DELETE /api/tasks/:id  PUT /api/settings")
-    (println (str "  CORS:  * (no static). Pair with a page on another origin via "
-                  "?api=http://localhost:" port))
+    (println (str "  CORS:  * (no static). Pick this backend in the demo's navbar picker "
+                  "(or ?backend=bb-cors) on a page served from another origin."))
     @(promise)))

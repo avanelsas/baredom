@@ -7,7 +7,7 @@ import { defineConfig } from '@playwright/test';
 //                        read/write specs drive this with no CORS; SPA deep-links
 //                        resolve via the server's fallback.
 //  - `bb serve-api 3001` — the INDEPENDENT API-only + CORS server (serve_api.clj) on
-//                        a separate origin. xorigin.spec.ts drives it via ?api= to
+//                        a separate origin. xorigin.spec.ts drives it via ?backend= to
 //                        prove the elements work cross-origin against a different
 //                        backend (see server/API-CONTRACT.md).
 // Bundled chromium is used (what `bb e2e` provisions via `npx playwright install

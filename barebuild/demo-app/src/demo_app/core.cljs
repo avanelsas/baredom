@@ -8,6 +8,8 @@
   namespaces; the write surfaces those namespaces build are wired by hand in
   write-side (the Phase-4 telemetry seam)."
   (:require
+   [demo-app.wiring     :as w]
+   [demo-app.dom        :as dom]
    [demo-app.board      :as board]
    [demo-app.detail     :as detail]
    [demo-app.settings   :as settings]
@@ -56,12 +58,34 @@
                  x-cancel-dialogue x-toast x-toaster]]
     (.init m)))
 
+(defn- init-backend-select!
+  "Wire the navbar backend picker (#backend-select): populate it from the data-driven
+  w/backends, reflect the active choice, and on a change persist + reload — the brokers
+  re-fetch from the new backend cleanly on load. This is the demo's interactive proof of
+  server-agnosticism (swap the server, the same app works against it). The change guard
+  ignores the upgrade's echo of the current value, so only a real switch reloads.
+
+  Set before component registration (the picker is parsed but not upgraded): options +
+  the value ATTRIBUTE are read by x-select on upgrade, and the listener is already live."
+  []
+  (when-let [^js sel (.querySelector js/document "#backend-select")]
+    (dom/fill-options! sel w/backends nil)
+    (.setAttribute sel "value" (:value w/active-backend))
+    (.addEventListener sel w/ev-select-change
+                       (fn on-backend-change [^js e]
+                         (let [v (.. e -detail -value)]
+                           (when (not= v (:value w/active-backend))
+                             (w/select-backend! v)
+                             (.reload (.. js/window -location))))))))
+
 (defn init! []
   (board/init-board!)
   (detail/init-detail!)
   (settings/init-settings!)
   ;; Live write-side handlers — create / update / delete / settings (see write_side.cljs).
   (write-side/attach-write-handlers!)
+  (w/capture-backend!)        ; persist a valid ?backend deep-link so the choice sticks
+  (init-backend-select!)
   (register-components!))
 
 (defn reload! []

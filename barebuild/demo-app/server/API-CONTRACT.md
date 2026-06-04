@@ -86,5 +86,6 @@ No credentials are sent, so `*` is correct.
 **URL-match note:** `<barebuild-data>` decides whether a `barebuild-invalidate` applies by exact
 **origin + pathname + query** equality. So when the page drives a cross-origin API, the data
 broker's `src` **and** the matching `<barebuild-invalidate-on src>` must both carry the **same
-absolute base** (see the demo's `?api=` switch). A relative `src` resolves to the page origin and
-would not match an absolute cross-origin invalidate.
+absolute base** (the demo routes every API URL through `demo_app.wiring/api`, selected via the
+navbar backend picker). A relative `src` resolves to the page origin and would not match an
+absolute cross-origin invalidate.

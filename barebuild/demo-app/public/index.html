@@ -10,6 +10,8 @@
       main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
       .nav-link { text-decoration: none; padding: 6px 12px; border-radius: 8px; color: inherit; }
       .nav-link:hover { background: rgba(127,127,127,.12); }
+      .backend-picker { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+      .backend-picker > span { color: var(--x-color-text-muted, #777); }
       .toolbar { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 16px 0; }
       .toolbar .grow { flex: 1 1 220px; }
       .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
@@ -29,6 +31,15 @@
       <x-navbar label="BareBuild Tasks" sticky elevated>
         <a class="nav-link" href="/tasks" data-barebuild-route>Board</a>
         <a class="nav-link" href="/settings" data-barebuild-route>Settings</a>
+        <!-- Backend picker (demo affordance): proves BareBuild is server-agnostic by letting
+             you swap which server the demo talks to. Options come from demo_app.wiring/backends;
+             a change persists + reloads (core/init-backend-select!). A non-same-origin choice
+             needs that server running + CORS-enabled (e.g. `bb serve-api` for :3001). -->
+        <div slot="end" class="backend-picker"
+             title="Swap the backend the demo talks to (server-agnostic demo). A non-same-origin choice needs that server running + CORS — e.g. `bb serve-api` for :3001.">
+          <span id="backend-label">Backend</span>
+          <x-select id="backend-select" aria-label="Backend"></x-select>
+        </div>
       </x-navbar>
 
       <main>
@@ -179,12 +190,8 @@
     <!-- Global toast region (persists across routes). Write outcomes surface here. -->
     <x-toaster id="toaster" position="bottom-end"></x-toaster>
 
-    <!-- Backend switch (demonstrates BareBuild is server-agnostic): pass ?api=<origin>
-         (e.g. ?api=http://localhost:3001) to drive a SEPARATE, cross-origin backend —
-         the independent `bb serve-api` server. No ?api → relative URLs → single-origin
-         `bb serve`. The base is read + normalized once in demo-app.wiring/api-base and
-         every API URL (read broker src, write action, invalidate-on src) flows through
-         w/api — so the static action/invalidate URLs below are the relative default and
-         write_side re-points them only when a cross-origin ?api is set. -->
+    <!-- (Backend selection is the navbar #backend-select picker above; see its comment and
+         demo_app.wiring. The static action/invalidate URLs below are the same-origin
+         default — write_side re-points them only when a non-same-origin backend is active.) -->
   </body>
 </html>

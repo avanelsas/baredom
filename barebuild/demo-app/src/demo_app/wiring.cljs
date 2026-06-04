@@ -8,25 +8,71 @@
   in their namespace — they are not duplicated, and they read 1:1 with index.html.)"
   (:require [clojure.string :as str]))
 
-;; ── API base (cross-origin / backend-swap switch) ─────────────────────────────
-;; API URLs are RELATIVE by default ("") → they resolve to the PAGE origin, exactly
-;; what single-origin `bb serve` needs. Pass `?api=<origin>` (e.g.
-;; ?api=http://localhost:3001) to drive a SEPARATE backend cross-origin — the
-;; independent `bb serve-api` server (see server/API-CONTRACT.md).
+;; ── Backends (data-driven backend registry — the demo's "swap server" picker) ──
+;; The demo's whole server-agnosticism story as DATA: each entry is a backend the demo
+;; can talk to. Adding one (e.g. the future Node server) is a SINGLE row here + that
+;; server implementing server/API-CONTRACT.md on its port with CORS — nothing else
+;; changes. `:base` "" = same-origin as the page (the default; works with just
+;; `bb serve`). A non-empty `:base` is a SEPARATE origin, so that server must be running
+;; AND CORS-enabled (the page is one origin; a different base = cross-origin). `:value`
+;; is the option value, the sessionStorage value, and the `?backend=<value>` deep-link id.
+;; PORTS: the labels/bases assume the servers' DEFAULT ports (serve.clj :3000,
+;; serve_api.clj :3001). Override a server's PORT and you must edit its row here too —
+;; there is no shared source of truth between the servers and these labels.
+(def backends
+  [{:value "same-origin" :label "Same-origin · :3000 (babashka)"    :base ""}
+   {:value "bb-cors"     :label "CORS · :3001 (babashka serve_api)" :base "http://localhost:3001"}
+   ;; Add the future Node server here once it implements the contract on :3002 with CORS:
+   ;; {:value "node-cors" :label "CORS · :3002 (Node)" :base "http://localhost:3002"}
+   ])
+
+(def ^:private backend-storage-key "barebuildDemoBackend")
+
+(defn- backend-by-value [v]
+  (first (filter #(= v (:value %)) backends)))
+
+;; NOTE: `url-backend-param` / `active-backend` / `api-base` read the browser environment at
+;; namespace LOAD (not in init!) ON PURPOSE — the backend choice is fixed for the page's
+;; lifetime (an epoch); swapping it is a page reload (a new epoch), never a live mutation. It
+;; must be a load-time value because write_side's `(def api-tasks (w/api …))` reads api-base
+;; at its own load. Don't "fix" this into an init-time read without reworking that chain.
 ;;
-;; This is the SINGLE place the base is read and normalized — there is no JS boot
-;; script and no `window` global. Read once at load (a backend swap is a page reload,
-;; not a live mutation). A trailing slash is stripped so `(str api-base "/api/x")` can
-;; never produce a double slash (which the server 404s — and which still origin-matches
-;; the invalidate, so the failure would be silent). Every API URL flows through `api`
-;; below, so read brokers, write actions, and invalidate-on srcs all prefix uniformly.
-(def api-base
-  (let [raw  (or (.get (js/URLSearchParams. (.. js/window -location -search)) "api") "")
-        base (str/replace raw #"/+$" "")]
-    (when (and (seq base) (not (str/includes? base "://")))
-      (js/console.warn (str "demo-app: ?api=\"" base "\" has no scheme; it resolves against the "
-                            "page origin, not a separate backend. Use e.g. http://localhost:3001")))
-    base))
+;; The `?backend=<value>` deep-link, read ONCE at load (the URL doesn't change between
+;; ns-load and init!, so `active-backend` and `capture-backend!` share this single read).
+(def ^:private url-backend-param
+  (.get (js/URLSearchParams. (.. js/window -location -search)) "backend"))
+
+(defn- store-backend! [v]
+  (.setItem js/sessionStorage backend-storage-key v))
+
+;; The active backend, resolved ONCE at load (a READ, no writes): a VALID `?backend=<value>`
+;; deep-link wins, else the remembered sessionStorage choice, else the first (same-origin).
+;; Persisting the deep-link is done separately by `capture-backend!` (from core/init!), so
+;; resolving the value here has no side effects.
+(def active-backend
+  (or (backend-by-value url-backend-param)
+      (backend-by-value (.getItem js/sessionStorage backend-storage-key))
+      (first backends)))
+
+(defn capture-backend!
+  "If the URL carried a VALID `?backend=<value>`, remember it for the tab so the choice
+  survives in-app navigation (the router drops the query) and reloads. Validates first, so
+  an unknown/empty `?backend` is ignored rather than persisted as junk. Called from init!."
+  []
+  (when-let [b (backend-by-value url-backend-param)]
+    (store-backend! (:value b))))
+
+(defn select-backend!
+  "Persist the chosen backend `value` for the tab; `active-backend` reads it on the next
+  load. The caller reloads to apply it — a backend swap re-initialises every broker
+  cleanly, rather than live-repointing (which would make the base a place, not a value)."
+  [value]
+  (store-backend! value))
+
+;; Every API URL flows through `api`. The base is normalised (trailing slash stripped) so a
+;; `backends` row pasted with a trailing slash can't produce `//api/x` — which the server
+;; 404s while the invalidate still origin-matches (a silent failure). "" → relative → origin.
+(def api-base (str/replace (:base active-backend) #"/+$" ""))
 
 (defn api
   "Prefix an API path with the configured base (empty default = relative URL → page
