@@ -398,8 +398,50 @@
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
 
+(defn- option-value-present?
+  "True when the inner <select> currently has an <option> with this exact value."
+  [^js select-el value]
+  (let [opts (.-options select-el)
+        n    (.-length opts)]
+    (loop [i 0]
+      (cond
+        (>= i n)                          false
+        (= value (.-value (aget opts i))) true
+        :else                             (recur (inc i))))))
+
+;; `value` must reflect the CURRENT selection — that is the native <select> contract and
+;; what every other BareDOM form control honours (x-form's collect-values and direct
+;; `el.value` readers depend on it). The reflecting accessor install-properties! would give
+;; reads the `value` ATTRIBUTE, which a user selection never updates, so override `value`
+;; with a getter that reads the live inner <select>. The one wrinkle: a non-empty value set
+;; BEFORE its <option> exists (async-loaded options) can't be held by the inner <select> —
+;; surface that as pending via the attribute until the option arrives and apply-model!
+;; selects it. (`value-attr-not-auto-set-on-change-test` still holds: a user change updates
+;; only the inner <select>, never the attribute.)
+(defn- define-value-prop! [^js proto]
+  (.defineProperty
+   js/Object proto "value"
+   #js {:configurable true
+        :enumerable   true
+        :get (fn xs-get-value []
+               (this-as ^js this
+                 (if-let [refs (du/getv this k-refs)]
+                   (let [^js select-el (gobj/get refs part-select)
+                         attr          (or (du/get-attr this model/attr-value) "")]
+                     (if (and (not= attr "") (not (option-value-present? select-el attr)))
+                       attr                       ; pending: option not loaded yet
+                       (.-value select-el)))      ; live selection (incl. a deliberate empty pick)
+                   (or (du/get-attr this model/attr-value) ""))))
+        :set (fn xs-set-value [v]
+               ;; Set the attribute (the controlled/pending value); apply-model! selects the
+               ;; matching <option> on the inner select. Same as the reflecting setter it replaces.
+               (this-as ^js this
+                 (du/set-attr! this model/attr-value
+                               (if (and (some? v) (not= v js/undefined)) (str v) ""))))}))
+
 (defn- install-property-accessors! [^js proto]
-  (du/install-properties! proto model/property-api))
+  (du/install-properties! proto model/property-api)   ; disabled / required / name + (reflecting) value
+  (define-value-prop! proto))                          ; override `value`: getter reads the live inner <select>
 
 (defn init! []
   (component/register! model/tag-name
