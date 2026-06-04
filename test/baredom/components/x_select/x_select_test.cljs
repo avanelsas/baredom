@@ -324,6 +324,47 @@
           0))
        0))))
 
+;; Conforming behaviour: `el.value` reflects the user's CURRENT selection (native <select>
+;; contract) — what x-form's collect-values and the demo's status filter read. Previously
+;; el.value returned the stale `value` attribute and never tracked a user selection.
+(deftest value-reflects-user-selection-test
+  (async done
+    (let [el    (append! (make-el))
+          opt-a (.createElement js/document "option")
+          opt-b (.createElement js/document "option")]
+      (.setAttribute opt-a "value" "alpha") (set! (.-textContent opt-a) "Alpha")
+      (.setAttribute opt-b "value" "beta")  (set! (.-textContent opt-b) "Beta")
+      (.appendChild el opt-a)
+      (.appendChild el opt-b)
+      (js/setTimeout
+       (fn []
+         (let [^js sel (shadow-part el "[part=select]")]
+           (set! (.-value sel) "beta")
+           (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
+         (js/setTimeout
+          (fn []
+            (is (= "beta" (.-value el))
+                "el.value reflects the user's selection (not the stale attribute)")
+            (done))
+          0))
+       0))))
+
+;; A value set BEFORE its <option> exists (async-loaded options) reads back as pending,
+;; then resolves to the live selection once the option arrives.
+(deftest value-set-before-options-is-pending-then-resolves-test
+  (async done
+    (let [el (append! (make-el))]
+      (set! (.-value el) "beta")
+      (is (= "beta" (.-value el)) "pending value reads back before its option exists")
+      (let [opt-b (.createElement js/document "option")]
+        (.setAttribute opt-b "value" "beta") (set! (.-textContent opt-b) "Beta")
+        (.appendChild el opt-b))
+      (js/setTimeout
+       (fn []
+         (is (= "beta" (.-value el)) "resolves to the now-present option's value")
+         (done))
+       0))))
+
 (deftest select-change-event-bubbles-and-composed-test
   (async done
     (let [el    (append! (make-el))
