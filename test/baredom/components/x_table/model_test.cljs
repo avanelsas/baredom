@@ -4,10 +4,10 @@
 
 ;; ── parse-columns ────────────────────────────────────────────────────────────
 (deftest parse-columns-integer-test
-  (testing "integer string → repeat(N,1fr)"
-    (is (= "repeat(4,1fr)" (model/parse-columns "4")))
-    (is (= "repeat(1,1fr)" (model/parse-columns "1")))
-    (is (= "repeat(12,1fr)" (model/parse-columns "12")))))
+  (testing "integer string → repeat(N,minmax(0,1fr)) for truly equal columns"
+    (is (= "repeat(4,minmax(0,1fr))" (model/parse-columns "4")))
+    (is (= "repeat(1,minmax(0,1fr))" (model/parse-columns "1")))
+    (is (= "repeat(12,minmax(0,1fr))" (model/parse-columns "12")))))
 
 (deftest parse-columns-css-string-test
   (testing "CSS string passed through"
@@ -77,7 +77,7 @@
     (is (nil?     (:row-count m)))))
 
 (deftest normalize-columns-test
-  (is (= "repeat(3,1fr)" (:columns (model/normalize {:columns-raw "3"}))))
+  (is (= "repeat(3,minmax(0,1fr))" (:columns (model/normalize {:columns-raw "3"}))))
   (is (= "2fr 1fr"       (:columns (model/normalize {:columns-raw "2fr 1fr"})))))
 
 (deftest normalize-selectable-test

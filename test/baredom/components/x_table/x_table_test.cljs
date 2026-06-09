@@ -64,7 +64,8 @@
 (deftest columns-integer-test
   (let [^js el (append! (make-table {:columns "3"}))]
     ;; grid-template-columns should be set on host style
-    (is (= "repeat(3, 1fr)" (.. el -style -gridTemplateColumns)))))
+    ;; Browser serialises 0 → 0px when reading back the computed style value.
+    (is (= "repeat(3, minmax(0px, 1fr))" (.. el -style -gridTemplateColumns)))))
 
 (deftest columns-css-value-test
   (let [^js el (append! (make-table {:columns "2fr 1fr"}))]

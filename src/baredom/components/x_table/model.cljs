@@ -50,7 +50,12 @@
 
 (defn parse-columns
   "Parse `columns` attribute to a CSS grid-template-columns string.
-  A positive integer string (e.g. \"4\") becomes \"repeat(4,1fr)\".
+  A positive integer string (e.g. \"4\") becomes \"repeat(4,minmax(0,1fr))\"
+  — equal-width tracks that can shrink below their content's intrinsic
+  minimum. Plain `1fr` keeps a `min-content` floor, so a wide/unbreakable
+  cell makes its column bulge past its share and the columns come out
+  uneven; `minmax(0,1fr)` is what authors actually mean by \"N equal
+  columns\". For per-column sizing, pass an explicit template string instead.
   Any other non-empty string is returned as-is.
   Nil or blank → nil (no explicit template)."
   [s]
@@ -61,7 +66,7 @@
           (if (and (not (js/isNaN n))
                    (pos? n)
                    (= t (str n)))
-            (str "repeat(" n ",1fr)")
+            (str "repeat(" n ",minmax(0,1fr))")
             t))))))
 
 (defn parse-selectable
