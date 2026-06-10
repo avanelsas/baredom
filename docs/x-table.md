@@ -26,7 +26,7 @@ A stateless Web Component that acts as the grid container for `x-table-row` and 
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `columns` | string | absent | CSS `grid-template-columns` value. A positive integer (e.g. `"4"`) expands to `repeat(4,1fr)`. Any other string is used as-is. Absent → no explicit column template. |
+| `columns` | string | absent | CSS `grid-template-columns` value. A positive integer (e.g. `"4"`) expands to `repeat(4,minmax(0,1fr))` (equal-width columns). Any other string is used as-is. Absent → no explicit column template. |
 | `caption` | string | absent | Visible caption text rendered before the first row. Also sets `aria-label` on the host. |
 | `selectable` | `"none"\|"single"\|"multi"` | `"none"` | Row selection mode. `"single"` and `"multi"` switch `role` to `"grid"` and enable automatic selection management via `x-table-row-click` events. `"multi"` also adds `aria-multiselectable="true"`. |
 | `striped` | boolean | absent | Applies an alternating background to even-indexed `x-table-row` children. |
@@ -182,8 +182,8 @@ x-table {
 `x-table` is `display:grid`. Its `grid-template-columns` value comes from the `columns` attribute:
 
 ```css
-/* Integer shorthand */
-<x-table columns="4">          →  grid-template-columns: repeat(4,1fr)
+/* Integer shorthand — equal-width columns */
+<x-table columns="4">          →  grid-template-columns: repeat(4,minmax(0,1fr))
 
 /* CSS value */
 <x-table columns="2fr 1fr 120px">  →  grid-template-columns: 2fr 1fr 120px
@@ -191,6 +191,8 @@ x-table {
 /* Absent */
 <x-table>                      →  grid-template-columns: (not set, auto)
 ```
+
+The integer shorthand expands to `minmax(0,1fr)`, not plain `1fr`. A bare `1fr` track keeps a `min-content` floor, so a column holding wide or unbreakable content (a long string, a button) bulges past its share and the columns come out uneven. `minmax(0,1fr)` removes that floor, giving genuinely equal columns whose content shrinks/ellipsises instead of overflowing — which is what `columns="N"` is meant to express. Pass an explicit template string when you want per-column sizing.
 
 Each `x-table-row` child has `grid-template-columns:subgrid; grid-column:1/-1` — it inherits the column tracks from `x-table` and its `x-table-cell` children align perfectly across rows.
 
