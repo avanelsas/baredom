@@ -25,15 +25,8 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           VERSION="${TAG#v}"
-          # Dist-tag from any semver pre-release identifier so a pre-release NEVER moves
-          # `latest`: 4.0.0-alpha.0 → alpha, 4.0.0-rc.1 → rc, 3.5.0 → latest (no identifier).
-          DIST_TAG=$(printf '%s' "$VERSION" | sed -n 's/^[0-9.]*-\([A-Za-z]*\).*/\1/p')
-          [ -z "$DIST_TAG" ] && DIST_TAG=latest
-          PRERELEASE=false; [ "$DIST_TAG" = latest ] || PRERELEASE=true
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "dist_tag=${DIST_TAG}" >> "$GITHUB_OUTPUT"
-          echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
 
       # Added this step to fix UnsupportedClassVersionError
       - name: Setup Java
@@ -84,15 +77,11 @@ jobs:
       - name: Publish to NPM
         run: |
           npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
-          npm publish --access public --tag "${{ steps.version.outputs.dist_tag }}"
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build and Publish to Clojars
-        # Pre-releases (alpha) are npm/ESM-only — skip the Clojure jar. (The jar is for
-        # source-consuming CLJS apps, not the alpha audience; skipping also avoids
-        # re-deploying an unbumped jar version, which Clojars rejects.)
-        if: ${{ steps.version.outputs.prerelease == 'false' }}
         run: |
           clojure -T:build jar
           clojure -X:deploy
@@ -106,6 +95,5 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: "v${{ steps.version.outputs.version }}"
           generate_release_notes: true
-          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

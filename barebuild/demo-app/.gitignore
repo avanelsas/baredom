@@ -1,8 +1,0 @@
-/node_modules
-/.shadow-cljs
-/public/js
-/test-results
-/playwright-report
-# Generated fresh each install (CI installs a locally-packed @vanelsas/baredom
-# tarball over the pin); never commit a lockfile pinned to a local file: path.
-/package-lock.json

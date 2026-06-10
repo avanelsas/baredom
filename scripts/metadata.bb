@@ -182,9 +182,7 @@
 
    `prefixes` selects which export names to keep; defaults to [\"x-\"] so the
    framework-adapter generators (which call this with no args) only ever see the
-   x- components — barebuild-* orchestration elements must NOT be wrapped by
-   adapters (enforced by check-barebuild-boundary.bb). The .d.ts/CEM generator
-   opts barebuild-* in explicitly by passing [\"x-\" \"barebuild-\"]."
+   x- components."
   ([] (load-package-exports ["x-"]))
   ([prefixes]
    (let [pkg (json/parse-string (slurp package-json) true)]

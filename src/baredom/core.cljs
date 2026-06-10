@@ -9,10 +9,6 @@
   []
   (doseq [register! registry/all-registers]
     (register!))
-  ;; BareBuild orchestration components are not in all-registers (the kitchen-sink
-  ;; UI bundle stays pure); the dev demo registers them explicitly.
-  (doseq [register! registry/barebuild-registers]
-    (register!))
   (x-debug/register!)
   (x-trace-history/register!)
   (hot-reload/refresh-styles!))
