@@ -103,7 +103,7 @@ All adapters are auto-generated from the same Custom Elements Manifest, so addin
 
 ## Components
 
-**103 UI web components across 11 categories** — from foundational UI controls to morphing animations, organic effects, and scroll-driven storytelling — plus **3 [BareBuild](./barebuild/docs/read-side.md) orchestration elements** (read-side: router / route / data).
+**103 UI web components across 11 categories** — from foundational UI controls to morphing animations, organic effects, and scroll-driven storytelling.
 
 | Category | Count | Examples |
 |----------|------:|----------|
@@ -118,7 +118,6 @@ All adapters are auto-generated from the same Custom Elements Manifest, so addin
 | **Effects**    | 12 | Liquid Glass · Confetti · Neural Glow · Metaball Cursor · Organic Shape |
 | **Scroll**     | 5  | Scroll · Scroll Parallax · Scroll Stack · Scroll Story · Scroll Timeline |
 | **Utility**    | 2  | i18n · i18n Provider |
-| **Orchestration** | 3 | BareBuild Router · Route · Data — read-side; not adapter-wrapped |
 
 See [**docs/components.md**](./docs/components.md) for the full per-component catalogue with one-line descriptions and links to each component's API documentation.
 

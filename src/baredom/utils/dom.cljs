@@ -42,8 +42,7 @@
    or nil when already initialized.
 
    Centralises the attach-shadow + <style>/<slot> bootstrap that layout-only
-   and non-visual components (e.g. the barebuild-* orchestration elements)
-   otherwise hand-roll identically."
+   and non-visual components otherwise hand-roll identically."
   [^js el css init-key slot?]
   (when-not (initialized? el init-key)
     (let [root  (.attachShadow el #js {:mode "open"})

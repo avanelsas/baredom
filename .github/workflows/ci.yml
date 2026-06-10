@@ -59,9 +59,6 @@ jobs:
       - name: Check du discipline (no gobj on host, no make-el shim)
         run: bb scripts/check_du_discipline.bb
 
-      - name: Check barebuild boundary (BareDOM <-> BareBuild)
-        run: bb scripts/check-barebuild-boundary.bb
-
       - name: Build ESM library
         run: npm run build
 
@@ -124,52 +121,3 @@ jobs:
         run: npm test
         env:
           CHROMIUM_FLAGS: "--no-sandbox"
-
-  demo-e2e:
-    name: Demo app E2E (Playwright)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-
-      - uses: DeLaGuardo/setup-clojure@13
-        with:
-          cli: 'latest'
-
-      - name: Setup Babashka
-        run: |
-          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
-          chmod +x install
-          sudo ./install --dir /usr/local/bin
-          bb --version
-
-      - run: npm ci
-
-      # barebuild-* is not published to npm yet, so build the ESM library and
-      # install a local pack OVER the demo app's registry pin (same approach as
-      # `bb smoke-build`). Once barebuild-* ships, the demo's ^3.x pin resolves
-      # from the registry and these two steps collapse to a plain `npm install`.
-      - name: Build ESM library (for the local pack)
-        run: npx shadow-cljs release lib
-
-      - name: Pack and install the library into the demo app (over the pin)
-        run: |
-          TGZ="$(npm pack --silent | tail -1)"
-          echo "packed $TGZ"
-          cd barebuild/demo-app
-          npm install "$GITHUB_WORKSPACE/$TGZ"
-
-      - name: Install Playwright chromium + OS deps
-        run: cd barebuild/demo-app && npx playwright install --with-deps chromium
-
-      - name: Run demo-app read-path E2E
-        run: cd barebuild/demo-app && bb e2e

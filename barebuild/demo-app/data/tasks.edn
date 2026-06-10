@@ -1,6 +1,0 @@
-;; Seed task data for the demo backend (server/serve.clj). Loaded into an
-;; in-memory atom at startup; mutations are ephemeral (reset on restart).
-[{:id 1 :title "Draft the read-side guide" :status "done"  :assignee "Ada"   :due "2026-06-02"}
- {:id 2 :title "Wire the board route"       :status "doing" :assignee "Alan"  :due "2026-06-05"}
- {:id 3 :title "Sketch the detail view"     :status "todo"  :assignee "Grace" :due "2026-06-09"}
- {:id 4 :title "Seed the demo backend"      :status "todo"  :assignee "Ada"   :due "2026-06-11"}]
