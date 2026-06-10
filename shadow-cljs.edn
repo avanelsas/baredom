@@ -572,21 +572,4 @@
      {init baredom.exports.x-trace-history/init}
      :depends-on #{:base}}
 
-    ;; BareBuild orchestration components (read-side, V1). Same per-module ESM
-    ;; shape as the x-* UI components; named barebuild-* (orchestration, not UI).
-    :barebuild-router
-    {:exports
-     {init baredom.exports.barebuild-router/init}
-     :depends-on #{:base}}
-
-    :barebuild-route
-    {:exports
-     {init baredom.exports.barebuild-route/init}
-     :depends-on #{:base}}
-
-    :barebuild-data
-    {:exports
-     {init baredom.exports.barebuild-data/init}
-     :depends-on #{:base}}
-
     }}}}

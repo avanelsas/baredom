@@ -1,5 +1,0 @@
-[
-  { "id": 1, "name": "Ada Lovelace", "role": "Admin" },
-  { "id": 2, "name": "Alan Turing", "role": "Engineer" },
-  { "id": 3, "name": "Grace Hopper", "role": "Engineer" }
-]
