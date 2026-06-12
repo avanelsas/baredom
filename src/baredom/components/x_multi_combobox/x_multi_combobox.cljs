@@ -184,7 +184,7 @@
    "flex-shrink:0;"
    "margin-left:0.25rem;"
    "transition:transform 200ms ease;"
-   "pointer-events:none;"
+   "cursor:pointer;"
    "}"
    ":host([open]) [part=chevron]{"
    "transform:rotate(180deg);"
