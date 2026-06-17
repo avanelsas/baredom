@@ -44,6 +44,35 @@
     (is (some? (shadow-part el "[part=chevron]")))
     (is (some? (shadow-part el "[part=panel]")))))
 
+;; ── Chevron is hit-testable (regression: issue #267) ─────────────────────────
+;; The chevron carries a `pointerdown` listener that toggles the panel. If CSS
+;; sets `pointer-events:none` on it, real clicks fall through and the handler is
+;; dead code. A synthetic dispatchEvent bypasses hit-testing, so we assert the
+;; computed style directly — this is what actually caught the bug.
+(deftest chevron-is-hit-testable-test
+  (let [^js el      (append! (make-el))
+        ^js chevron (shadow-part el "[part=chevron]")
+        pe          (.-pointerEvents (js/getComputedStyle chevron))]
+    (is (not= "none" pe)
+        "chevron must receive pointer events so its click handler can fire")))
+
+;; ── Chevron pointerdown toggles the panel (issue #267) ───────────────────────
+(deftest chevron-pointerdown-toggles-open-test
+  (let [^js el      (append! (make-el))
+        ^js chevron (shadow-part el "[part=chevron]")
+        fire!       (fn []
+                      (.dispatchEvent
+                       chevron
+                       (js/PointerEvent. "pointerdown"
+                                         #js {:bubbles true :cancelable true})))]
+    (is (not (.hasAttribute el model/attr-open)))
+    (fire!)
+    (is (.hasAttribute el model/attr-open)
+        "pointerdown on the chevron should open the panel")
+    (fire!)
+    (is (not (.hasAttribute el model/attr-open))
+        "pointerdown on the chevron while open should close the panel")))
+
 ;; ── Default state ────────────────────────────────────────────────────────────
 (deftest default-state-test
   (let [^js el    (append! (make-el))

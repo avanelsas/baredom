@@ -206,7 +206,7 @@
    "[part=chevron]{"
    "display:inline-flex;align-items:center;"
    "color:var(--x-combobox-chevron-color);flex-shrink:0;margin-left:0.25rem;"
-   "transition:transform 200ms ease;pointer-events:none;"
+   "transition:transform 200ms ease;cursor:pointer;"
    "}"
    ":host([open]) [part=chevron]{transform:rotate(180deg);}"
    "[part=panel]{"
