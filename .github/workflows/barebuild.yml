@@ -1,0 +1,75 @@
+name: barebuild
+
+# BareBuild is a self-contained subproject that only shares this repo for convenience.
+# Its CI runs ONLY when barebuild/ changes, and BareDOM's ci.yml ignores barebuild/ —
+# so the two projects' pipelines never trigger each other.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'barebuild/**'
+      - '.github/workflows/barebuild.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'barebuild/**'
+      - '.github/workflows/barebuild.yml'
+
+concurrency:
+  group: barebuild-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  barebuild:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - name: Setup clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          clj-kondo --version
+
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
+      - name: Install deps
+        working-directory: barebuild
+        run: npm ci
+
+      - name: Lint (product + demo)
+        working-directory: barebuild
+        run: clj-kondo --lint src test read_demo/src read_demo/test
+
+      - name: Unit tests (Node)
+        working-directory: barebuild
+        run: npm test
+
+      - name: Server handler tests
+        working-directory: barebuild
+        run: npm run test:server
+
+      - name: Release build (Closure Advanced)
+        working-directory: barebuild
+        run: npm run build

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BareBuild — Task demo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 60rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    header { margin-bottom: 1.5rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { color: gray; margin-top: 0; }
+    #app { margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BareBuild — Task demo</h1>
+    <p class="subtitle">
+      A read-only projection of server state: one <code>&lt;server-resource&gt;</code> fetches the
+      task list and fans out to several consumers — a total-count <code>&lt;x-stat&gt;</code>, a
+      page-position <code>&lt;x-progress&gt;</code>, a free-text <code>&lt;x-search-field&gt;</code>
+      filter, and a sortable, paginated <code>&lt;x-table&gt;</code>. Filter, sort a column, or
+      change page and the query round-trips through the server into the URL; invalid queries and
+      network failures keep the last good view on screen.
+    </p>
+  </header>
+
+  <main id="app">
+    <server-resource src="http://localhost:8090/api/tasks">
+      <x-progress-consumer>
+        <x-progress label="Page position" show-value></x-progress>
+      </x-progress-consumer>
+      <x-spacer size="1rem"></x-spacer>
+      <x-search-field-consumer>
+        <x-search-field label="Filter tasks" placeholder="Search owner or status..." debounce="250"></x-search-field>
+      </x-search-field-consumer>
+      <x-stat-consumer>
+        <x-stat label="Total tasks"></x-stat>
+      </x-stat-consumer>
+      <x-table-consumer>
+        <x-table caption="Tasks" bordered></x-table>
+      </x-table-consumer>
+    </server-resource>
+  </main>
+
+  <script type="module">
+    // Registers BareBuild's elements + the BareDOM components it drives (demo-scoped).
+    import { init } from "../dist/demo.js";
+    init();
+  </script>
+</body>
+</html>
