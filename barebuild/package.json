@@ -1,0 +1,25 @@
+{
+  "name": "@vanelsas/barebuild",
+  "version": "0.1.0",
+  "description": "Server-resource read projection runtime for BareDOM — drives presentational web components from server state without ad-hoc client business logic. Read-only (v1).",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Alexander van Elsas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avanelsas/baredom.git",
+    "directory": "barebuild"
+  },
+  "scripts": {
+    "compile": "npx shadow-cljs compile lib",
+    "build": "npx shadow-cljs release lib",
+    "test": "npx shadow-cljs compile test && node out/node-tests.cjs",
+    "test:server": "bb run test:server",
+    "server": "bb run server"
+  },
+  "exports": {},
+  "devDependencies": {
+    "shadow-cljs": "^3.4.11"
+  }
+}
