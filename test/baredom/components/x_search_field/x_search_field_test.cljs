@@ -193,8 +193,82 @@
        0))))
 
 ;; ---------------------------------------------------------------------------
+;; Debounce (async)
+;; ---------------------------------------------------------------------------
+
+(deftest debounce-coalesces-input-events-test
+  (async done
+    (let [el    (append! (make-el))
+          input (shadow-part el "[part=input]")
+          count (atom 0)
+          last  (atom nil)]
+      (.setAttribute el model/attr-name "q")
+      (.setAttribute el model/attr-debounce "40")
+      (.addEventListener
+       el model/event-input
+       (fn [^js ev]
+         (swap! count inc)
+         (reset! last (.-value (.-detail ev)))))
+      ;; Two rapid keystrokes within the debounce window
+      (set! (.-value input) "a")
+      (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))
+      (set! (.-value input) "ab")
+      (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))
+      (is (= 0 @count) "no input event should fire synchronously while debouncing")
+      (js/setTimeout
+       (fn []
+         (is (= 1 @count)   "the two keystrokes should coalesce into one event")
+         (is (= "ab" @last) "the coalesced event carries the final value")
+         (done))
+       120))))
+
+(deftest debounce-cancelled-by-clear-test
+  (async done
+    (let [el    (append! (make-el))
+          input (shadow-part el "[part=input]")
+          clear (shadow-part el "[part=clear]")
+          seen  (atom 0)]
+      (.setAttribute el model/attr-name "q")
+      (.setAttribute el model/attr-debounce "40")
+      (.addEventListener el model/event-input (fn [^js _ev] (swap! seen inc)))
+      (set! (.-value input) "hello")
+      (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))
+      ;; Clear before the debounce window elapses
+      (.click clear)
+      (js/setTimeout
+       (fn []
+         (is (= 0 @seen) "a pending debounced input must not fire after clear")
+         (done))
+       120))))
+
+(deftest debounce-zero-fires-immediately-test
+  (async done
+    (let [el    (append! (make-el))
+          input (shadow-part el "[part=input]")
+          seen  (atom nil)]
+      (.setAttribute el model/attr-name "q")
+      (.setAttribute el model/attr-debounce "0")
+      (.addEventListener
+       el model/event-input
+       (fn [^js ev] (reset! seen (.-value (.-detail ev)))))
+      (set! (.-value input) "test")
+      (.dispatchEvent input (js/Event. "input" #js {:bubbles true}))
+      (js/setTimeout
+       (fn []
+         (is (= "test" @seen) "debounce=0 dispatches input immediately")
+         (done))
+       0))))
+
+;; ---------------------------------------------------------------------------
 ;; Properties
 ;; ---------------------------------------------------------------------------
+
+(deftest debounce-property-test
+  (let [el (append! (make-el))]
+    (set! (.-debounce el) 300)
+    (is (= "300" (.getAttribute el model/attr-debounce)))
+    (is (= 300 (.-debounce el)))
+    (is (= 0 (.-debounce (append! (make-el)))) "defaults to 0 when unset")))
 
 (deftest value-property-test
   (let [el (append! (make-el))]

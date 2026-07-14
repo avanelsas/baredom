@@ -24,6 +24,7 @@ export class BaredomSearchField implements OnInit, OnDestroy {
   @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
+  @Input() set debounce(v: number) { this.el.debounce = v as any; }
 
   @Output() input = new EventEmitter<CustomEvent<{ name: string; value: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ name: string; value: string }>>();

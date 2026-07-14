@@ -12,6 +12,7 @@
     autocomplete?: string;
     disabled?: boolean;
     required?: boolean;
+    debounce?: number;
     oninput?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onchange?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onsearch?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -33,6 +34,7 @@
     autocomplete,
     disabled,
     required,
+    debounce,
     oninput,
     onchange,
     onsearch,
@@ -73,6 +75,7 @@
   {autocomplete}
   {disabled}
   {required}
+  {debounce}
   class={className}
   {id}
   {...rest}

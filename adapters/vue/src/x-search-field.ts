@@ -22,6 +22,7 @@ export const XSearchField = defineComponent({
     autocomplete: { type: String as PropType<string | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    debounce: { type: Number as PropType<number | undefined>, default: undefined },
   },
   emits: {
     "input": (_e: CustomEvent<{ name: string; value: string }>) => true,

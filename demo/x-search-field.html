@@ -86,7 +86,14 @@
           <option value="on">on</option>
         </x-select>
       </label>
+      <label>debounce (ms)
+        <x-form-field type="text" id="ctrl-debounce" value="0"></x-form-field>
+      </label>
     </div>
+    <p style="font-size:13px;color:#6b7280;margin:0 0 8px;">
+      Set debounce &gt; 0, then type quickly: local UI (clear button) stays instant, but
+      <code>x-search-field-input</code> is logged only once you pause.
+    </p>
     <x-search-field id="live-field" name="live" label="Search" placeholder="Search…"></x-search-field>
 
     <!-- ------------------------------------------------------------------ -->
@@ -96,7 +103,9 @@
     <script>
       const log = document.getElementById('log');
       function logEvent(name, detail) {
-        log.textContent = `${name}  ${JSON.stringify(detail)}\n` + log.textContent;
+        const t = new Date().toLocaleTimeString([], { hour12: false }) +
+                  '.' + String(new Date().getMilliseconds()).padStart(3, '0');
+        log.textContent = `${t}  ${name}  ${JSON.stringify(detail)}\n` + log.textContent;
       }
 
       // --- Standalone ---
@@ -128,10 +137,12 @@
         const disabled     = document.getElementById('ctrl-disabled').checked;
         const required     = document.getElementById('ctrl-required').checked;
         const autocomplete = document.getElementById('ctrl-autocomplete').value;
+        const debounce     = document.getElementById('ctrl-debounce').value;
 
         liveField.setAttribute('placeholder',  placeholder);
         liveField.setAttribute('label',        label);
         liveField.setAttribute('autocomplete', autocomplete);
+        liveField.setAttribute('debounce',     debounce);
         if (disabled) liveField.setAttribute('disabled', ''); else liveField.removeAttribute('disabled');
         if (required) liveField.setAttribute('required', ''); else liveField.removeAttribute('required');
       }
