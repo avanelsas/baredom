@@ -22,6 +22,28 @@
   (is (= "off" (model/normalize-autocomplete ""))))
 
 ;; ---------------------------------------------------------------------------
+;; normalize-debounce
+;; ---------------------------------------------------------------------------
+
+(deftest debounce-positive-test
+  (is (= 300 (model/normalize-debounce "300"))))
+
+(deftest debounce-zero-test
+  (is (= 0 (model/normalize-debounce "0"))))
+
+(deftest debounce-nil-defaults-zero-test
+  (is (= 0 (model/normalize-debounce nil))))
+
+(deftest debounce-empty-defaults-zero-test
+  (is (= 0 (model/normalize-debounce ""))))
+
+(deftest debounce-non-numeric-defaults-zero-test
+  (is (= 0 (model/normalize-debounce "abc"))))
+
+(deftest debounce-negative-defaults-zero-test
+  (is (= 0 (model/normalize-debounce "-5"))))
+
+;; ---------------------------------------------------------------------------
 ;; normalize — boolean flags
 ;; ---------------------------------------------------------------------------
 
@@ -53,7 +75,11 @@
     (is (= "" (:label m)))
     (is (= false (:disabled? m)))
     (is (= false (:required? m)))
-    (is (= "off" (:autocomplete m)))))
+    (is (= "off" (:autocomplete m)))
+    (is (= 0    (:debounce m)))))
+
+(deftest normalize-debounce-field-test
+  (is (= 250 (:debounce (model/normalize {:debounce-raw "250"})))))
 
 ;; ---------------------------------------------------------------------------
 ;; normalize — string fields pass through

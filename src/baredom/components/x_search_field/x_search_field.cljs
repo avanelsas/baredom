@@ -7,9 +7,10 @@
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys (Closure-safe: access via gobj/get / gobj/set)
 ;; ---------------------------------------------------------------------------
-(def ^:private k-refs      "__xSearchFieldRefs")
-(def ^:private k-internals "__xSearchFieldInternals")
-(def ^:private k-handlers  "__xSearchFieldHandlers")
+(def ^:private k-refs           "__xSearchFieldRefs")
+(def ^:private k-internals      "__xSearchFieldInternals")
+(def ^:private k-handlers       "__xSearchFieldHandlers")
+(def ^:private k-debounce-timer "__xSearchFieldDebounceTimer")
 
 ;; ---------------------------------------------------------------------------
 ;; Style
@@ -227,6 +228,37 @@
 ;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
+;; Debounced input dispatch
+;; ---------------------------------------------------------------------------
+(defn- clear-pending-debounce! [^js el]
+  (when-let [timer (du/getv el k-debounce-timer)]
+    (js/clearTimeout timer)
+    ;; Transient handle: debounce timer id — no diagnostic display value.
+    (du/setv-untraced! el k-debounce-timer nil)))
+
+(defn- dispatch-input! [^js el name value]
+  (du/dispatch! el model/event-input #js {:name name :value value}))
+
+;; Dispatches `x-search-field-input` either immediately or, when the
+;; `debounce` attribute is a positive millisecond count, after the caller
+;; stops typing for that long. Only the outward event is delayed — local
+;; effects (form value, validity, clear button) already ran synchronously.
+(defn- schedule-input-dispatch! [^js el name value]
+  (let [ms (model/normalize-debounce (du/get-attr el model/attr-debounce))]
+    (clear-pending-debounce! el)
+    (if (pos? ms)
+      (let [timer (js/setTimeout
+                   (fn []
+                     ;; Transient handle: debounce timer id.
+                     (du/setv-untraced! el k-debounce-timer nil)
+                     (when-let [refs (du/getv el k-refs)]
+                       (dispatch-input! el name (.-value (gobj/get refs "input")))))
+                   ms)]
+        ;; Transient handle: debounce timer id.
+        (du/setv-untraced! el k-debounce-timer timer))
+      (dispatch-input! el name value))))
+
 (defn- make-input-handler [^js el]
   (fn [^js _evt]
     (when-let [refs (du/getv el k-refs)]
@@ -238,7 +270,7 @@
           (.setFormValue internals value)
           (sync-validity! el internals input-el))
         (toggle-clear-visibility! input-el clear-el el)
-        (du/dispatch! el model/event-input #js {:name name :value value})))))
+        (schedule-input-dispatch! el name value)))))
 
 (defn- make-change-handler [^js el]
   (fn [^js _evt]
@@ -271,6 +303,7 @@
             ^js clear-el (gobj/get refs "clear")
             name         (or (du/get-attr el model/attr-name) "")]
         (set! (.-value input-el) "")
+        (clear-pending-debounce! el)
         (when-let [^js internals (du/getv el k-internals)]
           (.setFormValue internals "")
           (sync-validity! el internals input-el))
@@ -318,6 +351,7 @@
   (render! el))
 
 (defn- form-reset! [^js el]
+  (clear-pending-debounce! el)
   (du/remove-attr! el model/attr-value)
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")]
@@ -348,6 +382,7 @@
   (render! el))
 
 (defn- disconnected! [^js el]
+  (clear-pending-debounce! el)
   (remove-listeners! el))
 
 (defn- attribute-changed! [^js el name _old new-val]
@@ -390,6 +425,7 @@
   (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "required" model/attr-required)
+  (du/define-number-prop! proto "debounce" model/attr-debounce 0)
   ;; Methods (Tier-2 .defineProperty :value descriptors)
   (.defineProperty js/Object proto "checkValidity"
     #js {:value (fn xsf-check-validity []

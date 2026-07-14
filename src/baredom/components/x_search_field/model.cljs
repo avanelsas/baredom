@@ -10,6 +10,7 @@
 (def attr-disabled     "disabled")
 (def attr-required     "required")
 (def attr-autocomplete "autocomplete")
+(def attr-debounce     "debounce")
 
 ;; Event name constants
 (def event-input  "x-search-field-input")
@@ -24,7 +25,8 @@
        attr-label
        attr-disabled
        attr-required
-       attr-autocomplete])
+       attr-autocomplete
+       attr-debounce])
 
 (def allowed-autocomplete #{"on" "off"})
 
@@ -33,6 +35,15 @@
     raw
     "off"))
 
+(defn normalize-debounce
+  "Parses the raw `debounce` attribute into a non-negative millisecond count.
+   Absent, non-numeric, or negative input yields 0 (debounce disabled)."
+  [raw]
+  (if (string? raw)
+    (let [n (js/parseFloat raw)]
+      (if (or (js/isNaN n) (neg? n)) 0 n))
+    0))
+
 (def property-api
   {:value        {:type 'string  :reflects-attribute attr-value}
    :name         {:type 'string  :reflects-attribute attr-name}
@@ -40,7 +51,8 @@
    :label        {:type 'string  :reflects-attribute attr-label}
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
-   :required     {:type 'boolean :reflects-attribute attr-required}})
+   :required     {:type 'boolean :reflects-attribute attr-required}
+   :debounce     {:type 'number  :reflects-attribute attr-debounce}})
 
 (def event-schema
   {event-input  {:cancelable false :detail {:name 'string :value 'string}}
@@ -51,14 +63,15 @@
 (defn normalize
   "Derives a complete view-model map from raw attribute values."
   [{:keys [name-raw value-raw placeholder-raw label-raw
-           disabled-present? required-present? autocomplete-raw]}]
+           disabled-present? required-present? autocomplete-raw debounce-raw]}]
   {:name         (or name-raw "")
    :value        (or value-raw "")
    :placeholder  (or placeholder-raw "")
    :label        (or label-raw "")
    :disabled?    (boolean disabled-present?)
    :required?    (boolean required-present?)
-   :autocomplete (normalize-autocomplete autocomplete-raw)})
+   :autocomplete (normalize-autocomplete autocomplete-raw)
+   :debounce     (normalize-debounce debounce-raw)})
 
 (def method-api
   {:checkValidity  {:args [] :returns 'boolean}

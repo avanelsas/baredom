@@ -14,6 +14,7 @@ export interface XSearchFieldProps {
   autocomplete?: string;
   disabled?: boolean;
   required?: boolean;
+  debounce?: number;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onSearch?: (e: CustomEvent<{ name: string; value: string }>) => void;

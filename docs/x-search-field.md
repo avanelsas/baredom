@@ -19,6 +19,7 @@ A form-associated custom element providing search-box UX: inline search icon, cl
 | `disabled`     | boolean | absent  | Disables input, hides clear button  |
 | `required`     | boolean | absent  | Marks field as required             |
 | `autocomplete` | enum    | `"off"` | `"on"` \| `"off"`                   |
+| `debounce`     | number  | `0`     | Milliseconds to debounce `x-search-field-input`; `0`/absent/invalid = fire immediately |
 
 ## Properties
 
@@ -33,6 +34,7 @@ All properties reflect to their corresponding attributes.
 | `autocomplete` | string  |
 | `disabled`     | boolean |
 | `required`     | boolean |
+| `debounce`     | number  |
 
 Reading `value` returns the live `input.value` (not the attribute). Setting `value` syncs both the attribute and the input DOM node.
 
@@ -46,6 +48,19 @@ Reading `value` returns the live `input.value` (not the attribute). Setting `val
 | `x-search-field-clear`   | yes     | yes      | no         | `{name}`             |
 
 `x-search-field-search` is dispatched when the user presses Enter. It is cancelable but does **not** auto-submit a parent form.
+
+### Debouncing input
+
+Set the `debounce` attribute (or `.debounce` property) to a positive millisecond count to coalesce rapid typing into a single `x-search-field-input` event, fired once the user pauses. This is opt-in — with `debounce` absent or `0`, the event fires on every keystroke as before.
+
+Only the **outward** `x-search-field-input` event is delayed. Local UI feedback (the clear button, form value, and validity) stays synchronous with each keystroke, so the field never feels laggy. The coalesced event carries the field's **final** value. A pending debounced dispatch is cancelled when the field is cleared, the parent form is reset, or the element is disconnected — so a stale event never lands after the value is gone.
+
+`x-search-field-change` (blur), `x-search-field-search` (Enter), and `x-search-field-clear` are never debounced.
+
+```html
+<!-- Fire x-search-field-input at most once per 300ms of quiet typing -->
+<x-search-field name="q" placeholder="Search…" debounce="300"></x-search-field>
+```
 
 ## Shadow DOM Structure
 
