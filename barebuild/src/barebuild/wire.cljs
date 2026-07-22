@@ -40,8 +40,10 @@
      :value      (js->clj (gobj/get js-obj "value"))
      :page-info  (replace-js-keys (js->clj (gobj/get js-obj "pageInfo")))
      :shape      {:id-key (gobj/get shape "idKey")
-                  :fields (mapv (fn [f] {:key  (gobj/get f "key")
-                                         :type (keyword (gobj/get f "type"))})
+                  :fields (mapv (fn [f]
+                                  (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
+                                    (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
+                                    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))))
                                 (gobj/get shape "fields"))}}))
 
 (defn- ->rejected
@@ -77,6 +79,42 @@
         (= outcome outcome-rejected)
         (if (rejected-structure-correct? js-obj)
           (->rejected js-obj)
+          (protocol-failure :missing-rejected-members {:outcome outcome}))
+
+        :else
+        (protocol-failure :unknown-outcome {:outcome outcome})))))
+
+;; Write
+
+(defn- ->write-accepted
+  "Transforms write-ack js object to accepted CLJS map"
+  [js-obj]
+  {:outcome    :accepted
+   :request/id (gobj/get js-obj "requestId")
+   :revision   (gobj/get js-obj "revision")})
+
+(defn- accepted-write-structure-correct?
+  "Check if outcome has a revision and requestId"
+  [js-obj]
+  (and (some? (gobj/get js-obj "revision"))
+       (some? (gobj/get js-obj "requestId"))))
+
+(defn parse-ack
+  "Parses a server JS acknowledgement object to a CLJS map
+  Returns protocol failures if something is amiss"
+  [js-obj]
+  (if (nil? js-obj)
+    (protocol-failure :empty-body {})
+    (let [outcome (gobj/get js-obj "outcome")]
+      (cond
+        (= outcome outcome-accepted)
+        (if (accepted-write-structure-correct? js-obj)
+          (->write-accepted js-obj)
+          (protocol-failure :missing-accepted-members {:outcome outcome}))
+
+        (= outcome outcome-rejected)
+        (if (rejected-structure-correct? js-obj)
+          (->rejected js-obj) ; same structure as read
           (protocol-failure :missing-rejected-members {:outcome outcome}))
 
         :else

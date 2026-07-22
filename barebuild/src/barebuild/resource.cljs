@@ -1,56 +1,43 @@
 (ns barebuild.resource
   (:require [barebuild.utils :as utils]
-            [baredom.utils.model :as mu]))
+            [barebuild.validation :as validation]))
 
+;; READ functionality ----------------------------------------------------------
 (defn- resolve-history-mode
   "Push for navigations, replace otherwise (default)."
   [resource gesture-class]
   (get (:history-policy resource) gesture-class :replace))
 
 ;; contract validation
-(defn- err [path code message]
-  {:path path :code code :message message})
 
 (defn- validate-shape [shape]
   (cond-> []
-    (not (:id-key shape)) (conj (err [:shape :id-key] :missing-id-key "shape is missing :id-key"))
-    (not (:fields shape)) (conj (err [:shape :fields] :missing-fields "shape is missing :fields"))))
+    (not (:id-key shape)) (conj (validation/err [:shape :id-key] :missing-id-key "shape is missing :id-key"))
+    (not (:fields shape)) (conj (validation/err [:shape :fields] :missing-fields "shape is missing :fields"))))
 
 (defn- validate-value [v]
   (cond
-    (not (sequential? v)) [(err [:value] :not-a-list "value is not a list")]
-    (not (every? map? v)) [(err [:value] :not-maps "value is not a list of maps")]
+    (not (sequential? v)) [(validation/err [:value] :not-a-list "value is not a list")]
+    (not (every? map? v)) [(validation/err [:value] :not-maps "value is not a list of maps")]
     :else []))
 
 (defn- validate-ids [id-key value]
   (let [ids (map #(get % id-key) value)]
     (cond-> []
       (some nil? ids)
-      (conj (err [:value] :missing-id (str "some rows are missing \"" id-key "\"")))
+      (conj (validation/err [:value] :missing-id (str "some rows are missing \"" id-key "\"")))
       (not= (count ids) (count (distinct ids)))
-      (conj (err [:value] :duplicate-id "row ids are not unique")))))
-
-(defn- valid-datestr? [date-str]
-  (not (js/isNaN (.parse js/Date date-str))))
-
-(defn- validate-value-type [v type]
-  (or (nil? v)
-      (case type
-        :string (string? v)
-        :date   (valid-datestr? v)
-        :number (number? v)
-        :url    (and (string? v) (mu/safe-url? v))
-        false)))
+      (conj (validation/err [:value] :duplicate-id "row ids are not unique")))))
 
 (defn- validate-row [row-idx row fields]
   (mapcat (fn [{:keys [key type]}]
             (cond
               (not (contains? row key))
-              [(err [:value row-idx key] :missing-field
+              [(validation/err [:value row-idx key] :missing-field
                     (str "row " row-idx " is missing field \"" key "\""))]
 
-              (not (validate-value-type (get row key) type))
-              [(err [:value row-idx key] :wrong-type
+              (not (validation/validate-value-type (get row key) type))
+              [(validation/err [:value row-idx key] :wrong-type
                     (str "row " row-idx " field \"" key "\" is not a " (name type)))]
 
               :else []))
@@ -122,12 +109,38 @@
                                               :request/id id}])})
     result))
 
+;; WRITE functionality ----------------------------------------------------------
+(defn- start-write
+  "Save an active write request in r. The ID is generated elsewhere."
+  [r payload]
+  (let [n (inc (or (:write-count r) 0))]
+    (assoc r
+           :write-count  n
+           :active-write {:write/id (str (:resource/id r) ":w" n)
+                          :payload  payload})))
+
+(defn writing? [r]
+  (some? (:active-write r)))
+
+(defn- refetch-current
+  "After a successful write, retrieve the current state"
+  [{:keys [resource effects]}]
+  (let [r* (start-request resource (:url-intent resource))
+        id (get-in r* [:active-request :request/id])]
+    {:resource r*
+     :effects  (conj (vec effects)
+                     [:notify-consumers {:resource r*}]
+                     [:fetch {:endpoint   (:endpoint r*)
+                              :query      (:url-intent r*)
+                              :request/id id}])}))
+
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
   and the effects that need to be called. Each step gets a unique resource/id"
   [resource event]
   (let [[event-k payload] event]
     (case event-k
+      ;; reads
       :connected
       (let [embed  (:embed payload)
             intent (:url-intent resource)]
@@ -257,6 +270,49 @@
         {:resource (assoc resource :active-request nil)
          :effects  [[:abort {:request/id id}]]}
         {:resource resource :effects []})
+
+      ;; writes
+      :submit-write
+      (if-not (writing? resource)
+        (let [resource* (start-write resource payload)
+              id (get-in resource* [:active-write :write/id])]
+          {:resource resource*
+           :effects  [[:notify-consumers {:resource resource*}]
+                      [:write {:endpoint (:endpoint resource*) :write/id id :payload payload}]]})
+        {:resource resource
+         :effects  [[:diagnostic :stale-write]]})
+
+      :write-ack
+      (let [write-id        (:write/id payload)
+            active-write-id (get-in resource [:active-write :write/id])]
+        (if (= write-id active-write-id)
+          (if (= :accepted (:outcome payload))
+            (let [resource* (assoc resource :active-write nil)]
+              (refetch-current {:resource resource*
+                                :effects []}))
+            ;; :rejected
+            (let [resource* (assoc resource
+                                   :active-write nil
+                                   :last-failure {:failure :rejected
+                                                  :response payload})]
+              {:resource resource*
+               :effects  [[:notify-consumers {:resource resource*}]]}))
+
+          {:resource resource
+           :effects  [[:diagnostic :stale-write]]}))
+
+      :write-failed
+      (let [write-id        (:write/id payload)
+            active-write-id (get-in resource [:active-write :write/id])]
+        (if (= write-id active-write-id)
+          (let [failure   (if-let [detail (:protocol-failure payload)]
+                            {:failure :protocol :detail detail :write (:active-write resource)}
+                            {:failure :network :error (:error payload) :write (:active-write resource)})
+                resource* (assoc resource :last-failure failure :active-write nil)]
+            {:resource resource*
+             :effects  [[:notify-consumers {:resource resource*}]]})
+          {:resource resource
+           :effects [[:diagnostic :stale-write]]}))
 
       {:resource resource
        :effects    []})))

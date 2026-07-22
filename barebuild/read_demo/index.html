@@ -44,6 +44,24 @@
       <x-stat-consumer>
         <x-stat label="Total tasks"></x-stat>
       </x-stat-consumer>
+      <x-task-form-consumer>
+    <x-button data-role="open">Create Task</x-button>
+    <x-modal size="xl" label="New task">
+      <x-form novalidate>
+        <x-form-field name="owner"  type="text" label="Owner"></x-form-field>
+        <x-spacer size="1rem"></x-spacer>
+        <x-typography variant="overline">Start Date</x-typography>
+        <x-date-picker name="start" label="Start"></x-date-picker>
+        <x-spacer size="1rem"></x-spacer>
+        <x-typography variant="overline">End Date</x-typography>
+        <x-date-picker name="end"   label="End"></x-date-picker>
+        <x-spacer size="1rem"></x-spacer>
+        <x-typography variant="overline">Status</x-typography>
+        <x-select      name="status" label="Status"></x-select>
+        <x-button type="submit">Create</x-button>
+      </x-form>
+    </x-modal>
+  </x-task-form-consumer>
       <x-table-consumer>
         <x-table caption="Tasks" bordered></x-table>
       </x-table-consumer>

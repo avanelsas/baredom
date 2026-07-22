@@ -61,6 +61,22 @@
                 (when-not (= "AbortError" (.-name e))
                   (handle-event! el [:network-failed {:request/id request-id :error {:kind :offline}}])))))))
 
+(defn- execute-write! [^js el url init request-id]
+  (-> (js/fetch url init)
+    (.then (fn [^js resp]
+             (if (.-ok resp)
+               (.text resp) ; text, not .json
+               (throw (js/Error. (str "HTTP " (.-status resp)))))))
+    (.then (fn [^js body]
+             (let [obj     (try (js/JSON.parse body) (catch :default _ nil))
+                   result  (wire/parse-ack obj)
+                   result* (assoc result :write/id request-id)] ; obj nil -> empty-body marker
+               (if (:protocol-failure result*)
+                 (handle-event! el [:write-failed result*])
+                 (handle-event! el [:write-ack result*])))))
+    (.catch (fn [^js _e]
+              (handle-event! el [:write-failed {:write/id request-id :error {:kind :offline}}])))))
+
 (defn- run-effects!
   [^js el effects]
   (doseq [[fx m] effects]
@@ -81,7 +97,8 @@
       :notify-consumers
       (let [r         (:resource m)
             consumers (du/getv el k-consumers)
-            ctx       {:submit-intent! (fn [patch] (handle-event! el [:intent-patch patch]))}]
+            ctx       {:submit-intent! (fn [patch] (handle-event! el [:intent-patch patch]))
+                       :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
         (doseq [^js c consumers]
           (.applyResource c r ctx)))
 
@@ -98,6 +115,21 @@
       (when-let [^js controller (du/getv el k-abort)]
         (.abort controller)
         (du/setv-untraced! el k-abort nil))
+
+      :write
+      (let [write-id (:write/id m)
+            {:keys [op id record]} (:payload m)
+            base-url (:endpoint m)
+            url (if (= op :delete)
+                  (str base-url  "/" id "?requestId=" write-id)
+                  (str base-url "?requestId=" write-id))
+            init (if (= op :create)
+                   #js {:method "POST"
+                        :headers #js {"content-type" "application/json"}
+                        :body (js/JSON.stringify (clj->js record))}
+                   #js {:method "DELETE"})]
+
+        (execute-write! el url init write-id))
 
       nil)))
 

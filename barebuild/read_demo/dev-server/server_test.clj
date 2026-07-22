@@ -1,13 +1,25 @@
 ;; HTTP-level test for the dev-server: call the handler directly (no port bind)
 ;; and assert the §6.5 envelope. Run with `bb run test:server`.
 (ns server-test
-  (:require [clojure.test :refer [deftest is run-tests]]
+  (:require [clojure.test :refer [deftest is testing run-tests use-fixtures]]
             [clojure.string :as str]
             [cheshire.core :as json]
             [server]))
 
+;; The delete tests mutate the in-memory set; reset before each case so the count-based
+;; read assertions hold regardless of run order.
+(use-fixtures :each (fn [t] (server/reset-tasks!) (t)))
+
 (defn- get-raw [uri qs]
   (server/handler {:request-method :get :uri uri :query-string qs}))
+
+(defn- delete-raw [uri qs]
+  (server/handler {:request-method :delete :uri uri :query-string qs}))
+
+(defn- post-raw [uri qs body]
+  (server/handler {:request-method :post :uri uri :query-string qs :body body}))
+
+(defn- record-json [m] (json/generate-string m))
 
 (defn- get-json [uri qs]
   (let [resp (get-raw uri qs)]
@@ -46,6 +58,15 @@
         "status is constrained to the known set")
     (is (= {:page 1 :pageSize 10 :totalPages 4 :totalCount 40} (:pageInfo body))
         "pageInfo carries the server's pagination state")))
+
+(deftest shape-declares-required-and-status-enum
+  (let [[_ body] (get-json "/api/tasks" nil)
+        by-key   (into {} (map (juxt :key identity) (get-in body [:shape :fields])))]
+    (is (true? (get-in by-key ["owner" :required])) "owner is required")
+    (is (true? (get-in by-key ["status" :required])) "status is required")
+    (is (= ["todo" "doing" "done"] (get-in by-key ["status" :enum])) "status carries its enum")
+    (is (nil? (get-in by-key ["end" :required])) "end is optional — no required key emitted")
+    (is (nil? (get-in by-key ["owner" :enum])) "owner has no enum")))
 
 (deftest empty-query-echoes-empty
   (let [[_ body] (get-json "/api/tasks" nil)]
@@ -202,6 +223,132 @@
 (deftest dist-serving-rejects-traversal-and-missing
   (is (= 404 (:status (get-raw "/dist/../server.clj" nil))) "no path traversal")
   (is (= 404 (:status (get-raw "/dist/nope.js" nil))) "missing file -> 404"))
+
+;; --- writes: delete (step W1a) ---------------------------------------------
+
+(deftest delete-returns-ack-envelope
+  (let [resp (delete-raw "/api/tasks/7" "requestId=w-1")
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a write ack is a protocol response, HTTP 200")
+    (is (= "accepted" (:outcome body)) "the ack outcome")
+    (is (= "w-1" (:requestId body)) "echoes the client request id")
+    (is (= "tasks:v1" (:revision body)) "carries the revision for later concurrency")
+    (is (not (contains? body :value)) "ack carries no value -> client refetches")
+    (is (not (contains? body :shape)) "ack carries no shape")
+    (is (not (contains? body :error)) "an accepted ack has no error")))
+
+(deftest delete-mutates-the-set
+  (delete-raw "/api/tasks/7" "requestId=w-1")
+  (let [[_ after] (get-json "/api/tasks" nil)]
+    (is (not (some #{7} (ids after))) "the deleted id is gone from the read")
+    (is (= 39 (get-in after [:pageInfo :totalCount])) "one fewer row in the set")))
+
+(deftest delete-is-idempotent
+  (let [r1 (delete-raw "/api/tasks/3" "requestId=a")
+        r2 (delete-raw "/api/tasks/3" "requestId=b")]
+    (is (= "accepted" (:outcome (json/parse-string (:body r1) true))))
+    (is (= "accepted" (:outcome (json/parse-string (:body r2) true)))
+        "deleting an already-absent id still accepts")
+    (is (= 39 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))
+        "only one row removed by two identical deletes")))
+
+(deftest delete-of-unknown-id-is-a-noop
+  (let [resp (delete-raw "/api/tasks/999" "requestId=w-9")
+        body (json/parse-string (:body resp) true)]
+    (is (= "accepted" (:outcome body)) "an absent id still accepts")
+    (is (= 40 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))
+        "the set is unchanged")))
+
+(deftest delete-of-non-numeric-id-is-a-noop
+  (let [resp (delete-raw "/api/tasks/abc" "requestId=w-x")
+        body (json/parse-string (:body resp) true)]
+    (is (= "accepted" (:outcome body)) "a non-integer id parses to nil, matching no row")
+    (is (= 40 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))
+        "the set is unchanged")))
+
+(deftest options-advertises-write-verbs
+  (let [resp (server/handler {:request-method :options :uri "/api/tasks/7"})]
+    (is (= 204 (:status resp)) "preflight is a no-content response")
+    (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "DELETE")
+        "the preflight advertises DELETE")
+    (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "POST")
+        "the preflight advertises POST")))
+
+;; --- writes: create (step W3a) ---------------------------------------------
+
+(def ^:private new-task
+  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
+
+(deftest create-appends-and-returns-accepted-ack
+  (let [resp (post-raw "/api/tasks" "requestId=w-c1" (record-json new-task))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a create ack is a protocol response, HTTP 200")
+    (is (= "accepted" (:outcome body)) "a valid create is accepted")
+    (is (= "w-c1" (:requestId body)) "echoes the client request id")
+    (is (= "tasks:v1" (:revision body)))
+    (is (not (contains? body :value)) "ack carries no value -> client refetches")
+    (is (not (contains? body :error)) "an accepted ack has no error")
+    (testing "the new row is observable through a subsequent read, with a server-minted id"
+      (let [[_ all]  (get-json "/api/tasks" nil)
+            [_ zoe]  (get-json "/api/tasks" "search=Zoe")
+            row      (first (:value zoe))]
+        (is (= 41 (get-in all [:pageInfo :totalCount])) "one more row in the set")
+        (is (= "Zoe" (:owner row)))
+        (is (= 41 (:id row)) "server assigns the next id")))))
+
+(deftest create-with-end-before-start-is-rejected
+  (let [bad  (assoc new-task "start" "2026-03-10" "end" "2026-03-01")
+        resp (post-raw "/api/tasks" "requestId=w-c2" (record-json bad))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a rejected write is still HTTP 200, not a transport error")
+    (is (= "rejected" (:outcome body)))
+    (is (= "w-c2" (:requestId body)) "echoes the client request id")
+    (is (= "invalid-range" (get-in body [:error :code])))
+    (is (string? (get-in body [:error :message])))
+    (is (= "end" (get-in body [:error :details :field])) "details name the offending field")
+    (is (not (contains? body :value)) "rejected: no value")
+    (testing "a rejected create does not mutate the set"
+      (is (= 40 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))))))
+
+(deftest create-with-equal-start-and-end-is-accepted
+  (let [same (assoc new-task "start" "2026-03-05" "end" "2026-03-05")
+        body (json/parse-string (:body (post-raw "/api/tasks" "requestId=w-c3" (record-json same))) true)]
+    (is (= "accepted" (:outcome body)) "end == start satisfies end >= start")))
+
+;; --- writes: create structural validation (server-side, defense-in-depth) --
+
+(defn- create-rejection [request-id record]
+  (let [resp (post-raw "/api/tasks" (str "requestId=" request-id) (record-json record))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a rejected create is still HTTP 200")
+    (is (= "rejected" (:outcome body)))
+    (is (= 40 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))
+        "a rejected create does not mutate the set")
+    (:error body)))
+
+(deftest create-missing-required-is-rejected
+  (let [error (create-rejection "w-c4" (assoc new-task "owner" ""))]
+    (is (= "missing-required" (:code error)))
+    (is (= "owner" (get-in error [:details :field])) "details name the offending field")))
+
+(deftest create-invalid-type-is-rejected
+  (let [error (create-rejection "w-c5" (assoc new-task "start" "not-a-date"))]
+    (is (= "invalid-type" (:code error)))
+    (is (= "start" (get-in error [:details :field])))))
+
+(deftest create-value-not-in-enum-is-rejected
+  (let [error (create-rejection "w-c6" (assoc new-task "status" "archived"))]
+    (is (= "invalid-value" (:code error)))
+    (is (= "status" (get-in error [:details :field])))))
+
+(deftest create-with-blank-optional-end-is-accepted-and-reads-clean
+  (let [resp (post-raw "/api/tasks" "requestId=w-c7" (record-json (assoc new-task "end" "")))
+        body (json/parse-string (:body resp) true)]
+    (is (= "accepted" (:outcome body)) "end is optional — a blank end is not rejected")
+    (testing "the stored row's blank end normalizes to nil (JSON null), not \"\", so reads stay valid"
+      (let [[_ after] (get-json "/api/tasks" "search=Zoe")
+            row       (first (:value after))]
+        (is (nil? (:end row)) "blank optional end stored as null")))))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]

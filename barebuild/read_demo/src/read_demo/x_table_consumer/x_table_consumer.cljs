@@ -73,6 +73,11 @@
         gesture   (model/translate-gesture k direction)]
     (consumer-resource/submit-intent! consumer gesture)))
 
+(defn- delete-row-request! [^js e]
+  (let [id       (du/get-attr (.-currentTarget e) "data-row-id")
+        consumer (.closest (.-currentTarget e) "x-table-consumer")]
+    (consumer-resource/submit-write! consumer {:op :delete :id id})))
+
 (defn- create-table-cell!
   [s is-header sort-direction]
   (let [cell (.createElement js/document "x-table-cell")]
@@ -85,6 +90,22 @@
     (set! (.-textContent cell) (str s))
     cell))
 
+(defn- create-delete-table-cell!
+  [is-header id]
+  (let [cell (.createElement js/document "x-table-cell")]
+    (if is-header
+      (do
+        (du/set-attr! cell "type" "header")
+        (set! (.-textContent cell) "Action"))
+      (let [delete-button (.createElement js/document "x-button")]
+        (du/set-attr! delete-button "variant" "danger")
+        (du/set-attr! delete-button "size" "sm")
+        (du/set-attr! delete-button "data-row-id" (str id))
+        (set! (.-textContent delete-button) "Delete")
+        (.addEventListener delete-button "press" delete-row-request!)
+        (.appendChild cell delete-button)))
+    cell))
+
 (defn- create-header-row!
   [columns]
   (let [row (.createElement js/document "x-table-row")]
@@ -92,25 +113,28 @@
       (let [cell (create-table-cell! label true sort-direction)]
         (du/set-attr! cell k-data-field-key k)
         (.appendChild row cell)))
+    (.appendChild row (create-delete-table-cell! true nil))
     row))
 
 (defn- create-body-row!
-  [values]
+  [values id]
   (let [row (.createElement js/document "x-table-row")]
     (doseq [v values]
       (let [cell (create-table-cell! v false nil)]
         (.appendChild row cell)))
+    (.appendChild row (create-delete-table-cell! false id))
     row))
 
 (defn- render-table!
   [{:keys [columns rows]} table]
   (when table
     (set! (.-innerHTML table) "")
-    (du/set-attr! table "columns" (str (count columns)))
+    ;; Note we increase the column count as the client adds a delete button to each row
+    (du/set-attr! table "columns" (str (inc (count columns))))
     (.appendChild table (create-header-row! columns))
     (doseq [r rows]
       (let [values (map (fn [col] (get (:cells r) (:key col))) columns)
-            row    (create-body-row! values)]
+            row    (create-body-row! values (:id r))]
         (.appendChild table row)))))
 
 (defn- render! [^js table accepted ^js this]
@@ -131,6 +155,13 @@
     (do (du/remove-attr! table "aria-busy")
       (set! (.. table -style -opacity) ""))))
 
+(defn- on-writing! [^js table writing _this]
+  (if writing
+    (do (du/set-attr! table "aria-busy" "true")
+      (set! (.. table -style -opacity) "0.6"))
+    (do (du/remove-attr! table "aria-busy")
+      (set! (.. table -style -opacity) ""))))
+
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
@@ -138,4 +169,5 @@
     :observed-attributes model/observed-attributes
     :render              render!
     :on-failure          on-failure!
-    :on-pending          on-pending!}))
+    :on-pending          on-pending!
+    :on-writing          on-writing!}))
