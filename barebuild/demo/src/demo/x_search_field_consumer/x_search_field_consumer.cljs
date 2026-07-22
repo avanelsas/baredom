@@ -1,7 +1,7 @@
-(ns read-demo.x-search-field-consumer.x-search-field-consumer
+(ns demo.x-search-field-consumer.x-search-field-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
-   [read-demo.x-search-field-consumer.model :as model]
+   [demo.x-search-field-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
 (defn- on-pending! [^js x-search-field pending _this]

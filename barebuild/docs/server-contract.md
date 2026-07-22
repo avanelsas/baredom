@@ -3,7 +3,7 @@
 BareBuild is a *read projection*: it never owns state, it renders whatever an HTTP endpoint
 returns. That endpoint is the real integration point, the contract a server
 must satisfy. It is transport- and language-agnostic (plain JSON); the demo's
-[`read_demo/dev-server/server.clj`](../read_demo/dev-server/server.clj) is a complete
+[`demo/dev-server/server.clj`](../demo/dev-server/server.clj) is a complete
 reference implementation.
 
 ## The request
@@ -134,7 +134,7 @@ immediately, and fetches only if the URL intent differs. The demo serves this at
 
 ## Reference implementation
 
-The demo's Babashka server ([`read_demo/dev-server/server.clj`](../read_demo/dev-server/server.clj))
+The demo's Babashka server ([`demo/dev-server/server.clj`](../demo/dev-server/server.clj))
 implements this contract end to end, query normalization, the shape, `pageInfo`, and a
 fixture for every failure mode while emitting JSON independently of BareBuild. See
-[`../read_demo/README.md`](../read_demo/README.md).
+[`../demo/README.md`](../demo/README.md).

@@ -1,7 +1,7 @@
-(ns read-demo.x-stat-consumer-model-test
+(ns demo.x-stat-consumer-model-test
   "project-stat: the non-collection projection — an accepted response to a scalar string."
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [read-demo.x-stat-consumer.model :as model]))
+            [demo.x-stat-consumer.model :as model]))
 
 (deftest project-stat-reads-server-total-count
   (testing "the scalar comes from the server's page-info, not from the visible rows"

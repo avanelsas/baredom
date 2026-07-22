@@ -60,7 +60,7 @@ jobs:
 
       - name: Lint (product + demo)
         working-directory: barebuild
-        run: clj-kondo --lint src test read_demo/src read_demo/test
+        run: clj-kondo --lint src test demo/src demo/test
 
       - name: Unit tests (Node)
         working-directory: barebuild

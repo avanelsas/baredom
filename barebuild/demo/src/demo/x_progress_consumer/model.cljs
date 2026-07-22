@@ -1,4 +1,4 @@
-(ns read-demo.x-progress-consumer.model)
+(ns demo.x-progress-consumer.model)
 
 (def tag-name "x-progress-consumer")
 

@@ -100,7 +100,7 @@ flowchart LR
 | Path | What |
 |---|---|
 | `src/barebuild/` | **the product** — the pure core (`resource`, `wire`, `utils`), the `register!` mechanism (`consumer_resource`), and the `<server-resource>` element |
-| `read_demo/` | **the demo** — example consumers, a Babashka dev-server, and a live page (showcase; never shipped) |
+| `demo/` | **the demo** — example consumers, a Babashka dev-server, and a live page (showcase; never shipped) |
 | `docs/` | [`server-contract.md`](./docs/server-contract.md), [`architecture-diagram.md`](./docs/architecture-diagram.md), [`authoring-a-consumer.md`](./docs/authoring-a-consumer.md) |
 | `test/barebuild/` | product unit tests |
 
@@ -121,7 +121,7 @@ dependency on BareDOM. (An app whose consumers drive BareDOM components installs
 `@vanelsas/baredom` itself — that's the app's dependency, not BareBuild's.)
 
 Running the showcase demo (a live page driving BareDOM components from a tasks server) has
-its own guide, see [`read_demo/README.md`](./read_demo/README.md).
+its own guide, see [`demo/README.md`](./demo/README.md).
 
 ## License
 

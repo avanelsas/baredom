@@ -1,7 +1,7 @@
-(ns read-demo.x-stat-consumer.x-stat-consumer
+(ns demo.x-stat-consumer.x-stat-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
-   [read-demo.x-stat-consumer.model :as model]
+   [demo.x-stat-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
 (defn- on-pending! [^js x-stat pending _this]

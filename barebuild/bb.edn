@@ -1,4 +1,4 @@
-{:paths ["read_demo/dev-server"]
+{:paths ["demo/dev-server"]
  :tasks
  {server      {:doc      "Run the BareBuild dev-server (the contract oracle + demo backend)."
                :requires ([server])

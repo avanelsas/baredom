@@ -1,4 +1,4 @@
-(ns read-demo.x-search-field-consumer.model)
+(ns demo.x-search-field-consumer.model)
 
 (def tag-name "x-search-field-consumer")
 

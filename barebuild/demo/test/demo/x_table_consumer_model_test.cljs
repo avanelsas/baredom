@@ -1,6 +1,6 @@
-(ns read-demo.x-table-consumer-model-test
+(ns demo.x-table-consumer-model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [read-demo.x-table-consumer.model :as model]))
+            [demo.x-table-consumer.model :as model]))
 
 (def accepted
   {:outcome    :accepted

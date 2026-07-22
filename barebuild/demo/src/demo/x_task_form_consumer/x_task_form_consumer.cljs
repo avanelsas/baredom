@@ -1,8 +1,8 @@
-(ns read-demo.x-task-form-consumer.x-task-form-consumer
+(ns demo.x-task-form-consumer.x-task-form-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [barebuild.validation :as validation]
-   [read-demo.x-task-form-consumer.model :as model]
+   [demo.x-task-form-consumer.model :as model]
    [baredom.utils.dom :as du]
    [goog.object :as gobj]))
 

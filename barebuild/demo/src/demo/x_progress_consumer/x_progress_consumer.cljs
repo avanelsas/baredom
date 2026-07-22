@@ -1,7 +1,7 @@
-(ns read-demo.x-progress-consumer.x-progress-consumer
+(ns demo.x-progress-consumer.x-progress-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
-   [read-demo.x-progress-consumer.model :as model]
+   [demo.x-progress-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
 (defn- on-pending! [^js x-progress pending _this]
