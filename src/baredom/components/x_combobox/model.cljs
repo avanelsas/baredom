@@ -11,6 +11,7 @@
 (def attr-required    "required")
 (def attr-open        "open")
 (def attr-placement   "placement")
+(def attr-error       "error")
 
 ;; Event name constants
 (def event-change-request "x-combobox-change-request")
@@ -27,7 +28,7 @@
 
 (def observed-attributes
   #js [attr-value attr-placeholder attr-name attr-disabled
-       attr-required attr-open attr-placement])
+       attr-required attr-open attr-placement attr-error])
 
 (def property-api
   {:value       {:type 'string  :reflects-attribute attr-value}
@@ -36,7 +37,10 @@
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :required    {:type 'boolean :reflects-attribute attr-required}
    :open        {:type 'boolean :reflects-attribute attr-open}
-   :placement   {:type 'string  :reflects-attribute attr-placement}})
+   :placement   {:type 'string  :reflects-attribute attr-placement}
+   ;; `error` reflects the attribute so x-form's setFieldError can drive the
+   ;; inline validation message, mirroring x-form-field.
+   :error       {:type 'string  :reflects-attribute attr-error}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -59,14 +63,19 @@
 (defn normalize
   "Derives a complete view-model map from raw attribute presence/values."
   [{:keys [value-raw placeholder-raw name-raw
-           disabled-present? required-present? open-present? placement-raw]}]
+           disabled-present? required-present? open-present? placement-raw
+           error-raw]}]
   {:value       (or value-raw "")
    :placeholder (or placeholder-raw "")
    :name        (or name-raw "")
    :disabled?   (boolean disabled-present?)
    :required?   (boolean required-present?)
    :open?       (boolean open-present?)
-   :placement   (normalize-placement placement-raw)})
+   :placement   (normalize-placement placement-raw)
+   :error       (or error-raw "")
+   ;; Coerce to a strict boolean: tests call normalize with sparse maps, so
+   ;; `(and (string? nil) …)` must not leak nil into a has-error? predicate.
+   :has-error?  (boolean (and (string? error-raw) (not= error-raw "")))})
 
 ;; ---------------------------------------------------------------------------
 ;; Option filtering

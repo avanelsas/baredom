@@ -134,6 +134,18 @@
     </div>
   </section>
 
+  <!-- ── Validation error ────────────────────────────────────────────── -->
+  <section>
+    <h2>Validation error</h2>
+    <div class="row">
+      <x-combobox name="country-err" error="Please choose a country" placeholder="Select a country">
+        <option value="us">United States</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+      </x-combobox>
+    </div>
+  </section>
+
   <!-- ── Placements ──────────────────────────────────────────────────── -->
   <section>
     <h2>Placements</h2>
@@ -220,6 +232,10 @@
         Disabled
         <input type="checkbox" id="ctrl-disabled" />
       </label>
+      <label>
+        Error
+        <input type="text" id="ctrl-error" placeholder="(none)" />
+      </label>
     </div>
 
     <div class="row">
@@ -252,6 +268,10 @@
     });
     document.getElementById('ctrl-disabled').addEventListener('change', e => {
       cb.disabled = e.target.checked;
+    });
+    document.getElementById('ctrl-error').addEventListener('input', e => {
+      const v = e.target.value.trim();
+      if (v) cb.setAttribute('error', v); else cb.removeAttribute('error');
     });
 
     const log = document.getElementById('event-log');

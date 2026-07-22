@@ -19,6 +19,7 @@ A single-select combobox with type-ahead filtering. The user types to filter a l
 | `required`    | boolean | `false`        | Marks as required for form validation |
 | `open`        | boolean | `false`        | Controls panel visibility |
 | `placement`   | enum    | `"bottom-start"` | Panel position relative to input |
+| `error`       | string  | `""`           | Inline validation message; shows the `error` part and marks the field invalid |
 
 ### Placement values
 
@@ -35,6 +36,7 @@ A single-select combobox with type-ahead filtering. The user types to filter a l
 | `required`    | boolean | `required` |
 | `open`        | boolean | `open` |
 | `placement`   | string  | `placement` |
+| `error`       | string  | `error` |
 
 ## Public methods
 
@@ -110,6 +112,7 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 | `panel`    | Dropdown listbox container |
 | `option`   | Individual option item in panel |
 | `empty-msg`| "No matches" message when filter has no results |
+| `error`    | Inline validation message; hidden until the `error` attribute is set |
 
 ## CSS custom properties
 
@@ -138,6 +141,7 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 | `--x-combobox-panel-bg` | `var(--x-color-bg)` | Panel background |
 | `--x-combobox-option-hover-bg` | `var(--x-color-surface-hover)` | Option hover |
 | `--x-combobox-option-active-bg` | `var(--x-color-primary)` | Active/highlighted option |
+| `--x-combobox-error-color` | `var(--x-color-danger)` | Inline error text + invalid border |
 
 ### Motion
 
@@ -154,6 +158,7 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 - Active/highlighted option tracked via `aria-activedescendant` on input
 - `focusin` on input opens the panel immediately — keyboard users get immediate feedback
 - `Escape` closes panel and reverts input text to current selection
+- When the `error` attribute is set, the input gets `aria-invalid="true"` and `aria-describedby="error"`, and the `error` part is an assertive live region (`role="alert"`) so screen readers announce the validation message
 
 **Note:** `required` reflects the attribute for styling purposes (e.g. `:host([required])`) but native form validation via `ElementInternals` is not yet implemented.
 
@@ -216,6 +221,20 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
   <button type="submit">Submit</button>
 </form>
 ```
+
+### Validation error
+
+The `error` attribute renders an inline message below the control and marks it
+invalid. Inside `x-form`, this is driven for you by `form.setFieldError(name, message)`.
+
+```html
+<x-combobox name="country" error="Please choose a country" placeholder="Select a country">
+  <option value="us">United States</option>
+  <option value="nl">Netherlands</option>
+</x-combobox>
+```
+
+Clear it by removing the attribute (or `el.error = ''`).
 
 ### Programmatic control
 

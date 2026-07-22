@@ -19,6 +19,7 @@
 (def ^:private rk-clear   "clear")
 (def ^:private rk-chevron "chevron")
 (def ^:private rk-panel   "panel")
+(def ^:private rk-error   "error")
 (def ^:private rk-slot    "slot")
 
 ;; ── Handler-object keys ────────────────────────────────────────────────────
@@ -42,15 +43,19 @@
 (def ^:private attr-tabindex       "tabindex")
 (def ^:private attr-aria-label     "aria-label")
 (def ^:private attr-aria-hidden    "aria-hidden")
+(def ^:private attr-aria-live      "aria-live")
 (def ^:private attr-aria-expanded  "aria-expanded")
 (def ^:private attr-aria-selected  "aria-selected")
 (def ^:private attr-aria-controls  "aria-controls")
 (def ^:private attr-aria-autocomplete "aria-autocomplete")
 (def ^:private attr-aria-activedescendant "aria-activedescendant")
+(def ^:private attr-aria-invalid   "aria-invalid")
+(def ^:private attr-aria-describedby "aria-describedby")
 (def ^:private attr-data-active    "data-active")
 (def ^:private attr-data-value     "data-value")
 (def ^:private attr-data-placement "data-placement")
 (def ^:private attr-data-has-value "data-has-value")
+(def ^:private attr-data-invalid   "data-invalid")
 
 (def ^:private part-wrapper   "wrapper")
 (def ^:private part-input     "input")
@@ -59,6 +64,10 @@
 (def ^:private part-panel     "panel")
 (def ^:private part-option    "option")
 (def ^:private part-empty-msg "empty-msg")
+(def ^:private part-error     "error")
+
+(def ^:private id-error "error")
+(def ^:private cls-error-hidden "error-hidden")
 
 (def ^:private val-button   "button")
 (def ^:private val-text     "text")
@@ -71,6 +80,8 @@
 (def ^:private val-false    "false")
 (def ^:private val-clear-label "Clear")
 (def ^:private val-clear-glyph "×")
+(def ^:private val-alert     "alert")
+(def ^:private val-assertive "assertive")
 
 (def ^:private ev-focus        "focus")
 (def ^:private ev-input        "input")
@@ -134,6 +145,7 @@
    "--x-combobox-font-size:var(--x-font-size-sm,0.9375rem);"
    "--x-combobox-padding:0 0.625rem;"
    "--x-combobox-focus-ring:var(--x-color-focus-ring,#60a5fa);"
+   "--x-combobox-error-color:var(--x-color-danger,#dc2626);"
    "--x-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.05));"
    "--x-combobox-disabled-opacity:var(--x-opacity-disabled,0.55);"
    "--x-combobox-chevron-color:var(--x-color-text-muted,#64748b);"
@@ -159,6 +171,7 @@
    "--x-combobox-border-hover:1px solid var(--x-color-border,#475569);"
    "--x-combobox-border-focus:1px solid var(--x-color-focus-ring,#93c5fd);"
    "--x-combobox-focus-ring:var(--x-color-focus-ring,#93c5fd);"
+   "--x-combobox-error-color:var(--x-color-danger,#f87171);"
    "--x-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.2));"
    "--x-combobox-chevron-color:var(--x-color-text-muted,#94a3b8);"
    "--x-combobox-panel-bg:var(--x-color-bg,#1e293b);"
@@ -169,6 +182,7 @@
    "}"
    "}"
    "[part=wrapper]{"
+   "position:relative;"
    "display:flex;align-items:center;"
    "height:var(--x-combobox-height);"
    "background:var(--x-combobox-bg);"
@@ -184,6 +198,11 @@
    ":host(:focus-within) [part=wrapper]{"
    "border:var(--x-combobox-border-focus);"
    "box-shadow:0 0 0 2px var(--x-combobox-focus-ring);"
+   "}"
+   ":host([data-invalid]) [part=wrapper]{border:1px solid var(--x-combobox-error-color);}"
+   ":host([data-invalid]:focus-within) [part=wrapper]{"
+   "border:1px solid var(--x-combobox-error-color);"
+   "box-shadow:0 0 0 2px color-mix(in srgb,var(--x-combobox-error-color) 45%,transparent);"
    "}"
    ":host([disabled]) [part=wrapper]{"
    "opacity:var(--x-combobox-disabled-opacity);cursor:default;pointer-events:none;"
@@ -248,6 +267,12 @@
    "font-size:var(--x-combobox-font-size);color:var(--x-combobox-placeholder);"
    "font-style:italic;margin:0 0.25rem;"
    "}"
+   "[part=error]{"
+   "display:block;margin-top:0.25rem;"
+   "font-size:0.8125rem;line-height:1.4;"
+   "color:var(--x-combobox-error-color);"
+   "}"
+   ".error-hidden{display:none;}"
    "slot{display:none;}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=panel]{transition:none !important;}"
@@ -304,6 +329,17 @@
     (du/set-attr! panel-el attr-data-placement model/default-placement)
     panel-el))
 
+;; Inline error message below the control. Mirrors x-form-field: an assertive
+;; live region with role=alert, hidden until an `error` attribute is set.
+(defn- make-error! []
+  (let [error-el (.createElement js/document "span")]
+    (du/set-attr! error-el attr-part      part-error)
+    (du/set-attr! error-el attr-id        id-error)
+    (du/set-attr! error-el attr-role      val-alert)
+    (du/set-attr! error-el attr-aria-live val-assertive)
+    (.add (.-classList error-el) cls-error-hidden)
+    error-el))
+
 (defn- make-shadow! [^js el]
   (let [root       (.attachShadow el #js {:mode "open"})
         style-el   (.createElement js/document "style")
@@ -313,14 +349,18 @@
         chevron-el (make-chevron!)
         wrapper-el (make-wrapper! input-el clear-el chevron-el)
         panel-el   (make-panel! lb-id)
+        error-el   (make-error!)
         slot-el    (.createElement js/document "slot")
         refs       #js {}]
 
     (set! (.-textContent style-el) style-text)
 
+    ;; Panel is nested inside the wrapper (the positioned anchor) so the inline
+    ;; error span below the wrapper never displaces the open dropdown.
+    (.appendChild wrapper-el panel-el)
     (.appendChild root style-el)
     (.appendChild root wrapper-el)
-    (.appendChild root panel-el)
+    (.appendChild root error-el)
     (.appendChild root slot-el)
 
     (du/setv! el k-options [])
@@ -332,6 +372,7 @@
     (gobj/set refs rk-clear   clear-el)
     (gobj/set refs rk-chevron chevron-el)
     (gobj/set refs rk-panel   panel-el)
+    (gobj/set refs rk-error   error-el)
     (gobj/set refs rk-slot    slot-el)
     (du/setv! el k-refs refs)
     refs))
@@ -360,7 +401,8 @@
     :disabled-present? (du/has-attr? el model/attr-disabled)
     :required-present? (du/has-attr? el model/attr-required)
     :open-present?     (du/has-attr? el model/attr-open)
-    :placement-raw     (du/get-attr el model/attr-placement)}))
+    :placement-raw     (du/get-attr el model/attr-placement)
+    :error-raw         (du/get-attr el model/attr-error)}))
 
 ;; ── Panel rendering ────────────────────────────────────────────────────────
 (defn- append-option!
@@ -438,16 +480,37 @@
     (du/set-attr! el attr-data-has-value "")
     (du/remove-attr! el attr-data-has-value)))
 
+(defn- apply-error! [^js error-el {:keys [error has-error?]}]
+  (set! (.-textContent error-el) (or error ""))
+  (if has-error?
+    (.remove (.-classList error-el) cls-error-hidden)
+    (.add    (.-classList error-el) cls-error-hidden)))
+
+(defn- apply-host-invalid! [^js el {:keys [has-error?]}]
+  (if has-error?
+    (du/set-attr!    el attr-data-invalid "")
+    (du/remove-attr! el attr-data-invalid)))
+
+(defn- apply-input-invalid! [^js input-el {:keys [has-error?]}]
+  (du/set-attr! input-el attr-aria-invalid (if has-error? val-true val-false))
+  (if has-error?
+    (du/set-attr!    input-el attr-aria-describedby id-error)
+    (du/remove-attr! input-el attr-aria-describedby)))
+
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
           ^js panel-el (gobj/get refs rk-panel)
+          ^js error-el (gobj/get refs rk-error)
           options      (du/getv el k-options)
           selected-opt (model/find-option-by-value options (:value m))]
       (apply-input-state!        input-el m)
       (apply-panel-placement!    panel-el m)
       (apply-input-value!        input-el m selected-opt)
       (apply-host-data-has-value! el m)
+      (apply-error!              error-el m)
+      (apply-host-invalid!       el m)
+      (apply-input-invalid!      input-el m)
       ;; Re-render panel when open so highlights reflect the latest value.
       (when (:open? m)
         (render-panel! el))

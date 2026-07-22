@@ -22,6 +22,7 @@ export const XCombobox = defineComponent({
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     open: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     placement: { type: String as PropType<string | undefined>, default: undefined },
+    error: { type: String as PropType<string | undefined>, default: undefined },
     modelValue: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
