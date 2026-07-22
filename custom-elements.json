@@ -259,6 +259,12 @@
           "text" : "boolean"
         }
       }, {
+        "kind" : "field",
+        "name" : "debounce",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
         "kind" : "method",
         "name" : "checkValidity",
         "return" : {
@@ -364,6 +370,12 @@
         "name" : "readOnly",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -2355,6 +2367,12 @@
           "text" : "string"
         }
       }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
         "kind" : "method",
         "name" : "show",
         "return" : {
@@ -3305,6 +3323,12 @@
       }, {
         "kind" : "field",
         "name" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
         "type" : {
           "text" : "string"
         }
@@ -5399,19 +5423,13 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "value",
+        "name" : "open",
         "type" : {
-          "text" : "string"
+          "text" : "boolean"
         }
       }, {
         "kind" : "field",
         "name" : "placeholder",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "name",
         "type" : {
           "text" : "string"
         }
@@ -5423,15 +5441,27 @@
         }
       }, {
         "kind" : "field",
-        "name" : "required",
+        "name" : "name",
         "type" : {
-          "text" : "boolean"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
-        "name" : "open",
+        "name" : "value",
         "type" : {
-          "text" : "boolean"
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "error",
+        "type" : {
+          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -5441,9 +5471,9 @@
         }
       }, {
         "kind" : "field",
-        "name" : "max",
+        "name" : "required",
         "type" : {
-          "text" : "number"
+          "text" : "boolean"
         }
       }, {
         "kind" : "method",
