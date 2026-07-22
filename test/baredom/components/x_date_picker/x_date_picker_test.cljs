@@ -45,6 +45,63 @@
     (is (some? (shadow-part el "[part=weekdays]"))   "weekdays part")
     (is (some? (shadow-part el "[part=grid]"))       "grid part")))
 
+;; ---------------------------------------------------------------------------
+;; Inline error display (mirrors x-form-field)
+;; ---------------------------------------------------------------------------
+
+(deftest error-part-exists-and-hidden-by-default-test
+  (let [el (append! (make-el))
+        ^js err (shadow-part el "[part=error]")]
+    (is (some? err) "error span should exist in shadow DOM")
+    (is (.contains (.-classList err) "error-hidden")
+        "error span should be hidden when no error attr is set")
+    (is (= "alert" (.getAttribute err "role")))
+    (is (= "assertive" (.getAttribute err "aria-live")))))
+
+(deftest error-attr-shows-message-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Choose a valid date")
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (not (.contains (.-classList err) "error-hidden")))
+      (is (= "Choose a valid date" (.-textContent err)))
+      (is (.hasAttribute el "data-invalid")
+          "host should carry data-invalid when an error is present")
+      (is (= "true" (.getAttribute inp "aria-invalid")))
+      (is (= "error" (.getAttribute inp "aria-describedby"))))))
+
+(deftest error-attr-clears-message-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Boom")
+    (.removeAttribute el model/attr-error)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (.contains (.-classList err) "error-hidden"))
+      (is (not (.hasAttribute el "data-invalid")))
+      (is (= "false" (.getAttribute inp "aria-invalid")))
+      (is (not (.hasAttribute inp "aria-describedby"))
+          "aria-describedby should be removed when there is no error"))))
+
+(deftest error-merges-with-author-describedby-test
+  ;; The author-supplied aria-describedby must survive alongside the error id,
+  ;; and revert to author-only when the error clears.
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-aria-describedby "hint-1")
+    (.setAttribute el model/attr-error "Bad date")
+    (let [^js inp (shadow-part el "[part=input]")]
+      (is (= "hint-1 error" (.getAttribute inp "aria-describedby"))
+          "error id is appended to the author-supplied describedby"))
+    (.removeAttribute el model/attr-error)
+    (let [^js inp (shadow-part el "[part=input]")]
+      (is (= "hint-1" (.getAttribute inp "aria-describedby"))
+          "describedby reverts to the author value when the error clears"))))
+
+(deftest error-property-reflects-attr-test
+  (let [el (append! (make-el))]
+    (set! (.-error el) "Required")
+    (is (= "Required" (.getAttribute el model/attr-error)))
+    (is (= "Required" (.-error el)))))
+
 (deftest mode-default-test
   (let [el (append! (make-el))]
     (is (nil? (.getAttribute el model/attr-mode))

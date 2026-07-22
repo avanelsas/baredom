@@ -7,6 +7,13 @@
 ;; baredom.utils.dates-test. This file keeps only x-date-picker-specific
 ;; model logic (mode/format parsing, canonicalization, display parsing).
 
+(deftest error-metadata-test
+  (testing "error is an observed attribute so setFieldError re-renders the message"
+    (is (some #(= % "error") (array-seq model/observed-attributes))))
+  (testing "error is a reflecting string property"
+    (is (= model/attr-error (get-in model/property-api [:error :reflects-attribute])))
+    (is (= 'string (get-in model/property-api [:error :type])))))
+
 (deftest parse-mode-test
   (is (= :single (model/parse-mode nil)))
   (is (= :single (model/parse-mode "single")))

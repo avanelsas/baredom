@@ -21,6 +21,7 @@
 (def attr-required          "required")
 (def attr-name              "name")
 (def attr-autocomplete      "autocomplete")
+(def attr-error             "error")
 (def attr-aria-label        "aria-label")
 (def attr-aria-describedby  "aria-describedby")
 
@@ -31,7 +32,7 @@
 (def observed-attributes
   #js ["mode" "value" "start" "end" "min" "max" "format" "locale" "separator"
        "auto-swap" "range-allow-same-day" "close-on-select" "placeholder"
-       "disabled" "readonly" "required" "name" "autocomplete"
+       "disabled" "readonly" "required" "name" "autocomplete" "error"
        "aria-label" "aria-describedby" "open"])
 
 (def property-api
@@ -45,7 +46,10 @@
    :open        {:type 'boolean :reflects-attribute "open"}
    ;; `name` reflects the attribute like every other form control (and native
    ;; form inputs), so `el.name` works and x-form can collect this field by name.
-   :name        {:type 'string  :reflects-attribute attr-name}})
+   :name        {:type 'string  :reflects-attribute attr-name}
+   ;; `error` reflects the attribute so x-form's setFieldError can drive the
+   ;; inline validation message, mirroring x-form-field.
+   :error       {:type 'string  :reflects-attribute attr-error}})
 
 ;; ---------------------------------------------------------------------------
 ;; String / parsing helpers
