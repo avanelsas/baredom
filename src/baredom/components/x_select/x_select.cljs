@@ -1,6 +1,7 @@
 (ns baredom.components.x-select.x-select
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.components.x-select.model :as model]))
 
@@ -334,25 +335,15 @@
 ;; ---------------------------------------------------------------------------
 ;; Form association — ElementInternals value + constraint validation
 ;; ---------------------------------------------------------------------------
-(defn- sync-validity! [^js el ^js internals ^js select-el]
-  (let [has-error? (du/has-attr? el model/attr-error)
-        error-msg  (or (du/get-attr el model/attr-error) "")
-        required?  (du/has-attr? el model/attr-required)
-        value      (.-value select-el)]
-    (cond
-      has-error?
-      (.setValidity internals #js {:customError true} error-msg select-el)
-      (and required? (= value ""))
-      (.setValidity internals #js {:valueMissing true} msg-value-missing select-el)
-      :else
-      (.setValidity internals #js {} "" select-el))))
-
-;; Push the live selection into the form and refresh validity. No-op when the
-;; element is not form-associated (older browsers / attachInternals absent).
+;; Push the live selection into the form and refresh validity via the shared
+;; policy. No-op when the element is not form-associated (older browsers).
 (defn- sync-form-state! [^js el ^js select-el]
-  (when-let [^js internals (du/getv el k-internals)]
-    (.setFormValue internals (.-value select-el))
-    (sync-validity! el internals select-el)))
+  (forms/sync! (du/getv el k-internals) select-el (.-value select-el)
+               {:has-error?      (du/has-attr? el model/attr-error)
+                :error           (du/get-attr el model/attr-error)
+                :required?       (du/has-attr? el model/attr-required)
+                :empty?          (= (.-value select-el) "")
+                :missing-message msg-value-missing}))
 
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]

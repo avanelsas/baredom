@@ -4,6 +4,7 @@
             [baredom.components.x-multi-combobox.model :as model]
             [baredom.components.x-chip.x-chip :as x-chip]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [baredom.utils.overlay :as overlay]
             [clojure.string :as str]))
 
@@ -577,20 +578,14 @@
     (du/remove-attr! input-el attr-aria-describedby)))
 
 ;; Form association — push the selected set (comma-serialized) into the form and
-;; refresh validity. No-op when the element is not form-associated.
+;; refresh validity via the shared policy. No-op when not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
-  (when-let [^js internals (du/getv el k-internals)]
-    (let [fval      (model/serialize-value value)
-          error-msg (or (du/get-attr el model/attr-error) "")
-          required? (du/has-attr? el model/attr-required)]
-      (.setFormValue internals fval)
-      (cond
-        has-error?
-        (.setValidity internals #js {:customError true} error-msg input-el)
-        (and required? (empty? value))
-        (.setValidity internals #js {:valueMissing true} msg-value-missing input-el)
-        :else
-        (.setValidity internals #js {} "" input-el)))))
+  (forms/sync! (du/getv el k-internals) input-el (model/serialize-value value)
+               {:has-error?      has-error?
+                :error           (du/get-attr el model/attr-error)
+                :required?       (du/has-attr? el model/attr-required)
+                :empty?          (empty? value)
+                :missing-message msg-value-missing}))
 
 (defn- apply-model! [^js el {:keys [value placeholder disabled? open? placement] :as m}]
   (when-let [refs (du/getv el k-refs)]

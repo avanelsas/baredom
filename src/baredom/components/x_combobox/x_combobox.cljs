@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.forms :as forms]
    [goog.object :as gobj]
    [baredom.components.x-combobox.model :as model]))
 
@@ -500,20 +501,16 @@
     (du/set-attr!    input-el attr-aria-describedby id-error)
     (du/remove-attr! input-el attr-aria-describedby)))
 
-;; Form association — push the selected value into the form and refresh validity.
-;; No-op when the element is not form-associated (older browsers).
+;; Form association — push the selected value into the form and refresh validity
+;; via the shared policy. No-op when the element is not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
-  (when-let [^js internals (du/getv el k-internals)]
-    (let [error-msg (or (du/get-attr el model/attr-error) "")
-          required? (du/has-attr? el model/attr-required)]
-      (.setFormValue internals (or value ""))
-      (cond
-        has-error?
-        (.setValidity internals #js {:customError true} error-msg input-el)
-        (and required? (= (or value "") ""))
-        (.setValidity internals #js {:valueMissing true} msg-value-missing input-el)
-        :else
-        (.setValidity internals #js {} "" input-el)))))
+  (let [v (or value "")]
+    (forms/sync! (du/getv el k-internals) input-el v
+                 {:has-error?      has-error?
+                  :error           (du/get-attr el model/attr-error)
+                  :required?       (du/has-attr? el model/attr-required)
+                  :empty?          (= v "")
+                  :missing-message msg-value-missing})))
 
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]

@@ -1,6 +1,7 @@
 (ns baredom.components.x-text-area.x-text-area
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.components.x-text-area.model :as model]))
 
@@ -168,18 +169,15 @@
 ;; ---------------------------------------------------------------------------
 ;; Validity sync
 ;; ---------------------------------------------------------------------------
+;; Thin adapter: maps this control's state to the shared validity policy.
+;; :missing-message is omitted, so it uses forms/default-value-missing
+;; ("Please fill in this field.") — the message this component already used.
 (defn- sync-validity! [^js el ^js internals ^js textarea-el]
-  (let [has-error? (du/has-attr? el model/attr-error)
-        error-msg  (or (du/get-attr el model/attr-error) "")
-        required?  (du/has-attr? el model/attr-required)
-        value      (.-value textarea-el)]
-    (cond
-      has-error?
-      (.setValidity internals #js {:customError true} error-msg textarea-el)
-      (and required? (= value ""))
-      (.setValidity internals #js {:valueMissing true} "Please fill in this field." textarea-el)
-      :else
-      (.setValidity internals #js {} "" textarea-el))))
+  (forms/set-validity! internals textarea-el
+                       {:has-error? (du/has-attr? el model/attr-error)
+                        :error      (du/get-attr el model/attr-error)
+                        :required?  (du/has-attr? el model/attr-required)
+                        :empty?     (= (.-value textarea-el) "")}))
 
 ;; ---------------------------------------------------------------------------
 ;; Read element state from attributes

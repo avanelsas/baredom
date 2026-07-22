@@ -2,6 +2,7 @@
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
             [baredom.utils.dates :as dates]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-date-picker.model :as model]))
@@ -250,26 +251,20 @@
       "")))
 
 (defn- sync-form-state!
-  "Push the current value into the form and refresh validity. No-op when the
-  element is not form-associated (older browsers / attachInternals absent)."
+  "Push the current value into the form and refresh validity via the shared
+  policy. No-op when the element is not form-associated (older browsers)."
   [^js el]
-  (when-let [^js internals (du/getv el k-internals)]
-    (let [refs       (du/getv el k-refs)
-          ^js inp    (when refs (gobj/get refs "input"))
-          state      (du/getv el k-state)
-          canon      (when state (gobj/get state "canon"))
-          fval       (if canon (form-value-of canon) "")
-          has-error? (du/has-attr? el model/attr-error)
-          error-msg  (or (du/get-attr el model/attr-error) "")
-          required?  (du/has-attr? el model/attr-required)]
-      (.setFormValue internals fval)
-      (cond
-        has-error?
-        (.setValidity internals #js {:customError true} error-msg inp)
-        (and required? (= fval ""))
-        (.setValidity internals #js {:valueMissing true} msg-value-missing inp)
-        :else
-        (.setValidity internals #js {} "" inp)))))
+  (let [refs    (du/getv el k-refs)
+        ^js inp (when refs (gobj/get refs "input"))
+        state   (du/getv el k-state)
+        canon   (when state (gobj/get state "canon"))
+        fval    (if canon (form-value-of canon) "")]
+    (forms/sync! (du/getv el k-internals) inp fval
+                 {:has-error?      (du/has-attr? el model/attr-error)
+                  :error           (du/get-attr el model/attr-error)
+                  :required?       (du/has-attr? el model/attr-required)
+                  :empty?          (= fval "")
+                  :missing-message msg-value-missing})))
 
 (defn- render!
   [^js el]

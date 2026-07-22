@@ -116,6 +116,7 @@ Reference by name when discussing architecture:
   - **`[refs-key event handler-key capture?]`** — handler-key looks up a closure in a handlers JS object stashed on the host via `du/setv!`. Both `add-listeners!` and `remove-listeners!` iterate the same spec, so they cannot drift. Use when handlers must be removable across disconnect/reconnect (host listeners, document listeners, or anything that survives a teardown). References: `x-color-picker`, `x-multi-combobox` (`listener-spec` + `iter-listeners!`), `baredom.utils.overlay/attach-listener!`.
   - **`[refs-key event handler-fn]`** — handler-fn is a top-level `defn-` of `[^js el ^js event]` that the install path wraps in `(fn [event] (handler el event))`. No handlers map, no remove path. Use only when listeners bind to shadow children whose lifetime is tied to the shadow DOM itself (so they get GC'd with the element). Reference: `x-button` (`listener-spec` + `install-listeners!`).
   - Don't invent a third shape — pick whichever matches the removability requirement.
+- **`form-validity`** — a form-associated control composes `baredom.utils.forms` for its ElementInternals constraint validation rather than hand-writing the `error → customError` / `required+empty → valueMissing` / `else → clear` decision. The decision is a pure function (`forms/validity`) split from its effect (`forms/set-validity!`/`forms/sync!`); the component supplies only its per-control variation (empty predicate, anchor, value, non-default message). Golden samples: `x-select` (`forms/sync!`), `x-form-field` (`forms/set-validity!`).
 
 ## Closure Advanced Compilation Safety
 
@@ -207,6 +208,7 @@ Components **must** use shared utility modules — never reimplement locally:
 - **`du/dispatch!`** / **`du/dispatch-cancelable!`** — event dispatch
 - **`du/install-properties!`** — install property accessors from `model/property-api` (Tier 0; see _Property accessor tiers_ above)
 - **`du/define-bool-prop!`** / **`du/define-string-prop!`** / **`du/define-number-prop!`** — install single accessor (Tier 1)
+- **`forms/validity`** / **`forms/set-validity!`** / **`forms/sync!`** — the shared ElementInternals constraint-validation policy for form-associated components. `forms/validity` is a **pure** projection (`{:has-error? :error :required? :empty? :missing-message}` → `{:flags :message}`); `set-validity!` applies it via `setValidity`; `sync!` does `setFormValue` + `set-validity!`. A component supplies only its per-control variation (what counts as *empty*, the validity *anchor*, its *value*, any non-default *missing message*) — **never re-implement the `error → customError`, `required+empty → valueMissing`, `else → clear` cond inline.** References: `x-select`, `x-combobox`, `x-multi-combobox`, `x-date-picker` (`forms/sync!`), `x-form-field`, `x-text-area` (`forms/set-validity!`).
 - **`mu/`** — boolean parsing, string predicates, security sanitizers
 
 See [`docs/UTILITIES.md`](docs/UTILITIES.md) for the complete function reference.
