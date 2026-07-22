@@ -19,6 +19,7 @@
    "x-text-area"      {:value-type "string"  :change-event "x-text-area-change"      :change-request-event "x-text-area-change-request"      :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-select"         {:value-type "string"  :change-event "select-change"           :change-request-event "x-select-change-request"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-combobox"       {:value-type "string"  :change-event "x-combobox-change"       :change-request-event "x-combobox-change-request"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
+   "x-date-picker"    {:value-type "string"  :change-event "x-date-picker-change"    :change-request-event "x-date-picker-change-request"    :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-currency-field" {:value-type "string"  :change-event "x-currency-field-change" :change-request-event "x-currency-field-change-request" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-tabs"           {:value-type "string"  :change-event "value-change"            :change-request-event "value-change-request"            :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-pagination"     {:value-type "number"  :change-event "page-change"             :change-request-event "page-change-request"             :detail-field "page"    :write-mode :string-attr  :attr-name "page"}})

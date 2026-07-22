@@ -88,6 +88,16 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 ---
 
+## Form participation
+
+`x-date-picker` is a form-associated custom element (via `ElementInternals`). In a `<form>`:
+
+- The committed value is submitted under its `name`: the ISO date in single mode, or `start/end` once a range is complete.
+- Constraint validation is honoured: a `required` picker with no committed date reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
+- `form.reset()` clears the committed value(s) (mirroring how `x-form-field` resets), and `<fieldset disabled>` disables it via `formDisabledCallback`.
+
+---
+
 ## Keyboard (calendar open)
 
 | Key            | Action                               |
