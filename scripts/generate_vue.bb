@@ -43,9 +43,10 @@
   "Vue 3 runtime constructor for a bare TS type string."
   [type-str]
   (case type-str
-    "boolean" "Boolean"
-    "string"  "String"
-    "number"  "Number"
+    "boolean"  "Boolean"
+    "string"   "String"
+    "number"   "Number"
+    "string[]" "Array"
     "Object"))
 
 ;; Vue 3 reserves these names as VNode-level identifiers. A prop with
@@ -152,10 +153,13 @@
   (when event-entries
     (map (fn [{:keys [dom-name emit-name is-model]}]
            (if is-model
+             ;; "string[]" → "" (identity): detail.value is already an array, so
+             ;; it must NOT be String()-wrapped when emitted as modelValue.
              (let [coerce (case (:value-type v-model-cfg)
-                            "string"  "String"
-                            "number"  "Number"
-                            "boolean" "Boolean")]
+                            "string"   "String"
+                            "number"   "Number"
+                            "boolean"  "Boolean"
+                            "string[]" "")]
                (str "      {\n"
                     "        const handler = (e: Event) => {\n"
                     "          const detail = (e as CustomEvent).detail;\n"

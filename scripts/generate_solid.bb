@@ -73,9 +73,17 @@
                                events))
         ;; Prop interface lines
         prop-lines (concat
+                    ;; The controlled prop (e.g. `value`) uses the form-control
+                    ;; value-type, which can differ from the property-api type —
+                    ;; x-multi-combobox reflects `value` as a string attribute but
+                    ;; its controlled value is string[].
                     (when writable-props
                       (map (fn [[k m]]
-                             (str "  " (kebab->camel (name k)) "?: " (prop-type->ts m) ";"))
+                             (let [camel (kebab->camel (name k))
+                                   ts    (if (and ctrl (= camel ctrl-prop))
+                                           ctrl-type
+                                           (prop-type->ts m))]
+                               (str "  " camel "?: " ts ";")))
                            writable-props))
                     (when ctrl
                       [(str "  " default-prop "?: " ctrl-type ";")])

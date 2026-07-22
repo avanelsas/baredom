@@ -77,6 +77,25 @@
       <x-date-picker name="dob" error="Please enter a valid date" placeholder="YYYY-MM-DD"></x-date-picker>
     </div>
 
+    <x-typography variant="overline">In a form — submission gating (required)</x-typography>
+    <div class="stack">
+      <form id="gate-form" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <x-date-picker name="dob" required placeholder="Pick a date (required)"></x-date-picker>
+        <button type="submit">Submit</button>
+        <span id="gate-result" style="font-size:14px;color:var(--muted)">not submitted</span>
+      </form>
+    </div>
+    <script>
+      // Native <form> submit is blocked by the required x-date-picker until a
+      // date is committed — exercises the ElementInternals validity from PR 2.
+      document.getElementById("gate-form").addEventListener("submit", e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        document.getElementById("gate-result").textContent =
+          "submitted: dob=" + fd.get("dob");
+      });
+    </script>
+
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>mode

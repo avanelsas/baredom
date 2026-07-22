@@ -18,6 +18,9 @@
 (def ^:private k-handlers "__xDatePickerHandlers")
 (def ^:private k-range-step "__xDatePickerRangeStep")
 (def ^:private k-grid-focus "__xDatePickerGridFocus")
+(def ^:private k-internals  "__xDatePickerInternals")
+
+(def ^:private msg-value-missing "Please enter a date.")
 
 ;; ---------------------------------------------------------------------------
 ;; Read state from element attrs
@@ -233,6 +236,41 @@
         (du/set-attr!    inp "aria-describedby" db)
         (du/remove-attr! inp "aria-describedby")))))
 
+;; ---------------------------------------------------------------------------
+;; Form association — ElementInternals value + constraint validation
+;; ---------------------------------------------------------------------------
+(defn- form-value-of
+  "The string submitted with the form: the ISO value for single mode, or
+  \"start/end\" once a range is complete (empty until then)."
+  [canon]
+  (if (= (:mode canon) :single)
+    (or (:value-str canon) "")
+    (if (:complete? canon)
+      (str (:start-str canon) "/" (:end-str canon))
+      "")))
+
+(defn- sync-form-state!
+  "Push the current value into the form and refresh validity. No-op when the
+  element is not form-associated (older browsers / attachInternals absent)."
+  [^js el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (let [refs       (du/getv el k-refs)
+          ^js inp    (when refs (gobj/get refs "input"))
+          state      (du/getv el k-state)
+          canon      (when state (gobj/get state "canon"))
+          fval       (if canon (form-value-of canon) "")
+          has-error? (du/has-attr? el model/attr-error)
+          error-msg  (or (du/get-attr el model/attr-error) "")
+          required?  (du/has-attr? el model/attr-required)]
+      (.setFormValue internals fval)
+      (cond
+        has-error?
+        (.setValidity internals #js {:customError true} error-msg inp)
+        (and required? (= fval ""))
+        (.setValidity internals #js {:valueMissing true} msg-value-missing inp)
+        :else
+        (.setValidity internals #js {} "" inp)))))
+
 (defn- render!
   [^js el]
   (let [refs (du/getv el k-refs)]
@@ -264,6 +302,7 @@
           (when aria-label  (du/set-attr! inp "aria-label" aria-label)))
 
         (apply-error! el inp)
+        (sync-form-state! el)
         (sync-input-display! el)
         (render-calendar! el)))))
 
@@ -893,7 +932,9 @@
 (defn- connected!
   [^js el]
   (when-not (du/getv el k-refs)
-    (make-shadow! el))
+    (make-shadow! el)
+    (when (.-attachInternals el)
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (read-state! el)
@@ -938,6 +979,20 @@
     (read-state! this)
     (render! this)))
 
+;; ---------------------------------------------------------------------------
+;; Form-associated callbacks
+;; ---------------------------------------------------------------------------
+(defn- form-disabled! [^js el disabled?]
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (read-state! el)
+  (render! el))
+
+;; Reset clears the committed value(s) — mirroring x-form-field, which resets to
+;; empty. render! then re-syncs the (now empty) form value + validity.
+(defn- form-reset! [^js el]
+  (du/setv! el k-range-step 0)
+  (xdp-clear! el))
+
 (defn- define-methods!
   [^js proto]
   ;; focus / commit / clear — .defineProperty per the Tier-2 idiom (bare aset
@@ -968,4 +1023,7 @@
      :connected-fn           connected!
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))

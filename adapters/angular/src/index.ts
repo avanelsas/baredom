@@ -110,6 +110,8 @@ export { BaredomWelcomeTour } from './directives/x-welcome-tour.directive';
 export { BaredomCheckboxCva } from './cva/x-checkbox-cva.directive';
 export { BaredomComboboxCva } from './cva/x-combobox-cva.directive';
 export { BaredomCurrencyFieldCva } from './cva/x-currency-field-cva.directive';
+export { BaredomDatePickerCva } from './cva/x-date-picker-cva.directive';
+export { BaredomMultiComboboxCva } from './cva/x-multi-combobox-cva.directive';
 export { BaredomPaginationCva } from './cva/x-pagination-cva.directive';
 export { BaredomRadioCva } from './cva/x-radio-cva.directive';
 export { BaredomSelectCva } from './cva/x-select-cva.directive';

@@ -225,11 +225,14 @@
   [event-entries bindable-entry form-ctl-cfg]
   (when (seq event-entries)
     (let [bindable-name (when bindable-entry (:var-name bindable-entry))
+          ;; "string[]" → "" (identity): detail.value is already an array and
+          ;; must NOT be String()-wrapped when written back to the bindable.
           coerce        (when bindable-entry
                           (case (:value-type form-ctl-cfg)
-                            "string"  "String"
-                            "number"  "Number"
-                            "boolean" "Boolean"))
+                            "string"   "String"
+                            "number"   "Number"
+                            "boolean"  "Boolean"
+                            "string[]" ""))
           listener-blocks
           (map (fn [{:keys [dom-name prop-name detail-ts is-form-change]}]
                  (if is-form-change

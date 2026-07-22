@@ -103,6 +103,28 @@
       </x-select>
     </div>
 
+    <x-typography variant="overline">In a form — submission gating (required)</x-typography>
+    <div class="row">
+      <form id="gate-form" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <x-select name="fruit" required placeholder="Pick a fruit (required)">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </x-select>
+        <button type="submit">Submit</button>
+        <span id="gate-result" style="font-size:14px;color:var(--muted)">not submitted</span>
+      </form>
+    </div>
+    <script>
+      // Native <form> submit is blocked by the required x-select until a value
+      // is chosen — this exercises the ElementInternals validity added in PR 2.
+      document.getElementById("gate-form").addEventListener("submit", e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        document.getElementById("gate-result").textContent =
+          "submitted: fruit=" + fd.get("fruit");
+      });
+    </script>
+
     <x-typography variant="overline">Option groups</x-typography>
     <div class="row">
       <x-select name="city" placeholder="Choose a city">

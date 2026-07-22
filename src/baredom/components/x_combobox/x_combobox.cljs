@@ -12,6 +12,9 @@
 (def ^:private k-options    "__xComboboxOptions")
 (def ^:private k-active-idx "__xComboboxActiveIdx")
 (def ^:private k-query      "__xComboboxQuery")
+(def ^:private k-internals  "__xComboboxInternals")
+
+(def ^:private msg-value-missing "Please select an item in the list.")
 
 ;; ── Refs-object keys ───────────────────────────────────────────────────────
 (def ^:private rk-wrapper "wrapper")
@@ -497,6 +500,21 @@
     (du/set-attr!    input-el attr-aria-describedby id-error)
     (du/remove-attr! input-el attr-aria-describedby)))
 
+;; Form association — push the selected value into the form and refresh validity.
+;; No-op when the element is not form-associated (older browsers).
+(defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
+  (when-let [^js internals (du/getv el k-internals)]
+    (let [error-msg (or (du/get-attr el model/attr-error) "")
+          required? (du/has-attr? el model/attr-required)]
+      (.setFormValue internals (or value ""))
+      (cond
+        has-error?
+        (.setValidity internals #js {:customError true} error-msg input-el)
+        (and required? (= (or value "") ""))
+        (.setValidity internals #js {:valueMissing true} msg-value-missing input-el)
+        :else
+        (.setValidity internals #js {} "" input-el)))))
+
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)
@@ -511,6 +529,7 @@
       (apply-error!              error-el m)
       (apply-host-invalid!       el m)
       (apply-input-invalid!      input-el m)
+      (sync-form-state!          el input-el m)
       ;; Re-render panel when open so highlights reflect the latest value.
       (when (:open? m)
         (render-panel! el))
@@ -770,10 +789,24 @@
       (.removeEventListener js/document ev-click wrapped)
       (gobj/set hs hk-doc-click nil))))
 
+;; ── Form-associated callbacks ────────────────────────────────────────────────
+(defn- form-disabled! [^js el disabled?]
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (update-from-attrs! el))
+
+;; Reset clears the selection — mirroring x-form-field's reset-to-empty.
+;; apply-model! then re-syncs the (now empty) form value + validity.
+(defn- form-reset! [^js el]
+  (du/remove-attr! el model/attr-value)
+  (du/setv! el k-model nil)
+  (update-from-attrs! el))
+
 ;; ── Lifecycle ──────────────────────────────────────────────────────────────
 (defn- connected! [^js el]
   (when-not (du/getv el k-refs)
-    (make-shadow! el))
+    (make-shadow! el)
+    (when (.-attachInternals el)
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (remove-doc-listeners! el)
   (add-listeners! el)
@@ -817,4 +850,7 @@
                         :connected-fn         connected!
                         :disconnected-fn      disconnected!
                         :attribute-changed-fn attribute-changed!
+                        :form-associated?     true
+                        :form-disabled-fn     form-disabled!
+                        :form-reset-fn        form-reset!
                         :setup-prototype-fn   install-property-accessors!}))

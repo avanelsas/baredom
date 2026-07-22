@@ -9,11 +9,12 @@
     placeholder?: string;
     disabled?: boolean;
     name?: string;
-    value?: string;
     max?: number;
     error?: string;
     placement?: string;
     required?: boolean;
+    /** Two-way bindable form value — `bind:value={...}`. */
+    value?: string[];
     onchangerequest?: (e: CustomEvent<{ value: any; action: string; item: string }>) => void;
     onchange?: (e: CustomEvent<{ value: any }>) => void;
     oninput?: (e: CustomEvent<{ query: string }>) => void;
@@ -32,11 +33,11 @@
     placeholder,
     disabled,
     name,
-    value,
     max,
     error,
     placement,
     required,
+    value = $bindable(undefined),
     onchangerequest,
     onchange,
     oninput,
@@ -50,12 +51,23 @@
 
   $effect(() => {
     const node = el;
+    if (!node || value === undefined) return;
+    if (value != null) node.setAttribute("value", String(value));
+    else node.removeAttribute("value");
+  });
+
+  $effect(() => {
+    const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
     const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ value: any; action: string; item: string }>);
     node.addEventListener("x-multi-combobox-change-request", onchangerequestHandler);
     cleanups.push(() => node.removeEventListener("x-multi-combobox-change-request", onchangerequestHandler));
-    const onchangeHandler = (e: Event) => onchange?.(e as CustomEvent<{ value: any }>);
+    const onchangeHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ value: any }>).detail;
+      value = (detail.value);
+      onchange?.(e as CustomEvent<{ value: any }>);
+    };
     node.addEventListener("x-multi-combobox-change", onchangeHandler);
     cleanups.push(() => node.removeEventListener("x-multi-combobox-change", onchangeHandler));
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ query: string }>);
@@ -74,7 +86,6 @@
   {placeholder}
   {disabled}
   {name}
-  {value}
   {max}
   {error}
   {placement}
