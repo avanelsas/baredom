@@ -160,7 +160,13 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 - `Escape` closes panel and reverts input text to current selection
 - When the `error` attribute is set, the input gets `aria-invalid="true"` and `aria-describedby="error"`, and the `error` part is an assertive live region (`role="alert"`) so screen readers announce the validation message
 
-**Note:** `required` reflects the attribute for styling purposes (e.g. `:host([required])`) but native form validation via `ElementInternals` is not yet implemented.
+## Form participation
+
+`x-combobox` is a form-associated custom element (via `ElementInternals`). In a `<form>`:
+
+- The selected value is submitted under its `name` and appears in `FormData` — no hidden input needed.
+- Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
+- `form.reset()` clears the selection (mirroring `x-form-field`), and `<fieldset disabled>` disables it via `formDisabledCallback`.
 
 ## Keyboard navigation
 
