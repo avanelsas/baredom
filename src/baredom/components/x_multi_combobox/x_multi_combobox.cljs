@@ -34,13 +34,10 @@
 (def ^:private attr-data-value            "data-value")
 (def ^:private attr-data-active           "data-active")
 (def ^:private attr-data-disabled         "data-disabled")
-(def ^:private attr-data-invalid          "data-invalid")
 (def ^:private attr-data-placement        "data-placement")
 (def ^:private attr-aria-label            "aria-label")
 (def ^:private attr-aria-hidden           "aria-hidden")
 (def ^:private attr-aria-live             "aria-live")
-(def ^:private attr-aria-invalid          "aria-invalid")
-(def ^:private attr-aria-describedby      "aria-describedby")
 (def ^:private attr-aria-expanded         "aria-expanded")
 (def ^:private attr-aria-disabled         "aria-disabled")
 (def ^:private attr-aria-controls         "aria-controls")
@@ -560,23 +557,6 @@
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
-(defn- apply-error! [^js error-el {:keys [error has-error?]}]
-  (set! (.-textContent error-el) (or error ""))
-  (if has-error?
-    (.remove (.-classList error-el) cls-error-hidden)
-    (.add    (.-classList error-el) cls-error-hidden)))
-
-(defn- apply-host-invalid! [^js el {:keys [has-error?]}]
-  (if has-error?
-    (du/set-attr!    el attr-data-invalid "")
-    (du/remove-attr! el attr-data-invalid)))
-
-(defn- apply-input-invalid! [^js input-el {:keys [has-error?]}]
-  (du/set-attr! input-el attr-aria-invalid (if has-error? "true" "false"))
-  (if has-error?
-    (du/set-attr!    input-el attr-aria-describedby id-error)
-    (du/remove-attr! input-el attr-aria-describedby)))
-
 ;; Form association — push the selected set (comma-serialized) into the form and
 ;; refresh validity via the shared policy. No-op when not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
@@ -607,9 +587,8 @@
 
       (render-chips! el value disabled?)
 
-      (apply-error!         error-el m)
-      (apply-host-invalid!  el m)
-      (apply-input-invalid! input-el m)
+      (forms/apply-error-display! el input-el error-el m
+                                  (forms/error-describedby (:has-error? m) nil))
       (sync-form-state!     el input-el m)
 
       ;; Re-render panel when open so option list reflects new value/max

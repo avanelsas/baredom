@@ -53,13 +53,10 @@
 (def ^:private attr-aria-controls  "aria-controls")
 (def ^:private attr-aria-autocomplete "aria-autocomplete")
 (def ^:private attr-aria-activedescendant "aria-activedescendant")
-(def ^:private attr-aria-invalid   "aria-invalid")
-(def ^:private attr-aria-describedby "aria-describedby")
 (def ^:private attr-data-active    "data-active")
 (def ^:private attr-data-value     "data-value")
 (def ^:private attr-data-placement "data-placement")
 (def ^:private attr-data-has-value "data-has-value")
-(def ^:private attr-data-invalid   "data-invalid")
 
 (def ^:private part-wrapper   "wrapper")
 (def ^:private part-input     "input")
@@ -484,23 +481,6 @@
     (du/set-attr! el attr-data-has-value "")
     (du/remove-attr! el attr-data-has-value)))
 
-(defn- apply-error! [^js error-el {:keys [error has-error?]}]
-  (set! (.-textContent error-el) (or error ""))
-  (if has-error?
-    (.remove (.-classList error-el) cls-error-hidden)
-    (.add    (.-classList error-el) cls-error-hidden)))
-
-(defn- apply-host-invalid! [^js el {:keys [has-error?]}]
-  (if has-error?
-    (du/set-attr!    el attr-data-invalid "")
-    (du/remove-attr! el attr-data-invalid)))
-
-(defn- apply-input-invalid! [^js input-el {:keys [has-error?]}]
-  (du/set-attr! input-el attr-aria-invalid (if has-error? val-true val-false))
-  (if has-error?
-    (du/set-attr!    input-el attr-aria-describedby id-error)
-    (du/remove-attr! input-el attr-aria-describedby)))
-
 ;; Form association — push the selected value into the form and refresh validity
 ;; via the shared policy. No-op when the element is not form-associated.
 (defn- sync-form-state! [^js el ^js input-el {:keys [value has-error?]}]
@@ -523,9 +503,8 @@
       (apply-panel-placement!    panel-el m)
       (apply-input-value!        input-el m selected-opt)
       (apply-host-data-has-value! el m)
-      (apply-error!              error-el m)
-      (apply-host-invalid!       el m)
-      (apply-input-invalid!      input-el m)
+      (forms/apply-error-display! el input-el error-el m
+                                  (forms/error-describedby (:has-error? m) nil))
       (sync-form-state!          el input-el m)
       ;; Re-render panel when open so highlights reflect the latest value.
       (when (:open? m)

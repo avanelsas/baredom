@@ -25,11 +25,8 @@
 (def ^:private attr-aria-hidden      "aria-hidden")
 (def ^:private attr-aria-label       "aria-label")
 (def ^:private attr-aria-live        "aria-live")
-(def ^:private attr-aria-invalid     "aria-invalid")
-(def ^:private attr-aria-describedby "aria-describedby")
 (def ^:private attr-data-size        "data-size")
 (def ^:private attr-data-disabled    "data-disabled")
-(def ^:private attr-data-invalid     "data-invalid")
 (def ^:private attr-data-placeholder "data-placeholder")
 
 (def ^:private part-wrapper "wrapper")
@@ -39,8 +36,6 @@
 
 (def ^:private id-error "error")
 
-(def ^:private val-true      "true")
-(def ^:private val-false     "false")
 (def ^:private val-alert     "alert")
 (def ^:private val-assertive "assertive")
 
@@ -315,23 +310,6 @@
     (du/set-attr!    select-el attr-aria-label (or placeholder default-aria-label))
     (du/remove-attr! select-el attr-aria-label)))
 
-(defn- apply-error! [^js error-el error has-error?]
-  (set! (.-textContent error-el) (or error ""))
-  (if has-error?
-    (.remove (.-classList error-el) cls-error-hidden)
-    (.add    (.-classList error-el) cls-error-hidden)))
-
-(defn- apply-host-invalid! [^js el has-error?]
-  (if has-error?
-    (du/set-attr!    el attr-data-invalid "")
-    (du/remove-attr! el attr-data-invalid)))
-
-(defn- apply-select-invalid! [^js select-el has-error?]
-  (du/set-attr! select-el attr-aria-invalid (if has-error? val-true val-false))
-  (if has-error?
-    (du/set-attr!    select-el attr-aria-describedby id-error)
-    (du/remove-attr! select-el attr-aria-describedby)))
-
 ;; ---------------------------------------------------------------------------
 ;; Form association — ElementInternals value + constraint validation
 ;; ---------------------------------------------------------------------------
@@ -362,9 +340,8 @@
       (apply-value!          select-el (:value m))
       (apply-wrapper-state!  wrapper-el (:size m) disabled?)
       (apply-aria-label!     select-el name-val placeholder)
-      (apply-error!          error-el (:error m) has-error?)
-      (apply-host-invalid!   el has-error?)
-      (apply-select-invalid! select-el has-error?)
+      (forms/apply-error-display! el select-el error-el m
+                                  (forms/error-describedby has-error? nil))
       (sync-form-state!      el select-el)
       (du/setv! el k-model m))))
 

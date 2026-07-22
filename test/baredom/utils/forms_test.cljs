@@ -53,3 +53,16 @@
   (testing "set-validity! and sync! are safe no-ops when internals is nil"
     (is (nil? (forms/set-validity! nil nil {:required? true :empty? true})))
     (is (nil? (forms/sync! nil nil "x" {:has-error? true :error "e"})))))
+
+;; ── error-describedby: the aria-describedby token projection ─────────────────
+(deftest error-describedby-test
+  (testing "no error, no author → nil (attribute is removed)"
+    (is (nil? (forms/error-describedby false nil)))
+    (is (nil? (forms/error-describedby false ""))))
+  (testing "error only → the error id"
+    (is (= "error" (forms/error-describedby true nil)))
+    (is (= "error" (forms/error-describedby true ""))))
+  (testing "author only → the author value unchanged"
+    (is (= "hint-1" (forms/error-describedby false "hint-1"))))
+  (testing "author + error → author list with the error id appended"
+    (is (= "hint-1 error" (forms/error-describedby true "hint-1")))))
