@@ -15,6 +15,7 @@ export interface XDatePickerProps {
   mode?: string;
   start?: string;
   readOnly?: boolean;
+  error?: string;
   end?: string;
   required?: boolean;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;

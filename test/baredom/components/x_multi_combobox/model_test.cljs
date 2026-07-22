@@ -57,7 +57,19 @@
       (is (= #{"a" "b"} (:value m)))
       (is (= 5 (:max m)))
       (is (true? (:disabled? m)))
-      (is (= "top-end" (:placement m))))))
+      (is (= "top-end" (:placement m)))))
+  (testing "error defaults to empty with strict has-error?"
+    (let [m (model/normalize {})]
+      (is (= "" (:error m)))
+      (is (false? (:has-error? m)))))
+  (testing "error present"
+    (let [m (model/normalize {:error-raw "Pick at least one"})]
+      (is (= "Pick at least one" (:error m)))
+      (is (true? (:has-error? m)))))
+  (testing "empty-string error is treated as no error"
+    (let [m (model/normalize {:error-raw ""})]
+      (is (= "" (:error m)))
+      (is (false? (:has-error? m))))))
 
 ;; ── max-reached? ─────────────────────────────────────────────────────────
 (deftest max-reached?-test

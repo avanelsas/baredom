@@ -23,7 +23,18 @@
     (is (false?           (:disabled? m)))
     (is (false?           (:required? m)))
     (is (false?           (:open? m)))
-    (is (= "bottom-start" (:placement m)))))
+    (is (= "bottom-start" (:placement m)))
+    (is (= ""             (:error m)))
+    (is (false?           (:has-error? m)))))
+
+(deftest normalize-error-test
+  (let [m (model/normalize {:error-raw "Pick one"})]
+    (is (= "Pick one" (:error m)))
+    (is (true? (:has-error? m))))
+  (let [m (model/normalize {:error-raw ""})]
+    (is (= "" (:error m)))
+    (is (false? (:has-error? m))
+        "an empty-string error is treated as no error")))
 
 (deftest normalize-value-test
   (is (= "us" (:value (model/normalize {:value-raw "us"})))))

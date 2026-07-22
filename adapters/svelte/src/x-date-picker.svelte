@@ -12,6 +12,7 @@
     mode?: string;
     start?: string;
     readOnly?: boolean;
+    error?: string;
     end?: string;
     required?: boolean;
     oninput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
@@ -34,6 +35,7 @@
     mode,
     start,
     readOnly,
+    error,
     end,
     required,
     oninput,
@@ -72,6 +74,7 @@
   {mode}
   {start}
   {readOnly}
+  {error}
   {end}
   {required}
   class={className}

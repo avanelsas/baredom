@@ -24,6 +24,7 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
   @Input() set mode(v: string) { this.el.mode = v as any; }
   @Input() set start(v: string) { this.el.start = v as any; }
   @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
+  @Input() set error(v: string) { this.el.error = v as any; }
   @Input() set end(v: string) { this.el.end = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
 

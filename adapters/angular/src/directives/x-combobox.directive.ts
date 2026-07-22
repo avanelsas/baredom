@@ -24,6 +24,7 @@ export class BaredomCombobox implements OnInit, OnDestroy {
   @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set open(v: boolean) { this.el.open = v as any; }
   @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set error(v: string) { this.el.error = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; label: string; previousValue: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ value: string; label: string }>>();

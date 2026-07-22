@@ -22,6 +22,7 @@ export const XDatePicker = defineComponent({
     mode: { type: String as PropType<string | undefined>, default: undefined },
     start: { type: String as PropType<string | undefined>, default: undefined },
     readOnly: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    error: { type: String as PropType<string | undefined>, default: undefined },
     end: { type: String as PropType<string | undefined>, default: undefined },
     required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },

@@ -11,6 +11,7 @@
     required?: boolean;
     open?: boolean;
     placement?: string;
+    error?: string;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onchangerequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
@@ -33,6 +34,7 @@
     required,
     open,
     placement,
+    error,
     value = $bindable(undefined),
     onchangerequest,
     onchange,
@@ -84,6 +86,7 @@
   {required}
   {open}
   {placement}
+  {error}
   class={className}
   {id}
   {...rest}

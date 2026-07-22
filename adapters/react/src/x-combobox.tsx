@@ -15,6 +15,7 @@ export interface XComboboxProps {
   required?: boolean;
   open?: boolean;
   placement?: string;
+  error?: string;
   defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; label: string }>) => void;

@@ -200,6 +200,39 @@
 ;; Full render
 ;; ---------------------------------------------------------------------------
 
+(defn- describedby-value
+  "Combine the author-supplied aria-describedby with the inline error id when an
+  error is present. Returns nil when neither is set."
+  [aria-desc has-error?]
+  (let [author (when (and (string? aria-desc) (not= aria-desc "")) aria-desc)]
+    (cond
+      (and author has-error?) (str author " error")
+      has-error?              "error"
+      author                  author
+      :else                   nil)))
+
+(defn- apply-error!
+  "Render the inline error message and invalid markers from the `error` attr."
+  [^js el ^js inp]
+  (let [refs      (du/getv el k-refs)
+        ^js err   (when refs (gobj/get refs "error"))
+        error     (du/get-attr el model/attr-error)
+        has-error? (and (string? error) (not= error ""))]
+    (when err
+      (set! (.-textContent err) (or error ""))
+      (if has-error?
+        (.remove (.-classList err) "error-hidden")
+        (.add    (.-classList err) "error-hidden")))
+    (if has-error?
+      (du/set-attr!    el "data-invalid" "")
+      (du/remove-attr! el "data-invalid"))
+    (when inp
+      (du/set-attr! inp "aria-invalid" (if has-error? "true" "false"))
+      (if-let [db (describedby-value (du/get-attr el model/attr-aria-describedby)
+                                     has-error?)]
+        (du/set-attr!    inp "aria-describedby" db)
+        (du/remove-attr! inp "aria-describedby")))))
+
 (defn- render!
   [^js el]
   (let [refs (du/getv el k-refs)]
@@ -211,7 +244,6 @@
             readonly?   (du/has-attr? el model/attr-readonly)
             placeholder (du/get-attr el model/attr-placeholder)
             aria-label  (du/get-attr el model/attr-aria-label)
-            aria-desc   (du/get-attr el model/attr-aria-describedby)
             open?       (du/has-attr? el "open")]
 
         (when btn
@@ -229,9 +261,9 @@
           (when readonly?  (du/set-attr! inp "readonly" ""))
           (when-not readonly? (du/remove-attr! inp "readonly"))
           (when placeholder (du/set-attr! inp "placeholder" placeholder))
-          (when aria-label  (du/set-attr! inp "aria-label" aria-label))
-          (when aria-desc   (du/set-attr! inp "aria-describedby" aria-desc)))
+          (when aria-label  (du/set-attr! inp "aria-label" aria-label)))
 
+        (apply-error! el inp)
         (sync-input-display! el)
         (render-calendar! el)))))
 
@@ -430,6 +462,7 @@
    "--x-date-picker-selected-text:#fff;"
    "--x-date-picker-range-bg:var(--x-color-surface-active,#dbeafe);"
    "--x-date-picker-range-text:var(--x-color-primary-active,#1e40af);"
+   "--x-date-picker-error-color:var(--x-color-danger,#dc2626);"
    "}"
    "[part=container]{position:relative;display:flex;align-items:stretch;gap:8px;width:100%;}"
    "[part=input]{"
@@ -528,7 +561,19 @@
    "--x-date-picker-range-bg:var(--x-color-surface-active,#1e3a8a);"
    "--x-date-picker-range-text:var(--x-color-focus-ring,#93c5fd);"
    "--x-date-picker-nav-hover:var(--x-color-surface-active,#334155);"
+   "--x-date-picker-error-color:var(--x-color-danger,#f87171);"
    "}"
+   "}"
+   "[part=error]{"
+   "display:block;margin-top:0.25rem;"
+   "font-size:0.8125rem;line-height:1.4;"
+   "color:var(--x-date-picker-error-color,#dc2626);"
+   "}"
+   ".error-hidden{display:none;}"
+   ":host([data-invalid]) [part=input]{border-color:var(--x-date-picker-error-color,#dc2626);}"
+   ":host([data-invalid]) [part=input]:focus{"
+   "border-color:var(--x-date-picker-error-color,#dc2626);"
+   "box-shadow:0 0 0 3px color-mix(in srgb,var(--x-date-picker-error-color,#dc2626) 25%,transparent);"
    "}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=popover]{transition:none;}"
@@ -552,11 +597,20 @@
         ^js nav-next  (.createElement js/document "button")
         ^js weekdays  (.createElement js/document "div")
         ^js grid      (.createElement js/document "div")
-        ^js sr        (.createElement js/document "div")]
+        ^js sr        (.createElement js/document "div")
+        ^js error     (.createElement js/document "span")]
 
     (set! (.-textContent style) style-text)
 
     (du/set-attr! container "part" "container")
+
+    ;; Inline error message below the field. Mirrors x-form-field: an assertive
+    ;; live region with role=alert, hidden until an `error` attribute is set.
+    (du/set-attr! error "part" "error")
+    (du/set-attr! error "id" "error")
+    (du/set-attr! error "role" "alert")
+    (du/set-attr! error "aria-live" "assertive")
+    (.add (.-classList error) "error-hidden")
 
     (du/set-attr! inp "part" "input")
     (du/set-attr! inp "type" "text")
@@ -619,6 +673,7 @@
 
     (.appendChild root style)
     (.appendChild root container)
+    (.appendChild root error)
 
     (let [refs #js {:input      inp
                     :btn        btn
@@ -628,7 +683,8 @@
                     :nav-next   nav-next
                     :weekdays   weekdays
                     :grid       grid
-                    :sr         sr}]
+                    :sr         sr
+                    :error      error}]
       (du/setv! el k-refs refs)
       refs)))
 

@@ -12,6 +12,7 @@
 (def attr-open        "open")
 (def attr-placement   "placement")
 (def attr-max         "max")
+(def attr-error       "error")
 
 ;; ── Event name constants ─────────────────────────────────────────────────
 (def event-change-request "x-multi-combobox-change-request")
@@ -34,7 +35,7 @@
 
 (def observed-attributes
   #js [attr-value attr-placeholder attr-name attr-disabled
-       attr-required attr-open attr-placement attr-max])
+       attr-required attr-open attr-placement attr-max attr-error])
 
 ;; ── Property API metadata ────────────────────────────────────────────────
 (def property-api
@@ -45,7 +46,10 @@
    :required    {:type 'boolean :reflects-attribute attr-required}
    :open        {:type 'boolean :reflects-attribute attr-open}
    :placement   {:type 'string  :reflects-attribute attr-placement}
-   :max         {:type 'number  :reflects-attribute attr-max}})
+   :max         {:type 'number  :reflects-attribute attr-max}
+   ;; `error` reflects the attribute so x-form's setFieldError can drive the
+   ;; inline validation message, mirroring x-form-field.
+   :error       {:type 'string  :reflects-attribute attr-error}})
 
 ;; ── Event schema ─────────────────────────────────────────────────────────
 (def event-schema
@@ -102,7 +106,7 @@
   "Derives a complete view-model from raw attribute presence/values."
   [{:keys [value-raw placeholder-raw name-raw
            disabled-present? required-present? open-present?
-           placement-raw max-raw]}]
+           placement-raw max-raw error-raw]}]
   {:value       (parse-value value-raw)
    :placeholder (or placeholder-raw "")
    :name        (or name-raw "")
@@ -110,7 +114,11 @@
    :required?   (boolean required-present?)
    :open?       (boolean open-present?)
    :placement   (normalize-placement placement-raw)
-   :max         (parse-max max-raw)})
+   :max         (parse-max max-raw)
+   :error       (or error-raw "")
+   ;; Coerce to a strict boolean: tests call normalize with sparse maps, so
+   ;; `(and (string? nil) …)` must not leak nil into a has-error? predicate.
+   :has-error?  (boolean (and (string? error-raw) (not= error-raw "")))})
 
 ;; ── Max enforcement ──────────────────────────────────────────────────────
 (defn max-reached?

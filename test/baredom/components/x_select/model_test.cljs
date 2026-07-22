@@ -72,3 +72,20 @@
     (is (= "" (:placeholder m)))
     (is (= "" (:value m)))
     (is (= "" (:name m)))))
+
+;; ── error ───────────────────────────────────────────────────────────────────
+(deftest normalize-error-absent-test
+  (let [m (model/normalize {})]
+    (is (= "" (:error m))       "error defaults to empty string")
+    (is (false? (:has-error? m)) "has-error? is a strict false when absent")))
+
+(deftest normalize-error-present-test
+  (let [m (model/normalize {:error-raw "Pick a country"})]
+    (is (= "Pick a country" (:error m)))
+    (is (true? (:has-error? m)) "has-error? is a strict true when a message is set")))
+
+(deftest normalize-error-empty-string-test
+  (let [m (model/normalize {:error-raw ""})]
+    (is (= "" (:error m)))
+    (is (false? (:has-error? m))
+        "an empty-string error is treated as no error")))

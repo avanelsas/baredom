@@ -220,6 +220,60 @@
         "aria-label should match placeholder when no name is set")))
 
 ;; ---------------------------------------------------------------------------
+;; Inline error display (mirrors x-form-field)
+;; ---------------------------------------------------------------------------
+
+(deftest error-part-exists-and-hidden-by-default-test
+  (let [el (append! (make-el))
+        ^js err (shadow-part el "[part=error]")]
+    (is (some? err) "error span should exist in shadow DOM")
+    (is (.contains (.-classList err) "error-hidden")
+        "error span should be hidden when no error attr is set")
+    (is (= "alert" (.getAttribute err "role"))
+        "error span should have role=alert")
+    (is (= "assertive" (.getAttribute err "aria-live"))
+        "error span should be an assertive live region")))
+
+(deftest error-attr-shows-message-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Please choose an option")
+    (let [^js err (shadow-part el "[part=error]")
+          ^js sel (shadow-part el "[part=select]")]
+      (is (not (.contains (.-classList err) "error-hidden"))
+          "error span should be visible when error attr is set")
+      (is (= "Please choose an option" (.-textContent err))
+          "error span should display the error message")
+      (is (.hasAttribute el "data-invalid")
+          "host should carry data-invalid when an error is present")
+      (is (= "true" (.getAttribute sel "aria-invalid"))
+          "internal select should be marked aria-invalid=true")
+      (is (= "error" (.getAttribute sel "aria-describedby"))
+          "internal select should be described by the error span"))))
+
+(deftest error-attr-clears-message-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Boom")
+    (.removeAttribute el model/attr-error)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js sel (shadow-part el "[part=select]")]
+      (is (.contains (.-classList err) "error-hidden")
+          "error span should hide again when the error attr is removed")
+      (is (not (.hasAttribute el "data-invalid"))
+          "host should drop data-invalid when the error clears")
+      (is (= "false" (.getAttribute sel "aria-invalid"))
+          "internal select aria-invalid should return to false")
+      (is (not (.hasAttribute sel "aria-describedby"))
+          "internal select should no longer be described by the error span"))))
+
+(deftest error-property-reflects-attr-test
+  (let [el (append! (make-el))]
+    (set! (.-error el) "Required field")
+    (is (= "Required field" (.getAttribute el model/attr-error))
+        "setting the error property reflects to the error attr")
+    (is (= "Required field" (.-error el))
+        "reading the error property returns the attribute value")))
+
+;; ---------------------------------------------------------------------------
 ;; Option sync (async — slotchange fires in microtask)
 ;; ---------------------------------------------------------------------------
 

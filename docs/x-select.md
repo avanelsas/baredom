@@ -22,6 +22,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `placeholder` | string                | —       | Placeholder option shown when no value selected  |
 | `value`       | string                | —       | Currently selected value (consumer-controlled)   |
 | `name`        | string                | —       | Form field name forwarded to the internal select |
+| `error`       | string                | —       | Inline validation message; shows the `error` part and marks the field invalid |
 
 ## Properties
 
@@ -30,6 +31,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `disabled` | boolean | `disabled`         |
 | `required` | boolean | `required`         |
 | `value`    | string  | `value`            |
+| `error`    | string  | `error`            |
 
 ## Events
 
@@ -69,6 +71,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `--x-select-border-focus`       | `#3b82f6`                             | `#60a5fa`        |
 | `--x-select-chevron`            | `#64748b`                             | `#94a3b8`        |
 | `--x-select-focus-ring`         | `#93c5fd`                             | —                |
+| `--x-select-error-color`        | `#dc2626`                             | `#f87171`        |
 | `--x-select-shadow`             | `0 1px 2px rgba(15,23,42,0.06)`       | —                |
 | `--x-select-transition-duration`| `140ms`                               | —                |
 
@@ -79,6 +82,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 | `wrapper` | `<div>`  | The styled container; receives size/disabled data attrs |
 | `select`  | `<select>` | The native select element               |
 | `chevron` | `<span>` | The dropdown arrow icon                      |
+| `error`   | `<span>` | Inline validation message; hidden until the `error` attribute is set |
 
 ## Accessibility
 
@@ -86,6 +90,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 - When no `name` attribute is present, `aria-label` is set on the internal `<select>` using the placeholder text (or `"select"` as fallback).
 - Disabled state is communicated natively via `<select disabled>`.
 - Focus ring is applied via `:focus-within` on the wrapper using `--x-select-focus-ring`.
+- When the `error` attribute is set, the internal `<select>` gets `aria-invalid="true"` and `aria-describedby` pointing at the `error` part, which is an assertive live region (`role="alert"`) so screen readers announce the validation message.
 
 ## Theming
 
@@ -132,6 +137,20 @@ Transitions on the wrapper respect `@media (prefers-reduced-motion: reduce)` —
   });
 </script>
 ```
+
+### Validation error
+
+The `error` attribute renders an inline message and marks the field invalid. Inside
+`x-form`, this is driven for you by `form.setFieldError(name, message)`.
+
+```html
+<x-select name="country" error="Please choose a country">
+  <option value="us">United States</option>
+  <option value="nl">Netherlands</option>
+</x-select>
+```
+
+Clear it by removing the attribute (or `el.error = ''`).
 
 ### Disabled
 

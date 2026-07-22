@@ -34,6 +34,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `required`             | boolean | `false`    | Marks the field as required                                           |
 | `name`                 | string  | —          | Form field name                                                       |
 | `autocomplete`         | string  | —          | HTML autocomplete hint                                                |
+| `error`                | string  | —          | Inline validation message; shows the `error` part and marks the field invalid |
 | `aria-label`           | string  | —          | Accessible label for the input                                        |
 | `aria-describedby`     | string  | —          | References a describing element                                       |
 
@@ -51,6 +52,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | `readOnly` | boolean | `readonly`         |
 | `required` | boolean | `required`         |
 | `open`     | boolean | `open`             |
+| `error`    | string  | `error`            |
 
 ---
 
@@ -82,6 +84,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 - Calendar day cells have `role="gridcell"` with `aria-selected` and `aria-disabled`.
 - A screen-reader status region (`aria-live="polite"`, `aria-atomic="true"`) is provided.
 - Full keyboard navigation within the calendar grid with roving tabindex.
+- When the `error` attribute is set, the input gets `aria-invalid="true"` and its `aria-describedby` points at the `error` part (appended to any author-supplied `aria-describedby`). The `error` part is an assertive live region (`role="alert"`) so screen readers announce the validation message.
 
 ---
 
@@ -140,6 +143,18 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 ```html
 <x-date-picker disabled placeholder="Not available"></x-date-picker>
 ```
+
+### Validation error
+
+The `error` attribute renders an inline message below the field and marks it
+invalid. Inside `x-form`, this is driven for you by `form.setFieldError(name, message)`.
+
+```html
+<x-date-picker name="dob" error="Please enter a valid date"></x-date-picker>
+```
+
+Clear it by removing the attribute (or `el.error = ''`). Style the message via the
+`error` CSS part or the `--x-date-picker-error-color` custom property.
 
 ### Listening to changes
 

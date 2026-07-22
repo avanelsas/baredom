@@ -72,6 +72,11 @@
       <x-date-picker readonly value="2026-03-18"></x-date-picker>
     </div>
 
+    <x-typography variant="overline">Validation error</x-typography>
+    <div class="stack">
+      <x-date-picker name="dob" error="Please enter a valid date" placeholder="YYYY-MM-DD"></x-date-picker>
+    </div>
+
     <x-typography variant="overline">Live controls</x-typography>
     <div class="controls">
       <label>mode
@@ -97,6 +102,9 @@
       </label>
       <label>placeholder
         <x-form-field type="text" id="ctrl-placeholder" value="Select a date" style="width:140px"></x-form-field>
+      </label>
+      <label>error
+        <x-form-field type="text" id="ctrl-error" placeholder="(none)" style="width:160px"></x-form-field>
       </label>
       <label>disabled  <x-switch id="ctrl-disabled"></x-switch></label>
       <label>readonly  <x-switch id="ctrl-readonly"></x-switch></label>
@@ -129,12 +137,14 @@
         const min    = document.getElementById("ctrl-min").value.trim();
         const max    = document.getElementById("ctrl-max").value.trim();
         const ph     = document.getElementById("ctrl-placeholder").value;
+        const error  = document.getElementById("ctrl-error").value.trim();
         live.setAttribute("mode", mode);
         live.setAttribute("format", format);
         if (locale) live.setAttribute("locale", locale); else live.removeAttribute("locale");
         if (min) live.setAttribute("min", min); else live.removeAttribute("min");
         if (max) live.setAttribute("max", max); else live.removeAttribute("max");
         live.setAttribute("placeholder", ph);
+        if (error) live.setAttribute("error", error); else live.removeAttribute("error");
         if (document.getElementById("ctrl-disabled").checked) live.setAttribute("disabled", ""); else live.removeAttribute("disabled");
         if (document.getElementById("ctrl-readonly").checked) live.setAttribute("readonly", ""); else live.removeAttribute("readonly");
         if (document.getElementById("ctrl-required").checked) live.setAttribute("required", ""); else live.removeAttribute("required");
