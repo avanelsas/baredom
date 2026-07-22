@@ -1,6 +1,7 @@
 (ns baredom.components.x-form-field.x-form-field
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.components.x-form-field.model :as model]))
 
@@ -166,18 +167,14 @@
     refs))
 
 ;; ── Validity sync ─────────────────────────────────────────────────────────
+;; Thin adapter: maps this control's state to the shared validity policy.
 (defn- sync-validity! [^js el ^js internals ^js input-el]
-  (let [has-error? (du/has-attr? el model/attr-error)
-        error-msg  (or (du/get-attr el model/attr-error) "")
-        required?  (du/has-attr? el model/attr-required)
-        value      (.-value input-el)]
-    (cond
-      has-error?
-      (.setValidity internals #js {:customError true} error-msg input-el)
-      (and required? (= value ""))
-      (.setValidity internals #js {:valueMissing true} msg-value-missing input-el)
-      :else
-      (.setValidity internals #js {} "" input-el))))
+  (forms/set-validity! internals input-el
+                       {:has-error?      (du/has-attr? el model/attr-error)
+                        :error           (du/get-attr el model/attr-error)
+                        :required?       (du/has-attr? el model/attr-required)
+                        :empty?          (= (.-value input-el) "")
+                        :missing-message msg-value-missing}))
 
 ;; ── Model reading ─────────────────────────────────────────────────────────
 (defn- read-model [^js el]
