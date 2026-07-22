@@ -30,9 +30,13 @@
 (def ^:private attr-data-value            "data-value")
 (def ^:private attr-data-active           "data-active")
 (def ^:private attr-data-disabled         "data-disabled")
+(def ^:private attr-data-invalid          "data-invalid")
 (def ^:private attr-data-placement        "data-placement")
 (def ^:private attr-aria-label            "aria-label")
 (def ^:private attr-aria-hidden           "aria-hidden")
+(def ^:private attr-aria-live             "aria-live")
+(def ^:private attr-aria-invalid          "aria-invalid")
+(def ^:private attr-aria-describedby      "aria-describedby")
 (def ^:private attr-aria-expanded         "aria-expanded")
 (def ^:private attr-aria-disabled         "aria-disabled")
 (def ^:private attr-aria-controls         "aria-controls")
@@ -47,6 +51,10 @@
 (def ^:private part-panel     "panel")
 (def ^:private part-option    "option")
 (def ^:private part-empty-msg "empty-msg")
+(def ^:private part-error     "error")
+
+(def ^:private id-error "error")
+(def ^:private cls-error-hidden "error-hidden")
 
 (def ^:private role-combobox "combobox")
 (def ^:private role-listbox  "listbox")
@@ -92,6 +100,7 @@
    "--x-multi-combobox-font-size:var(--x-font-size-sm,0.9375rem);"
    "--x-multi-combobox-padding:0.25rem 0.5rem;"
    "--x-multi-combobox-focus-ring:var(--x-color-focus-ring,#60a5fa);"
+   "--x-multi-combobox-error-color:var(--x-color-danger,#dc2626);"
    "--x-multi-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.05));"
    "--x-multi-combobox-disabled-opacity:var(--x-opacity-disabled,0.55);"
    "--x-multi-combobox-chevron-color:var(--x-color-text-muted,#64748b);"
@@ -119,6 +128,7 @@
    "--x-multi-combobox-border-hover:1px solid var(--x-color-border,#475569);"
    "--x-multi-combobox-border-focus:1px solid var(--x-color-focus-ring,#93c5fd);"
    "--x-multi-combobox-focus-ring:var(--x-color-focus-ring,#93c5fd);"
+   "--x-multi-combobox-error-color:var(--x-color-danger,#f87171);"
    "--x-multi-combobox-shadow:var(--x-shadow-sm,0 1px 2px rgba(0,0,0,0.2));"
    "--x-multi-combobox-chevron-color:var(--x-color-text-muted,#94a3b8);"
    "--x-multi-combobox-panel-bg:var(--x-color-bg,#1e293b);"
@@ -130,6 +140,7 @@
    "}"
    ;; Wrapper
    "[part=wrapper]{"
+   "position:relative;"
    "display:flex;"
    "align-items:center;"
    "min-height:var(--x-multi-combobox-min-height);"
@@ -148,6 +159,11 @@
    ":host(:focus-within) [part=wrapper]{"
    "border:var(--x-multi-combobox-border-focus);"
    "box-shadow:0 0 0 2px var(--x-multi-combobox-focus-ring);"
+   "}"
+   ":host([data-invalid]) [part=wrapper]{border:1px solid var(--x-multi-combobox-error-color);}"
+   ":host([data-invalid]:focus-within) [part=wrapper]{"
+   "border:1px solid var(--x-multi-combobox-error-color);"
+   "box-shadow:0 0 0 2px color-mix(in srgb,var(--x-multi-combobox-error-color) 45%,transparent);"
    "}"
    ":host([disabled]) [part=wrapper]{"
    "opacity:var(--x-multi-combobox-disabled-opacity);"
@@ -277,6 +293,15 @@
    "font-style:italic;"
    "margin:0 0.25rem;"
    "}"
+   ;; Inline error message
+   "[part=error]{"
+   "display:block;"
+   "margin-top:0.25rem;"
+   "font-size:0.8125rem;"
+   "line-height:1.4;"
+   "color:var(--x-multi-combobox-error-color);"
+   "}"
+   ".error-hidden{display:none;}"
    ;; Hidden slot
    "slot{display:none;}"
    ;; Reduced motion
@@ -348,6 +373,17 @@
     (du/set-attr! panel-el attr-data-placement       model/default-placement)
     panel-el))
 
+;; Inline error message below the control. Mirrors x-form-field: an assertive
+;; live region with role=alert, hidden until an `error` attribute is set.
+(defn- make-error! ^js []
+  (let [^js error-el (.createElement js/document "span")]
+    (du/set-attr! error-el attr-part      part-error)
+    (du/set-attr! error-el attr-id        id-error)
+    (du/set-attr! error-el attr-role      "alert")
+    (du/set-attr! error-el attr-aria-live "assertive")
+    (.add (.-classList error-el) cls-error-hidden)
+    error-el))
+
 (defn- init-instance-fields! [^js el _lb-id]
   (du/setv! el k-options [])
   (du/setv! el k-query "")
@@ -362,11 +398,15 @@
         ^js chevron-el (make-chevron!)
         ^js wrapper-el (make-wrapper! chip-area input-el chevron-el)
         ^js panel-el  (make-panel! lb-id)
+        ^js error-el  (make-error!)
         ^js slot-el   (.createElement js/document "slot")]
 
+    ;; Panel is nested inside the wrapper (the positioned anchor) so the inline
+    ;; error span below the wrapper never displaces the open dropdown.
+    (.appendChild wrapper-el panel-el)
     (.appendChild root style-el)
     (.appendChild root wrapper-el)
-    (.appendChild root panel-el)
+    (.appendChild root error-el)
     (.appendChild root slot-el)
 
     (init-instance-fields! el lb-id)
@@ -376,6 +416,7 @@
                     :input    input-el
                     :chevron  chevron-el
                     :panel    panel-el
+                    :error    error-el
                     :slot     slot-el}]
       (du/setv! el k-refs refs)
       refs)))
@@ -409,7 +450,8 @@
     :required-present? (du/has-attr? el model/attr-required)
     :open-present?     (du/has-attr? el model/attr-open)
     :placement-raw     (du/get-attr el model/attr-placement)
-    :max-raw           (du/get-attr el model/attr-max)}))
+    :max-raw           (du/get-attr el model/attr-max)
+    :error-raw         (du/get-attr el model/attr-error)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Chip rendering
@@ -514,10 +556,28 @@
 ;; ---------------------------------------------------------------------------
 ;; Render pipeline (apply-model! + update-from-attrs!)
 ;; ---------------------------------------------------------------------------
+(defn- apply-error! [^js error-el {:keys [error has-error?]}]
+  (set! (.-textContent error-el) (or error ""))
+  (if has-error?
+    (.remove (.-classList error-el) cls-error-hidden)
+    (.add    (.-classList error-el) cls-error-hidden)))
+
+(defn- apply-host-invalid! [^js el {:keys [has-error?]}]
+  (if has-error?
+    (du/set-attr!    el attr-data-invalid "")
+    (du/remove-attr! el attr-data-invalid)))
+
+(defn- apply-input-invalid! [^js input-el {:keys [has-error?]}]
+  (du/set-attr! input-el attr-aria-invalid (if has-error? "true" "false"))
+  (if has-error?
+    (du/set-attr!    input-el attr-aria-describedby id-error)
+    (du/remove-attr! input-el attr-aria-describedby)))
+
 (defn- apply-model! [^js el {:keys [value placeholder disabled? open? placement] :as m}]
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs "input")
-          ^js panel-el (gobj/get refs "panel")]
+          ^js panel-el (gobj/get refs "panel")
+          ^js error-el (gobj/get refs "error")]
 
       ;; Show placeholder only when no chips
       (set! (.-placeholder input-el)
@@ -532,6 +592,10 @@
         (set! (.-value input-el) ""))
 
       (render-chips! el value disabled?)
+
+      (apply-error!         error-el m)
+      (apply-host-invalid!  el m)
+      (apply-input-invalid! input-el m)
 
       ;; Re-render panel when open so option list reflects new value/max
       (when open?
@@ -888,6 +952,7 @@
   (du/define-string-prop! proto "placeholder" model/attr-placeholder)
   (du/define-string-prop! proto "name"        model/attr-name)
   (du/define-string-prop! proto "placement"   model/attr-placement)
+  (du/define-string-prop! proto "error"       model/attr-error)
   (du/define-bool-prop!   proto "disabled"    model/attr-disabled)
   (du/define-bool-prop!   proto "required"    model/attr-required)
   (du/define-bool-prop!   proto "open"        model/attr-open)

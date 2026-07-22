@@ -20,6 +20,7 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 | `open`        | boolean | `false`          | Controls panel visibility |
 | `placement`   | enum    | `"bottom-start"` | Panel position relative to input |
 | `max`         | number  | none             | Maximum number of selections |
+| `error`       | string  | `""`             | Inline validation message; shows the `error` part and marks the field invalid |
 
 ### Placement values
 
@@ -37,6 +38,7 @@ A multi-select combobox with type-ahead filtering. Selected items display as rem
 | `open`        | boolean   | `open`              | |
 | `placement`   | string    | `placement`         | |
 | `max`         | number    | `max`               | |
+| `error`       | string    | `error`             | Inline validation message |
 
 ## Public methods
 
@@ -116,6 +118,7 @@ Fired before the panel opens or closes. **Cancelable**.
 | `--x-multi-combobox-panel-max-height` | `16rem` | Panel max scroll height |
 | `--x-multi-combobox-option-active-bg` | `var(--x-color-primary)` | Keyboard-highlighted option |
 | `--x-multi-combobox-chip-gap` | `0.25rem` | Gap between chips |
+| `--x-multi-combobox-error-color` | `var(--x-color-danger)` | Inline error text + invalid border |
 
 Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme chips globally.
 
@@ -130,6 +133,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 | `panel` | `<div>` | Dropdown listbox |
 | `option` | `<div>` | Individual option in dropdown |
 | `empty-msg` | `<div>` | "No matches" message |
+| `error` | `<span>` | Inline validation message; hidden until the `error` attribute is set |
 
 ## Keyboard
 
@@ -150,6 +154,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 - Options: `role="option"`, `aria-disabled` when max reached
 - Chip area: `role="group"`, `aria-label="Selected values"`
 - Active option tracked via `aria-activedescendant`
+- When the `error` attribute is set, the input gets `aria-invalid="true"` and `aria-describedby="error"`, and the `error` part is an assertive live region (`role="alert"`) so screen readers announce the validation message
 
 ## Example
 
@@ -176,3 +181,17 @@ el.addEventListener('x-multi-combobox-change', e => {
   console.log('Selected:', e.detail.value);
 });
 ```
+
+### Validation error
+
+The `error` attribute renders an inline message below the control and marks it
+invalid. Inside `x-form`, this is driven for you by `form.setFieldError(name, message)`.
+
+```html
+<x-multi-combobox name="tags" error="Select at least one tag" placeholder="Pick tags">
+  <option value="news">News</option>
+  <option value="sport">Sport</option>
+</x-multi-combobox>
+```
+
+Clear it by removing the attribute (or `el.error = ''`).

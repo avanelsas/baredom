@@ -5,14 +5,15 @@
   init();
   export type { XMultiComboboxElement };
   export interface XMultiComboboxProps {
-    value?: string;
-    placeholder?: string;
-    name?: string;
-    disabled?: boolean;
-    required?: boolean;
     open?: boolean;
-    placement?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    name?: string;
+    value?: string;
     max?: number;
+    error?: string;
+    placement?: string;
+    required?: boolean;
     onchangerequest?: (e: CustomEvent<{ value: any; action: string; item: string }>) => void;
     onchange?: (e: CustomEvent<{ value: any }>) => void;
     oninput?: (e: CustomEvent<{ query: string }>) => void;
@@ -27,14 +28,15 @@
 
 <script lang="ts">
   let {
-    value,
-    placeholder,
-    name,
-    disabled,
-    required,
     open,
-    placement,
+    placeholder,
+    disabled,
+    name,
+    value,
     max,
+    error,
+    placement,
+    required,
     onchangerequest,
     onchange,
     oninput,
@@ -68,14 +70,15 @@
 
 <x-multi-combobox
   bind:this={el}
-  {value}
-  {placeholder}
-  {name}
-  {disabled}
-  {required}
   {open}
-  {placement}
+  {placeholder}
+  {disabled}
+  {name}
+  {value}
   {max}
+  {error}
+  {placement}
+  {required}
   class={className}
   {id}
   {...rest}

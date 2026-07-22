@@ -152,6 +152,18 @@
     </div>
   </section>
 
+  <!-- ── Validation error ────────────────────────────────────────────── -->
+  <section>
+    <h2>Validation error</h2>
+    <div class="row">
+      <x-multi-combobox name="tags-err" error="Select at least one tag" placeholder="Pick tags">
+        <option value="news">News</option>
+        <option value="sport">Sport</option>
+        <option value="tech">Tech</option>
+      </x-multi-combobox>
+    </div>
+  </section>
+
   <!-- ── Large dataset ───────────────────────────────────────────────── -->
   <section>
     <h2>Large dataset (100+ options)</h2>
@@ -186,6 +198,10 @@
       <label>
         Disabled
         <input type="checkbox" id="ctrl-disabled" />
+      </label>
+      <label>
+        Error
+        <input type="text" id="ctrl-error" placeholder="(none)" />
       </label>
     </div>
 
@@ -261,6 +277,10 @@
     });
     document.getElementById('ctrl-disabled').addEventListener('change', e => {
       cb.disabled = e.target.checked;
+    });
+    document.getElementById('ctrl-error').addEventListener('input', e => {
+      const v = e.target.value.trim();
+      if (v) cb.setAttribute('error', v); else cb.removeAttribute('error');
     });
 
     // Event logging

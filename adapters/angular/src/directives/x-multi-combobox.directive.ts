@@ -17,14 +17,15 @@ export class BaredomMultiCombobox implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set value(v: string) { this.el.value = v as any; }
-  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
-  @Input() set name(v: string) { this.el.name = v as any; }
-  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set open(v: boolean) { this.el.open = v as any; }
-  @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
+  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set max(v: number) { this.el.max = v as any; }
+  @Input() set error(v: string) { this.el.error = v as any; }
+  @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: any; action: string; item: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ value: any }>>();

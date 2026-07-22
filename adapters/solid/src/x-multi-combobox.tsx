@@ -7,14 +7,15 @@ import { init } from "@vanelsas/baredom/x-multi-combobox";
 init();
 
 export interface XMultiComboboxProps {
-  value?: string;
-  placeholder?: string;
-  name?: string;
-  disabled?: boolean;
-  required?: boolean;
   open?: boolean;
-  placement?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
   max?: number;
+  error?: string;
+  placement?: string;
+  required?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: any; action: string; item: string }>) => void;
   onChange?: (e: CustomEvent<{ value: any }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;

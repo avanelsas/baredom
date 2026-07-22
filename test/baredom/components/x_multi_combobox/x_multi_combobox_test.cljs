@@ -46,7 +46,53 @@
     (is (some? (shadow-part el "[part=chip-area]")))
     (is (some? (shadow-part el "[part=input]")))
     (is (some? (shadow-part el "[part=chevron]")))
-    (is (some? (shadow-part el "[part=panel]")))))
+    (is (some? (shadow-part el "[part=panel]")))
+    (is (some? (shadow-part el "[part=error]")))))
+
+;; ── Inline error display (mirrors x-form-field) ──────────────────────────────
+
+(deftest error-panel-nested-in-wrapper-test
+  ;; The panel is anchored inside the wrapper so the inline error span below the
+  ;; wrapper never displaces the open dropdown.
+  (let [^js el      (append! (make-el))
+        ^js wrapper (shadow-part el "[part=wrapper]")]
+    (is (some? (.querySelector wrapper "[part=panel]"))
+        "panel should be nested inside the wrapper")))
+
+(deftest error-part-hidden-by-default-test
+  (let [^js el  (append! (make-el))
+        ^js err (shadow-part el "[part=error]")]
+    (is (.contains (.-classList err) "error-hidden"))
+    (is (= "alert" (.getAttribute err "role")))
+    (is (= "assertive" (.getAttribute err "aria-live")))))
+
+(deftest error-attr-shows-message-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-error "Choose at least one")
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (not (.contains (.-classList err) "error-hidden")))
+      (is (= "Choose at least one" (.-textContent err)))
+      (is (.hasAttribute el "data-invalid"))
+      (is (= "true" (.getAttribute inp "aria-invalid")))
+      (is (= "error" (.getAttribute inp "aria-describedby"))))))
+
+(deftest error-attr-clears-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-error "Boom")
+    (.removeAttribute el model/attr-error)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (.contains (.-classList err) "error-hidden"))
+      (is (not (.hasAttribute el "data-invalid")))
+      (is (= "false" (.getAttribute inp "aria-invalid")))
+      (is (not (.hasAttribute inp "aria-describedby"))))))
+
+(deftest error-property-reflects-attr-test
+  (let [^js el (append! (make-el))]
+    (set! (.-error el) "Required")
+    (is (= "Required" (.getAttribute el model/attr-error)))
+    (is (= "Required" (.-error el)))))
 
 ;; ── Chevron is hit-testable (regression: issue #267) ─────────────────────────
 ;; The chevron carries a `pointerdown` listener that toggles the panel. If CSS
