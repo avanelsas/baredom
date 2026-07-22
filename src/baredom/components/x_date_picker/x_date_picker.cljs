@@ -204,38 +204,17 @@
 ;; Full render
 ;; ---------------------------------------------------------------------------
 
-(defn- describedby-value
-  "Combine the author-supplied aria-describedby with the inline error id when an
-  error is present. Returns nil when neither is set."
-  [aria-desc has-error?]
-  (let [author (when (and (string? aria-desc) (not= aria-desc "")) aria-desc)]
-    (cond
-      (and author has-error?) (str author " error")
-      has-error?              "error"
-      author                  author
-      :else                   nil)))
-
 (defn- apply-error!
-  "Render the inline error message and invalid markers from the `error` attr."
+  "Render the inline error message and invalid markers from the `error` attr,
+  merging any author-supplied aria-describedby with the inline error id."
   [^js el ^js inp]
-  (let [refs      (du/getv el k-refs)
-        ^js err   (when refs (gobj/get refs "error"))
-        error     (du/get-attr el model/attr-error)
-        has-error? (and (string? error) (not= error ""))]
-    (when err
-      (set! (.-textContent err) (or error ""))
-      (if has-error?
-        (.remove (.-classList err) "error-hidden")
-        (.add    (.-classList err) "error-hidden")))
-    (if has-error?
-      (du/set-attr!    el "data-invalid" "")
-      (du/remove-attr! el "data-invalid"))
-    (when inp
-      (du/set-attr! inp "aria-invalid" (if has-error? "true" "false"))
-      (if-let [db (describedby-value (du/get-attr el model/attr-aria-describedby)
-                                     has-error?)]
-        (du/set-attr!    inp "aria-describedby" db)
-        (du/remove-attr! inp "aria-describedby")))))
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js err    (gobj/get refs "error")
+          error      (du/get-attr el model/attr-error)
+          has-error? (and (string? error) (not= error ""))]
+      (forms/apply-error-display!
+       el inp err {:error error :has-error? has-error?}
+       (forms/error-describedby has-error? (du/get-attr el model/attr-aria-describedby))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Form association — ElementInternals value + constraint validation
