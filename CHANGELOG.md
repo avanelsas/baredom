@@ -2,6 +2,34 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.4.0] - 2026-07-22
+
+The four popup-selection form controls — `x-select`, `x-date-picker`, `x-combobox`, and `x-multi-combobox` — become **real form controls**: they display inline validation errors and participate in native `<form>` submission and constraint validation via `ElementInternals`. Two internal refactors extract the resulting form-control policy into one shared, unit-tested place.
+
+### Added
+
+- **Inline validation errors** on `x-select`, `x-date-picker`, `x-combobox`, `x-multi-combobox` — a new `error` attribute (and matching `error` property) renders a message in an `error` CSS part (an assertive `role="alert"` live region), marks the host `data-invalid`, and sets `aria-invalid` / `aria-describedby` on the control. Inside `x-form` this is driven for you by `form.setFieldError(name, message)`.
+- **Form association** for those four controls — they now attach `ElementInternals`, submit their value under `name` (appearing in `FormData` with no hidden input), honour `required`, expose the `error` attribute as a `customError`, and respond to `form.reset()` and a disabling `<fieldset>`.
+- **Framework adapter form bindings** for the newly form-associated controls: `x-date-picker` gains Vue `v-model` / Angular `ControlValueAccessor` / Svelte `bind:value` / React & Solid controlled `value`; `x-multi-combobox` gains the same with an array (`string[]`) value via new array-aware adapter codegen.
+
+### Changed — behavior changes (please read)
+
+These are bug fixes — the controls advertised `name` / `required` but did not honour them — but they change runtime behavior for anyone already using these four inside a `<form>`:
+
+- **Native form participation.** Placed in a plain `<form>`, these controls now submit their value under `name` and appear in `FormData`. Previously they did not (unless manually wired); a hidden-input workaround for the same `name` will now double-submit.
+- **`required` and `error` now block submission**, and `form.reset()` now clears these fields. Previously `required` was inert and reset skipped them — a form that used to submit with an empty required select/combobox/date-picker will now be gated by `reportValidity()`.
+
+No attributes, properties, or events were removed or renamed; this is otherwise additive.
+
+### Changed — internal
+
+- **`baredom.utils.forms`** (new) — the ElementInternals constraint-validation policy and the inline error-display recipe, previously hand-implemented in each form control, are extracted into one namespace. Both the validity decision and the `aria-describedby` projection are pure functions split from their effects, and are now unit-tested (coverage the effecting versions never had). All six form-associated components (the four above plus `x-form-field`, `x-text-area`) compose the shared validity policy; the four popup controls also compose the shared error display.
+- **`custom-elements.json`** — regenerated to pick up the `error` fields and `x-search-field`'s `debounce` field that had drifted out of the committed manifest.
+
+### Notes
+
+- Adapter packages are versioned independently. This release ships alongside `react@2.2.0`, `angular@2.8.0`, `vue@0.2.0`, `svelte@0.2.0`, `solid@0.2.0` — each a minor bump carrying the new form bindings. See [`docs/RELEASING.md`](docs/RELEASING.md).
+
 ## [3.3.0] - 2026-05-26
 
 Three new framework adapters ship alongside the existing React and Angular adapters: **Vue 3**, **Svelte 5**, and **SolidJS** are now officially supported. BareDOM users of every major JS framework can now install a typed wrapper package that adds framework-idiomatic props, events, and ref handling on top of the same underlying web components.
