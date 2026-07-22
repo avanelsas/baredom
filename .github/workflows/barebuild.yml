@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   barebuild:
-    name: Lint, Test & Build
+    name: Lint, Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
