@@ -18,6 +18,7 @@ export interface XDatePickerProps {
   error?: string;
   end?: string;
   required?: boolean;
+  defaultValue?: string;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
   onChangeRequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
@@ -30,7 +31,7 @@ export interface XDatePickerProps {
 
 export const XDatePicker = forwardRef<XDatePickerElement, XDatePickerProps>(
   function XDatePicker(props, forwardedRef) {
-    const { onInput, onChangeRequest, onChange, children, ...rest } = props;
+    const { value, defaultValue, onInput, onChangeRequest, onChange, children, ...rest } = props;
     const innerRef = useRef<XDatePickerElement>(null);
 
     const setRef = (el: XDatePickerElement | null) => {
@@ -38,6 +39,14 @@ export const XDatePicker = forwardRef<XDatePickerElement, XDatePickerProps>(
       if (typeof forwardedRef === "function") forwardedRef(el);
       else if (forwardedRef) forwardedRef.current = el;
     };
+
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
       const el = innerRef.current;
@@ -48,9 +57,14 @@ export const XDatePicker = forwardRef<XDatePickerElement, XDatePickerProps>(
         el.addEventListener("x-date-picker-input", onInput as EventListener);
         cleanup.push(() => el.removeEventListener("x-date-picker-input", onInput as EventListener));
       }
-      if (onChangeRequest) {
-        el.addEventListener("x-date-picker-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-date-picker-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-date-picker-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-date-picker-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-date-picker-change", onChange as EventListener);
@@ -58,8 +72,8 @@ export const XDatePicker = forwardRef<XDatePickerElement, XDatePickerProps>(
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onInput, onChangeRequest, onChange]);
+    }, [value, onInput, onChangeRequest, onChange]);
 
-    return <x-date-picker ref={setRef} {...rest}>{children}</x-date-picker>;
+    return <x-date-picker ref={setRef} value={value} {...rest}>{children}</x-date-picker>;
   }
 );

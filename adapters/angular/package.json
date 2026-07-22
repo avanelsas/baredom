@@ -144,6 +144,10 @@
       "import" : "./dist/directives/x-date-picker.directive.js",
       "types" : "./dist/directives/x-date-picker.directive.d.ts"
     },
+    "./x-date-picker-cva" : {
+      "import" : "./dist/cva/x-date-picker-cva.directive.js",
+      "types" : "./dist/cva/x-date-picker-cva.directive.d.ts"
+    },
     "./x-divider" : {
       "import" : "./dist/directives/x-divider.directive.js",
       "types" : "./dist/directives/x-divider.directive.d.ts"
@@ -251,6 +255,10 @@
     "./x-multi-combobox" : {
       "import" : "./dist/directives/x-multi-combobox.directive.js",
       "types" : "./dist/directives/x-multi-combobox.directive.d.ts"
+    },
+    "./x-multi-combobox-cva" : {
+      "import" : "./dist/cva/x-multi-combobox-cva.directive.js",
+      "types" : "./dist/cva/x-multi-combobox-cva.directive.d.ts"
     },
     "./x-navbar" : {
       "import" : "./dist/directives/x-navbar.directive.js",

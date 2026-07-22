@@ -8,13 +8,14 @@
     open?: boolean;
     disabled?: boolean;
     name?: string;
-    value?: string;
     mode?: string;
     start?: string;
     readOnly?: boolean;
     error?: string;
     end?: string;
     required?: boolean;
+    /** Two-way bindable form value — `bind:value={...}`. */
+    value?: string;
     oninput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
     onchangerequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
     onchange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
@@ -31,13 +32,13 @@
     open,
     disabled,
     name,
-    value,
     mode,
     start,
     readOnly,
     error,
     end,
     required,
+    value = $bindable(undefined),
     oninput,
     onchangerequest,
     onchange,
@@ -50,6 +51,13 @@
 
   $effect(() => {
     const node = el;
+    if (!node || value === undefined) return;
+    if (value != null) node.setAttribute("value", String(value));
+    else node.removeAttribute("value");
+  });
+
+  $effect(() => {
+    const node = el;
     if (!node) return;
     const cleanups: Array<() => void> = [];
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ value: string; mode: string }>);
@@ -58,7 +66,11 @@
     const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
     node.addEventListener("x-date-picker-change-request", onchangerequestHandler);
     cleanups.push(() => node.removeEventListener("x-date-picker-change-request", onchangerequestHandler));
-    const onchangeHandler = (e: Event) => onchange?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+    const onchangeHandler = (e: Event) => {
+      const detail = (e as CustomEvent<{ value: string; mode: string; reason: string }>).detail;
+      value = String(detail.value);
+      onchange?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+    };
     node.addEventListener("x-date-picker-change", onchangeHandler);
     cleanups.push(() => node.removeEventListener("x-date-picker-change", onchangeHandler));
     return () => cleanups.forEach((fn) => fn());
@@ -70,7 +82,6 @@
   {open}
   {disabled}
   {name}
-  {value}
   {mode}
   {start}
   {readOnly}

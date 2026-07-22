@@ -12,11 +12,12 @@ export interface XMultiComboboxProps {
   placeholder?: string;
   disabled?: boolean;
   name?: string;
-  value?: string;
+  value?: string[];
   max?: number;
   error?: string;
   placement?: string;
   required?: boolean;
+  defaultValue?: string[];
   onChangeRequest?: (e: CustomEvent<{ value: any; action: string; item: string }>) => void;
   onChange?: (e: CustomEvent<{ value: any }>) => void;
   onInput?: (e: CustomEvent<{ query: string }>) => void;
@@ -30,7 +31,7 @@ export interface XMultiComboboxProps {
 
 export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxProps>(
   function XMultiCombobox(props, forwardedRef) {
-    const { onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
+    const { value, defaultValue, onChangeRequest, onChange, onInput, onToggle, children, ...rest } = props;
     const innerRef = useRef<XMultiComboboxElement>(null);
 
     const setRef = (el: XMultiComboboxElement | null) => {
@@ -39,14 +40,27 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
       else if (forwardedRef) forwardedRef.current = el;
     };
 
+    // Set initial value from defaultValue (uncontrolled mode)
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el || value !== undefined || defaultValue === undefined) return;
+      el.setAttribute("value", String(defaultValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       const cleanup: Array<() => void> = [];
 
-      if (onChangeRequest) {
-        el.addEventListener("x-multi-combobox-change-request", onChangeRequest as EventListener);
-        cleanup.push(() => el.removeEventListener("x-multi-combobox-change-request", onChangeRequest as EventListener));
+      {
+        const controlled = value !== undefined;
+        const wrappedHandler = (e: Event) => {
+          if (controlled) e.preventDefault();
+          if (onChangeRequest) (onChangeRequest as EventListener)(e);
+        };
+        el.addEventListener("x-multi-combobox-change-request", wrappedHandler);
+        cleanup.push(() => el.removeEventListener("x-multi-combobox-change-request", wrappedHandler));
       }
       if (onChange) {
         el.addEventListener("x-multi-combobox-change", onChange as EventListener);
@@ -62,8 +76,8 @@ export const XMultiCombobox = forwardRef<XMultiComboboxElement, XMultiComboboxPr
       }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onChangeRequest, onChange, onInput, onToggle]);
+    }, [value, onChangeRequest, onChange, onInput, onToggle]);
 
-    return <x-multi-combobox ref={setRef} {...rest}>{children}</x-multi-combobox>;
+    return <x-multi-combobox ref={setRef} value={value} {...rest}>{children}</x-multi-combobox>;
   }
 );

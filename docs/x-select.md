@@ -92,6 +92,15 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 - Focus ring is applied via `:focus-within` on the wrapper using `--x-select-focus-ring`.
 - When the `error` attribute is set, the internal `<select>` gets `aria-invalid="true"` and `aria-describedby` pointing at the `error` part, which is an assertive live region (`role="alert"`) so screen readers announce the validation message.
 
+## Form participation
+
+`x-select` is a form-associated custom element (via `ElementInternals`). When placed in a `<form>`:
+
+- Its current selection is submitted under its `name`, and it appears in `FormData` — no hidden input needed.
+- Constraint validation is honoured: a `required` select with no selection reports `valueMissing` and **blocks submission** (`form.reportValidity()` returns `false`); setting the `error` attribute reports a `customError` with that message. This is what `x-form` and native `<form>` submission gate on.
+- `form.reset()` restores the markup-default `<option selected>` (dropping any controlled `value` attribute), mirroring a native `<select>`.
+- `<fieldset disabled>` disables it via `formDisabledCallback`.
+
 ## Theming
 
 Dark mode is handled automatically via `@media (prefers-color-scheme: dark)` inside the component's shadow styles. Override any CSS custom property on the host to customize:

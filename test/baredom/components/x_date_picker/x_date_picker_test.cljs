@@ -426,3 +426,71 @@
                (done))
              0)))
         (when-not day (done))))))
+
+;; ---------------------------------------------------------------------------
+;; Form association (ElementInternals)
+;;
+;; NOTE: instance-level validity APIs (validity/checkValidity/willValidate) are
+;; not exposed by the karma harness — the shipped x-form-field behaves the same
+;; — so validity assertions are guarded with `(when (.-validity el) …)`. The
+;; static flag and the form callbacks are harness-independent; end-to-end submit
+;; gating is verified in a real browser via the demo.
+;; ---------------------------------------------------------------------------
+
+(deftest form-associated-static-test
+  (let [^js cls (.get js/customElements model/tag-name)]
+    (is (= true (.-formAssociated cls))
+        "formAssociated static property must be true")))
+
+(deftest form-reset-callback-clears-value-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el model/attr-value "2024-06-15")
+      (js/setTimeout
+       (fn []
+         (is (= "2024-06-15" (.getAttribute el model/attr-value)) "precondition")
+         (.formResetCallback el)
+         (js/setTimeout
+          (fn []
+            (is (not (.hasAttribute el model/attr-value))
+                "formResetCallback clears the committed value")
+            (let [^js inp (shadow-part el "[part=input]")]
+              (is (= "" (.-value inp)) "input display is cleared on reset"))
+            (done))
+          0))
+       0))))
+
+(deftest form-disabled-callback-reflects-attr-test
+  (let [^js el (append! (make-el))]
+    (.formDisabledCallback el true)
+    (is (.hasAttribute el model/attr-disabled)
+        "formDisabledCallback true sets disabled (e.g. inside <fieldset disabled>)")
+    (.formDisabledCallback el false)
+    (is (not (.hasAttribute el model/attr-disabled))
+        "formDisabledCallback false clears disabled")))
+
+(deftest validity-value-missing-when-required-empty-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el "name" "dob")
+      (.setAttribute el "required" "")
+      (js/setTimeout
+       (fn []
+         (when (.-validity el)
+           (is (true? (.. el -validity -valueMissing))
+               "required + no date reports valueMissing"))
+         (done))
+       0))))
+
+(deftest validity-custom-error-when-error-set-test
+  (async done
+    (let [^js el (append! (make-el))]
+      (.setAttribute el "error" "Bad date")
+      (js/setTimeout
+       (fn []
+         (when (.-validity el)
+           (is (true? (.. el -validity -customError))
+               "error attribute drives customError")
+           (is (= "Bad date" (.-validationMessage el))))
+         (done))
+       0))))

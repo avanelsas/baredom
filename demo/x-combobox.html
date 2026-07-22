@@ -134,6 +134,29 @@
     </div>
   </section>
 
+  <!-- ── In a form — submission gating ───────────────────────────────── -->
+  <section>
+    <h2>In a form — submission gating (required)</h2>
+    <form id="gate-form" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <x-combobox name="country" required placeholder="Pick a country (required)">
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="nl">Netherlands</option>
+      </x-combobox>
+      <button type="submit">Submit</button>
+      <span id="gate-result" style="font-size:14px;color:var(--muted)">not submitted</span>
+    </form>
+    <script>
+      // Native <form> submit is blocked by the required x-combobox until a value
+      // is chosen — exercises the ElementInternals validity added in PR 2.
+      document.getElementById("gate-form").addEventListener("submit", e => {
+        e.preventDefault();
+        document.getElementById("gate-result").textContent =
+          "submitted: country=" + new FormData(e.target).get("country");
+      });
+    </script>
+  </section>
+
   <!-- ── Validation error ────────────────────────────────────────────── -->
   <section>
     <h2>Validation error</h2>
