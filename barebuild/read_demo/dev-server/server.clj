@@ -35,11 +35,24 @@
 
 (def ^:private statuses ["todo" "doing" "done"])
 
+;; Title vocab, deliberately free of any owner name, status word or date fragment as a
+;; substring: `filter-tasks` searches titles too, so a collision here would silently change
+;; the result sets the search tests pin.
+(def ^:private titles
+  ["Audit build pipeline"    "Migrate legacy schema"   "Refactor parser core"
+   "Write onboarding guide"  "Fix flaky test suite"    "Profile query latency"
+   "Update API contract"     "Trim bundle size"        "Harden auth flow"
+   "Document error codes"    "Batch import jobs"       "Retire unused flags"
+   "Split monolith module"   "Cache lookup results"    "Tune retry backoff"
+   "Chart usage metrics"     "Patch upload limits"     "Verify backup restore"
+   "Seed staging fixtures"   "Polish empty states"])
+
 (defn- gen-task
   "Deterministic demo task for 1-based id `i`."
   [i]
   (let [day (inc (mod (dec i) 28))]
     {:id     i
+     :title  (nth titles (mod (dec i) (count titles)))
      :owner  (nth owners (mod (dec i) (count owners)))
      :start  (format "2026-01-%02d" day)
      :end    (format "2026-02-%02d" day)
@@ -66,7 +79,8 @@
 ;; directions. `end` is intentionally optional.
 (def shape
   {:idKey  "id"
-   :fields [{:key "owner"  :type "string" :required true}
+   :fields [{:key "title"  :type "string" :required true}
+            {:key "owner"  :type "string" :required true}
             {:key "start"  :type "date"   :required true}
             {:key "end"    :type "date"}
             {:key "status" :type "string" :required true :enum ["todo" "doing" "done"]}]})
@@ -116,7 +130,7 @@
     (let [needle (str/lower-case term)]
       (filterv (fn [t]
                  (some (fn [v] (str/includes? (str/lower-case (str v)) needle))
-                       ((juxt :owner :start :end :status) t)))
+                       ((juxt :title :owner :start :end :status) t)))
                ts))
     ts))
 
@@ -349,6 +363,7 @@
   [ts record]
   (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
     (conj ts {:id     (next-id ts)
+              :title  (field "title")
               :owner  (field "owner")
               :start  (field "start")
               :end    (field "end")

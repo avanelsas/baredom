@@ -62,6 +62,7 @@ stays domain-agnostic — it never hardcodes field names; the shape tells it wha
 {
   "idKey": "id",
   "fields": [
+    { "key": "title",  "type": "string" },
     { "key": "owner",  "type": "string" },
     { "key": "start",  "type": "date"   },
     { "key": "status", "type": "string" }

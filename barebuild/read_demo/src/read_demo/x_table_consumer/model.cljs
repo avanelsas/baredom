@@ -13,11 +13,11 @@
   (let [{:keys [query shape]} accepted-response
         sort-column-name      (:sort query)
         sort-direction        (:direction query)
-        {:keys [id-key label fields]} shape
+        {:keys [id-key fields]} shape
         columns (mapv
                  (fn [{:keys [key type]}]
                    {:key key
-                    :label (or label key)
+                    :label key
                     :type type
                     :sort-direction (if (= sort-column-name key)
                                       sort-direction

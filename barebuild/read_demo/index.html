@@ -39,7 +39,7 @@
       </x-progress-consumer>
       <x-spacer size="1rem"></x-spacer>
       <x-search-field-consumer>
-        <x-search-field label="Filter tasks" placeholder="Search owner or status..." debounce="250"></x-search-field>
+        <x-search-field label="Filter tasks" placeholder="Search title, owner or status..." debounce="250"></x-search-field>
       </x-search-field-consumer>
       <x-stat-consumer>
         <x-stat label="Total tasks"></x-stat>
@@ -48,6 +48,8 @@
     <x-button data-role="open">Create Task</x-button>
     <x-modal size="xl" label="New task">
       <x-form novalidate>
+        <x-form-field name="title"  type="text" label="Title"></x-form-field>
+        <x-spacer size="1rem"></x-spacer>
         <x-form-field name="owner"  type="text" label="Owner"></x-form-field>
         <x-spacer size="1rem"></x-spacer>
         <x-typography variant="overline">Start Date</x-typography>
