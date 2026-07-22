@@ -215,3 +215,47 @@
          (is (= "apple" (.getAttribute el model/attr-value)))
          (done))
        50))))
+
+;; ── Form association (ElementInternals) ──────────────────────────────────────
+;; Instance validity APIs aren't exposed by the karma harness (same as the
+;; shipped x-form-field), so validity assertions are guarded; the static flag
+;; and form callbacks are harness-independent. Submit gating is verified in a
+;; real browser via the demo.
+
+(deftest form-associated-static-test
+  (let [^js cls (.get js/customElements model/tag-name)]
+    (is (= true (.-formAssociated cls))
+        "formAssociated static property must be true")))
+
+(deftest form-reset-callback-clears-value-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-value "apple,banana")
+    (is (= "apple,banana" (.getAttribute el model/attr-value)) "precondition")
+    (.formResetCallback el)
+    (is (not (.hasAttribute el model/attr-value))
+        "formResetCallback clears the selected set")))
+
+(deftest form-disabled-callback-reflects-attr-test
+  (let [^js el (append! (make-el))]
+    (.formDisabledCallback el true)
+    (is (.hasAttribute el model/attr-disabled)
+        "formDisabledCallback true sets disabled (e.g. inside <fieldset disabled>)")
+    (.formDisabledCallback el false)
+    (is (not (.hasAttribute el model/attr-disabled))
+        "formDisabledCallback false clears disabled")))
+
+(deftest validity-value-missing-when-required-empty-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el "name" "tags")
+    (.setAttribute el "required" "")
+    (when (.-validity el)
+      (is (true? (.. el -validity -valueMissing))
+          "required + empty set reports valueMissing"))))
+
+(deftest validity-custom-error-when-error-set-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el "error" "Pick at least one")
+    (when (.-validity el)
+      (is (true? (.. el -validity -customError))
+          "error attribute drives customError")
+      (is (= "Pick at least one" (.-validationMessage el))))))

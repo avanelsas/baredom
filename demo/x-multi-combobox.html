@@ -152,6 +152,29 @@
     </div>
   </section>
 
+  <!-- ── In a form — submission gating ───────────────────────────────── -->
+  <section>
+    <h2>In a form — submission gating (required)</h2>
+    <form id="gate-form" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <x-multi-combobox name="tags" required placeholder="Pick tags (required)">
+        <option value="news">News</option>
+        <option value="sport">Sport</option>
+        <option value="tech">Tech</option>
+      </x-multi-combobox>
+      <button type="submit">Submit</button>
+      <span id="gate-result" style="font-size:14px;color:var(--muted)">not submitted</span>
+    </form>
+    <script>
+      // Native <form> submit is blocked by the required x-multi-combobox until
+      // at least one tag is chosen — exercises the ElementInternals validity.
+      document.getElementById("gate-form").addEventListener("submit", e => {
+        e.preventDefault();
+        document.getElementById("gate-result").textContent =
+          "submitted: tags=" + new FormData(e.target).get("tags");
+      });
+    </script>
+  </section>
+
   <!-- ── Validation error ────────────────────────────────────────────── -->
   <section>
     <h2>Validation error</h2>
