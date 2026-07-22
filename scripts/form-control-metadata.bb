@@ -4,12 +4,17 @@
 ;; $bindable() form props. Pure data; no behavior.
 ;;
 ;; Schema per component:
-;;   :value-type            — TypeScript type for the form value ("boolean", "string", "number")
+;;   :value-type            — TypeScript type for the form value ("boolean", "string", "number", "string[]")
 ;;   :change-event          — DOM event fired on committed value change
 ;;   :change-request-event  — cancelable DOM event fired BEFORE commit (consumed by React's controlled mode)
 ;;   :detail-field          — field in event.detail that carries the new value
 ;;   :write-mode            — :boolean-attr (set/remove attribute) or :string-attr (setAttribute)
 ;;   :attr-name             — attribute name to write/remove
+;;
+;; Array-valued controls (value-type "string[]", e.g. x-multi-combobox) use
+;; :string-attr: `String(["a","b"])` is "a,b", which matches the component's
+;; comma-separated `value` attribute, so the attribute write round-trips. The
+;; read-back path is NOT String()-coerced (see the Vue/Svelte coerce tables).
 
 (def form-controls
   {"x-checkbox"       {:value-type "boolean" :change-event "x-checkbox-change"       :change-request-event "x-checkbox-change-request"       :detail-field "checked" :write-mode :boolean-attr :attr-name "checked"}
@@ -18,7 +23,8 @@
    "x-slider"         {:value-type "string"  :change-event "x-slider-change"         :change-request-event "x-slider-change-request"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-text-area"      {:value-type "string"  :change-event "x-text-area-change"      :change-request-event "x-text-area-change-request"      :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-select"         {:value-type "string"  :change-event "select-change"           :change-request-event "x-select-change-request"         :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
-   "x-combobox"       {:value-type "string"  :change-event "x-combobox-change"       :change-request-event "x-combobox-change-request"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
+   "x-combobox"       {:value-type "string"   :change-event "x-combobox-change"       :change-request-event "x-combobox-change-request"       :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
+   "x-multi-combobox" {:value-type "string[]" :change-event "x-multi-combobox-change" :change-request-event "x-multi-combobox-change-request" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-date-picker"    {:value-type "string"  :change-event "x-date-picker-change"    :change-request-event "x-date-picker-change-request"    :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-currency-field" {:value-type "string"  :change-event "x-currency-field-change" :change-request-event "x-currency-field-change-request" :detail-field "value"   :write-mode :string-attr  :attr-name "value"}
    "x-tabs"           {:value-type "string"  :change-event "value-change"            :change-request-event "value-change-request"            :detail-field "value"   :write-mode :string-attr  :attr-name "value"}

@@ -164,7 +164,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
 - `form.reset()` clears the selection (mirroring `x-form-field`), and `<fieldset disabled>` disables it via `formDisabledCallback`.
 
-> Framework `v-model` / `ControlValueAccessor` bindings for the adapters are a follow-up (they need array-aware codegen); the element itself works in native `<form>`s and `x-form` today.
+The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue` — the value round-trips through the comma-separated `value` attribute.
 
 ## Example
 

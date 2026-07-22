@@ -256,6 +256,10 @@
       "import" : "./dist/directives/x-multi-combobox.directive.js",
       "types" : "./dist/directives/x-multi-combobox.directive.d.ts"
     },
+    "./x-multi-combobox-cva" : {
+      "import" : "./dist/cva/x-multi-combobox-cva.directive.js",
+      "types" : "./dist/cva/x-multi-combobox-cva.directive.d.ts"
+    },
     "./x-navbar" : {
       "import" : "./dist/directives/x-navbar.directive.js",
       "types" : "./dist/directives/x-navbar.directive.d.ts"
