@@ -8,6 +8,7 @@
     disabled?: boolean;
     required?: boolean;
     name?: string;
+    error?: string;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onchangerequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
@@ -25,6 +26,7 @@
     disabled,
     required,
     name,
+    error,
     value = $bindable(undefined),
     onchangerequest,
     onselectchange,
@@ -65,6 +67,7 @@
   {disabled}
   {required}
   {name}
+  {error}
   class={className}
   {id}
   {...rest}

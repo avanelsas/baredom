@@ -15,16 +15,32 @@
 ;; Attribute / part name constants
 ;; ---------------------------------------------------------------------------
 (def ^:private attr-part             "part")
+(def ^:private attr-id               "id")
 (def ^:private attr-hidden           "hidden")
+(def ^:private attr-role             "role")
 (def ^:private attr-aria-hidden      "aria-hidden")
 (def ^:private attr-aria-label       "aria-label")
+(def ^:private attr-aria-live        "aria-live")
+(def ^:private attr-aria-invalid     "aria-invalid")
+(def ^:private attr-aria-describedby "aria-describedby")
 (def ^:private attr-data-size        "data-size")
 (def ^:private attr-data-disabled    "data-disabled")
+(def ^:private attr-data-invalid     "data-invalid")
 (def ^:private attr-data-placeholder "data-placeholder")
 
 (def ^:private part-wrapper "wrapper")
 (def ^:private part-select  "select")
 (def ^:private part-chevron "chevron")
+(def ^:private part-error   "error")
+
+(def ^:private id-error "error")
+
+(def ^:private val-true      "true")
+(def ^:private val-false     "false")
+(def ^:private val-alert     "alert")
+(def ^:private val-assertive "assertive")
+
+(def ^:private cls-error-hidden "error-hidden")
 
 (def ^:private default-aria-label "select")
 
@@ -58,6 +74,7 @@
    "--x-select-border-focus:var(--x-color-primary,#3b82f6);"
    "--x-select-chevron:var(--x-color-text-muted,#64748b);"
    "--x-select-focus-ring:var(--x-color-focus-ring,#93c5fd);"
+   "--x-select-error-color:var(--x-color-danger,#dc2626);"
    "--x-select-shadow:var(--x-shadow-sm,0 1px 2px rgba(15,23,42,0.06));"
    "--x-select-transition-duration:var(--x-transition-duration,140ms);"
    "}"
@@ -70,6 +87,7 @@
    "--x-select-border-hover:var(--x-color-border,#4b5563);"
    "--x-select-border-focus:var(--x-color-focus-ring,#60a5fa);"
    "--x-select-chevron:var(--x-color-text-muted,#94a3b8);"
+   "--x-select-error-color:var(--x-color-danger,#f87171);"
    "}"
    "}"
    "[part=wrapper]{"
@@ -105,6 +123,13 @@
    "[part=wrapper]:focus-within:not([data-disabled]){"
    "border-color:var(--x-select-border-focus);"
    "box-shadow:0 0 0 3px var(--x-select-focus-ring);"
+   "}"
+   ":host([data-invalid]) [part=wrapper]{"
+   "border-color:var(--x-select-error-color);"
+   "}"
+   ":host([data-invalid]) [part=wrapper]:focus-within:not([data-disabled]){"
+   "border-color:var(--x-select-error-color);"
+   "box-shadow:0 0 0 3px color-mix(in srgb,var(--x-select-error-color) 25%,transparent);"
    "}"
    "[part=select]{"
    "appearance:none;"
@@ -145,6 +170,14 @@
    "slot{"
    "display:none;"
    "}"
+   "[part=error]{"
+   "display:block;"
+   "margin-top:0.25rem;"
+   "font-size:0.8125rem;"
+   "line-height:1.4;"
+   "color:var(--x-select-error-color);"
+   "}"
+   ".error-hidden{display:none;}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=wrapper]{transition:none;}"
    "}"))
@@ -168,6 +201,7 @@
         select-el  (.createElement js/document "select")
         ph-opt-el  (.createElement js/document "option")
         chevron-el (.createElement js/document "span")
+        error-el   (.createElement js/document "span")
         slot-el    (.createElement js/document "slot")]
 
     (set! (.-textContent style-el) style-text)
@@ -176,6 +210,14 @@
     (du/set-attr! select-el  attr-part        part-select)
     (du/set-attr! chevron-el attr-part        part-chevron)
     (du/set-attr! chevron-el attr-aria-hidden "true")
+
+    ;; Inline error message. Mirrors x-form-field: assertive live region with
+    ;; role=alert, hidden until an `error` attribute is present.
+    (du/set-attr! error-el attr-part      part-error)
+    (du/set-attr! error-el attr-id        id-error)
+    (du/set-attr! error-el attr-role      val-alert)
+    (du/set-attr! error-el attr-aria-live val-assertive)
+    (.add (.-classList error-el) cls-error-hidden)
 
     ;; Placeholder option: empty value, hidden by default, disabled, selected.
     ;; `disabled` and `hidden` go through du/ as attributes (visible to the
@@ -196,12 +238,14 @@
     (.appendChild wrapper-el chevron-el)
     (.appendChild root style-el)
     (.appendChild root wrapper-el)
+    (.appendChild root error-el)
     (.appendChild root slot-el)
 
     (let [refs #js {:root            root
                     :wrapper         wrapper-el
                     :select          select-el
                     :placeholder-opt ph-opt-el
+                    :error           error-el
                     :slot            slot-el
                     :chevron         chevron-el}]
       (du/setv! el k-refs refs)
@@ -217,7 +261,8 @@
     :size-raw          (du/get-attr el model/attr-size)
     :placeholder-raw   (du/get-attr el model/attr-placeholder)
     :value-raw         (du/get-attr el model/attr-value)
-    :name-raw          (du/get-attr el model/attr-name)}))
+    :name-raw          (du/get-attr el model/attr-name)
+    :error-raw         (du/get-attr el model/attr-error)}))
 
 ;; ---------------------------------------------------------------------------
 ;; Render (render-orchestrator: apply-model! reads as a phase list, caches
@@ -266,14 +311,33 @@
     (du/set-attr!    select-el attr-aria-label (or placeholder default-aria-label))
     (du/remove-attr! select-el attr-aria-label)))
 
+(defn- apply-error! [^js error-el error has-error?]
+  (set! (.-textContent error-el) (or error ""))
+  (if has-error?
+    (.remove (.-classList error-el) cls-error-hidden)
+    (.add    (.-classList error-el) cls-error-hidden)))
+
+(defn- apply-host-invalid! [^js el has-error?]
+  (if has-error?
+    (du/set-attr!    el attr-data-invalid "")
+    (du/remove-attr! el attr-data-invalid)))
+
+(defn- apply-select-invalid! [^js select-el has-error?]
+  (du/set-attr! select-el attr-aria-invalid (if has-error? val-true val-false))
+  (if has-error?
+    (du/set-attr!    select-el attr-aria-describedby id-error)
+    (du/remove-attr! select-el attr-aria-describedby)))
+
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js wrapper-el (gobj/get refs "wrapper")
           ^js select-el  (gobj/get refs "select")
           ^js ph-opt-el  (gobj/get refs "placeholder-opt")
+          ^js error-el   (gobj/get refs "error")
           disabled?      (:disabled? m)
           name-val       (:name m)
-          placeholder    (:placeholder m)]
+          placeholder    (:placeholder m)
+          has-error?     (:has-error? m)]
       (apply-disabled!       select-el disabled?)
       (apply-required!       select-el (:required? m))
       (apply-name!           select-el name-val)
@@ -281,6 +345,9 @@
       (apply-value!          select-el (:value m))
       (apply-wrapper-state!  wrapper-el (:size m) disabled?)
       (apply-aria-label!     select-el name-val placeholder)
+      (apply-error!          error-el (:error m) has-error?)
+      (apply-host-invalid!   el has-error?)
+      (apply-select-invalid! select-el has-error?)
       (du/setv! el k-model m))))
 
 ;; Unconditional re-render — `sync-options!` invalidates non-attribute state

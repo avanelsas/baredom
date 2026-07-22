@@ -94,6 +94,15 @@
       </x-select>
     </div>
 
+    <x-typography variant="overline">Validation error</x-typography>
+    <div class="row">
+      <x-select name="country-err" error="Please choose a country" placeholder="Choose a country">
+        <option value="us">United States</option>
+        <option value="nl">Netherlands</option>
+        <option value="de">Germany</option>
+      </x-select>
+    </div>
+
     <x-typography variant="overline">Option groups</x-typography>
     <div class="row">
       <x-select name="city" placeholder="Choose a city">
@@ -147,6 +156,9 @@
       <label>value
         <x-form-field type="text" id="ctrl-value" style="width:80px" placeholder="(attr)"></x-form-field>
       </label>
+      <label>error
+        <x-form-field type="text" id="ctrl-error" style="width:140px" placeholder="(none)"></x-form-field>
+      </label>
     </div>
     <div class="row">
       <x-select id="live-sel" name="live" placeholder="Select…">
@@ -189,12 +201,14 @@
         const size        = document.getElementById("ctrl-size").value;
         const placeholder = document.getElementById("ctrl-placeholder").value;
         const value       = document.getElementById("ctrl-value").value.trim();
+        const error       = document.getElementById("ctrl-error").value.trim();
 
         if (disabled) liveSel.setAttribute("disabled", "");       else liveSel.removeAttribute("disabled");
         if (required) liveSel.setAttribute("required", "");       else liveSel.removeAttribute("required");
         liveSel.setAttribute("size", size);
         if (placeholder) liveSel.setAttribute("placeholder", placeholder); else liveSel.removeAttribute("placeholder");
         if (value)    liveSel.setAttribute("value", value);       else liveSel.removeAttribute("value");
+        if (error)    liveSel.setAttribute("error", error);       else liveSel.removeAttribute("error");
       }
 
       document.querySelectorAll(".controls input, .controls select, .controls x-switch, .controls x-select, .controls x-form-field").forEach(el => {
