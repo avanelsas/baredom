@@ -434,6 +434,112 @@
          (resource/step base [:disconnected {}]))
       "nothing in flight -> disconnect is a clean no-op"))
 
+;; --- W1b: writes — submit-write / write-ack / write-failed -----------------
+
+(deftest submit-write-starts-write-and-emits-write-effect
+  (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete :id 7}])]
+    (testing "an active write is recorded under a namespaced id, carrying the payload"
+      (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7}} (:active-write resource)))
+      (is (true? (resource/writing? resource))))
+    (testing "notify first (so the button disables), then the :write effect carries endpoint,
+              write id, and the whole payload for the executor to translate into a request"
+      (is (= [[:notify-consumers {:resource resource}]
+              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload {:op :delete :id 7}}]]
+             effects)))))
+
+(deftest submit-write-is-op-neutral-passes-payload-through
+  (testing "a create payload rides the same spine — step carries it verbatim, the executor
+            (not step) decides POST vs DELETE from :op"
+    (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
+          payload {:op :create :record record}
+          {:keys [resource effects]} (resource/step base [:submit-write payload])]
+      (is (= {:write/id "tasks:w1" :payload payload} (:active-write resource)))
+      (is (= [[:notify-consumers {:resource resource}]
+              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload payload}]]
+             effects)))))
+
+(deftest submit-write-while-writing-is-a-noop
+  (let [r (assoc base :write-count 1
+                      :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:submit-write {:op :delete :id 9}])]
+    (testing "a second write while one is in flight does not start another (guards the double-click)"
+      (is (= r resource))
+      (is (= [[:diagnostic :stale-write]] effects)))))
+
+(deftest write-ack-accepted-clears-write-and-refetches-current-intent
+  (let [r (assoc base :url-intent {:sort "owner"}
+                      :request-count 3
+                      :write-count 1
+                      :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:write-ack {:outcome  :accepted
+                                                                 :write/id "tasks:w1"
+                                                                 :revision "tasks:v1"}])]
+    (testing "the write clears -> writing? false"
+      (is (nil? (:active-write resource)))
+      (is (false? (resource/writing? resource))))
+    (testing "a refetch of the CURRENT intent is issued under a fresh read id (mutate -> refetch)"
+      (is (= {:request/id "tasks:4" :query {:sort "owner"}} (:active-request resource)))
+      (is (= [[:notify-consumers {:resource resource}]
+              [:fetch {:endpoint "/api/tasks" :query {:sort "owner"} :request/id "tasks:4"}]]
+             effects)))
+    (testing "last-accepted is untouched — the refetch's :response installs the post-mutation truth"
+      (is (nil? (:last-accepted resource))))))
+
+(deftest write-ack-rejected-records-failure-keeps-stale-and-clears-writing
+  (let [r   (assoc base :last-accepted accepted
+                        :write-count 1
+                        :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
+        ack {:outcome :rejected :write/id "tasks:w1"
+             :error   {:code :conflict :message "nope"}}
+        {:keys [resource effects]} (resource/step r [:write-ack ack])]
+    (testing "the rejection is recorded as a :rejected failure wrapping the ack"
+      (is (= {:failure :rejected :response ack} (:last-failure resource))))
+    (testing "writing? clears so the button re-enables (the regression that bit twice)"
+      (is (nil? (:active-write resource)))
+      (is (false? (resource/writing? resource))))
+    (testing "pessimistic keep-stale: last-accepted intact, no refetch"
+      (is (= accepted (:last-accepted resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
+
+(deftest write-ack-for-superseded-write-is-dropped
+  (let [r (assoc base :write-count 2
+                      :active-write {:write/id "tasks:w2" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:write-ack {:outcome :accepted :write/id "tasks:w1"}])]
+    (testing "an ack that doesn't answer the in-flight write never touches state"
+      (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
+    (testing "it surfaces only as a diagnostic"
+      (is (= [[:diagnostic :stale-write]] effects)))))
+
+(deftest write-failed-records-failure-keeps-stale-and-clears-writing
+  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+        r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
+        {:keys [resource effects]} (resource/step r [:write-failed {:write/id "tasks:w1"
+                                                                    :error    {:kind :offline}}])]
+    (testing "records a :network failure carrying the error kind and the in-flight write"
+      (is (= {:failure :network :error {:kind :offline} :write aw} (:last-failure resource))))
+    (testing "writing? clears; last-accepted kept (pessimistic -> nothing to roll back)"
+      (is (nil? (:active-write resource)))
+      (is (= accepted (:last-accepted resource))))
+    (testing "consumers are notified with the updated resource"
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
+
+(deftest write-failed-for-superseded-write-is-dropped
+  (let [r (assoc base :active-write {:write/id "tasks:w2" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:write-failed {:write/id "tasks:w1"
+                                                                    :error    {:kind :offline}}])]
+    (testing "a failure for a superseded write does not touch state"
+      (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
+    (testing "it surfaces only as a diagnostic"
+      (is (= [[:diagnostic :stale-write]] effects)))))
+
+(deftest write-failed-protocol-is-labelled-protocol-not-network
+  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+        r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
+        {:keys [resource]} (resource/step r [:write-failed {:write/id "tasks:w1"
+                                                            :protocol-failure {:reason :empty-body}}])]
+    (testing "a broken ack envelope is a :protocol failure carrying its detail, not a nil-error :network one"
+      (is (= {:failure :protocol :detail {:reason :empty-body} :write aw} (:last-failure resource))))))
+
 (deftest unknown-event-is-a-noop
   (is (= {:resource base :effects []}
          (resource/step base [:some-future-event {}]))
