@@ -1,34 +1,36 @@
-(ns read-demo.x-table-consumer-model-test
+(ns demo.x-table-consumer-model-test
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [read-demo.x-table-consumer.model :as model]))
+            [demo.x-table-consumer.model :as model]))
 
 (def accepted
   {:outcome    :accepted
    :request/id "req-1"
    :revision   "tasks:v1"
    :query      {:sort "owner" :direction "asc"}
-   :value      [{"id" 1 "owner" "Alice" "start" "2026-01-05" "status" "doing" "secret" "x"}
-                {"id" 2 "owner" "Bob"   "start" nil          "status" "todo"  "secret" "y"}]
+   :value      [{"id" 1 "title" "Refactor parser core" "owner" "Alice" "start" "2026-01-05" "status" "doing" "secret" "x"}
+                {"id" 2 "title" "Trim bundle size"     "owner" "Bob"   "start" nil          "status" "todo"  "secret" "y"}]
    :shape      {:id-key "id"
-                :fields [{:key "owner"  :type :string}
+                :fields [{:key "title"  :type :string}
+                         {:key "owner"  :type :string}
                          {:key "start"  :type :date}
                          {:key "status" :type :string}]}})
 
 (deftest columns-from-shape-in-declared-order
   (let [{:keys [columns]} (model/accepted-response->view-model accepted)]
-    (is (= [{:key "owner"  :label "owner"  :type :string  :sort-direction "asc"}
+    (is (= [{:key "title"  :label "title"  :type :string  :sort-direction "none"}
+            {:key "owner"  :label "owner"  :type :string  :sort-direction "asc"}
             {:key "start"  :label "start"  :type :date    :sort-direction "none"}
             {:key "status" :label "status" :type :string  :sort-direction "none"}]
            columns)
-        "columns from shape.fields in order; label falls back to key; the sorted column
-         carries the echoed direction, others \"none\"")))
+        "columns from shape.fields in order; the header label is the field key; the sorted
+         column carries the echoed direction, others \"none\"")))
 
 (deftest rows-lift-id-and-project-declared-cells
   (let [{:keys [rows]} (model/accepted-response->view-model accepted)]
     (testing "id is lifted from each row via shape :id-key"
       (is (= [1 2] (mapv :id rows))))
     (testing "cells contain only declared fields, as a map of raw values"
-      (is (= {"owner" "Alice" "start" "2026-01-05" "status" "doing"}
+      (is (= {"title" "Refactor parser core" "owner" "Alice" "start" "2026-01-05" "status" "doing"}
              (:cells (first rows))))
       (is (not (contains? (:cells (first rows)) "secret")) "undeclared key dropped (§5.2)")
       (is (not (contains? (:cells (first rows)) "id")) "id is lifted, not a cell"))
@@ -46,7 +48,7 @@
   (testing "the sorted column gets the echoed direction, all others get \"none\""
     (let [{:keys [columns]} (model/accepted-response->view-model
                              (assoc accepted :query {:sort "start" :direction "desc"}))]
-      (is (= ["none" "desc" "none"] (mapv :sort-direction columns)))))
+      (is (= ["none" "none" "desc" "none"] (mapv :sort-direction columns)))))
   (testing "no sort in the query -> every column \"none\""
     (let [{:keys [columns]} (model/accepted-response->view-model
                              (assoc accepted :query {}))]

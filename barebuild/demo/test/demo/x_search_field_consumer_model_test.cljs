@@ -1,9 +1,9 @@
-(ns read-demo.x-search-field-consumer-model-test
+(ns demo.x-search-field-consumer-model-test
   "translate-search-gesture / project-search-value: the refinement gesture out, and the
    echoed term read back. Query keys are keywords — wire/parse-envelope runs the echo through
    canonicalize-query, and the merge in resource/step canonicalizes intent-patches too."
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [read-demo.x-search-field-consumer.model :as model]))
+            [demo.x-search-field-consumer.model :as model]))
 
 (deftest translate-produces-a-refinement-query-patch
   (testing "a term becomes a :search query-patch classed as a refinement"

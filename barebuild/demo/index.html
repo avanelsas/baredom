@@ -23,11 +23,11 @@
   <header>
     <h1>BareBuild — Task demo</h1>
     <p class="subtitle">
-      A read-only projection of server state: one <code>&lt;server-resource&gt;</code> fetches the
-      task list and fans out to several consumers — a total-count <code>&lt;x-stat&gt;</code>, a
-      page-position <code>&lt;x-progress&gt;</code>, a free-text <code>&lt;x-search-field&gt;</code>
-      filter, and a sortable, paginated <code>&lt;x-table&gt;</code>. Filter, sort a column, or
-      change page and the query round-trips through the server into the URL; invalid queries and
+      A read and write projection of server state: the tasks live only on the server. BareBuild
+      is a small ClojureScript runtime that wraps the web components on the page — it turns
+      server responses into data the components can display, and turns user interactions back
+      into requests the server can handle. Create and delete tasks, filter, sort a column, or
+      change page; the query round-trips through the server into the URL. Invalid queries and
       network failures keep the last good view on screen.
     </p>
   </header>
@@ -39,7 +39,7 @@
       </x-progress-consumer>
       <x-spacer size="1rem"></x-spacer>
       <x-search-field-consumer>
-        <x-search-field label="Filter tasks" placeholder="Search owner or status..." debounce="250"></x-search-field>
+        <x-search-field label="Filter tasks" placeholder="Search title, owner or status..." debounce="250"></x-search-field>
       </x-search-field-consumer>
       <x-stat-consumer>
         <x-stat label="Total tasks"></x-stat>
@@ -48,6 +48,8 @@
     <x-button data-role="open">Create Task</x-button>
     <x-modal size="xl" label="New task">
       <x-form novalidate>
+        <x-form-field name="title"  type="text" label="Title"></x-form-field>
+        <x-spacer size="1rem"></x-spacer>
         <x-form-field name="owner"  type="text" label="Owner"></x-form-field>
         <x-spacer size="1rem"></x-spacer>
         <x-typography variant="overline">Start Date</x-typography>

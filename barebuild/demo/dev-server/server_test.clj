@@ -49,8 +49,8 @@
     (is (contains? body :shape) "accepted envelope carries shape")
     (is (not (contains? body :error)) "accepted envelope has no error")
     (is (= "id" (get-in body [:shape :idKey])))
-    (is (= ["owner" "start" "status"]
-           (->> (get-in body [:shape :fields]) (map :key) (filter #{"owner" "start" "status"})))
+    (is (= ["title" "owner" "start" "status"]
+           (->> (get-in body [:shape :fields]) (map :key) (filter #{"title" "owner" "start" "status"})))
         "shape declares the display fields")
     (is (= 10 (count (:value body))) "a page holds page-size rows")
     (is (every? #(contains? % :id) (:value body)) "every row has the id-key")
@@ -62,6 +62,7 @@
 (deftest shape-declares-required-and-status-enum
   (let [[_ body] (get-json "/api/tasks" nil)
         by-key   (into {} (map (juxt :key identity) (get-in body [:shape :fields])))]
+    (is (true? (get-in by-key ["title" :required])) "title is required")
     (is (true? (get-in by-key ["owner" :required])) "owner is required")
     (is (true? (get-in by-key ["status" :required])) "status is required")
     (is (= ["todo" "doing" "done"] (get-in by-key ["status" :enum])) "status carries its enum")
@@ -277,7 +278,7 @@
 ;; --- writes: create (step W3a) ---------------------------------------------
 
 (def ^:private new-task
-  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
+  {"title" "Ship the release" "owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
 
 (deftest create-appends-and-returns-accepted-ack
   (let [resp (post-raw "/api/tasks" "requestId=w-c1" (record-json new-task))
@@ -293,6 +294,7 @@
             [_ zoe]  (get-json "/api/tasks" "search=Zoe")
             row      (first (:value zoe))]
         (is (= 41 (get-in all [:pageInfo :totalCount])) "one more row in the set")
+        (is (= "Ship the release" (:title row)))
         (is (= "Zoe" (:owner row)))
         (is (= 41 (:id row)) "server assigns the next id")))))
 

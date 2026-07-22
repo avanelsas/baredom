@@ -1,7 +1,7 @@
 ;; BareBuild — fully separate build, run from inside barebuild/.
 ;; Imports BareDOM utils from source via the "../src" source-path (this repo's
 ;; shadow-cljs compiles from :source-paths + bundled CLJS, not deps.edn).
-{:source-paths ["src" "test" "read_demo/src" "read_demo/test" "../src"]
+{:source-paths ["src" "test" "demo/src" "demo/test" "../src"]
 
  :builds
  {;; ESM library output (per-component modules added as elements land).
@@ -17,8 +17,8 @@
            :depends-on #{:base}}
     ;; Demo/dev entry: stands in for a host app — registers the BareDOM components +
     ;; the demo's own consumers (bundled only in this module) and BareBuild via :core.
-    ;; Source lives under read_demo/ (read-demo.* ns), fully separate from the product.
-    :demo {:exports    {init read-demo.demo/init}
+    ;; Source lives under demo/ (demo.* ns), fully separate from the product.
+    :demo {:exports    {init demo.app/init}
            :depends-on #{:core}}}}
 
   ;; Fast pure-CLJS unit tests under Node (the pure core is DOM-free).

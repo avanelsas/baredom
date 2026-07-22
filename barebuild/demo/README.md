@@ -2,7 +2,7 @@
 
 A showcase for a read version of [BareBuild](../README.md): a live page that drives several BareDOM
 components from one `<server-resource>`, backed by a small tasks server. It exists to
-demonstrate the runtime. **It is not part of BareBuild itself** (`read-demo.*`
+demonstrate the runtime. **It is not part of BareBuild itself** (`demo.*`
 namespaces).
 
 ## What it shows
@@ -39,12 +39,12 @@ npm run server           # tasks API + SSR boot page on http://localhost:8090
 
 Then open the demo one of two ways:
 
-- **The page**: Serve `barebuild/` over http and open `read_demo/index.html`:
+- **The page**: Serve `barebuild/` over http and open `demo/index.html`:
   ```sh
   # Run
   python3 -m http.server 8095      # from barebuild/, in another shell
 
-  # open http://localhost:8095/read_demo/index.html
+  # open http://localhost:8095/demo/index.html
   ```
 - **The SSR variant**: Open <http://localhost:8090/demo/boot> directly. The dev-server
   serves it with the first response embedded, so the table paints with no initial fetch.
@@ -52,13 +52,13 @@ Then open the demo one of two ways:
 ## Layout
 
 ```
-read_demo/
+demo/
   index.html                 ; the demo page
   dev-server/                ; Babashka tasks state + API (server.clj) + handler tests
-  src/read_demo/
-    demo.cljs                ; registers the driven components + consumers, then barebuild.core/init
+  src/demo/
+    app.cljs                ; registers the driven components + consumers, then barebuild.core/init
     x_<name>_consumer/       ; the four example consumers (pure model.cljs + element file)
-  test/read_demo/            ; consumer model tests
+  test/demo/            ; consumer model tests
 ```
 
 ## Test & lint
@@ -67,7 +67,7 @@ read_demo/
 # from barebuild/
 npm test               # runs the consumer model tests (in the same Node build as the core's)
 npm run test:server    # the dev-server's handler tests
-clj-kondo --lint read_demo/src read_demo/test
+clj-kondo --lint demo/src demo/test
 ```
 
 ## Write your own consumer

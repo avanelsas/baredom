@@ -1,7 +1,7 @@
-(ns read-demo.x-table-consumer.x-table-consumer
+(ns demo.x-table-consumer.x-table-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
-   [read-demo.x-table-consumer.model :as model]
+   [demo.x-table-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
 (def ^:private k-data-field-key "data-field-key")

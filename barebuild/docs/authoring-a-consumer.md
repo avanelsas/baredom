@@ -12,7 +12,7 @@ The value your projection reads is the accepted server envelope — its exact sh
 ## The two files
 
 ```
-x_<name>_consumer/          ; app code — this repo's demo keeps these under read_demo/src/read_demo/
+x_<name>_consumer/          ; app code — this repo's demo keeps these under demo/src/demo/
   model.cljs          ; pure: tag metadata + projection (resource → view data). Node-tested.
   x_<name>_consumer.cljs  ; DOM: render + optional hooks + init! → register!
 ```
@@ -72,7 +72,7 @@ submit it:
    alongside the driven BareDOM component's `init!`. Then call `barebuild.core/init` to
    install `<server-resource>` (the BareBuild runtime). Consumers are app code — they are
    **never** added to `barebuild.core`, which registers only `<server-resource>`. In this
-   repo's demo all of that lives in `read-demo.demo` (`read_demo/src/read_demo/demo.cljs`); in
+   repo's demo all of that lives in `demo.app` (`demo/src/demo/app.cljs`); in
    production the driven BareDOM component is a peer dependency the host page loads.
 2. Demo markup — add the consumer as a **direct child** of `<server-resource>` (so
    `collect-consumers` finds it); nest the child inside it:

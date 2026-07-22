@@ -1,4 +1,4 @@
-(ns read-demo.demo
+(ns demo.app
   (:require
    [baredom.components.x-alert.x-alert :as x-alert]
    [baredom.components.x-button.x-button :as x-button]
@@ -16,11 +16,11 @@
    [baredom.components.x-table-row.x-table-row :as x-table-row]
    [baredom.components.x-table-cell.x-table-cell :as x-table-cell]
    [baredom.components.x-typography.x-typography :as x-typography]
-   [read-demo.x-progress-consumer.x-progress-consumer :as x-progress-consumer]
-   [read-demo.x-search-field-consumer.x-search-field-consumer :as x-search-field-consumer]
-   [read-demo.x-stat-consumer.x-stat-consumer :as x-stat-consumer]
-   [read-demo.x-table-consumer.x-table-consumer :as x-table-consumer]
-   [read-demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
+   [demo.x-progress-consumer.x-progress-consumer :as x-progress-consumer]
+   [demo.x-search-field-consumer.x-search-field-consumer :as x-search-field-consumer]
+   [demo.x-stat-consumer.x-stat-consumer :as x-stat-consumer]
+   [demo.x-table-consumer.x-table-consumer :as x-table-consumer]
+   [demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
    [barebuild.core :as core]))
 
 ;; Stands in for a host app: registers the BareDOM components it drives, the demo's own

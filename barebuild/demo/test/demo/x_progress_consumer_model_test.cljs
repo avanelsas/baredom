@@ -1,7 +1,7 @@
-(ns read-demo.x-progress-consumer-model-test
+(ns demo.x-progress-consumer-model-test
   "project-progress: the bounded-numeric projection — page-info to an x-progress value/max pair."
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [read-demo.x-progress-consumer.model :as model]))
+            [demo.x-progress-consumer.model :as model]))
 
 (deftest project-progress-maps-page-onto-value-and-max
   (testing "page becomes the value, total-pages becomes the max"

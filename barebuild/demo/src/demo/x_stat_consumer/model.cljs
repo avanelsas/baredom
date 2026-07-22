@@ -1,4 +1,4 @@
-(ns read-demo.x-stat-consumer.model)
+(ns demo.x-stat-consumer.model)
 
 (def tag-name "x-stat-consumer")
 

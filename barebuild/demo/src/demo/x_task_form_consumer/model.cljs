@@ -1,4 +1,4 @@
-(ns read-demo.x-task-form-consumer.model)
+(ns demo.x-task-form-consumer.model)
 
 (def tag-name "x-task-form-consumer")
 
