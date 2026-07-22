@@ -7,9 +7,12 @@
 ;; ---------------------------------------------------------------------------
 ;; Instance field keys (Closure-safe: access via du/setv! / du/getv)
 ;; ---------------------------------------------------------------------------
-(def ^:private k-refs     "__xSelectRefs")
-(def ^:private k-handlers "__xSelectHandlers")
-(def ^:private k-model    "__xSelectModel")
+(def ^:private k-refs      "__xSelectRefs")
+(def ^:private k-handlers  "__xSelectHandlers")
+(def ^:private k-model     "__xSelectModel")
+(def ^:private k-internals "__xSelectInternals")
+
+(def ^:private msg-value-missing "Please select an item in the list.")
 
 ;; ---------------------------------------------------------------------------
 ;; Attribute / part name constants
@@ -328,6 +331,29 @@
     (du/set-attr!    select-el attr-aria-describedby id-error)
     (du/remove-attr! select-el attr-aria-describedby)))
 
+;; ---------------------------------------------------------------------------
+;; Form association — ElementInternals value + constraint validation
+;; ---------------------------------------------------------------------------
+(defn- sync-validity! [^js el ^js internals ^js select-el]
+  (let [has-error? (du/has-attr? el model/attr-error)
+        error-msg  (or (du/get-attr el model/attr-error) "")
+        required?  (du/has-attr? el model/attr-required)
+        value      (.-value select-el)]
+    (cond
+      has-error?
+      (.setValidity internals #js {:customError true} error-msg select-el)
+      (and required? (= value ""))
+      (.setValidity internals #js {:valueMissing true} msg-value-missing select-el)
+      :else
+      (.setValidity internals #js {} "" select-el))))
+
+;; Push the live selection into the form and refresh validity. No-op when the
+;; element is not form-associated (older browsers / attachInternals absent).
+(defn- sync-form-state! [^js el ^js select-el]
+  (when-let [^js internals (du/getv el k-internals)]
+    (.setFormValue internals (.-value select-el))
+    (sync-validity! el internals select-el)))
+
 (defn- apply-model! [^js el m]
   (when-let [refs (du/getv el k-refs)]
     (let [^js wrapper-el (gobj/get refs "wrapper")
@@ -348,6 +374,7 @@
       (apply-error!          error-el (:error m) has-error?)
       (apply-host-invalid!   el has-error?)
       (apply-select-invalid! select-el has-error?)
+      (sync-form-state!      el select-el)
       (du/setv! el k-model m))))
 
 ;; Unconditional re-render — `sync-options!` invalidates non-attribute state
@@ -406,7 +433,11 @@
                         el model/event-change-request
                         #js {:value value :label label :previousValue prev-value})]
         (if allowed?
-          (du/dispatch! el model/event-select-change #js {:value value :label label})
+          (do
+            ;; A user selection updates only the inner <select> (never the value
+            ;; attribute), so push the live value into the form here.
+            (sync-form-state! el sel)
+            (du/dispatch! el model/event-select-change #js {:value value :label label}))
           ;; Revert native select to previous value. <select>.value is
           ;; property-only — no attribute counterpart — so this stays as a
           ;; property write rather than going through du/.
@@ -442,10 +473,34 @@
       (du/setv! el k-handlers nil))))
 
 ;; ---------------------------------------------------------------------------
+;; Form-associated callbacks
+;; ---------------------------------------------------------------------------
+(defn- form-disabled! [^js el disabled?]
+  (du/set-bool-attr! el model/attr-disabled (boolean disabled?))
+  (update-from-attrs! el))
+
+;; Native form reset restores each <option> to its markup default (the
+;; `selected` attribute) and drops any controlled `value` override, mirroring a
+;; plain <select>. apply-model! then re-syncs the form value + validity.
+(defn- form-reset! [^js el]
+  (du/remove-attr! el model/attr-value)
+  (when-let [refs (du/getv el k-refs)]
+    (let [^js select-el (gobj/get refs "select")
+          opts          (.-options select-el)]
+      (dotimes [i (.-length opts)]
+        (let [^js o (aget opts i)]
+          (set! (.-selected o) (.-defaultSelected o))))))
+  (du/setv! el k-model nil)
+  (render! el))
+
+;; ---------------------------------------------------------------------------
 ;; Lifecycle
 ;; ---------------------------------------------------------------------------
 (defn- connected! [^js el]
-  (when-not (du/getv el k-refs) (make-shadow! el))
+  (when-not (du/getv el k-refs)
+    (make-shadow! el)
+    (when (.-attachInternals el)
+      (du/setv! el k-internals (.attachInternals el))))
   (remove-listeners! el)
   (add-listeners! el)
   (sync-options! el)
@@ -516,4 +571,7 @@
      :connected-fn           connected!
      :disconnected-fn        disconnected!
      :attribute-changed-fn   attribute-changed!
+     :form-associated?       true
+     :form-disabled-fn       form-disabled!
+     :form-reset-fn          form-reset!
      :setup-prototype-fn     install-property-accessors!}))
