@@ -9,8 +9,10 @@
         prefix (str resource-id ".")
         owned  (filterv #(str/starts-with? % prefix)
                         (js/Array.from (.keys params)))]
-    (doseq [k owned] (.delete params k))
-    (doseq [[k v] new-params] (.set params (str prefix (name k)) (str v)))
+    (doseq [k owned]
+      (.delete params k))
+    (doseq [[k v] new-params]
+      (.set params (str prefix (name k)) (str v)))
     (let [qs (.toString params)]
       (if (str/blank? qs) pathname (str pathname "?" qs)))))
 

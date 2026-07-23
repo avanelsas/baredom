@@ -4,8 +4,8 @@
 
 (defn- valid-datestr? [date-str]
   ;; Intentionally lenient. js/Date.parse accepts more than the server's strict ISO
-  ;; LocalDate/parse, so the client may pass a date the server rejects. That is fine —
-  ;; the server is the authority; this local check is only for a faster UX.
+  ;; LocalDate/parse, so the client may pass a date the server rejects. That is ok,
+  ;; the server is the authority. This local check is only for a faster UX.
   (not (js/isNaN (.parse js/Date date-str))))
 
 (defn validate-value-type [v type]

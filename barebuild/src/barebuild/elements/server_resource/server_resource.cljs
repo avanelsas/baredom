@@ -41,8 +41,6 @@
     (.toString params)))
 
 (defn- execute-fetch! [^js el url request-id]
-  ;; Transient transport handle: the AbortController lives outside every value (§6.3);
-  ;; the lifecycle it tracks is traced through :active-request + the dispatched events.
   (let [controller (js/AbortController.)]
     (du/setv-untraced! el k-abort controller)
     (-> (js/fetch url #js {:signal (.-signal controller)})
@@ -84,14 +82,13 @@
       :fetch
       (let [request-id   (:request/id m)
             query        (:query m)
-            ;; turn the map of k-v pairs into a query param
             query-params (map->query-params query)
-            url         (str
-                         (:endpoint m)
-                         "?requestId="
-                         request-id
-                         (when-not (str/blank? query-params)
-                           (str "&" query-params)))]
+            url          (str
+                          (:endpoint m)
+                          "?requestId="
+                          request-id
+                          (when-not (str/blank? query-params)
+                            (str "&" query-params)))]
         (execute-fetch! el url request-id))
 
       :notify-consumers
@@ -117,17 +114,17 @@
         (du/setv-untraced! el k-abort nil))
 
       :write
-      (let [write-id (:write/id m)
+      (let [write-id               (:write/id m)
             {:keys [op id record]} (:payload m)
-            base-url (:endpoint m)
-            url (if (= op :delete)
-                  (str base-url  "/" id "?requestId=" write-id)
-                  (str base-url "?requestId=" write-id))
-            init (if (= op :create)
-                   #js {:method "POST"
-                        :headers #js {"content-type" "application/json"}
-                        :body (js/JSON.stringify (clj->js record))}
-                   #js {:method "DELETE"})]
+            base-url               (:endpoint m)
+            url                    (if (= op :delete)
+                                     (str base-url  "/" id "?requestId=" write-id)
+                                     (str base-url "?requestId=" write-id))
+            init                   (if (= op :create)
+                                     #js {:method "POST"
+                                          :headers #js {"content-type" "application/json"}
+                                          :body (js/JSON.stringify (clj->js record))}
+                                     #js {:method "DELETE"})]
 
         (execute-write! el url init write-id))
 
@@ -151,11 +148,24 @@
       (wire/parse-envelope obj))))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
+(defn- element-descendants [^js el]
+  (array-seq (.querySelectorAll el "*")))
+
+(defn- owned-by? [^js el ^js node]
+  (identical? el (.closest (.-parentElement node) model/tag-name)))
+
 (defn- collect-consumers [^js el]
-  (->> (array-seq (.-children el))
+  (->> (element-descendants el)
     (filterv
      (fn [^js c]
-       (some? (.-applyResource c))))))
+       (and (some? (.-applyResource c))
+            (owned-by? el c))))))
+
+(defn- custom-element-tags [^js el]
+  (->> (element-descendants el)
+    (map (fn [^js node] (.. node -tagName toLowerCase)))
+    (filter (fn [tag] (str/includes? tag "-")))
+    distinct))
 
 (defn- boot!
   "When reloading, read the current url and see if there are url parameters that
@@ -171,7 +181,6 @@
                              :last-accepted  nil
                              :url-intent     (construct-url-intent resource-id)
                              :history-policy history-policy})
-    ;; add a popstate event listener
     (du/setv! el k-popstate on-popstate)
     (.addEventListener js/window "popstate" on-popstate)
     (du/setv! el k-consumers (collect-consumers el))
@@ -183,9 +192,7 @@
   (du/setv! el k-popstate nil))
 
 (defn- connected! [^js el]
-  (let [tags (->> (array-seq (.-children el))
-               (map #(.. % -tagName toLowerCase))
-               distinct)]
+  (let [tags (custom-element-tags el)]
     (-> (js/Promise.all (clj->js (map #(js/customElements.whenDefined %) tags)))
       (.then (fn [] (boot! el))))))
 

@@ -5,6 +5,7 @@
    [baredom.components.x-date-picker.x-date-picker :as x-date-picker]
    [baredom.components.x-form.x-form :as x-form]
    [baredom.components.x-form-field.x-form-field :as x-form-field]
+   [baredom.components.x-grid.x-grid :as x-grid]
    [baredom.components.x-modal.x-modal :as x-modal]
    [baredom.components.x-pagination.x-pagination :as x-pagination]
    [baredom.components.x-progress.x-progress :as x-progress]
@@ -23,15 +24,16 @@
    [demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
    [barebuild.core :as core]))
 
-;; Stands in for a host app: registers the BareDOM components it drives, the demo's own
+;; Rregisters the BareDOM components it uses, the demo's own
 ;; consumers, and then the BareBuild runtime (server-resource) via barebuild.core.
 (defn ^:export init []
-  ;; driven BareDOM components
+  ;; BareDOM components
   (x-alert/init!)
   (x-button/init!)
   (x-date-picker/init!)
   (x-form/init!)
   (x-form-field/init!)
+  (x-grid/init!)
   (x-modal/init!)
   (x-pagination/init!)
   (x-progress/init!)
@@ -44,7 +46,7 @@
   (x-table-cell/init!)
   (x-typography/init!)
 
-  ;; the demo's consumers (host-app code, not part of the BareBuild product)
+  ;; the demo's consumers (host-app code, not part of BareBuild)
   (x-progress-consumer/init!)
   (x-search-field-consumer/init!)
   (x-stat-consumer/init!)

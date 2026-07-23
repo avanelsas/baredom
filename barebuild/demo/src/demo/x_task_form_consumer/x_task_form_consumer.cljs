@@ -13,7 +13,6 @@
 (def ^:private k-shape  "__xConsumerShape")
 
 (defn- clear-form! [^js form]
-  ;; BareDOM 3.4.0 made x-date-picker/x-select form-associated, so reset() clears them too.
   (.reset form))
 
 (defn- on-failure! [^js form failure ^js this]
@@ -21,7 +20,7 @@
     (nil? failure) (.clearErrors form)
     (= :rejected (:failure failure))
     (let [{:keys [message details]} (get-in failure [:response :error])
-          field (get details "field")]
+          field                     (get details "field")]
       (when (and field (.querySelector form (str "[name='" field "']")))
         (.setFieldError form field message)
         (du/setv! this k-submit-pending false)))
@@ -63,7 +62,7 @@
         modal      (.querySelector el "x-modal")
         form       (.querySelector el "x-form")]
 
-    (du/setv! el k-button submit-btn)         ; on-writing! disables the submit button, not the trigger
+    (du/setv! el k-button submit-btn) ; on-writing! disables the submit button, not the trigger
     (du/setv! el k-modal modal)
     ;; These event listeners are disposed of automatically
     (.addEventListener trigger "press"

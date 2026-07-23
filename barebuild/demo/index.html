@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BareBuild — Task demo</title>
+  <title>BareBuild — Read and Write Server State Task demo</title>
   <style>
     :root { color-scheme: light dark; }
     body {
@@ -15,20 +15,25 @@
     }
     header { margin-bottom: 1.5rem; }
     h1 { margin-bottom: 0.25rem; }
-    .subtitle { color: gray; margin-top: 0; }
+    .subtitle { color: gray; margin-top: 0; font-size: 0.875rem;}
     #app { margin-top: 1.5rem; }
+    x-table { --x-table-caption-padding: 0.5rem; }
+    x-pagination::part(list) { justify-content: flex-end; }
   </style>
 </head>
 <body>
   <header>
-    <h1>BareBuild — Task demo</h1>
+    <h1>BareBuild — Read and Write Task demo (server state only)</h1>
     <p class="subtitle">
-      A read and write projection of server state: the tasks live only on the server. BareBuild
-      is a small ClojureScript runtime that wraps the web components on the page — it turns
+      A read and write projection of server state: the tasks live only on the server.
+    </p>
+    <p class="subtitle">
+      BareBuild is a small ClojureScript runtime that wraps the web components used on the page. It turns
       server responses into data the components can display, and turns user interactions back
-      into requests the server can handle. Create and delete tasks, filter, sort a column, or
-      change page; the query round-trips through the server into the URL. Invalid queries and
-      network failures keep the last good view on screen.
+      into fetch requests the server can handle.
+    </p>
+    <p class="subtitle">Create and delete tasks, filter, sort a column, or change page. The query round-trips through
+      the server into the URL. Invalid queries and network failures keep the last good view on screen.
     </p>
   </header>
 
@@ -37,35 +42,43 @@
       <x-progress-consumer>
         <x-progress label="Page position" show-value></x-progress>
       </x-progress-consumer>
+
       <x-spacer size="1rem"></x-spacer>
       <x-search-field-consumer>
         <x-search-field label="Filter tasks" placeholder="Search title, owner or status..." debounce="250"></x-search-field>
       </x-search-field-consumer>
-      <x-stat-consumer>
-        <x-stat label="Total tasks"></x-stat>
-      </x-stat-consumer>
-      <x-task-form-consumer>
-    <x-button data-role="open">Create Task</x-button>
-    <x-modal size="xl" label="New task">
-      <x-form novalidate>
-        <x-form-field name="title"  type="text" label="Title"></x-form-field>
-        <x-spacer size="1rem"></x-spacer>
-        <x-form-field name="owner"  type="text" label="Owner"></x-form-field>
-        <x-spacer size="1rem"></x-spacer>
-        <x-typography variant="overline">Start Date</x-typography>
-        <x-date-picker name="start" label="Start"></x-date-picker>
-        <x-spacer size="1rem"></x-spacer>
-        <x-typography variant="overline">End Date</x-typography>
-        <x-date-picker name="end"   label="End"></x-date-picker>
-        <x-spacer size="1rem"></x-spacer>
-        <x-typography variant="overline">Status</x-typography>
-        <x-select      name="status" label="Status"></x-select>
-        <x-button type="submit">Create</x-button>
-      </x-form>
-    </x-modal>
-  </x-task-form-consumer>
+
+      <x-grid columns="1fr auto" align-items="center" justify-items="end" gap="md">
+        <x-stat-consumer>
+          <x-stat label="Total tasks" align="center"></x-stat>
+        </x-stat-consumer>
+
+        <x-task-form-consumer>
+          <x-button data-role="open">Create Task</x-button>
+
+          <x-modal size="xl" label="New task">
+            <x-form novalidate>
+              <x-form-field name="title"  type="text" label="Title"></x-form-field>
+              <x-spacer size="1rem"></x-spacer>
+              <x-form-field name="owner"  type="text" label="Owner"></x-form-field>
+              <x-spacer size="1rem"></x-spacer>
+              <x-typography variant="overline">Start Date</x-typography>
+              <x-date-picker name="start" label="Start"></x-date-picker>
+              <x-spacer size="1rem"></x-spacer>
+              <x-typography variant="overline">End Date</x-typography>
+              <x-date-picker name="end"   label="End"></x-date-picker>
+              <x-spacer size="1rem"></x-spacer>
+              <x-typography variant="overline">Status</x-typography>
+              <x-select      name="status" label="Status"></x-select>
+              <x-button type="submit">Create</x-button>
+            </x-form>
+          </x-modal>
+        </x-task-form-consumer>
+      </x-grid>
+
       <x-table-consumer>
         <x-table caption="Tasks" bordered></x-table>
+        <x-spacer size="0.5rem"></x-spacer>
       </x-table-consumer>
     </server-resource>
   </main>
