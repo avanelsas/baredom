@@ -1,0 +1,104 @@
+name: release-barebuild
+
+# BareBuild releases on its own cadence, keyed on 'barebuild-v*' tags. The core
+# library's release.yml matches 'v[0-9]*', so the two never trigger each other.
+on:
+  push:
+    tags:
+      - 'barebuild-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, Test & Publish BareBuild
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#barebuild-v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify versions match the tag
+        working-directory: barebuild
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          status=0
+          grep -Eq "^\(def version +\"${V}\"\)" build.clj || { echo "build.clj version != ${V}" >&2; status=1; }
+          grep -q "target/barebuild-${V}.jar" deps.edn      || { echo "deps.edn artifact != ${V}" >&2; status=1; }
+          grep -q "\"version\": \"${V}\"" package.json      || { echo "package.json version != ${V}" >&2; status=1; }
+          exit $status
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - name: Setup clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          clj-kondo --version
+
+      - name: Setup Babashka
+        run: |
+          curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install
+          chmod +x install
+          sudo ./install --dir /usr/local/bin
+          bb --version
+
+      - name: Install deps
+        working-directory: barebuild
+        run: npm ci
+
+      - name: Lint (product + demo)
+        working-directory: barebuild
+        run: clj-kondo --lint src test demo/src demo/test
+
+      - name: Unit tests (Node)
+        working-directory: barebuild
+        run: npm test
+
+      - name: Server handler tests
+        working-directory: barebuild
+        run: npm run test:server
+
+      - name: Release build (Closure Advanced)
+        working-directory: barebuild
+        run: npm run build
+
+      - name: Build and Publish to Clojars
+        working-directory: barebuild
+        run: |
+          clojure -T:build jar
+          clojure -X:deploy
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "BareBuild ${{ steps.version.outputs.version }}"
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
