@@ -128,6 +128,9 @@
 
         (execute-write! el url init write-id))
 
+      :diagnostic
+      (js/console.debug "[server-resource]" (name m))
+
       nil)))
 
 (defn- handle-event!
