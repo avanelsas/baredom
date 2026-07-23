@@ -1,28 +1,33 @@
-# BareBuild — read demo
+# BareBuild — demo
 
-A showcase for a read version of [BareBuild](../README.md): a live page that drives several BareDOM
+A showcase for [BareBuild](../README.md): a live page that drives several BareDOM
 components from one `<server-resource>`, backed by a small tasks server. It exists to
 demonstrate the runtime. **It is not part of BareBuild itself** (`demo.*`
 namespaces).
 
 ## What it shows
 
-The demo shows a task x-table that can be sorted, an x-stat that shows the nr of tasks, an x-progress that
-displays the current page position, and an x-search-field to filter tasks in the table.
+The demo shows a task x-table that can be sorted and whose rows can be deleted, an x-stat with
+the nr of tasks, an x-progress that displays the current page position, an x-search-field to
+filter tasks in the table, and an x-modal with an x-form to create a new task.
 
-The code uses one `<server-resource>` that manages four independent **consumers**, each a thin element
-that projects the same server value onto a different component. Adding these four web components have not
-led to any BareBuild code changes.
+The code uses one `<server-resource>` that manages five independent **consumers**, each a thin element
+that projects the same server value onto a different component.
 
 | Consumer | Drives | Shows |
 |---|---|---|
 | `x-stat-consumer` | `x-stat` | total task count (a scalar) |
 | `x-progress-consumer` | `x-progress` | page position (bounded numeric; indeterminate while loading) |
-| `x-table-consumer` | `x-table` | the task list, with sortable columns + pagination |
+| `x-table-consumer` | `x-table` | the task list, with sortable columns, row delete, and a dynamically created `x-pagination` |
 | `x-search-field-consumer` | `x-search-field` | a debounced free-text filter |
+| `x-task-form-consumer` | `x-modal` + `x-form` | create a task, with the form fields validated against the `shape` the server sends |
 
-User gestures like sort, page, and filter and the query all round-trip through the server into the URL. Invalid
-queries and network failures keep the last good view on screen.
+Adding the four read components led to no BareBuild code changes at all. The write half did
+need product work — `submit-write!`, the `:write` effect and `validation.cljs` — but that
+machinery is domain-agnostic, so the task-form consumer itself is ordinary host-app code.
+
+User gestures like sort, page, filter, create and delete all round-trip through the server, and
+the query lands in the URL. Invalid queries and network failures keep the last good view on screen.
 
 ## To run the demo
 
@@ -57,7 +62,7 @@ demo/
   dev-server/                ; Babashka tasks state + API (server.clj) + handler tests
   src/demo/
     app.cljs                ; registers the driven components + consumers, then barebuild.core/init
-    x_<name>_consumer/       ; the four example consumers (pure model.cljs + element file)
+    x_<name>_consumer/       ; the five example consumers (pure model.cljs + element file)
   test/demo/            ; consumer model tests
 ```
 

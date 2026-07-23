@@ -1,14 +1,14 @@
 # The server contract
 
-BareBuild is a *read projection*: it never owns state, it renders whatever an HTTP endpoint
-returns. That endpoint is the real integration point, the contract a server
-must satisfy. It is transport- and language-agnostic (plain JSON); the demo's
+BareBuild never owns state: it renders whatever an HTTP endpoint returns, and sends writes
+back to that same endpoint. That endpoint is the real integration point, the contract a
+server must satisfy. It is transport- and language-agnostic (plain JSON). The demo's
 [`demo/dev-server/server.clj`](../demo/dev-server/server.clj) is a complete
 reference implementation.
 
-## The request
+## The read request
 
-BareBuild fetches with a single GET — read-only, no body:
+BareBuild fetches with a single GET, no body:
 
 ```
 GET <endpoint>?<query>&requestId=<id>
@@ -20,7 +20,25 @@ GET <endpoint>?<query>&requestId=<id>
   honors.
 - **`requestId`**: An opaque id BareBuild mints per request, echo it back unchanged.
 
-## The response
+## The write requests
+
+Two mutations, both carrying a `requestId` the same way. There is **no update/PUT** yet.
+
+```
+POST   <endpoint>?requestId=<id>          body: the record as JSON
+DELETE <endpoint>/<id>?requestId=<id>     no body
+```
+
+- **Create** posts a flat JSON object keyed by the shape's field keys. The server mints the
+  identity. The client never sends one.
+- **Delete** puts the record's id in the path, taken from the `idKey` field of the row.
+
+A write's response is an **ack**, not data (see [Write acks](#write-acks)). After an accepted
+ack BareBuild refetches, so new state is always observed through the read path rather than
+inferred from the ack. There is no optimistic update: nothing appears on screen until the
+server has confirmed it and the refetch has landed.
+
+## The read response
 
 Always **HTTP 200** for a business outcome (see [Status codes](#status-codes)). The JSON body
 is one of two envelopes.
@@ -49,23 +67,56 @@ A *business* verdict (e.g. an unsupported sort field), not a transport error.
 | `query` | object | the rejected query, echoed |
 | `error` | object | `{ code, message, details }` — `code` a short slug, `message` human-readable, `details` free-form |
 
-A rejected envelope carries **no `value` / `shape`** — BareBuild keeps the last good view and
+A rejected envelope carries **no `value` / `shape`**. BareBuild keeps the last good view and
 surfaces the error.
+
+## Write acks
+
+A create or delete answers with an **ack**: the verdict on the mutation, never the new data.
+Also always HTTP 200.
+
+### Accepted — the server performed the write
+
+| Field | Type | Notes |
+|---|---|---|
+| `outcome` | `"accepted"` | |
+| `requestId` | string | echo of the write's id |
+| `revision` | string | opaque version tag |
+
+No `value`, no `shape`, no `query`. BareBuild refetches to observe the result.
+
+### Rejected — the server refuses the write
+
+| Field | Type | Notes |
+|---|---|---|
+| `outcome` | `"rejected"` | |
+| `requestId` | string | echo |
+| `revision` | string | |
+| `error` | object | `{ code, message, details }` |
+
+For a rejected write, put the offending field name in `details` (e.g.
+`{"field": "end"}`). A consumer maps that back onto the form input, which is why a
+field-level rejection can be shown in place instead of as a banner.
+
+Business rules the client cannot know : "end date must not precede start date", uniqueness,
+authorization, belong here as a rejected ack. The client's local validation
+(see [The shape](#the-shape)) is only a faster UX. The server is the authority.
 
 ## The shape
 
 `shape` is a structural description of a record: which field is its identity, and the key and
 type of every field it carries. BareBuild validates each response against it, so the runtime
-stays domain-agnostic — it never hardcodes field names; the shape tells it what to expect.
+stays domain-agnostic. It never hardcodes field names. The shape tells it what to expect.
 
 ```json
 {
   "idKey": "id",
   "fields": [
-    { "key": "title",  "type": "string" },
-    { "key": "owner",  "type": "string" },
-    { "key": "start",  "type": "date"   },
-    { "key": "status", "type": "string" }
+    { "key": "title",  "type": "string", "required": true },
+    { "key": "owner",  "type": "string", "required": true },
+    { "key": "start",  "type": "date",   "required": true },
+    { "key": "end",    "type": "date" },
+    { "key": "status", "type": "string", "required": true, "enum": ["todo", "doing", "done"] }
   ]
 }
 ```
@@ -74,6 +125,14 @@ stays domain-agnostic — it never hardcodes field names; the shape tells it wha
   be unique.
 - **`fields`**: The declared, consumable fields. Each has a `key` and a `type`, one of
   **`string` · `number` · `date` · `url`**. `null` is allowed for any field.
+- **`required`** *(optional, boolean)*: the field must be present and non-blank in a create
+  payload.
+- **`enum`** *(optional, array)*: the only permitted values for the field.
+
+`required` and `enum` drive **writes**, not reads: a consumer can build a create form from
+the shape and check the payload before submitting. They are advisory to the client and
+binding on the server, a create that slips past the local check must still be rejected
+server-side.
 
 On every accepted response BareBuild **validates the records against this shape** (id present and
 unique, each declared field present, each value the declared type). A mismatch is a *contract
@@ -101,10 +160,13 @@ BareBuild distinguishes four, and **all keep the last good view on screen**:
 
 | Failure | Trigger |
 |---|---|
-| **rejected** | `outcome: "rejected"` with an `error` |
+| **rejected** | `outcome: "rejected"` with an `error` — on a read or on a write ack |
 | **contract** | an accepted envelope whose records don't match the declared `shape` |
-| **protocol** | the body isn't a valid envelope (unparseable JSON, or missing `value` + `shape` / missing `error`) |
+| **protocol** | the body isn't a valid envelope (unparseable JSON, or missing `value` + `shape` / missing `error`; for an ack, a missing `requestId` or `revision`) |
 | **network** | no response, or a non-2xx status |
+
+A failed write leaves the resource untouched: nothing was rendered optimistically, so there
+is nothing to roll back.
 
 ## The round-trip
 
@@ -123,6 +185,24 @@ sequenceDiagram
   else transport failure
     S--xC: non-2xx / no response
     C->>C: keep last good view · retry on next intent
+  end
+```
+
+And a write, which always ends in a read:
+
+```mermaid
+%%{init: {'themeVariables': {'fontSize': '16px'}}}%%
+sequenceDiagram
+  participant C as server-resource
+  participant S as Server
+  C->>S: POST endpoint?requestId (record) / DELETE endpoint/id?requestId
+  alt accepted ack (HTTP 200)
+    S-->>C: outcome:accepted · requestId · revision
+    C->>S: GET endpoint?query & requestId
+    S-->>C: accepted envelope with the new state
+  else rejected ack (HTTP 200)
+    S-->>C: outcome:rejected · error {code, message, details}
+    C->>C: keep last good view · show the error on the offending field
   end
 ```
 
