@@ -129,7 +129,7 @@
   [{:keys [columns rows]} table]
   (when table
     (set! (.-innerHTML table) "")
-    ;; Note we increase the column count as the client adds a delete button to each row
+    ;; Note we increase the server column count as the client adds a delete button to each row
     (du/set-attr! table "columns" (str (inc (count columns))))
     (.appendChild table (create-header-row! columns))
     (doseq [r rows]

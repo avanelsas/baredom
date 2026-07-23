@@ -31,7 +31,7 @@
                            (du/setv! this k-submit-intent (:submit-intent! ctx))
                            (du/setv! this k-submit-write (:submit-write! ctx))
                            (let [{:keys [last-accepted last-failure]} resource-value
-                                 pending (resource/pending? resource-value)
+                                 pending  (resource/pending? resource-value)
                                  writing (resource/writing? resource-value)]
                              (when (and on-failure (not= last-failure (du/getv this k-last-failure)))
                                (on-failure (du/getv this k-child) last-failure this)
@@ -51,12 +51,12 @@
   "Register a resource-consumer custom element from a config:
   :tag        element tag name
   :child-tag  the driven child element, cached on connect
-  :render     (fn [child accepted this]) — called when :last-accepted changes
-  :on-failure (fn [child failure this]) — optional; called when :last-failure changes,
+  :render     (fn [child accepted this]), called when :last-accepted changes
+  :on-failure (fn [child failure this]), optional, called when :last-failure changes,
   with failure nil on recovery so the component can clear its UI
-  :on-pending (fn [child pending this]) — optional; called when :pending? changes
-  :on-writing (fn [child writing this]) — optional; called when :writing? changes
-  :on-connect (fn [this]) — optional extra wiring
+  :on-pending (fn [child pending this]), optional, called when :pending? changes
+  :on-writing (fn [child writing this]), optional, called when :writing? changes
+  :on-connect (fn [this]), optional extra wiring
   :observed-attributes — optional, defaults to #js []"
   [{:keys [tag child-tag render on-failure on-pending on-connect on-writing observed-attributes]}]
   (component/register!
@@ -66,4 +66,5 @@
                             (du/setv! el k-child (.querySelector el child-tag))
                             (when on-connect (on-connect el)))
     :attribute-changed-fn (fn [_el _name _old _new] nil)
-    :setup-prototype-fn   (fn [^js proto] (install-apply-resource! proto render on-failure on-pending on-writing))}))
+    :setup-prototype-fn   (fn [^js proto]
+                            (install-apply-resource! proto render on-failure on-pending on-writing))}))

@@ -154,7 +154,7 @@
                             [:fetch {:endpoint (:endpoint r*) :query intent :request/id id}]]})
               {:resource installed
                :effects  [[:notify-consumers {:resource installed}]]}))
-          ;; no usable embed → last-accepted nil → always pending → always fetch
+          ;; no usable embed -> last-accepted nil -> always pending -> always fetch
           (let [r* (start-request resource intent)
                 id (get-in r* [:active-request :request/id])]
             {:resource r*
@@ -216,8 +216,8 @@
             merged     (assoc resource :url-intent new-intent)
             mode       (resolve-history-mode resource (:gesture-class payload))
             moved?     (not= new-intent (:url-intent resource)) ; owned intent changed?
-            fetch?     (and (nil? (:active-request resource))   ; no request in flight …
-                            (pending? merged))                  ; … and the new intent is unanswered
+            fetch?     (and (nil? (:active-request resource))   ; no request in flight
+                            (pending? merged))                  ; and the new intent is unanswered
             r*         (if fetch? (start-request merged new-intent) merged)
             id         (get-in r* [:active-request :request/id])]
         {:resource r*
