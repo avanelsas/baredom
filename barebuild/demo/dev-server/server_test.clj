@@ -19,6 +19,9 @@
 (defn- post-raw [uri qs body]
   (server/handler {:request-method :post :uri uri :query-string qs :body body}))
 
+(defn- put-raw [uri qs body]
+  (server/handler {:request-method :put :uri uri :query-string qs :body body}))
+
 (defn- record-json [m] (json/generate-string m))
 
 (defn- get-json [uri qs]
@@ -273,7 +276,9 @@
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "DELETE")
         "the preflight advertises DELETE")
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "POST")
-        "the preflight advertises POST")))
+        "the preflight advertises POST")
+    (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PUT")
+        "the preflight advertises PUT")))
 
 ;; --- writes: create (step W3a) ---------------------------------------------
 
@@ -351,6 +356,89 @@
       (let [[_ after] (get-json "/api/tasks" "search=Zoe")
             row       (first (:value after))]
         (is (nil? (:end row)) "blank optional end stored as null")))))
+
+;; --- writes: update (step U1a) ---------------------------------------------
+
+(defn- update-rejection [uri request-id record]
+  (let [resp (put-raw uri (str "requestId=" request-id) (record-json record))
+        body (json/parse-string (:body resp) true)
+        [_ after] (get-json "/api/tasks" nil)]
+    (is (= 200 (:status resp)) "a rejected update is still HTTP 200")
+    (is (= "rejected" (:outcome body)))
+    (is (= request-id (:requestId body)) "echoes the client request id")
+    (is (not (contains? body :value)) "rejected: no value")
+    (is (= 40 (get-in after [:pageInfo :totalCount])) "a rejected update does not mutate the set")
+    (is (= "Update API contract" (:title (first (filter #(= 7 (:id %)) (:value after)))))
+        "the targeted row keeps its stored values")
+    (:error body)))
+
+(deftest update-replaces-the-row-and-returns-accepted-ack
+  (let [resp (put-raw "/api/tasks/7" "requestId=w-u1" (record-json new-task))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "an update ack is a protocol response, HTTP 200")
+    (is (= "accepted" (:outcome body)) "a valid update is accepted")
+    (is (= "w-u1" (:requestId body)) "echoes the client request id")
+    (is (= "tasks:v1" (:revision body)))
+    (is (not (contains? body :value)) "ack carries no value -> client refetches")
+    (is (not (contains? body :shape)) "ack carries no shape")
+    (is (not (contains? body :error)) "an accepted ack has no error")
+    (testing "the replaced row is observable through a subsequent read"
+      (let [[_ all] (get-json "/api/tasks" nil)
+            row     (first (filter #(= 7 (:id %)) (:value all)))]
+        (is (= 40 (get-in all [:pageInfo :totalCount])) "an update does not change the count")
+        (is (= (vec (range 1 11)) (ids all)) "the row keeps its id and its place in the set")
+        (is (= "Ship the release" (:title row)) "every field comes from the record")
+        (is (= "Zoe" (:owner row)))
+        (is (= "2026-03-01" (:start row)))
+        (is (= "todo" (:status row)))))))
+
+(deftest update-replaces-rather-than-merges
+  (put-raw "/api/tasks/7" "requestId=w-u2" (record-json (dissoc new-task "end")))
+  (let [[_ all] (get-json "/api/tasks" nil)
+        row     (first (filter #(= 7 (:id %)) (:value all)))]
+    (is (nil? (:end row))
+        "PUT is a full replace: an omitted optional field is cleared, not carried over")
+    (is (= "Ship the release" (:title row)) "the fields the record did carry are stored")))
+
+(deftest update-with-blank-optional-end-reads-clean
+  (put-raw "/api/tasks/7" "requestId=w-u3" (record-json (assoc new-task "end" "")))
+  (let [[_ all] (get-json "/api/tasks" nil)
+        row     (first (filter #(= 7 (:id %)) (:value all)))]
+    (is (nil? (:end row)) "a blank optional end stores as null, not \"\", so reads stay valid")))
+
+(deftest update-of-unknown-id-is-rejected
+  (let [error (update-rejection "/api/tasks/999" "w-u4" new-task)]
+    (is (= "not-found" (:code error)) "update is not idempotent over an absent row")
+    (is (string? (:message error)))
+    (is (= "999" (get-in error [:details :id])) "details name the id that matched no row")
+    (is (nil? (get-in error [:details :field]))
+        "no field is named — the record is fine, the target is not")))
+
+(deftest update-of-non-numeric-id-is-rejected
+  (let [error (update-rejection "/api/tasks/abc" "w-u5" new-task)]
+    (is (= "not-found" (:code error)) "a non-integer id matches no row")
+    (is (= "abc" (get-in error [:details :id])) "the raw id is echoed as asked for")))
+
+(deftest update-with-end-before-start-is-rejected
+  (let [bad   (assoc new-task "start" "2026-03-10" "end" "2026-03-01")
+        error (update-rejection "/api/tasks/7" "w-u6" bad)]
+    (is (= "invalid-range" (:code error)) "the cross-field rule applies to updates too")
+    (is (= "end" (get-in error [:details :field])) "details name the offending field")))
+
+(deftest update-missing-required-is-rejected
+  (let [error (update-rejection "/api/tasks/7" "w-u7" (assoc new-task "owner" ""))]
+    (is (= "missing-required" (:code error)))
+    (is (= "owner" (get-in error [:details :field])))))
+
+(deftest update-invalid-type-is-rejected
+  (let [error (update-rejection "/api/tasks/7" "w-u8" (assoc new-task "start" "not-a-date"))]
+    (is (= "invalid-type" (:code error)))
+    (is (= "start" (get-in error [:details :field])))))
+
+(deftest update-value-not-in-enum-is-rejected
+  (let [error (update-rejection "/api/tasks/7" "w-u9" (assoc new-task "status" "archived"))]
+    (is (= "invalid-value" (:code error)))
+    (is (= "status" (get-in error [:details :field])))))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]

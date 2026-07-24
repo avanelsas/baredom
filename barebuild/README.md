@@ -10,7 +10,7 @@ does not need business logic, store or runtime framework. The two main parts of 
 - **`consumer-resource/register!`**: The mechanism that is used to author *consumers*. consumers
 are thin elements that translate/project an accepted server value onto a specific web component.
 - **`submit-intent!` / `submit-write!`**: what a consumer's gesture handlers call to send a
-  change of intent (sort, filter, page) or a write (create, delete) back into the loop.
+  change of intent (sort, filter, page) or a write (create, update, delete) back into the loop.
 
 The idea behind BareBuild is that you write a pure projection and a render function. BareBuild owns the whole lifecycle.
 A server holds all state and is the only source of truth.
@@ -73,7 +73,7 @@ flowchart LR
 
   STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count · :shape<br/>:history-policy · :endpoint"]
 
-  EFFECTS["Effects out (data)<br/><br/>:fetch (endpoint, query, request/id)<br/>:write (endpoint, write/id, payload)<br/>:url-write (params, mode)<br/>:notify-consumers (resource)<br/>:abort (request/id)<br/>:diagnostic (stale-*)"]
+  EFFECTS["Effects out (data)<br/><br/>:fetch (request/id, method, url)<br/>:write (write/id, method, url, headers, body)<br/>:url-write (params, mode)<br/>:notify-consumers (resource)<br/>:abort (request/id)<br/>:diagnostic (stale-*, unsupported-write)"]
 
   EXEC["executor (decisionless edge)<br/><br/>fetch · write · history push/replace<br/>applyResource · AbortController<br/>console diagnostics"]
 
@@ -87,8 +87,10 @@ flowchart LR
 - **Writes are the same loop**: a consumer calls `submit-write!`, `step` emits a `:write`
   effect, and the ack comes back as `:write-ack` and triggers a refetch. What is
   rendered always comes from the server, never from a local guess. `writing?` derives from
-  the value exactly as `pending?` does. Create payloads are validated first against the
-  `:shape` the server sent.
+  the value exactly as `pending?` does. Write payloads are validated first against the
+  `:shape` the server sent. The op, create, update or delete, is a row in a table that
+  `step` resolves into a method, a URL and an optional body, so the edge performs the
+  request and decides nothing about it.
 - **One request in flight**: `start-request` mints a monotonic `:request/id`; `pending?`
   and `installable?` derive purely from the value. A response is installed only if its id
   matches the live request. A gesture made mid-flight is picked up by a single trailing
@@ -103,13 +105,13 @@ flowchart LR
 
 ## Status
 
-**0.1.0 — first release.** Reads and writes both work end to end: fetch, sort, filter, page,
-URL round-trip, create, delete, shape-driven validation, and keep-last-good on failure.
-Writes cover **create and delete only**. There is no update/PUT yet.
+**Reads and writes both work end to end**: fetch, sort, filter, page, URL round-trip, create,
+update, delete, shape-driven validation, and keep-last-good on failure. Update is a **full
+replace** (PUT). There is no PATCH and no optimistic rendering.
 
 BareBuild tries to be component-agnostic by design: a consumer only reads attributes and sets
 attributes or properties, so nothing in the runtime knows what it drives. In practice
-**14 of BareDOM's 105 components** have been used end to end — `x-stat`, `x-progress`,
+**14 of BareDOM's 105 components** have been used end to end: `x-stat`, `x-progress`,
 `x-table` + `x-table-row` + `x-table-cell`, `x-search-field`, `x-pagination`, `x-alert`,
 `x-form`, `x-form-field`, `x-select`, `x-date-picker`, `x-modal`, `x-button`. Components
 with imperative-only APIs, canvas rendering, or internal animation state may need consumer
@@ -121,7 +123,7 @@ Published to Clojars for ClojureScript host apps.
 
 ```clojure
 ;; deps.edn
-{:deps {com.github.avanelsas/barebuild {:mvn/version "0.1.0"}}}
+{:deps {com.github.avanelsas/barebuild {:mvn/version "0.2.0"}}}
 ```
 
 This brings `com.github.avanelsas/baredom` with it, since BareBuild uses a handful of its

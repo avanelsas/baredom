@@ -31,19 +31,16 @@
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
-(defn- map->query-params
-  "Take a map of k v and turn it into a url query parameter string
-  e.g. {tasks.sort \"end\"} -> \"tasks.sort=end\""
-  [m]
-  (let [params (js/URLSearchParams.)]
-    (doseq [[k v] m]
-      (.append params (name k) (str v)))
-    (.toString params)))
+(defn- fetch-init [{:keys [method headers body]}]
+  (clj->js (cond-> {:method method}
+             headers (assoc :headers headers)
+             body    (assoc :body (js/JSON.stringify (clj->js body))))))
 
-(defn- execute-fetch! [^js el url request-id]
-  (let [controller (js/AbortController.)]
+(defn- execute-fetch! [^js el m]
+  (let [controller (js/AbortController.)
+        request-id (:request/id m)]
     (du/setv-untraced! el k-abort controller)
-    (-> (js/fetch url #js {:signal (.-signal controller)})
+    (-> (js/fetch (:url m) (js/Object.assign (fetch-init m) #js {:signal (.-signal controller)}))
       (.then (fn [^js resp]
                (if (.-ok resp)
                  (.text resp) ; text, not .json
@@ -59,37 +56,29 @@
                 (when-not (= "AbortError" (.-name e))
                   (handle-event! el [:network-failed {:request/id request-id :error {:kind :offline}}])))))))
 
-(defn- execute-write! [^js el url init request-id]
-  (-> (js/fetch url init)
-    (.then (fn [^js resp]
-             (if (.-ok resp)
-               (.text resp) ; text, not .json
-               (throw (js/Error. (str "HTTP " (.-status resp)))))))
-    (.then (fn [^js body]
-             (let [obj     (try (js/JSON.parse body) (catch :default _ nil))
-                   result  (wire/parse-ack obj)
-                   result* (assoc result :write/id request-id)] ; obj nil -> empty-body marker
-               (if (:protocol-failure result*)
-                 (handle-event! el [:write-failed result*])
-                 (handle-event! el [:write-ack result*])))))
-    (.catch (fn [^js _e]
-              (handle-event! el [:write-failed {:write/id request-id :error {:kind :offline}}])))))
+(defn- execute-write! [^js el m]
+  (let [write-id (:write/id m)]
+    (-> (js/fetch (:url m) (fetch-init m))
+      (.then (fn [^js resp]
+               (if (.-ok resp)
+                 (.text resp) ; text, not .json
+                 (throw (js/Error. (str "HTTP " (.-status resp)))))))
+      (.then (fn [^js body]
+               (let [obj     (try (js/JSON.parse body) (catch :default _ nil))
+                     result  (wire/parse-ack obj)
+                     result* (assoc result :write/id write-id)] ; obj nil -> empty-body marker
+                 (if (:protocol-failure result*)
+                   (handle-event! el [:write-failed result*])
+                   (handle-event! el [:write-ack result*])))))
+      (.catch (fn [^js _e]
+                (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
 (defn- run-effects!
   [^js el effects]
   (doseq [[fx m] effects]
     (case fx
       :fetch
-      (let [request-id   (:request/id m)
-            query        (:query m)
-            query-params (map->query-params query)
-            url          (str
-                          (:endpoint m)
-                          "?requestId="
-                          request-id
-                          (when-not (str/blank? query-params)
-                            (str "&" query-params)))]
-        (execute-fetch! el url request-id))
+      (execute-fetch! el m)
 
       :notify-consumers
       (let [r         (:resource m)
@@ -114,19 +103,7 @@
         (du/setv-untraced! el k-abort nil))
 
       :write
-      (let [write-id               (:write/id m)
-            {:keys [op id record]} (:payload m)
-            base-url               (:endpoint m)
-            url                    (if (= op :delete)
-                                     (str base-url  "/" id "?requestId=" write-id)
-                                     (str base-url "?requestId=" write-id))
-            init                   (if (= op :create)
-                                     #js {:method "POST"
-                                          :headers #js {"content-type" "application/json"}
-                                          :body (js/JSON.stringify (clj->js record))}
-                                     #js {:method "DELETE"})]
-
-        (execute-write! el url init write-id))
+      (execute-write! el m)
 
       :diagnostic
       (js/console.debug "[server-resource]" (name m))

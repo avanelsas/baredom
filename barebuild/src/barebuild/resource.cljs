@@ -34,11 +34,11 @@
             (cond
               (not (contains? row key))
               [(validation/err [:value row-idx key] :missing-field
-                    (str "row " row-idx " is missing field \"" key "\""))]
+                               (str "row " row-idx " is missing field \"" key "\""))]
 
               (not (validation/validate-value-type (get row key) type))
               [(validation/err [:value row-idx key] :wrong-type
-                    (str "row " row-idx " field \"" key "\" is not a " (name type)))]
+                               (str "row " row-idx " field \"" key "\" is not a " (name type)))]
 
               :else []))
           fields))
@@ -60,6 +60,14 @@
                    (validate-ids (:id-key shape) value))
                  (when-not (seq value-errors)
                    (validate-rows (:fields shape) value))))))
+
+(defn- read-request [r]
+  (let [{:keys [query] rid :request/id} (:active-request r)]
+    (assoc (utils/request {:endpoint   (:endpoint r)
+                           :method     "GET"
+                           :query      query
+                           :request-id rid})
+           :request/id rid)))
 
 (defn- start-request
   "Save an active request in r. The ID is generated elsewhere."
@@ -101,15 +109,34 @@
   the active-request. DO nothing if the active-request is still set"
   [{:keys [resource effects] :as result}]
   (if (and (nil? (:active-request resource)) (pending? resource))
-    (let [r* (start-request resource (:url-intent resource))
-          id (get-in r* [:active-request :request/id])]
+    (let [r* (start-request resource (:url-intent resource))]
       {:resource r*
-       :effects  (conj (vec effects) [:fetch {:endpoint   (:endpoint r*)
-                                              :query      (:url-intent r*)
-                                              :request/id id}])})
+       :effects  (conj (vec effects) [:fetch (read-request r*)])})
     result))
 
 ;; WRITE functionality ----------------------------------------------------------
+
+;; The write vocabulary as data: each op maps to its method, whether it addresses the
+;; collection or a member, and whether it carries a body. step resolves this into the
+;; :write effect so the executor decides nothing.
+(def ^:private write-ops
+  {:create {:method "POST"   :target :collection :body? true}
+   :update {:method "PUT"    :target :member     :body? true}
+   :delete {:method "DELETE" :target :member     :body? false}})
+
+(defn write-request
+  "The :write effect value for a write payload, or nil when none can be built"
+  [endpoint write-id {:keys [op id record]}]
+  (when-let [{:keys [method target body?]} (get write-ops op)]
+    (let [member? (= target :member)]
+      (when (or (not member?) (seq (str id)))
+        (assoc (utils/request {:endpoint endpoint
+                               :segment (when member? id)
+                               :method method
+                               :body (when body? record)
+                               :request-id write-id})
+               :write/id write-id)))))
+
 (defn- start-write
   "Save an active write request in r. The ID is generated elsewhere."
   [r payload]
@@ -125,14 +152,11 @@
 (defn- refetch-current
   "After a successful write, retrieve the current state"
   [{:keys [resource effects]}]
-  (let [r* (start-request resource (:url-intent resource))
-        id (get-in r* [:active-request :request/id])]
+  (let [r* (start-request resource (:url-intent resource))]
     {:resource r*
      :effects  (conj (vec effects)
                      [:notify-consumers {:resource r*}]
-                     [:fetch {:endpoint   (:endpoint r*)
-                              :query      (:url-intent r*)
-                              :request/id id}])}))
+                     [:fetch (read-request r*)])}))
 
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
@@ -147,18 +171,16 @@
         (if (= :accepted (:outcome embed))
           (let [installed (assoc resource :last-accepted embed :last-failure nil)]
             (if (pending? installed)
-              (let [r* (start-request installed intent)
-                    id (get-in r* [:active-request :request/id])]
+              (let [r* (start-request installed intent)]
                 {:resource r*
                  :effects  [[:notify-consumers {:resource r*}]
-                            [:fetch {:endpoint (:endpoint r*) :query intent :request/id id}]]})
+                            [:fetch (read-request r*)]]})
               {:resource installed
                :effects  [[:notify-consumers {:resource installed}]]}))
           ;; no usable embed -> last-accepted nil -> always pending -> always fetch
-          (let [r* (start-request resource intent)
-                id (get-in r* [:active-request :request/id])]
+          (let [r* (start-request resource intent)]
             {:resource r*
-             :effects  [[:fetch {:endpoint (:endpoint r*) :query intent :request/id id}]
+             :effects  [[:fetch (read-request r*)]
                         [:notify-consumers {:resource r*}]]})))
 
       :response
@@ -218,29 +240,23 @@
             moved?     (not= new-intent (:url-intent resource)) ; owned intent changed?
             fetch?     (and (nil? (:active-request resource))   ; no request in flight
                             (pending? merged))                  ; and the new intent is unanswered
-            r*         (if fetch? (start-request merged new-intent) merged)
-            id         (get-in r* [:active-request :request/id])]
+            r*         (if fetch? (start-request merged new-intent) merged)]
         {:resource r*
          :effects  (cond-> []
-                     moved? (conj [:url-write {:resource/id (:resource/id r*)
-                                               :params      new-intent
-                                               :mode        mode}])
-                     fetch? (conj [:fetch {:endpoint   (:endpoint r*)
-                                           :query      new-intent
-                                           :request/id id}])
+                     moved?  (conj [:url-write {:resource/id (:resource/id r*)
+                                                :params      new-intent
+                                                :mode        mode}])
+                     fetch?  (conj [:fetch (read-request r*)])
                      :always (conj [:notify-consumers {:resource r*}]))})
 
       :url-changed
       (let [replaced (assoc resource :url-intent payload)
             fetch?   (and (nil? (:active-request resource))
                           (pending? replaced))
-            r*       (if fetch? (start-request replaced payload) replaced)
-            id       (get-in r* [:active-request :request/id])]
+            r*       (if fetch? (start-request replaced payload) replaced)]
         {:resource r*
          :effects  (cond-> []
-                     fetch? (conj [:fetch {:endpoint   (:endpoint r*)
-                                           :query      payload
-                                           :request/id id}])
+                     fetch? (conj [:fetch (read-request r*)])
                      :always (conj [:notify-consumers {:resource r*}]))})
 
       :protocol-failed
@@ -275,10 +291,14 @@
       :submit-write
       (if-not (writing? resource)
         (let [resource* (start-write resource payload)
-              id (get-in resource* [:active-write :write/id])]
-          {:resource resource*
-           :effects  [[:notify-consumers {:resource resource*}]
-                      [:write {:endpoint (:endpoint resource*) :write/id id :payload payload}]]})
+              id        (get-in resource* [:active-write :write/id])
+              write-req (write-request (:endpoint resource*) id payload)]
+          (if write-req
+            {:resource resource*
+             :effects  [[:notify-consumers {:resource resource*}]
+                        [:write write-req]]}
+            {:resource resource
+             :effects  [[:diagnostic :unsupported-write]]}))
         {:resource resource
          :effects  [[:diagnostic :stale-write]]})
 

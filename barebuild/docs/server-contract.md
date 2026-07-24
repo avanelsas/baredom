@@ -22,16 +22,26 @@ GET <endpoint>?<query>&requestId=<id>
 
 ## The write requests
 
-Two mutations, both carrying a `requestId` the same way. There is **no update/PUT** yet.
+Three mutations, all carrying a `requestId` the same way.
 
 ```
 POST   <endpoint>?requestId=<id>          body: the record as JSON
+PUT    <endpoint>/<id>?requestId=<id>     body: the record as JSON
 DELETE <endpoint>/<id>?requestId=<id>     no body
 ```
 
 - **Create** posts a flat JSON object keyed by the shape's field keys. The server mints the
   identity. The client never sends one.
+- **Update** is a **full replace**. The body carries every field the shape declares, so a key
+  the client omits is cleared rather than left alone — there is no partial merge, and no PATCH.
+  The id travels in the path and never in the body: the server owns identity.
 - **Delete** puts the record's id in the path, taken from the `idKey` field of the row.
+
+The id in the path is URL-encoded, so an opaque id may contain any character.
+
+Update is the one mutation that is **not idempotent over a missing row**. Delete can accept an
+absent id as a no-op, because the outcome it promises — the row is gone — already holds. An
+update of a row that does not exist has nothing to replace, so a server must reject it.
 
 A write's response is an **ack**, not data (see [Write acks](#write-acks)). After an accepted
 ack BareBuild refetches, so new state is always observed through the read path rather than
@@ -72,8 +82,8 @@ surfaces the error.
 
 ## Write acks
 
-A create or delete answers with an **ack**: the verdict on the mutation, never the new data.
-Also always HTTP 200.
+A create, update or delete answers with an **ack**: the verdict on the mutation, never the new
+data. Also always HTTP 200.
 
 ### Accepted — the server performed the write
 
@@ -97,6 +107,11 @@ No `value`, no `shape`, no `query`. BareBuild refetches to observe the result.
 For a rejected write, put the offending field name in `details` (e.g.
 `{"field": "end"}`). A consumer maps that back onto the form input, which is why a
 field-level rejection can be shown in place instead of as a banner.
+
+Some rejections name no field, because the record was fine and the *target* was not — an
+update of an id that no longer exists is the common case. Send what identifies the problem
+instead (e.g. `{"id": "42"}`); a consumer that finds no matching input surfaces the message
+as a banner rather than silently discarding it.
 
 Business rules the client cannot know : "end date must not precede start date", uniqueness,
 authorization, belong here as a rejected ack. The client's local validation
@@ -195,7 +210,7 @@ And a write, which always ends in a read:
 sequenceDiagram
   participant C as server-resource
   participant S as Server
-  C->>S: POST endpoint?requestId (record) / DELETE endpoint/id?requestId
+  C->>S: POST endpoint?requestId (record) / PUT endpoint/id?requestId (record) / DELETE endpoint/id?requestId
   alt accepted ack (HTTP 200)
     S-->>C: outcome:accepted · requestId · revision
     C->>S: GET endpoint?query & requestId

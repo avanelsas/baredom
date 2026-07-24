@@ -27,7 +27,7 @@
   (let [r* (assoc base :request-count 1
                        :active-request {:request/id "tasks:1" :query nil})]
     (is (= {:resource r*
-            :effects  [[:fetch {:endpoint "/api/tasks" :query nil :request/id "tasks:1"}]
+            :effects  [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
                        [:notify-consumers {:resource r*}]]}
            (resource/step base [:connected {}]))
         "connect fetches the endpoint, records a fresh live request, carries the empty intent")))
@@ -35,7 +35,9 @@
 (deftest connected-carries-url-intent
   (let [r (assoc base :url-intent {:sort "start" :direction "desc"})
         {:keys [resource effects]} (resource/step r [:connected {}])]
-    (is (= [[:fetch {:endpoint "/api/tasks" :query {:sort "start" :direction "desc"} :request/id "tasks:1"}]
+    (is (= [[:fetch {:method     "GET"
+                     :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=start"
+                     :request/id "tasks:1"}]
             [:notify-consumers {:resource resource}]]
            effects)
         "a resource booted from a sorted URL fetches that query on connect")))
@@ -60,14 +62,14 @@
       (is (= embed (:last-accepted resource))))
     (testing "notifies AND fetches the current intent under a fresh id"
       (is (= [[:notify-consumers {:resource resource}]
-              [:fetch {:endpoint "/api/tasks" :query {:sort "owner"} :request/id "tasks:1"}]]
+              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
              effects)))))
 
 (deftest connected-with-broken-embed-fetches
   (let [marker {:protocol-failure {:reason :unknown-outcome}}
         {:keys [resource effects]} (resource/step base [:connected {:embed marker}])]
     (is (nil? (:last-accepted resource)) "a broken embed is not installed")
-    (is (= [[:fetch {:endpoint "/api/tasks" :query nil :request/id "tasks:1"}]
+    (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
             [:notify-consumers {:resource resource}]] effects)
         "falls back to a normal fetch")))
 
@@ -81,8 +83,8 @@
       (is (= [[:url-write {:resource/id "tasks"
                            :params      {:sort "owner" :direction "desc"}
                            :mode        :replace}]
-              [:fetch {:endpoint   "/api/tasks"
-                       :query      {:sort "owner" :direction "desc"}
+              [:fetch {:method     "GET"
+                       :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=owner"
                        :request/id "tasks:1"}]
               [:notify-consumers {:resource resource}]]
              effects)))))
@@ -127,7 +129,9 @@
     (testing "a nil-valued patch clears the keys: the merged intent canonicalizes to {}"
       (is (= {} (:url-intent resource))))
     (testing "it fetches the now-empty query (matches a server echoing no sort keys)"
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {} (:query m)))) effects)))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:1" (:url m))))
+                effects)))))
 
 (deftest url-changed-replaces-intent-and-fetches-without-writing
   (let [r (assoc base :url-intent {:sort "owner"})
@@ -135,7 +139,7 @@
     (testing "the URL-derived intent replaces :url-intent (not merged)"
       (is (= {:page "2"} (:url-intent resource))))
     (testing "fetches the new intent and does NOT write the URL (browser already moved)"
-      (is (= [[:fetch {:endpoint "/api/tasks" :query {:page "2"} :request/id "tasks:1"}]
+      (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]
               [:notify-consumers {:resource resource}]] effects)))))
 
 (deftest accepted-response-installs-and-notifies
@@ -331,7 +335,7 @@
     (testing "a trailing fetch fires once for the NEW intent under a fresh id"
       (is (= {:request/id "tasks:2" :query {:sort "start"}} (:active-request resource)))
       (is (some (fn [[fx m]] (and (= :fetch fx)
-                                  (= {:sort "start"} (:query m))
+                                  (= "/api/tasks?requestId=tasks:2&sort=start" (:url m))
                                   (= "tasks:2" (:request/id m))))
                 effects)))))
 
@@ -355,7 +359,8 @@
                                                                       :error {:kind :offline}}])]
     (testing "the failed query is adjudicated, but intent moved -> fetch the new intent once"
       (is (= {:request/id "tasks:2" :query {:sort "start"}} (:active-request resource)))
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {:sort "start"} (:query m))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:2&sort=start" (:url m))))
                 effects)))))
 
 ;; --- C4: rejection revert (T8/T9/T10) --------------------------------------
@@ -416,7 +421,8 @@
       (is (not-any? (fn [[fx _]] (= :url-write fx)) effects)))
     (testing "the newer intent is unanswered -> a trailing fetch fires for it"
       (is (= {:request/id "tasks:3" :query {:sort "start"}} (:active-request resource)))
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {:sort "start"} (:query m))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:3&sort=start" (:url m))))
                 effects)))))
 
 ;; --- T15: disconnect aborts the in-flight request --------------------------
@@ -441,22 +447,106 @@
     (testing "an active write is recorded under a namespaced id, carrying the payload"
       (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7}} (:active-write resource)))
       (is (true? (resource/writing? resource))))
-    (testing "notify first (so the button disables), then the :write effect carries endpoint,
-              write id, and the whole payload for the executor to translate into a request"
+    (testing "notify first (so the button disables), then the :write effect — which carries the
+              request step already decided, not the payload for the executor to interpret"
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload {:op :delete :id 7}}]]
+              [:write {:write/id "tasks:w1"
+                       :method   "DELETE"
+                       :url      "/api/tasks/7?requestId=tasks:w1"}]]
              effects)))))
 
-(deftest submit-write-is-op-neutral-passes-payload-through
-  (testing "a create payload rides the same spine — step carries it verbatim, the executor
-            (not step) decides POST vs DELETE from :op"
+(deftest submit-write-decides-the-request-in-step
+  (testing "a create rides the same spine and step — not the executor — resolves it to a
+            POST with a body; the payload stays on :active-write, never in the effect"
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
       (is (= {:write/id "tasks:w1" :payload payload} (:active-write resource)))
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload payload}]]
+              [:write {:write/id "tasks:w1"
+                       :method   "POST"
+                       :url      "/api/tasks?requestId=tasks:w1"
+                       :body     record
+                       :headers  {"content-type" "application/json"}}]]
              effects)))))
+
+(deftest submit-write-update-addresses-the-member-with-a-body
+  (testing "update is one row in the op table: PUT, member-addressed, body-carrying"
+    (let [record  {"title" "Ship it" "status" "done"}
+          {:keys [effects]} (resource/step base [:submit-write {:op :update :id 7 :record record}])]
+      (is (= [:write {:write/id "tasks:w1"
+                      :method   "PUT"
+                      :url      "/api/tasks/7?requestId=tasks:w1"
+                      :body     record
+                      :headers  {"content-type" "application/json"}}]
+             (second effects))))))
+
+(deftest submit-write-of-an-unsupported-op-leaves-the-resource-untouched
+  (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :frobnicate :id 7}])]
+    (testing "an op the table can't build never starts a write — no :active-write, no id burned.
+              Starting one would set writing? with no request to answer it, and the single-flight
+              guard would then reject every later write for the life of the element"
+      (is (= base resource))
+      (is (false? (resource/writing? resource))))
+    (testing "it surfaces as its own diagnostic, distinct from the double-click case"
+      (is (= [[:diagnostic :unsupported-write]] effects)))))
+
+(deftest submit-write-without-a-member-id-leaves-the-resource-untouched
+  (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete}])]
+    (testing "an unbuildable member op is refused before start-write, exactly like an
+              unknown op — no :active-write, so the single-flight slot stays free"
+      (is (= base resource))
+      (is (false? (resource/writing? resource))))
+    (is (= [[:diagnostic :unsupported-write]] effects))))
+
+;; --- U1b: write-request — the op table as data -----------------------------
+
+(deftest write-request-resolves-each-op
+  (let [record {"title" "Ship it"}]
+    (testing "create: collection-addressed POST carrying the record"
+      (is (= {:write/id "tasks:w1"
+              :method   "POST"
+              :url      "/api/tasks?requestId=tasks:w1"
+              :body     record
+              :headers  {"content-type" "application/json"}}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record}))))
+    (testing "update: member-addressed PUT carrying the record"
+      (is (= {:write/id "tasks:w1"
+              :method   "PUT"
+              :url      "/api/tasks/7?requestId=tasks:w1"
+              :body     record
+              :headers  {"content-type" "application/json"}}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :update :id 7 :record record}))))
+    (testing "delete: member-addressed DELETE, no body and so no content-type"
+      (is (= {:write/id "tasks:w1"
+              :method   "DELETE"
+              :url      "/api/tasks/7?requestId=tasks:w1"}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 7}))))))
+
+(deftest write-request-of-an-unknown-op-is-nil
+  (testing "the table is the whole write vocabulary — nil is how step learns it can't build one"
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7})))))
+
+(deftest write-request-of-a-member-op-without-an-id-is-nil
+  (testing "no id would address the collection instead — a DELETE that reads as
+            'delete everything' to any server implementing collection-level delete"
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :update :record {"title" "x"}})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id ""}))))
+  (testing "a collection op needs no id"
+    (is (some? (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record {"title" "x"}}))))
+  (testing "0 is a legitimate id, not a missing one"
+    (is (= "/api/tasks/0?requestId=tasks:w1"
+           (:url (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 0}))))))
+
+(deftest write-request-passes-the-record-through-unconverted
+  (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an
+            =-comparable effect is what makes the write spine testable at all"
+    (let [record {"title" "Ship it" "status" "todo"}
+          req    (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record})]
+      (is (map? (:body req)))
+      (is (= record (:body req))))))
 
 (deftest submit-write-while-writing-is-a-noop
   (let [r (assoc base :write-count 1
@@ -480,7 +570,7 @@
     (testing "a refetch of the CURRENT intent is issued under a fresh read id (mutate -> refetch)"
       (is (= {:request/id "tasks:4" :query {:sort "owner"}} (:active-request resource)))
       (is (= [[:notify-consumers {:resource resource}]
-              [:fetch {:endpoint "/api/tasks" :query {:sort "owner"} :request/id "tasks:4"}]]
+              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:4&sort=owner" :request/id "tasks:4"}]]
              effects)))
     (testing "last-accepted is untouched — the refetch's :response installs the post-mutation truth"
       (is (nil? (:last-accepted resource))))))

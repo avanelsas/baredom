@@ -56,7 +56,9 @@
         <x-task-form-consumer>
           <x-button data-role="open">Create Task</x-button>
 
-          <x-modal size="xl" label="New task">
+          <x-modal size="xl" label="Create Task">
+            <x-typography slot="header" variant="h6" data-role="title">Create Task</x-typography>
+            <x-spacer size="1rem"></x-spacer>
             <x-form novalidate>
               <x-form-field name="title"  type="text" label="Title"></x-form-field>
               <x-spacer size="1rem"></x-spacer>

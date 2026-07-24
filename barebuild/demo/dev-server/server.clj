@@ -201,7 +201,7 @@
 
 (def ^:private cors-headers
   {"access-control-allow-origin"  "*"
-   "access-control-allow-methods" "GET,POST,DELETE,OPTIONS"
+   "access-control-allow-methods" "GET,POST,PUT,DELETE,OPTIONS"
    "access-control-allow-headers" "content-type"})
 
 (defn- parse-query [qs]
@@ -265,12 +265,17 @@
 
 ;; --- writes: delete (step W1a) ---------------------------------------------
 
+(defn- task-id-str
+  "The raw `:id` segment of `/api/tasks/:id`. An update echoes it back in a not-found
+   rejection so the message names what the client asked for, numeric or not."
+  [uri]
+  (subs uri (count "/api/tasks/")))
+
 (defn- task-id-from-uri
   "The 1-based id in `/api/tasks/:id`, or nil when the tail is not an integer. A nil id
    simply matches no row, keeping delete a no-op rather than an error."
   [uri]
-  (let [raw (subs uri (count "/api/tasks/"))]
-    (try (Long/parseLong raw) (catch Exception _ nil))))
+  (try (Long/parseLong (task-id-str uri)) (catch Exception _ nil)))
 
 (defn delete-task
   "Drop the row whose id is `id` from `ts`. Idempotent: an absent id leaves the set
@@ -278,7 +283,7 @@
   [ts id]
   (filterv #(not= (:id %) id) ts))
 
-;; --- writes: create (step W3a) ---------------------------------------------
+;; --- writes: create (step W3a) / update (step U1a) --------------------------
 
 (defn- request-record
   "Parse the JSON request body into a record map with opaque string keys. Handles both a
@@ -308,7 +313,7 @@
     true))
 
 (defn structural-error
-  "First structural violation (required / type / enum) of a create record against `shape`, or
+  "First structural violation (required / type / enum) of a write record against `shape`, or
    nil. Defense-in-depth per WRITES-PLAN decision #7: the client runs the same checks locally
    via `validate-payload`, but the server is the authority and never trusts the client. Checked
    independently in Clojure — the oracle is an honest second implementation, not the bijection."
@@ -344,11 +349,37 @@
        :message "End date must be on or after the start date."
        :details {:field "end"}})))
 
-(defn create-error
-  "Validate a create record: structural (required/type/enum — defense-in-depth) first, then the
-   cross-field range rule. Returns the first §6.5 error, or nil when acceptable."
+(defn record-error
+  "Validate a write record: structural (required/type/enum — defense-in-depth) first, then the
+   cross-field range rule. Returns the first §6.5 error, or nil when acceptable. Create and
+   update run the same checks — an update is a full replace, so its payload is a complete
+   record and the shape validates it exactly as it validates a create."
   [record]
   (or (structural-error record) (range-error record)))
+
+(defn update-error
+  "First error for an update of `id` in `ts` with `record`. A missing target comes first:
+   update, unlike delete, is not idempotent over an absent row — there is nothing to replace,
+   so a rejection is the honest answer. That error names no field (`details` carries the id),
+   because the record is fine and the target is not; a consumer with nothing to highlight
+   surfaces it as a message instead. Otherwise the ordinary record validation applies."
+  [ts id raw-id record]
+  (if (some #(= (:id %) id) ts)
+    (record-error record)
+    {:code    "not-found"
+     :message (str "No task with id \"" raw-id "\".")
+     :details {:id raw-id}}))
+
+(defn- record->row
+  "The stored row fields for a write `record` (opaque string keys). Blank optional fields
+   normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is)."
+  [record]
+  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
+    {:title  (field "title")
+     :owner  (field "owner")
+     :start  (field "start")
+     :end    (field "end")
+     :status (field "status")}))
 
 (defn- next-id
   "Server-assigned id for a new task: one past the current max (ids are 1-based)."
@@ -356,18 +387,22 @@
   (inc (reduce max 0 (map :id ts))))
 
 (defn create-task
-  "Append a task built from `record` (opaque string keys) with a server-minted id. Returns
-   the updated set. Blank optional fields normalize to nil so the stored row stays read-contract
-   valid (\"\" is not a valid :date; nil is). Duplicate-on-retry is an accepted edge for now
-   (WRITES-PLAN decision #5)."
+  "Append a task built from `record` with a server-minted id. Returns the updated set.
+   Duplicate-on-retry is an accepted edge for now (WRITES-PLAN decision #5)."
   [ts record]
-  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
-    (conj ts {:id     (next-id ts)
-              :title  (field "title")
-              :owner  (field "owner")
-              :start  (field "start")
-              :end    (field "end")
-              :status (field "status")})))
+  (conj ts (merge {:id (next-id ts)} (record->row record))))
+
+(defn update-task
+  "Replace the row whose id is `id` with `record`, keeping its id and its position in the
+   set. PUT semantics: a full replace, so every field comes from the record — a key the
+   client omitted becomes nil rather than keeping its old value. An id matching no row
+   leaves the set untouched (the handler rejects that case before calling this)."
+  [ts id record]
+  (mapv (fn [t]
+          (if (= (:id t) id)
+            (merge {:id id} (record->row record))
+            t))
+        ts))
 
 ;; --- fixtures (step 5a): controlled failure modes for the client (5b) ------
 
@@ -463,9 +498,22 @@
       (and (= :post (:request-method req)) (= "/api/tasks" uri))
       (let [params (parse-query (:query-string req))
             record (request-record req)]
-        (if-let [error (create-error record)]
+        (if-let [error (record-error record)]
           (json-response 200 (write-rejected-ack params error))
           (do (swap! tasks create-task record)
+              (json-response 200 (accepted-ack params)))))
+
+      ;; PUT /api/tasks/:id — replace the row with the record body (step U1a). A full
+      ;; replace, validated exactly like a create, plus a not-found rejection when the id
+      ;; matches no row. Both verdicts are HTTP 200; the client refetches to see the result.
+      (and (= :put (:request-method req))
+           (str/starts-with? uri "/api/tasks/"))
+      (let [params (parse-query (:query-string req))
+            id     (task-id-from-uri uri)
+            record (request-record req)]
+        (if-let [error (update-error @tasks id (task-id-str uri) record)]
+          (json-response 200 (write-rejected-ack params error))
+          (do (swap! tasks update-task id record)
               (json-response 200 (accepted-ack params)))))
 
       (= "/api/tasks" uri)
