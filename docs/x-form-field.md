@@ -109,7 +109,7 @@ Dark-mode defaults are applied automatically via `@media (prefers-color-scheme: 
 | Callback             | Behaviour                                          |
 |----------------------|----------------------------------------------------|
 | `formDisabledCallback(d)` | Sets/removes `disabled` attribute, re-renders |
-| `formResetCallback()`     | Clears input value and `value` attribute, calls `setFormValue("")` |
+| `formResetCallback()`     | Clears input value, the `value` attribute and the `error` attribute, calls `setFormValue("")` |
 
 Validity is set via `setValidity`:
 - `error` attribute non-empty → `{ customError: true }` with the error message

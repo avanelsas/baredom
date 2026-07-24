@@ -347,6 +347,7 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")]
       (set! (.-value textarea-el) "")))

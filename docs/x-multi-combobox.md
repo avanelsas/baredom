@@ -162,7 +162,7 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 
 - The selected set is submitted under its `name` as a comma-separated string, and appears in `FormData` — no hidden input needed.
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
-- `form.reset()` clears the selection (mirroring `x-form-field`), and `<fieldset disabled>` disables it via `formDisabledCallback`.
+- `form.reset()` clears the selection (mirroring `x-form-field`) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
 The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue` — the value round-trips through the comma-separated `value` attribute.
 

@@ -98,7 +98,7 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 
 - Its current selection is submitted under its `name`, and it appears in `FormData` — no hidden input needed.
 - Constraint validation is honoured: a `required` select with no selection reports `valueMissing` and **blocks submission** (`form.reportValidity()` returns `false`); setting the `error` attribute reports a `customError` with that message. This is what `x-form` and native `<form>` submission gate on.
-- `form.reset()` restores the markup-default `<option selected>` (dropping any controlled `value` attribute), mirroring a native `<select>`.
+- `form.reset()` restores the markup-default `<option selected>` (dropping any controlled `value` attribute), mirroring a native `<select>`. It also drops the `error` attribute, so a stale validation message does not survive the reset.
 - `<fieldset disabled>` disables it via `formDisabledCallback`.
 
 ## Theming
