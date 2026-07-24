@@ -31,15 +31,6 @@
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
-(defn- map->query-params
-  "Take a map of k v and turn it into a url query parameter string
-  e.g. {tasks.sort \"end\"} -> \"tasks.sort=end\""
-  [m]
-  (let [params (js/URLSearchParams.)]
-    (doseq [[k v] m]
-      (.append params (name k) (str v)))
-    (.toString params)))
-
 (defn- execute-fetch! [^js el url request-id]
   (let [controller (js/AbortController.)]
     (du/setv-untraced! el k-abort controller)
@@ -82,7 +73,7 @@
       :fetch
       (let [request-id   (:request/id m)
             query        (:query m)
-            query-params (map->query-params query)
+            query-params (utils/map->query-params query)
             url          (str
                           (:endpoint m)
                           "?requestId="
@@ -114,19 +105,13 @@
         (du/setv-untraced! el k-abort nil))
 
       :write
-      (let [write-id               (:write/id m)
-            {:keys [op id record]} (:payload m)
-            base-url               (:endpoint m)
-            url                    (if (= op :delete)
-                                     (str base-url  "/" id "?requestId=" write-id)
-                                     (str base-url "?requestId=" write-id))
-            init                   (if (= op :create)
-                                     #js {:method "POST"
-                                          :headers #js {"content-type" "application/json"}
-                                          :body (js/JSON.stringify (clj->js record))}
-                                     #js {:method "DELETE"})]
+      (let [{:keys [method headers body url]} m
+            init (clj->js
+                   (cond-> {:method method}
+                     body (assoc :body (js/JSON.stringify (clj->js body))
+                                 :headers headers)))]
 
-        (execute-write! el url init write-id))
+        (execute-write! el url init (:write/id m)))
 
       :diagnostic
       (js/console.debug "[server-resource]" (name m))

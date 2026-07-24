@@ -25,3 +25,24 @@
               :let  [s (str v)]
               :when (and (some? v) (not= "" s))]
           [(keyword k) s])))
+
+(defn map->query-params
+  "Take a map of k v and turn it into a url query parameter string
+  e.g. {tasks.sort \"end\"} -> \"tasks.sort=end\""
+  [m]
+  (let [params (js/URLSearchParams.)]
+    (doseq [[k v] m]
+      (.append params (name k) (str v)))
+    (.toString params)))
+
+(defn request
+  "build a request value for the executor from the parts provided
+  .e.g. -> {:method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner&direction=asc\"}"
+  [{:keys [endpoint segment method query body request-id]}]
+  (cond-> {:method method
+           :url    (str endpoint
+                        (when segment
+                          (str "/" segment))
+                        "?requestId=" request-id (when (seq query) (str "&" (map->query-params query))))}
+    body (assoc :body body
+                :headers {"content-type" "application/json"})))

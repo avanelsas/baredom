@@ -441,22 +441,86 @@
     (testing "an active write is recorded under a namespaced id, carrying the payload"
       (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7}} (:active-write resource)))
       (is (true? (resource/writing? resource))))
-    (testing "notify first (so the button disables), then the :write effect carries endpoint,
-              write id, and the whole payload for the executor to translate into a request"
+    (testing "notify first (so the button disables), then the :write effect — which carries the
+              request step already decided, not the payload for the executor to interpret"
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload {:op :delete :id 7}}]]
+              [:write {:write/id "tasks:w1"
+                       :method   "DELETE"
+                       :url      "/api/tasks/7?requestId=tasks:w1"}]]
              effects)))))
 
-(deftest submit-write-is-op-neutral-passes-payload-through
-  (testing "a create payload rides the same spine — step carries it verbatim, the executor
-            (not step) decides POST vs DELETE from :op"
+(deftest submit-write-decides-the-request-in-step
+  (testing "a create rides the same spine and step — not the executor — resolves it to a
+            POST with a body; the payload stays on :active-write, never in the effect"
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
       (is (= {:write/id "tasks:w1" :payload payload} (:active-write resource)))
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:endpoint "/api/tasks" :write/id "tasks:w1" :payload payload}]]
+              [:write {:write/id "tasks:w1"
+                       :method   "POST"
+                       :url      "/api/tasks?requestId=tasks:w1"
+                       :body     record
+                       :headers  {"content-type" "application/json"}}]]
              effects)))))
+
+(deftest submit-write-update-addresses-the-member-with-a-body
+  (testing "update is one row in the op table: PUT, member-addressed, body-carrying"
+    (let [record  {"title" "Ship it" "status" "done"}
+          {:keys [effects]} (resource/step base [:submit-write {:op :update :id 7 :record record}])]
+      (is (= [:write {:write/id "tasks:w1"
+                      :method   "PUT"
+                      :url      "/api/tasks/7?requestId=tasks:w1"
+                      :body     record
+                      :headers  {"content-type" "application/json"}}]
+             (second effects))))))
+
+(deftest submit-write-of-an-unsupported-op-leaves-the-resource-untouched
+  (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :frobnicate :id 7}])]
+    (testing "an op the table can't build never starts a write — no :active-write, no id burned.
+              Starting one would set writing? with no request to answer it, and the single-flight
+              guard would then reject every later write for the life of the element"
+      (is (= base resource))
+      (is (false? (resource/writing? resource))))
+    (testing "it surfaces as its own diagnostic, distinct from the double-click case"
+      (is (= [[:diagnostic :unsupported-write]] effects)))))
+
+;; --- U1b: write-request — the op table as data -----------------------------
+
+(deftest write-request-resolves-each-op
+  (let [record {"title" "Ship it"}]
+    (testing "create: collection-addressed POST carrying the record"
+      (is (= {:write/id "tasks:w1"
+              :method   "POST"
+              :url      "/api/tasks?requestId=tasks:w1"
+              :body     record
+              :headers  {"content-type" "application/json"}}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record}))))
+    (testing "update: member-addressed PUT carrying the record"
+      (is (= {:write/id "tasks:w1"
+              :method   "PUT"
+              :url      "/api/tasks/7?requestId=tasks:w1"
+              :body     record
+              :headers  {"content-type" "application/json"}}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :update :id 7 :record record}))))
+    (testing "delete: member-addressed DELETE, no body and so no content-type"
+      (is (= {:write/id "tasks:w1"
+              :method   "DELETE"
+              :url      "/api/tasks/7?requestId=tasks:w1"}
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 7}))))))
+
+(deftest write-request-of-an-unknown-op-is-nil
+  (testing "the table is the whole write vocabulary — nil is how step learns it can't build one"
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7})))))
+
+(deftest write-request-passes-the-record-through-unconverted
+  (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an
+            =-comparable effect is what makes the write spine testable at all"
+    (let [record {"title" "Ship it" "status" "todo"}
+          req    (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record})]
+      (is (map? (:body req)))
+      (is (= record (:body req))))))
 
 (deftest submit-write-while-writing-is-a-noop
   (let [r (assoc base :write-count 1

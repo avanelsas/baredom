@@ -34,11 +34,11 @@
             (cond
               (not (contains? row key))
               [(validation/err [:value row-idx key] :missing-field
-                    (str "row " row-idx " is missing field \"" key "\""))]
+                               (str "row " row-idx " is missing field \"" key "\""))]
 
               (not (validation/validate-value-type (get row key) type))
               [(validation/err [:value row-idx key] :wrong-type
-                    (str "row " row-idx " field \"" key "\" is not a " (name type)))]
+                               (str "row " row-idx " field \"" key "\" is not a " (name type)))]
 
               :else []))
           fields))
@@ -110,6 +110,24 @@
     result))
 
 ;; WRITE functionality ----------------------------------------------------------
+
+;; Allows us to simplify the execution branch
+(def ^:private write-ops
+  {:create {:method "POST"   :target :collection :body? true}
+   :update {:method "PUT"    :target :member     :body? true}
+   :delete {:method "DELETE" :target :member     :body? false}})
+
+(defn write-request
+  "Prepares write operation data based upon its op type (POST/PUT/DELETE)"
+  [endpoint write-id {:keys [op id record]}]
+  (when-let [{:keys [method target body?]} (get write-ops op)]
+    (assoc (utils/request {:endpoint endpoint
+                           :segment (when (= target :member) id)
+                           :method method
+                           :body (when body? record)
+                           :request-id write-id})
+           :write/id write-id)))
+
 (defn- start-write
   "Save an active write request in r. The ID is generated elsewhere."
   [r payload]
@@ -275,10 +293,14 @@
       :submit-write
       (if-not (writing? resource)
         (let [resource* (start-write resource payload)
-              id (get-in resource* [:active-write :write/id])]
-          {:resource resource*
-           :effects  [[:notify-consumers {:resource resource*}]
-                      [:write {:endpoint (:endpoint resource*) :write/id id :payload payload}]]})
+              id        (get-in resource* [:active-write :write/id])
+              write-req (write-request (:endpoint resource*) id payload)]
+          (if write-req
+            {:resource resource*
+             :effects  [[:notify-consumers {:resource resource*}]
+                        [:write write-req]]}
+            {:resource resource
+             :effects  [[:diagnostic :unsupported-write]]}))
         {:resource resource
          :effects  [[:diagnostic :stale-write]]})
 
