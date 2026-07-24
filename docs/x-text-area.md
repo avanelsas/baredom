@@ -103,7 +103,7 @@ Dark mode values are set automatically via `@media (prefers-color-scheme: dark)`
 `x-text-area` is a form-associated custom element. It integrates natively with `<form>`:
 
 - Participates in form submission via `FormData` using the `name` attribute.
-- Responds to form `reset` — clears the value.
+- Responds to form `reset` — clears the value and the `error` attribute, so a stale validation message does not survive the reset.
 - Disabled by the form when the containing `<fieldset disabled>` is present.
 - Constraint validation via ElementInternals (supports `required`, `maxlength`, custom `error`).
 

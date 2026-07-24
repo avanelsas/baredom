@@ -452,6 +452,7 @@
 ;; plain <select>. apply-model! then re-syncs the form value + validity.
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (when-let [refs (du/getv el k-refs)]
     (let [^js select-el (gobj/get refs "select")
           opts          (.-options select-el)]

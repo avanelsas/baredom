@@ -173,6 +173,13 @@
          :end-str    (or (normalize-str end) "")
          :complete?  complete?}))))
 
+(defn committed-value?
+  "True when the canonicalized model holds at least one committed date."
+  [canon]
+  (if (= (:mode canon) :range)
+    (or (some? (:start-d canon)) (some? (:end-d canon)))
+    (some? (:value-d canon))))
+
 ;; ---------------------------------------------------------------------------
 ;; Display value helper
 ;; ---------------------------------------------------------------------------

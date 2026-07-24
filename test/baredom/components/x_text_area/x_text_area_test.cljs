@@ -364,6 +364,19 @@
       (.formResetCallback el)
       (is (= "" (.-value ta))))))
 
+(deftest form-reset-clears-error-test
+  (testing "formResetCallback clears the error and its invalid markers"
+    (sut/init!)
+    (let [^js el    (mount! {"error" "Required"})
+          ^js error (shadow-q el "[part=error]")
+          ^js ta    (get-textarea el)]
+      (is (.hasAttribute el "data-invalid"))
+      (.formResetCallback el)
+      (is (not (.hasAttribute el model/attr-error)))
+      (is (.contains (.-classList error) "error-hidden"))
+      (is (not (.hasAttribute el "data-invalid")))
+      (is (= "false" (.getAttribute ta "aria-invalid"))))))
+
 (deftest form-disabled-test
   (testing "formDisabledCallback sets disabled attribute and disables textarea"
     (sut/init!)

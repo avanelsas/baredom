@@ -336,6 +336,22 @@
     (is (= "" (.-value input-el))
         "formResetCallback should clear the shadow input value")))
 
+(deftest form-reset-callback-clears-error-test
+  (let [el       (append! (make-el))
+        error-el (shadow-part el "[part=error]")
+        input-el (shadow-part el "[part=input]")]
+    (.setAttribute el model/attr-error "This field is required")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (is (not (.hasAttribute el model/attr-error))
+        "formResetCallback should remove the error attribute")
+    (is (.contains (.-classList error-el) "error-hidden")
+        "formResetCallback should hide the error message")
+    (is (not (.hasAttribute el "data-invalid"))
+        "formResetCallback should remove data-invalid")
+    (is (= "false" (.getAttribute input-el "aria-invalid"))
+        "formResetCallback should clear aria-invalid on the input")))
+
 ;; ---------------------------------------------------------------------------
 ;; ElementInternals validity
 ;; ---------------------------------------------------------------------------

@@ -309,6 +309,7 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)]
       (set! (.-value input-el) "")))

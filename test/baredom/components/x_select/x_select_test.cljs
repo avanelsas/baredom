@@ -689,6 +689,22 @@
           0))
        0))))
 
+(deftest form-reset-callback-clears-error-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Please choose an option")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js sel (shadow-part el "[part=select]")]
+      (is (not (.hasAttribute el model/attr-error))
+          "reset drops the error attribute")
+      (is (.contains (.-classList err) "error-hidden")
+          "reset hides the inline error message")
+      (is (not (.hasAttribute el "data-invalid"))
+          "reset drops data-invalid")
+      (is (= "false" (.getAttribute sel "aria-invalid"))
+          "reset clears aria-invalid on the internal select"))))
+
 (deftest form-reset-drops-controlled-value-test
   (async done
     (let [^js pair (make-form-with-select {"name" "fruit" "value" "banana"})

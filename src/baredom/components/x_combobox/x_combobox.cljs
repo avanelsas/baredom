@@ -774,6 +774,7 @@
 ;; apply-model! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (du/setv! el k-model nil)
   (update-from-attrs! el))
 

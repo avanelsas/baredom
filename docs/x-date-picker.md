@@ -66,6 +66,12 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 `reason` is one of `"click"`, `"keyboard"`, `"blur"`, or `"programmatic"`. In single mode, `value` contains the ISO date string. In range mode, `start` and `end` contain the ISO date strings (either may be absent if the range is incomplete).
 
+### Clearing by emptying the input
+
+Deleting the text and committing (blur, `Enter`, or `commit()`) clears the committed value, exactly as `clear()` does. It fires a cancelable `x-date-picker-change-request` first, then `x-date-picker-change`, both with empty strings in the value fields — `{ value: "", mode, reason }` in single mode, `{ start: "", end: "", mode, reason }` in range mode. Cancelling the request keeps the committed value and restores the input text.
+
+Committing a blank input when nothing is committed yet is a no-op: neither event fires.
+
 ---
 
 ## Slots
@@ -94,7 +100,7 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 
 - The committed value is submitted under its `name`: the ISO date in single mode, or `start/end` once a range is complete.
 - Constraint validation is honoured: a `required` picker with no committed date reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
-- `form.reset()` clears the committed value(s) (mirroring how `x-form-field` resets), and `<fieldset disabled>` disables it via `formDisabledCallback`.
+- `form.reset()` clears the committed value(s) (mirroring how `x-form-field` resets) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
 ---
 
