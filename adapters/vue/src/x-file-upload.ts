@@ -15,13 +15,13 @@ export const XFileUpload = defineComponent({
   name: "XFileUpload",
   inheritAttrs: false,
   props: {
-    accept: { type: String as PropType<string | undefined>, default: undefined },
-    multiple: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    maxSize: { type: Number as PropType<number | undefined>, default: undefined },
-    maxFiles: { type: Number as PropType<number | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     name: { type: String as PropType<string | undefined>, default: undefined },
+    multiple: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    maxFiles: { type: Number as PropType<number | undefined>, default: undefined },
+    maxSize: { type: Number as PropType<number | undefined>, default: undefined },
+    required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    accept: { type: String as PropType<string | undefined>, default: undefined },
   },
   emits: {
     "select": (_e: CustomEvent<{ files: any; rejected: any }>) => true,

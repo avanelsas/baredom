@@ -1,5 +1,6 @@
 (ns baredom.utils.forms-test
   (:require [cljs.test :refer-macros [deftest is testing]]
+            [goog.object :as gobj]
             [baredom.utils.forms :as forms]))
 
 ;; ── validity: valid (clear) ─────────────────────────────────────────────────
@@ -66,3 +67,54 @@
     (is (= "hint-1" (forms/error-describedby false "hint-1"))))
   (testing "author + error → author list with the error id appended"
     (is (= "hint-1 error" (forms/error-describedby true "hint-1")))))
+
+;; ── install-validity-api! ───────────────────────────────────────────────────
+(def ^:private k-test-internals "__xFormsTestInternals")
+
+(defn- fake-internals
+  "A stand-in for ElementInternals: the members install-validity-api! reads."
+  []
+  #js {:validity          #js {:customError true}
+       :validationMessage "Bad value"
+       :willValidate      true
+       :form              #js {:tagName "FORM"}
+       :labels            #js []
+       :checkValidity     (fn [] false)
+       :reportValidity    (fn [] false)})
+
+(defn- api-instance
+  "An object whose prototype carries the installed validity API."
+  [internals]
+  (let [proto #js {}]
+    (forms/install-validity-api! proto k-test-internals)
+    (let [obj (.create js/Object proto)]
+      (when internals (gobj/set obj k-test-internals internals))
+      obj)))
+
+(deftest install-validity-api-delegates-test
+  (testing "every member reads through to ElementInternals"
+    (let [^js internals (fake-internals)
+          ^js el        (api-instance internals)]
+      (is (true? (.. el -validity -customError)))
+      (is (= "Bad value" (.-validationMessage el)))
+      (is (true? (.-willValidate el)))
+      (is (= "FORM" (.. el -form -tagName)))
+      (is (some? (.-labels el)))
+      (is (false? (.checkValidity el)))
+      (is (false? (.reportValidity el)))))
+  (testing "the getters track the internals, they do not snapshot them"
+    (let [^js internals (fake-internals)
+          ^js el        (api-instance internals)]
+      (gobj/set internals "validationMessage" "Now valid")
+      (is (= "Now valid" (.-validationMessage el))))))
+
+(deftest install-validity-api-without-internals-test
+  (testing "falls back to a control that never blocks submission"
+    (let [^js el (api-instance nil)]
+      (is (nil? (.-validity el)))
+      (is (= "" (.-validationMessage el)))
+      (is (false? (.-willValidate el)))
+      (is (nil? (.-form el)))
+      (is (nil? (.-labels el)))
+      (is (true? (.checkValidity el)))
+      (is (true? (.reportValidity el))))))

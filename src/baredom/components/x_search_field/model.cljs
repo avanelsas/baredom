@@ -52,7 +52,12 @@
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
    :required     {:type 'boolean :reflects-attribute attr-required}
-   :debounce     {:type 'number  :reflects-attribute attr-debounce}})
+   :debounce     {:type 'number  :reflects-attribute attr-debounce}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-input  {:cancelable false :detail {:name 'string :value 'string}}

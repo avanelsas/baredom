@@ -7,14 +7,14 @@ import { init } from "@vanelsas/baredom/x-combobox";
 init();
 
 export interface XComboboxProps {
-  value?: string;
-  placeholder?: string;
-  name?: string;
-  disabled?: boolean;
-  required?: boolean;
   open?: boolean;
-  placement?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
   error?: string;
+  placement?: string;
+  required?: boolean;
   defaultValue?: string;
   onChangeRequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
   onChange?: (e: CustomEvent<{ value: string; label: string }>) => void;

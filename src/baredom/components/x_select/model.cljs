@@ -37,7 +37,12 @@
    :name     {:type 'string  :reflects-attribute attr-name}
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline error message, mirroring x-form-field.
-   :error    {:type 'string  :reflects-attribute attr-error}})
+   :error    {:type 'string  :reflects-attribute attr-error}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -67,4 +72,6 @@
    ;; `(and (string? nil) …)` must not leak nil into a has-error? predicate.
    :has-error?  (boolean (and (string? error-raw) (not= error-raw "")))})
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

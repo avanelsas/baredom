@@ -357,19 +357,16 @@
 ;; ---------------------------------------------------------------------------
 
 (deftest validity-custom-error-when-error-set-test
-  ;; form-associated elements expose .validity directly on the element
   (let [el (append! (make-el))]
-    (when (.-validity el)
-      (.setAttribute el model/attr-error "Invalid email")
-      (is (.-customError (.-validity el))
-          "validity.customError should be true when error attribute is set"))))
+    (.setAttribute el model/attr-error "Invalid email")
+    (is (.-customError (.-validity el))
+        "validity.customError should be true when error attribute is set")))
 
 (deftest validity-value-missing-when-required-and-empty-test
   (let [el (append! (make-el))]
-    (when (.-validity el)
-      (.setAttribute el model/attr-required "")
-      (is (.-valueMissing (.-validity el))
-          "validity.valueMissing should be true when required and value is empty"))))
+    (.setAttribute el model/attr-required "")
+    (is (.-valueMissing (.-validity el))
+        "validity.valueMissing should be true when required and value is empty")))
 
 ;; ---------------------------------------------------------------------------
 ;; Events

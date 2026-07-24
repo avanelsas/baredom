@@ -522,11 +522,12 @@
 ;; ---------------------------------------------------------------------------
 ;; Form association (ElementInternals)
 ;;
-;; NOTE: instance-level validity APIs (validity/checkValidity/willValidate) are
-;; not exposed by the karma harness — the shipped x-form-field behaves the same
-;; — so validity assertions are guarded with `(when (.-validity el) …)`. The
-;; static flag and the form callbacks are harness-independent; end-to-end submit
-;; gating is verified in a real browser via the demo.
+;; The instance-level validity API (validity/validationMessage/willValidate/
+;; checkValidity/reportValidity/form/labels) comes from
+;; baredom.utils.forms/install-validity-api! — ElementInternals never mirrors it
+;; onto the host by itself. Cross-component coverage lives in
+;; baredom.components.validity-api-test; end-to-end submit gating is verified in
+;; a real browser via the demo.
 ;; ---------------------------------------------------------------------------
 
 (deftest form-associated-static-test
@@ -584,9 +585,8 @@
       (.setAttribute el "required" "")
       (js/setTimeout
        (fn []
-         (when (.-validity el)
-           (is (true? (.. el -validity -valueMissing))
-               "required + no date reports valueMissing"))
+         (is (true? (.. el -validity -valueMissing))
+             "required + no date reports valueMissing")
          (done))
        0))))
 
@@ -596,10 +596,9 @@
       (.setAttribute el "error" "Bad date")
       (js/setTimeout
        (fn []
-         (when (.-validity el)
-           (is (true? (.. el -validity -customError))
-               "error attribute drives customError")
-           (is (= "Bad date" (.-validationMessage el))))
+         (is (true? (.. el -validity -customError))
+             "error attribute drives customError")
+         (is (= "Bad date" (.-validationMessage el)))
          (done))
        0))))
 

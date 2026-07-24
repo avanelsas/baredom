@@ -5,13 +5,13 @@
   init();
   export type { XFileUploadElement };
   export interface XFileUploadProps {
-    accept?: string;
-    multiple?: boolean;
-    maxSize?: number;
-    maxFiles?: number;
     disabled?: boolean;
-    required?: boolean;
     name?: string;
+    multiple?: boolean;
+    maxFiles?: number;
+    maxSize?: number;
+    required?: boolean;
+    accept?: string;
     onselect?: (e: CustomEvent<{ files: any; rejected: any }>) => void;
     onremove?: (e: CustomEvent<{ file: Record<string, any>; remaining: any }>) => void;
     el?: XFileUploadElement | null;
@@ -24,13 +24,13 @@
 
 <script lang="ts">
   let {
-    accept,
-    multiple,
-    maxSize,
-    maxFiles,
     disabled,
-    required,
     name,
+    multiple,
+    maxFiles,
+    maxSize,
+    required,
+    accept,
     onselect,
     onremove,
     el = $bindable(null),
@@ -56,13 +56,13 @@
 
 <x-file-upload
   bind:this={el}
-  {accept}
-  {multiple}
-  {maxSize}
-  {maxFiles}
   {disabled}
-  {required}
   {name}
+  {multiple}
+  {maxFiles}
+  {maxSize}
+  {required}
+  {accept}
   class={className}
   {id}
   {...rest}

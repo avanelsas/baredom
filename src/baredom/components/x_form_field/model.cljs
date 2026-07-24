@@ -49,7 +49,12 @@
    :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
    :readonly     {:type 'boolean :reflects-attribute attr-readonly}
-   :required     {:type 'boolean :reflects-attribute attr-required}})
+   :required     {:type 'boolean :reflects-attribute attr-required}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-input  {:cancelable false :detail {:name 'string :value 'string}}
@@ -78,4 +83,6 @@
      :has-hint?    (and (string? hint-raw)  (not= hint-raw "")  (some? hint-raw))
      :has-label?   (and (string? label-raw) (not= label-raw "") (some? label-raw))}))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

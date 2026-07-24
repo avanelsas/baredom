@@ -8,13 +8,13 @@ import { init } from "@vanelsas/baredom/x-file-upload";
 init();
 
 export interface XFileUploadProps {
-  accept?: string;
-  multiple?: boolean;
-  maxSize?: number;
-  maxFiles?: number;
   disabled?: boolean;
-  required?: boolean;
   name?: string;
+  multiple?: boolean;
+  maxFiles?: number;
+  maxSize?: number;
+  required?: boolean;
+  accept?: string;
   onSelect?: (e: CustomEvent<{ files: any; rejected: any }>) => void;
   onRemove?: (e: CustomEvent<{ file: Record<string, any>; remaining: any }>) => void;
   children?: React.ReactNode;

@@ -368,6 +368,7 @@
                        (set! (.-value input-el) str-v))))))}))
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (define-value-prop! proto)
   (du/define-string-prop! proto "label"        model/attr-label "")
   (du/define-string-prop! proto "type"         model/attr-type "")

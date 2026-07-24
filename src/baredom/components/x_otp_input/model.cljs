@@ -142,7 +142,12 @@
    :autofocus   {:type 'boolean :reflects-attribute attr-autofocus}
    :label       {:type 'string  :reflects-attribute attr-label       :default ""}
    :placeholder {:type 'string  :reflects-attribute attr-placeholder :default ""}
-   :error       {:type 'string  :reflects-attribute attr-error       :default ""}})
+   :error       {:type 'string  :reflects-attribute attr-error       :default ""}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-input    {:cancelable false

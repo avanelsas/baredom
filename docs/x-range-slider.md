@@ -172,6 +172,10 @@ is submitted under the `name` attribute as a single comma-joined string
 `"start,end"` (e.g. `"20,80"`); split on `,` to read the two values. Form reset
 restores the widest range (`start` → `min`, `end` → `max`).
 
+### Validation API
+
+Like a native form control, `x-range-slider` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Responsive

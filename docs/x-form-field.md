@@ -116,6 +116,10 @@ Validity is set via `setValidity`:
 - `required` attribute set + empty value → `{ valueMissing: true }` with `"Please fill in this field."`
 - otherwise → `{}` (valid)
 
+### Validation API
+
+Like a native form control, `x-form-field` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Accessibility

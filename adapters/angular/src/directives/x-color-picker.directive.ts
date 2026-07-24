@@ -45,4 +45,6 @@ export class BaredomColorPicker implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

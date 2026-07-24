@@ -6,8 +6,7 @@
    token — are pure functions, separated from their effects (`set-validity!` /
    `sync!` / `apply-error-display!`), so the policy that maps a component's
    `error` / `required` / emptiness onto native validity and invalid markers
-   lives in one place and is unit-testable — the browser test harness cannot
-   exercise the ElementInternals / DOM effects, but it can test the projections.
+   lives in one place and is unit-testable.
 
    A component supplies only its genuine per-control variation — what counts as
    *empty*, which element is the validity *anchor*, its *value* projection, any
@@ -50,6 +49,69 @@
   (when internals
     (.setFormValue internals value)
     (set-validity! internals anchor inputs)))
+
+;; ── Native-like validation API ───────────────────────────────────────────────
+(defn- define-getter!
+  [^js proto prop-name getter-fn]
+  (.defineProperty js/Object proto prop-name
+                   #js {:get getter-fn :configurable true}))
+
+(defn- define-method!
+  [^js proto method-name method-fn]
+  (.defineProperty js/Object proto method-name
+                   #js {:value method-fn :writable true :configurable true}))
+
+(defn install-validity-api!
+  "Install the native form-control validation surface on `proto`, delegating to
+   the ElementInternals each instance stashes under `k-internals`: `validity`,
+   `validationMessage`, `willValidate`, `form` and `labels` as read-only
+   getters, plus `checkValidity()` and `reportValidity()`.
+
+   ElementInternals never mirrors any of this onto the host element — a
+   form-associated custom element has to expose it itself, or consumers can only
+   observe validity through a submit attempt. Where `attachInternals` is
+   unavailable the members fall back to the shape of a control that never blocks
+   submission, so feature-detecting callers see a consistent surface."
+  [^js proto k-internals]
+  (define-getter! proto "validity"
+    (fn validity-getter []
+      (this-as ^js this
+        (when-let [^js internals (du/getv this k-internals)]
+          (.-validity internals)))))
+  (define-getter! proto "validationMessage"
+    (fn validation-message-getter []
+      (this-as ^js this
+        (if-let [^js internals (du/getv this k-internals)]
+          (.-validationMessage internals)
+          ""))))
+  (define-getter! proto "willValidate"
+    (fn will-validate-getter []
+      (this-as ^js this
+        (if-let [^js internals (du/getv this k-internals)]
+          (.-willValidate internals)
+          false))))
+  (define-getter! proto "form"
+    (fn form-getter []
+      (this-as ^js this
+        (when-let [^js internals (du/getv this k-internals)]
+          (.-form internals)))))
+  (define-getter! proto "labels"
+    (fn labels-getter []
+      (this-as ^js this
+        (when-let [^js internals (du/getv this k-internals)]
+          (.-labels internals)))))
+  (define-method! proto "checkValidity"
+    (fn check-validity []
+      (this-as ^js this
+        (if-let [^js internals (du/getv this k-internals)]
+          (.checkValidity internals)
+          true))))
+  (define-method! proto "reportValidity"
+    (fn report-validity []
+      (this-as ^js this
+        (if-let [^js internals (du/getv this k-internals)]
+          (.reportValidity internals)
+          true)))))
 
 ;; ── Inline error display ─────────────────────────────────────────────────────
 (def ^:private error-id             "error")

@@ -66,6 +66,10 @@ Both events bubble and are composed.
 - The submitted value is the `value` attribute (default `"on"`) when checked; nothing is submitted when unchecked.
 - On form reset, `checked` and `indeterminate` attributes are removed. The `value` attribute is not restored by reset (matching native `<input type="checkbox">` behaviour).
 
+### Validation API
+
+Like a native form control, `x-checkbox` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Accessibility

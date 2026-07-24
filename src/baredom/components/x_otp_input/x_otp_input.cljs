@@ -1,5 +1,6 @@
 (ns baredom.components.x-otp-input.x-otp-input
   (:require [baredom.utils.component :as component]
+            [baredom.utils.forms :as forms]
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-otp-input.model :as model]))
@@ -543,6 +544,7 @@
 ;; Property accessors and methods
 ;; ---------------------------------------------------------------------------
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api)
   (aset proto "focus"
         (fn []
@@ -552,19 +554,7 @@
           (this-as ^js this
                    ;; remove-attr! triggers attributeChangedCallback → update-from-attrs!
                    (du/remove-attr! this model/attr-value)
-                   (focus-slot! this 0))))
-  (aset proto "checkValidity"
-        (fn []
-          (this-as ^js this
-                   (if-let [^js internals (du/getv this k-internals)]
-                     (.checkValidity internals)
-                     true))))
-  (aset proto "reportValidity"
-        (fn []
-          (this-as ^js this
-                   (if-let [^js internals (du/getv this k-internals)]
-                     (.reportValidity internals)
-                     true)))))
+                   (focus-slot! this 0)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Element registration

@@ -51,4 +51,6 @@ export class BaredomMultiCombobox implements OnInit, OnDestroy {
 
   show(): void { return this.el.show(); }
   hide(): void { return this.el.hide(); }
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

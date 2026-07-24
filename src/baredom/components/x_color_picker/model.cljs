@@ -60,7 +60,12 @@
    :name     {:type 'string  :reflects-attribute attr-name}
    :mode     {:type 'string  :reflects-attribute attr-mode}
    :open     {:type 'boolean :reflects-attribute attr-open}
-   :label    {:type 'string  :reflects-attribute attr-label}})
+   :label    {:type 'string  :reflects-attribute attr-label}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-input  {:detail {:value 'string :h 'number :s 'number :l 'number :a 'number}
@@ -383,4 +388,6 @@
   [{:keys [disabled? readonly?]}]
   (and (not disabled?) (not readonly?)))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

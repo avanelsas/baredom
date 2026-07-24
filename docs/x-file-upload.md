@@ -135,6 +135,10 @@ Rejected files are included in the `x-file-upload-select` event's `detail.reject
 - Responds to `form.reset()` (clears all files)
 - Responds to `fieldset.disabled`
 
+### Validation API
+
+Like a native form control, `x-file-upload` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Usage examples
 
 ### Basic image upload

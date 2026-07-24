@@ -486,14 +486,12 @@
   (let [^js el (append! (make-el))]
     (.setAttribute el "name" "country")
     (.setAttribute el "required" "")
-    (when (.-validity el)
-      (is (true? (.. el -validity -valueMissing))
-          "required + no selection reports valueMissing"))))
+    (is (true? (.. el -validity -valueMissing))
+        "required + no selection reports valueMissing")))
 
 (deftest validity-custom-error-when-error-set-test
   (let [^js el (append! (make-el))]
     (.setAttribute el "error" "Required")
-    (when (.-validity el)
-      (is (true? (.. el -validity -customError))
-          "error attribute drives customError")
-      (is (= "Required" (.-validationMessage el))))))
+    (is (true? (.. el -validity -customError))
+        "error attribute drives customError")
+    (is (= "Required" (.-validationMessage el)))))

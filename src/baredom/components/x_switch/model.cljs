@@ -35,7 +35,12 @@
    :readOnly {:type 'boolean :reflects-attribute attr-readonly}
    :required {:type 'boolean :reflects-attribute attr-required}
    :name     {:type 'string  :reflects-attribute attr-name}
-   :value    {:type 'string  :reflects-attribute attr-value}})
+   :value    {:type 'string  :reflects-attribute attr-value}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -109,4 +114,6 @@
      :aria-labelledby  aria-labelledby-raw
      :aria-checked     (if checked? "true" "false")}))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})
