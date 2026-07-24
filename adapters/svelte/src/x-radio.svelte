@@ -6,10 +6,10 @@
   export type { XRadioElement };
   export interface XRadioProps {
     disabled?: boolean;
-    readOnly?: boolean;
-    required?: boolean;
     name?: string;
     value?: string;
+    readOnly?: boolean;
+    required?: boolean;
     /** Two-way bindable form value — `bind:checked={...}`. */
     checked?: boolean;
     onchangerequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
@@ -25,10 +25,10 @@
 <script lang="ts">
   let {
     disabled,
-    readOnly,
-    required,
     name,
     value,
+    readOnly,
+    required,
     checked = $bindable(undefined),
     onchangerequest,
     onchange,
@@ -67,10 +67,10 @@
 <x-radio
   bind:this={el}
   {disabled}
-  {readOnly}
-  {required}
   {name}
   {value}
+  {readOnly}
+  {required}
   class={className}
   {id}
   {...rest}

@@ -218,9 +218,42 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "value",
+        "name" : "validationMessage",
         "type" : {
           "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "debounce",
+        "type" : {
+          "text" : "number"
         }
       }, {
         "kind" : "field",
@@ -230,7 +263,7 @@
         }
       }, {
         "kind" : "field",
-        "name" : "placeholder",
+        "name" : "value",
         "type" : {
           "text" : "string"
         }
@@ -248,10 +281,11 @@
         }
       }, {
         "kind" : "field",
-        "name" : "disabled",
+        "name" : "form",
         "type" : {
-          "text" : "boolean"
-        }
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "required",
@@ -260,10 +294,11 @@
         }
       }, {
         "kind" : "field",
-        "name" : "debounce",
+        "name" : "validity",
         "type" : {
-          "text" : "number"
-        }
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "checkValidity",
@@ -331,10 +366,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "open",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -379,6 +435,13 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "end",
         "type" : {
           "text" : "string"
@@ -389,6 +452,13 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "focus",
@@ -411,6 +481,22 @@
         "return" : {
           "type" : {
             "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
           }
         }
       } ],
@@ -459,10 +545,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "min",
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -519,6 +626,13 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "end",
         "type" : {
           "text" : "string"
@@ -528,6 +642,29 @@
         "name" : "step",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -804,25 +941,28 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "checked",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
         "type" : {
           "text" : "boolean"
-        }
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "readOnly",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "required",
         "type" : {
           "text" : "boolean"
         }
@@ -837,6 +977,54 @@
         "name" : "value",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -1158,37 +1346,28 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "accept",
+        "name" : "validationMessage",
         "type" : {
           "text" : "string"
-        }
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
-        "name" : "multiple",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
         "type" : {
           "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "maxSize",
-        "type" : {
-          "text" : "number"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "maxFiles",
-        "type" : {
-          "text" : "number"
-        }
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "required",
         "type" : {
           "text" : "boolean"
         }
@@ -1200,11 +1379,55 @@
         }
       }, {
         "kind" : "field",
+        "name" : "multiple",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
         "name" : "files",
         "type" : {
           "text" : "any"
         },
         "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "maxFiles",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "maxSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "accept",
+        "type" : {
+          "text" : "string"
+        }
       }, {
         "kind" : "method",
         "name" : "checkValidity",
@@ -1611,10 +1834,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "mask",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "placeholder",
@@ -1677,10 +1921,24 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "required",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "focus",
@@ -2326,19 +2584,34 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "value",
+        "name" : "validationMessage",
         "type" : {
           "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "placeholder",
-        "type" : {
-          "text" : "string"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "name",
         "type" : {
           "text" : "string"
         }
@@ -2350,19 +2623,13 @@
         }
       }, {
         "kind" : "field",
-        "name" : "required",
+        "name" : "name",
         "type" : {
-          "text" : "boolean"
+          "text" : "string"
         }
       }, {
         "kind" : "field",
-        "name" : "open",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "placement",
+        "name" : "value",
         "type" : {
           "text" : "string"
         }
@@ -2372,6 +2639,32 @@
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "show",
@@ -2386,6 +2679,22 @@
         "return" : {
           "type" : {
             "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
           }
         }
       } ],
@@ -3304,21 +3613,30 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "required",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "value",
-        "type" : {
-          "text" : "string"
         }
       }, {
         "kind" : "field",
@@ -3328,9 +3646,51 @@
         }
       }, {
         "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "error",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -3435,6 +3795,27 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "disabled",
         "type" : {
           "text" : "boolean"
@@ -3483,9 +3864,39 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "required",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -5423,10 +5834,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "open",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "placeholder",
@@ -5465,6 +5897,13 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "placement",
         "type" : {
           "text" : "string"
@@ -5475,6 +5914,13 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "show",
@@ -5489,6 +5935,22 @@
         "return" : {
           "type" : {
             "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
           }
         }
       } ],
@@ -6336,10 +6798,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "allowClear",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -6393,6 +6876,36 @@
         "name" : "shape",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -7474,6 +7987,27 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "placeholder",
         "type" : {
           "text" : "string"
@@ -7522,9 +8056,39 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "required",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -7613,10 +8177,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "min",
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "placeholder",
@@ -7685,10 +8270,24 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "required",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
       }, {
         "kind" : "method",
         "name" : "checkValidity",
@@ -7982,31 +8581,28 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "checked",
+        "name" : "validationMessage",
         "type" : {
-          "text" : "boolean"
-        }
+          "text" : "string"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
-        "name" : "indeterminate",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
         "type" : {
           "text" : "boolean"
-        }
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "readOnly",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "required",
         "type" : {
           "text" : "boolean"
         }
@@ -8021,6 +8617,60 @@
         "name" : "value",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -8210,25 +8860,28 @@
       },
       "members" : [ {
         "kind" : "field",
-        "name" : "checked",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
         "type" : {
           "text" : "boolean"
-        }
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "readOnly",
-        "type" : {
-          "text" : "boolean"
-        }
-      }, {
-        "kind" : "field",
-        "name" : "required",
         "type" : {
           "text" : "boolean"
         }
@@ -8243,6 +8896,54 @@
         "name" : "value",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -8918,10 +9619,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "open",
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -8969,6 +9691,36 @@
         "name" : "alpha",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {
@@ -9117,10 +9869,31 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "validationMessage",
+        "type" : {
+          "text" : "string"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
+        "name" : "labels",
+        "type" : {
+          "text" : "NodeList | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "min",
         "type" : {
           "text" : "string"
         }
+      }, {
+        "kind" : "field",
+        "name" : "willValidate",
+        "type" : {
+          "text" : "boolean"
+        },
+        "readonly" : true
       }, {
         "kind" : "field",
         "name" : "disabled",
@@ -9171,9 +9944,39 @@
         }
       }, {
         "kind" : "field",
+        "name" : "form",
+        "type" : {
+          "text" : "HTMLFormElement | null"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "field",
         "name" : "step",
         "type" : {
           "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "validity",
+        "type" : {
+          "text" : "ValidityState"
+        },
+        "readonly" : true
+      }, {
+        "kind" : "method",
+        "name" : "checkValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reportValidity",
+        "return" : {
+          "type" : {
+            "text" : "boolean"
+          }
         }
       } ],
       "events" : [ {

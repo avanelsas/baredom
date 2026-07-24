@@ -1,5 +1,6 @@
 (ns baredom.components.x-range-slider.x-range-slider
   (:require [baredom.utils.component :as component]
+            [baredom.utils.forms :as forms]
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-range-slider.model :as model]))
@@ -544,6 +545,7 @@
 ;; Element class and registration
 ;; ---------------------------------------------------------------------------
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api))
 
 (defn init! []

@@ -661,14 +661,12 @@
     (is (= true (.-formAssociated cls))
         "formAssociated static property must be true")))
 
-;; NOTE ON HARNESS COVERAGE: instance-level ElementInternals APIs
-;; (willValidate, validity, checkValidity, el.form, FormData participation) are
-;; not exposed by the karma/browser-test harness — the shipped x-form-field
-;; behaves identically here — so validity assertions are guarded with
-;; `(when (.-validity el) …)` and run only where the platform supports them.
-;; The form callbacks are invoked directly, which IS harness-independent, and
-;; the static formAssociated flag is asserted above. End-to-end submit gating is
-;; verified in a real browser via the demo.
+;; The instance-level validity API (willValidate, validity, checkValidity,
+;; el.form, labels) comes from baredom.utils.forms/install-validity-api! —
+;; ElementInternals never mirrors it onto the host by itself. Cross-component
+;; coverage lives in baredom.components.validity-api-test. FormData
+;; participation and end-to-end submit gating are verified in a real browser via
+;; the demo.
 
 (deftest form-reset-callback-restores-default-test
   (async done
@@ -688,6 +686,22 @@
             (done))
           0))
        0))))
+
+(deftest form-reset-callback-clears-error-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Please choose an option")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js sel (shadow-part el "[part=select]")]
+      (is (not (.hasAttribute el model/attr-error))
+          "reset drops the error attribute")
+      (is (.contains (.-classList err) "error-hidden")
+          "reset hides the inline error message")
+      (is (not (.hasAttribute el "data-invalid"))
+          "reset drops data-invalid")
+      (is (= "false" (.getAttribute sel "aria-invalid"))
+          "reset clears aria-invalid on the internal select"))))
 
 (deftest form-reset-drops-controlled-value-test
   (async done
@@ -725,9 +739,8 @@
          (let [^js sel (shadow-part el "[part=select]")]
            (set! (.-value sel) "")
            (.dispatchEvent sel (js/Event. "change" #js {:bubbles true})))
-         (when (.-validity el)
-           (is (true? (.. el -validity -valueMissing))
-               "required + empty selection reports valueMissing"))
+         (is (true? (.. el -validity -valueMissing))
+             "required + empty selection reports valueMissing")
          (done))
        0))))
 
@@ -738,9 +751,8 @@
       (js/setTimeout
        (fn []
          (.setAttribute el "error" "Not allowed")
-         (when (.-validity el)
-           (is (true? (.. el -validity -customError))
-               "error attribute drives customError")
-           (is (= "Not allowed" (.-validationMessage el))))
+         (is (true? (.. el -validity -customError))
+             "error attribute drives customError")
+         (is (= "Not allowed" (.-validationMessage el)))
          (done))
        0))))

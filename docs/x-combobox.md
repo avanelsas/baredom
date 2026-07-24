@@ -166,7 +166,11 @@ Fired before the panel opens or closes. **Cancelable** — call `event.preventDe
 
 - The selected value is submitted under its `name` and appears in `FormData` — no hidden input needed.
 - Constraint validation is honoured: a `required` combobox with no selection reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
-- `form.reset()` clears the selection (mirroring `x-form-field`), and `<fieldset disabled>` disables it via `formDisabledCallback`.
+- `form.reset()` clears the selection (mirroring `x-form-field`) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
+
+### Validation API
+
+Like a native form control, `x-combobox` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
 
 ## Keyboard navigation
 

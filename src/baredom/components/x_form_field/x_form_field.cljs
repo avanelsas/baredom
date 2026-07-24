@@ -309,6 +309,7 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (when-let [refs (du/getv el k-refs)]
     (let [^js input-el (gobj/get refs rk-input)]
       (set! (.-value input-el) "")))
@@ -367,6 +368,7 @@
                        (set! (.-value input-el) str-v))))))}))
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (define-value-prop! proto)
   (du/define-string-prop! proto "label"        model/attr-label "")
   (du/define-string-prop! proto "type"         model/attr-type "")

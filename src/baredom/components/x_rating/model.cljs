@@ -75,7 +75,12 @@
    :readOnly   {:type 'boolean :reflects-attribute attr-readonly}
    :name       {:type 'string  :reflects-attribute attr-name}
    :label      {:type 'string  :reflects-attribute attr-label}
-   :size       {:type 'string  :reflects-attribute attr-size}})
+   :size       {:type 'string  :reflects-attribute attr-size}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -83,7 +88,9 @@
    event-change         {:detail {:value 'number :max 'number}}
    event-hover          {:detail {:value 'number :max 'number}}})
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})
 
 ;; ---------------------------------------------------------------------------
 ;; Attribute normalization helpers

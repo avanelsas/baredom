@@ -235,6 +235,22 @@
     (is (not (.hasAttribute el model/attr-value))
         "formResetCallback clears the selected set")))
 
+(deftest form-reset-callback-clears-error-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-error "Choose at least one")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (not (.hasAttribute el model/attr-error))
+          "reset drops the error attribute")
+      (is (.contains (.-classList err) "error-hidden")
+          "reset hides the inline error message")
+      (is (not (.hasAttribute el "data-invalid"))
+          "reset drops data-invalid")
+      (is (= "false" (.getAttribute inp "aria-invalid"))
+          "reset clears aria-invalid on the input"))))
+
 (deftest form-disabled-callback-reflects-attr-test
   (let [^js el (append! (make-el))]
     (.formDisabledCallback el true)
@@ -248,14 +264,12 @@
   (let [^js el (append! (make-el))]
     (.setAttribute el "name" "tags")
     (.setAttribute el "required" "")
-    (when (.-validity el)
-      (is (true? (.. el -validity -valueMissing))
-          "required + empty set reports valueMissing"))))
+    (is (true? (.. el -validity -valueMissing))
+        "required + empty set reports valueMissing")))
 
 (deftest validity-custom-error-when-error-set-test
   (let [^js el (append! (make-el))]
     (.setAttribute el "error" "Pick at least one")
-    (when (.-validity el)
-      (is (true? (.. el -validity -customError))
-          "error attribute drives customError")
-      (is (= "Pick at least one" (.-validationMessage el))))))
+    (is (true? (.. el -validity -customError))
+        "error attribute drives customError")
+    (is (= "Pick at least one" (.-validationMessage el)))))

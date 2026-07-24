@@ -2,6 +2,7 @@
   (:require
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
+   [baredom.utils.forms :as forms]
    [goog.object :as gobj]
    [baredom.components.x-currency-field.model :as model]))
 
@@ -492,26 +493,8 @@
                                (if (= str-v "") ""
                                    (format-display str-v currency locale)))))))))}))
 
-(defn- install-validity-methods! [^js proto]
-  ;; .defineProperty with a :value descriptor — same Tier-2 idiom adopted in
-  ;; x-cancel-dialogue, x-alert, x-collapse, x-combobox, x-form. Bare aset on
-  ;; the prototype was audited out in PR #155.
-  (.defineProperty js/Object proto "checkValidity"
-                   #js {:value (fn xcf-check-validity []
-                                 (this-as ^js this
-                                   (if-let [^js internals (du/getv this k-internals)]
-                                     (.checkValidity internals)
-                                     true)))
-                        :writable true :configurable true})
-  (.defineProperty js/Object proto "reportValidity"
-                   #js {:value (fn xcf-report-validity []
-                                 (this-as ^js this
-                                   (if-let [^js internals (du/getv this k-internals)]
-                                     (.reportValidity internals)
-                                     true)))
-                        :writable true :configurable true}))
-
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (define-value-prop! proto)
   (du/define-string-prop! proto "name"        model/attr-name "")
   (du/define-string-prop! proto "currency"    model/attr-currency "")
@@ -524,8 +507,7 @@
   (du/define-string-prop! proto "error"       model/attr-error "")
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "readOnly" model/attr-readonly)
-  (du/define-bool-prop! proto "required" model/attr-required)
-  (install-validity-methods! proto))
+  (du/define-bool-prop! proto "required" model/attr-required))
 
 ;; ── Public API ────────────────────────────────────────────────────────────
 (defn init! []

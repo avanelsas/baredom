@@ -15,13 +15,13 @@ export const XCheckbox = defineComponent({
   name: "XCheckbox",
   inheritAttrs: false,
   props: {
-    checked: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    indeterminate: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    readOnly: { type: Boolean as PropType<boolean | undefined>, default: undefined },
-    required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     name: { type: String as PropType<string | undefined>, default: undefined },
     value: { type: String as PropType<string | undefined>, default: undefined },
+    indeterminate: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    readOnly: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    checked: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    required: { type: Boolean as PropType<boolean | undefined>, default: undefined },
     modelValue: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   emits: {

@@ -234,3 +234,10 @@ x-otp-input::part(slot) {
   letter-spacing: 0;
 }
 ```
+
+---
+
+## Form participation
+
+Like a native form control, `x-otp-input` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+

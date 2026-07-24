@@ -6,9 +6,9 @@
   export type { XSelectElement };
   export interface XSelectProps {
     disabled?: boolean;
-    required?: boolean;
     name?: string;
     error?: string;
+    required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onchangerequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
@@ -24,9 +24,9 @@
 <script lang="ts">
   let {
     disabled,
-    required,
     name,
     error,
+    required,
     value = $bindable(undefined),
     onchangerequest,
     onselectchange,
@@ -65,9 +65,9 @@
 <x-select
   bind:this={el}
   {disabled}
-  {required}
   {name}
   {error}
+  {required}
   class={className}
   {id}
   {...rest}

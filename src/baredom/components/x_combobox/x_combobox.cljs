@@ -774,6 +774,7 @@
 ;; apply-model! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (du/setv! el k-model nil)
   (update-from-attrs! el))
 
@@ -807,6 +808,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api)
   ;; show()/hide() public methods — .defineProperty is the shared idiom
   ;; for prototype methods (bare aset was audited out of x-button in PR #155).

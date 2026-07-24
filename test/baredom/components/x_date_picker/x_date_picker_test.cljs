@@ -27,6 +27,14 @@
   [^js el s]
   (.querySelector (.-shadowRoot el) s))
 
+(defn blur-with!
+  "Set the input to s and fire the blur that triggers commit-display!."
+  [^js el s]
+  (let [^js inp (shadow-part el "[part=input]")]
+    (set! (.-value inp) s)
+    (.dispatchEvent inp (js/Event. "blur"))
+    inp))
+
 ;; ---------------------------------------------------------------------------
 
 (deftest registration-test
@@ -297,23 +305,107 @@
     (let [el (append! (make-el))]
       (.addEventListener el model/event-change-request
                          (fn [^js e] (.preventDefault e)))
-      (let [^js inp (shadow-part el "[part=input]")]
-        (set! (.-value inp) "2024-06-15")
-        (.dispatchEvent inp (js/Event. "change"))
-        (is (nil? (.getAttribute el model/attr-value))
-            "value should not be set when change-request is cancelled"))))
+      (blur-with! el "2024-06-15")
+      (is (nil? (.getAttribute el model/attr-value))
+          "value should not be set when change-request is cancelled")))
+  (testing "single mode — the same commit lands when nothing cancels it"
+    (let [el (append! (make-el))]
+      (blur-with! el "2024-06-15")
+      (is (= "2024-06-15" (.getAttribute el model/attr-value))
+          "value is set when change-request is not cancelled")))
   (testing "range mode — preventDefault on change-request blocks attr-start/attr-end"
     (let [el (append! (make-el))]
       (.setAttribute el "mode" "range")
       (.addEventListener el model/event-change-request
                          (fn [^js e] (.preventDefault e)))
-      (let [^js inp (shadow-part el "[part=input]")]
-        (set! (.-value inp) "2024-06-15 – 2024-06-20")
-        (.dispatchEvent inp (js/Event. "change"))
-        (is (nil? (.getAttribute el model/attr-start))
-            "start should not be set when change-request is cancelled")
-        (is (nil? (.getAttribute el model/attr-end))
-            "end should not be set when change-request is cancelled")))))
+      (blur-with! el "2024-06-15 - 2024-06-20")
+      (is (nil? (.getAttribute el model/attr-start))
+          "start should not be set when change-request is cancelled")
+      (is (nil? (.getAttribute el model/attr-end))
+          "end should not be set when change-request is cancelled")))
+  (testing "range mode — the same commit lands when nothing cancels it"
+    (let [el (append! (make-el))]
+      (.setAttribute el "mode" "range")
+      (blur-with! el "2024-06-15 - 2024-06-20")
+      (is (= "2024-06-15" (.getAttribute el model/attr-start))
+          "start is set when change-request is not cancelled")
+      (is (= "2024-06-20" (.getAttribute el model/attr-end))
+          "end is set when change-request is not cancelled"))))
+
+;; ---------------------------------------------------------------------------
+;; Blank input commit
+;; ---------------------------------------------------------------------------
+
+(deftest blank-input-commit-clears-single-test
+  (let [el      (append! (make-el))
+        details (atom [])]
+    (.setAttribute el model/attr-value "2024-06-15")
+    (.addEventListener el model/event-change
+                       (fn [^js e] (swap! details conj (.-detail e))))
+    (let [^js inp (blur-with! el "")]
+      (is (nil? (.getAttribute el model/attr-value))
+          "clearing the input clears the committed value")
+      (is (= "" (.-value inp))
+          "input display stays empty after the commit")
+      (is (= 1 (count @details)) "one change event")
+      (let [^js d (first @details)]
+        (is (= "" (.-value d))    "change detail reports an empty value")
+        (is (= "single" (.-mode d)))
+        (is (= "blur" (.-reason d)))))))
+
+(deftest blank-input-commit-clears-range-test
+  (let [el      (append! (make-el))
+        details (atom [])]
+    (.setAttribute el "mode" "range")
+    (.setAttribute el model/attr-start "2024-03-01")
+    (.setAttribute el model/attr-end   "2024-03-15")
+    (.addEventListener el model/event-change
+                       (fn [^js e] (swap! details conj (.-detail e))))
+    (blur-with! el "")
+    (is (nil? (.getAttribute el model/attr-start)) "start cleared")
+    (is (nil? (.getAttribute el model/attr-end))   "end cleared")
+    (is (= 1 (count @details)) "one change event")
+    (let [^js d (first @details)]
+      (is (= "" (.-start d)))
+      (is (= "" (.-end d)))
+      (is (= "range" (.-mode d))))))
+
+(deftest blank-input-commit-respects-change-request-cancel-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-value "2024-06-15")
+    (.addEventListener el model/event-change-request
+                       (fn [^js e] (.preventDefault e)))
+    (let [^js inp (blur-with! el "")]
+      (is (= "2024-06-15" (.getAttribute el model/attr-value))
+          "value survives a cancelled clear")
+      (is (= "2024-06-15" (.-value inp))
+          "input display is restored from the committed value"))))
+
+(deftest blank-input-commit-is-noop-when-nothing-committed-test
+  (let [el      (append! (make-el))
+        changes (atom 0)
+        reqs    (atom 0)]
+    (.addEventListener el model/event-change         (fn [_] (swap! changes inc)))
+    (.addEventListener el model/event-change-request (fn [_] (swap! reqs inc)))
+    (blur-with! el "")
+    (is (= 0 @reqs)    "no change-request when there is nothing to clear")
+    (is (= 0 @changes) "no change when there is nothing to clear")))
+
+(deftest blank-input-commit-resets-range-step-test
+  (let [el (append! (make-el))]
+    (.setAttribute el "mode" "range")
+    (.setAttribute el "open" "")
+    (let [^js grid (shadow-part el "[part=grid]")
+          ^js day  (.querySelector grid "[part=day][data-outside=false][data-disabled=false]")]
+      (.click day))
+    (is (some? (.getAttribute el model/attr-start)) "first click sets start")
+    (blur-with! el "")
+    (is (nil? (.getAttribute el model/attr-start)) "start cleared")
+    (let [^js grid (shadow-part el "[part=grid]")
+          ^js day  (.querySelector grid "[part=day][data-outside=false][data-disabled=false]")]
+      (.click day))
+    (is (some? (.getAttribute el model/attr-start)) "click after clear sets start")
+    (is (nil? (.getAttribute el model/attr-end))    "click after clear leaves end unset")))
 
 ;; ---------------------------------------------------------------------------
 ;; ARIA tests
@@ -430,11 +522,12 @@
 ;; ---------------------------------------------------------------------------
 ;; Form association (ElementInternals)
 ;;
-;; NOTE: instance-level validity APIs (validity/checkValidity/willValidate) are
-;; not exposed by the karma harness — the shipped x-form-field behaves the same
-;; — so validity assertions are guarded with `(when (.-validity el) …)`. The
-;; static flag and the form callbacks are harness-independent; end-to-end submit
-;; gating is verified in a real browser via the demo.
+;; The instance-level validity API (validity/validationMessage/willValidate/
+;; checkValidity/reportValidity/form/labels) comes from
+;; baredom.utils.forms/install-validity-api! — ElementInternals never mirrors it
+;; onto the host by itself. Cross-component coverage lives in
+;; baredom.components.validity-api-test; end-to-end submit gating is verified in
+;; a real browser via the demo.
 ;; ---------------------------------------------------------------------------
 
 (deftest form-associated-static-test
@@ -460,6 +553,22 @@
           0))
        0))))
 
+(deftest form-reset-callback-clears-error-test
+  (let [el (append! (make-el))]
+    (.setAttribute el model/attr-error "Choose a valid date")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (not (.hasAttribute el model/attr-error))
+          "reset drops the error attribute")
+      (is (.contains (.-classList err) "error-hidden")
+          "reset hides the inline error message")
+      (is (not (.hasAttribute el "data-invalid"))
+          "reset drops data-invalid")
+      (is (= "false" (.getAttribute inp "aria-invalid"))
+          "reset clears aria-invalid on the input"))))
+
 (deftest form-disabled-callback-reflects-attr-test
   (let [^js el (append! (make-el))]
     (.formDisabledCallback el true)
@@ -476,9 +585,8 @@
       (.setAttribute el "required" "")
       (js/setTimeout
        (fn []
-         (when (.-validity el)
-           (is (true? (.. el -validity -valueMissing))
-               "required + no date reports valueMissing"))
+         (is (true? (.. el -validity -valueMissing))
+             "required + no date reports valueMissing")
          (done))
        0))))
 
@@ -488,9 +596,9 @@
       (.setAttribute el "error" "Bad date")
       (js/setTimeout
        (fn []
-         (when (.-validity el)
-           (is (true? (.. el -validity -customError))
-               "error attribute drives customError")
-           (is (= "Bad date" (.-validationMessage el))))
+         (is (true? (.. el -validity -customError))
+             "error attribute drives customError")
+         (is (= "Bad date" (.-validationMessage el)))
          (done))
        0))))
+

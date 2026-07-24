@@ -1,5 +1,6 @@
 (ns baredom.components.x-file-upload.x-file-upload
   (:require [baredom.utils.component :as component]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.components.x-file-upload.model :as model]
             [baredom.utils.dom :as du]))
@@ -593,6 +594,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/define-string-prop! proto "accept"   model/attr-accept)
   (du/define-string-prop! proto "name"     model/attr-name)
   (du/define-bool-prop!   proto "multiple" model/attr-multiple)
@@ -606,21 +608,7 @@
    #js {:configurable true
         :enumerable   true
         :get (fn [] (this-as ^js this
-                             (.slice (or (du/getv this k-files) #js []))))})
-  ;; checkValidity / reportValidity — .defineProperty per the Tier-2 idiom
-  ;; (bare aset on the prototype was audited out in PR #155).
-  (.defineProperty js/Object proto "checkValidity"
-                   #js {:value (fn xfu-check-validity []
-                                 (this-as ^js this
-                                   (when-let [^js i (du/getv this k-internals)]
-                                     (.checkValidity i))))
-                        :writable true :configurable true})
-  (.defineProperty js/Object proto "reportValidity"
-                   #js {:value (fn xfu-report-validity []
-                                 (this-as ^js this
-                                   (when-let [^js i (du/getv this k-internals)]
-                                     (.reportValidity i))))
-                        :writable true :configurable true}))
+                             (.slice (or (du/getv this k-files) #js []))))}))
 
 (defn init! []
   (component/register! model/tag-name

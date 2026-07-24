@@ -122,6 +122,10 @@ The `size` attribute sets CSS custom properties on `[part=base]`:
 
 `x-slider` is form-associated (`formAssociated = true`). The current `value` is submitted with the form under the `name` attribute. Supports `formResetCallback` (resets value to `0`) and `formDisabledCallback`.
 
+### Validation API
+
+Like a native form control, `x-slider` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Responsive

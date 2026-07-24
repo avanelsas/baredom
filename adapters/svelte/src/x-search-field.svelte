@@ -5,14 +5,14 @@
   init();
   export type { XSearchFieldElement };
   export interface XSearchFieldProps {
-    value?: string;
-    name?: string;
     placeholder?: string;
+    disabled?: boolean;
+    debounce?: number;
+    name?: string;
+    value?: string;
     label?: string;
     autocomplete?: string;
-    disabled?: boolean;
     required?: boolean;
-    debounce?: number;
     oninput?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onchange?: (e: CustomEvent<{ name: string; value: string }>) => void;
     onsearch?: (e: CustomEvent<{ name: string; value: string }>) => void;
@@ -27,14 +27,14 @@
 
 <script lang="ts">
   let {
-    value,
-    name,
     placeholder,
+    disabled,
+    debounce,
+    name,
+    value,
     label,
     autocomplete,
-    disabled,
     required,
-    debounce,
     oninput,
     onchange,
     onsearch,
@@ -68,14 +68,14 @@
 
 <x-search-field
   bind:this={el}
-  {value}
-  {name}
   {placeholder}
+  {disabled}
+  {debounce}
+  {name}
+  {value}
   {label}
   {autocomplete}
-  {disabled}
   {required}
-  {debounce}
   class={className}
   {id}
   {...rest}

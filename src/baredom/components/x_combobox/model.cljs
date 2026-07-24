@@ -40,7 +40,12 @@
    :placement   {:type 'string  :reflects-attribute attr-placement}
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline validation message, mirroring x-form-field.
-   :error       {:type 'string  :reflects-attribute attr-error}})
+   :error       {:type 'string  :reflects-attribute attr-error}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -129,4 +134,6 @@
 
 (def method-api
   {:show {:args [] :returns 'void}
-   :hide {:args [] :returns 'void}})
+   :hide {:args [] :returns 'void}
+   :checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

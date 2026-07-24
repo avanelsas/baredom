@@ -17,12 +17,12 @@ export class BaredomRadio implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set checked(v: boolean) { this.el.checked = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
   @Input() set value(v: string) { this.el.value = v as any; }
+  @Input() set readOnly(v: boolean) { this.el.readOnly = v as any; }
+  @Input() set checked(v: boolean) { this.el.checked = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>>();
   @Output() change = new EventEmitter<CustomEvent<{ value: string; checked: boolean }>>();
@@ -42,4 +42,6 @@ export class BaredomRadio implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

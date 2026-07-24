@@ -54,7 +54,12 @@
    :error       {:type 'string  :reflects-attribute attr-error}
    :disabled    {:type 'boolean :reflects-attribute attr-disabled}
    :readOnly    {:type 'boolean :reflects-attribute attr-readonly}
-   :required    {:type 'boolean :reflects-attribute attr-required}})
+   :required    {:type 'boolean :reflects-attribute attr-required}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}

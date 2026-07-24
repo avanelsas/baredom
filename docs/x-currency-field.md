@@ -107,6 +107,10 @@ The `value` getter always returns the raw numeric string stored in the `value` a
 - **`formResetCallback`** — clears the `value` attribute and the input display
 - The form submission value is the raw numeric string (e.g. `"1234.56"`)
 
+### Validation API
+
+Like a native form control, `x-currency-field` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Formatting behavior
 
 - **Blurred**: `input.value` shows the value formatted with `Intl.NumberFormat` (e.g. `"1,234.56"` for USD/en-US)

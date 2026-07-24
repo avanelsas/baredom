@@ -1,5 +1,6 @@
 (ns baredom.components.x-slider.x-slider
   (:require [baredom.utils.component :as component]
+            [baredom.utils.forms :as forms]
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-slider.model :as model]))
@@ -429,6 +430,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api))
 
 (defn init! []

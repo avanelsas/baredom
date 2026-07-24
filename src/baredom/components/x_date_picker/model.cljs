@@ -49,7 +49,12 @@
    :name        {:type 'string  :reflects-attribute attr-name}
    ;; `error` reflects the attribute so x-form's setFieldError can drive the
    ;; inline validation message, mirroring x-form-field.
-   :error       {:type 'string  :reflects-attribute attr-error}})
+   :error       {:type 'string  :reflects-attribute attr-error}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 ;; ---------------------------------------------------------------------------
 ;; String / parsing helpers
@@ -173,6 +178,13 @@
          :end-str    (or (normalize-str end) "")
          :complete?  complete?}))))
 
+(defn committed-value?
+  "True when the canonicalized model holds at least one committed date."
+  [canon]
+  (if (= (:mode canon) :range)
+    (or (some? (:start-d canon)) (some? (:end-d canon)))
+    (some? (:value-d canon))))
+
 ;; ---------------------------------------------------------------------------
 ;; Display value helper
 ;; ---------------------------------------------------------------------------
@@ -203,4 +215,6 @@
 (def method-api
   {:focus  {:args [] :returns 'void}
    :commit {:args [] :returns 'void}
-   :clear  {:args [] :returns 'void}})
+   :clear  {:args [] :returns 'void}
+   :checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

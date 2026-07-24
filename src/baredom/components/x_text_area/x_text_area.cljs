@@ -347,6 +347,7 @@
 
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (when-let [refs (du/getv el k-refs)]
     (let [^js textarea-el (gobj/get refs "textarea")]
       (set! (.-value textarea-el) "")))
@@ -413,6 +414,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (define-value-prop! proto)
   (du/define-string-prop! proto "name"         model/attr-name "")
   (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")

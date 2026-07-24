@@ -903,6 +903,7 @@
 ;; apply-model! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
   (du/remove-attr! el model/attr-value)
+  (du/remove-attr! el model/attr-error)
   (du/setv! el k-model nil)
   (update-from-attrs! el))
 
@@ -940,6 +941,7 @@
 ;; Property accessors
 ;; ---------------------------------------------------------------------------
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   ;; Custom value accessor: getter returns JS array, setter accepts array or string.
   ;; Setter routes through du/ so programmatic `el.value = […]` is visible to
   ;; the trace recorder (x-trace-history) like every other attribute mutation.

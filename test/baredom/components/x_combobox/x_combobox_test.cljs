@@ -457,6 +457,22 @@
     (is (not (.hasAttribute el model/attr-value))
         "formResetCallback clears the selected value")))
 
+(deftest form-reset-callback-clears-error-test
+  (let [^js el (append! (make-el))]
+    (.setAttribute el model/attr-error "Choose an option")
+    (is (.hasAttribute el "data-invalid") "precondition: error is displayed")
+    (.formResetCallback el)
+    (let [^js err (shadow-part el "[part=error]")
+          ^js inp (shadow-part el "[part=input]")]
+      (is (not (.hasAttribute el model/attr-error))
+          "reset drops the error attribute")
+      (is (.contains (.-classList err) "error-hidden")
+          "reset hides the inline error message")
+      (is (not (.hasAttribute el "data-invalid"))
+          "reset drops data-invalid")
+      (is (= "false" (.getAttribute inp "aria-invalid"))
+          "reset clears aria-invalid on the input"))))
+
 (deftest form-disabled-callback-reflects-attr-test
   (let [^js el (append! (make-el))]
     (.formDisabledCallback el true)
@@ -470,14 +486,12 @@
   (let [^js el (append! (make-el))]
     (.setAttribute el "name" "country")
     (.setAttribute el "required" "")
-    (when (.-validity el)
-      (is (true? (.. el -validity -valueMissing))
-          "required + no selection reports valueMissing"))))
+    (is (true? (.. el -validity -valueMissing))
+        "required + no selection reports valueMissing")))
 
 (deftest validity-custom-error-when-error-set-test
   (let [^js el (append! (make-el))]
     (.setAttribute el "error" "Required")
-    (when (.-validity el)
-      (is (true? (.. el -validity -customError))
-          "error attribute drives customError")
-      (is (= "Required" (.-validationMessage el))))))
+    (is (true? (.. el -validity -customError))
+        "error attribute drives customError")
+    (is (= "Required" (.-validationMessage el)))))

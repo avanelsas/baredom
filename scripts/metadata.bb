@@ -43,6 +43,11 @@
     "number"  "number"
     "object"  "Record<string, any>"
     "void"    "void"
+    ;; DOM interfaces reached through ElementInternals on form-associated
+    ;; components — lib.dom.d.ts already declares them, so emit them verbatim.
+    "ValidityState"    "ValidityState"
+    "HTMLFormElement"  "HTMLFormElement | null"
+    "NodeList"         "NodeList | null"
     "any"))
 
 ;; ── Naming conventions ──────────────────────────────────────────────────────

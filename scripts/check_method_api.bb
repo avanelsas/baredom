@@ -197,12 +197,21 @@
             :else
             (do (.append sb c) (recur (inc i) false))))))))
 
+(def ^:private shared-installer-methods
+  "Methods installed by a shared utility rather than by the component itself.
+   The utility is the single implementation, so a component that calls it
+   installs every method the utility defines."
+  {#"\(forms/install-validity-api!\s+proto\s" #{"checkValidity" "reportValidity"}})
+
 (defn- extract-installed-methods [source]
   (when source
     (let [code (strip-line-comments source)]
-      (->> method-install-patterns
-           (mapcat (fn [p] (map second (re-seq p code))))
-           set))))
+      (into (->> method-install-patterns
+                 (mapcat (fn [p] (map second (re-seq p code))))
+                 set)
+            (mapcat (fn [[pattern methods]]
+                      (when (re-find pattern code) methods))
+                    shared-installer-methods)))))
 
 ;; ── Compare ──────────────────────────────────────────────────────────────────
 

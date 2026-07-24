@@ -5,13 +5,13 @@
   init();
   export type { XComboboxElement };
   export interface XComboboxProps {
-    placeholder?: string;
-    name?: string;
-    disabled?: boolean;
-    required?: boolean;
     open?: boolean;
-    placement?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    name?: string;
     error?: string;
+    placement?: string;
+    required?: boolean;
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     onchangerequest?: (e: CustomEvent<{ value: string; label: string; previousValue: string }>) => void;
@@ -28,13 +28,13 @@
 
 <script lang="ts">
   let {
-    placeholder,
-    name,
-    disabled,
-    required,
     open,
-    placement,
+    placeholder,
+    disabled,
+    name,
     error,
+    placement,
+    required,
     value = $bindable(undefined),
     onchangerequest,
     onchange,
@@ -80,13 +80,13 @@
 
 <x-combobox
   bind:this={el}
-  {placeholder}
-  {name}
-  {disabled}
-  {required}
   {open}
-  {placement}
+  {placeholder}
+  {disabled}
+  {name}
   {error}
+  {placement}
+  {required}
   class={className}
   {id}
   {...rest}

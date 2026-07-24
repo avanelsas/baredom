@@ -371,6 +371,14 @@
 ;; Input commit
 ;; ---------------------------------------------------------------------------
 
+(declare xdp-clear!)
+
+(defn- clear-detail
+  [mode-s reason]
+  (if (= mode-s "range")
+    #js {:start "" :end "" :mode mode-s :reason reason}
+    #js {:value "" :mode mode-s :reason reason}))
+
 (defn- commit-display!
   [^js el reason]
   (let [refs    (du/getv el k-refs)
@@ -381,7 +389,17 @@
         mode    (:mode canon)
         mode-s  (if (= mode :range) "range" "single")]
     (du/dispatch! el model/event-input #js {:value val :mode mode-s})
-    (if (= mode :single)
+    (cond
+      ;; A blank input should clear
+      (and (nil? (model/normalize-str val))
+           (model/committed-value? canon))
+      (let [detail (clear-detail mode-s reason)]
+        (when (du/dispatch-cancelable! el model/event-change-request detail)
+          (du/setv! el k-range-step 0)
+          (xdp-clear! el)
+          (du/dispatch! el model/event-change detail)))
+
+      (= mode :single)
       (let [{:keys [ok? date]} (model/parse-display->single val)]
         (when ok?
           (let [iso (dates/date->iso date)]
@@ -396,6 +414,8 @@
               (render! el)
               (du/dispatch! el model/event-change
                          #js {:value iso :mode mode-s :reason reason})))))
+
+      :else
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
         (when ok?
           (let [s-iso (dates/date->iso start)
@@ -965,6 +985,7 @@
 ;; empty. render! then re-syncs the (now empty) form value + validity.
 (defn- form-reset! [^js el]
   (du/setv! el k-range-step 0)
+  (du/remove-attr! el model/attr-error)
   (xdp-clear! el))
 
 (defn- define-methods!
@@ -988,6 +1009,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api)
   (define-methods! proto))
 

@@ -51,6 +51,25 @@
     (let [c (model/canonicalize {:mode "range" :start "2024-03-01"})]
       (is (= false (:complete? c))))))
 
+(deftest committed-value?-test
+  (testing "single mode"
+    (is (= false (model/committed-value? (model/canonicalize {}))))
+    (is (= false (model/committed-value? (model/canonicalize {:value ""}))))
+    (is (= false (model/committed-value? (model/canonicalize {:value "not-a-date"}))))
+    (is (= true  (model/committed-value? (model/canonicalize {:value "2024-06-15"})))))
+  (testing "range mode — either endpoint counts"
+    (is (= false (model/committed-value? (model/canonicalize {:mode "range"}))))
+    (is (= true  (model/committed-value?
+                  (model/canonicalize {:mode "range" :start "2024-03-01"}))))
+    (is (= true  (model/committed-value?
+                  (model/canonicalize {:mode "range" :end "2024-03-15"}))))
+    (is (= true  (model/committed-value?
+                  (model/canonicalize {:mode "range" :start "2024-03-01"
+                                       :end "2024-03-15"})))))
+  (testing "sparse map — no canonicalize"
+    (is (= false (model/committed-value? {})))
+    (is (= false (model/committed-value? {:mode :range})))))
+
 (deftest parse-display->single-test
   (testing "valid ISO string"
     (let [{:keys [ok? date]} (model/parse-display->single "2024-06-15")]
