@@ -32,7 +32,12 @@
    :disabled {:type 'boolean :reflects-attribute attr-disabled}
    :required {:type 'boolean :reflects-attribute attr-required}
    :name     {:type 'string  :reflects-attribute attr-name}
-   :files    {:type 'array   :read-only true}})
+   :files    {:type 'array   :read-only true}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-select {:cancelable false

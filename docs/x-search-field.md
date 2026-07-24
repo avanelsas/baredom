@@ -110,6 +110,10 @@ Dark mode values are applied automatically via `@media (prefers-color-scheme: da
 
 `x-form`'s `collect-values` picks up `x-search-field` via the `(.-value field)` property fallback — no x-form changes required.
 
+### Validation API
+
+Like a native form control, `x-search-field` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Accessibility
 
 - The `label` attribute sets `aria-label` on the inner `<input>` (no visible label element is rendered).

@@ -808,6 +808,7 @@
 
 ;; ── Property accessors ────────────────────────────────────────────────────
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api)
   ;; show()/hide() public methods — .defineProperty is the shared idiom
   ;; for prototype methods (bare aset was audited out of x-button in PR #155).

@@ -102,6 +102,10 @@ Committing a blank input when nothing is committed yet is a no-op: neither event
 - Constraint validation is honoured: a `required` picker with no committed date reports `valueMissing` and **blocks submission**; setting the `error` attribute reports a `customError`. This is what `x-form` and native submission gate on.
 - `form.reset()` clears the committed value(s) (mirroring how `x-form-field` resets) **and drops the `error` attribute**, so a stale validation message does not survive the reset. `<fieldset disabled>` disables it via `formDisabledCallback`.
 
+### Validation API
+
+Like a native form control, `x-date-picker` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Keyboard (calendar open)

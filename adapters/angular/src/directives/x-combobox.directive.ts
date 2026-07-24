@@ -17,14 +17,14 @@ export class BaredomCombobox implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set value(v: string) { this.el.value = v as any; }
-  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
-  @Input() set name(v: string) { this.el.name = v as any; }
-  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set open(v: boolean) { this.el.open = v as any; }
-  @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
+  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
+  @Input() set placement(v: string) { this.el.placement = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; label: string; previousValue: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ value: string; label: string }>>();
@@ -50,4 +50,6 @@ export class BaredomCombobox implements OnInit, OnDestroy {
 
   show(): void { return this.el.show(); }
   hide(): void { return this.el.hide(); }
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

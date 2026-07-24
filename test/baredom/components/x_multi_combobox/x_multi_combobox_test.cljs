@@ -264,14 +264,12 @@
   (let [^js el (append! (make-el))]
     (.setAttribute el "name" "tags")
     (.setAttribute el "required" "")
-    (when (.-validity el)
-      (is (true? (.. el -validity -valueMissing))
-          "required + empty set reports valueMissing"))))
+    (is (true? (.. el -validity -valueMissing))
+        "required + empty set reports valueMissing")))
 
 (deftest validity-custom-error-when-error-set-test
   (let [^js el (append! (make-el))]
     (.setAttribute el "error" "Pick at least one")
-    (when (.-validity el)
-      (is (true? (.. el -validity -customError))
-          "error attribute drives customError")
-      (is (= "Pick at least one" (.-validationMessage el))))))
+    (is (true? (.. el -validity -customError))
+        "error attribute drives customError")
+    (is (= "Pick at least one" (.-validationMessage el)))))

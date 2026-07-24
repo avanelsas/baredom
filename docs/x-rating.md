@@ -153,6 +153,10 @@ submitted under the `name` attribute as a numeric string (e.g. `"4"` or
 `"3.5"`); `"0"` is submitted for an unrated widget. Form reset removes the
 `value` attribute, returning the rating to `0`.
 
+### Validation API
+
+Like a native form control, `x-rating` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ---
 
 ## Responsive

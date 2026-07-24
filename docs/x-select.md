@@ -101,6 +101,10 @@ A styled, accessible select input component that wraps a native `<select>` eleme
 - `form.reset()` restores the markup-default `<option selected>` (dropping any controlled `value` attribute), mirroring a native `<select>`. It also drops the `error` attribute, so a stale validation message does not survive the reset.
 - `<fieldset disabled>` disables it via `formDisabledCallback`.
 
+### Validation API
+
+Like a native form control, `x-select` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Theming
 
 Dark mode is handled automatically via `@media (prefers-color-scheme: dark)` inside the component's shadow styles. Override any CSS custom property on the host to customize:

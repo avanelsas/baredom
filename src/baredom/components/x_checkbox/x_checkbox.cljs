@@ -1,6 +1,7 @@
 (ns baredom.components.x-checkbox.x-checkbox
   (:require [baredom.utils.component :as component]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [goog.object :as gobj]
             [baredom.utils.model :as mu]
             [baredom.components.x-checkbox.model :as model]))
@@ -387,6 +388,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api))
 
 (defn init! []

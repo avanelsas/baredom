@@ -74,7 +74,12 @@
    :showValue {:type 'boolean :reflects-attribute attr-show-value}
    :name      {:type 'string  :reflects-attribute attr-name}
    :label     {:type 'string  :reflects-attribute attr-label}
-   :size      {:type 'string  :reflects-attribute attr-size}})
+   :size      {:type 'string  :reflects-attribute attr-size}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -84,7 +89,9 @@
    event-input          {:detail {:start 'number :end 'number :min 'number :max 'number}}
    event-change         {:detail {:start 'number :end 'number :min 'number :max 'number}}})
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})
 
 ;; ---------------------------------------------------------------------------
 ;; Attribute normalization helpers

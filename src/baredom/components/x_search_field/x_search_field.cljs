@@ -1,5 +1,6 @@
 (ns baredom.components.x-search-field.x-search-field
   (:require [baredom.utils.component :as component]
+            [baredom.utils.forms :as forms]
             [baredom.utils.dom :as du]
             [goog.object :as gobj]
             [baredom.components.x-search-field.model :as model]))
@@ -418,6 +419,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (define-value-prop! proto)
   (du/define-string-prop! proto "name"         model/attr-name "")
   (du/define-string-prop! proto "placeholder"  model/attr-placeholder "")
@@ -425,22 +427,7 @@
   (du/define-string-prop! proto "autocomplete" model/attr-autocomplete "")
   (du/define-bool-prop! proto "disabled" model/attr-disabled)
   (du/define-bool-prop! proto "required" model/attr-required)
-  (du/define-number-prop! proto "debounce" model/attr-debounce 0)
-  ;; Methods (Tier-2 .defineProperty :value descriptors)
-  (.defineProperty js/Object proto "checkValidity"
-    #js {:value (fn xsf-check-validity []
-                  (this-as ^js this
-                    (if-let [^js internals (du/getv this k-internals)]
-                      (.checkValidity internals)
-                      true)))
-         :writable true :configurable true})
-  (.defineProperty js/Object proto "reportValidity"
-    #js {:value (fn xsf-report-validity []
-                  (this-as ^js this
-                    (if-let [^js internals (du/getv this k-internals)]
-                      (.reportValidity internals)
-                      true)))
-         :writable true :configurable true}))
+  (du/define-number-prop! proto "debounce" model/attr-debounce 0))
 
 (defn init! []
   (component/register! model/tag-name

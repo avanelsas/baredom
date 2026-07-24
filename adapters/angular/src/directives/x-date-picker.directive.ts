@@ -51,4 +51,6 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
   focus(): void { return this.el.focus(); }
   commit(): void { return this.el.commit(); }
   clear(): void { return this.el.clear(); }
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

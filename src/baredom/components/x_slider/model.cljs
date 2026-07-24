@@ -68,7 +68,12 @@
    :showValue {:type 'boolean :reflects-attribute attr-show-value}
    :name      {:type 'string  :reflects-attribute attr-name}
    :label     {:type 'string  :reflects-attribute attr-label}
-   :size      {:type 'string  :reflects-attribute attr-size}})
+   :size      {:type 'string  :reflects-attribute attr-size}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true
@@ -155,4 +160,6 @@
      :aria-labelledby  (when (and (string? aria-labelledby) (not= "" aria-labelledby)) aria-labelledby)
      :aria-describedby (when (and (string? aria-describedby) (not= "" aria-describedby)) aria-describedby)}))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

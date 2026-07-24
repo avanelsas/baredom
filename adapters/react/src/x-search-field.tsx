@@ -8,14 +8,14 @@ import { init } from "@vanelsas/baredom/x-search-field";
 init();
 
 export interface XSearchFieldProps {
-  value?: string;
-  name?: string;
   placeholder?: string;
+  disabled?: boolean;
+  debounce?: number;
+  name?: string;
+  value?: string;
   label?: string;
   autocomplete?: string;
-  disabled?: boolean;
   required?: boolean;
-  debounce?: number;
   onInput?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onChange?: (e: CustomEvent<{ name: string; value: string }>) => void;
   onSearch?: (e: CustomEvent<{ name: string; value: string }>) => void;

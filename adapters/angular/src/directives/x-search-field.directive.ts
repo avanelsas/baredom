@@ -17,14 +17,14 @@ export class BaredomSearchField implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set value(v: string) { this.el.value = v as any; }
-  @Input() set name(v: string) { this.el.name = v as any; }
   @Input() set placeholder(v: string) { this.el.placeholder = v as any; }
+  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set debounce(v: number) { this.el.debounce = v as any; }
+  @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set label(v: string) { this.el.label = v as any; }
   @Input() set autocomplete(v: string) { this.el.autocomplete = v as any; }
-  @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
   @Input() set required(v: boolean) { this.el.required = v as any; }
-  @Input() set debounce(v: number) { this.el.debounce = v as any; }
 
   @Output() input = new EventEmitter<CustomEvent<{ name: string; value: string }>>();
   @Output() change = new EventEmitter<CustomEvent<{ name: string; value: string }>>();

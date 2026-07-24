@@ -8,12 +8,12 @@ import { init } from "@vanelsas/baredom/x-switch";
 init();
 
 export interface XSwitchProps {
-  checked?: boolean;
   disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
   name?: string;
   value?: string;
+  readOnly?: boolean;
+  checked?: boolean;
+  required?: boolean;
   defaultChecked?: boolean;
   onChangeRequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
   onChange?: (e: CustomEvent<{ value: string; checked: boolean }>) => void;

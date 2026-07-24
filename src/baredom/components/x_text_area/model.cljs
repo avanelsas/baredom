@@ -62,7 +62,12 @@
    :rows         {:type 'number  :reflects-attribute attr-rows}
    :maxLength    {:type 'number  :reflects-attribute attr-maxlength}
    :minLength    {:type 'number  :reflects-attribute attr-minlength}
-   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}})
+   :autocomplete {:type 'string  :reflects-attribute attr-autocomplete}
+   :validity          {:type 'ValidityState   :readonly true}
+   :validationMessage {:type 'string          :readonly true}
+   :willValidate      {:type 'boolean         :readonly true}
+   :form              {:type 'HTMLFormElement :readonly true}
+   :labels            {:type 'NodeList        :readonly true}})
 
 (def event-schema
   {event-change-request {:cancelable true  :detail {:name 'string :value 'string :previousValue 'string}}
@@ -96,4 +101,6 @@
      :has-hint?    (and (string? hint-raw)  (not= hint-raw ""))
      :has-label?   (and (string? label-raw) (not= label-raw ""))}))
 
-(def method-api {})
+(def method-api
+  {:checkValidity  {:args [] :returns 'boolean}
+   :reportValidity {:args [] :returns 'boolean}})

@@ -48,6 +48,33 @@ Before adding a new utility function, check whether it already exists here. Add 
 | `define-number-prop!` | `[proto prop-name attr-name default-val]` | Install a numeric property with default fallback |
 | `install-properties!` | `[proto property-api]` | Install all property accessors from a declarative `property-api` map |
 
+## `baredom.utils.forms` (alias `forms`)
+
+Shared policy for form-associated components. Every function here is composed by
+the component — none of it is reimplemented per control.
+
+### Constraint validation
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `validity` | `[{:keys [has-error? error required? empty? missing-message]}]` | **Pure.** The standard projection onto `{:flags :message}`: `error` → `customError`, `required` + empty → `valueMissing`, else valid |
+| `set-validity!` | `[internals anchor inputs]` | Apply that projection via `setValidity`. No-op when `internals` is nil |
+| `sync!` | `[internals anchor value inputs]` | `setFormValue` + `set-validity!` in one call |
+| `install-validity-api!` | `[proto k-internals]` | Install the native validation surface on the prototype: read-only `validity`, `validationMessage`, `willValidate`, `form`, `labels` plus `checkValidity()` / `reportValidity()`, all delegating to the `ElementInternals` stashed under `k-internals` |
+
+`install-validity-api!` exists because `ElementInternals` never mirrors those
+members onto the host element — a form-associated custom element that skips the
+call leaves consumers unable to validate it other than by attempting a submit.
+Declare the members in `property-api` as `:readonly true` (so the adapters skip
+them and the `.d.ts` marks them `readonly`) and the two methods in `method-api`.
+
+### Inline error display
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `error-describedby` | `[has-error? author]` | **Pure.** The `aria-describedby` token — the error id, appended after any author-supplied ids |
+| `apply-error-display!` | `[el anchor error-el {:keys [error has-error?]} describedby]` | Render the `[part=error]` text + `error-hidden`, `data-invalid` on the host, `aria-invalid` / `aria-describedby` on the anchor |
+
 ## `baredom.utils.model` (alias `mu`)
 
 ### Parsers

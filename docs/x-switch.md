@@ -105,6 +105,10 @@ Dark-mode overrides are applied automatically via `@media (prefers-color-scheme:
 
 `x-switch` is a form-associated custom element. It submits `name=value` when checked, nothing when unchecked. It responds to `formResetCallback` and `formDisabledCallback`.
 
+### Validation API
+
+Like a native form control, `x-switch` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Usage examples
 
 ```html

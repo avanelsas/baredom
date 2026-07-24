@@ -941,6 +941,7 @@
 ;; Property accessors
 ;; ---------------------------------------------------------------------------
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   ;; Custom value accessor: getter returns JS array, setter accepts array or string.
   ;; Setter routes through du/ so programmatic `el.value = […]` is visible to
   ;; the trace recorder (x-trace-history) like every other attribute mutation.

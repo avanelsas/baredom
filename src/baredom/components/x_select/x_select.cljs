@@ -531,6 +531,7 @@
                                (if (and (some? v) (not= v js/undefined)) (str v) ""))))}))
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api)   ; disabled / required / name + (reflecting) value
   (define-value-prop! proto))                          ; override `value`: getter reads the live inner <select>
 

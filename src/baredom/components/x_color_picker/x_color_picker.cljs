@@ -2,6 +2,7 @@
   (:require [baredom.utils.component :as component]
             [goog.object :as gobj]
             [baredom.utils.dom :as du]
+            [baredom.utils.forms :as forms]
             [baredom.components.x-color-picker.model :as model]))
 
 ;; ---------------------------------------------------------------------------
@@ -1010,6 +1011,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- install-property-accessors! [^js proto]
+  (forms/install-validity-api! proto k-internals)
   (du/install-properties! proto model/property-api))
 
 (defn init! []

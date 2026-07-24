@@ -18,10 +18,10 @@ export class BaredomSelect implements OnInit, OnDestroy {
   }
 
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
-  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set error(v: string) { this.el.error = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; label: string; previousValue: string }>>();
   @Output() selectChange = new EventEmitter<CustomEvent<{ value: string; label: string }>>();
@@ -41,4 +41,6 @@ export class BaredomSelect implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  checkValidity(): boolean { return this.el.checkValidity(); }
+  reportValidity(): boolean { return this.el.reportValidity(); }
 }

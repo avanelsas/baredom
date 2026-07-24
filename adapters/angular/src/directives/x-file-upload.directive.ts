@@ -17,13 +17,13 @@ export class BaredomFileUpload implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
-  @Input() set accept(v: string) { this.el.accept = v as any; }
-  @Input() set multiple(v: boolean) { this.el.multiple = v as any; }
-  @Input() set maxSize(v: number) { this.el.maxSize = v as any; }
-  @Input() set maxFiles(v: number) { this.el.maxFiles = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
-  @Input() set required(v: boolean) { this.el.required = v as any; }
   @Input() set name(v: string) { this.el.name = v as any; }
+  @Input() set multiple(v: boolean) { this.el.multiple = v as any; }
+  @Input() set maxFiles(v: number) { this.el.maxFiles = v as any; }
+  @Input() set maxSize(v: number) { this.el.maxSize = v as any; }
+  @Input() set required(v: boolean) { this.el.required = v as any; }
+  @Input() set accept(v: string) { this.el.accept = v as any; }
 
   @Output() select = new EventEmitter<CustomEvent<{ files: any; rejected: any }>>();
   @Output() remove = new EventEmitter<CustomEvent<{ file: Record<string, any>; remaining: any }>>();

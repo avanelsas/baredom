@@ -5,12 +5,12 @@
   init();
   export type { XCheckboxElement };
   export interface XCheckboxProps {
-    indeterminate?: boolean;
     disabled?: boolean;
-    readOnly?: boolean;
-    required?: boolean;
     name?: string;
     value?: string;
+    indeterminate?: boolean;
+    readOnly?: boolean;
+    required?: boolean;
     /** Two-way bindable form value — `bind:checked={...}`. */
     checked?: boolean;
     onchangerequest?: (e: CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>) => void;
@@ -25,12 +25,12 @@
 
 <script lang="ts">
   let {
-    indeterminate,
     disabled,
-    readOnly,
-    required,
     name,
     value,
+    indeterminate,
+    readOnly,
+    required,
     checked = $bindable(undefined),
     onchangerequest,
     onchange,
@@ -68,12 +68,12 @@
 
 <x-checkbox
   bind:this={el}
-  {indeterminate}
   {disabled}
-  {readOnly}
-  {required}
   {name}
   {value}
+  {indeterminate}
+  {readOnly}
+  {required}
   class={className}
   {id}
   {...rest}

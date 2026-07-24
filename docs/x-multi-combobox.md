@@ -166,6 +166,10 @@ Chip styling is owned by `x-chip`. Use `--x-chip-*` custom properties to theme c
 
 The framework adapters expose the array value as a form control: Vue `v-model` (`string[]`), Svelte `bind:value`, Angular `ControlValueAccessor`, and React/Solid controlled `value` / `defaultValue` — the value round-trips through the comma-separated `value` attribute.
 
+### Validation API
+
+Like a native form control, `x-multi-combobox` exposes read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. All seven delegate to the element's `ElementInternals`, so `el.checkValidity()` answers the same question a submit attempt would.
+
 ## Example
 
 ```html
