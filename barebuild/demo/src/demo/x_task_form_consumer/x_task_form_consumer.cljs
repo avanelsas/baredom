@@ -107,7 +107,7 @@
     (du/setv! el k-button submit-btn) ; on-writing! disables the submit button, not the trigger
     (du/setv! el k-modal modal)
 
-    ;; These event listeners are disposed of automatically
+    ;; Listeners on the consumer's own subtree (trigger, modal, form) are GC'd with it.
     (.addEventListener trigger "press"
                        (fn [_e]
                          (du/setv! el k-edit-id nil)
@@ -119,6 +119,9 @@
     (.addEventListener modal "x-modal-dismiss"
                        (fn [_e]
                          (clear-form! form)))
+    ;; This one is on the shared <server-resource> ancestor, so it is NOT scoped to this
+    ;; consumer's lifetime — fine for the demo (never unmounts); a real host wanting
+    ;; unmount safety would need a disconnect hook on consumer-resource/register!.
     (let [resource (.closest el "server-resource")]
       (.addEventListener resource "x-task-edit-request"
                          (fn [^js e]

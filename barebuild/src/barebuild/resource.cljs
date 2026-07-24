@@ -116,14 +116,16 @@
 
 ;; WRITE functionality ----------------------------------------------------------
 
-;; Allows us to simplify the execution branch
+;; The write vocabulary as data: each op maps to its method, whether it addresses the
+;; collection or a member, and whether it carries a body. step resolves this into the
+;; :write effect so the executor decides nothing.
 (def ^:private write-ops
   {:create {:method "POST"   :target :collection :body? true}
    :update {:method "PUT"    :target :member     :body? true}
    :delete {:method "DELETE" :target :member     :body? false}})
 
 (defn write-request
-  "Prepares write operation data based upon its op type (POST/PUT/DELETE)"
+  "The :write effect value for a write payload, or nil when none can be built"
   [endpoint write-id {:keys [op id record]}]
   (when-let [{:keys [method target body?]} (get write-ops op)]
     (let [member? (= target :member)]

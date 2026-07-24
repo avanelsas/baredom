@@ -80,7 +80,7 @@
 
 (defn- edit-row-request! [^js e]
   (let [id       (du/get-attr (.-currentTarget e) "data-row-id")]
-    ;; the creste/edit form has to handle this event
+    ;; the create/edit form consumer handles this event
     (.dispatchEvent (.closest (.-currentTarget e) "server-resource")
                     (js/CustomEvent. "x-task-edit-request"
                                      #js {:detail #js {:id id} :bubbles true :composed true}))))
