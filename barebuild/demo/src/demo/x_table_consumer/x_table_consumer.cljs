@@ -78,6 +78,13 @@
         consumer (.closest (.-currentTarget e) "x-table-consumer")]
     (consumer-resource/submit-write! consumer {:op :delete :id id})))
 
+(defn- edit-row-request! [^js e]
+  (let [id       (du/get-attr (.-currentTarget e) "data-row-id")]
+    ;; the creste/edit form has to handle this event
+    (.dispatchEvent (.closest (.-currentTarget e) "server-resource")
+                    (js/CustomEvent. "x-task-edit-request"
+                                     #js {:detail #js {:id id} :bubbles true :composed true}))))
+
 (defn- create-table-cell!
   [s is-header sort-direction]
   (let [cell (.createElement js/document "x-table-cell")]
@@ -90,19 +97,29 @@
     (set! (.-textContent cell) (str s))
     cell))
 
-(defn- create-delete-table-cell!
+(defn- create-actions-table-cell!
   [is-header id]
   (let [cell (.createElement js/document "x-table-cell")]
     (if is-header
       (do
         (du/set-attr! cell "type" "header")
-        (set! (.-textContent cell) "Action"))
-      (let [delete-button (.createElement js/document "x-button")]
+        (set! (.-textContent cell) "Actions"))
+      (let [delete-button (.createElement js/document "x-button")
+            edit-button   (.createElement js/document "x-button")]
+        ; edit
+        (du/set-attr! edit-button "variant" "primary")
+        (du/set-attr! edit-button "size" "sm")
+        (du/set-attr! edit-button "data-row-id" (str id))
+        (set! (.-textContent edit-button) "Edit")
+        (.addEventListener edit-button "press" edit-row-request!)
+        ; delete
         (du/set-attr! delete-button "variant" "danger")
         (du/set-attr! delete-button "size" "sm")
         (du/set-attr! delete-button "data-row-id" (str id))
         (set! (.-textContent delete-button) "Delete")
         (.addEventListener delete-button "press" delete-row-request!)
+
+        (.appendChild cell edit-button)
         (.appendChild cell delete-button)))
     cell))
 
@@ -113,7 +130,7 @@
       (let [cell (create-table-cell! label true sort-direction)]
         (du/set-attr! cell k-data-field-key k)
         (.appendChild row cell)))
-    (.appendChild row (create-delete-table-cell! true nil))
+    (.appendChild row (create-actions-table-cell! true nil))
     row))
 
 (defn- create-body-row!
@@ -122,7 +139,7 @@
     (doseq [v values]
       (let [cell (create-table-cell! v false nil)]
         (.appendChild row cell)))
-    (.appendChild row (create-delete-table-cell! false id))
+    (.appendChild row (create-actions-table-cell! false id))
     row))
 
 (defn- render-table!
