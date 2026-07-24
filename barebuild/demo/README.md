@@ -7,9 +7,10 @@ namespaces).
 
 ## What it shows
 
-The demo shows a task x-table that can be sorted and whose rows can be deleted, an x-stat with
-the nr of tasks, an x-progress that displays the current page position, an x-search-field to
-filter tasks in the table, and an x-modal with an x-form to create a new task.
+The demo shows a task x-table that can be sorted and whose rows can be edited or deleted, an
+x-stat with the nr of tasks, an x-progress that displays the current page position, an
+x-search-field to filter tasks in the table, and an x-modal with an x-form to create a new task
+or edit an existing one.
 
 The code uses one `<server-resource>` that manages five independent **consumers**, each a thin element
 that projects the same server value onto a different component.
@@ -18,16 +19,16 @@ that projects the same server value onto a different component.
 |---|---|---|
 | `x-stat-consumer` | `x-stat` | total task count (a scalar) |
 | `x-progress-consumer` | `x-progress` | page position (bounded numeric; indeterminate while loading) |
-| `x-table-consumer` | `x-table` | the task list, with sortable columns, row delete, and a dynamically created `x-pagination` |
+| `x-table-consumer` | `x-table` | the task list, with sortable columns, per-row edit and delete, and a dynamically created `x-pagination` |
 | `x-search-field-consumer` | `x-search-field` | a debounced free-text filter |
-| `x-task-form-consumer` | `x-modal` + `x-form` | create a task, with the form fields validated against the `shape` the server sends |
+| `x-task-form-consumer` | `x-modal` + `x-form` | create or edit a task, with the form fields validated against the `shape` the server sends |
 
 Adding the four read components led to no BareBuild code changes at all. The write half did
-need product work — `submit-write!`, the `:write` effect and `validation.cljs` — but that
+need product work: `submit-write!`, the `:write` effect and `validation.cljs`, but that
 machinery is domain-agnostic, so the task-form consumer itself is ordinary host-app code.
 
-User gestures like sort, page, filter, create and delete all round-trip through the server, and
-the query lands in the URL. Invalid queries and network failures keep the last good view on screen.
+User gestures like sort, page, filter, create, edit and delete all round-trip through the
+server, and the query lands in the URL. Invalid queries and network failures keep the last good view on screen.
 
 ## To run the demo
 
