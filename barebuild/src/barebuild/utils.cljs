@@ -26,12 +26,13 @@
               :when (and (some? v) (not= "" s))]
           [(keyword k) s])))
 
-(defn map->query-params
-  "Take a map of k v and turn it into a url query parameter string
+(defn- map->query-params
+  "Take a map of k v and turn it into a url query parameter string, key-sorted so the
+  same query always renders the same URL regardless of how the map was built.
   e.g. {tasks.sort \"end\"} -> \"tasks.sort=end\""
   [m]
   (let [params (js/URLSearchParams.)]
-    (doseq [[k v] m]
+    (doseq [[k v] (sort-by (comp name first) m)]
       (.append params (name k) (str v)))
     (.toString params)))
 

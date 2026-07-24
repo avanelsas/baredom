@@ -61,6 +61,14 @@
                  (when-not (seq value-errors)
                    (validate-rows (:fields shape) value))))))
 
+(defn- read-request [r]
+  (let [{:keys [query] rid :request/id} (:active-request r)]
+    (assoc (utils/request {:endpoint   (:endpoint r)
+                           :method     "GET"
+                           :query      query
+                           :request-id rid})
+           :request/id rid)))
+
 (defn- start-request
   "Save an active request in r. The ID is generated elsewhere."
   [r query]
@@ -101,12 +109,9 @@
   the active-request. DO nothing if the active-request is still set"
   [{:keys [resource effects] :as result}]
   (if (and (nil? (:active-request resource)) (pending? resource))
-    (let [r* (start-request resource (:url-intent resource))
-          id (get-in r* [:active-request :request/id])]
+    (let [r* (start-request resource (:url-intent resource))]
       {:resource r*
-       :effects  (conj (vec effects) [:fetch {:endpoint   (:endpoint r*)
-                                              :query      (:url-intent r*)
-                                              :request/id id}])})
+       :effects  (conj (vec effects) [:fetch (read-request r*)])})
     result))
 
 ;; WRITE functionality ----------------------------------------------------------
@@ -143,14 +148,11 @@
 (defn- refetch-current
   "After a successful write, retrieve the current state"
   [{:keys [resource effects]}]
-  (let [r* (start-request resource (:url-intent resource))
-        id (get-in r* [:active-request :request/id])]
+  (let [r* (start-request resource (:url-intent resource))]
     {:resource r*
      :effects  (conj (vec effects)
                      [:notify-consumers {:resource r*}]
-                     [:fetch {:endpoint   (:endpoint r*)
-                              :query      (:url-intent r*)
-                              :request/id id}])}))
+                     [:fetch (read-request r*)])}))
 
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
@@ -165,18 +167,16 @@
         (if (= :accepted (:outcome embed))
           (let [installed (assoc resource :last-accepted embed :last-failure nil)]
             (if (pending? installed)
-              (let [r* (start-request installed intent)
-                    id (get-in r* [:active-request :request/id])]
+              (let [r* (start-request installed intent)]
                 {:resource r*
                  :effects  [[:notify-consumers {:resource r*}]
-                            [:fetch {:endpoint (:endpoint r*) :query intent :request/id id}]]})
+                            [:fetch (read-request r*)]]})
               {:resource installed
                :effects  [[:notify-consumers {:resource installed}]]}))
           ;; no usable embed -> last-accepted nil -> always pending -> always fetch
-          (let [r* (start-request resource intent)
-                id (get-in r* [:active-request :request/id])]
+          (let [r* (start-request resource intent)]
             {:resource r*
-             :effects  [[:fetch {:endpoint (:endpoint r*) :query intent :request/id id}]
+             :effects  [[:fetch (read-request r*)]
                         [:notify-consumers {:resource r*}]]})))
 
       :response
@@ -236,29 +236,23 @@
             moved?     (not= new-intent (:url-intent resource)) ; owned intent changed?
             fetch?     (and (nil? (:active-request resource))   ; no request in flight
                             (pending? merged))                  ; and the new intent is unanswered
-            r*         (if fetch? (start-request merged new-intent) merged)
-            id         (get-in r* [:active-request :request/id])]
+            r*         (if fetch? (start-request merged new-intent) merged)]
         {:resource r*
          :effects  (cond-> []
-                     moved? (conj [:url-write {:resource/id (:resource/id r*)
-                                               :params      new-intent
-                                               :mode        mode}])
-                     fetch? (conj [:fetch {:endpoint   (:endpoint r*)
-                                           :query      new-intent
-                                           :request/id id}])
+                     moved?  (conj [:url-write {:resource/id (:resource/id r*)
+                                                :params      new-intent
+                                                :mode        mode}])
+                     fetch?  (conj [:fetch (read-request r*)])
                      :always (conj [:notify-consumers {:resource r*}]))})
 
       :url-changed
       (let [replaced (assoc resource :url-intent payload)
             fetch?   (and (nil? (:active-request resource))
                           (pending? replaced))
-            r*       (if fetch? (start-request replaced payload) replaced)
-            id       (get-in r* [:active-request :request/id])]
+            r*       (if fetch? (start-request replaced payload) replaced)]
         {:resource r*
          :effects  (cond-> []
-                     fetch? (conj [:fetch {:endpoint   (:endpoint r*)
-                                           :query      payload
-                                           :request/id id}])
+                     fetch? (conj [:fetch (read-request r*)])
                      :always (conj [:notify-consumers {:resource r*}]))})
 
       :protocol-failed

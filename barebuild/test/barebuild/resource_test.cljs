@@ -27,7 +27,7 @@
   (let [r* (assoc base :request-count 1
                        :active-request {:request/id "tasks:1" :query nil})]
     (is (= {:resource r*
-            :effects  [[:fetch {:endpoint "/api/tasks" :query nil :request/id "tasks:1"}]
+            :effects  [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
                        [:notify-consumers {:resource r*}]]}
            (resource/step base [:connected {}]))
         "connect fetches the endpoint, records a fresh live request, carries the empty intent")))
@@ -35,7 +35,9 @@
 (deftest connected-carries-url-intent
   (let [r (assoc base :url-intent {:sort "start" :direction "desc"})
         {:keys [resource effects]} (resource/step r [:connected {}])]
-    (is (= [[:fetch {:endpoint "/api/tasks" :query {:sort "start" :direction "desc"} :request/id "tasks:1"}]
+    (is (= [[:fetch {:method     "GET"
+                     :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=start"
+                     :request/id "tasks:1"}]
             [:notify-consumers {:resource resource}]]
            effects)
         "a resource booted from a sorted URL fetches that query on connect")))
@@ -60,14 +62,14 @@
       (is (= embed (:last-accepted resource))))
     (testing "notifies AND fetches the current intent under a fresh id"
       (is (= [[:notify-consumers {:resource resource}]
-              [:fetch {:endpoint "/api/tasks" :query {:sort "owner"} :request/id "tasks:1"}]]
+              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
              effects)))))
 
 (deftest connected-with-broken-embed-fetches
   (let [marker {:protocol-failure {:reason :unknown-outcome}}
         {:keys [resource effects]} (resource/step base [:connected {:embed marker}])]
     (is (nil? (:last-accepted resource)) "a broken embed is not installed")
-    (is (= [[:fetch {:endpoint "/api/tasks" :query nil :request/id "tasks:1"}]
+    (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
             [:notify-consumers {:resource resource}]] effects)
         "falls back to a normal fetch")))
 
@@ -81,8 +83,8 @@
       (is (= [[:url-write {:resource/id "tasks"
                            :params      {:sort "owner" :direction "desc"}
                            :mode        :replace}]
-              [:fetch {:endpoint   "/api/tasks"
-                       :query      {:sort "owner" :direction "desc"}
+              [:fetch {:method     "GET"
+                       :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=owner"
                        :request/id "tasks:1"}]
               [:notify-consumers {:resource resource}]]
              effects)))))
@@ -127,7 +129,9 @@
     (testing "a nil-valued patch clears the keys: the merged intent canonicalizes to {}"
       (is (= {} (:url-intent resource))))
     (testing "it fetches the now-empty query (matches a server echoing no sort keys)"
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {} (:query m)))) effects)))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:1" (:url m))))
+                effects)))))
 
 (deftest url-changed-replaces-intent-and-fetches-without-writing
   (let [r (assoc base :url-intent {:sort "owner"})
@@ -135,7 +139,7 @@
     (testing "the URL-derived intent replaces :url-intent (not merged)"
       (is (= {:page "2"} (:url-intent resource))))
     (testing "fetches the new intent and does NOT write the URL (browser already moved)"
-      (is (= [[:fetch {:endpoint "/api/tasks" :query {:page "2"} :request/id "tasks:1"}]
+      (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]
               [:notify-consumers {:resource resource}]] effects)))))
 
 (deftest accepted-response-installs-and-notifies
@@ -331,7 +335,7 @@
     (testing "a trailing fetch fires once for the NEW intent under a fresh id"
       (is (= {:request/id "tasks:2" :query {:sort "start"}} (:active-request resource)))
       (is (some (fn [[fx m]] (and (= :fetch fx)
-                                  (= {:sort "start"} (:query m))
+                                  (= "/api/tasks?requestId=tasks:2&sort=start" (:url m))
                                   (= "tasks:2" (:request/id m))))
                 effects)))))
 
@@ -355,7 +359,8 @@
                                                                       :error {:kind :offline}}])]
     (testing "the failed query is adjudicated, but intent moved -> fetch the new intent once"
       (is (= {:request/id "tasks:2" :query {:sort "start"}} (:active-request resource)))
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {:sort "start"} (:query m))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:2&sort=start" (:url m))))
                 effects)))))
 
 ;; --- C4: rejection revert (T8/T9/T10) --------------------------------------
@@ -416,7 +421,8 @@
       (is (not-any? (fn [[fx _]] (= :url-write fx)) effects)))
     (testing "the newer intent is unanswered -> a trailing fetch fires for it"
       (is (= {:request/id "tasks:3" :query {:sort "start"}} (:active-request resource)))
-      (is (some (fn [[fx m]] (and (= :fetch fx) (= {:sort "start"} (:query m))))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:3&sort=start" (:url m))))
                 effects)))))
 
 ;; --- T15: disconnect aborts the in-flight request --------------------------
@@ -544,7 +550,7 @@
     (testing "a refetch of the CURRENT intent is issued under a fresh read id (mutate -> refetch)"
       (is (= {:request/id "tasks:4" :query {:sort "owner"}} (:active-request resource)))
       (is (= [[:notify-consumers {:resource resource}]
-              [:fetch {:endpoint "/api/tasks" :query {:sort "owner"} :request/id "tasks:4"}]]
+              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:4&sort=owner" :request/id "tasks:4"}]]
              effects)))
     (testing "last-accepted is untouched — the refetch's :response installs the post-mutation truth"
       (is (nil? (:last-accepted resource))))))

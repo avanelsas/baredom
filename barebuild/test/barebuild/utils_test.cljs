@@ -27,12 +27,12 @@
 ;; --- request: the shared request builder -----------------------------------
 
 (deftest request-builds-a-collection-get-with-the-query
-  (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner&direction=asc"}
+  (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1&direction=asc&sort=owner"}
          (utils/request {:endpoint   "/api/tasks"
                          :method     "GET"
                          :request-id "tasks:1"
                          :query      {:sort "owner" :direction "asc"}}))
-      "no segment -> the collection; requestId leads, the query follows"))
+      "no segment -> the collection; requestId leads, then the query, key-sorted"))
 
 (deftest request-omits-an-empty-query
   (testing "an empty query contributes nothing — no dangling separator"
