@@ -2,6 +2,28 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.5.0] - 2026-07-24
+
+Form-associated components gain the instance-level validation API they were missing, and two form-control bugs are fixed: emptying an `x-date-picker` input now clears the committed date, and a form reset now clears validation errors.
+
+### Added
+
+- **The native validation API on all 17 form-associated components** — read-only `validity`, `validationMessage`, `willValidate`, `form` and `labels`, plus `checkValidity()` and `reportValidity()`. `ElementInternals` never mirrors these onto the host element, so only `x-search-field`, `x-currency-field`, `x-otp-input` and `x-file-upload` exposed any of it (the two methods), and every other control could be validated only by attempting a submit. `x-checkbox`, `x-color-picker`, `x-combobox`, `x-date-picker`, `x-form-field`, `x-multi-combobox`, `x-radio`, `x-range-slider`, `x-rating`, `x-select`, `x-slider`, `x-switch` and `x-text-area` now expose the full surface, and the four above are extended to match.
+
+### Fixed
+
+- **`x-date-picker` ignored a cleared input.** Deleting the text and committing it (blur, `Enter`, or `commit()`) left the previous date committed and repainted the old text — there was no way to clear the field from the keyboard. It now clears the value through the same cancelable `x-date-picker-change-request` path a normal commit uses, reports empty strings in the change detail (`{ value: "" }`, or `{ start: "", end: "" }` in range mode), and resets the range step so a half-picked range cannot complete against a start that no longer exists. Committing a blank input when nothing is committed stays a no-op.
+- **`form.reset()` left stale validation errors.** Reset cleared the value but not the `error` attribute, so the inline message, `data-invalid`, `aria-invalid` and the `customError` flag survived it on `x-date-picker`, `x-select`, `x-combobox`, `x-multi-combobox`, `x-form-field` and `x-text-area`. All six now drop the attribute on reset.
+
+### Changed — internal
+
+- **`forms/install-validity-api!`** (new, in `baredom.utils.forms`) is the single implementation of the validation surface; the four components that hand-rolled `checkValidity` / `reportValidity` are migrated onto it. The five read-only members are declared in each `property-api` as `:readonly true` — the framework adapters skip them and the generated declarations mark them `readonly` — and the two methods in `method-api`.
+- Twelve validity assertions across five test suites sat behind a `(when (.-validity el) …)` guard that was never true, and an input-commit regression test dispatched an event the component never listens for. All of them now genuinely run, alongside a new cross-component suite covering the surface on all 17 tags.
+
+### Notes
+
+- No adapter release accompanies this one: the new members are read-only, so the generated wrappers filter them out and the adapter packages are functionally unchanged.
+
 ## [3.4.0] - 2026-07-22
 
 The four popup-selection form controls — `x-select`, `x-date-picker`, `x-combobox`, and `x-multi-combobox` — become **real form controls**: they display inline validation errors and participate in native `<form>` submission and constraint validation via `ElementInternals`. Two internal refactors extract the resulting form-control policy into one shared, unit-tested place.

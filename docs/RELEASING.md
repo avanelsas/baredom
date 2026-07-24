@@ -11,7 +11,7 @@ When bumping the version, update **all four** locations — they must match:
 1. `package.json` — `"version": "X.Y.Z"`
 2. `build.clj` — `(def version "X.Y.Z")`
 3. `deps.edn` — `:exec-args {:artifact "target/baredom-X.Y.Z.jar"}`
-4. `README.md` — Clojars and npm install examples
+4. `docs/installation.md` — the Clojars (`deps.edn` + `:dependencies` vector) and npm install examples. `README.md` links here rather than pinning a version; check it too if that ever changes
 
 Then:
 
