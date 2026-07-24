@@ -78,6 +78,19 @@
                                :request-id "tasks:1" :query {:search "a b&c"}})))
       "values go through URLSearchParams, so separators in a term can't break the query"))
 
+(deftest request-encodes-the-path-segment
+  (testing "an id is opaque server data — a separator inside it must not restructure the URL"
+    (is (= "/api/tasks/a%2Fb%3Fc?requestId=tasks:w1"
+           (:url (utils/request {:endpoint "/api/tasks" :segment "a/b?c"
+                                 :method "DELETE" :request-id "tasks:w1"}))))
+    (is (= "/api/tasks/a%20b%23c?requestId=tasks:w1"
+           (:url (utils/request {:endpoint "/api/tasks" :segment "a b#c"
+                                 :method "DELETE" :request-id "tasks:w1"})))))
+  (testing "an ordinary id is unchanged by encoding"
+    (is (= "/api/tasks/7?requestId=tasks:w1"
+           (:url (utils/request {:endpoint "/api/tasks" :segment 7
+                                 :method "DELETE" :request-id "tasks:w1"}))))))
+
 (deftest canonicalize-query-drops-nil-and-blank
   (testing "nil-valued entries are dropped: a cleared key is simply absent"
     (is (= {} (utils/canonicalize-query {:sort nil :direction nil}))))

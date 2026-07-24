@@ -126,12 +126,14 @@
   "Prepares write operation data based upon its op type (POST/PUT/DELETE)"
   [endpoint write-id {:keys [op id record]}]
   (when-let [{:keys [method target body?]} (get write-ops op)]
-    (assoc (utils/request {:endpoint endpoint
-                           :segment (when (= target :member) id)
-                           :method method
-                           :body (when body? record)
-                           :request-id write-id})
-           :write/id write-id)))
+    (let [member? (= target :member)]
+      (when (or (not member?) (seq (str id)))
+        (assoc (utils/request {:endpoint endpoint
+                               :segment (when member? id)
+                               :method method
+                               :body (when body? record)
+                               :request-id write-id})
+               :write/id write-id)))))
 
 (defn- start-write
   "Save an active write request in r. The ID is generated elsewhere."

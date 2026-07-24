@@ -491,6 +491,14 @@
     (testing "it surfaces as its own diagnostic, distinct from the double-click case"
       (is (= [[:diagnostic :unsupported-write]] effects)))))
 
+(deftest submit-write-without-a-member-id-leaves-the-resource-untouched
+  (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete}])]
+    (testing "an unbuildable member op is refused before start-write, exactly like an
+              unknown op — no :active-write, so the single-flight slot stays free"
+      (is (= base resource))
+      (is (false? (resource/writing? resource))))
+    (is (= [[:diagnostic :unsupported-write]] effects))))
+
 ;; --- U1b: write-request — the op table as data -----------------------------
 
 (deftest write-request-resolves-each-op
@@ -519,6 +527,18 @@
   (testing "the table is the whole write vocabulary — nil is how step learns it can't build one"
     (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7})))
     (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7})))))
+
+(deftest write-request-of-a-member-op-without-an-id-is-nil
+  (testing "no id would address the collection instead — a DELETE that reads as
+            'delete everything' to any server implementing collection-level delete"
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :update :record {"title" "x"}})))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id ""}))))
+  (testing "a collection op needs no id"
+    (is (some? (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record {"title" "x"}}))))
+  (testing "0 is a legitimate id, not a missing one"
+    (is (= "/api/tasks/0?requestId=tasks:w1"
+           (:url (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 0}))))))
 
 (deftest write-request-passes-the-record-through-unconverted
   (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an

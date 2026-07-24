@@ -43,7 +43,7 @@
   (cond-> {:method method
            :url    (str endpoint
                         (when segment
-                          (str "/" segment))
+                          (str "/" (js/encodeURIComponent segment)))
                         "?requestId=" request-id (when (seq query) (str "&" (map->query-params query))))}
     body (assoc :body body
                 :headers {"content-type" "application/json"})))
