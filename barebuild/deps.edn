@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps  {com.github.avanelsas/baredom {:mvn/version "3.4.0"}}
+ :deps  {com.github.avanelsas/baredom {:mvn/version "3.5.0"}}
  :aliases
  {:build  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.5"}}
            :ns-default build}
