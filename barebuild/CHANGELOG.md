@@ -17,6 +17,8 @@
   the shape, and submits an update. A rejection naming no field — an unknown id, an unreachable
   server — now reads as a message in the modal instead of closing it as though the write had
   succeeded.
+- Bumps the BareDOM dependency to 3.5.0, whose `x-date-picker` clears its value on a blank
+  input — so an editing consumer can unset an optional date, which a full-replace update needs.
 
 ## 0.1.0
 
