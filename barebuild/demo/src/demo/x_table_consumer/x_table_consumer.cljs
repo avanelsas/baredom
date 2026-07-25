@@ -201,26 +201,10 @@
                                          :dismissible true
                                          :text        (failure-message failure)}))))
 
-(defn- on-pending! [^js table pending _this]
-  (if pending
-    (do (du/set-attr! table "aria-busy" "true")
-      (set! (.. table -style -opacity) "0.6"))
-    (do (du/remove-attr! table "aria-busy")
-      (set! (.. table -style -opacity) ""))))
-
-(defn- on-writing! [^js table writing _this]
-  (if writing
-    (do (du/set-attr! table "aria-busy" "true")
-      (set! (.. table -style -opacity) "0.6"))
-    (do (du/remove-attr! table "aria-busy")
-      (set! (.. table -style -opacity) ""))))
-
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-table"
     :observed-attributes model/observed-attributes
     :render              render!
-    :on-failure          on-failure!
-    :on-pending          on-pending!
-    :on-writing          on-writing!}))
+    :on-failure          on-failure!}))

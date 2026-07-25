@@ -37,7 +37,7 @@
                                         (not= last-failure (du/getv this k-last-failure)))
                                (on-failure (du/getv this k-child) last-failure this)
                                (du/setv! this k-last-failure last-failure))
-                             (when last-accepted
+                             (when (and render last-accepted)
                                (let [rkey [(render-key last-accepted)]]
                                  (when (not= rkey (du/getv this k-last-rendered))
                                    (render (du/getv this k-child) last-accepted this)
@@ -56,7 +56,7 @@
   "Register a resource-consumer custom element from a config:
   :tag        element tag name
   :child-tag  the driven child element, cached on connect
-  :render     (fn [child accepted this]), called when :last-accepted changes
+  :render     (fn [child accepted this]), optional, called when the render-key slice changes
   :on-failure (fn [child failure this]), optional, called when :last-failure changes,
   with failure nil on recovery so the component can clear its UI
   :on-pending (fn [child pending this]), optional, called when :pending? changes
