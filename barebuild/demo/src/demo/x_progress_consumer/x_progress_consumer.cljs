@@ -20,4 +20,5 @@
     :child-tag           "x-progress"
     :observed-attributes model/observed-attributes
     :on-pending          on-pending!
+    :render-key          (fn [accepted] (model/project-progress (:page-info accepted)))
     :render              render!}))

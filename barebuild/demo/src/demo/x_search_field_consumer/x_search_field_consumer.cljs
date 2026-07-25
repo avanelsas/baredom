@@ -32,5 +32,6 @@
     :child-tag           "x-search-field"
     :observed-attributes model/observed-attributes
     :on-pending          on-pending!
+    :render-key          model/project-search-value
     :render              render!
     :on-connect          on-connect!}))

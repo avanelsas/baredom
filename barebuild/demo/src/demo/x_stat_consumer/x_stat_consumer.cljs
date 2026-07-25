@@ -18,4 +18,5 @@
     :child-tag           "x-stat"
     :observed-attributes model/observed-attributes
     :on-pending          on-pending!
+    :render-key          model/project-stat
     :render              render!}))
