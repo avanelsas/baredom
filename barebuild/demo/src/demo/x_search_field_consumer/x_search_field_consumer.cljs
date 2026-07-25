@@ -4,11 +4,6 @@
    [demo.x-search-field-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
-(defn- on-pending! [^js x-search-field pending _this]
-  (if pending
-    (du/set-attr! x-search-field "aria-busy" "true")
-    (du/remove-attr! x-search-field "aria-busy")))
-
 (defn- on-connect! [^js el]
   (let [x-search-field (.querySelector el "x-search-field")]
     ;; These event listeners are disposed of automatically
@@ -31,7 +26,6 @@
    {:tag                 model/tag-name
     :child-tag           "x-search-field"
     :observed-attributes model/observed-attributes
-    :on-pending          on-pending!
     :render-key          model/project-search-value
     :render              render!
     :on-connect          on-connect!}))
