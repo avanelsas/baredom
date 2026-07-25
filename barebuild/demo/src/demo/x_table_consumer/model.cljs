@@ -32,6 +32,14 @@
     {:columns columns
      :rows rows}))
 
+(defn reconcile-plan
+  "Diff current row ids against desired rows: ids to remove, and the desired order flagged new/existing."
+  [old-ids new-rows]
+  (let [old-set (set old-ids)
+        new-set (set (map (comp str :id) new-rows))]
+    {:remove (vec (remove new-set old-ids))
+     :order  (mapv #(assoc % :new? (not (old-set (str (:id %))))) new-rows)}))
+
 (defn translate-gesture
   [field-key direction]
   {:query-patch (if (= direction "none")
