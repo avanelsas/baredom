@@ -31,18 +31,23 @@
                            (du/setv! this k-submit-intent (:submit-intent! ctx))
                            (du/setv! this k-submit-write (:submit-write! ctx))
                            (let [{:keys [last-accepted last-failure]} resource-value
-                                 pending  (resource/pending? resource-value)
-                                 writing (resource/writing? resource-value)]
-                             (when (and on-failure (not= last-failure (du/getv this k-last-failure)))
+                                 rkey               (resource/render-key last-accepted)
+                                 pending            (resource/pending? resource-value)
+                                 writing            (resource/writing? resource-value)]
+                             (when (and on-failure
+                                        (not= last-failure (du/getv this k-last-failure)))
                                (on-failure (du/getv this k-child) last-failure this)
                                (du/setv! this k-last-failure last-failure))
-                             (when (and last-accepted (not= last-accepted (du/getv this k-last-rendered)))
+                             (when (and last-accepted
+                                        (not= rkey (du/getv this k-last-rendered)))
                                (render (du/getv this k-child) last-accepted this)
-                               (du/setv! this k-last-rendered last-accepted))
-                             (when (and on-pending (not= pending (du/getv this k-pending)))
+                               (du/setv! this k-last-rendered rkey))
+                             (when (and on-pending
+                                        (not= pending (du/getv this k-pending)))
                                (on-pending (du/getv this k-child) pending this)
                                (du/setv! this k-pending pending))
-                             (when (and on-writing (not= writing (du/getv this k-writing)))
+                             (when (and on-writing
+                                        (not= writing (du/getv this k-writing)))
                                (on-writing (du/getv this k-child) writing this)
                                (du/setv! this k-writing writing)))))
                         :writable true :configurable true}))

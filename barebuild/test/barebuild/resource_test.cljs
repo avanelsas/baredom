@@ -23,6 +23,24 @@
   (assoc r :active-request {:request/id (:request/id response)
                             :query      (:query response)}))
 
+;; --- render-key: the change-guard projection -------------------------------
+
+(deftest render-key-ignores-the-per-request-id
+  (testing "two responses identical but for :request/id compare equal, so a refetch that
+            returns unchanged data does not re-render"
+    (is (= (resource/render-key (assoc accepted :request/id "tasks:1"))
+           (resource/render-key (assoc accepted :request/id "tasks:2"))))))
+
+(deftest render-key-tracks-every-drawn-field
+  (let [k (resource/render-key accepted)]
+    (testing "a change in any field a consumer draws yields a different key"
+      (is (not= k (resource/render-key (assoc accepted :value [{"id" 2 "owner" "Bob"}]))))
+      (is (not= k (resource/render-key (assoc accepted :query {:sort "start"}))))
+      (is (not= k (resource/render-key (assoc accepted :page-info {:page 2}))))
+      (is (not= k (resource/render-key (assoc accepted :shape {:id-key "id" :fields []})))))
+    (testing "revision stays in the key — a consumer may draw it, so it is not excluded"
+      (is (not= k (resource/render-key (assoc accepted :revision "tasks:v2")))))))
+
 (deftest connected-emits-fetch
   (let [r* (assoc base :request-count 1
                        :active-request {:request/id "tasks:1" :query nil})]
