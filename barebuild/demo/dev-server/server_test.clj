@@ -230,16 +230,18 @@
 
 ;; --- writes: delete (step W1a) ---------------------------------------------
 
-(deftest delete-returns-ack-envelope
+(deftest delete-returns-post-mutation-envelope
   (let [resp (delete-raw "/api/tasks/7" "requestId=w-1")
         body (json/parse-string (:body resp) true)]
-    (is (= 200 (:status resp)) "a write ack is a protocol response, HTTP 200")
-    (is (= "accepted" (:outcome body)) "the ack outcome")
+    (is (= 200 (:status resp)) "a write response is HTTP 200")
+    (is (= "accepted" (:outcome body)) "the write outcome")
     (is (= "w-1" (:requestId body)) "echoes the client request id")
     (is (= "tasks:v1" (:revision body)) "carries the revision for later concurrency")
-    (is (not (contains? body :value)) "ack carries no value -> client refetches")
-    (is (not (contains? body :shape)) "ack carries no shape")
-    (is (not (contains? body :error)) "an accepted ack has no error")))
+    (is (contains? body :value) "an accepted write returns the full post-mutation state")
+    (is (contains? body :shape) "including the shape, like a read")
+    (is (not (some #{7} (ids body))) "the deleted row is gone from the returned value")
+    (is (= 39 (get-in body [:pageInfo :totalCount])) "one fewer row, reflected in pageInfo")
+    (is (not (contains? body :error)) "an accepted write has no error")))
 
 (deftest delete-mutates-the-set
   (delete-raw "/api/tasks/7" "requestId=w-1")
@@ -285,20 +287,20 @@
 (def ^:private new-task
   {"title" "Ship the release" "owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
 
-(deftest create-appends-and-returns-accepted-ack
+(deftest create-appends-and-returns-post-mutation-envelope
   (let [resp (post-raw "/api/tasks" "requestId=w-c1" (record-json new-task))
         body (json/parse-string (:body resp) true)]
-    (is (= 200 (:status resp)) "a create ack is a protocol response, HTTP 200")
+    (is (= 200 (:status resp)) "a write response is HTTP 200")
     (is (= "accepted" (:outcome body)) "a valid create is accepted")
     (is (= "w-c1" (:requestId body)) "echoes the client request id")
     (is (= "tasks:v1" (:revision body)))
-    (is (not (contains? body :value)) "ack carries no value -> client refetches")
-    (is (not (contains? body :error)) "an accepted ack has no error")
-    (testing "the new row is observable through a subsequent read, with a server-minted id"
-      (let [[_ all]  (get-json "/api/tasks" nil)
-            [_ zoe]  (get-json "/api/tasks" "search=Zoe")
-            row      (first (:value zoe))]
-        (is (= 41 (get-in all [:pageInfo :totalCount])) "one more row in the set")
+    (is (contains? body :value) "an accepted create returns the full post-mutation state")
+    (is (contains? body :shape))
+    (is (= 41 (get-in body [:pageInfo :totalCount])) "the new row is counted in the returned state")
+    (is (not (contains? body :error)) "an accepted write has no error")
+    (testing "the new row is observable, with a server-minted id"
+      (let [[_ zoe] (get-json "/api/tasks" "search=Zoe")
+            row     (first (:value zoe))]
         (is (= "Ship the release" (:title row)))
         (is (= "Zoe" (:owner row)))
         (is (= 41 (:id row)) "server assigns the next id")))))
@@ -372,25 +374,24 @@
         "the targeted row keeps its stored values")
     (:error body)))
 
-(deftest update-replaces-the-row-and-returns-accepted-ack
+(deftest update-replaces-the-row-and-returns-post-mutation-envelope
   (let [resp (put-raw "/api/tasks/7" "requestId=w-u1" (record-json new-task))
-        body (json/parse-string (:body resp) true)]
-    (is (= 200 (:status resp)) "an update ack is a protocol response, HTTP 200")
+        body (json/parse-string (:body resp) true)
+        row  (first (filter #(= 7 (:id %)) (:value body)))]
+    (is (= 200 (:status resp)) "a write response is HTTP 200")
     (is (= "accepted" (:outcome body)) "a valid update is accepted")
     (is (= "w-u1" (:requestId body)) "echoes the client request id")
     (is (= "tasks:v1" (:revision body)))
-    (is (not (contains? body :value)) "ack carries no value -> client refetches")
-    (is (not (contains? body :shape)) "ack carries no shape")
-    (is (not (contains? body :error)) "an accepted ack has no error")
-    (testing "the replaced row is observable through a subsequent read"
-      (let [[_ all] (get-json "/api/tasks" nil)
-            row     (first (filter #(= 7 (:id %)) (:value all)))]
-        (is (= 40 (get-in all [:pageInfo :totalCount])) "an update does not change the count")
-        (is (= (vec (range 1 11)) (ids all)) "the row keeps its id and its place in the set")
-        (is (= "Ship the release" (:title row)) "every field comes from the record")
-        (is (= "Zoe" (:owner row)))
-        (is (= "2026-03-01" (:start row)))
-        (is (= "todo" (:status row)))))))
+    (is (contains? body :value) "an accepted update returns the full post-mutation state")
+    (is (contains? body :shape))
+    (is (not (contains? body :error)) "an accepted write has no error")
+    (testing "the replaced row is in the returned value, in place, every field from the record"
+      (is (= 40 (get-in body [:pageInfo :totalCount])) "an update does not change the count")
+      (is (= (vec (range 1 11)) (ids body)) "the row keeps its id and its place in the set")
+      (is (= "Ship the release" (:title row)) "every field comes from the record")
+      (is (= "Zoe" (:owner row)))
+      (is (= "2026-03-01" (:start row)))
+      (is (= "todo" (:status row))))))
 
 (deftest update-replaces-rather-than-merges
   (put-raw "/api/tasks/7" "requestId=w-u2" (record-json (dissoc new-task "end")))

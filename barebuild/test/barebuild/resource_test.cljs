@@ -25,11 +25,15 @@
 
 ;; --- render-key: the change-guard projection -------------------------------
 
-(deftest render-key-ignores-the-per-request-id
+(deftest render-key-ignores-transport-ids
   (testing "two responses identical but for :request/id compare equal, so a refetch that
             returns unchanged data does not re-render"
     (is (= (resource/render-key (assoc accepted :request/id "tasks:1"))
-           (resource/render-key (assoc accepted :request/id "tasks:2"))))))
+           (resource/render-key (assoc accepted :request/id "tasks:2")))))
+  (testing "a write install's :write/id is transport too — an identical read after a write
+            does not re-render"
+    (is (= (resource/render-key (assoc accepted :write/id "tasks:w1"))
+           (resource/render-key accepted)))))
 
 (deftest render-key-tracks-every-drawn-field
   (let [k (resource/render-key accepted)]
@@ -463,7 +467,7 @@
 (deftest submit-write-starts-write-and-emits-write-effect
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete :id 7}])]
     (testing "an active write is recorded under a namespaced id, carrying the payload"
-      (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7}} (:active-write resource)))
+      (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7} :query nil} (:active-write resource)))
       (is (true? (resource/writing? resource))))
     (testing "notify first (so the button disables), then the :write effect — which carries the
               request step already decided, not the payload for the executor to interpret"
@@ -479,7 +483,7 @@
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
-      (is (= {:write/id "tasks:w1" :payload payload} (:active-write resource)))
+      (is (= {:write/id "tasks:w1" :payload payload :query nil} (:active-write resource)))
       (is (= [[:notify-consumers {:resource resource}]
               [:write {:write/id "tasks:w1"
                        :method   "POST"
@@ -527,42 +531,49 @@
               :url      "/api/tasks?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record}))))
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record} nil))))
     (testing "update: member-addressed PUT carrying the record"
       (is (= {:write/id "tasks:w1"
               :method   "PUT"
               :url      "/api/tasks/7?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :update :id 7 :record record}))))
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :update :id 7 :record record} nil))))
     (testing "delete: member-addressed DELETE, no body and so no content-type"
       (is (= {:write/id "tasks:w1"
               :method   "DELETE"
               :url      "/api/tasks/7?requestId=tasks:w1"}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 7}))))))
+             (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 7} nil))))))
+
+(deftest write-request-carries-the-current-query
+  (testing "the write is issued for the current view, so its query rides the URL like a read's"
+    (is (= "/api/tasks?requestId=tasks:w1&direction=desc&sort=owner"
+           (:url (resource/write-request "/api/tasks" "tasks:w1"
+                                         {:op :create :record {"title" "x"}}
+                                         {:sort "owner" :direction "desc"}))))))
 
 (deftest write-request-of-an-unknown-op-is-nil
   (testing "the table is the whole write vocabulary — nil is how step learns it can't build one"
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7})))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7})))))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7} nil)))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7} nil)))))
 
 (deftest write-request-of-a-member-op-without-an-id-is-nil
   (testing "no id would address the collection instead — a DELETE that reads as
             'delete everything' to any server implementing collection-level delete"
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete})))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :update :record {"title" "x"}})))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id ""}))))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete} nil)))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :update :record {"title" "x"}} nil)))
+    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id ""} nil))))
   (testing "a collection op needs no id"
-    (is (some? (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record {"title" "x"}}))))
+    (is (some? (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record {"title" "x"}} nil))))
   (testing "0 is a legitimate id, not a missing one"
     (is (= "/api/tasks/0?requestId=tasks:w1"
-           (:url (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 0}))))))
+           (:url (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 0} nil))))))
 
 (deftest write-request-passes-the-record-through-unconverted
   (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an
             =-comparable effect is what makes the write spine testable at all"
     (let [record {"title" "Ship it" "status" "todo"}
-          req    (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record})]
+          req    (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record} nil)]
       (is (map? (:body req)))
       (is (= record (:body req))))))
 
@@ -574,24 +585,53 @@
       (is (= r resource))
       (is (= [[:diagnostic :stale-write]] effects)))))
 
-(deftest write-ack-accepted-clears-write-and-refetches-current-intent
-  (let [r (assoc base :url-intent {:sort "owner"}
-                      :request-count 3
-                      :write-count 1
-                      :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
-        {:keys [resource effects]} (resource/step r [:write-ack {:outcome  :accepted
-                                                                 :write/id "tasks:w1"
-                                                                 :revision "tasks:v1"}])]
+(deftest write-ack-accepted-installs-the-returned-state
+  (let [r       (assoc base :url-intent {:sort "owner"} :write-count 1
+                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        payload (assoc accepted :query {:sort "owner"} :write/id "tasks:w1")
+        {:keys [resource effects]} (resource/step r [:write-ack payload])]
     (testing "the write clears -> writing? false"
       (is (nil? (:active-write resource)))
       (is (false? (resource/writing? resource))))
-    (testing "a refetch of the CURRENT intent is issued under a fresh read id (mutate -> refetch)"
-      (is (= {:request/id "tasks:4" :query {:sort "owner"}} (:active-request resource)))
-      (is (= [[:notify-consumers {:resource resource}]
-              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:4&sort=owner" :request/id "tasks:4"}]]
-             effects)))
-    (testing "last-accepted is untouched — the refetch's :response installs the post-mutation truth"
-      (is (nil? (:last-accepted resource))))))
+    (testing "the returned envelope is installed directly — no refetch, just notify"
+      (is (= payload (:last-accepted resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
+
+(deftest write-ack-accepted-adopts-a-clamped-echo
+  (let [r       (assoc base :url-intent {:page "4"} :write-count 1
+                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:page "4"}})
+        payload (assoc accepted :query {:page "3"} :write/id "tasks:w1")
+        {:keys [resource effects]} (resource/step r [:write-ack payload])]
+    (testing "not drifted, so the clamped echo is adopted and written to the URL"
+      (is (= {:page "3"} (:url-intent resource)))
+      (is (some (fn [[fx m]] (and (= :url-write fx) (= {:page "3"} (:params m)))) effects))
+      (is (= payload (:last-accepted resource))))))
+
+(deftest write-ack-accepted-does-not-adopt-a-drifted-echo
+  (let [r       (assoc base :url-intent {:sort "start"} :request-count 3 :write-count 1
+                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        payload (assoc accepted :query {:sort "owner"} :write/id "tasks:w1")
+        {:keys [resource effects]} (resource/step r [:write-ack payload])]
+    (testing "the user moved during the write, so its old-query echo is not adopted"
+      (is (= {:sort "start"} (:url-intent resource)))
+      (is (not-any? (fn [[fx _]] (= :url-write fx)) effects)))
+    (testing "a trailing fetch fires for the new intent under a fresh id"
+      (is (= {:request/id "tasks:4" :query {:sort "start"}} (:active-request resource)))
+      (is (some (fn [[fx m]] (and (= :fetch fx)
+                                  (= "/api/tasks?requestId=tasks:4&sort=start" (:url m))))
+                effects)))))
+
+(deftest write-ack-accepted-with-broken-contract-keeps-stale
+  (let [r      (assoc base :url-intent {:sort "owner"} :last-accepted accepted :write-count 1
+                           :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        broken (assoc accepted :query {:sort "owner"} :write/id "tasks:w1" :value [{"owner" "Alice"}])
+        {:keys [resource effects]} (resource/step r [:write-ack broken])]
+    (testing "the returned envelope fails the shape, so it is not installed"
+      (is (= accepted (:last-accepted resource)))
+      (is (= :contract (get-in resource [:last-failure :failure]))))
+    (testing "the write clears and the stale view is kept"
+      (is (nil? (:active-write resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
 
 (deftest write-ack-rejected-records-failure-keeps-stale-and-clears-writing
   (let [r   (assoc base :last-accepted accepted

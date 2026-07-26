@@ -65,7 +65,7 @@
                  (throw (js/Error. (str "HTTP " (.-status resp)))))))
       (.then (fn [^js body]
                (let [obj     (try (js/JSON.parse body) (catch :default _ nil))
-                     result  (wire/parse-ack obj)
+                     result  (wire/parse-envelope obj)
                      result* (assoc result :write/id write-id)] ; obj nil -> empty-body marker
                  (if (:protocol-failure result*)
                    (handle-event! el [:write-failed result*])
