@@ -22,7 +22,7 @@
   [^js consumer payload]
   ((du/getv consumer k-submit-write) payload))
 
-(defn- install-apply-resource! [^js proto render on-failure on-pending on-writing]
+(defn- install-apply-resource! [^js proto render-key render on-failure on-pending on-writing]
   (.defineProperty js/Object proto "applyResource"
                    #js {:value
                         (fn apply-resource [resource-value ctx]
@@ -31,18 +31,23 @@
                            (du/setv! this k-submit-intent (:submit-intent! ctx))
                            (du/setv! this k-submit-write (:submit-write! ctx))
                            (let [{:keys [last-accepted last-failure]} resource-value
-                                 pending  (resource/pending? resource-value)
-                                 writing (resource/writing? resource-value)]
-                             (when (and on-failure (not= last-failure (du/getv this k-last-failure)))
+                                 pending            (resource/pending? resource-value)
+                                 writing            (resource/writing? resource-value)]
+                             (when (and on-failure
+                                        (not= last-failure (du/getv this k-last-failure)))
                                (on-failure (du/getv this k-child) last-failure this)
                                (du/setv! this k-last-failure last-failure))
-                             (when (and last-accepted (not= last-accepted (du/getv this k-last-rendered)))
-                               (render (du/getv this k-child) last-accepted this)
-                               (du/setv! this k-last-rendered last-accepted))
-                             (when (and on-pending (not= pending (du/getv this k-pending)))
+                             (when (and render last-accepted)
+                               (let [rkey [(render-key last-accepted)]]
+                                 (when (not= rkey (du/getv this k-last-rendered))
+                                   (render (du/getv this k-child) last-accepted this)
+                                   (du/setv! this k-last-rendered rkey))))
+                             (when (and on-pending
+                                        (not= pending (du/getv this k-pending)))
                                (on-pending (du/getv this k-child) pending this)
                                (du/setv! this k-pending pending))
-                             (when (and on-writing (not= writing (du/getv this k-writing)))
+                             (when (and on-writing
+                                        (not= writing (du/getv this k-writing)))
                                (on-writing (du/getv this k-child) writing this)
                                (du/setv! this k-writing writing)))))
                         :writable true :configurable true}))
@@ -51,14 +56,16 @@
   "Register a resource-consumer custom element from a config:
   :tag        element tag name
   :child-tag  the driven child element, cached on connect
-  :render     (fn [child accepted this]), called when :last-accepted changes
+  :render     (fn [child accepted this]), optional, called when the render-key slice changes
   :on-failure (fn [child failure this]), optional, called when :last-failure changes,
   with failure nil on recovery so the component can clear its UI
   :on-pending (fn [child pending this]), optional, called when :pending? changes
   :on-writing (fn [child writing this]), optional, called when :writing? changes
   :on-connect (fn [this]), optional extra wiring
+  :render-key (fn [accepted]) -> the slice render draws, so render only fires when it changes.
+  Defaults to the whole accepted value minus the per-request id
   :observed-attributes — optional, defaults to #js []"
-  [{:keys [tag child-tag render on-failure on-pending on-connect on-writing observed-attributes]}]
+  [{:keys [tag child-tag render on-failure on-pending on-connect on-writing observed-attributes render-key]}]
   (component/register!
    tag
    {:observed-attributes  (or observed-attributes #js [])
@@ -67,4 +74,5 @@
                             (when on-connect (on-connect el)))
     :attribute-changed-fn (fn [_el _name _old _new] nil)
     :setup-prototype-fn   (fn [^js proto]
-                            (install-apply-resource! proto render on-failure on-pending on-writing))}))
+                            (install-apply-resource! proto (or render-key resource/render-key)
+                                                     render on-failure on-pending on-writing))}))

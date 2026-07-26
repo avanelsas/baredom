@@ -106,13 +106,19 @@
 
 (defn- with-trailing-fetch
   "If there is a current intent, still not answered, fire it again if a transition had cleared
-  the active-request. DO nothing if the active-request is still set"
+  the active-request. Do nothing if the active-request is still set"
   [{:keys [resource effects] :as result}]
   (if (and (nil? (:active-request resource)) (pending? resource))
     (let [r* (start-request resource (:url-intent resource))]
       {:resource r*
        :effects  (conj (vec effects) [:fetch (read-request r*)])})
     result))
+
+(defn render-key
+  "In order to check if an accepted envelope, remove the added request/id
+  so that it can be compared to the saved value"
+  [accepted]
+  (dissoc accepted :request/id))
 
 ;; WRITE functionality ----------------------------------------------------------
 

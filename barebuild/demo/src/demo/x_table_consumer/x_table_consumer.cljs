@@ -136,23 +136,59 @@
 (defn- create-body-row!
   [values id]
   (let [row (.createElement js/document "x-table-row")]
+    (du/set-attr! row "data-row-id" (str id))
     (doseq [v values]
       (let [cell (create-table-cell! v false nil)]
         (.appendChild row cell)))
     (.appendChild row (create-actions-table-cell! false id))
     row))
 
+(defn- current-row-ids [^js table]
+  (->> (.querySelectorAll table "x-table-row[data-row-id]")
+    array-seq
+    (mapv #(du/get-attr % "data-row-id"))))
+
+(defn- find-row [^js table id]
+  (.querySelector table (str "x-table-row[data-row-id='" id "']")))
+
+(defn- ensure-header! [^js table columns]
+  (if-let [header (.querySelector table "x-table-row:not([data-row-id])")]
+    (doseq [{:keys [key sort-direction]} columns]
+      (when-let [cell (.querySelector header (str "x-table-cell[" k-data-field-key "='" key "']"))]
+        (du/set-attr! cell "sort-direction" sort-direction)))
+    (do
+      (du/set-attr! table "columns" (str (inc (count columns))))
+      (.appendChild table (create-header-row! columns)))))
+
+(defn- update-cells! [^js row cells columns]
+  (doseq [[i {:keys [key]}] (map-indexed vector columns)]
+    (let [cell (aget (.-children row) i)
+          text (str (get cells key))]
+      (when (not= (.-textContent cell) text)
+        (set! (.-textContent cell) text)))))
+
+(defn- row-element [^js table columns {:keys [id cells new?]}]
+  (if new?
+    (create-body-row! (map #(get cells (:key %)) columns) id)
+    (doto (find-row table (str id))
+      (update-cells! cells columns))))
+
+(defn- apply-plan!
+  [^js table {:keys [remove order]} columns]
+  (ensure-header! table columns)
+  (doseq [id remove]
+    (when-let [row (find-row table id)] (.remove row)))
+  (reduce (fn [anchor row-vm]
+            (let [el (row-element table columns row-vm)]
+              (.insertBefore table el anchor)
+              el))
+          nil
+          (reverse order)))
+
 (defn- render-table!
-  [{:keys [columns rows]} table]
+  [{:keys [columns rows]} ^js table]
   (when table
-    (set! (.-innerHTML table) "")
-    ;; Note we increase the server column count as the client adds a delete button to each row
-    (du/set-attr! table "columns" (str (inc (count columns))))
-    (.appendChild table (create-header-row! columns))
-    (doseq [r rows]
-      (let [values (map (fn [col] (get (:cells r) (:key col))) columns)
-            row    (create-body-row! values (:id r))]
-        (.appendChild table row)))))
+    (apply-plan! table (model/reconcile-plan (current-row-ids table) rows) columns)))
 
 (defn- render! [^js table accepted ^js this]
   (render-table! (model/accepted-response->view-model accepted) table)
@@ -165,26 +201,10 @@
                                          :dismissible true
                                          :text        (failure-message failure)}))))
 
-(defn- on-pending! [^js table pending _this]
-  (if pending
-    (do (du/set-attr! table "aria-busy" "true")
-      (set! (.. table -style -opacity) "0.6"))
-    (do (du/remove-attr! table "aria-busy")
-      (set! (.. table -style -opacity) ""))))
-
-(defn- on-writing! [^js table writing _this]
-  (if writing
-    (do (du/set-attr! table "aria-busy" "true")
-      (set! (.. table -style -opacity) "0.6"))
-    (do (du/remove-attr! table "aria-busy")
-      (set! (.. table -style -opacity) ""))))
-
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-table"
     :observed-attributes model/observed-attributes
     :render              render!
-    :on-failure          on-failure!
-    :on-pending          on-pending!
-    :on-writing          on-writing!}))
+    :on-failure          on-failure!}))

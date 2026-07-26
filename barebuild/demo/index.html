@@ -49,9 +49,14 @@
       </x-search-field-consumer>
 
       <x-grid columns="1fr auto" align-items="center" justify-items="end" gap="md">
-        <x-stat-consumer>
-          <x-stat label="Total tasks" align="center"></x-stat>
-        </x-stat-consumer>
+        <x-grid columns="auto auto" align-items="center" gap="sm">
+          <x-spinner-consumer>
+            <x-spinner size="sm" label="Loading tasks"></x-spinner>
+          </x-spinner-consumer>
+          <x-stat-consumer>
+            <x-stat label="Total tasks" align="center"></x-stat>
+          </x-stat-consumer>
+        </x-grid>
 
         <x-task-form-consumer>
           <x-button data-role="open">Create Task</x-button>
