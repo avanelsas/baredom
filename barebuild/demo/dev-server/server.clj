@@ -241,17 +241,11 @@
                  :totalPages tp
                  :totalCount (count filtered)}}))
 
-;; --- writes: acks (steps W1a / W3a) ----------------------------------------
+;; --- writes: acks ----------------------------------------------------------
 
-(defn accepted-ack
-  "The §8 accepted write ack: `outcome` + echoed `requestId` + `revision`. Shared by delete
-   and create — it carries NO `value`/`shape`; the client refetches to observe the new state
-   (WRITES-PLAN). `revision` is threaded now so opt-in concurrency is purely additive later;
-   single-user last-write-wins ignores it."
-  [params]
-  {:outcome   "accepted"
-   :requestId (get params "requestId" "server-boot")
-   :revision  revision})
+;; An accepted write returns the full post-mutation envelope (`accepted-envelope`), shaped by
+;; the write's query, so the client installs the new state directly with no follow-up read. A
+;; rejected write returns `write-rejected-ack` — no value/shape, just the structured error.
 
 (defn write-rejected-ack
   "The §8 rejected write ack: the accepted fields plus a structured `error {code, message,
@@ -491,21 +485,21 @@
       (str/starts-with? uri "/dist/")
       (serve-dist uri)
 
-      ;; POST /api/tasks — create a task from the JSON record body (step W3a). Server-only
-      ;; semantic validation (end >= start) yields a rejected ack + field details; otherwise
-      ;; the record is appended with a server-minted id and an accepted ack returned. Both are
-      ;; HTTP 200; the client refetches to see the new row.
+      ;; POST /api/tasks — create a task from the JSON record body. Server-only semantic
+      ;; validation (end >= start) yields a rejected ack + field details; otherwise the record
+      ;; is appended with a server-minted id and the full post-mutation envelope, shaped by the
+      ;; write's query, is returned. Both are HTTP 200; the client installs the envelope directly.
       (and (= :post (:request-method req)) (= "/api/tasks" uri))
       (let [params (parse-query (:query-string req))
             record (request-record req)]
         (if-let [error (record-error record)]
           (json-response 200 (write-rejected-ack params error))
           (do (swap! tasks create-task record)
-              (json-response 200 (accepted-ack params)))))
+              (json-response 200 (accepted-envelope params)))))
 
-      ;; PUT /api/tasks/:id — replace the row with the record body (step U1a). A full
-      ;; replace, validated exactly like a create, plus a not-found rejection when the id
-      ;; matches no row. Both verdicts are HTTP 200; the client refetches to see the result.
+      ;; PUT /api/tasks/:id — replace the row with the record body. A full replace, validated
+      ;; exactly like a create, plus a not-found rejection when the id matches no row. Both
+      ;; verdicts are HTTP 200; an accepted write returns the full post-mutation envelope.
       (and (= :put (:request-method req))
            (str/starts-with? uri "/api/tasks/"))
       (let [params (parse-query (:query-string req))
@@ -514,7 +508,7 @@
         (if-let [error (update-error @tasks id (task-id-str uri) record)]
           (json-response 200 (write-rejected-ack params error))
           (do (swap! tasks update-task id record)
-              (json-response 200 (accepted-ack params)))))
+              (json-response 200 (accepted-envelope params)))))
 
       (= "/api/tasks" uri)
       (let [params  (parse-query (:query-string req))
@@ -527,14 +521,14 @@
           (unsupported-sort? params) (json-response 200 (rejected-envelope params))
           :else                      (json-response 200 (accepted-envelope params))))
 
-      ;; DELETE /api/tasks/:id — mutate the in-memory set, return the ack (step W1a).
-      ;; The ack is HTTP 200 with an `accepted` outcome (mirroring reads); the client
-      ;; refetches to observe the new state.
+      ;; DELETE /api/tasks/:id — mutate the in-memory set, return the full post-mutation
+      ;; envelope shaped by the write's query (HTTP 200, `accepted`); the client installs it
+      ;; directly. Deleting the last row on a page lets the server clamp the page in the echo.
       (and (= :delete (:request-method req))
            (str/starts-with? uri "/api/tasks/"))
       (let [params (parse-query (:query-string req))]
         (swap! tasks delete-task (task-id-from-uri uri))
-        (json-response 200 (accepted-ack params)))
+        (json-response 200 (accepted-envelope params)))
 
       :else
       (json-response 404 {:error "not-found" :uri uri}))))

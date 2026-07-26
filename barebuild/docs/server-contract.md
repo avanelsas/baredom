@@ -22,13 +22,17 @@ GET <endpoint>?<query>&requestId=<id>
 
 ## The write requests
 
-Three mutations, all carrying a `requestId` the same way.
+Three mutations, all carrying a `requestId` and the **current view's query** the same way.
 
 ```
-POST   <endpoint>?requestId=<id>          body: the record as JSON
-PUT    <endpoint>/<id>?requestId=<id>     body: the record as JSON
-DELETE <endpoint>/<id>?requestId=<id>     no body
+POST   <endpoint>?<query>&requestId=<id>          body: the record as JSON
+PUT    <endpoint>/<id>?<query>&requestId=<id>     body: the record as JSON
+DELETE <endpoint>/<id>?<query>&requestId=<id>     no body
 ```
+
+The `<query>` is the same intent a read carries (sort, page, filter, …). A write returns the
+new state (see [Write acks](#write-acks)), and the server shapes that state to this query — the
+page and sort the user is looking at — exactly as it would for a GET.
 
 - **Create** posts a flat JSON object keyed by the shape's field keys. The server mints the
   identity. The client never sends one.
@@ -43,10 +47,10 @@ Update is the one mutation that is **not idempotent over a missing row**. Delete
 absent id as a no-op, because the outcome it promises — the row is gone — already holds. An
 update of a row that does not exist has nothing to replace, so a server must reject it.
 
-A write's response is an **ack**, not data (see [Write acks](#write-acks)). After an accepted
-ack BareBuild refetches, so new state is always observed through the read path rather than
-inferred from the ack. There is no optimistic update: nothing appears on screen until the
-server has confirmed it and the refetch has landed.
+An accepted write returns the **full post-mutation state** — the same envelope a read returns,
+shaped by the write's query — which BareBuild installs directly (see [Write acks](#write-acks)).
+There is no optimistic update: the state is server-confirmed truth, not a client guess, so
+nothing appears on screen until the server has performed the write and returned the result.
 
 ## The read response
 
@@ -82,18 +86,16 @@ surfaces the error.
 
 ## Write acks
 
-A create, update or delete answers with an **ack**: the verdict on the mutation, never the new
-data. Also always HTTP 200.
+A create, update or delete answers on the same two-outcome envelope as a read, always HTTP 200.
 
 ### Accepted — the server performed the write
 
-| Field | Type | Notes |
-|---|---|---|
-| `outcome` | `"accepted"` | |
-| `requestId` | string | echo of the write's id |
-| `revision` | string | opaque version tag |
-
-No `value`, no `shape`, no `query`. BareBuild refetches to observe the result.
+An accepted write returns the **full post-mutation envelope** — identical in shape to an
+accepted read response — carrying `outcome`, the echoed `requestId`, `revision`, the `query`
+echo, `value`, `shape`, and `pageInfo`. BareBuild validates it against the shape and installs it
+directly, with no follow-up read. The `value` reflects the mutation, shaped to the write's query
+(the current page and sort); deleting the last row on a page lets the server clamp the page in
+the echo, exactly as a read would.
 
 ### Rejected — the server refuses the write
 
@@ -175,9 +177,9 @@ BareBuild distinguishes four, and **all keep the last good view on screen**:
 
 | Failure | Trigger |
 |---|---|
-| **rejected** | `outcome: "rejected"` with an `error` — on a read or on a write ack |
-| **contract** | an accepted envelope whose records don't match the declared `shape` |
-| **protocol** | the body isn't a valid envelope (unparseable JSON, or missing `value` + `shape` / missing `error`; for an ack, a missing `requestId` or `revision`) |
+| **rejected** | `outcome: "rejected"` with an `error` — on a read or on a write |
+| **contract** | an accepted envelope (read or write) whose records don't match the declared `shape` |
+| **protocol** | the body isn't a valid envelope (unparseable JSON, or an accepted outcome missing `value` + `shape`, or a rejected one missing `error`) |
 | **network** | no response, or a non-2xx status |
 
 A failed write leaves the resource untouched: nothing was rendered optimistically, so there
@@ -203,18 +205,17 @@ sequenceDiagram
   end
 ```
 
-And a write, which always ends in a read:
+And a write, whose accepted response already carries the new state:
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '16px'}}}%%
 sequenceDiagram
   participant C as server-resource
   participant S as Server
-  C->>S: POST endpoint?requestId (record) / PUT endpoint/id?requestId (record) / DELETE endpoint/id?requestId
-  alt accepted ack (HTTP 200)
-    S-->>C: outcome:accepted · requestId · revision
-    C->>S: GET endpoint?query & requestId
-    S-->>C: accepted envelope with the new state
+  C->>S: POST endpoint?query&requestId (record) / PUT endpoint/id?query&requestId (record) / DELETE endpoint/id?query&requestId
+  alt accepted (HTTP 200)
+    S-->>C: outcome:accepted · query echo · value · shape · pageInfo
+    C->>C: validate records vs shape → install, adopt echo into URL
   else rejected ack (HTTP 200)
     S-->>C: outcome:rejected · error {code, message, details}
     C->>C: keep last good view · show the error on the offending field
