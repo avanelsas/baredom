@@ -118,7 +118,7 @@
   "In order to check if an accepted envelope, remove the added request/id
   so that it can be compared to the saved value"
   [accepted]
-  (dissoc accepted :request/id))
+  (dissoc accepted :request/id :write/id))
 
 ;; WRITE functionality ----------------------------------------------------------
 
@@ -132,37 +132,53 @@
 
 (defn write-request
   "The :write effect value for a write payload, or nil when none can be built"
-  [endpoint write-id {:keys [op id record]}]
+  [endpoint write-id {:keys [op id record]} query]
   (when-let [{:keys [method target body?]} (get write-ops op)]
     (let [member? (= target :member)]
       (when (or (not member?) (seq (str id)))
         (assoc (utils/request {:endpoint endpoint
                                :segment (when member? id)
                                :method method
+                               :query query
                                :body (when body? record)
                                :request-id write-id})
                :write/id write-id)))))
 
 (defn- start-write
   "Save an active write request in r. The ID is generated elsewhere."
-  [r payload]
+  [r payload query]
   (let [n (inc (or (:write-count r) 0))]
     (assoc r
            :write-count  n
            :active-write {:write/id (str (:resource/id r) ":w" n)
-                          :payload  payload})))
+                          :payload  payload
+                          :query query})))
 
 (defn writing? [r]
   (some? (:active-write r)))
 
-(defn- refetch-current
-  "After a successful write, retrieve the current state"
-  [{:keys [resource effects]}]
-  (let [r* (start-request resource (:url-intent resource))]
-    {:resource r*
-     :effects  (conj (vec effects)
-                     [:notify-consumers {:resource r*}]
-                     [:fetch (read-request r*)])}))
+(defn- install-accepted
+  "Install an accepted envelope: set last-accepted and, when adopt?, adopt the query echo
+  as intent. Returns the resource and whether the URL needs a corrective write."
+  [resource payload adopt?]
+  (let [echo      (:query payload)
+        installed (assoc resource :last-accepted payload :last-failure nil)]
+    {:resource (if adopt?
+                 (assoc installed :url-intent echo)
+                 installed)
+     :correct? (and adopt? 
+                    (not= echo (:url-intent resource)))}))
+
+
+
+(defn- write-drifted? [r]
+  (not= (:url-intent r) (get-in r [:active-write :query])))
+
+(defn- accepted-effects [resource echo correct?]
+  (let [notify [:notify-consumers {:resource resource}]]
+    (if correct?
+      [[:url-write {:resource/id (:resource/id resource) :params echo :mode :replace}] notify]
+      [notify])))
 
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
@@ -203,22 +219,12 @@
                                                       :errors   errors}
                                        :active-request nil)]
                   {:resource resource* :effects [[:notify-consumers {:resource resource*}]]}))
-              (let [echo      (:query payload)
-                    adopt?    (not (drifted? resource))
-                    correct?  (and adopt? (not= echo (:url-intent resource)))
-                    installed (assoc resource
-                                     :last-accepted payload
-                                     :last-failure nil
-                                     :active-request nil)
-                    resource* (if adopt? (assoc installed :url-intent echo) installed)]
+              (let [adopt? (not (drifted? resource))
+                    {:keys [resource correct?]} (install-accepted (assoc resource :active-request nil)
+                                                                  payload adopt?)]
                 (with-trailing-fetch
-                  {:resource resource*
-                   :effects  (if correct?
-                               [[:url-write {:resource/id (:resource/id resource*)
-                                             :params      echo
-                                             :mode        :replace}]
-                                [:notify-consumers {:resource resource*}]]
-                               [[:notify-consumers {:resource resource*}]])}))))
+                  {:resource resource
+                   :effects  (accepted-effects resource (:query payload) correct?)}))))
 
           :rejected
           (let [accepted-query (get-in resource [:last-accepted :query])
@@ -296,9 +302,9 @@
       ;; writes
       :submit-write
       (if-not (writing? resource)
-        (let [resource* (start-write resource payload)
+        (let [resource* (start-write resource payload (:url-intent resource))
               id        (get-in resource* [:active-write :write/id])
-              write-req (write-request (:endpoint resource*) id payload)]
+              write-req (write-request (:endpoint resource*) id payload (:url-intent resource))]
           (if write-req
             {:resource resource*
              :effects  [[:notify-consumers {:resource resource*}]
@@ -313,10 +319,21 @@
             active-write-id (get-in resource [:active-write :write/id])]
         (if (= write-id active-write-id)
           (if (= :accepted (:outcome payload))
-            (let [resource* (assoc resource :active-write nil)]
-              (refetch-current {:resource resource*
-                                :effects []}))
-            ;; :rejected
+            (let [errors (validate-contract payload)]
+              (if (seq errors)
+                (with-trailing-fetch
+                  (let [resource* (assoc resource
+                                         :last-failure {:failure :contract
+                                                        :response payload
+                                                        :errors   errors}
+                                         :active-write nil)]
+                    {:resource resource* :effects [[:notify-consumers {:resource resource*}]]}))
+                (let [adopt? (not (write-drifted? resource))
+                      {:keys [resource correct?]} (install-accepted (assoc resource :active-write nil)
+                                                                    payload adopt?)]
+                  (with-trailing-fetch
+                    {:resource resource
+                     :effects  (accepted-effects resource (:query payload) correct?)}))))
             (let [resource* (assoc resource
                                    :active-write nil
                                    :last-failure {:failure :rejected

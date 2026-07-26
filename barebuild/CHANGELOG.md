@@ -1,39 +1,18 @@
 # Changelog
 
+## 0.3.0
+
+- A write returns the full post-mutation state. The client installs it directly instead of refetching, so a write is one round-trip, not two.
+- Breaking. An accepted write must now be a full envelope. The old value-less ack is a protocol failure, and writes carry the current query.
+
 ## 0.2.0
 
-- Update (PUT) joins create and delete. It is a full replace: the body carries every field the
-  shape declares, so a key the client omits is cleared rather than left alone. The id travels
-  in the path and never in the body, and an id matching no row is rejected rather than accepted
-  as a no-op — unlike delete, an update of an absent row has nothing to replace.
-- The op vocabulary is data. `write-ops` maps each op to a method, a collection- or
-  member-addressed URL, and whether it carries a body; `step` resolves that into the `:write`
-  effect. The executor performs the request and decides nothing about it. Reads now go through
-  the same builder, so neither edge assembles a URL by hand.
-- Path segments are URL-encoded, and query keys render in sorted order so the same query always
-  produces the same URL. A write whose op is unknown, or which addresses a member without an id,
-  yields no request at all rather than a malformed one.
-- The demo table gains per-row editing. The task form opens on an existing task, prefills from
-  the shape, and submits an update. A rejection naming no field — an unknown id, an unreachable
-  server — now reads as a message in the modal instead of closing it as though the write had
-  succeeded.
-- Bumps the BareDOM dependency to 3.5.0, whose `x-date-picker` clears its value on a blank
-  input — so an editing consumer can unset an optional date, which a full-replace update needs.
+- Implements PUT as a full replace.
+- The write op vocabulary is data. Reads and writes share one request builder.
+- URL-encoded path segments and sorted query keys. An unbuildable write yields no request.
+- Demo gains per-row editing. Field-less write rejections show as a message.
+- Bumps BareDOM to 3.5.0 for the clearable date picker.
 
 ## 0.1.0
 
-First release. BareBuild — the server-resource runtime for BareDOM — and its showcase demo.
-
-- The `<server-resource>` element and the pure `step` lifecycle
-  (fetch, sort, page, filter, rejection, keep-stale, contract validation, echo-adoption,
-  trailing-fetch, network/protocol failures, disconnect-abort, SSR boot), plus the shared
-  `consumer-resource/register!` mechanism for authoring consumers.
-- Create and delete run through the same loop: `submit-write!` -> `:write`
-  effect -> ack -> refetch, so the rendered value always comes from the server. Create
-  payloads are validated locally against the `shape` the server sends before submission.
-- A demo showcase. A Babashka tasks server and a live page where one `<server-resource>`
-  drives five consumers: x-stat, x-progress, x-table, x-search-field and x-form. All using server
-  state, covering sort, filter, paging, create and delete.
-- Scripts to publish to to Clojars as `com.github.avanelsas/barebuild`.
-
-Writes cover create and delete only — there is no update/PUT yet.
+First release. The `<server-resource>` runtime with a pure `step` lifecycle, the `consumer-resource/register!` mechanism, create and delete writes, and a Babashka-backed demo. Published to Clojars.
