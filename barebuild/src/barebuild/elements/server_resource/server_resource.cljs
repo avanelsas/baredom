@@ -74,6 +74,13 @@
       (.catch (fn [^js _e]
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
+(defn- notify-consumers! [^js el r]
+  (let [consumers (du/getv el k-consumers)
+        ctx       {:submit-intent! (fn [patch]   (handle-event! el [:intent-patch patch]))
+                   :submit-write!  (fn [payload]  (handle-event! el [:submit-write payload]))}]
+    (doseq [^js c consumers]
+      (.applyResource c r ctx))))
+
 (defn- run-effects!
   [^js el effects]
   (doseq [[fx m] effects]
@@ -82,12 +89,7 @@
       (execute-fetch! el m)
 
       :notify-consumers
-      (let [r         (:resource m)
-            consumers (du/getv el k-consumers)
-            ctx       {:submit-intent! (fn [patch] (handle-event! el [:intent-patch patch]))
-                       :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
-        (doseq [^js c consumers]
-          (.applyResource c r ctx)))
+      (notify-consumers! el (:resource m))
 
       :url-write
       (let [new-url (utils/build-scoped-url (.-search js/location)
@@ -182,6 +184,12 @@
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
+(defn- setup-prototype! [^js proto]
+  (.defineProperty js/Object proto "projectResource"
+                   #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))
+                        :writable     true
+                        :configurable true}))
+
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []
@@ -189,4 +197,5 @@
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
                         :disconnected-fn      disconnected!
-                        :attribute-changed-fn attribute-changed!}))
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   setup-prototype!}))
