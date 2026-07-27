@@ -1,9 +1,10 @@
 (ns barebuild.elements.server-resource.server-resource
   (:require
-   [barebuild.wire :as wire]
-   [barebuild.resource :as resource]
    [barebuild.elements.server-resource.model :as model]
+   [barebuild.recorder :as recorder]
+   [barebuild.resource :as resource]
    [barebuild.utils :as utils]
+   [barebuild.wire :as wire]
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [clojure.string :as str]))
@@ -115,6 +116,8 @@
   (let [r                          (du/getv el k-resource)
         {:keys [resource effects]} (resource/step r event)]
     (du/setv! el k-resource resource)
+    ;; Note: if no recorder is set then this is won't record anything
+    (recorder/record! {:el el :event event :before r :after resource :effects effects})
     (run-effects! el effects)))
 
 (defn- read-boot-embed
