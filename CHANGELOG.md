@@ -2,6 +2,23 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.6.0] - 2026-07-27
+
+One new component: a floating, draggable container for inspectors, tool palettes, mini-players, and any persistent surface the user should be able to move out of the way.
+
+### Added
+
+- **`x-floating-panel`** — a non-modal container that floats above page content at a viewport-fixed position and is repositioned by dragging its handle bar or, when the handle has focus, with the arrow keys. Position lives in the `x` / `y` attributes, so a panel renders where you declared it on first paint with no measure-then-place flash, and clamping keeps the handle reachable whenever the panel opens, connects, moves, or the viewport resizes — a panel parked off-screen is pulled back rather than stranded. Optional `closable` (close button plus `Escape`), `resizable` (native CSS resize grip on the body), `focus-on-open` (off by default, so an ambient panel never steals focus from what the user is typing in), and `step` for arrow-key distance. Emits `x-floating-panel-toggle`, a cancelable `x-floating-panel-dismiss-request`, and `x-floating-panel-move` on drag end and keyboard nudge — never per animation frame.
+
+### Accessibility
+
+- The handle bar is keyboard-operable, which WCAG 2.2 SC 2.5.7 (Dragging Movements) requires of any drag interaction. It is focusable and carries `aria-roledescription="Drag handle"` plus `aria-keyshortcuts`, because the handle is moved rather than activated and a bare `role="button"` would promise an activation that never happens. The panel is a non-modal `role="dialog"` with no focus trap, always accessibly named from the `header` slot or the `label` attribute.
+
+### Notes
+
+- Interactive content in the `header` slot can opt out of the drag surface with `data-no-drag`; the built-in close button is excluded automatically.
+- The framework adapters gain a generated `x-floating-panel` wrapper. They version on their own cadence — see [`docs/RELEASING.md`](docs/RELEASING.md) — so releasing them is a separate step.
+
 ## [3.5.0] - 2026-07-24
 
 Form-associated components gain the instance-level validation API they were missing, and two form-control bugs are fixed: emptying an `x-date-picker` input now clears the committed date, and a form reset now clears validation errors.
