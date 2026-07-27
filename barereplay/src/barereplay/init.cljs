@@ -1,8 +1,20 @@
 (ns barereplay.init
-  (:require [barebuild.recorder :as recorder]
-            [barereplay.store :as store]))
+  (:require
+   [baredom.components.x-slider.x-slider :as x-slider]
+   [baredom.components.x-typography.x-typography :as x-typography]
+   [barereplay.dock :as dock]
+   [barebuild.recorder :as recorder]
+   [barereplay.store :as store]))
+
+;; Ensure a Web component used is inited if needed
+(defn- ensure! [tag init!]
+  (when-not (js/customElements.get tag) (init!)))
 
 (defn init!
   "Start recording BareBuild events into the replay store."
   []
-  (recorder/set-recorder! store/record!))
+  (recorder/set-recorder! store/record!)
+  (ensure! "x-slider" x-slider/init!)
+  (ensure! "x-typography" x-typography/init!)
+  (dock/register!)
+  (dock/mount!))
