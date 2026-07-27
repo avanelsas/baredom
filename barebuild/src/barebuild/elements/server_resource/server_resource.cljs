@@ -1,9 +1,10 @@
 (ns barebuild.elements.server-resource.server-resource
   (:require
-   [barebuild.wire :as wire]
-   [barebuild.resource :as resource]
    [barebuild.elements.server-resource.model :as model]
+   [barebuild.recorder :as recorder]
+   [barebuild.resource :as resource]
    [barebuild.utils :as utils]
+   [barebuild.wire :as wire]
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [clojure.string :as str]))
@@ -73,6 +74,13 @@
       (.catch (fn [^js _e]
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
+(defn- notify-consumers! [^js el r]
+  (let [consumers (du/getv el k-consumers)
+        ctx       {:submit-intent! (fn [patch]   (handle-event! el [:intent-patch patch]))
+                   :submit-write!  (fn [payload]  (handle-event! el [:submit-write payload]))}]
+    (doseq [^js c consumers]
+      (.applyResource c r ctx))))
+
 (defn- run-effects!
   [^js el effects]
   (doseq [[fx m] effects]
@@ -81,12 +89,7 @@
       (execute-fetch! el m)
 
       :notify-consumers
-      (let [r         (:resource m)
-            consumers (du/getv el k-consumers)
-            ctx       {:submit-intent! (fn [patch] (handle-event! el [:intent-patch patch]))
-                       :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
-        (doseq [^js c consumers]
-          (.applyResource c r ctx)))
+      (notify-consumers! el (:resource m))
 
       :url-write
       (let [new-url (utils/build-scoped-url (.-search js/location)
@@ -115,6 +118,8 @@
   (let [r                          (du/getv el k-resource)
         {:keys [resource effects]} (resource/step r event)]
     (du/setv! el k-resource resource)
+    ;; Note: if no recorder is set then this is won't record anything
+    (recorder/record! {:el el :event event :before r :after resource :effects effects})
     (run-effects! el effects)))
 
 (defn- read-boot-embed
@@ -179,6 +184,12 @@
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
+(defn- setup-prototype! [^js proto]
+  (.defineProperty js/Object proto "projectResource"
+                   #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))
+                        :writable     true
+                        :configurable true}))
+
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []
@@ -186,4 +197,5 @@
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
                         :disconnected-fn      disconnected!
-                        :attribute-changed-fn attribute-changed!}))
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   setup-prototype!}))
