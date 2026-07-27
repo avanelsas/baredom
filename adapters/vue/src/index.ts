@@ -32,6 +32,7 @@ export { XDropdown, type XDropdownInstance, type XDropdownExposed } from "./x-dr
 export { XFieldset, type XFieldsetInstance, type XFieldsetExposed } from "./x-fieldset";
 export { XFileDownload, type XFileDownloadInstance, type XFileDownloadExposed } from "./x-file-download";
 export { XFileUpload, type XFileUploadInstance, type XFileUploadExposed } from "./x-file-upload";
+export { XFloatingPanel, type XFloatingPanelInstance, type XFloatingPanelExposed } from "./x-floating-panel";
 export { XForm, type XFormInstance, type XFormExposed } from "./x-form";
 export { XFormField, type XFormFieldInstance, type XFormFieldExposed } from "./x-form-field";
 export { XGaussianBlur, type XGaussianBlurInstance, type XGaussianBlurExposed } from "./x-gaussian-blur";

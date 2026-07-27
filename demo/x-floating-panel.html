@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-floating-panel demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+      body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; line-height: 1.4; }
+      p.desc { color: var(--muted); margin: 0 0 32px; font-size: 0.9rem; }
+      .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0 20px; }
+      .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0 20px; }
+      .controls label { font-size: 13px; }
+      .log {
+        margin-top: 24px; padding: 12px; border-radius: 8px;
+        background: #111827; color: #f9fafb; min-height: 96px;
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+      }
+      .filler { color: var(--muted); font-size: 0.9rem; max-width: 60ch; }
+      .panel-header { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; }
+      .panel-body { font-size: 0.9rem; line-height: 1.6; }
+      .panel-body p { margin: 0 0 10px; }
+      .readout { font-family: monospace; font-size: 12px; color: var(--muted); }
+    </style>
+    <link rel="stylesheet" href="demo-responsive.css" />
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-floating-panel</x-typography>
+    <p class="desc">
+      Non-modal container that floats above page content. Drag the handle bar to move it, or focus
+      the handle and use the arrow keys (Shift + arrow for 1px precision). Sits below modals and
+      toasts by design.
+    </p>
+
+    <x-typography variant="overline">API</x-typography>
+    <div class="row">
+      <x-button onclick="panel.show()">show()</x-button>
+      <x-button onclick="panel.hide()">hide()</x-button>
+      <x-button onclick="panel.toggle()">toggle()</x-button>
+      <x-button variant="secondary" onclick="resetPosition()">Reset position</x-button>
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
+    </div>
+
+    <x-typography variant="overline">Live Controls</x-typography>
+    <div class="controls">
+      <x-checkbox id="ctrl-closable" checked></x-checkbox>
+      <label for="ctrl-closable">closable</label>
+      <x-checkbox id="ctrl-resizable"></x-checkbox>
+      <label for="ctrl-resizable">resizable</label>
+      <x-checkbox id="ctrl-focus"></x-checkbox>
+      <label for="ctrl-focus">focus-on-open</label>
+      <label for="ctrl-step">Arrow step (px):</label>
+      <x-form-field type="text" id="ctrl-step" value="10" style="width:80px"></x-form-field>
+      <x-button onclick="applyStep()">Apply step</x-button>
+    </div>
+
+    <x-typography variant="overline">Cancelable dismissal</x-typography>
+    <div class="controls">
+      <x-checkbox id="ctrl-block"></x-checkbox>
+      <label for="ctrl-block">Block dismissal (preventDefault)</label>
+    </div>
+
+    <p class="filler">
+      Scroll or resize the window: the panel is positioned against the viewport, so it stays put
+      while this content moves, and it is re-clamped into view whenever the viewport shrinks.
+      Try dragging it mostly off the left edge — a strip stays reachable rather than letting it
+      escape entirely.
+    </p>
+
+    <div class="log" id="event-log">Events will appear here…</div>
+
+    <x-floating-panel id="demo-panel" open closable label="Demo panel" x="700" y="420">
+      <div slot="header" class="panel-header">
+        <span>Demo panel</span>
+      </div>
+
+      <div class="panel-body">
+        <p>Any content goes here — this is a generic container.</p>
+        <p>The handle bar above is the drag surface and is keyboard focusable.</p>
+        <p class="readout" id="position-readout">x: 700, y: 420</p>
+        <x-button size="sm" onclick="addLog('Button inside the panel pressed')">Interact</x-button>
+      </div>
+    </x-floating-panel>
+
+    <script>
+      const panel = document.getElementById('demo-panel');
+      const log = document.getElementById('event-log');
+      const readout = document.getElementById('position-readout');
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.push(new Date().toLocaleTimeString() + '  ' + msg);
+        if (logLines.length > 20) logLines = logLines.slice(-20);
+        log.textContent = logLines.join('\n');
+      }
+
+      function clearLog() {
+        logLines = [];
+        log.textContent = 'Events will appear here…';
+      }
+
+      function resetPosition() {
+        panel.x = 700;
+        panel.y = 420;
+        updateReadout(700, 420);
+        panel.show();
+      }
+
+      function updateReadout(x, y) {
+        readout.textContent = 'x: ' + Math.round(x) + ', y: ' + Math.round(y);
+      }
+
+      function applyStep() {
+        const step = document.getElementById('ctrl-step').value || '10';
+        panel.setAttribute('step', step);
+        addLog('step attribute set to ' + step + ' — focus the handle bar and press an arrow key');
+      }
+
+      panel.addEventListener('x-floating-panel-toggle', (e) => {
+        addLog('x-floating-panel-toggle  { open: ' + e.detail.open + ' }');
+      });
+
+      panel.addEventListener('x-floating-panel-move', (e) => {
+        updateReadout(e.detail.x, e.detail.y);
+        addLog('x-floating-panel-move  { x: ' + Math.round(e.detail.x) +
+               ', y: ' + Math.round(e.detail.y) + ', source: "' + e.detail.source + '" }');
+      });
+
+      panel.addEventListener('x-floating-panel-dismiss-request', (e) => {
+        const blocked = document.getElementById('ctrl-block').checked;
+        if (blocked) {
+          e.preventDefault();
+          addLog('x-floating-panel-dismiss-request { reason: "' + e.detail.reason +
+                 '" } — cancelled by preventDefault()');
+        } else {
+          addLog('x-floating-panel-dismiss-request { reason: "' + e.detail.reason + '" }');
+        }
+      });
+
+      document.getElementById('ctrl-closable').addEventListener('x-checkbox-change', (e) => {
+        panel.closable = e.detail.checked;
+      });
+
+      document.getElementById('ctrl-resizable').addEventListener('x-checkbox-change', (e) => {
+        panel.resizable = e.detail.checked;
+      });
+
+      document.getElementById('ctrl-focus').addEventListener('x-checkbox-change', (e) => {
+        panel.focusOnOpen = e.detail.checked;
+      });
+    </script>
+  </body>
+</html>

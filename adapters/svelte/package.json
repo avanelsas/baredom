@@ -162,6 +162,10 @@
       "types" : "./dist/x-file-upload.d.ts",
       "import" : "./dist/x-file-upload.js"
     },
+    "./x-floating-panel" : {
+      "types" : "./dist/x-floating-panel.d.ts",
+      "import" : "./dist/x-floating-panel.js"
+    },
     "./x-form" : {
       "types" : "./dist/x-form.d.ts",
       "import" : "./dist/x-form.js"
@@ -459,7 +463,7 @@
     "@vanelsas/baredom" : "file:../../"
   },
   "files" : [ "dist", "README.md", "LICENSE" ],
-  "version" : "0.2.0",
+  "version" : "0.3.0",
   "main" : "./dist/index.js",
   "sideEffects" : [ "./dist/*.svelte", "./dist/*.js" ]
 }

@@ -34,6 +34,7 @@ import type { XDropdown } from "@vanelsas/baredom/x-dropdown";
 import type { XFieldset } from "@vanelsas/baredom/x-fieldset";
 import type { XFileDownload } from "@vanelsas/baredom/x-file-download";
 import type { XFileUpload } from "@vanelsas/baredom/x-file-upload";
+import type { XFloatingPanel } from "@vanelsas/baredom/x-floating-panel";
 import type { XForm } from "@vanelsas/baredom/x-form";
 import type { XFormField } from "@vanelsas/baredom/x-form-field";
 import type { XGaussianBlur } from "@vanelsas/baredom/x-gaussian-blur";
@@ -142,6 +143,7 @@ declare module "solid-js" {
       "x-fieldset": JSX.HTMLAttributes<XFieldset> & Record<string, any>;
       "x-file-download": JSX.HTMLAttributes<XFileDownload> & Record<string, any>;
       "x-file-upload": JSX.HTMLAttributes<XFileUpload> & Record<string, any>;
+      "x-floating-panel": JSX.HTMLAttributes<XFloatingPanel> & Record<string, any>;
       "x-form": JSX.HTMLAttributes<XForm> & Record<string, any>;
       "x-form-field": JSX.HTMLAttributes<XFormField> & Record<string, any>;
       "x-gaussian-blur": JSX.HTMLAttributes<XGaussianBlur> & Record<string, any>;
