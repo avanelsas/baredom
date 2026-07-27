@@ -16,13 +16,14 @@
   }
 
   .panel {
+  box-sizing: border-box;
+  width: min(300px, calc(100vw - 2rem));
   background: var(--x-color-bg, #fff);
   color: var(--x-color-text, #111);
   border: 1px solid var(--x-color-border, #ccc);
   border-radius: 0.5rem;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   padding: 0.5rem;
-  min-width: 260px;
   }
 
   .handle {
@@ -30,6 +31,17 @@
   user-select: none;
   font-weight: 600;
   padding-bottom: 0.35rem;
+  }
+
+  x-slider {
+  display: block;
+  width: 100%;
+  }
+
+  .count {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -43,6 +55,32 @@
 
 
 (def ^:private tag "barereplay-dock")
+(def ^:private k-state "__brDockState")
+
+(defn- project! [n]
+  (when-let [^js sr (.querySelector js/document "server-resource")]
+    (when-let [resource (reconstruct/resource-at (store/entries) n)]
+      (.projectResource sr resource))))
+
+(defn- readout! [count-el entries n]
+  (set! (.-textContent count-el) (label/readout entries n)))
+
+(defn- stamp! [^js el count-el entries n pinned?]
+  (du/setv! el k-state {:n n :pinned? pinned?})
+  (readout! count-el entries n))
+
+(defn- select! [^js el count-el entries n pinned?]
+  (stamp! el count-el entries n pinned?)
+  (project! n))
+
+(defn- on-store-change! [^js el slider count-el entries]
+  (let [total               (count entries)
+        {:keys [n pinned?]} (du/getv el k-state)]
+    (du/set-attr! slider "max" (str total))
+    (if pinned?
+      (do (du/set-attr! slider "value" (str total))
+          (stamp! el count-el entries total true))
+      (readout! count-el entries n))))
 
 (defn mount!
   "Mounts the replay dock"
@@ -60,12 +98,8 @@
   (when-let [^js el (.querySelector js/document tag)]
     (.remove el)))
 
-(defn- project! [n]
-  (when-let [^js sr (.querySelector js/document "server-resource")]
-    (.projectResource sr (reconstruct/resource-at (store/entries) n))))
-
 (defn- disconnected! [^js _el]
-  nil)
+  (store/unsubscribe!))
 
 (defn- wire-drag! [^js el ^js handle]
   (.addEventListener handle "pointermove"
@@ -83,22 +117,20 @@
                          (du/setv-untraced! el "__dy" (- (.-clientY e) (.-top r)))
                          (.setPointerCapture handle (.-pointerId e))))))
 
-(defn- build-slider [root]
-  (let [slider       (.querySelector root "x-slider")
-        count-el     (.querySelector root ".count")
-        refresh-max! (fn [] (du/set-attr! slider "max" (str (count (store/entries)))))
-        set-max!     (fn []                                   ;; initial only
-                       (refresh-max!)
-                       (du/set-attr! slider "value" (str (count (store/entries))))
-                       (set! (.-textContent count-el)
-                         (label/readout (store/entries) (count (store/entries)))))]
+(defn- build-slider [root ^js el]
+  (let [slider   (.querySelector root "x-slider")
+        count-el (.querySelector root ".count")
+        entries  (store/entries)
+        total    (count entries)]
     (.addEventListener slider "x-slider-input"
                        (fn [^js e]
-                         (let [n (js/Math.round (.. e -detail -value))]
-                           (project! n)
-                           (set! (.-textContent count-el) (label/readout (store/entries) n)))))
-    (.addEventListener slider "pointerdown" (fn [_] (refresh-max!)))
-    (set-max!)))
+                         (let [es (store/entries)
+                               n  (js/Math.round (.. e -detail -value))]
+                           (select! el count-el es n (= n (count es))))))
+    (du/set-attr! slider "max" (str total))
+    (du/set-attr! slider "value" (str total))
+    (select! el count-el entries total true)
+    (store/subscribe! (fn [es] (on-store-change! el slider count-el es)))))
 
 (defn- build-handle [root el]
   (let [handle (.querySelector root ".handle")]
@@ -113,7 +145,7 @@
            "  <x-slider min='0' step='1' show-value label='Replay'></x-slider>"
            "  <x-typography variant='caption' class='count'></x-typography>"
            "</div>"))
-    (build-slider root)
+    (build-slider root el)
     (build-handle root el)))
 
 
