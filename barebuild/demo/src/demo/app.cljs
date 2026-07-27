@@ -24,7 +24,8 @@
    [demo.x-stat-consumer.x-stat-consumer :as x-stat-consumer]
    [demo.x-table-consumer.x-table-consumer :as x-table-consumer]
    [demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
-   [barebuild.core :as core]))
+   [barebuild.core :as core]
+   [barereplay.init :as barereplay]))
 
 ;; Rregisters the BareDOM components it uses, the demo's own
 ;; consumers, and then the BareBuild runtime (server-resource) via barebuild.core.
@@ -57,5 +58,7 @@
   (x-table-consumer/init!)
   (x-task-form-consumer/init!)
 
+  ;; set up the recorder of events
+  (barereplay/init!)
   ;; the BareBuild runtime element
   (core/init))
