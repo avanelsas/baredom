@@ -42,11 +42,24 @@
   display: block;
   white-space: normal;
   overflow-wrap: anywhere;
+  margin-top: 0.5rem;
   }
 
   .now {
   display: block;
-  margin-top: 0.4rem;
+  margin-top: 1rem;
+  }
+
+  .log {
+  display: block;
+  max-height: 40vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  }
+
+  .log x-timeline-item {
+  --x-timeline-item-title-font-size: 0.75rem;
+  --x-timeline-item-label-width: 0;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -78,20 +91,42 @@
   (stamp! el count-el entries n pinned?)
   (project! n))
 
-(defn- on-store-change! [^js el slider count-el entries]
+(defn- make-item! [entries i n]
+  (let [item (.createElement js/document "x-timeline-item")
+        idx  (inc i)]
+    (du/set-attr! item "data-index" (str idx))
+    (du/set-attr! item "status" (cond (= idx n) "active"
+                                  (< idx n) "complete"
+                                  :else     "pending"))
+    (du/set-attr! item "title" (label/event->label (:event (nth entries i))))
+    item))
+
+(defn- render-log! [^js timeline entries n]
+  (set! (.-innerHTML timeline) "")
+  (doseq [i (range (count entries))]
+    (.appendChild timeline (make-item! entries i n))))
+
+(defn- show! [^js el count-el timeline entries n pinned?]
+  (select! el count-el entries n pinned?)     ;; state + readout + project
+  (render-log! timeline entries n))
+
+(defn- go-to! [^js el slider count-el timeline n]  ;; also moves the slider thumb
+  (let [entries (store/entries)]
+    (du/set-attr! slider "value" (str n))
+    (show! el count-el timeline entries n (= n (count entries)))))
+
+(defn- to-now! [^js el slider count-el timeline]
+  (go-to! el slider count-el timeline (count (store/entries))))
+
+(defn- on-store-change! [^js el slider count-el timeline entries]
   (let [total               (count entries)
         {:keys [n pinned?]} (du/getv el k-state)]
     (du/set-attr! slider "max" (str total))
     (if pinned?
       (do (du/set-attr! slider "value" (str total))
-        (stamp! el count-el entries total true))
-      (readout! count-el entries n))))
-
-(defn- to-now! [^js el slider count-el]
-  (let [entries (store/entries)
-        total   (count entries)]
-    (du/set-attr! slider "value" (str total))
-    (select! el count-el entries total true)))
+        (show! el count-el timeline entries total true))
+      (do (render-log! timeline entries n)
+        (readout! count-el entries n)))))
 
 (defn mount!
   "Mounts the replay dock"
@@ -132,20 +167,26 @@
   (let [slider   (.querySelector root "x-slider")
         now-btn  (.querySelector root ".now")
         count-el (.querySelector root ".count")
+        timeline (.querySelector root "x-timeline")
         entries  (store/entries)
         total    (count entries)]
     (.addEventListener slider "x-slider-input"
                        (fn [^js e]
                          (let [es (store/entries)
                                n  (js/Math.round (.. e -detail -value))]
-                           (select! el count-el es n (= n (count es))))))
+                           (show! el count-el timeline es n (= n (count es))))))
     (.addEventListener now-btn "press"
                        (fn [_]
-                         (to-now! el slider count-el)))
+                         (to-now! el slider count-el timeline)))
+    (.addEventListener timeline "x-timeline-select"
+                       (fn [^js e]
+                         (let [n (.. e -detail -index)]
+                           (when (number? n)
+                             (go-to! el slider count-el timeline n)))))
     (du/set-attr! slider "max" (str total))
     (du/set-attr! slider "value" (str total))
-    (select! el count-el entries total true)
-    (store/subscribe! (fn [es] (on-store-change! el slider count-el es)))))
+    (show! el count-el timeline entries total true)
+    (store/subscribe! (fn [es] (on-store-change! el slider count-el timeline es)))))
 
 (defn- build-handle [root el]
   (let [handle (.querySelector root ".handle")]
@@ -160,6 +201,7 @@
            "  <x-slider min='0' step='1' show-value label='Replay'></x-slider>"
            "  <x-typography variant='caption' class='count'></x-typography>"
            "  <x-button class='now' variant='secondary'>Now</x-button>"
+           "  <x-timeline class='log' label='Events' position='end'></x-timeline>"
            "</div>"))
     (build-slider root el)
     (build-handle root el)))
