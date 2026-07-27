@@ -1,0 +1,13 @@
+;; BareReplay — time-travel replay/debug tool for BareBuild.
+;; A standalone subproject (like barebuild/), run from inside barereplay/.
+;; It imports BareBuild (../barebuild/src) and BareDOM (../src) from source, the same
+;; way barebuild imports baredom. The published jar declares them as real deps (deps.edn).
+{:source-paths ["src" "test" "../barebuild/src" "../src"]
+
+ :builds
+ {;; Fast pure-CLJS unit tests under Node (store + reconstruct are DOM-free).
+  ;; The UI element tests will use a browser target later.
+  :test
+  {:target    :node-test
+   :output-to "out/node-tests.cjs"
+   :ns-regexp "-test$"}}}
