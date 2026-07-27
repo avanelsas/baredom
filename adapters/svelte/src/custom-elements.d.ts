@@ -37,6 +37,7 @@ declare namespace svelteHTML {
     "x-fieldset": Record<string, any>;
     "x-file-download": Record<string, any>;
     "x-file-upload": Record<string, any>;
+    "x-floating-panel": Record<string, any>;
     "x-form": Record<string, any>;
     "x-form-field": Record<string, any>;
     "x-gaussian-blur": Record<string, any>;

@@ -42,6 +42,7 @@
    [baredom.exports.x-fieldset            :as x-fieldset]
    [baredom.exports.x-file-download       :as x-file-download]
    [baredom.exports.x-file-upload         :as x-file-upload]
+   [baredom.exports.x-floating-panel      :as x-floating-panel]
    [baredom.exports.x-form                :as x-form]
    [baredom.exports.x-form-field          :as x-form-field]
    [baredom.exports.x-gaussian-blur       :as x-gaussian-blur]
@@ -150,6 +151,7 @@
    x-fieldset/register!
    x-file-download/register!
    x-file-upload/register!
+   x-floating-panel/register!
    x-form/register!
    x-form-field/register!
    x-gaussian-blur/register!

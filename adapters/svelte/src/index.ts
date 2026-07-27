@@ -32,6 +32,7 @@ export { default as XDropdown, type XDropdownProps, type XDropdownElement } from
 export { default as XFieldset, type XFieldsetProps, type XFieldsetElement } from "./x-fieldset.svelte";
 export { default as XFileDownload, type XFileDownloadProps, type XFileDownloadElement } from "./x-file-download.svelte";
 export { default as XFileUpload, type XFileUploadProps, type XFileUploadElement } from "./x-file-upload.svelte";
+export { default as XFloatingPanel, type XFloatingPanelProps, type XFloatingPanelElement } from "./x-floating-panel.svelte";
 export { default as XForm, type XFormProps, type XFormElement } from "./x-form.svelte";
 export { default as XFormField, type XFormFieldProps, type XFormFieldElement } from "./x-form-field.svelte";
 export { default as XGaussianBlur, type XGaussianBlurProps, type XGaussianBlurElement } from "./x-gaussian-blur.svelte";
