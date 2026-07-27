@@ -1,5 +1,6 @@
 (ns barereplay.init
   (:require
+   [baredom.components.x-button.x-button :as x-button]
    [baredom.components.x-slider.x-slider :as x-slider]
    [baredom.components.x-typography.x-typography :as x-typography]
    [barereplay.dock :as dock]
@@ -14,6 +15,7 @@
   "Start recording BareBuild events into the replay store."
   []
   (recorder/set-recorder! store/record!)
+  (ensure! "x-button" x-button/init!)
   (ensure! "x-slider" x-slider/init!)
   (ensure! "x-typography" x-typography/init!)
   (dock/register!)

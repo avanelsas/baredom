@@ -44,6 +44,11 @@
   overflow-wrap: anywhere;
   }
 
+  .now {
+  display: block;
+  margin-top: 0.4rem;
+  }
+
   @media (prefers-color-scheme: dark) {
   .panel {
   background: var(--x-color-bg, #1e1e1e);
@@ -79,8 +84,14 @@
     (du/set-attr! slider "max" (str total))
     (if pinned?
       (do (du/set-attr! slider "value" (str total))
-          (stamp! el count-el entries total true))
+        (stamp! el count-el entries total true))
       (readout! count-el entries n))))
+
+(defn- to-now! [^js el slider count-el]
+  (let [entries (store/entries)
+        total   (count entries)]
+    (du/set-attr! slider "value" (str total))
+    (select! el count-el entries total true)))
 
 (defn mount!
   "Mounts the replay dock"
@@ -119,6 +130,7 @@
 
 (defn- build-slider [root ^js el]
   (let [slider   (.querySelector root "x-slider")
+        now-btn  (.querySelector root ".now")
         count-el (.querySelector root ".count")
         entries  (store/entries)
         total    (count entries)]
@@ -127,6 +139,9 @@
                          (let [es (store/entries)
                                n  (js/Math.round (.. e -detail -value))]
                            (select! el count-el es n (= n (count es))))))
+    (.addEventListener now-btn "press"
+                       (fn [_]
+                         (to-now! el slider count-el)))
     (du/set-attr! slider "max" (str total))
     (du/set-attr! slider "value" (str total))
     (select! el count-el entries total true)
@@ -144,6 +159,7 @@
            "  <div class='handle'>BareReplay</div>"
            "  <x-slider min='0' step='1' show-value label='Replay'></x-slider>"
            "  <x-typography variant='caption' class='count'></x-typography>"
+           "  <x-button class='now' variant='secondary'>Now</x-button>"
            "</div>"))
     (build-slider root el)
     (build-handle root el)))
