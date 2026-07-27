@@ -97,7 +97,8 @@
                          (let [n (js/Math.round (.. e -detail -value))]
                            (project! n)
                            (set! (.-textContent count-el) (label/readout (store/entries) n)))))
-    (.addEventListener slider "pointerdown" (fn [_] (refresh-max!)))))
+    (.addEventListener slider "pointerdown" (fn [_] (refresh-max!)))
+    (set-max!)))
 
 (defn- build-handle [root el]
   (let [handle (.querySelector root ".handle")]
