@@ -316,6 +316,11 @@
       "import": "./dist/x-file-upload.js",
       "default": "./dist/x-file-upload.js"
     },
+    "./x-floating-panel": {
+      "types": "./dist/x-floating-panel.d.ts",
+      "import": "./dist/x-floating-panel.js",
+      "default": "./dist/x-floating-panel.js"
+    },
     "./x-table-row": {
       "types": "./dist/x-table-row.d.ts",
       "import": "./dist/x-table-row.js",

@@ -33,6 +33,7 @@ export { BaredomDropdown } from './directives/x-dropdown.directive';
 export { BaredomFieldset } from './directives/x-fieldset.directive';
 export { BaredomFileDownload } from './directives/x-file-download.directive';
 export { BaredomFileUpload } from './directives/x-file-upload.directive';
+export { BaredomFloatingPanel } from './directives/x-floating-panel.directive';
 export { BaredomForm } from './directives/x-form.directive';
 export { BaredomFormField } from './directives/x-form-field.directive';
 export { BaredomGaussianBlur } from './directives/x-gaussian-blur.directive';

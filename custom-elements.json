@@ -4643,6 +4643,122 @@
     } ]
   }, {
     "kind" : "javascript-module",
+    "path" : "dist/x-floating-panel.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XFloatingPanel",
+      "tagName" : "x-floating-panel",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "x",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "y",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "step",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "closable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "resizable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "focusOnOpen",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "show",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "hide",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      }, {
+        "kind" : "method",
+        "name" : "toggle",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-floating-panel-toggle",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-floating-panel-dismiss-request",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-floating-panel-move",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-floating-panel",
+      "declaration" : {
+        "name" : "XFloatingPanel"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-scroll-stack.js",
     "declarations" : [ {
       "kind" : "class",

@@ -1,6 +1,6 @@
 # Components
 
-The full catalogue of BareDOM components — 103 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
+The full catalogue of BareDOM components — 104 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
@@ -9,7 +9,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 - [Navigation (8)](#navigation-8)
 - [Layout (10)](#layout-10)
 - [Data (11)](#data-11)
-- [Overlay (9)](#overlay-9)
+- [Overlay (10)](#overlay-10)
 - [Display (6)](#display-6)
 - [Animation (6)](#animation-6)
 - [Effects (12)](#effects-12)
@@ -106,7 +106,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-timeline>`](./x-timeline.md) | Vertical timeline container that coordinates `<x-timeline-item>` children. |
 | [`<x-timeline-item>`](./x-timeline-item.md) | Individual timeline event with time, icon, heading, and body slots. |
 
-## Overlay (9)
+## Overlay (10)
 
 | Tag | Description |
 |-----|-------------|
@@ -115,6 +115,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-context-menu>`](./x-context-menu.md) | Right-click / long-press contextual action menu. |
 | [`<x-drawer>`](./x-drawer.md) | Off-canvas sliding panel, configurable from any edge. |
 | [`<x-dropdown>`](./x-dropdown.md) | Positioned dropdown container for menus and selection. |
+| [`<x-floating-panel>`](./x-floating-panel.md) | Non-modal container that floats above page content and is repositioned by drag or arrow keys. |
 | [`<x-modal>`](./x-modal.md) | Centred dialog with backdrop, focus trap, and `Escape` to close. |
 | [`<x-popover>`](./x-popover.md) | Anchored popover for tooltips, help text, and contextual UI. |
 | [`<x-tooltip>`](./x-tooltip.md) | Lightweight non-interactive overlay showing supplementary text on hover or focus of a trigger element. |

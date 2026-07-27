@@ -32,6 +32,7 @@ export { XDropdown, type XDropdownProps } from "./x-dropdown";
 export { XFieldset, type XFieldsetProps } from "./x-fieldset";
 export { XFileDownload, type XFileDownloadProps } from "./x-file-download";
 export { XFileUpload, type XFileUploadProps } from "./x-file-upload";
+export { XFloatingPanel, type XFloatingPanelProps } from "./x-floating-panel";
 export { XForm, type XFormProps } from "./x-form";
 export { XFormField, type XFormFieldProps } from "./x-form-field";
 export { XGaussianBlur, type XGaussianBlurProps } from "./x-gaussian-blur";

@@ -226,6 +226,11 @@
      {init baredom.exports.x-file-upload/init}
      :depends-on #{:base}}
 
+    :x-floating-panel
+    {:exports
+     {init baredom.exports.x-floating-panel/init}
+     :depends-on #{:base}}
+
     :x-form-field
     {:exports
      {init baredom.exports.x-form-field/init}

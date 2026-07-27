@@ -172,6 +172,10 @@
       "import" : "./dist/directives/x-file-upload.directive.js",
       "types" : "./dist/directives/x-file-upload.directive.d.ts"
     },
+    "./x-floating-panel" : {
+      "import" : "./dist/directives/x-floating-panel.directive.js",
+      "types" : "./dist/directives/x-floating-panel.directive.d.ts"
+    },
     "./x-form" : {
       "import" : "./dist/directives/x-form.directive.js",
       "types" : "./dist/directives/x-form.directive.d.ts"

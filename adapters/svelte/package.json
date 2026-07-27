@@ -162,6 +162,10 @@
       "types" : "./dist/x-file-upload.d.ts",
       "import" : "./dist/x-file-upload.js"
     },
+    "./x-floating-panel" : {
+      "types" : "./dist/x-floating-panel.d.ts",
+      "import" : "./dist/x-floating-panel.js"
+    },
     "./x-form" : {
       "types" : "./dist/x-form.d.ts",
       "import" : "./dist/x-form.js"
