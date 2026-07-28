@@ -105,7 +105,8 @@
         (du/set-attr! cell "type" "header")
         (set! (.-textContent cell) "Actions"))
       (let [delete-button (.createElement js/document "x-button")
-            edit-button   (.createElement js/document "x-button")]
+            edit-button   (.createElement js/document "x-button")
+            actions       (.createElement js/document "span")]
         ; edit
         (du/set-attr! edit-button "variant" "primary")
         (du/set-attr! edit-button "size" "sm")
@@ -119,8 +120,11 @@
         (set! (.-textContent delete-button) "Delete")
         (.addEventListener delete-button "press" delete-row-request!)
 
-        (.appendChild cell edit-button)
-        (.appendChild cell delete-button)))
+        (.setProperty (.-style actions) "display" "inline-flex")
+        (.setProperty (.-style actions) "gap" "0.2rem")
+        (.appendChild actions edit-button)
+        (.appendChild actions delete-button)
+        (.appendChild cell actions)))
     cell))
 
 (defn- create-header-row!
