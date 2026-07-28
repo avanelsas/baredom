@@ -1,7 +1,7 @@
 (ns barereplay.label)
 
 (defn event->label
-  "A short human label for a recorded event."
+  "A short readable label for a recorded event."
   [[k payload]]
   (case k
     :connected       "connected"
@@ -23,9 +23,25 @@
      :event (when (pos? n) (:event (nth entries (dec n))))}))
 
 (defn readout
-  "Status line for scrub position `n` over `entries`: LIVE at the end, else the
-  REPLAYING step and the event that produced it."
   [entries n]
   (let [{:keys [live? n total event]} (status entries n)]
     (str (if live? "LIVE" "REPLAYING") " " n " / " total
          (when event (str " · " (event->label event))))))
+
+(defn detail-at [entries n]
+  (when (pos? n)
+    (let [{:keys [event effects]} (nth entries (dec n))
+          [k payload] event
+          request  (some (fn [[fx m]] (when (or (= fx :write) (= fx :fetch)) m)) effects)
+          response (when (or (= k :response) (= k :write-ack)) payload)]
+      (cond-> nil
+        request  (assoc :request request)
+        response (assoc :response response)))))
+
+(defn clamp [n lo hi]
+  (max lo (min hi n)))
+
+(defn item-status [idx n]
+  (cond (= idx n) "active"
+        (< idx n) "complete"
+        :else     "pending"))

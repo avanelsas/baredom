@@ -8,53 +8,69 @@
 
 (def ^:private styles
   "
-  :host {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 2147483647;
-  }
+  :host { display: contents; }
 
-  .panel {
-  box-sizing: border-box;
-  width: min(300px, calc(100vw - 2rem));
-  background: var(--x-color-bg, #fff);
-  color: var(--x-color-text, #111);
-  border: 1px solid var(--x-color-border, #ccc);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  padding: 0.5rem;
-  }
+  .panel::part(body) { scrollbar-gutter: stable; }
 
-  .handle {
-  cursor: move;
-  user-select: none;
-  font-weight: 600;
-  padding-bottom: 0.35rem;
-  }
-
-  x-slider {
-  display: block;
+  .body {
   width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   }
+
+  .status { display: flex; align-items: baseline; gap: 0.5rem; }
+
+  .badge {
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.35rem;
+  color: #fff;
+  background: var(--x-color-warning, #b45309);
+  }
+
+  .badge[data-live] { background: var(--x-color-success, #108c48); }
 
   .count {
-  display: block;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  margin-top: 0.5rem;
+  color: var(--x-color-text-muted, #64748b);
+  font-variant-numeric: tabular-nums;
   }
 
-  .now {
-  display: block;
-  margin-top: 1rem;
+  .event {
+  color: var(--x-color-text-muted, #64748b);
+  font-size: 0.7rem;
+  line-height: 1.3;
+  height: 2.6em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   }
+
+  .history {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--x-color-text-muted, #64748b);
+  }
+
+  .transport { display: flex; align-items: center; gap: 0.2rem; }
+  .transport x-slider { flex: 1 1 auto; display: block; }
+  .nav { flex: 0 0 auto; }
+  .transport .nav {
+  --x-button-padding-inline: 0.25rem;
+  --x-button-height-md: 1.9rem;
+  --x-button-ghost-bg-hover: rgba(127, 127, 127, 0.2);
+  --x-button-ghost-bg-active: rgba(127, 127, 127, 0.32);
+  }
+  .nav svg { display: block; width: 15px; height: 15px; }
 
   .log {
   display: block;
   max-height: 40vh;
   overflow-y: auto;
-  margin-top: 1rem;
+  scrollbar-gutter: stable;
   }
 
   .log x-timeline-item {
@@ -62,71 +78,182 @@
   --x-timeline-item-label-width: 0;
   }
 
-  @media (prefers-color-scheme: dark) {
-  .panel {
-  background: var(--x-color-bg, #1e1e1e);
-  color: var(--x-color-text, #e6e6e6);
-  border-color: var(--x-color-border, #444);
+  .data summary {
+  cursor: pointer;
+  user-select: none;
+  color: var(--x-color-text-muted, #64748b);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   }
+
+  .data[open] summary { margin-bottom: 0.4rem; }
+  .data-code { display: block; }
+
+  @media (prefers-color-scheme: dark) {
+  .count, .event, .history { color: var(--x-color-text-muted, #94a3b8); }
   }
   ")
 
-
 (def ^:private tag "barereplay-dock")
 (def ^:private k-state "__brDockState")
+(def ^:private k-view "__brDockView")
 
-(defn- project! [n]
+(def ^:private svg-start "M6 6h2v12H6zm3.5 6l8.5 6V6z")
+(def ^:private svg-prev  "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z")
+(def ^:private svg-next  "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z")
+(def ^:private svg-end   "M6 18l8.5-6L6 6v12zM16 6v12h2V6z")
+
+(defn- data-json [entries n]
+  (if-let [d (label/detail-at entries n)]
+    (js/JSON.stringify (clj->js d) nil 2)
+    "No request/response at this step."))
+
+(defn- project! [entries n]
   (when-let [^js sr (.querySelector js/document "server-resource")]
-    (when-let [resource (reconstruct/resource-at (store/entries) n)]
+    (when-let [resource (reconstruct/resource-at entries n)]
       (.projectResource sr resource))))
 
-(defn- readout! [count-el entries n]
-  (set! (.-textContent count-el) (label/readout entries n)))
+(defn- set-disabled! [^js btn disabled?]
+  (if disabled?
+    (du/set-attr! btn "disabled" "")
+    (du/remove-attr! btn "disabled")))
 
-(defn- stamp! [^js el count-el entries n pinned?]
-  (du/setv! el k-state {:n n :pinned? pinned?})
-  (readout! count-el entries n))
-
-(defn- select! [^js el count-el entries n pinned?]
-  (stamp! el count-el entries n pinned?)
-  (project! n))
-
-(defn- make-item! [entries i n]
-  (let [item (.createElement js/document "x-timeline-item")
-        idx  (inc i)]
-    (du/set-attr! item "data-index" (str idx))
-    (du/set-attr! item "status" (cond (= idx n) "active"
-                                  (< idx n) "complete"
-                                  :else     "pending"))
+(defn- make-item! [entries i]
+  (let [^js item (.createElement js/document "x-timeline-item")]
     (du/set-attr! item "title" (label/event->label (:event (nth entries i))))
     item))
 
-(defn- render-log! [^js timeline entries n]
-  (set! (.-innerHTML timeline) "")
-  (doseq [i (range (count entries))]
-    (.appendChild timeline (make-item! entries i n))))
+(defn- grow-log! [^js timeline entries from to]
+  (doseq [i (range from to)]
+    (.appendChild timeline (make-item! entries i))))
 
-(defn- show! [^js el count-el timeline entries n pinned?]
-  (select! el count-el entries n pinned?)     ;; state + readout + project
-  (render-log! timeline entries n))
+(defn- paint-statuses! [^js timeline n]
+  (let [items (.-children timeline)]
+    (dotimes [i (.-length items)]
+      (du/set-attr! (.item items i) "status" (label/item-status (inc i) n)))))
 
-(defn- go-to! [^js el slider count-el timeline n]  ;; also moves the slider thumb
-  (let [entries (store/entries)]
-    (du/set-attr! slider "value" (str n))
-    (show! el count-el timeline entries n (= n (count entries)))))
+(defn- scroll-active! [^js timeline n]
+  (when (pos? n)
+    (when-let [^js item (.item (.-children timeline) (dec n))]
+      (.scrollIntoView item #js {:block "nearest"}))))
 
-(defn- to-now! [^js el slider count-el timeline]
-  (go-to! el slider count-el timeline (count (store/entries))))
+(defn- render-status! [refs entries n]
+  (let [^js badge    (:badge refs)
+        ^js count-el (:count refs)
+        ^js event-el (:event refs)
+        {:keys [live? total event]} (label/status entries n)]
+    (set! (.-textContent badge) (if live? "LIVE" "REPLAYING"))
+    (if live?
+      (du/set-attr! badge "data-live" "")
+      (du/remove-attr! badge "data-live"))
+    (set! (.-textContent count-el) (str n " / " total))
+    (set! (.-textContent event-el) (if event (label/event->label event) ""))))
 
-(defn- on-store-change! [^js el slider count-el timeline entries]
-  (let [total               (count entries)
-        {:keys [n pinned?]} (du/getv el k-state)]
+(defn- render-log! [refs entries n]
+  (let [^js timeline (:timeline refs)
+        total        (count entries)
+        have         (.-length (.-children timeline))]
+    (cond
+      (> have total) (do (set! (.-innerHTML timeline) "")
+                         (grow-log! timeline entries 0 total))
+      (< have total) (grow-log! timeline entries have total))
+    (paint-statuses! timeline n)
+    (scroll-active! timeline n)))
+
+(defn- render-data! [refs entries n]
+  (let [^js data-code (:data refs)]
+    (set! (.-code data-code) (data-json entries n))))
+
+(defn- render-nav! [refs n total]
+  (set-disabled! (:start refs) (<= n 0))
+  (set-disabled! (:prev refs) (<= n 0))
+  (set-disabled! (:next refs) (>= n total))
+  (set-disabled! (:end refs) (>= n total)))
+
+(defn- render-slider! [refs n total]
+  (let [^js slider (:slider refs)]
     (du/set-attr! slider "max" (str total))
-    (if pinned?
-      (do (du/set-attr! slider "value" (str total))
-        (show! el count-el timeline entries total true))
-      (do (render-log! timeline entries n)
-        (readout! count-el entries n)))))
+    (du/set-attr! slider "value" (str n))))
+
+(defn- render! [^js el refs entries n]
+  (let [total (count entries)
+        view  {:n n :total total}
+        prev  (du/getv el k-view)]
+    (when (not= view prev)
+      (when (not= (:n prev) n)
+        (project! entries n))
+      (du/setv! el k-view view)
+      (render-status! refs entries n)
+      (render-log! refs entries n)
+      (render-data! refs entries n)
+      (render-nav! refs n total)
+      (render-slider! refs n total))))
+
+(defn- apply-at! [^js el refs entries n pinned?]
+  (du/setv! el k-state {:n n :pinned? pinned?})
+  (render! el refs entries n))
+
+(defn- go! [^js el refs n]
+  (let [entries (store/entries)
+        total   (count entries)
+        n'      (label/clamp n 0 total)]
+    (apply-at! el refs entries n' (= n' total))))
+
+(defn- icon-svg [path]
+  (str "<svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='"
+       path "'/></svg>"))
+
+(defn- nav-btn [cls aria path]
+  (str "<x-button class='nav " cls "' variant='ghost' aria-label='" aria "'>"
+       (icon-svg path)
+       "</x-button>"))
+
+(defn- markup []
+  (str "<style>" styles "</style>"
+       "<x-floating-panel class='panel' open label='BareReplay'>"
+       "<span slot='header'>BareReplay</span>"
+       "<div class='body'>"
+       "<div class='status'><span class='badge'></span><span class='count'></span></div>"
+       "<div class='event'></div>"
+       "<div class='history'>History</div>"
+       "<div class='transport'>"
+       (nav-btn "nav-start" "Jump to start" svg-start)
+       (nav-btn "nav-prev" "Step back" svg-prev)
+       "<x-slider class='slider' min='0' step='1' aria-label='History'></x-slider>"
+       (nav-btn "nav-next" "Step forward" svg-next)
+       (nav-btn "nav-end" "Jump to live" svg-end)
+       "</div>"
+       "<x-timeline class='log' position='end'></x-timeline>"
+       "<details class='data'>"
+       "<summary>Data</summary>"
+       "<x-code class='data-code' language='json' show-copy wrap max-lines='12'></x-code>"
+       "</details>"
+       "</div>"
+       "</x-floating-panel>"))
+
+(defn- build-refs [^js root]
+  {:panel    (.querySelector root "x-floating-panel")
+   :badge    (.querySelector root ".badge")
+   :count    (.querySelector root ".count")
+   :event    (.querySelector root ".event")
+   :slider   (.querySelector root "x-slider")
+   :timeline (.querySelector root "x-timeline")
+   :data     (.querySelector root ".data-code")
+   :start    (.querySelector root ".nav-start")
+   :prev     (.querySelector root ".nav-prev")
+   :next     (.querySelector root ".nav-next")
+   :end      (.querySelector root ".nav-end")})
+
+(defn- position-top-right! [^js panel]
+  (js/requestAnimationFrame
+   (fn []
+     (let [margin   8
+           ^js part (some-> (.-shadowRoot panel) (.querySelector "[part=panel]"))
+           w        (if part (.-width (.getBoundingClientRect part)) 352)
+           x        (max margin (- (.-innerWidth js/window) w margin))]
+       (du/set-attr! panel "x" (str x))
+       (du/set-attr! panel "y" (str margin))))))
 
 (defn mount!
   "Mounts the replay dock"
@@ -144,75 +271,49 @@
   (when-let [^js el (.querySelector js/document tag)]
     (.remove el)))
 
-(defn- disconnected! [^js _el]
-  (store/unsubscribe!))
+(defn- current-n [^js el]
+  (:n (du/getv el k-state)))
 
-(defn- wire-drag! [^js el ^js handle]
-  (.addEventListener handle "pointermove"
-                     (fn [^js e]
-                       (when-some [dx (du/getv el "__dx")]
-                         (set! (.. el -style -left)  (str (- (.-clientX e) dx) "px"))
-                         (set! (.. el -style -top)   (str (- (.-clientY e) (du/getv el "__dy")) "px"))
-                         (set! (.. el -style -right) "auto"))))       ;; release the initial right-pin
-  (.addEventListener handle "pointerup"
-                     (fn [^js _] (du/setv-untraced! el "__dx" nil)))
-  (.addEventListener handle "pointerdown"
-                     (fn [^js e]
-                       (let [r (.getBoundingClientRect el)]
-                         (du/setv-untraced! el "__dx" (- (.-clientX e) (.-left r)))
-                         (du/setv-untraced! el "__dy" (- (.-clientY e) (.-top r)))
-                         (.setPointerCapture handle (.-pointerId e))))))
-
-(defn- build-slider [root ^js el]
-  (let [slider   (.querySelector root "x-slider")
-        now-btn  (.querySelector root ".now")
-        count-el (.querySelector root ".count")
-        timeline (.querySelector root "x-timeline")
-        entries  (store/entries)
-        total    (count entries)]
-    (.addEventListener slider "x-slider-input"
+(defn- wire! [^js el ^js root]
+  (let [refs (build-refs root)]
+    (.addEventListener (:slider refs) "x-slider-input"
                        (fn [^js e]
-                         (let [es (store/entries)
-                               n  (js/Math.round (.. e -detail -value))]
-                           (show! el count-el timeline es n (= n (count es))))))
-    (.addEventListener now-btn "press"
-                       (fn [_]
-                         (to-now! el slider count-el timeline)))
-    (.addEventListener timeline "x-timeline-select"
+                         (let [entries (store/entries)
+                               total   (count entries)
+                               n       (label/clamp (js/Math.round (.. e -detail -value)) 0 total)]
+                           (apply-at! el refs entries n (= n total)))))
+    (.addEventListener (:timeline refs) "x-timeline-select"
                        (fn [^js e]
-                         (let [n (.. e -detail -index)]
-                           (when (number? n)
-                             (go-to! el slider count-el timeline n)))))
-    (du/set-attr! slider "max" (str total))
-    (du/set-attr! slider "value" (str total))
-    (show! el count-el timeline entries total true)
-    (store/subscribe! (fn [es] (on-store-change! el slider count-el timeline es)))))
-
-(defn- build-handle [root el]
-  (let [handle (.querySelector root ".handle")]
-    (wire-drag! el handle)))
+                         (let [i (.. e -detail -index)]
+                           (when (number? i)
+                             (go! el refs (inc i))))))
+    (.addEventListener (:start refs) "press" (fn [_] (go! el refs 0)))
+    (.addEventListener (:prev refs) "press" (fn [_] (go! el refs (dec (current-n el)))))
+    (.addEventListener (:next refs) "press" (fn [_] (go! el refs (inc (current-n el)))))
+    (.addEventListener (:end refs) "press" (fn [_] (go! el refs (count (store/entries)))))
+    (position-top-right! (:panel refs))
+    (go! el refs (count (store/entries)))
+    (store/subscribe!
+     (fn [entries]
+       (let [{:keys [n pinned?]} (du/getv el k-state)]
+         (if pinned?
+           (go! el refs (count entries))
+           (render! el refs entries n)))))))
 
 (defn- connected! [^js el]
   (let [root (.attachShadow el #js {:mode "open"})]
-    (set! (.-innerHTML root)
-      (str "<style>" styles "</style>"
-           "<div class='panel'>"
-           "  <div class='handle'>BareReplay</div>"
-           "  <x-slider min='0' step='1' show-value label='Replay'></x-slider>"
-           "  <x-typography variant='caption' class='count'></x-typography>"
-           "  <x-button class='now' variant='secondary'>Now</x-button>"
-           "  <x-timeline class='log' label='Events' position='end'></x-timeline>"
-           "</div>"))
-    (build-slider root el)
-    (build-handle root el)))
+    (set! (.-innerHTML root) (markup))
+    (wire! el root)))
 
+(defn- disconnected! [^js _el]
+  (store/unsubscribe!))
 
 (def ^:private element-opts
   "Declarative class options passed to component/register!. `:internal? true`
   keeps the dev-tool lifecycle hook from firing on the dock's own
-  connect/disconnect — otherwise those records would pollute every trace
-  the dock records. There are no observed attributes; the no-op
-  attribute-changed-fn is a formality (the callback can never fire)."
+  connect/disconnect. This prevents those records from polluting every trace.
+  There are no observed attributes. The no-op attribute-changed-fn is mandatory but does not do anything
+  (the callback will never fire)."
   {:internal?            true
    :observed-attributes  #js []
    :connected-fn         connected!
