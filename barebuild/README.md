@@ -119,6 +119,15 @@ patterns that do not exist yet.
 
 Published to Clojars for ClojureScript host apps.
 
+## Debugging
+
+[BareReplay](../barereplay/README.md) is a companion time-travel debugger for
+BareBuild apps. It records the event log and reconstructs any past state by
+replaying the pure `step`, then re-projects it onto the live components. Add it in
+one call and scrub, step, and jump through everything the app has done, with the
+request and response behind each step. See the BareBuild demo to see BareReplay in
+action.
+
 ## Install
 
 ```clojure
