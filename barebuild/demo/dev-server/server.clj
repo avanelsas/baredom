@@ -497,6 +497,52 @@
             t))
         ts))
 
+;; --- writes: rank normalization on a board move ----------------------------
+;; Rank is server-owned: a card's position within its (projectId, status) column. A board drop
+;; carries the target rank (the drop index); the server places the card there and re-denses the
+;; affected columns so ranks stay a clean 0..n with no gaps or ties.
+
+(defn- column-of
+  "The (projectId, status) column a task lives in — rank is dense within it."
+  [t]
+  [(:projectId t) (:status t)])
+
+(defn- place-and-dense
+  "Renumber the ranks of `col`'s tasks to a dense 0-based sequence. When `place-id` names a task
+   in the column, it is inserted at `place-rank` (clamped) instead of at its stored rank;
+   otherwise the stored rank order is kept — used to close the gap in a vacated column."
+  [ts col place-id place-rank]
+  (let [in?     (fn [t] (= (column-of t) col))
+        others  (->> ts (filter in?) (remove #(= (:id %) place-id)) (sort-by :rank) vec)
+        placed  (some #(when (and (in? %) (= (:id %) place-id)) %) ts)
+        ordered (if placed
+                  (let [i (max 0 (min (count others) (int place-rank)))]
+                    (vec (concat (subvec others 0 i) [placed] (subvec others i))))
+                  others)
+        rank-of (into {} (map-indexed (fn [idx t] [(:id t) idx]) ordered))]
+    (mapv (fn [t] (if (in? t) (assoc t :rank (rank-of (:id t))) t)) ts)))
+
+(defn reindex-columns
+  "After a board move of task `id`, re-dense its destination column (placing the task at its
+   requested rank) and its old column (closing the gap it left behind)."
+  [ts id old-col]
+  (let [moved    (first (filter #(= (:id %) id) ts))
+        dest-col (column-of moved)]
+    (cond-> (place-and-dense ts dest-col id (:rank moved))
+      (not= old-col dest-col) (place-and-dense old-col nil nil))))
+
+(defn apply-update
+  "Replace task `id` with `record`, then keep ranks server-owned. A write carrying a rank (a
+   board move) places the task at that rank and re-denses the affected columns; a write with no
+   rank (a flat edit) keeps the task's prior rank untouched rather than nulling it."
+  [ts id record]
+  (let [old-row   (first (filter #(= (:id %) id) ts))
+        has-rank? (some? (get record "rank"))
+        updated   (update-task ts id record)]
+    (if has-rank?
+      (reindex-columns updated id (column-of old-row))
+      (mapv (fn [t] (if (= (:id t) id) (assoc t :rank (:rank old-row)) t)) updated))))
+
 ;; --- fixtures (step 5a): controlled failure modes for the client (5b) ------
 
 (def ^:private slow-ms 3000)
@@ -616,7 +662,7 @@
             record (request-record req)]
         (if-let [error (update-error @tasks id (task-id-str uri) record)]
           (json-response 200 (write-rejected-ack params error))
-          (do (swap! tasks update-task id record)
+          (do (swap! tasks apply-update id record)
               (json-response 200 (accepted-envelope params)))))
 
       (= "/api/tasks" uri)

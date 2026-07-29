@@ -514,6 +514,46 @@
     (is (= "invalid-value" (:code error)))
     (is (= "status" (get-in error [:details :field])))))
 
+;; --- writes: rank reindex on a board move ----------------------------------
+
+(defn- project-tasks [project]
+  (second (get-json "/api/tasks" (str "project=" project))))
+
+(defn- column-ranks [body status]
+  (->> (:value body) (filter #(= status (:status %))) (map :rank) sort vec))
+
+;; p-1 seeds five tasks per status column, ranks 0..4. Task 1 is (p-1, todo, rank 0).
+(def ^:private move-record
+  {"title" "Card" "owner" "Alice" "start" "2026-01-01"
+   "projectId" "p-1" "assigneeId" "u-1"})
+
+(deftest board-move-places-card-and-redenses-columns
+  (put-raw "/api/tasks/1" "requestId=w-m1"
+           (record-json (assoc move-record "status" "done" "rank" 2)))
+  (let [body  (project-tasks "p-1")
+        moved (first (filter #(= 1 (:id %)) (:value body)))]
+    (is (= "done" (:status moved)) "the card is in its new column")
+    (is (= 2 (:rank moved)) "at the requested rank")
+    (is (= [0 1 2 3 4 5] (column-ranks body "done")) "destination column re-densed to 0..5")
+    (is (= [0 1 2 3] (column-ranks body "todo")) "the vacated column closed its gap")))
+
+(deftest board-reorder-within-a-column
+  (put-raw "/api/tasks/1" "requestId=w-m2"
+           (record-json (assoc move-record "status" "todo" "rank" 3)))
+  (let [body (project-tasks "p-1")
+        t1   (first (filter #(= 1 (:id %)) (:value body)))]
+    (is (= "todo" (:status t1)))
+    (is (= 3 (:rank t1)) "the card lands at its new rank within the same column")
+    (is (= [0 1 2 3 4] (column-ranks body "todo")) "the column stays dense 0..4")))
+
+(deftest flat-edit-without-rank-preserves-rank
+  (let [before (:rank (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1")))))]
+    (put-raw "/api/tasks/1" "requestId=w-m3"
+             (record-json (assoc move-record "title" "Renamed" "status" "todo")))
+    (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+      (is (= "Renamed" (:title after)) "the edit applied")
+      (is (= before (:rank after)) "rank is untouched when the write carries none"))))
+
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]
     (System/exit (if (pos? (+ (or fail 0) (or error 0))) 1 0))))
