@@ -47,22 +47,77 @@
    "Chart usage metrics"     "Patch upload limits"     "Verify backup restore"
    "Seed staging fixtures"   "Polish empty states"])
 
+;; --- related collections: users and projects (relational board demo) -------
+;; Two server-owned collections the board demo projects alongside tasks, over ONE shared
+;; backend with the flat table demo. A task references a user and a project by opaque string
+;; id; the server denormalizes their display names onto each task row on read, so a consumer
+;; renders a name without joining across resources.
+
+(def users-revision "users:v1")
+(def projects-revision "projects:v1")
+
+(def ^:private users
+  [{:id "u-1" :name "Alice"  :email "alice@example.com"}
+   {:id "u-2" :name "Bob"    :email "bob@example.com"}
+   {:id "u-3" :name "Carmen" :email "carmen@example.com"}
+   {:id "u-4" :name "Dev"    :email "dev@example.com"}
+   {:id "u-5" :name "Erin"   :email "erin@example.com"}])
+
+(def ^:private projects
+  [{:id "p-1" :name "Website Redesign" :description "Marketing site refresh"}
+   {:id "p-2" :name "Mobile App"       :description "iOS and Android client"}
+   {:id "p-3" :name "Data Platform"    :description "Warehouse and pipelines"}])
+
+(def users-shape
+  {:idKey  "id"
+   :fields [{:key "name"  :type "string" :required true}
+            {:key "email" :type "string"}]})
+
+(def projects-shape
+  {:idKey  "id"
+   :fields [{:key "name"        :type "string" :required true}
+            {:key "description" :type "string"}]})
+
+(def ^:private user-ids (mapv :id users))
+(def ^:private project-ids (mapv :id projects))
+
+(defn- user-name [id]
+  (some #(when (= (:id %) id) (:name %)) users))
+
+(defn- project-name [id]
+  (some #(when (= (:id %) id) (:name %)) projects))
+
 (defn- gen-task
-  "Deterministic demo task for 1-based id `i`."
+  "Deterministic demo task for 1-based id `i`. `projectId` is decorrelated from `status` (a
+   different cycle) so every project spans all three status columns rather than collapsing
+   into one; `owner` and `status` keep their original cycles so the flat-demo counts hold."
   [i]
   (let [day (inc (mod (dec i) 28))]
-    {:id     i
-     :title  (nth titles (mod (dec i) (count titles)))
-     :owner  (nth owners (mod (dec i) (count owners)))
-     :start  (format "2026-01-%02d" day)
-     :end    (format "2026-02-%02d" day)
-     :status (nth statuses (mod (dec i) 3))}))
+    {:id         i
+     :title      (nth titles (mod (dec i) (count titles)))
+     :owner      (nth owners (mod (dec i) (count owners)))
+     :start      (format "2026-01-%02d" day)
+     :end        (format "2026-02-%02d" day)
+     :status     (nth statuses (mod (dec i) 3))
+     :projectId  (nth project-ids (mod (quot (dec i) 3) (count project-ids)))
+     :assigneeId (nth user-ids (mod (dec i) (count user-ids)))}))
 
 ;; 40 rows so pagination is worth demoing. The set is mutable server state — a delete
 ;; (step W1a) removes a row — so it lives in an atom. This is honest backend state, NOT a
 ;; BareBuild value/step: the stateless-component rule governs the client runtime, not the
 ;; oracle. `initial-tasks` is the pristine set the tests reset to between cases.
-(def ^:private initial-tasks (mapv gen-task (range 1 41)))
+(defn- seed-ranks
+  "Assign a dense 0-based rank to each task within its (projectId, status) column, by id order,
+   then restore the set's natural id order. Rank places a card within its board column; the
+   server owns it."
+  [ts]
+  (->> (vals (group-by (juxt :projectId :status) ts))
+       (mapcat (fn [group]
+                 (map-indexed (fn [idx t] (assoc t :rank idx)) (sort-by :id group))))
+       (sort-by :id)
+       vec))
+
+(def ^:private initial-tasks (seed-ranks (mapv gen-task (range 1 41))))
 (def tasks (atom initial-tasks))
 
 (defn reset-tasks!
@@ -134,6 +189,18 @@
                ts))
     ts))
 
+(defn- project-term
+  "The trimmed `project` param, or nil when absent or blank. Opaque id of the project whose
+   board is being viewed; a nil term leaves the task set unfiltered."
+  [params]
+  (let [p (some-> (get params "project") str/trim)]
+    (when-not (str/blank? p) p)))
+
+(defn filter-by-project
+  "Rows whose :projectId is `proj`. A nil proj leaves the set untouched. Applied before search."
+  [ts proj]
+  (if proj (filterv #(= (:projectId %) proj) ts) ts))
+
 ;; --- query handling (steps 2a + 4a) ----------------------------------------
 
 (defn normalize-query
@@ -148,8 +215,12 @@
   [params tp]
   (let [sort (get params "sort")
         term (search-term params)
+        proj (project-term params)
         page (parse-page params tp)]
     (cond-> {}
+      proj
+      (assoc "project" proj)
+
       term
       (assoc "search" term)
 
@@ -218,28 +289,53 @@
    :headers (merge {"content-type" "application/json"} cors-headers)
    :body    (json/generate-string body)})
 
+(defn- denormalize-task
+  "Add the server-owned display names for a task's user and project references, so a consumer
+   renders a name without joining across resources. A nil reference yields a nil name."
+  [t]
+  (assoc t
+         :assigneeName (user-name (:assigneeId t))
+         :projectName  (project-name (:projectId t))))
+
 (defn accepted-envelope
-  "Build the complete accepted envelope: rows are filtered by the search term (7a), then
-   sorted, then sliced to the requested page. The query echo is the server-normalized query,
-   and `pageInfo` reflects the FILTERED set (current page, page size, total pages/rows) so
-   the client's pagination and any count display follow the search."
+  "Build the complete accepted envelope: rows are filtered by project (board reads) and by the
+   search term (7a), then sorted, then — for the flat, unfiltered view — sliced to the requested
+   page. A `?project=` read is the whole column set UNPAGINATED: a board places every card, so
+   paging it would hide cards. The query echo is the server-normalized query; `pageInfo` reflects
+   the FILTERED set. Each returned row carries its denormalized user and project names."
   [params]
-  (let [term     (search-term params)
-        filtered (filter-tasks @tasks term)
-        tp       (total-pages (count filtered))
+  (let [proj     (project-term params)
+        term     (search-term params)
+        filtered (-> (filter-by-project @tasks proj)
+                     (filter-tasks term))
+        paged?   (nil? proj)
+        tp       (if paged? (total-pages (count filtered)) 1)
         nq       (normalize-query params tp)
         page     (parse-page params tp)
-        sorted   (sort-tasks filtered nq)]
+        sorted   (sort-tasks filtered nq)
+        rows     (if paged? (paginate sorted page) sorted)]
     {:outcome   "accepted"
      :requestId (get params "requestId" "server-boot")
      :revision  revision
      :query     nq
-     :value     (paginate sorted page)
+     :value     (mapv denormalize-task rows)
      :shape     shape
-     :pageInfo  {:page       page
-                 :pageSize   page-size
+     :pageInfo  {:page       (if paged? page 1)
+                 :pageSize   (if paged? page-size (count rows))
                  :totalPages tp
                  :totalCount (count filtered)}}))
+
+(defn collection-envelope
+  "The read envelope for a small related collection (users, projects): the full set, no paging,
+   search or sort. The same §6.5 accepted shape as tasks, so one consumer mechanism drives all."
+  [params rev rows shape]
+  {:outcome   "accepted"
+   :requestId (get params "requestId" "server-boot")
+   :revision  rev
+   :query     {}
+   :value     rows
+   :shape     shape
+   :pageInfo  {:page 1 :pageSize (count rows) :totalPages 1 :totalCount (count rows)}})
 
 ;; --- writes: acks ----------------------------------------------------------
 
@@ -369,11 +465,14 @@
    normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is)."
   [record]
   (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
-    {:title  (field "title")
-     :owner  (field "owner")
-     :start  (field "start")
-     :end    (field "end")
-     :status (field "status")}))
+    {:title      (field "title")
+     :owner      (field "owner")
+     :start      (field "start")
+     :end        (field "end")
+     :status     (field "status")
+     :projectId  (field "projectId")
+     :assigneeId (field "assigneeId")
+     :rank       (field "rank")}))
 
 (defn- next-id
   "Server-assigned id for a new task: one past the current max (ids are 1-based)."
@@ -484,6 +583,16 @@
 
       (str/starts-with? uri "/dist/")
       (serve-dist uri)
+
+      ;; GET /api/users, /api/projects — the related read-only collections the board projects
+      ;; alongside tasks. Same accepted envelope; a task references these by opaque string id.
+      (= "/api/users" uri)
+      (json-response 200 (collection-envelope (parse-query (:query-string req))
+                                              users-revision users users-shape))
+
+      (= "/api/projects" uri)
+      (json-response 200 (collection-envelope (parse-query (:query-string req))
+                                              projects-revision projects projects-shape))
 
       ;; POST /api/tasks — create a task from the JSON record body. Server-only semantic
       ;; validation (end >= start) yields a rejected ack + field details; otherwise the record

@@ -183,6 +183,79 @@
     (is (= 1 (get-in body [:pageInfo :page])))
     (is (= [1 11 21 31] (ids body)) "still the four Alice rows")))
 
+;; --- relational: users, projects, denormalized tasks, project filter -------
+
+(deftest get-users-returns-accepted-envelope
+  (let [[status body] (get-json "/api/users" "requestId=u-1")]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= "u-1" (:requestId body)) "echoes the client request id")
+    (is (= "users:v1" (:revision body)))
+    (is (= "id" (get-in body [:shape :idKey])))
+    (is (= ["name" "email"] (mapv :key (get-in body [:shape :fields]))))
+    (is (= 5 (count (:value body))) "all users, unpaged")
+    (is (every? #(contains? % :id) (:value body)) "every user row carries the id-key")
+    (is (some #(= "Alice" (:name %)) (:value body)))))
+
+(deftest get-projects-returns-accepted-envelope
+  (let [[status body] (get-json "/api/projects" "requestId=p-1")]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= "projects:v1" (:revision body)))
+    (is (= ["name" "description"] (mapv :key (get-in body [:shape :fields]))))
+    (is (= 3 (count (:value body))) "all projects, unpaged")
+    (is (some #(= "p-1" (:id %)) (:value body)))))
+
+(deftest flat-read-shape-fields-are-unchanged
+  (let [[_ body] (get-json "/api/tasks" nil)]
+    (is (= ["title" "owner" "start" "end" "status"]
+           (mapv :key (get-in body [:shape :fields])))
+        "the flat demo's declared columns are untouched — the new task keys are not :fields")))
+
+(deftest tasks-carry-refs-and-denormalized-names
+  (let [[_ body]  (get-json "/api/tasks" nil)
+        [_ users] (get-json "/api/users" nil)
+        row       (first (:value body))]
+    (is (contains? row :projectId) "task carries its project ref")
+    (is (contains? row :assigneeId) "task carries its assignee ref")
+    (is (contains? row :rank) "task carries its rank")
+    (is (contains? row :assigneeName) "server denormalizes the assignee name")
+    (is (contains? row :projectName) "server denormalizes the project name")
+    (is (= (:assigneeName row)
+           (:name (first (filter #(= (:assigneeId row) (:id %)) (:value users)))))
+        "the denormalized assignee name matches the referenced user")))
+
+(deftest project-filter-returns-only-that-project-unpaginated
+  (let [[status body] (get-json "/api/tasks" "project=p-1")
+        n             (count (:value body))]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= {:project "p-1"} (:query body)) "the project term is echoed so it round-trips")
+    (is (every? #(= "p-1" (:projectId %)) (:value body)) "only that project's tasks")
+    (is (> n 10) "more than one flat page's worth — the board read is not paged")
+    (is (= n (get-in body [:pageInfo :totalCount])) "every matching row is returned")
+    (is (= 1 (get-in body [:pageInfo :totalPages])) "served as a single unpaged response")))
+
+(deftest project-filter-spans-all-status-columns
+  (let [[_ body] (get-json "/api/tasks" "project=p-2")]
+    (is (= #{"todo" "doing" "done"} (set (map :status (:value body))))
+        "a project's tasks spread across every column, not collapsed into one")))
+
+(deftest ranks-are-dense-within-each-project-column
+  (let [[_ body]  (get-json "/api/tasks" "project=p-1")
+        by-status (group-by :status (:value body))]
+    (doseq [[_ rows] by-status]
+      (is (= (set (range (count rows))) (set (map :rank rows)))
+          "each status column carries dense 0..n-1 ranks"))))
+
+(deftest create-without-refs-still-succeeds
+  (let [resp (post-raw "/api/tasks" "requestId=w-compat"
+                       (record-json {"title" "Legacy create" "owner" "Zoe"
+                                     "start" "2026-03-01" "status" "todo"}))
+        body (json/parse-string (:body resp) true)]
+    (is (= "accepted" (:outcome body))
+        "a flat-demo write with no project/assignee/rank is still accepted")))
+
 ;; --- step 5a: failure fixtures + SSR boot -----------------------------------
 
 (deftest fixture-bad-outcome-is-unknown-outcome
