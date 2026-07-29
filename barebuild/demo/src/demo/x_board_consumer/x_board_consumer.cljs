@@ -1,9 +1,8 @@
 (ns demo.x-board-consumer.x-board-consumer
-  "The kanban board — one consumer driving three x-drop-zones (Option B, hand-rolled multi-zone).
+  "The kanban board, one consumer driving three x-drop-zones.
    Render reconciles each zone's x-drag-panel children from the tasks value (keyed by id, so a
-   moved card is the SAME element and animate-moves animates it). A drop reserves the slot,
-   submits the move as a write, and releases when the server confirms — no optimism: the card
-   relocates only when the refetched truth re-renders it."
+   moved card is the SAME element and animate-moves animates it). A drop reserves a slot,
+   submits the move as a write, and releases when the server confirms."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [demo.x-board-consumer.model :as model]
@@ -59,10 +58,9 @@
     (cond (nil? n) nil, (panel? n) n, :else (recur (.-nextElementSibling n)))))
 
 (defn- reconcile-zone!
-  "Reconcile `zone`'s cards to the order of `rows` — the order is decided upstream (model/columns);
-   this only materialises a panel per row (reusing `pool`, refreshing content) and places them.
-   Placement is one O(n) anchor walk that moves only out-of-place panels and drops the leftovers,
-   so an unchanged column mutates nothing and animate-moves leaves it be."
+  "Reconciles card movements in a zone. Server decides the order, here we try to materialise
+them by reusing the current content (pool) and refreshing it with the server state received. Only
+cards that are out of place will mutate and animate-move."
   [^js zone rows pool]
   (let [wanted (mapv (fn [row]
                        (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
@@ -73,9 +71,9 @@
       (if-let [^js panel (first ws)]
         (if (identical? panel anchor)
           (recur (rest ws) (next-panel anchor))
-          (do (.insertBefore zone panel anchor)          ; anchor nil -> append
+          (do (.insertBefore zone panel anchor)
               (recur (rest ws) anchor)))
-        (loop [^js n anchor]                              ; leftovers here are no longer wanted
+        (loop [^js n anchor]
           (when n
             (let [^js nxt (next-panel n)]
               (.remove n)

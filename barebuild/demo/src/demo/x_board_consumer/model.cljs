@@ -1,7 +1,4 @@
-(ns demo.x-board-consumer.model
-  "The pure layer of the kanban board consumer: group the tasks value into status columns
-   ordered by rank, project a card's view-model, and translate a drop into the full-replace
-   write that moves the task. Rows carry opaque string keys.")
+(ns demo.x-board-consumer.model)
 
 (def tag-name "x-board-consumer")
 
@@ -14,8 +11,8 @@
 (def statuses ["todo" "doing" "done"])
 
 (defn columns
-  "Tasks grouped by status into the three ordered columns, each sorted by rank. Also the
-   render-key: the board re-renders exactly when the grouped, ordered set changes."
+  "Tasks grouped by status into the three ordered columns, each sorted by rank.
+  The board re-renders exactly when the grouped, ordered set changes."
   [accepted-response]
   (let [by-status (group-by #(get % "status") (:value accepted-response))]
     (into {}
@@ -30,8 +27,7 @@
     (mod (reduce (fn [h i] (+ (* h 31) (.charCodeAt s i))) 7 (range (count s))) 360)))
 
 (defn card-vm
-  "What a card renders: its opaque value (task id as a string), title, assignee and project,
-   and a stable avatar initial + hue keyed on the assignee."
+  "Elements that render in a card."
   [row]
   (let [assignee (str (get row "assigneeName"))]
     {:value    (str (get row "id"))
@@ -42,8 +38,8 @@
      :hue      (name-hue assignee)}))
 
 (defn translate-drop-gesture
-  "The :move for dropping `row` at `to-status`/`index`. A move is a positional command, not an
-   edit: it carries only the destination — the server owns rank and keeps the rest of the row."
+  "A move is a positional command, used when a user drops a card. Not an
+   edit, it carries only the destination"
   [row to-status index]
   {:op     :move
    :id     (get row "id")

@@ -1,8 +1,7 @@
 (ns demo.x-project-selector-consumer.x-project-selector-consumer
-  "A consumer of the PROJECTS <server-resource> that drives the TASKS resource: selecting a
-   project sends a targeted intent to \"tasks\", which writes tasks.project to the URL and
-   refetches the filtered set. This is the cross-resource, URL-mediated coordination the
-   runtime primitive enables — projects and tasks stay independent projections."
+  "A consumer of the PROJECTS <server-resource> that drives the TASKS resource. Selecting a
+  project sends a targeted intent to \"tasks\", which writes tasks.project to the URL and
+  refetches the filtered set."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [demo.x-project-selector-consumer.model :as model]
@@ -36,16 +35,12 @@
 
 (defn- on-select-change! [^js el ^js e]
   (let [id (.. e -detail -value)]
-    ;; Guard against a programmatic value set echoing back as a change: only drive tasks
-    ;; when the pick actually differs from what the URL already holds.
     (when (not= id (current-project-id))
       (consumer-resource/submit-intent! el (model/translate-project-gesture id) tasks-resource-id))))
 
 (defn- on-connect! [^js el]
   (let [x-select (.querySelector el "x-select")]
     (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
-    ;; Keep the dropdown in step with Back/Forward, which change tasks.project in the URL
-    ;; but do not re-render this projects consumer.
     (.addEventListener js/window "popstate"
                        (fn [_e] (du/set-attr! x-select "value" (current-project-id))))))
 
