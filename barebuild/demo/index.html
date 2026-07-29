@@ -38,6 +38,13 @@
   </header>
 
   <main id="app">
+    <server-resource resource-id="projects" src="http://localhost:8090/api/projects">
+      <x-project-selector-consumer>
+        <x-select label="Project" placeholder="All projects"></x-select>
+      </x-project-selector-consumer>
+    </server-resource>
+    <x-spacer size="1rem"></x-spacer>
+
     <server-resource src="http://localhost:8090/api/tasks">
       <x-progress-consumer>
         <x-progress label="Page position" show-value></x-progress>
