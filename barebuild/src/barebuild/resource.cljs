@@ -125,10 +125,15 @@
 ;; The write vocabulary as data: each op maps to its method, whether it addresses the
 ;; collection or a member, and whether it carries a body. step resolves this into the
 ;; :write effect so the executor decides nothing.
+;; :move is a positional command, not a partial merge of the record: it repositions a member
+;; (server-owned rank) and carries only the destination, so full-replace :update stays the only
+;; way to edit record fields. Adding it is one row here — the executor performs it and decides
+;; nothing.
 (def ^:private write-ops
   {:create {:method "POST"   :target :collection :body? true}
    :update {:method "PUT"    :target :member     :body? true}
-   :delete {:method "DELETE" :target :member     :body? false}})
+   :delete {:method "DELETE" :target :member     :body? false}
+   :move   {:method "PATCH"  :target :member     :body? true}})
 
 (defn write-request
   "The :write effect value for a write payload, or nil when none can be built"
