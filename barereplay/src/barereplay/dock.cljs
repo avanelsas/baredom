@@ -110,9 +110,11 @@
     "No request/response at this step."))
 
 (defn- project! [entries n]
-  (when-let [^js sr (.querySelector js/document "server-resource")]
-    (when-let [resource (reconstruct/resource-at entries n)]
-      (.projectResource sr resource))))
+  (doseq [[_ m] (reconstruct/resources-at entries n)]
+    (let [^js el (:el m)
+          value  (:value m)]
+      (when (and el value)
+        (.projectResource el value)))))
 
 (defn- set-disabled! [^js btn disabled?]
   (if disabled?
