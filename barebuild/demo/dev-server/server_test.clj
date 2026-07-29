@@ -353,7 +353,9 @@
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "POST")
         "the preflight advertises POST")
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PUT")
-        "the preflight advertises PUT")))
+        "the preflight advertises PUT")
+    (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PATCH")
+        "the preflight advertises PATCH for :move")))
 
 ;; --- writes: create (step W3a) ---------------------------------------------
 
@@ -514,7 +516,10 @@
     (is (= "invalid-value" (:code error)))
     (is (= "status" (get-in error [:details :field])))))
 
-;; --- writes: rank reindex on a board move ----------------------------------
+;; --- writes: the :move op (server-owned rank) ------------------------------
+
+(defn- patch-raw [uri qs body]
+  (server/handler {:request-method :patch :uri uri :query-string qs :body body}))
 
 (defn- project-tasks [project]
   (second (get-json "/api/tasks" (str "project=" project))))
@@ -522,37 +527,54 @@
 (defn- column-ranks [body status]
   (->> (:value body) (filter #(= status (:status %))) (map :rank) sort vec))
 
-;; p-1 seeds five tasks per status column, ranks 0..4. Task 1 is (p-1, todo, rank 0).
-(def ^:private move-record
-  {"title" "Card" "owner" "Alice" "start" "2026-01-01"
-   "projectId" "p-1" "assigneeId" "u-1"})
+;; p-1 seeds five tasks per status column, ranks 0..4. Task 1 is (p-1, todo, rank 0). A move
+;; carries only {status, index}; rank is server-owned and never in a record.
 
-(deftest board-move-places-card-and-redenses-columns
-  (put-raw "/api/tasks/1" "requestId=w-m1"
-           (record-json (assoc move-record "status" "done" "rank" 2)))
+(deftest move-places-card-and-redenses-columns
+  (patch-raw "/api/tasks/1" "requestId=w-m1" (record-json {"status" "done" "index" 2}))
   (let [body  (project-tasks "p-1")
         moved (first (filter #(= 1 (:id %)) (:value body)))]
     (is (= "done" (:status moved)) "the card is in its new column")
-    (is (= 2 (:rank moved)) "at the requested rank")
+    (is (= 2 (:rank moved)) "at the requested index")
     (is (= [0 1 2 3 4 5] (column-ranks body "done")) "destination column re-densed to 0..5")
     (is (= [0 1 2 3] (column-ranks body "todo")) "the vacated column closed its gap")))
 
-(deftest board-reorder-within-a-column
-  (put-raw "/api/tasks/1" "requestId=w-m2"
-           (record-json (assoc move-record "status" "todo" "rank" 3)))
+(deftest move-reorders-within-a-column
+  (patch-raw "/api/tasks/1" "requestId=w-m2" (record-json {"status" "todo" "index" 3}))
   (let [body (project-tasks "p-1")
         t1   (first (filter #(= 1 (:id %)) (:value body)))]
     (is (= "todo" (:status t1)))
-    (is (= 3 (:rank t1)) "the card lands at its new rank within the same column")
+    (is (= 3 (:rank t1)) "the card lands at its new index within the same column")
     (is (= [0 1 2 3 4] (column-ranks body "todo")) "the column stays dense 0..4")))
 
-(deftest flat-edit-without-rank-preserves-rank
+(deftest move-touches-only-status-and-position
+  (let [before (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+    (patch-raw "/api/tasks/1" "requestId=w-m3" (record-json {"status" "doing" "index" 0}))
+    (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+      (is (= "doing" (:status after)))
+      (is (= (:title before) (:title after)) "the rest of the row is kept")
+      (is (= (:assigneeId before) (:assigneeId after))))))
+
+(deftest move-of-unknown-id-is-rejected
+  (let [body (json/parse-string (:body (patch-raw "/api/tasks/999" "requestId=w-m4"
+                                                  (record-json {"status" "done" "index" 0}))) true)]
+    (is (= "rejected" (:outcome body)))
+    (is (= "not-found" (get-in body [:error :code])))))
+
+(deftest move-to-unknown-status-is-rejected
+  (let [body (json/parse-string (:body (patch-raw "/api/tasks/1" "requestId=w-m5"
+                                                  (record-json {"status" "archived" "index" 0}))) true)]
+    (is (= "rejected" (:outcome body)))
+    (is (= "invalid-value" (get-in body [:error :code])))))
+
+(deftest update-preserves-server-owned-rank
   (let [before (:rank (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1")))))]
-    (put-raw "/api/tasks/1" "requestId=w-m3"
-             (record-json (assoc move-record "title" "Renamed" "status" "todo")))
+    (put-raw "/api/tasks/1" "requestId=w-m6"
+             (record-json {"title" "Renamed" "owner" "Alice" "start" "2026-01-01"
+                           "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
     (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
       (is (= "Renamed" (:title after)) "the edit applied")
-      (is (= before (:rank after)) "rank is untouched when the write carries none"))))
+      (is (= before (:rank after)) "rank is server-owned — an update leaves it untouched"))))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]

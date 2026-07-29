@@ -33,13 +33,9 @@
     (is (<= 0 h1 359) "hue is a valid degree"))
   (is (= "?" (:initial (model/card-vm {}))) "a missing assignee falls back to a placeholder"))
 
-(deftest translate-drop-gesture-is-a-full-replace-move
+(deftest translate-drop-gesture-is-a-move-command
   (let [g (model/translate-drop-gesture (first rows) "done" 2)]
-    (is (= :update (:op g)))
+    (is (= :move (:op g)) "a drop is a positional move, not a record edit")
     (is (= 1 (:id g)))
-    (testing "status and rank carry the move; denormalized names are dropped"
-      (is (= "done" (get-in g [:record "status"])))
-      (is (= 2 (get-in g [:record "rank"])))
-      (is (not (contains? (:record g) "assigneeName")))
-      (is (not (contains? (:record g) "projectName")))
-      (is (= "A" (get-in g [:record "title"])) "the rest of the record is preserved"))))
+    (is (= {"status" "done" "index" 2} (:record g))
+        "the move carries only the destination — no record fields, no server-owned rank")))

@@ -272,7 +272,7 @@
 
 (def ^:private cors-headers
   {"access-control-allow-origin"  "*"
-   "access-control-allow-methods" "GET,POST,PUT,DELETE,OPTIONS"
+   "access-control-allow-methods" "GET,POST,PUT,PATCH,DELETE,OPTIONS"
    "access-control-allow-headers" "content-type"})
 
 (defn- parse-query [qs]
@@ -461,8 +461,9 @@
      :details {:id raw-id}}))
 
 (defn- record->row
-  "The stored row fields for a write `record` (opaque string keys). Blank optional fields
-   normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is)."
+  "The client-owned row fields for a write `record` (opaque string keys). Blank optional fields
+   normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is).
+   Rank is NOT here — it is server-owned and set only by :move."
   [record]
   (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
     {:title      (field "title")
@@ -471,8 +472,7 @@
      :end        (field "end")
      :status     (field "status")
      :projectId  (field "projectId")
-     :assigneeId (field "assigneeId")
-     :rank       (field "rank")}))
+     :assigneeId (field "assigneeId")}))
 
 (defn- next-id
   "Server-assigned id for a new task: one past the current max (ids are 1-based)."
@@ -486,21 +486,21 @@
   (conj ts (merge {:id (next-id ts)} (record->row record))))
 
 (defn update-task
-  "Replace the row whose id is `id` with `record`, keeping its id and its position in the
-   set. PUT semantics: a full replace, so every field comes from the record — a key the
-   client omitted becomes nil rather than keeping its old value. An id matching no row
+  "Replace the row whose id is `id` with `record`. PUT semantics: a full replace of the
+   client-owned fields, so a key the client omitted becomes nil. The server-owned fields — id
+   and rank — are preserved across the replace; only :move changes rank. An id matching no row
    leaves the set untouched (the handler rejects that case before calling this)."
   [ts id record]
   (mapv (fn [t]
           (if (= (:id t) id)
-            (merge {:id id} (record->row record))
+            (merge {:id id :rank (:rank t)} (record->row record))
             t))
         ts))
 
-;; --- writes: rank normalization on a board move ----------------------------
-;; Rank is server-owned: a card's position within its (projectId, status) column. A board drop
-;; carries the target rank (the drop index); the server places the card there and re-denses the
-;; affected columns so ranks stay a clean 0..n with no gaps or ties.
+;; --- writes: the :move op (server-owned rank) ------------------------------
+;; Rank is a card's position within its (projectId, status) column, and it belongs to the SERVER
+;; — the client never sends it in a record. A :move carries only the destination (status + index);
+;; the server places the card there and re-denses the affected columns so ranks stay a clean 0..n.
 
 (defn- column-of
   "The (projectId, status) column a task lives in — rank is dense within it."
@@ -531,17 +531,31 @@
     (cond-> (place-and-dense ts dest-col id (:rank moved))
       (not= old-col dest-col) (place-and-dense old-col nil nil))))
 
-(defn apply-update
-  "Replace task `id` with `record`, then keep ranks server-owned. A write carrying a rank (a
-   board move) places the task at that rank and re-denses the affected columns; a write with no
-   rank (a flat edit) keeps the task's prior rank untouched rather than nulling it."
+(defn move-error
+  "First error for a :move of `id`: a missing target (a move, like an update, is not idempotent
+   over an absent row), or a destination status outside the enum. The index is clamped by
+   place-and-dense, so it needs no bound check."
+  [ts id raw-id record]
+  (let [statuses (set (:enum (some #(when (= "status" (:key %)) %) (:fields shape))))]
+    (cond
+      (not (some #(= (:id %) id) ts))
+      {:code "not-found" :message (str "No task with id \"" raw-id "\".") :details {:id raw-id}}
+
+      (not (contains? statuses (get record "status")))
+      {:code    "invalid-value"
+       :message (str "\"" (get record "status") "\" is not a status.")
+       :details {:field "status"}})))
+
+(defn move-task
+  "Reposition task `id` to the destination status + index the :move record carries. Only status
+   and rank change; every other field is kept. The destination and vacated columns are re-densed."
   [ts id record]
-  (let [old-row   (first (filter #(= (:id %) id) ts))
-        has-rank? (some? (get record "rank"))
-        updated   (update-task ts id record)]
-    (if has-rank?
-      (reindex-columns updated id (column-of old-row))
-      (mapv (fn [t] (if (= (:id t) id) (assoc t :rank (:rank old-row)) t)) updated))))
+  (let [old-row (first (filter #(= (:id %) id) ts))
+        old-col (column-of old-row)
+        index   (or (get record "index") (count ts))
+        moved   (assoc old-row :status (get record "status") :rank index)
+        ts*     (mapv (fn [t] (if (= (:id t) id) moved t)) ts)]
+    (reindex-columns ts* id old-col)))
 
 ;; --- fixtures (step 5a): controlled failure modes for the client (5b) ------
 
@@ -662,7 +676,20 @@
             record (request-record req)]
         (if-let [error (update-error @tasks id (task-id-str uri) record)]
           (json-response 200 (write-rejected-ack params error))
-          (do (swap! tasks apply-update id record)
+          (do (swap! tasks update-task id record)
+              (json-response 200 (accepted-envelope params)))))
+
+      ;; PATCH /api/tasks/:id — the :move op. Repositions a card (server-owned rank) to the
+      ;; destination status + index the body carries; every other field is left as-is. HTTP 200,
+      ;; the full post-mutation envelope, like the other writes.
+      (and (= :patch (:request-method req))
+           (str/starts-with? uri "/api/tasks/"))
+      (let [params (parse-query (:query-string req))
+            id     (task-id-from-uri uri)
+            record (request-record req)]
+        (if-let [error (move-error @tasks id (task-id-str uri) record)]
+          (json-response 200 (write-rejected-ack params error))
+          (do (swap! tasks move-task id record)
               (json-response 200 (accepted-envelope params)))))
 
       (= "/api/tasks" uri)

@@ -42,11 +42,9 @@
      :hue      (name-hue assignee)}))
 
 (defn translate-drop-gesture
-  "The full-replace update for moving `row` to `to-status` at `index`. The denormalized names
-   are dropped — the server recomputes them; status and rank carry the move."
+  "The :move for dropping `row` at `to-status`/`index`. A move is a positional command, not an
+   edit: it carries only the destination — the server owns rank and keeps the rest of the row."
   [row to-status index]
-  {:op     :update
+  {:op     :move
    :id     (get row "id")
-   :record (-> row
-               (assoc "status" to-status "rank" index)
-               (dissoc "assigneeName" "projectName" "id"))})
+   :record {"status" to-status "index" index}})
