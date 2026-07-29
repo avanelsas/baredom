@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BareBuild — Kanban board demo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 72rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    header { margin-bottom: 1.5rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { color: gray; margin-top: 0; font-size: 0.875rem; }
+    #app { margin-top: 1.5rem; }
+
+    .board { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; }
+    .board x-drop-zone { flex: 1; min-width: min(16rem, calc(100vw - 2rem)); }
+    .board-column-title { font-weight: 600; margin: 0 0 0.5rem; }
+    .board-card-body { color: gray; font-size: 0.8125rem; margin-top: 0.25rem; }
+
+    /* Per-project: the board is meaningful only for a selected project. */
+    x-board-consumer[data-empty="true"] .board { display: none; }
+    x-board-consumer:not([data-empty="true"]) .board-prompt { display: none; }
+    .board-prompt { color: gray; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BareBuild — Kanban board demo</h1>
+    <p class="subtitle">
+      A second projection of the same server state: two independent <code>&lt;server-resource&gt;</code>
+      elements — projects and tasks — coordinating through the URL. Pick a project to load its board;
+      drag a card to another column and the move is submitted to the server, then observed back.
+      Nothing moves until the server confirms.
+    </p>
+  </header>
+
+  <main id="app">
+    <server-resource resource-id="projects" src="http://localhost:8090/api/projects">
+      <x-project-selector-consumer>
+        <x-select label="Project" placeholder="Select a project"></x-select>
+      </x-project-selector-consumer>
+    </server-resource>
+
+    <server-resource src="http://localhost:8090/api/tasks">
+      <x-board-consumer>
+        <p class="board-prompt">Select a project to see its board.</p>
+        <div class="board">
+          <x-drop-zone value="todo" accepts="task" label="To do" animate-moves>
+            <p class="board-column-title" slot="empty">To do</p>
+          </x-drop-zone>
+          <x-drop-zone value="doing" accepts="task" label="In progress" animate-moves>
+            <p class="board-column-title" slot="empty">In progress</p>
+          </x-drop-zone>
+          <x-drop-zone value="done" accepts="task" label="Done" animate-moves>
+            <p class="board-column-title" slot="empty">Done</p>
+          </x-drop-zone>
+        </div>
+      </x-board-consumer>
+    </server-resource>
+  </main>
+
+  <script type="module">
+    import { init } from "../dist/demo.js";
+    init();
+  </script>
+</body>
+</html>

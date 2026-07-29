@@ -3,6 +3,8 @@
    [baredom.components.x-alert.x-alert :as x-alert]
    [baredom.components.x-button.x-button :as x-button]
    [baredom.components.x-date-picker.x-date-picker :as x-date-picker]
+   [baredom.components.x-drag-panel.x-drag-panel :as x-drag-panel]
+   [baredom.components.x-drop-zone.x-drop-zone :as x-drop-zone]
    [baredom.components.x-form.x-form :as x-form]
    [baredom.components.x-form-field.x-form-field :as x-form-field]
    [baredom.components.x-grid.x-grid :as x-grid]
@@ -18,6 +20,7 @@
    [baredom.components.x-table-row.x-table-row :as x-table-row]
    [baredom.components.x-table-cell.x-table-cell :as x-table-cell]
    [baredom.components.x-typography.x-typography :as x-typography]
+   [demo.x-board-consumer.x-board-consumer :as x-board-consumer]
    [demo.x-project-selector-consumer.x-project-selector-consumer :as x-project-selector-consumer]
    [demo.x-progress-consumer.x-progress-consumer :as x-progress-consumer]
    [demo.x-search-field-consumer.x-search-field-consumer :as x-search-field-consumer]
@@ -36,6 +39,8 @@
   (x-alert/init!)
   (x-button/init!)
   (x-date-picker/init!)
+  (x-drag-panel/init!)
+  (x-drop-zone/init!)
   (x-form/init!)
   (x-form-field/init!)
   (x-grid/init!)
@@ -53,6 +58,7 @@
   (x-typography/init!)
 
   ;; the demo's consumers (host-app code, not part of BareBuild)
+  (x-board-consumer/init!)
   (x-project-selector-consumer/init!)
   (x-progress-consumer/init!)
   (x-search-field-consumer/init!)
