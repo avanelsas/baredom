@@ -18,10 +18,20 @@
       (is (= [2 1] (mapv #(get % "id") (get cols "todo"))))
       (is (= [3] (mapv #(get % "id") (get cols "done")))))))
 
-(deftest card-vm-projects-title-and-subtitle
-  (is (= {:value "1" :title "A" :subtitle "Alice · Web"}
-         (model/card-vm (first rows)))
-      "value is the id as a string; subtitle joins the denormalized names"))
+(deftest card-vm-projects-card-fields
+  (let [vm (model/card-vm (first rows))]
+    (is (= "1" (:value vm)) "value is the id as a string")
+    (is (= "A" (:title vm)))
+    (is (= "Alice" (:assignee vm)))
+    (is (= "Web" (:project vm)))
+    (is (= "A" (:initial vm)) "the avatar initial is the assignee's first letter")))
+
+(deftest card-vm-avatar-hue-is-stable-and-bounded
+  (let [h1 (:hue (model/card-vm {"assigneeName" "Alice"}))
+        h2 (:hue (model/card-vm {"assigneeName" "Alice"}))]
+    (is (= h1 h2) "same assignee always gets the same hue")
+    (is (<= 0 h1 359) "hue is a valid degree"))
+  (is (= "?" (:initial (model/card-vm {}))) "a missing assignee falls back to a placeholder"))
 
 (deftest translate-drop-gesture-is-a-full-replace-move
   (let [g (model/translate-drop-gesture (first rows) "done" 2)]

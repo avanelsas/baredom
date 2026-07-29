@@ -16,21 +16,24 @@
 
 ;; --- card building ------------------------------------------------------------
 
+(defn- ensure-child! [^js panel selector tag decorate!]
+  (or (.querySelector panel selector)
+      (let [child (.createElement js/document tag)]
+        (decorate! child)
+        (.appendChild panel child)
+        child)))
+
 (defn- set-card-content! [^js panel row]
-  (let [{:keys [title subtitle]} (model/card-vm row)
-        head (or (.querySelector panel "[slot=header]")
-                 (let [h (.createElement js/document "span")]
-                   (set! (.-slot h) "header")
-                   (.appendChild panel h)
-                   h))
-        body (or (.querySelector panel ".board-card-body")
-                 (let [b (.createElement js/document "div")]
-                   (set! (.-className b) "board-card-body")
-                   (.appendChild panel b)
-                   b))]
+  (let [{:keys [title assignee project initial hue]} (model/card-vm row)
+        head   (ensure-child! panel "[slot=header]" "span" #(set! (.-slot %) "header"))
+        body   (ensure-child! panel ".board-card-body" "div" #(set! (.-className %) "board-card-body"))
+        avatar (ensure-child! body ".board-card-avatar" "span" #(set! (.-className %) "board-card-avatar"))
+        meta   (ensure-child! body ".board-card-meta" "span" #(set! (.-className %) "board-card-meta"))]
     (du/set-attr! panel "label" title)
     (set! (.-textContent head) title)
-    (set! (.-textContent body) subtitle)))
+    (set! (.-textContent avatar) initial)
+    (.setProperty (.-style avatar) "background-color" (str "hsl(" hue " 55% 48%)"))
+    (set! (.-textContent meta) (str assignee " · " project))))
 
 (defn- make-card! [row]
   (let [panel (.createElement js/document "x-drag-panel")]
@@ -46,18 +49,32 @@
   (into {} (map (fn [^js p] [(du/get-attr p "value") p])
                 (array-seq (.querySelectorAll this "x-drag-panel")))))
 
+(defn- panels-in [^js zone]
+  (vec (array-seq (.querySelectorAll zone "x-drag-panel"))))
+
+(defn- reconcile-zone!
+  "Make `zone`'s cards match `rows` in order, moving only the panels that are out of place — so
+   an unchanged column produces NO child-list mutation, and animate-moves leaves it alone.
+   Content is always refreshed (a cheap in-panel update that animate-moves ignores)."
+  [^js zone rows pool]
+  (let [desired (mapv (fn [row]
+                        (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
+                          (set-card-content! panel row)
+                          panel))
+                      rows)]
+    (doseq [[i ^js panel] (map-indexed vector desired)]
+      (let [^js current (nth (panels-in zone) i nil)]
+        (when-not (identical? current panel)
+          (if current
+            (.insertBefore zone panel current)
+            (.appendChild zone panel)))))
+    (doseq [^js extra (drop (count desired) (panels-in zone))]
+      (.remove extra))))
+
 (defn- place-cards! [^js this cols]
-  (let [pool   (panel-pool this)
-        wanted (set (map #(str (get % "id")) (mapcat val cols)))]
+  (let [pool (panel-pool this)]
     (doseq [^js zone (array-seq (.querySelectorAll this "x-drop-zone"))]
-      (doseq [row (get cols (du/get-attr zone "value") [])]
-        (let [value (str (get row "id"))
-              panel (or (get pool value) (make-card! row))]
-          (set-card-content! panel row)
-          (.appendChild zone panel))))                 ; appendChild MOVES an existing panel
-    (doseq [^js p (array-seq (.querySelectorAll this "x-drag-panel"))]
-      (when-not (contains? wanted (du/get-attr p "value"))
-        (.remove p)))))
+      (reconcile-zone! zone (get cols (du/get-attr zone "value") []) pool))))
 
 (defn- project-selected? []
   (some? (.get (js/URLSearchParams. (.-search js/location)) "tasks.project")))

@@ -23,12 +23,23 @@
                  [s (vec (sort-by #(or (get % "rank") 0) (get by-status s [])))])
                statuses))))
 
+(defn- name-hue
+  "A stable hue (0-359) derived from a name, so each assignee keeps one avatar colour."
+  [name]
+  (let [s (str name)]
+    (mod (reduce (fn [h i] (+ (* h 31) (.charCodeAt s i))) 7 (range (count s))) 360)))
+
 (defn card-vm
-  "What a card renders: its opaque value (task id as a string), title, and a subtitle."
+  "What a card renders: its opaque value (task id as a string), title, assignee and project,
+   and a stable avatar initial + hue keyed on the assignee."
   [row]
-  {:value    (str (get row "id"))
-   :title    (get row "title")
-   :subtitle (str (get row "assigneeName") " · " (get row "projectName"))})
+  (let [assignee (str (get row "assigneeName"))]
+    {:value    (str (get row "id"))
+     :title    (get row "title")
+     :assignee assignee
+     :project  (str (get row "projectName"))
+     :initial  (if (seq assignee) (subs assignee 0 1) "?")
+     :hue      (name-hue assignee)}))
 
 (defn translate-drop-gesture
   "The full-replace update for moving `row` to `to-status` at `index`. The denormalized names
