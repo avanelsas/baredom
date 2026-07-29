@@ -74,10 +74,28 @@
       (.catch (fn [^js _e]
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
+(defn- find-resource
+  "The <server-resource> on the page whose resolved id is `target-id`, or nil. Matches the
+   stored :resource/id rather than an attribute, so a resource that resolved the default id is
+   found too."
+  [target-id]
+  (some (fn [^js e]
+          (when (= target-id (:resource/id (du/getv e k-resource))) e))
+        (array-seq (.querySelectorAll js/document model/tag-name))))
+
 (defn- notify-consumers! [^js el r]
-  (let [consumers (du/getv el k-consumers)
-        ctx       {:submit-intent! (fn [patch]   (handle-event! el [:intent-patch patch]))
-                   :submit-write!  (fn [payload]  (handle-event! el [:submit-write payload]))}]
+  (let [own-id    (:resource/id r)
+        consumers (du/getv el k-consumers)
+        ctx       {:submit-intent! (fn [patch & [target-id]]
+                                     ;; With a target-id naming another resource, drive that
+                                     ;; sibling through its own :intent-patch (and thus its URL
+                                     ;; projection); otherwise patch this resource.
+                                     (let [target (if (and target-id (not= target-id own-id))
+                                                    (find-resource target-id)
+                                                    el)]
+                                       (when target
+                                         (handle-event! target [:intent-patch patch]))))
+                   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
     (doseq [^js c consumers]
       (.applyResource c r ctx))))
 
@@ -157,7 +175,8 @@
   have to be processed to get the element in the right state (e.g. table sorting).
   If there is an embedderd version, load that first."
   [^js el]
-  (let [resource-id    "tasks"
+  (let [attr-id        (du/get-attr el model/attr-resource-id)
+        resource-id    (if (str/blank? attr-id) "tasks" attr-id)
         history-policy {:navigation :push}
         on-popstate    (fn [_e] (handle-popstate el resource-id))
         embed          (read-boot-embed el)]
@@ -184,12 +203,6 @@
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
-(defn- setup-prototype! [^js proto]
-  (.defineProperty js/Object proto "projectResource"
-                   #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))
-                        :writable     true
-                        :configurable true}))
-
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []
@@ -197,5 +210,4 @@
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
                         :disconnected-fn      disconnected!
-                        :attribute-changed-fn attribute-changed!
-                        :setup-prototype-fn   setup-prototype!}))
+                        :attribute-changed-fn attribute-changed!}))
