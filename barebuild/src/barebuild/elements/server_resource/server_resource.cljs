@@ -203,6 +203,16 @@
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
+;; The replay hook. BareReplay's dock calls el.projectResource(value) to push a reconstructed
+;; (time-travelled) resource value at the consumers, so the components paint that historical
+;; state. It reuses the same notify path a live step uses. Not dead code — the sole caller is
+;; barereplay.dock, a sibling project.
+(defn- setup-prototype! [^js proto]
+  (.defineProperty js/Object proto "projectResource"
+                   #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))
+                        :writable     true
+                        :configurable true}))
+
 ;; ── Public API ───────────────────────────────────────────────────────────────
 
 (defn init! []
@@ -210,4 +220,5 @@
                        {:observed-attributes  model/observed-attributes
                         :connected-fn         connected!
                         :disconnected-fn      disconnected!
-                        :attribute-changed-fn attribute-changed!}))
+                        :attribute-changed-fn attribute-changed!
+                        :setup-prototype-fn   setup-prototype!}))
