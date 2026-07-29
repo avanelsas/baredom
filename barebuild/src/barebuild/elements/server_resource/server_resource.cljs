@@ -77,7 +77,8 @@
 (defn- find-resource
   "The <server-resource> on the page whose resolved id is `target-id`, or nil. Matches the
    stored :resource/id rather than an attribute, so a resource that resolved the default id is
-   found too."
+   found too. Scope is the whole document: shadow-nested resources and a second app on the same
+   page are out of the coordination contract."
   [target-id]
   (some (fn [^js e]
           (when (= target-id (:resource/id (du/getv e k-resource))) e))
@@ -87,10 +88,7 @@
   (let [own-id    (:resource/id r)
         consumers (du/getv el k-consumers)
         ctx       {:submit-intent! (fn [patch & [target-id]]
-                                     ;; With a target-id naming another resource, drive that
-                                     ;; sibling through its own :intent-patch (and thus its URL
-                                     ;; projection); otherwise patch this resource.
-                                     (let [target (if (and target-id (not= target-id own-id))
+                                     (let [target (if (model/targets-sibling? own-id target-id)
                                                     (find-resource target-id)
                                                     el)]
                                        (when target
@@ -175,8 +173,7 @@
   have to be processed to get the element in the right state (e.g. table sorting).
   If there is an embedderd version, load that first."
   [^js el]
-  (let [attr-id        (du/get-attr el model/attr-resource-id)
-        resource-id    (if (str/blank? attr-id) "tasks" attr-id)
+  (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         history-policy {:navigation :push}
         on-popstate    (fn [_e] (handle-popstate el resource-id))
         embed          (read-boot-embed el)]

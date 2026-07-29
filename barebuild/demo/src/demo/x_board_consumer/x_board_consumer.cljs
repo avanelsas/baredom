@@ -9,8 +9,6 @@
    [demo.x-board-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
-;; id (string) -> row, so the drop handler can build a full-replace record; and the zone whose
-;; reservation is awaiting the write's answer.
 (def ^:private k-rows         "__xBoardRows")
 (def ^:private k-pending-zone "__xBoardPendingZone")
 
@@ -39,7 +37,7 @@
   (let [panel (.createElement js/document "x-drag-panel")]
     (du/set-attr! panel "kind" "task")
     (du/set-attr! panel "value" (str (get row "id")))
-    (du/set-attr! panel "grab" "surface")   ; drag the whole card, not just the handle bar
+    (du/set-attr! panel "grab" "surface")
     (set-card-content! panel row)
     panel))
 
@@ -91,11 +89,14 @@
   (some (fn [^js z] (when (= status (du/get-attr z "value")) z))
         (array-seq (.querySelectorAll this "x-drop-zone"))))
 
+(defn- write-pending? [^js this]
+  (some? (du/getv this k-pending-zone)))
+
 (defn- on-drop! [^js this ^js e]
   (let [^js detail (.-detail e)
         row        (get (du/getv this k-rows) (.-value detail))
         ^js zone   (zone-for this (.-to detail))]
-    (when (and row zone)
+    (when (and row zone (not (write-pending? this)))
       (.reserve zone (.-panel detail) (.-index detail))
       (du/setv! this k-pending-zone zone)
       (consumer-resource/submit-write!

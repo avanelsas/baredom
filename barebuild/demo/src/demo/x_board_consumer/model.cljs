@@ -49,4 +49,4 @@
    :id     (get row "id")
    :record (-> row
                (assoc "status" to-status "rank" index)
-               (dissoc "assigneeName" "projectName"))})
+               (dissoc "assigneeName" "projectName" "id"))})
