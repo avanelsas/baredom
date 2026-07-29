@@ -183,7 +183,8 @@
         view  {:n n :total total}
         prev  (du/getv el k-view)]
     (when (not= view prev)
-      (when (not= (:n prev) n)
+      (when (and (not= (:n prev) n)
+                 (not (and (= (:n prev) (:total prev)) (= n total))))
         (project! entries n))
       (du/setv! el k-view view)
       (render-status! refs entries n)
