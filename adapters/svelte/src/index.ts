@@ -27,7 +27,9 @@ export { default as XCopy, type XCopyProps, type XCopyElement } from "./x-copy.s
 export { default as XCurrencyField, type XCurrencyFieldProps, type XCurrencyFieldElement } from "./x-currency-field.svelte";
 export { default as XDatePicker, type XDatePickerProps, type XDatePickerElement } from "./x-date-picker.svelte";
 export { default as XDivider, type XDividerProps, type XDividerElement } from "./x-divider.svelte";
+export { default as XDragPanel, type XDragPanelProps, type XDragPanelElement } from "./x-drag-panel.svelte";
 export { default as XDrawer, type XDrawerProps, type XDrawerElement } from "./x-drawer.svelte";
+export { default as XDropZone, type XDropZoneProps, type XDropZoneElement } from "./x-drop-zone.svelte";
 export { default as XDropdown, type XDropdownProps, type XDropdownElement } from "./x-dropdown.svelte";
 export { default as XFieldset, type XFieldsetProps, type XFieldsetElement } from "./x-fieldset.svelte";
 export { default as XFileDownload, type XFileDownloadProps, type XFileDownloadElement } from "./x-file-download.svelte";

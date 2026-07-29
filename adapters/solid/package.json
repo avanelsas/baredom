@@ -139,9 +139,17 @@
       "import" : "./dist/x-divider.jsx",
       "types" : "./dist/x-divider.d.ts"
     },
+    "./x-drag-panel" : {
+      "import" : "./dist/x-drag-panel.jsx",
+      "types" : "./dist/x-drag-panel.d.ts"
+    },
     "./x-drawer" : {
       "import" : "./dist/x-drawer.jsx",
       "types" : "./dist/x-drawer.d.ts"
+    },
+    "./x-drop-zone" : {
+      "import" : "./dist/x-drop-zone.jsx",
+      "types" : "./dist/x-drop-zone.d.ts"
     },
     "./x-dropdown" : {
       "import" : "./dist/x-dropdown.jsx",

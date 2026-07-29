@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-drag-panel demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .board {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+
+      .board x-drop-zone {
+        flex: 1 1 220px;
+        min-width: 220px;
+      }
+
+      .col-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        opacity: .7;
+        margin-bottom: 6px;
+      }
+
+      .card-title { font-weight: 600; font-size: 14px; }
+      .card-note  { font-size: 13px; opacity: .75; margin: 4px 0 0; }
+
+      .log {
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        border: 1px solid rgba(128,128,128,.35);
+        border-radius: 8px;
+        padding: 10px;
+        min-height: 120px;
+        max-height: 240px;
+        overflow: auto;
+        margin-top: 16px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-drag-panel</x-typography>
+    <x-typography variant="body">
+      A panel the user can pick up with a pointer or the keyboard. It reports where it was
+      dropped and never moves itself — the handler below is what actually reorders the DOM.
+    </x-typography>
+    <x-typography variant="body">
+      The component needs no server and no network. Out of the box this page runs the whole
+      board from one <code>x-drop-zone-drop</code> handler that calls
+      <code>insertBefore</code>. The in-flight controls further down are the optional extra
+      for apps that <em>do</em> have a round trip to wait on.
+    </x-typography>
+
+    <x-typography variant="overline">Live Controls</x-typography>
+    <div class="row">
+      <x-checkbox id="ctrl-surface"></x-checkbox>
+      <label for="ctrl-surface">grab="surface" (drag from anywhere on the card)</label>
+    </div>
+    <div class="row">
+      <x-checkbox id="ctrl-no-scroll"></x-checkbox>
+      <label for="ctrl-no-scroll">auto-scroll="none"</label>
+    </div>
+    <div class="row">
+      <x-checkbox id="ctrl-disable-first"></x-checkbox>
+      <label for="ctrl-disable-first">disable the first card</label>
+    </div>
+    <div class="row">
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
+    </div>
+
+    <x-typography variant="overline">Optional — the in-flight window</x-typography>
+    <x-typography variant="body">
+      Only relevant when the move has to be confirmed by something slow. Turn this on and the
+      app sets <code>pending</code> on the card and <code>pending</code> +
+      <code>pending-index</code> on the target zone, then clears them when the fake server
+      answers. Nothing in the board moves until it does.
+    </x-typography>
+    <div class="row">
+      <x-checkbox id="ctrl-server"></x-checkbox>
+      <label for="ctrl-server">simulate a server round-trip (800ms)</label>
+      <x-checkbox id="ctrl-reject"></x-checkbox>
+      <label for="ctrl-reject">server rejects every move</label>
+    </div>
+
+    <x-typography variant="overline">Board</x-typography>
+    <x-typography variant="body">
+      Keyboard: Tab to a card's handle, press <x-kbd>Space</x-kbd> to pick it up,
+      <x-kbd>↑</x-kbd>/<x-kbd>↓</x-kbd> to cycle zones, <x-kbd>Enter</x-kbd> to drop,
+      <x-kbd>Esc</x-kbd> to cancel.
+    </x-typography>
+
+    <div class="board">
+      <div style="flex:1 1 220px">
+        <div class="col-title">Backlog</div>
+        <x-drop-zone accepts="task" label="Backlog" animate-moves>
+          <span slot="empty">Nothing here</span>
+
+          <x-drag-panel kind="task" value="t-1" label="Rewrite the parser">
+            <span slot="header" class="card-title">Rewrite the parser</span>
+            <p class="card-note">Estimated 3 days.</p>
+          </x-drag-panel>
+
+          <x-drag-panel kind="task" value="t-2" label="Fix the flaky test">
+            <span slot="header" class="card-title">Fix the flaky test</span>
+            <p class="card-note">Fails once in twenty runs.</p>
+          </x-drag-panel>
+
+          <x-drag-panel kind="task" value="t-3" label="Audit the bundle size">
+            <span slot="header" class="card-title">Audit the bundle size</span>
+            <p class="card-note">base.js grew 4KB last release.</p>
+          </x-drag-panel>
+        </x-drop-zone>
+      </div>
+
+      <div style="flex:1 1 220px">
+        <div class="col-title">In progress</div>
+        <x-drop-zone accepts="task" label="In progress" animate-moves>
+          <span slot="empty">Nothing here</span>
+        </x-drop-zone>
+      </div>
+
+      <div style="flex:1 1 220px">
+        <div class="col-title">Done (max 2)</div>
+        <x-drop-zone accepts="task" label="Done" max="2" animate-moves>
+          <span slot="empty">Nothing here</span>
+        </x-drop-zone>
+      </div>
+    </div>
+
+    <div class="log" id="event-log">Events will appear here…</div>
+
+    <script>
+      const log = document.getElementById('event-log');
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.push(new Date().toLocaleTimeString() + '  ' + msg);
+        if (logLines.length > 24) logLines = logLines.slice(-24);
+        log.textContent = logLines.join('\n');
+      }
+
+      function clearLog() {
+        logLines = [];
+        log.textContent = 'Events will appear here…';
+      }
+
+      function allPanels() {
+        return document.querySelectorAll('x-drag-panel');
+      }
+
+      // The application owns the landing. Neither component moves a node; this
+      // is the only code in the demo that touches the DOM tree.
+      function applyMove(zone, panel, index) {
+        const siblings = [...zone.querySelectorAll(':scope > x-drag-panel')]
+          .filter((c) => c !== panel);
+        zone.insertBefore(panel, siblings[index] || null);
+      }
+
+      document.addEventListener('x-drop-zone-drop', (e) => {
+        const zone = e.target;
+        const { panel, index, value, fromZone } = e.detail;
+        const from = fromZone ? fromZone.label : '(none)';
+        addLog(`x-drop-zone-drop  { value: "${value}", index: ${index}, from: "${from}" } → "${zone.label}"`);
+
+        if (!document.getElementById('ctrl-server').checked) {
+          applyMove(zone, panel, index);
+          return;
+        }
+
+        // Mark the in-flight window. Nothing in the board moves until the
+        // simulated server answers.
+        panel.pending = true;
+        zone.pending = true;
+        zone.pendingIndex = index;
+        addLog(`  … request sent, awaiting server`);
+
+        setTimeout(() => {
+          const rejected = document.getElementById('ctrl-reject').checked;
+          if (!rejected) applyMove(zone, panel, index);
+          panel.pending = false;
+          zone.pending = false;
+          zone.pendingIndex = null;
+          addLog(rejected ? '  ← server rejected the move' : '  ← server confirmed the move');
+        }, 800);
+      });
+
+      document.addEventListener('x-drag-panel-drag-start', (e) => {
+        addLog(`x-drag-panel-drag-start  { value: "${e.detail.value}" }`);
+      });
+
+      document.addEventListener('x-drag-panel-drag-cancel', (e) => {
+        addLog(`x-drag-panel-drag-cancel  { value: "${e.detail.value}", reason: "${e.detail.reason}" }`);
+      });
+
+      document.getElementById('ctrl-surface').addEventListener('x-checkbox-change', (e) => {
+        allPanels().forEach((p) => { p.grab = e.detail.checked ? 'surface' : 'handle'; });
+      });
+
+      document.getElementById('ctrl-no-scroll').addEventListener('x-checkbox-change', (e) => {
+        allPanels().forEach((p) => { p.autoScroll = e.detail.checked ? 'none' : 'auto'; });
+      });
+
+      document.getElementById('ctrl-disable-first').addEventListener('x-checkbox-change', (e) => {
+        const first = document.querySelector('x-drag-panel');
+        if (first) first.disabled = e.detail.checked;
+      });
+    </script>
+  </body>
+</html>

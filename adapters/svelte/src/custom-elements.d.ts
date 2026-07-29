@@ -32,7 +32,9 @@ declare namespace svelteHTML {
     "x-currency-field": Record<string, any>;
     "x-date-picker": Record<string, any>;
     "x-divider": Record<string, any>;
+    "x-drag-panel": Record<string, any>;
     "x-drawer": Record<string, any>;
+    "x-drop-zone": Record<string, any>;
     "x-dropdown": Record<string, any>;
     "x-fieldset": Record<string, any>;
     "x-file-download": Record<string, any>;

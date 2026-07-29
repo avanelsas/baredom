@@ -3,6 +3,87 @@
   "readme" : "README.md",
   "modules" : [ {
     "kind" : "javascript-module",
+    "path" : "dist/x-drag-panel.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDragPanel",
+      "tagName" : "x-drag-panel",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "kind",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "grab",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "autoScroll",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pending",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-drag-panel-drag-start",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-drag-panel-drag-cancel",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-drag-panel",
+      "declaration" : {
+        "name" : "XDragPanel"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
     "path" : "dist/x-grid.js",
     "declarations" : [ {
       "kind" : "class",
@@ -2499,6 +2580,92 @@
       "name" : "x-kinetic-font",
       "declaration" : {
         "name" : "XKineticFont"
+      }
+    } ]
+  }, {
+    "kind" : "javascript-module",
+    "path" : "dist/x-drop-zone.js",
+    "declarations" : [ {
+      "kind" : "class",
+      "name" : "XDropZone",
+      "tagName" : "x-drop-zone",
+      "superclass" : {
+        "name" : "HTMLElement"
+      },
+      "members" : [ {
+        "kind" : "field",
+        "name" : "accepts",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pending",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "pendingIndex",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "kind" : "field",
+        "name" : "animateMoves",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "events" : [ {
+        "name" : "x-drop-zone-enter",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-drop-zone-leave",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      }, {
+        "name" : "x-drop-zone-drop",
+        "type" : {
+          "text" : "CustomEvent"
+        }
+      } ],
+      "slots" : [ {
+        "name" : ""
+      } ]
+    } ],
+    "exports" : [ {
+      "kind" : "js",
+      "name" : "init",
+      "declaration" : {
+        "name" : "init"
+      }
+    }, {
+      "kind" : "custom-element-definition",
+      "name" : "x-drop-zone",
+      "declaration" : {
+        "name" : "XDropZone"
       }
     } ]
   }, {

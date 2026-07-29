@@ -201,9 +201,19 @@
      {init baredom.exports.x-divider/init}
      :depends-on #{:base}}
 
+    :x-drag-panel
+    {:exports
+     {init baredom.exports.x-drag-panel/init}
+     :depends-on #{:base}}
+
     :x-drawer
     {:exports
      {init baredom.exports.x-drawer/init}
+     :depends-on #{:base}}
+
+    :x-drop-zone
+    {:exports
+     {init baredom.exports.x-drop-zone/init}
      :depends-on #{:base}}
 
     :x-dropdown

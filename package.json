@@ -171,6 +171,16 @@
       "import": "./dist/x-metaball-cursor.js",
       "default": "./dist/x-metaball-cursor.js"
     },
+    "./x-drag-panel": {
+      "types": "./dist/x-drag-panel.d.ts",
+      "import": "./dist/x-drag-panel.js",
+      "default": "./dist/x-drag-panel.js"
+    },
+    "./x-drop-zone": {
+      "types": "./dist/x-drop-zone.d.ts",
+      "import": "./dist/x-drop-zone.js",
+      "default": "./dist/x-drop-zone.js"
+    },
     "./x-drawer": {
       "types": "./dist/x-drawer.d.ts",
       "import": "./dist/x-drawer.js",
