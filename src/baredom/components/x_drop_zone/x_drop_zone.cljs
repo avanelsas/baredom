@@ -13,6 +13,7 @@
 (def ^:private k-handlers     "__xDropZoneHandlers")
 (def ^:private k-hover        "__xDropZoneHover")
 (def ^:private k-last-drop    "__xDropZoneLastDrop")
+(def ^:private k-reservation  "__xDropZoneReservation")
 (def ^:private k-rects        "__xDropZoneRects")
 (def ^:private k-observer     "__xDropZoneObserver")
 
@@ -235,7 +236,8 @@
 ;; ── Attribute readers ────────────────────────────────────────────────────────
 (defn- read-model [^js el]
   (model/normalize
-   {:accepts-raw            (du/get-attr el model/attr-accepts)
+   {:value-raw              (du/get-attr el model/attr-value)
+    :accepts-raw            (du/get-attr el model/attr-accepts)
     :max-raw                (du/get-attr el model/attr-max)
     :label-raw              (du/get-attr el model/attr-label)
     :disabled-present?      (du/has-attr? el model/attr-disabled)
@@ -482,11 +484,24 @@
           (du/setv-untraced! el k-hover (assoc hover :index index)))
         (refresh-caret! el)))))
 
+(defn- zone-value
+  "The `value` of a zone element, or nil when there is no zone.
+
+  nil and \"\" are different answers: nil means the panel came from outside any
+  zone, \"\" means it came from a zone the author gave no identity."
+  [^js zone]
+  (when zone
+    (model/normalize-value (du/get-attr zone model/attr-value))))
+
 (defn- fire-drop! [^js el ^js panel ^js from-zone index]
   (du/setv! el k-last-drop {:panel panel :label (panel-label panel)})
   (du/dispatch! el model/event-drop
-                (model/drop-detail (panel-kind panel) (panel-value panel)
-                                   panel index from-zone)))
+                (model/drop-detail (panel-kind panel)
+                                   (panel-value panel)
+                                   (zone-value from-zone)
+                                   (:value (current-model el))
+                                   index
+                                   panel)))
 
 (defn commit-drop!
   "Announce an accepted pointer drop. The zone never moves the panel — the app
@@ -508,6 +523,47 @@
     (clear-drag-state! el)
     (fire-drop! el panel from-zone index)
     (refresh-caret! el)))
+
+;; ── Reservation ──────────────────────────────────────────────────────────────
+;; Sugar over the `pending` / `pending-index` attributes, which stay fully
+;; author-settable. This does not weaken the rule that matters: the component
+;; still never *infers* that a drop was sent. It reserves only when the app
+;; calls reserve!, having decided to send it.
+
+(defn- clear-reserved-panel! [^js el]
+  (when-let [reservation (du/getv el k-reservation)]
+    (when-let [^js panel (:panel reservation)]
+      (du/remove-attr! panel panel-model/attr-pending))))
+
+(defn reserve!
+  "Mark an in-flight move of `panel` into this zone at `index`: the panel
+  renders its footprint, the zone renders the reserved caret and busy tint.
+
+  Replacing a live reservation clears the previous panel first, so a second drop
+  cannot strand the first panel in a permanent pending state. Omitting `index`
+  gives busy-only, the right rendering for an unordered bucket."
+  [^js el ^js panel index]
+  (ensure-shadow! el)
+  (clear-reserved-panel! el)
+  (du/setv! el k-reservation {:panel panel})
+  (when panel
+    (du/set-attr! panel panel-model/attr-pending ""))
+  (if (number? index)
+    (du/set-attr! el model/attr-pending-index (str index))
+    (du/remove-attr! el model/attr-pending-index))
+  (du/set-attr! el model/attr-pending ""))
+
+(defn release!
+  "Clear the reservation made by `reserve!`.
+
+  Idempotent, and harmless when the reserved panel was destroyed by a
+  confirmation re-render — the replacement never carried `pending` to begin
+  with, so there is nothing stale to clear."
+  [^js el]
+  (clear-reserved-panel! el)
+  (du/setv! el k-reservation nil)
+  (du/remove-attr! el model/attr-pending)
+  (du/remove-attr! el model/attr-pending-index))
 
 (defn announce-candidate!
   "Narrate this zone becoming the keyboard candidate."
@@ -558,13 +614,27 @@
 ;; missing, and install-properties! coerces an omitted or nil number default to
 ;; 0 — which would silently close a zone and pin a caret to the top.
 (defn- install-property-accessors! [^js proto]
+  (du/define-string-prop! proto "value"        model/attr-value "")
   (du/define-string-prop! proto "accepts"      model/attr-accepts "")
   (du/define-number-prop! proto "max"          model/attr-max nil)
   (du/define-string-prop! proto "label"        model/attr-label model/default-label)
   (du/define-bool-prop!   proto "disabled"     model/attr-disabled)
   (du/define-bool-prop!   proto "pending"      model/attr-pending)
   (du/define-number-prop! proto "pendingIndex" model/attr-pending-index nil)
-  (du/define-bool-prop!   proto "animateMoves" model/attr-animate-moves))
+  (du/define-bool-prop!   proto "animateMoves" model/attr-animate-moves)
+
+  (.defineProperty js/Object proto "reserve"
+                   #js {:value        (fn [^js panel index]
+                                        (this-as ^js this (reserve! this panel index)))
+                        :enumerable   true
+                        :configurable true
+                        :writable     true})
+
+  (.defineProperty js/Object proto "release"
+                   #js {:value        (fn [] (this-as ^js this (release! this)))
+                        :enumerable   true
+                        :configurable true
+                        :writable     true}))
 
 ;; ── Lifecycle ────────────────────────────────────────────────────────────────
 (defn- connected! [^js el]

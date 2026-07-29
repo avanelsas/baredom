@@ -6,6 +6,7 @@
 (deftest normalize-defaults-test
   (testing "an empty map yields every default without throwing"
     (let [m (model/normalize {})]
+      (is (= "" (:value m)))
       (is (nil? (:accept-kinds m)))
       (is (nil? (:capacity m)))
       (is (= model/default-label (:label m)))
@@ -120,14 +121,41 @@
     (is (= "task" (.-kind d)))
     (is (= "t-1"  (.-value d)))))
 
+(deftest normalize-value-test
+  (testing "the zone's identity key collapses absent to empty, like the panel's"
+    (is (= ""      (model/normalize-value nil)))
+    (is (= ""      (model/normalize-value "")))
+    (is (= "doing" (model/normalize-value "doing")))))
+
 (deftest drop-detail-test
   (let [panel #js {}
-        from  #js {}
-        d     (model/drop-detail "task" "t-1" panel 2 from)]
-    (is (= "task" (.-kind d)))
-    (is (= 2      (.-index d)))
-    (is (identical? panel (.-panel d)))
-    (is (identical? from  (.-fromZone d)))))
+        d     (model/drop-detail "task" "t-1" "todo" "doing" 2 panel)]
+    (is (= "task"  (.-kind d)))
+    (is (= "t-1"   (.-value d)))
+    (is (= "todo"  (.-from d)))
+    (is (= "doing" (.-to d)))
+    (is (= 2       (.-index d)))
+    (is (identical? panel (.-panel d)))))
+
+(deftest drop-detail-nil-source-test
+  (testing "nil `from` means the panel came from outside any zone — distinct
+            from a source zone the author gave no value"
+    (let [no-source   (model/drop-detail "task" "t-1" nil "doing" 0 #js {})
+          unnamed-src (model/drop-detail "task" "t-1" ""  "doing" 0 #js {})]
+      (is (nil? (.-from no-source)))
+      (is (= "" (.-from unnamed-src))))))
+
+;; ── Methods ──────────────────────────────────────────────────────────────────
+(deftest method-api-test
+  (testing "reserve/release are declared so the adapters generate signatures"
+    (is (contains? model/method-api :reserve))
+    (is (contains? model/method-api :release))
+    (is (= [] (:args (:release model/method-api)))))
+  (testing "every arg carries the {:name :type} shape the codegen expects"
+    (doseq [[_ spec] model/method-api]
+      (doseq [arg (:args spec)]
+        (is (string? (:name arg)))
+        (is (some? (:type arg)))))))
 
 ;; ── Metadata ─────────────────────────────────────────────────────────────────
 (deftest property-api-test

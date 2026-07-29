@@ -8,7 +8,7 @@ pointer; releasing it over a zone makes that zone report a drop. Rearranging the
 DOM is the application's job. See [Who owns the landing](#who-owns-the-landing).
 
 ```html
-<x-drop-zone accepts="task" label="Backlog">
+<x-drop-zone value="todo" accepts="task" label="Backlog">
   <x-drag-panel kind="task" value="t-104" label="Rewrite the parser">
     <span slot="header">Rewrite the parser</span>
     <p>Estimated 3 days.</p>
@@ -42,25 +42,34 @@ document.addEventListener('x-drop-zone-drop', (e) => {
 });
 ```
 
+The detail also describes the move as pure data — `{ value, from, to, index }`,
+where `from` and `to` are the two zones' `value`s — so a server-backed handler
+never has to touch an element at all. See
+[handling a drop](./x-drop-zone.md#handling-a-drop).
+
 ## The in-flight window
 
-For a server-authoritative board, set `pending` while the request is in flight and
-clear it when the answer arrives. The panel renders an empty dashed footprint
-that keeps its box, so the source list does not reorder until the server has
-agreed.
+For a server-authoritative board, reserve the position while the request is in
+flight and release it when the answer arrives. The panel renders an empty dashed
+footprint that keeps its box, so the source list does not reorder until the
+server has agreed.
 
 ```js
-panel.pending = true;
-zone.pending = true;
-zone.pendingIndex = index;
+document.addEventListener('x-drop-zone-drop', async (e) => {
+  const zone = e.target;
+  const { value, to, index, panel } = e.detail;
 
-await api.move(panel.value, zone.id, index);
-
-applyMove(zone, panel, index);
-panel.pending = false;
-zone.pending = false;
-zone.pendingIndex = null;
+  zone.reserve(panel, index);
+  const ok = await api.move(value, to, index);
+  if (ok) applyMove(zone, panel, index);
+  zone.release();
+});
 ```
+
+`pending` is still a plain attribute you can set yourself;
+[`reserve()` / `release()`](./x-drop-zone.md#methods) are sugar over it that set
+the panel and the zone together, so there is one call each way instead of six
+property writes to keep in step.
 
 Nothing times out. If the answer never comes, the footprint stays visible and
 keyboard-reachable, so a stalled move reads as stuck rather than as a lost card.

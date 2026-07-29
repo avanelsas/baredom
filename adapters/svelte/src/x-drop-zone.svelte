@@ -5,6 +5,7 @@
   init();
   export type { XDropZoneElement };
   export interface XDropZoneProps {
+    value?: string;
     accepts?: string;
     max?: number;
     label?: string;
@@ -14,7 +15,7 @@
     animateMoves?: boolean;
     onenter?: (e: CustomEvent<{ kind: string; value: string }>) => void;
     onleave?: (e: CustomEvent<{ kind: string; value: string }>) => void;
-    ondrop?: (e: CustomEvent<{ kind: string; value: string; panel: HTMLElement | null; index: number; fromZone: HTMLElement | null }>) => void;
+    ondrop?: (e: CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>) => void;
     el?: XDropZoneElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -25,6 +26,7 @@
 
 <script lang="ts">
   let {
+    value,
     accepts,
     max,
     label,
@@ -52,7 +54,7 @@
     const onleaveHandler = (e: Event) => onleave?.(e as CustomEvent<{ kind: string; value: string }>);
     node.addEventListener("x-drop-zone-leave", onleaveHandler);
     cleanups.push(() => node.removeEventListener("x-drop-zone-leave", onleaveHandler));
-    const ondropHandler = (e: Event) => ondrop?.(e as CustomEvent<{ kind: string; value: string; panel: HTMLElement | null; index: number; fromZone: HTMLElement | null }>);
+    const ondropHandler = (e: Event) => ondrop?.(e as CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>);
     node.addEventListener("x-drop-zone-drop", ondropHandler);
     cleanups.push(() => node.removeEventListener("x-drop-zone-drop", ondropHandler));
     return () => cleanups.forEach((fn) => fn());
@@ -61,6 +63,7 @@
 
 <x-drop-zone
   bind:this={el}
+  {value}
   {accepts}
   {max}
   {label}

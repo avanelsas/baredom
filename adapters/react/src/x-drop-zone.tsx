@@ -8,6 +8,7 @@ import { init } from "@vanelsas/baredom/x-drop-zone";
 init();
 
 export interface XDropZoneProps {
+  value?: string;
   accepts?: string;
   max?: number;
   label?: string;
@@ -17,7 +18,7 @@ export interface XDropZoneProps {
   animateMoves?: boolean;
   onEnter?: (e: CustomEvent<{ kind: string; value: string }>) => void;
   onLeave?: (e: CustomEvent<{ kind: string; value: string }>) => void;
-  onDrop?: (e: CustomEvent<{ kind: string; value: string; panel: HTMLElement | null; index: number; fromZone: HTMLElement | null }>) => void;
+  onDrop?: (e: CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>) => void;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

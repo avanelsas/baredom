@@ -2594,6 +2594,12 @@
       },
       "members" : [ {
         "kind" : "field",
+        "name" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "kind" : "field",
         "name" : "accepts",
         "type" : {
           "text" : "string"
@@ -2633,6 +2639,33 @@
         "name" : "animateMoves",
         "type" : {
           "text" : "boolean"
+        }
+      }, {
+        "kind" : "method",
+        "name" : "reserve",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
+        },
+        "parameters" : [ {
+          "name" : "panel",
+          "type" : {
+            "text" : "HTMLElement"
+          }
+        }, {
+          "name" : "index",
+          "type" : {
+            "text" : "number"
+          }
+        } ]
+      }, {
+        "kind" : "method",
+        "name" : "release",
+        "return" : {
+          "type" : {
+            "text" : "void"
+          }
         }
       } ],
       "events" : [ {

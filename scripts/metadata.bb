@@ -49,7 +49,10 @@
     "ValidityState"    "ValidityState"
     "HTMLFormElement"  "HTMLFormElement | null"
     "NodeList"         "NodeList | null"
-    "HTMLElement"      "HTMLElement | null"
+    "HTMLElement"      "HTMLElement"
+    ;; A detail field that is genuinely absent rather than empty — forcing a
+    ;; null check at the call site is the point.
+    "NullableString"   "string | null"
     "any"))
 
 ;; ── Naming conventions ──────────────────────────────────────────────────────

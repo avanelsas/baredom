@@ -15,6 +15,7 @@ export const XDropZone = defineComponent({
   name: "XDropZone",
   inheritAttrs: false,
   props: {
+    value: { type: String as PropType<string | undefined>, default: undefined },
     accepts: { type: String as PropType<string | undefined>, default: undefined },
     max: { type: Number as PropType<number | undefined>, default: undefined },
     label: { type: String as PropType<string | undefined>, default: undefined },
@@ -26,7 +27,7 @@ export const XDropZone = defineComponent({
   emits: {
     "enter": (_e: CustomEvent<{ kind: string; value: string }>) => true,
     "leave": (_e: CustomEvent<{ kind: string; value: string }>) => true,
-    "drop": (_e: CustomEvent<{ kind: string; value: string; panel: HTMLElement | null; index: number; fromZone: HTMLElement | null }>) => true,
+    "drop": (_e: CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XDropZoneElement | null>(null);

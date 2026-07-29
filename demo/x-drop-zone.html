@@ -92,7 +92,7 @@
     <div class="lanes">
       <div class="lane">
         <div class="lane-title">Mixed — accepts anything</div>
-        <x-drop-zone label="Mixed" animate-moves>
+        <x-drop-zone value="mixed" label="Mixed" animate-moves>
           <span slot="empty">Drop anything here</span>
 
           <x-drag-panel kind="task" value="t-1" label="Rewrite the parser">
@@ -107,14 +107,14 @@
 
       <div class="lane">
         <div class="lane-title">Tasks only</div>
-        <x-drop-zone accepts="task" label="Tasks only" animate-moves>
+        <x-drop-zone value="tasks" accepts="task" label="Tasks only" animate-moves>
           <span slot="empty">Tasks only</span>
         </x-drop-zone>
       </div>
 
       <div class="lane">
         <div class="lane-title">Capacity 1</div>
-        <x-drop-zone label="Capacity one" max="1" animate-moves>
+        <x-drop-zone value="capped" label="Capacity one" max="1" animate-moves>
           <span slot="empty">Room for one</span>
         </x-drop-zone>
       </div>
@@ -127,7 +127,7 @@
     </x-typography>
 
     <div class="lane horizontal">
-      <x-drop-zone label="Row lane" animate-moves>
+      <x-drop-zone value="row" label="Row lane" animate-moves>
         <span slot="empty">Drop into the row</span>
         <x-drag-panel kind="task" value="t-2" label="Fix the flaky test">
           <span slot="header" class="card-title">Fix the flaky test</span>
@@ -140,8 +140,20 @@
 
     <x-typography variant="overline">In-flight reservation</x-typography>
     <x-typography variant="body">
-      Both attributes are author-set: the component never infers that a drop was sent. Drive them
-      by hand to see exactly what the pending window looks like.
+      <code>reserve(panel, index)</code> sets <code>pending</code> on the card and
+      <code>pending</code> + <code>pending-index</code> on the zone in one call;
+      <code>release()</code> clears all three. Both act on the first lane below the heading.
+    </x-typography>
+
+    <div class="row">
+      <x-button onclick="reserveFirst(1)">reserve(panel, 1)</x-button>
+      <x-button onclick="reserveFirst(null)">reserve(panel, null) — busy only</x-button>
+      <x-button variant="secondary" onclick="releaseFirst()">release()</x-button>
+    </div>
+
+    <x-typography variant="body">
+      The same thing driven by hand. The attributes stay author-settable — the component never
+      infers that a drop was sent, whichever route you take.
     </x-typography>
 
     <div class="row">
@@ -171,6 +183,20 @@
 
       function firstZone() {
         return document.querySelector('x-drop-zone');
+      }
+
+      function reserveFirst(index) {
+        const zone = firstZone();
+        const panel = zone.querySelector(':scope > x-drag-panel');
+        if (!panel) { addLog('nothing to reserve — lane is empty'); return; }
+        zone.reserve(panel, index);
+        addLog(`reserve(panel "${panel.value}", ${JSON.stringify(index)}) on "${zone.value}"`);
+      }
+
+      function releaseFirst() {
+        const zone = firstZone();
+        zone.release();
+        addLog(`release() on "${zone.value}"`);
       }
 
       function setPending(index) {
@@ -203,8 +229,8 @@
 
       document.addEventListener('x-drop-zone-drop', (e) => {
         const zone = e.target;
-        const { panel, index, kind, value } = e.detail;
-        addLog(`x-drop-zone-drop  { kind: "${kind}", value: "${value}", index: ${index} } → "${zone.label}"`);
+        const { panel, index, kind, value, from, to } = e.detail;
+        addLog(`x-drop-zone-drop  { kind: "${kind}", value: "${value}", from: ${JSON.stringify(from)}, to: "${to}", index: ${index} }`);
         applyMove(zone, panel, index);
       });
 

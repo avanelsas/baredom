@@ -7,7 +7,7 @@ it, shows where one would land, and reports the drop.
 is declared with `accepts` and `max`; the landing is the application's job.
 
 ```html
-<x-drop-zone accepts="task bug" label="In progress" max="5" animate-moves>
+<x-drop-zone value="doing" accepts="task bug" label="In progress" max="5" animate-moves>
   <span slot="empty">Nothing in progress</span>
   <x-drag-panel kind="task" value="t-104" label="Rewrite the parser">
     <span slot="header">Rewrite the parser</span>
@@ -21,35 +21,70 @@ is declared with `accepts` and `max`; the landing is the application's job.
 
 ## Handling a drop
 
-`x-drop-zone-drop` carries the insertion index, computed from the pointer against
-the measured positions of the zone's current panels. That index is the one thing
-the component knows and your app would have to re-derive.
+The detail describes the whole move as data: which panel (`value`), between which
+two zones (`from` → `to`), at what rank (`index`). Both endpoints are opaque
+strings, so nothing you hold needs to survive a re-render.
 
 ```js
 document.addEventListener('x-drop-zone-drop', (e) => {
-  const zone = e.target;
-  const { panel, index, kind, value, fromZone } = e.detail;
-  const siblings = [...zone.querySelectorAll(':scope > x-drag-panel')]
-    .filter((c) => c !== panel);
-  zone.insertBefore(panel, siblings[index] || null);
+  const { value, from, to, index, panel } = e.detail;
+  // "move task `value` from `from` to `to`, at rank `index`"
+  await submitWrite(value, to, index);
 });
 ```
 
-A panel dragged within its own zone is excluded from the measurement, so dropping
-it back where it started yields its original index and you can cheaply no-op.
+`index` is computed from the pointer against the measured positions of the zone's
+current panels — the one thing the component knows that your app would otherwise
+have to re-derive. A panel dragged within its own zone is excluded from the
+measurement, so dropping it back where it started yields its original index and
+you can cheaply no-op.
+
+`panel` is the only element reference in the detail. It stays because the
+synchronous DOM path needs a node to move and it cannot be derived:
+
+```js
+const siblings = [...zone.querySelectorAll(':scope > x-drag-panel')]
+  .filter((c) => c !== panel);
+zone.insertBefore(panel, siblings[index] || null);
+```
+
+The source zone element is deliberately *not* in the detail. Inside the handler
+it is `panel.closest('x-drop-zone')`; after that, `from` is what you want, and
+holding the element across a round trip is the bug `from` exists to prevent.
 
 ## The in-flight window
 
-For a server-authoritative board, set `pending` and `pending-index` when you send
-the request and clear both when the answer arrives. The zone renders a pulsing
-caret at the reserved position plus a busy tint, and sets `aria-busy`.
+For a server-authoritative board, reserve the position when you send the request
+and release it when the answer arrives:
 
-Nothing in the layout moves during that window — the source panel holds its box
-open as a footprint, and this zone does not reflow. Every real layout change
-happens once, when the truth arrives.
+```js
+document.addEventListener('x-drop-zone-drop', async (e) => {
+  const zone = e.target;
+  const { value, to, index, panel } = e.detail;
 
-Setting `pending` without `pending-index` gives the busy tint and no caret, which
-is the right rendering for an unordered bucket.
+  zone.reserve(panel, index);        // panel footprint + zone caret and busy tint
+  const ok = await submitWrite(value, to, index);
+  if (ok) applyMove(zone, panel, index);
+  zone.release();                     // clears all three
+});
+```
+
+`reserve()` sets `pending` on the panel and `pending` + `pending-index` on the
+zone; `release()` clears them. Holding the *zone* across the await is safe — it
+is the element that survives a confirmation re-render, which is the same reason
+focus moves here on a keyboard drop.
+
+Nothing in the layout moves during that window — the panel holds its box open as
+a footprint, and this zone does not reflow. Every real layout change happens
+once, when the truth arrives.
+
+Reserving without an index gives the busy tint and no caret, which is the right
+rendering for an unordered bucket.
+
+`pending` and `pending-index` remain fully author-settable if you would rather
+drive them yourself; `reserve()` and `release()` are sugar over exactly those
+attributes. Either way the component never *infers* that a drop was sent — it
+reserves only when you ask it to, having decided to send it.
 
 A reservation does **not** count toward `max`: the panel has not arrived, and
 counting it would refuse a second drop the server may well accept.
@@ -58,6 +93,7 @@ counting it would refuse a second drop the server may well accept.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `value` | string | `""` | Opaque identity key for this zone — a status, a column id, a bucket name. Echoed as `from` / `to` in the drop detail. |
 | `accepts` | string | absent | Space-separated kinds. Absent accepts any panel — deliberately different from accepting nothing. |
 | `max` | number | absent | Capacity, counted over `x-drag-panel` children. A full zone renders the reject cue. |
 | `label` | string | `"Drop zone"` | Accessible name for the group, and the name used in narration. |
@@ -79,6 +115,7 @@ exclusive.
 
 | Property | Type | Reflects |
 |----------|------|----------|
+| `value` | `string` | `value` |
 | `accepts` | `string` | `accepts` |
 | `max` | `number` | `max` |
 | `label` | `string` | `label` |
@@ -99,10 +136,15 @@ landing, so there is no default action to prevent.
 |-------|--------|------------|
 | `x-drop-zone-enter` | `{ kind, value }` | A dragged panel enters, whether accepted or rejected. |
 | `x-drop-zone-leave` | `{ kind, value }` | A dragged panel leaves, including when dropped elsewhere. |
-| `x-drop-zone-drop` | `{ kind, value, panel, index, fromZone }` | An accepted panel is released over the zone, by pointer or by <kbd>Enter</kbd>. |
+| `x-drop-zone-drop` | `{ kind, value, from, to, index, panel }` | An accepted panel is released over the zone, by pointer or by <kbd>Enter</kbd>. |
 
-`panel` is the `<x-drag-panel>` element; `fromZone` is the zone it was picked up
-from, or `null` if it had none.
+`value` is the panel's identity key; `from` and `to` are the source and
+destination zones' `value`s; `index` is the rank within the destination; `panel`
+is the `<x-drag-panel>` element.
+
+`from` is `null` when the panel was dragged from outside any zone — distinct from
+`""`, which means it came from a zone the author gave no `value`. The generated
+TypeScript types it `string | null` so the check is not optional.
 
 `enter` and `leave` fire for rejected panels too, so you can distinguish *hovered
 but refused* from *never hovered* — useful for expanding a collapsed column when
@@ -111,7 +153,15 @@ emits `x-drag-panel-drag-cancel` with reason `"no-zone"` instead.
 
 ## Methods
 
-None.
+| Method | Signature | Effect |
+|--------|-----------|--------|
+| `reserve` | `(panel: HTMLElement, index: number) => void` | Sets `pending` on `panel` and `pending` + `pending-index` on the zone. Pass a non-numeric `index` for busy-only. |
+| `release` | `() => void` | Clears all three. Idempotent. |
+
+A zone holds one reservation. Calling `reserve()` again clears the previous
+panel's `pending` first, so a second drop cannot strand the first panel. A
+`release()` whose panel was destroyed by a re-render is a harmless no-op — the
+replacement never carried `pending` to begin with.
 
 ## Slots
 

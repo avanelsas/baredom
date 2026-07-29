@@ -29,8 +29,9 @@
     (set! (.. el -style -width) "200px")
     el))
 
-(defn ^js make-zone [& {:keys [accepts max-count panels]}]
+(defn ^js make-zone [& {:keys [value accepts max-count panels]}]
   (let [^js el (.createElement js/document model/tag-name)]
+    (when value     (.setAttribute el model/attr-value value))
     (when accepts   (.setAttribute el model/attr-accepts accepts))
     (when max-count (.setAttribute el model/attr-max (str max-count)))
     (set! (.. el -style -width) "220px")
@@ -174,8 +175,8 @@
 ;; ── Drop ─────────────────────────────────────────────────────────────────────
 (deftest commit-drop-test
   (let [^js a    (make-panel "task" "a")
-        ^js z    (make-zone :panels [a])
-        ^js from (make-zone)
+        ^js z    (make-zone :value "doing" :panels [a])
+        ^js from (make-zone :value "todo")
         ^js incoming (make-panel "task" "c")
         dropped  (collect! z model/event-drop)
         ^js rect (.getBoundingClientRect z)]
@@ -183,16 +184,36 @@
     (zone/commit-drop! z incoming from (.-left rect) (.-top rect))
     (is (= 1 (count @dropped)))
     (let [^js d (first @dropped)]
-      (is (= "task" (.-kind d)))
-      (is (= "c"    (.-value d)))
-      (is (= 0      (.-index d)))
-      (is (identical? incoming (.-panel d)))
-      (is (identical? from     (.-fromZone d))))
+      (is (= "task"  (.-kind d)))
+      (is (= "c"     (.-value d)))
+      (is (= 0       (.-index d)))
+      (testing "both endpoints are opaque strings that survive a re-render"
+        (is (= "todo"  (.-from d)))
+        (is (= "doing" (.-to d))))
+      (is (identical? incoming (.-panel d))))
     (testing "the zone never moves the panel — the app owns the landing"
       (is (nil? (.-parentElement incoming))))
     (testing "hover state is torn down by the drop"
       (is (nil? (.getAttribute z model/attr-drag-state)))
       (is (caret-hidden? z)))))
+
+(deftest drop-from-outside-any-zone-test
+  (let [^js z        (make-zone :value "doing")
+        ^js incoming (make-panel "task" "c")
+        dropped      (collect! z model/event-drop)
+        ^js rect     (.getBoundingClientRect z)]
+    (zone/commit-drop! z incoming nil (.-left rect) (.-top rect))
+    (testing "nil `from` is distinct from a source zone with no value"
+      (is (nil? (.-from (first @dropped)))))))
+
+(deftest drop-from-unnamed-zone-test
+  (let [^js z        (make-zone :value "doing")
+        ^js from     (make-zone)
+        ^js incoming (make-panel "task" "c")
+        dropped      (collect! z model/event-drop)
+        ^js rect     (.getBoundingClientRect z)]
+    (zone/commit-drop! z incoming from (.-left rect) (.-top rect))
+    (is (= "" (.-from (first @dropped))))))
 
 (deftest commit-keyboard-drop-appends-test
   (let [^js a (make-panel "task" "a")
@@ -204,7 +225,7 @@
     (let [^js d (first @dropped)]
       (is (= 2 (.-index d)))
       (testing "a null source zone is reported rather than omitted"
-        (is (nil? (.-fromZone d)))))))
+        (is (nil? (.-from d)))))))
 
 ;; ── Pending window ───────────────────────────────────────────────────────────
 (deftest pending-busy-test
@@ -226,6 +247,72 @@
     (testing "clearing pending clears the reservation"
       (.removeAttribute z model/attr-pending)
       (is (caret-hidden? z)))))
+
+;; ── reserve() / release() ────────────────────────────────────────────────────
+;; Driven through the element methods rather than the namespace fns, so the
+;; defineProperty wiring is covered too.
+
+(deftest reserve-sets-the-whole-trio-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :value "doing" :panels [p])]
+    (.reserve z p 1)
+    (is (.hasAttribute p panel-model/attr-pending))
+    (is (.hasAttribute z model/attr-pending))
+    (is (= "1" (.getAttribute z model/attr-pending-index)))
+    (is (= "true" (.getAttribute z "aria-busy")))))
+
+(deftest release-clears-the-whole-trio-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :value "doing" :panels [p])]
+    (.reserve z p 1)
+    (.release z)
+    (is (not (.hasAttribute p panel-model/attr-pending)))
+    (is (not (.hasAttribute z model/attr-pending)))
+    (is (nil? (.getAttribute z model/attr-pending-index)))))
+
+(deftest release-is-idempotent-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :panels [p])]
+    (.reserve z p 0)
+    (.release z)
+    (.release z)
+    (testing "releasing twice is harmless — nothing to strand"
+      (is (not (.hasAttribute p panel-model/attr-pending)))
+      (is (not (.hasAttribute z model/attr-pending))))))
+
+(deftest release-without-reserve-is-inert-test
+  (let [^js z (make-zone)]
+    (.release z)
+    (is (not (.hasAttribute z model/attr-pending)))))
+
+(deftest re-reserving-frees-the-previous-panel-test
+  (let [^js first-panel  (make-panel "task" "t-1")
+        ^js second-panel (make-panel "task" "t-2")
+        ^js z            (make-zone :panels [first-panel second-panel])]
+    (.reserve z first-panel 0)
+    (.reserve z second-panel 1)
+    (testing "a second drop must not strand the first panel in permanent pending"
+      (is (not (.hasAttribute first-panel panel-model/attr-pending))))
+    (is (.hasAttribute second-panel panel-model/attr-pending))
+    (is (= "1" (.getAttribute z model/attr-pending-index)))))
+
+(deftest reserve-without-index-is-busy-only-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :panels [p])]
+    (.reserve z p nil)
+    (is (.hasAttribute z model/attr-pending))
+    (testing "no index reserves no position — right for an unordered bucket"
+      (is (nil? (.getAttribute z model/attr-pending-index)))
+      (is (caret-hidden? z)))))
+
+(deftest reserve-survives-the-panel-being-destroyed-test
+  (let [^js p (make-panel "task" "t-1")
+        ^js z (make-zone :panels [p])]
+    (.reserve z p 0)
+    (.remove p)
+    (.release z)
+    (testing "a confirmation re-render that replaced the panel leaves nothing stale"
+      (is (not (.hasAttribute z model/attr-pending))))))
 
 (deftest pending-does-not-count-toward-capacity-test
   (let [^js existing (make-panel "task" "t-1")

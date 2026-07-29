@@ -4,6 +4,7 @@
 (def tag-name "x-drop-zone")
 
 ;; ── Attribute name constants ─────────────────────────────────────────────────
+(def attr-value         "value")
 (def attr-accepts       "accepts")
 (def attr-max           "max")
 (def attr-label         "label")
@@ -13,7 +14,7 @@
 (def attr-animate-moves "animate-moves")
 
 (def observed-attributes
-  #js [attr-accepts attr-max attr-label attr-disabled attr-pending
+  #js [attr-value attr-accepts attr-max attr-label attr-disabled attr-pending
        attr-pending-index attr-animate-moves])
 
 ;; ── Event name constants ─────────────────────────────────────────────────────
@@ -70,10 +71,20 @@
         (let [n (js/parseInt t 10)]
           (when (and (js/isFinite n) (>= n 0)) n))))))
 
+(defn normalize-value
+  "Normalize the raw `value` attribute — the zone's opaque identity key.
+
+  Absent collapses to the empty string, matching the panel's `value`. Callers
+  that need to distinguish *this zone has no id* from *there was no zone at all*
+  do so at the boundary, where nil means the latter."
+  [raw]
+  (if (string? raw) raw ""))
+
 (defn normalize
   "Normalise raw attribute inputs into a stable view-model map.
 
   Input keys:
+    :value-raw              string | nil
     :accepts-raw            string | nil
     :max-raw                string | nil
     :label-raw              string | nil
@@ -83,6 +94,7 @@
     :animate-moves-present? boolean
 
   Output keys:
+    :value          string
     :accept-kinds   set | nil  (nil → accepts anything)
     :capacity       number | nil
     :label          string
@@ -90,9 +102,10 @@
     :pending?       boolean
     :pending-index  number | nil
     :animate-moves? boolean"
-  [{:keys [accepts-raw max-raw label-raw disabled-present? pending-present?
-           pending-index-raw animate-moves-present?]}]
-  {:accept-kinds   (parse-accepts accepts-raw)
+  [{:keys [value-raw accepts-raw max-raw label-raw disabled-present?
+           pending-present? pending-index-raw animate-moves-present?]}]
+  {:value          (normalize-value value-raw)
+   :accept-kinds   (parse-accepts accepts-raw)
    :capacity       (parse-count max-raw)
    :label          (normalize-label label-raw)
    :disabled?      (boolean disabled-present?)
@@ -190,18 +203,28 @@
   #js {:kind kind :value value})
 
 (defn drop-detail
-  "Build the x-drop-zone-drop CustomEvent detail."
-  [kind value panel index from-zone]
-  #js {:kind     kind
-       :value    value
-       :panel    panel
-       :index    index
-       :fromZone from-zone})
+  "Build the x-drop-zone-drop CustomEvent detail.
 
-;; Seven entries — below the array-map threshold. A ninth would reshuffle every
-;; generated adapter file.
+  Both endpoints are opaque strings rather than element references: a
+  confirmation re-render can replace the panel and its source zone, so an app
+  that held elements across the round trip would be writing to detached nodes.
+  `panel` stays because the synchronous path needs a node to move and it cannot
+  be derived; `from` is nil when the panel was dragged from outside any zone,
+  which is distinct from a source zone that simply has no `value`."
+  [kind value from to index panel]
+  #js {:kind  kind
+       :value value
+       :from  from
+       :to    to
+       :index index
+       :panel panel})
+
+;; Eight entries — exactly at the array-map threshold. A ninth flips this to a
+;; hash-map and reshuffles every generated adapter file, so anything further
+;; has to displace an existing entry rather than join them.
 (def property-api
-  {:accepts      {:type 'string  :reflects-attribute attr-accepts :default ""}
+  {:value        {:type 'string  :reflects-attribute attr-value   :default ""}
+   :accepts      {:type 'string  :reflects-attribute attr-accepts :default ""}
    :max          {:type 'number  :reflects-attribute attr-max     :default nil}
    :label        {:type 'string  :reflects-attribute attr-label   :default default-label}
    :disabled     {:type 'boolean :reflects-attribute attr-disabled}
@@ -212,10 +235,15 @@
 (def event-schema
   {event-enter {:cancelable false :detail {:kind 'string :value 'string}}
    event-leave {:cancelable false :detail {:kind 'string :value 'string}}
-   event-drop  {:cancelable false :detail {:kind     'string
-                                           :value    'string
-                                           :panel    'HTMLElement
-                                           :index    'number
-                                           :fromZone 'HTMLElement}}})
+   event-drop  {:cancelable false :detail {:kind  'string
+                                           :value 'string
+                                           :from  'NullableString
+                                           :to    'string
+                                           :index 'number
+                                           :panel 'HTMLElement}}})
 
-(def method-api {})
+(def method-api
+  {:reserve {:args    [{:name "panel" :type 'HTMLElement}
+                       {:name "index" :type 'number}]
+             :returns 'void}
+   :release {:args [] :returns 'void}})

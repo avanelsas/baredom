@@ -17,6 +17,7 @@ export class BaredomDropZone implements OnInit, OnDestroy {
     this.zone = zone;
   }
 
+  @Input() set value(v: string) { this.el.value = v as any; }
   @Input() set accepts(v: string) { this.el.accepts = v as any; }
   @Input() set max(v: number) { this.el.max = v as any; }
   @Input() set label(v: string) { this.el.label = v as any; }
@@ -27,7 +28,7 @@ export class BaredomDropZone implements OnInit, OnDestroy {
 
   @Output() enter = new EventEmitter<CustomEvent<{ kind: string; value: string }>>();
   @Output() leave = new EventEmitter<CustomEvent<{ kind: string; value: string }>>();
-  @Output() drop = new EventEmitter<CustomEvent<{ kind: string; value: string; panel: HTMLElement | null; index: number; fromZone: HTMLElement | null }>>();
+  @Output() drop = new EventEmitter<CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>>();
 
   ngOnInit(): void {
     this.listen('x-drop-zone-enter', this.enter);
@@ -45,4 +46,6 @@ export class BaredomDropZone implements OnInit, OnDestroy {
     this.listeners.push(() => this.el.removeEventListener(event, handler));
   }
 
+  reserve(panel: HTMLElement, index: number): void { return this.el.reserve(panel, index); }
+  release(): void { return this.el.release(); }
 }
