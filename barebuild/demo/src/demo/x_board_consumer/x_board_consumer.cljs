@@ -47,27 +47,39 @@
   (into {} (map (fn [^js p] [(du/get-attr p "value") p])
                 (array-seq (.querySelectorAll this "x-drag-panel")))))
 
-(defn- panels-in [^js zone]
-  (vec (array-seq (.querySelectorAll zone "x-drag-panel"))))
+(defn- panel? [^js node]
+  (and (some? node) (= "x-drag-panel" (.. node -tagName toLowerCase))))
+
+(defn- first-panel [^js zone]
+  (loop [^js n (.-firstElementChild zone)]
+    (cond (nil? n) nil, (panel? n) n, :else (recur (.-nextElementSibling n)))))
+
+(defn- next-panel [^js node]
+  (loop [^js n (.-nextElementSibling node)]
+    (cond (nil? n) nil, (panel? n) n, :else (recur (.-nextElementSibling n)))))
 
 (defn- reconcile-zone!
-  "Make `zone`'s cards match `rows` in order, moving only the panels that are out of place — so
-   an unchanged column produces NO child-list mutation, and animate-moves leaves it alone.
-   Content is always refreshed (a cheap in-panel update that animate-moves ignores)."
+  "Reconcile `zone`'s cards to the order of `rows` — the order is decided upstream (model/columns);
+   this only materialises a panel per row (reusing `pool`, refreshing content) and places them.
+   Placement is one O(n) anchor walk that moves only out-of-place panels and drops the leftovers,
+   so an unchanged column mutates nothing and animate-moves leaves it be."
   [^js zone rows pool]
-  (let [desired (mapv (fn [row]
-                        (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
-                          (set-card-content! panel row)
-                          panel))
-                      rows)]
-    (doseq [[i ^js panel] (map-indexed vector desired)]
-      (let [^js current (nth (panels-in zone) i nil)]
-        (when-not (identical? current panel)
-          (if current
-            (.insertBefore zone panel current)
-            (.appendChild zone panel)))))
-    (doseq [^js extra (drop (count desired) (panels-in zone))]
-      (.remove extra))))
+  (let [wanted (mapv (fn [row]
+                       (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
+                         (set-card-content! panel row)
+                         panel))
+                     rows)]
+    (loop [ws wanted, ^js anchor (first-panel zone)]
+      (if-let [^js panel (first ws)]
+        (if (identical? panel anchor)
+          (recur (rest ws) (next-panel anchor))
+          (do (.insertBefore zone panel anchor)          ; anchor nil -> append
+              (recur (rest ws) anchor)))
+        (loop [^js n anchor]                              ; leftovers here are no longer wanted
+          (when n
+            (let [^js nxt (next-panel n)]
+              (.remove n)
+              (recur nxt))))))))
 
 (defn- place-cards! [^js this cols]
   (let [pool (panel-pool this)]
