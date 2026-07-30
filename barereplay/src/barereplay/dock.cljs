@@ -110,9 +110,11 @@
     "No request/response at this step."))
 
 (defn- project! [entries n]
-  (when-let [^js sr (.querySelector js/document "server-resource")]
-    (when-let [resource (reconstruct/resource-at entries n)]
-      (.projectResource sr resource))))
+  (doseq [[_ m] (reconstruct/resources-at entries n)]
+    (let [^js el (:el m)
+          value  (:value m)]
+      (when (and el value)
+        (.projectResource el value)))))
 
 (defn- set-disabled! [^js btn disabled?]
   (if disabled?
@@ -181,7 +183,8 @@
         view  {:n n :total total}
         prev  (du/getv el k-view)]
     (when (not= view prev)
-      (when (not= (:n prev) n)
+      (when (and (not= (:n prev) n)
+                 (not (and (= (:n prev) (:total prev)) (= n total))))
         (project! entries n))
       (du/setv! el k-view view)
       (render-status! refs entries n)

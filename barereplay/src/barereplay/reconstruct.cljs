@@ -1,16 +1,19 @@
 (ns barereplay.reconstruct
   (:require [barebuild.resource :as resource]))
 
-(defn- reconstruct
-  "The resource value after replaying the first `n` events onto `seed`."
-  [seed events n]
-  (reduce (fn [r e] (:resource (resource/step r e)))
-          seed
-          (take n events)))
+(defn- resource-id-of [entry]
+  (:resource/id (:before entry)))
 
-(defn resource-at
-  "The resource value the log holds after its first `n` entries, replayed from seed."
-  [entries n]
-  (reconstruct (:before (first entries))
-               (map :event entries)
-               n))
+(defn- fold [seed events]
+  (reduce (fn [r e] (:resource (resource/step r e))) seed events))
+
+(defn resources-at [entries n]
+  (let [taken (take n entries)]
+    (into {}
+          (map (fn [[rid group]]
+                 (let [events (->> taken
+                                   (filter #(= rid (resource-id-of %)))
+                                   (map :event))]
+                   [rid {:el    (:el (first group))
+                         :value (fold (:before (first group)) events)}])))
+          (group-by resource-id-of entries))))
