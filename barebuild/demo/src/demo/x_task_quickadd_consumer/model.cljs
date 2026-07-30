@@ -9,10 +9,7 @@
 (def method-api {})
 
 (defn new-task-record
-  "The complete create record for a quick-add. The typed title and name join the fields the
-  small form does not surface: the name is the task's owner (shown as the card's person),
-  status is always todo since new cards start there, projectId scopes the card to the board
-  being viewed, and start defaults to today."
+  "The create record for a quick-add."
   [form-values project-id today]
   (merge form-values
          {"status"    "todo"

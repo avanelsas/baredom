@@ -429,15 +429,17 @@
       (is (= (set (range (count todo))) (set (map :rank todo)))
           "the column ranks stay dense 0..n-1"))))
 
-(deftest board-create-shows-the-typed-name-without-a-user
+(deftest board-create-stores-the-typed-name-as-owner
   (post-raw "/api/tasks" "requestId=w-b2"
             (record-json {"title" "Named card" "owner" "Wendy" "start" "2026-03-01"
                           "status" "todo" "projectId" "p-1"}))
   (let [[_ body] (get-json "/api/tasks" "project=p-1")
         made     (first (filter #(= "Named card" (:title %)) (:value body)))]
     (is (nil? (:assigneeId made)) "the board create carries no user reference")
-    (is (= "Wendy" (:assigneeName made))
-        "the typed name falls through to the denormalized assignee name")))
+    (is (nil? (:assigneeName made))
+        "with no user, the server honestly reports no assignee name")
+    (is (= "Wendy" (:owner made))
+        "the typed name is stored as the owner; the card view supplies the display fallback")))
 
 (deftest create-with-end-before-start-is-rejected
   (let [bad  (assoc new-task "start" "2026-03-10" "end" "2026-03-01")
@@ -540,6 +542,18 @@
   (let [[_ all] (get-json "/api/tasks" nil)
         row     (first (filter #(= 7 (:id %)) (:value all)))]
     (is (nil? (:end row)) "a blank optional end stores as null, not \"\", so reads stay valid")))
+
+(deftest update-carrying-project-keeps-it-on-the-board
+  (let [[_ before] (get-json "/api/tasks" "project=p-1")
+        id         (:id (first (:value before)))]
+    (put-raw (str "/api/tasks/" id) "requestId=w-u5"
+             (record-json {"title" "Edited" "owner" "Alice" "start" "2026-01-01"
+                           "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
+    (let [[_ after] (get-json "/api/tasks" "project=p-1")]
+      (is (some #(= id (:id %)) (:value after))
+          "a full-replace update that carries projectId keeps the task on its board")
+      (is (= "p-1" (:projectId (first (filter #(= id (:id %)) (:value after)))))
+          "the carried projectId is stored"))))
 
 (deftest update-of-unknown-id-is-rejected
   (let [error (update-rejection "/api/tasks/999" "w-u4" new-task)]

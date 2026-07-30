@@ -307,11 +307,11 @@
 
 (defn- denormalize-task
   "Add the server-owned display names for a task's user and project references, so a consumer
-   renders a name without joining across resources. A task with no assignee user falls back to
-   its own :owner, so a board card created with just a typed name still shows that name."
+   renders a name without joining across resources. A nil reference yields a nil name; the
+   presentation layer decides any fallback (a board card shows :owner when there is no user)."
   [t]
   (assoc t
-         :assigneeName (or (user-name (:assigneeId t)) (:owner t))
+         :assigneeName (user-name (:assigneeId t))
          :projectName  (project-name (:projectId t))))
 
 (defn accepted-envelope
@@ -499,14 +499,17 @@
   [ts]
   (inc (reduce max 0 (map :id ts))))
 
+(defn- column-of
+  "The (projectId, status) column a task lives in. Rank is dense within it."
+  [t]
+  [(:projectId t) (:status t)])
+
 (defn- append-rank
-  "The next rank at the bottom of a task's (projectId, status) column: one past the current
-   max, or 0 for an empty column. A board create lands its card below the others in its column;
-   rank stays server-owned, minted here rather than sent by the client."
-  [ts project-id status]
-  (let [ranks (->> ts
-                   (filter #(and (= (:projectId %) project-id) (= (:status %) status)))
-                   (keep :rank))]
+  "The next rank at the bottom of a `col` (projectId, status): one past the current max, or 0
+   for an empty column. A board create lands its card below the others, and rank stays
+   server-owned, minted here rather than sent by the client."
+  [ts col]
+  (let [ranks (->> ts (filter #(= (column-of %) col)) (keep :rank))]
     (if (seq ranks) (inc (reduce max ranks)) 0)))
 
 (defn create-task
@@ -516,7 +519,7 @@
   [ts record]
   (let [row (record->row record)]
     (conj ts (merge {:id   (next-id ts)
-                     :rank (append-rank ts (:projectId row) (:status row))}
+                     :rank (append-rank ts (column-of row))}
                     row))))
 
 (defn update-task
@@ -535,11 +538,6 @@
 ;; Rank is a card's position within its (projectId, status) column, and it belongs to the SERVER
 ;; — the client never sends it in a record. A :move carries only the destination (status + index);
 ;; the server places the card there and re-denses the affected columns so ranks stay a clean 0..n.
-
-(defn- column-of
-  "The (projectId, status) column a task lives in — rank is dense within it."
-  [t]
-  [(:projectId t) (:status t)])
 
 (defn- place-and-dense
   "Renumber the ranks of `col`'s tasks to a dense 0-based sequence. When `place-id` names a task

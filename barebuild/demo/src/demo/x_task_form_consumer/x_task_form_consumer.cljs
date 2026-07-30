@@ -3,28 +3,31 @@
    [demo.consumer-form :as consumer-form]
    [demo.x-task-form-consumer.model :as model]
    [barebuild.consumer-resource :as consumer-resource]
-   [baredom.utils.dom :as du]
-   [goog.object :as gobj]))
+   [baredom.utils.dom :as du]))
 
 (def ^:private k-button "__xConsumerButton")
 (def ^:private k-modal "__xConsumerModal")
 (def ^:private k-populated? "__xConsumerPopulated?")
 (def ^:private k-shape "__xConsumerShape")
 (def ^:private k-edit-id "__xConsumerEditId")
+(def ^:private k-edit-extras "__xConsumerEditExtras")
 (def ^:private k-accepted "__xConsumerAccepted")
 
 (defn- submit! [^js e]
-  (let [vals     (.. e -detail -values)
-        record   (into {} (map (fn [k] [k (gobj/get vals k)]) (js/Object.keys vals)))
+  (let [entered  (consumer-form/form-values e)
         form     (.-currentTarget e)
         consumer (.closest form model/tag-name)
-        shape    (du/getv consumer k-shape)]
+        shape    (du/getv consumer k-shape)
+        edit-id  (du/getv consumer k-edit-id)
+        record   (merge entered (du/getv consumer k-edit-extras))]
     (when shape
-      (let [edit-id (du/getv consumer k-edit-id)
-            payload (if edit-id
+      (let [payload (if edit-id
                       {:op :update :id edit-id :record record}
                       {:op :create :record record})]
-        (consumer-form/validate-and-write! consumer form record shape payload)))))
+        (consumer-form/attempt-write! consumer form record shape payload)))))
+
+(defn- on-failure! [^js form failure ^js this]
+  (consumer-form/on-failure! form (du/getv this k-modal) failure this))
 
 (defn- on-writing! [^js form writing ^js this]
   (consumer-form/on-writing! form writing this (du/getv this k-button)
@@ -50,17 +53,15 @@
     (.addEventListener trigger "press"
                        (fn [_e]
                          (du/setv! el k-edit-id nil)
+                         (du/setv! el k-edit-extras nil)
                          (set! (.-textContent submit-btn) "Create")
                          (du/set-attr! modal "label" "Create Task")
                          (set! (.-textContent modal-header) "Create Task")
-                         (consumer-form/remove-alert! form)
+                         (consumer-form/remove-alert! modal)
                          (.show modal)))
     (.addEventListener modal "x-modal-dismiss"
                        (fn [_e]
                          (consumer-form/clear-form! form)))
-    ;; This one is on the shared <server-resource> ancestor, so it is NOT scoped to this
-    ;; consumer's lifetime — fine for the demo (never unmounts); a real host wanting
-    ;; unmount safety would need a disconnect hook on consumer-resource/register!.
     (let [resource (.closest el "server-resource")]
       (.addEventListener resource "x-task-edit-request"
                          (fn [^js e]
@@ -73,10 +74,11 @@
                                              (:value accepted)))]
                              (when row
                                (du/setv! el k-edit-id id)
+                               (du/setv! el k-edit-extras (select-keys row ["projectId" "assigneeId"]))
                                (set! (.-textContent submit-btn) "Update")
                                (du/set-attr! modal "label" "Edit Task")
                                (set! (.-textContent modal-header) "Edit Task")
-                               (consumer-form/remove-alert! form)
+                               (consumer-form/remove-alert! modal)
                                (prefill-form! form row fields)
                                (.show modal))))))
     (.addEventListener form "x-form-submit"
@@ -85,7 +87,7 @@
 
 (defn- render! [^js form accepted ^js this]
   (du/setv! this k-accepted accepted)
-  ;; populate the select + stash shape — once
+  ;; populate the select + stash shape once
   (when-not (du/getv this k-populated?)
     (let [enum   (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first :enum)
           select (.querySelector form "x-select")]
@@ -105,4 +107,4 @@
     :on-connect connect!
     :render     render!
     :on-writing on-writing!
-    :on-failure consumer-form/on-failure!}))
+    :on-failure on-failure!}))

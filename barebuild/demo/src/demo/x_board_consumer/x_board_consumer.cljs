@@ -1,8 +1,5 @@
 (ns demo.x-board-consumer.x-board-consumer
-  "The kanban board, one consumer driving three x-drop-zones.
-   Render reconciles each zone's x-drag-panel children from the tasks value (keyed by id, so a
-   moved card is the SAME element and animate-moves animates it). A drop reserves a slot,
-   submits the move as a write, and releases when the server confirms."
+  "The kanban board consumer driving three x-drop-zones"
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [demo.x-board-consumer.model :as model]
@@ -47,15 +44,22 @@
                 (array-seq (.querySelectorAll this "x-drag-panel")))))
 
 (defn- panel? [^js node]
-  (and (some? node) (= "x-drag-panel" (.. node -tagName toLowerCase))))
+  (and (some? node)
+       (= "x-drag-panel" (.. node -tagName toLowerCase))))
 
 (defn- first-panel [^js zone]
   (loop [^js n (.-firstElementChild zone)]
-    (cond (nil? n) nil, (panel? n) n, :else (recur (.-nextElementSibling n)))))
+    (cond
+      (nil? n) nil
+      (panel? n) n
+      :else (recur (.-nextElementSibling n)))))
 
 (defn- next-panel [^js node]
   (loop [^js n (.-nextElementSibling node)]
-    (cond (nil? n) nil, (panel? n) n, :else (recur (.-nextElementSibling n)))))
+    (cond
+      (nil? n) nil
+      (panel? n) n
+      :else (recur (.-nextElementSibling n)))))
 
 (defn- reconcile-zone!
   "Reconciles card movements in a zone. Server decides the order, here we try to materialise

@@ -26,6 +26,14 @@
     (is (= "Web" (:project vm)))
     (is (= "A" (:initial vm)) "the avatar initial is the assignee's first letter")))
 
+(deftest card-vm-falls-back-to-owner-when-no-user
+  (is (= "Wendy"
+         (:assignee (model/card-vm {"id" 9 "title" "T" "owner" "Wendy" "projectName" "Web"})))
+      "a quick-added card with no resolved user shows its owner")
+  (is (= "Alice"
+         (:assignee (model/card-vm {"id" 9 "title" "T" "assigneeName" "Alice" "owner" "Wendy"})))
+      "a resolved assignee name wins over the owner"))
+
 (deftest card-vm-avatar-hue-is-stable-and-bounded
   (let [h1 (:hue (model/card-vm {"assigneeName" "Alice"}))
         h2 (:hue (model/card-vm {"assigneeName" "Alice"}))]

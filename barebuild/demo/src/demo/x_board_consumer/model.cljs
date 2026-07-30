@@ -11,7 +11,7 @@
 (def statuses ["todo" "doing" "done"])
 
 (defn columns
-  "Tasks grouped by status into the three ordered columns, each sorted by rank.
+  "Tasks grouped by status into the three ordered columns, sorted by rank.
   The board re-renders exactly when the grouped, ordered set changes."
   [accepted-response]
   (let [by-status (group-by #(get % "status") (:value accepted-response))]
@@ -29,7 +29,7 @@
 (defn card-vm
   "Elements that render in a card."
   [row]
-  (let [assignee (str (get row "assigneeName"))]
+  (let [assignee (str (or (get row "assigneeName") (get row "owner")))]
     {:value    (str (get row "id"))
      :title    (get row "title")
      :assignee assignee
