@@ -111,10 +111,11 @@ flowchart LR
 
 ## Coordinating multiple resources
 
-One page can hold several `<server-resource>` elements, each owning a slice of the URL. A
-resource writes its intent under its **`resource-id`** (default `tasks`), so give each one an id
-and their query keys never collide: `projects.*` for one, `tasks.*` for another. Every view is
-still a single shareable link, and the back button still works.
+One page can hold several `<server-resource>` elements, each owning a slice of the URL. A named
+resource writes its intent under its **`resource-id`**, so give each one an id and their query
+keys never collide: `projects.*` for one, `tasks.*` for another. A single unnamed resource keeps
+the bare root keys (`?sort=…`), so name a resource only when it shares a page or is a target.
+Every view is still a single shareable link, and the back button still works.
 
 Consumers coordinate by **naming a sibling**. A gesture handler calls `submit-intent!` with a
 target id, which drives that sibling's URL projection and refetch. There is no shared store and
@@ -133,7 +134,7 @@ no direct element reference, only the URL:
   </x-project-selector-consumer>
 </server-resource>
 
-<server-resource src="/api/tasks">
+<server-resource resource-id="tasks" src="/api/tasks">
   <x-board-consumer><!-- three drop-zones of draggable cards --></x-board-consumer>
 </server-resource>
 ```
@@ -174,7 +175,7 @@ action.
 
 ```clojure
 ;; deps.edn
-{:deps {com.github.avanelsas/barebuild {:mvn/version "0.3.0"}}}
+{:deps {com.github.avanelsas/barebuild {:mvn/version "0.4.0"}}}
 ```
 
 This brings `com.github.avanelsas/baredom` with it, since BareBuild uses a handful of its

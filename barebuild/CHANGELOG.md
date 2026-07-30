@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Multiple `<server-resource>` elements coordinate on one page. A named resource namespaces its URL keys under its `resource-id` (`tasks.sort`, `projects.name`), and an unnamed one owns the bare root keys. A consumer sends a targeted `submit-intent!` to a named sibling, so coordination runs through the URL with no shared store.
+- Adds the move op: a positional PATCH command that repositions a member by its server-owned rank, carrying only the destination. Update stays a full replace.
+- Bumps BareDOM to 3.7.0 for the `x-drag-panel` and `x-drop-zone` components.
+- Demo gains a relational kanban board (two coordinating resources, drag-as-move, create project, quick-add task) alongside the flat table.
+
 ## 0.3.0
 
 - A write returns the full post-mutation state. The client installs it directly instead of refetching, so a write is one round-trip, not two.
