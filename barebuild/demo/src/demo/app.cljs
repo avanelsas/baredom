@@ -29,6 +29,7 @@
    [demo.x-stat-consumer.x-stat-consumer :as x-stat-consumer]
    [demo.x-table-consumer.x-table-consumer :as x-table-consumer]
    [demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
+   [demo.x-task-quickadd-consumer.x-task-quickadd-consumer :as x-task-quickadd-consumer]
    [barebuild.core :as core]
    [barereplay.init :as barereplay]
    [baredom.dev.x-trace-history.x-trace-history :as x-trace-history]))
@@ -68,6 +69,7 @@
   (x-stat-consumer/init!)
   (x-table-consumer/init!)
   (x-task-form-consumer/init!)
+  (x-task-quickadd-consumer/init!)
 
   ;; set up the recorder of events
   (barereplay/init!)

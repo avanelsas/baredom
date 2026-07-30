@@ -104,6 +104,12 @@
 
     x-select { max-width: 22rem; }
     .projects-bar { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+
+    /* --- quick-add: the Add a task affordance at the bottom of the To Do column --- */
+    x-task-quickadd-consumer { display: block; margin-top: 0.25rem; }
+    .quickadd-open { align-self: flex-start; }
+    .quickadd-form { margin-top: 0.5rem; }
+    .quickadd-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -148,6 +154,20 @@
             <x-drop-zone value="todo" accepts="task" label="To do" animate-moves>
               <span slot="empty" class="column-empty">Nothing to do yet</span>
             </x-drop-zone>
+            <x-task-quickadd-consumer>
+              <x-button class="quickadd-open" data-role="open" variant="ghost" size="sm">+ Add a task</x-button>
+              <div class="quickadd-form" hidden>
+                <x-form novalidate>
+                  <x-form-field name="title" type="text" label="Title" placeholder="Card title"></x-form-field>
+                  <x-spacer size="0.5rem"></x-spacer>
+                  <x-form-field name="owner" type="text" label="Name" placeholder="Assigned to"></x-form-field>
+                  <div class="quickadd-actions">
+                    <x-button type="submit" size="sm">Add</x-button>
+                    <x-button data-role="cancel" variant="ghost" size="sm">Cancel</x-button>
+                  </div>
+                </x-form>
+              </div>
+            </x-task-quickadd-consumer>
           </section>
           <section class="column" style="--accent: #f59e0b;">
             <div class="column-header"><span class="dot"></span> In progress</div>
