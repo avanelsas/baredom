@@ -31,8 +31,7 @@
    [demo.x-task-form-consumer.x-task-form-consumer :as x-task-form-consumer]
    [demo.x-task-quickadd-consumer.x-task-quickadd-consumer :as x-task-quickadd-consumer]
    [barebuild.core :as core]
-   [barereplay.init :as barereplay]
-   [baredom.dev.x-trace-history.x-trace-history :as x-trace-history]))
+   [barereplay.init :as barereplay]))
 
 ;; Rregisters the BareDOM components it uses, the demo's own
 ;; consumers, and then the BareBuild runtime (server-resource) via barebuild.core.
@@ -73,6 +72,5 @@
 
   ;; set up the recorder of events
   (barereplay/init!)
-  (x-trace-history/register!)
   ;; the BareBuild runtime element
   (core/init))
