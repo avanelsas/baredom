@@ -8,12 +8,12 @@
 (def attr-resource-id "resource-id")
 
 (defn resolve-resource-id
-  "The element's resource id: its `resource-id` attribute value, or \"tasks\" when absent or blank."
+  "The element's resource id from its `resource-id` attribute, or nil when absent or blank."
   [attr-id]
-  (if (str/blank? attr-id) "tasks" attr-id))
+  (when-not (str/blank? attr-id) attr-id))
 
 (defn targets-sibling?
-  "True when an intent names a resource other than its own — cross-resource coordination. A nil
+  "True when an intent names a resource other than its own, cross-resource coordination. A nil
    target (or one equal to the own id) drives the resource itself."
   [own-id target-id]
   (boolean (and target-id (not= target-id own-id))))

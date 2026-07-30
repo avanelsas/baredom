@@ -663,7 +663,7 @@
          "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
          "<title>BareBuild — SSR boot</title></head>\n<body>\n"
          "  <h1>BareBuild — SSR boot demo</h1>\n"
-         "  <server-resource resource-id=\"tasks\" src=\"/api/tasks\">\n"
+         "  <server-resource src=\"/api/tasks\">\n"
          "    <script type=\"application/json\">" envelope "</script>\n"
          "    <x-table-consumer>\n"
          "      <x-table caption=\"Tasks\" bordered></x-table>\n"

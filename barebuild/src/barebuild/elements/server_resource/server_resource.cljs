@@ -18,12 +18,12 @@
 
 (defn- construct-url-intent [resource-id]
   (let [current-url-params (js/URLSearchParams. (.-search js/location))
-        prefix             (str resource-id ".")
-        resource-id-keys   (filterv #(str/starts-with? % prefix)
-                                    (js/Array.from (.keys current-url-params)))]
+        prefix             (utils/url-prefix resource-id)
+        owned              (utils/owned-url-keys resource-id
+                                                 (js/Array.from (.keys current-url-params)))]
     (utils/canonicalize-query
      (into {}
-           (for [k resource-id-keys]
+           (for [k owned]
              [(keyword (subs k (count prefix)))
               (.get current-url-params k)])))))
 
@@ -75,10 +75,7 @@
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
 (defn- find-resource
-  "The <server-resource> on the page whose resolved id is `target-id`, or nil. Matches the
-   stored :resource/id rather than an attribute, so a resource that resolved the default id is
-   found too. Scope is the whole document: shadow-nested resources and a second app on the same
-   page are out of the coordination contract."
+  "The <server-resource> on the page whose resolved id is `target-id`, or nil."
   [target-id]
   (some (fn [^js e]
           (when (= target-id (:resource/id (du/getv e k-resource))) e))
@@ -202,7 +199,7 @@
 
 ;; The replay hook. BareReplay's dock calls el.projectResource(value) to push a reconstructed
 ;; (time-travelled) resource value at the consumers, so the components paint that historical
-;; state. It reuses the same notify path a live step uses. Not dead code — the sole caller is
+;; state. It reuses the same notify path a live step uses. The sole caller is
 ;; barereplay.dock, a sibling project.
 (defn- setup-prototype! [^js proto]
   (.defineProperty js/Object proto "projectResource"

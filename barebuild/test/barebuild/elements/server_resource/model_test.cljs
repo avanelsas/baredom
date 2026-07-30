@@ -4,13 +4,19 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [barebuild.elements.server-resource.model :as model]))
 
-(deftest resolve-resource-id-defaults-to-tasks
+(deftest resolve-resource-id-nil-when-unnamed
   (testing "an explicit id is kept"
     (is (= "projects" (model/resolve-resource-id "projects"))))
-  (testing "absent or blank falls back to the default so the existing single-resource demo works"
-    (is (= "tasks" (model/resolve-resource-id nil)))
-    (is (= "tasks" (model/resolve-resource-id "")))
-    (is (= "tasks" (model/resolve-resource-id "   ")))))
+  (testing "absent or blank means unnamed: nil, so the resource owns the URL's root namespace"
+    (is (nil? (model/resolve-resource-id nil)))
+    (is (nil? (model/resolve-resource-id "")))
+    (is (nil? (model/resolve-resource-id "   ")))))
+
+(deftest targets-sibling?-with-an-unnamed-resource
+  (testing "an unnamed resource driving itself is not a sibling hop"
+    (is (false? (model/targets-sibling? nil nil))))
+  (testing "an unnamed resource naming a sibling still coordinates"
+    (is (true? (model/targets-sibling? nil "tasks")))))
 
 (deftest targets-sibling?-only-when-naming-another-resource
   (testing "no target -> drive self"
