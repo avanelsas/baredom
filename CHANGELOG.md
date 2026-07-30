@@ -2,6 +2,32 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.7.0] - 2026-07-30
+
+Two new components that work as a pair: a panel the user can pick up and a region that accepts it. Together they cover kanban boards, sortable lists, and any interface where something is moved from one place to another.
+
+### Added
+
+- **`x-drag-panel`** — a surface the user picks up with a pointer or the keyboard, with a grip handle over a body slot. Built on pointer events rather than the HTML5 drag-and-drop API, which never fires from touch input on iOS or Android, so it works from 320px up. `grab` chooses whether the whole card is a drag target or only the handle bar; in surface mode a touch drag arms after a short press and cancels if the finger travels first, so swiping over a card still scrolls the board. Dragging toward the edge of a scrollable ancestor auto-scrolls it, resolving the vertical and horizontal scrollers independently so a board that scrolls sideways with columns that scroll down works in both axes at once. Emits `x-drag-panel-drag-start` and `x-drag-panel-drag-cancel`.
+
+- **`x-drop-zone`** — a region that senses panels passing over it, renders an insertion caret where one would land, and reports the drop. Acceptance is declarative: `accepts` matches the panel's `kind` and `max` caps capacity, so a full or incompatible zone shows a reject cue during the hover rather than silently ignoring the drop. `animate-moves` animates children into place whenever the child list changes, which covers drop confirmations, another client's change arriving over a websocket, and filter toggles with one mechanism. Emits `x-drop-zone-enter`, `x-drop-zone-leave`, and `x-drop-zone-drop`.
+
+### Notes
+
+- **Neither component moves a node.** A drop is a request, not a fact — an app may validate it locally and refuse, queue it offline, or send it to a server that reorders differently. The components sense and report; the application owns the landing. `x-drop-zone-drop` carries `{ kind, value, from, to, index, panel }`, where `value` identifies the panel and `from` / `to` are the two zones' `value`s, so a server-backed handler works entirely in opaque strings and never holds an element across a round trip. `from` is `null` when the panel came from outside any zone, distinct from `""` for a zone with no `value`, and is typed `string | null` so the check is not optional.
+
+- **For moves that need confirming**, `zone.reserve(panel, index)` marks the in-flight window and `zone.release()` clears it. The panel renders an empty dashed footprint that keeps its box and the zone renders a reserved caret, so nothing in the layout moves until the answer arrives — every real reflow happens once, when the truth does. Nothing times out: a stalled move stays visible and keyboard-reachable rather than becoming a lost card. The underlying `pending` and `pending-index` attributes remain author-settable for apps that prefer to drive them directly.
+
+### Accessibility
+
+- The full interaction is keyboard-operable, which WCAG 2.2 SC 2.5.7 (Dragging Movements) requires of any drag: <kbd>Space</kbd> picks a panel up from its handle, arrows cycle the accepting zones in document order and scroll each into view, <kbd>Enter</kbd> drops, <kbd>Esc</kbd> cancels. Pointer and keyboard produce the same `x-drop-zone-drop` detail, so a consumer handles one path rather than two.
+
+- Focus moves to the destination zone on commit rather than riding the panel, because a confirmation re-render will often replace the panel element and focus would fall to `<body>`. Each component narrates the events it owns into a visually hidden live region; the panel's is created lazily at pickup so a fifty-card board carries no idle `aria-live` nodes. Whether a move succeeded is read back from the DOM rather than assumed, so a server that refused is announced honestly.
+
+- Auto-scroll is deliberately **not** disabled under `prefers-reduced-motion` — it is function rather than decoration, and a board deeper than the viewport would otherwise be unusable for the people relying on that setting. The lift transition, caret pulse, and `animate-moves` all are.
+
+- The framework adapters gain generated `x-drag-panel` and `x-drop-zone` wrappers. They version on their own cadence — see [`docs/RELEASING.md`](docs/RELEASING.md) — so releasing them is a separate step.
+
 ## [3.6.0] - 2026-07-27
 
 One new component: a floating, draggable container for inspectors, tool palettes, mini-players, and any persistent surface the user should be able to move out of the way.

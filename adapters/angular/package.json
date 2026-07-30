@@ -152,9 +152,17 @@
       "import" : "./dist/directives/x-divider.directive.js",
       "types" : "./dist/directives/x-divider.directive.d.ts"
     },
+    "./x-drag-panel" : {
+      "import" : "./dist/directives/x-drag-panel.directive.js",
+      "types" : "./dist/directives/x-drag-panel.directive.d.ts"
+    },
     "./x-drawer" : {
       "import" : "./dist/directives/x-drawer.directive.js",
       "types" : "./dist/directives/x-drawer.directive.d.ts"
+    },
+    "./x-drop-zone" : {
+      "import" : "./dist/directives/x-drop-zone.directive.js",
+      "types" : "./dist/directives/x-drop-zone.directive.d.ts"
     },
     "./x-dropdown" : {
       "import" : "./dist/directives/x-dropdown.directive.js",

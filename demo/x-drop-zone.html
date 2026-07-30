@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>x-drop-zone demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      * { box-sizing: border-box; }
+
+      html, body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        line-height: 1.4;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+
+      .row label { font-size: 13px; }
+
+      .lanes {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+
+      .lane { flex: 1 1 240px; min-width: 240px; }
+
+      .lane-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        opacity: .7;
+        margin-bottom: 6px;
+      }
+
+      .card-title { font-weight: 600; font-size: 14px; }
+
+      /* A row-flow zone: the caret follows the computed flex-direction, so it
+         renders as a vertical line here rather than a horizontal one. */
+      .horizontal x-drop-zone::part(zone) {
+        flex-direction: row;
+        align-items: flex-start;
+        overflow-x: auto;
+      }
+
+      .horizontal x-drag-panel { min-width: 150px; }
+
+      .log {
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        border: 1px solid rgba(128,128,128,.35);
+        border-radius: 8px;
+        padding: 10px;
+        min-height: 120px;
+        max-height: 240px;
+        overflow: auto;
+        margin-top: 16px;
+      }
+    </style>
+    <script src="../js/main.js"></script>
+    <script src="demo-theme.js" defer></script>
+  </head>
+  <body>
+    <x-typography variant="h1">x-drop-zone</x-typography>
+    <x-typography variant="body">
+      A region that senses dragged panels, shows where they would land, and reports the drop.
+      It never moves a node and never decides anything — acceptance is declared with
+      <code>accepts</code> and <code>max</code>, and the landing is the application's job.
+    </x-typography>
+
+    <x-typography variant="overline">Acceptance</x-typography>
+    <x-typography variant="body">
+      Drag a <strong>task</strong> or a <strong>note</strong> between the lanes. The middle lane
+      only accepts tasks, so a note hovering it renders the reject cue instead of a caret.
+    </x-typography>
+
+    <div class="lanes">
+      <div class="lane">
+        <div class="lane-title">Mixed — accepts anything</div>
+        <x-drop-zone value="mixed" label="Mixed" animate-moves>
+          <span slot="empty">Drop anything here</span>
+
+          <x-drag-panel kind="task" value="t-1" label="Rewrite the parser">
+            <span slot="header" class="card-title">Task · Rewrite the parser</span>
+          </x-drag-panel>
+
+          <x-drag-panel kind="note" value="n-1" label="Ask about the deadline">
+            <span slot="header" class="card-title">Note · Ask about the deadline</span>
+          </x-drag-panel>
+        </x-drop-zone>
+      </div>
+
+      <div class="lane">
+        <div class="lane-title">Tasks only</div>
+        <x-drop-zone value="tasks" accepts="task" label="Tasks only" animate-moves>
+          <span slot="empty">Tasks only</span>
+        </x-drop-zone>
+      </div>
+
+      <div class="lane">
+        <div class="lane-title">Capacity 1</div>
+        <x-drop-zone value="capped" label="Capacity one" max="1" animate-moves>
+          <span slot="empty">Room for one</span>
+        </x-drop-zone>
+      </div>
+    </div>
+
+    <x-typography variant="overline">Row flow</x-typography>
+    <x-typography variant="body">
+      The caret axis is read from the zone's computed <code>flex-direction</code>, so restyling
+      <code>::part(zone)</code> into a row moves the caret onto the horizontal axis.
+    </x-typography>
+
+    <div class="lane horizontal">
+      <x-drop-zone value="row" label="Row lane" animate-moves>
+        <span slot="empty">Drop into the row</span>
+        <x-drag-panel kind="task" value="t-2" label="Fix the flaky test">
+          <span slot="header" class="card-title">Fix the flaky test</span>
+        </x-drag-panel>
+        <x-drag-panel kind="task" value="t-3" label="Audit bundle size">
+          <span slot="header" class="card-title">Audit bundle size</span>
+        </x-drag-panel>
+      </x-drop-zone>
+    </div>
+
+    <x-typography variant="overline">In-flight reservation</x-typography>
+    <x-typography variant="body">
+      <code>reserve(panel, index)</code> sets <code>pending</code> on the card and
+      <code>pending</code> + <code>pending-index</code> on the zone in one call;
+      <code>release()</code> clears all three. Both act on the first lane below the heading.
+    </x-typography>
+
+    <div class="row">
+      <x-button onclick="reserveFirst(1)">reserve(panel, 1)</x-button>
+      <x-button onclick="reserveFirst(null)">reserve(panel, null) — busy only</x-button>
+      <x-button variant="secondary" onclick="releaseFirst()">release()</x-button>
+    </div>
+
+    <x-typography variant="body">
+      The same thing driven by hand. The attributes stay author-settable — the component never
+      infers that a drop was sent, whichever route you take.
+    </x-typography>
+
+    <div class="row">
+      <x-button onclick="setPending(0)">pending-index="0"</x-button>
+      <x-button onclick="setPending(1)">pending-index="1"</x-button>
+      <x-button onclick="setPendingBusyOnly()">pending only (no caret)</x-button>
+      <x-button variant="secondary" onclick="clearPending()">clear</x-button>
+      <x-button variant="secondary" onclick="clearLog()">Clear log</x-button>
+    </div>
+
+    <div class="log" id="event-log">Events will appear here…</div>
+
+    <script>
+      const log = document.getElementById('event-log');
+      let logLines = [];
+
+      function addLog(msg) {
+        logLines.push(new Date().toLocaleTimeString() + '  ' + msg);
+        if (logLines.length > 24) logLines = logLines.slice(-24);
+        log.textContent = logLines.join('\n');
+      }
+
+      function clearLog() {
+        logLines = [];
+        log.textContent = 'Events will appear here…';
+      }
+
+      function firstZone() {
+        return document.querySelector('x-drop-zone');
+      }
+
+      function reserveFirst(index) {
+        const zone = firstZone();
+        const panel = zone.querySelector(':scope > x-drag-panel');
+        if (!panel) { addLog('nothing to reserve — lane is empty'); return; }
+        zone.reserve(panel, index);
+        addLog(`reserve(panel "${panel.value}", ${JSON.stringify(index)}) on "${zone.value}"`);
+      }
+
+      function releaseFirst() {
+        const zone = firstZone();
+        zone.release();
+        addLog(`release() on "${zone.value}"`);
+      }
+
+      function setPending(index) {
+        const zone = firstZone();
+        zone.pending = true;
+        zone.pendingIndex = index;
+        addLog(`pending + pending-index=${index} set on "${zone.label}"`);
+      }
+
+      function setPendingBusyOnly() {
+        const zone = firstZone();
+        zone.pending = true;
+        zone.pendingIndex = null;
+        addLog(`pending set with no index on "${zone.label}" — busy, no caret`);
+      }
+
+      function clearPending() {
+        const zone = firstZone();
+        zone.pending = false;
+        zone.pendingIndex = null;
+        addLog(`pending cleared on "${zone.label}"`);
+      }
+
+      // The application owns the landing.
+      function applyMove(zone, panel, index) {
+        const siblings = [...zone.querySelectorAll(':scope > x-drag-panel')]
+          .filter((c) => c !== panel);
+        zone.insertBefore(panel, siblings[index] || null);
+      }
+
+      document.addEventListener('x-drop-zone-drop', (e) => {
+        const zone = e.target;
+        const { panel, index, kind, value, from, to } = e.detail;
+        addLog(`x-drop-zone-drop  { kind: "${kind}", value: "${value}", from: ${JSON.stringify(from)}, to: "${to}", index: ${index} }`);
+        applyMove(zone, panel, index);
+      });
+
+      document.addEventListener('x-drop-zone-enter', (e) => {
+        addLog(`x-drop-zone-enter  { kind: "${e.detail.kind}" } → "${e.target.label}"`);
+      });
+
+      document.addEventListener('x-drop-zone-leave', (e) => {
+        addLog(`x-drop-zone-leave  { kind: "${e.detail.kind}" } ← "${e.target.label}"`);
+      });
+    </script>
+  </body>
+</html>

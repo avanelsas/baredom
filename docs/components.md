@@ -1,13 +1,13 @@
 # Components
 
-The full catalogue of BareDOM components — 104 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
+The full catalogue of BareDOM components — 106 UI web components across 11 categories. Every UI component is a native Custom Element with auto-generated TypeScript declarations and is exposed in all five [framework adapters](../README.md#framework-adapters).
 
 Tag names are case-insensitive in HTML but always lowercase-kebab-case in the source. Component documentation links to deeper guides with API tables, examples, and a11y notes.
 
 - [Form (23)](#form-23)
 - [Feedback (11)](#feedback-11)
 - [Navigation (8)](#navigation-8)
-- [Layout (10)](#layout-10)
+- [Layout (12)](#layout-12)
 - [Data (11)](#data-11)
 - [Overlay (10)](#overlay-10)
 - [Display (6)](#display-6)
@@ -75,7 +75,7 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-tab>`](./x-tab.md) | Individual tab within an `<x-tabs>` container. |
 | [`<x-tabs>`](./x-tabs.md) | Tab container that coordinates `<x-tab>` children, manages active state, and fires change events. |
 
-## Layout (10)
+## Layout (12)
 
 | Tag | Description |
 |-----|-------------|
@@ -85,6 +85,8 @@ Tag names are case-insensitive in HTML but always lowercase-kebab-case in the so
 | [`<x-collapse>`](./x-collapse.md) | Expandable/collapsible section with animated height transition. |
 | [`<x-container>`](./x-container.md) | Responsive max-width container with configurable padding. |
 | [`<x-divider>`](./x-divider.md) | Horizontal or vertical visual separator. |
+| [`<x-drag-panel>`](./x-drag-panel.md) | Pointer- and keyboard-draggable panel. Reports where it was dropped; never moves itself. Pair with `<x-drop-zone>`. |
+| [`<x-drop-zone>`](./x-drop-zone.md) | Region that senses dragged panels, renders an insertion caret, and reports drops. Optional in-flight reservation for server-authoritative moves. |
 | [`<x-grid>`](./x-grid.md) | CSS Grid layout component with responsive column configuration. |
 | [`<x-proximity-list>`](./x-proximity-list.md) | Horizontal or vertical list whose items scale up as the pointer approaches — dock effect on any list. |
 | [`<x-spacer>`](./x-spacer.md) | Flexible spacing element for flexbox and grid layouts. |

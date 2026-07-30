@@ -37,7 +37,9 @@
    [baredom.exports.x-currency-field      :as x-currency-field]
    [baredom.exports.x-date-picker         :as x-date-picker]
    [baredom.exports.x-divider             :as x-divider]
+   [baredom.exports.x-drag-panel          :as x-drag-panel]
    [baredom.exports.x-drawer              :as x-drawer]
+   [baredom.exports.x-drop-zone           :as x-drop-zone]
    [baredom.exports.x-dropdown            :as x-dropdown]
    [baredom.exports.x-fieldset            :as x-fieldset]
    [baredom.exports.x-file-download       :as x-file-download]
@@ -146,7 +148,9 @@
    x-currency-field/register!
    x-date-picker/register!
    x-divider/register!
+   x-drag-panel/register!
    x-drawer/register!
+   x-drop-zone/register!
    x-dropdown/register!
    x-fieldset/register!
    x-file-download/register!
