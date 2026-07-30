@@ -6,9 +6,9 @@
             [cheshire.core :as json]
             [server]))
 
-;; The delete tests mutate the in-memory set; reset before each case so the count-based
+;; The write tests mutate the in-memory sets; reset before each case so the count-based
 ;; read assertions hold regardless of run order.
-(use-fixtures :each (fn [t] (server/reset-tasks!) (t)))
+(use-fixtures :each (fn [t] (server/reset-tasks!) (server/reset-projects!) (t)))
 
 (defn- get-raw [uri qs]
   (server/handler {:request-method :get :uri uri :query-string qs}))
@@ -76,6 +76,11 @@
   (let [[_ body] (get-json "/api/tasks" nil)]
     (is (= {} (:query body)) "no owned params (default page 1) -> empty query echo")
     (is (= (vec (range 1 11)) (ids body)) "no sort -> natural id order, first page")))
+
+(deftest seeded-titles-are-unique
+  (let [titles (map :title @server/tasks)]
+    (is (= 40 (count titles)) "the full seeded set")
+    (is (= (count titles) (count (distinct titles))) "every task has a unique title")))
 
 ;; --- step 2a: sorting + normalized echo ------------------------------------
 
@@ -183,6 +188,109 @@
     (is (= 1 (get-in body [:pageInfo :page])))
     (is (= [1 11 21 31] (ids body)) "still the four Alice rows")))
 
+;; --- relational: users, projects, denormalized tasks, project filter -------
+
+(deftest get-users-returns-accepted-envelope
+  (let [[status body] (get-json "/api/users" "requestId=u-1")]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= "u-1" (:requestId body)) "echoes the client request id")
+    (is (= "users:v1" (:revision body)))
+    (is (= "id" (get-in body [:shape :idKey])))
+    (is (= ["name" "email"] (mapv :key (get-in body [:shape :fields]))))
+    (is (= 5 (count (:value body))) "all users, unpaged")
+    (is (every? #(contains? % :id) (:value body)) "every user row carries the id-key")
+    (is (some #(= "Alice" (:name %)) (:value body)))))
+
+(deftest get-projects-returns-accepted-envelope
+  (let [[status body] (get-json "/api/projects" "requestId=p-1")]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= "projects:v1" (:revision body)))
+    (is (= ["name" "description"] (mapv :key (get-in body [:shape :fields]))))
+    (is (= 3 (count (:value body))) "all projects, unpaged")
+    (is (some #(= "p-1" (:id %)) (:value body)))))
+
+(deftest create-project-appends-and-returns-collection
+  (let [resp (post-raw "/api/projects" "requestId=cp-1"
+                       (record-json {"name" "Growth Experiments" "description" "A/B tests"}))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a write response is HTTP 200")
+    (is (= "accepted" (:outcome body)) "a valid create is accepted")
+    (is (= "cp-1" (:requestId body)) "echoes the client request id")
+    (is (= "projects:v1" (:revision body)) "carries the projects revision")
+    (is (= 4 (count (:value body))) "the new project is in the returned collection")
+    (let [made (last (:value body))]
+      (is (= "p-4" (:id made)) "server mints the next project id")
+      (is (= "Growth Experiments" (:name made))))))
+
+(deftest create-project-mutates-the-set
+  (post-raw "/api/projects" "requestId=cp-2" (record-json {"name" "Growth Experiments"}))
+  (let [[_ body] (get-json "/api/projects" nil)]
+    (is (= 4 (count (:value body))) "the created project is observable on a later read")
+    (is (some #(= "Growth Experiments" (:name %)) (:value body)))))
+
+(deftest create-project-with-blank-name-is-rejected
+  (let [resp (post-raw "/api/projects" "requestId=cp-3" (record-json {"name" ""}))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a rejected write is still HTTP 200")
+    (is (= "rejected" (:outcome body)))
+    (is (= "projects:v1" (:revision body)) "the rejection carries the projects revision")
+    (is (= "missing-required" (get-in body [:error :code])))
+    (is (= "name" (get-in body [:error :details :field])) "details name the offending field")
+    (is (= 3 (get-in (second (get-json "/api/projects" nil)) [:pageInfo :totalCount]))
+        "a rejected create does not mutate the set")))
+
+(deftest flat-read-shape-fields-are-unchanged
+  (let [[_ body] (get-json "/api/tasks" nil)]
+    (is (= ["title" "owner" "start" "end" "status"]
+           (mapv :key (get-in body [:shape :fields])))
+        "the flat demo's declared columns are untouched — the new task keys are not :fields")))
+
+(deftest tasks-carry-refs-and-denormalized-names
+  (let [[_ body]  (get-json "/api/tasks" nil)
+        [_ users] (get-json "/api/users" nil)
+        row       (first (:value body))]
+    (is (contains? row :projectId) "task carries its project ref")
+    (is (contains? row :assigneeId) "task carries its assignee ref")
+    (is (contains? row :rank) "task carries its rank")
+    (is (contains? row :assigneeName) "server denormalizes the assignee name")
+    (is (contains? row :projectName) "server denormalizes the project name")
+    (is (= (:assigneeName row)
+           (:name (first (filter #(= (:assigneeId row) (:id %)) (:value users)))))
+        "the denormalized assignee name matches the referenced user")))
+
+(deftest project-filter-returns-only-that-project-unpaginated
+  (let [[status body] (get-json "/api/tasks" "project=p-1")
+        n             (count (:value body))]
+    (is (= 200 status))
+    (is (= "accepted" (:outcome body)))
+    (is (= {:project "p-1"} (:query body)) "the project term is echoed so it round-trips")
+    (is (every? #(= "p-1" (:projectId %)) (:value body)) "only that project's tasks")
+    (is (> n 10) "more than one flat page's worth — the board read is not paged")
+    (is (= n (get-in body [:pageInfo :totalCount])) "every matching row is returned")
+    (is (= 1 (get-in body [:pageInfo :totalPages])) "served as a single unpaged response")))
+
+(deftest project-filter-spans-all-status-columns
+  (let [[_ body] (get-json "/api/tasks" "project=p-2")]
+    (is (= #{"todo" "doing" "done"} (set (map :status (:value body))))
+        "a project's tasks spread across every column, not collapsed into one")))
+
+(deftest ranks-are-dense-within-each-project-column
+  (let [[_ body]  (get-json "/api/tasks" "project=p-1")
+        by-status (group-by :status (:value body))]
+    (doseq [[_ rows] by-status]
+      (is (= (set (range (count rows))) (set (map :rank rows)))
+          "each status column carries dense 0..n-1 ranks"))))
+
+(deftest create-without-refs-still-succeeds
+  (let [resp (post-raw "/api/tasks" "requestId=w-compat"
+                       (record-json {"title" "Legacy create" "owner" "Zoe"
+                                     "start" "2026-03-01" "status" "todo"}))
+        body (json/parse-string (:body resp) true)]
+    (is (= "accepted" (:outcome body))
+        "a flat-demo write with no project/assignee/rank is still accepted")))
+
 ;; --- step 5a: failure fixtures + SSR boot -----------------------------------
 
 (deftest fixture-bad-outcome-is-unknown-outcome
@@ -280,7 +388,9 @@
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "POST")
         "the preflight advertises POST")
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PUT")
-        "the preflight advertises PUT")))
+        "the preflight advertises PUT")
+    (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PATCH")
+        "the preflight advertises PATCH for :move")))
 
 ;; --- writes: create (step W3a) ---------------------------------------------
 
@@ -304,6 +414,32 @@
         (is (= "Ship the release" (:title row)))
         (is (= "Zoe" (:owner row)))
         (is (= 41 (:id row)) "server assigns the next id")))))
+
+(deftest board-create-lands-at-bottom-of-its-column
+  (let [before (count (:value (second (get-json "/api/tasks" "project=p-1"))))]
+    (post-raw "/api/tasks" "requestId=w-b1"
+              (record-json {"title" "New board card" "owner" "Zoe" "start" "2026-03-01"
+                            "status" "todo" "projectId" "p-1"}))
+    (let [[_ body] (get-json "/api/tasks" "project=p-1")
+          todo     (filter #(= "todo" (:status %)) (:value body))
+          made     (first (filter #(= "New board card" (:title %)) todo))]
+      (is (= (inc before) (count (:value body))) "the card is added to the project board")
+      (is (some? made) "the new card is in the To Do column")
+      (is (= (dec (count todo)) (:rank made)) "it lands at the bottom of the column")
+      (is (= (set (range (count todo))) (set (map :rank todo)))
+          "the column ranks stay dense 0..n-1"))))
+
+(deftest board-create-stores-the-typed-name-as-owner
+  (post-raw "/api/tasks" "requestId=w-b2"
+            (record-json {"title" "Named card" "owner" "Wendy" "start" "2026-03-01"
+                          "status" "todo" "projectId" "p-1"}))
+  (let [[_ body] (get-json "/api/tasks" "project=p-1")
+        made     (first (filter #(= "Named card" (:title %)) (:value body)))]
+    (is (nil? (:assigneeId made)) "the board create carries no user reference")
+    (is (nil? (:assigneeName made))
+        "with no user, the server honestly reports no assignee name")
+    (is (= "Wendy" (:owner made))
+        "the typed name is stored as the owner; the card view supplies the display fallback")))
 
 (deftest create-with-end-before-start-is-rejected
   (let [bad  (assoc new-task "start" "2026-03-10" "end" "2026-03-01")
@@ -407,6 +543,18 @@
         row     (first (filter #(= 7 (:id %)) (:value all)))]
     (is (nil? (:end row)) "a blank optional end stores as null, not \"\", so reads stay valid")))
 
+(deftest update-carrying-project-keeps-it-on-the-board
+  (let [[_ before] (get-json "/api/tasks" "project=p-1")
+        id         (:id (first (:value before)))]
+    (put-raw (str "/api/tasks/" id) "requestId=w-u5"
+             (record-json {"title" "Edited" "owner" "Alice" "start" "2026-01-01"
+                           "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
+    (let [[_ after] (get-json "/api/tasks" "project=p-1")]
+      (is (some #(= id (:id %)) (:value after))
+          "a full-replace update that carries projectId keeps the task on its board")
+      (is (= "p-1" (:projectId (first (filter #(= id (:id %)) (:value after)))))
+          "the carried projectId is stored"))))
+
 (deftest update-of-unknown-id-is-rejected
   (let [error (update-rejection "/api/tasks/999" "w-u4" new-task)]
     (is (= "not-found" (:code error)) "update is not idempotent over an absent row")
@@ -440,6 +588,66 @@
   (let [error (update-rejection "/api/tasks/7" "w-u9" (assoc new-task "status" "archived"))]
     (is (= "invalid-value" (:code error)))
     (is (= "status" (get-in error [:details :field])))))
+
+;; --- writes: the :move op (server-owned rank) ------------------------------
+
+(defn- patch-raw [uri qs body]
+  (server/handler {:request-method :patch :uri uri :query-string qs :body body}))
+
+(defn- project-tasks [project]
+  (second (get-json "/api/tasks" (str "project=" project))))
+
+(defn- column-ranks [body status]
+  (->> (:value body) (filter #(= status (:status %))) (map :rank) sort vec))
+
+;; p-1 seeds five tasks per status column, ranks 0..4. Task 1 is (p-1, todo, rank 0). A move
+;; carries only {status, index}; rank is server-owned and never in a record.
+
+(deftest move-places-card-and-redenses-columns
+  (patch-raw "/api/tasks/1" "requestId=w-m1" (record-json {"status" "done" "index" 2}))
+  (let [body  (project-tasks "p-1")
+        moved (first (filter #(= 1 (:id %)) (:value body)))]
+    (is (= "done" (:status moved)) "the card is in its new column")
+    (is (= 2 (:rank moved)) "at the requested index")
+    (is (= [0 1 2 3 4 5] (column-ranks body "done")) "destination column re-densed to 0..5")
+    (is (= [0 1 2 3] (column-ranks body "todo")) "the vacated column closed its gap")))
+
+(deftest move-reorders-within-a-column
+  (patch-raw "/api/tasks/1" "requestId=w-m2" (record-json {"status" "todo" "index" 3}))
+  (let [body (project-tasks "p-1")
+        t1   (first (filter #(= 1 (:id %)) (:value body)))]
+    (is (= "todo" (:status t1)))
+    (is (= 3 (:rank t1)) "the card lands at its new index within the same column")
+    (is (= [0 1 2 3 4] (column-ranks body "todo")) "the column stays dense 0..4")))
+
+(deftest move-touches-only-status-and-position
+  (let [before (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+    (patch-raw "/api/tasks/1" "requestId=w-m3" (record-json {"status" "doing" "index" 0}))
+    (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+      (is (= "doing" (:status after)))
+      (is (= (:title before) (:title after)) "the rest of the row is kept")
+      (is (= (:assigneeId before) (:assigneeId after))))))
+
+(deftest move-of-unknown-id-is-rejected
+  (let [body (json/parse-string (:body (patch-raw "/api/tasks/999" "requestId=w-m4"
+                                                  (record-json {"status" "done" "index" 0}))) true)]
+    (is (= "rejected" (:outcome body)))
+    (is (= "not-found" (get-in body [:error :code])))))
+
+(deftest move-to-unknown-status-is-rejected
+  (let [body (json/parse-string (:body (patch-raw "/api/tasks/1" "requestId=w-m5"
+                                                  (record-json {"status" "archived" "index" 0}))) true)]
+    (is (= "rejected" (:outcome body)))
+    (is (= "invalid-value" (get-in body [:error :code])))))
+
+(deftest update-preserves-server-owned-rank
+  (let [before (:rank (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1")))))]
+    (put-raw "/api/tasks/1" "requestId=w-m6"
+             (record-json {"title" "Renamed" "owner" "Alice" "start" "2026-01-01"
+                           "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
+    (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
+      (is (= "Renamed" (:title after)) "the edit applied")
+      (is (= before (:rank after)) "rank is server-owned — an update leaves it untouched"))))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]

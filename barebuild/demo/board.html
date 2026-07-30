@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BareBuild — Kanban board demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-fg: #1f2430;
+      --card-bg: #ffffff;
+      --muted: #6b7280;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --page-fg: #e7e9ee; --card-bg: #1b1f27; --muted: #9aa2b1; }
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      color: var(--page-fg);
+      max-width: 76rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    header { margin-bottom: 1.5rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); margin-top: 0; font-size: 0.875rem; }
+    #app { margin-top: 1.5rem; }
+
+    /* --- board layout --- */
+    .board { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1.25rem; }
+    .column {
+      flex: 1;
+      min-width: min(15rem, calc(100vw - 2rem));
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    .column-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.1rem 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      /* light mode: a slightly deepened accent reads on the pale column tint */
+      color: color-mix(in srgb, var(--accent), black 12%);
+    }
+    @media (prefers-color-scheme: dark) {
+      /* dark mode: lighten the accent so it stays legible on the dark column tint */
+      .column-header { color: color-mix(in srgb, var(--accent), white 42%); }
+    }
+    .column-header .dot {
+      width: 0.6rem; height: 0.6rem; border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* --- drop zones: transparent, let the column tint show; accent the hover + caret --- */
+    .column x-drop-zone {
+      --x-drop-zone-bg: transparent;
+      --x-drop-zone-border: transparent;
+      --x-drop-zone-padding: 0;
+      --x-drop-zone-gap: 0.55rem;
+      --x-drop-zone-min-height: 6rem;
+      --x-drop-zone-over-bg: color-mix(in srgb, var(--accent) 14%, transparent);
+      --x-drop-zone-over-border: var(--accent);
+      --x-drop-zone-caret-color: var(--accent);
+    }
+    .column-empty { color: var(--muted); font-size: 0.8rem; font-style: italic; padding: 0.5rem; }
+
+    /* --- cards --- */
+    x-drag-panel {
+      --x-drag-panel-radius: 11px;
+      --x-drag-panel-bg: var(--card-bg);
+      --x-drag-panel-color: var(--page-fg);   /* pair the text with the card bg, both theme-aware */
+      --x-drag-panel-padding: 0.6rem 0.75rem;
+      --x-drag-panel-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.10);
+      --x-drag-panel-lift-shadow: 0 12px 30px rgba(15, 23, 42, 0.28);
+      --x-drag-panel-lift-scale: 1.03;
+    }
+    x-drag-panel::part(panel) { border-left: 3px solid var(--accent); }
+    /* the title is slotted content — set its colour directly so it can't inherit a dark default */
+    x-drag-panel [slot=header] { font-weight: 600; font-size: 0.9rem; color: var(--page-fg); }
+    .board-card-body { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.45rem; }
+    .board-card-avatar {
+      flex: none;
+      width: 1.35rem; height: 1.35rem;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase;
+    }
+    .board-card-meta { color: var(--muted); font-size: 0.78rem; }
+
+    /* per-project: the board is meaningful only for a selected project */
+    x-board-consumer[data-empty="true"] .board { display: none; }
+    x-board-consumer:not([data-empty="true"]) .board-prompt { display: none; }
+    .board-prompt { color: var(--muted); margin-top: 1rem; }
+
+    x-select { max-width: 22rem; }
+    .projects-bar { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+
+    /* --- quick-add: the Add a task affordance at the bottom of the To Do column --- */
+    x-task-quickadd-consumer { display: block; margin-top: 0.25rem; }
+    .quickadd-open { align-self: flex-start; }
+    .quickadd-form { margin-top: 0.5rem; }
+    .quickadd-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BareBuild — Kanban board</h1>
+    <p class="subtitle">
+      A second projection of the same server state: two independent <code>&lt;server-resource&gt;</code>
+      elements, projects and tasks, coordinating through the URL. Pick a project to load its board.
+      Drag a card to another column and the move is submitted to the server, then observed back.
+      Nothing moves until the server confirms.
+    </p>
+  </header>
+
+  <main id="app">
+    <server-resource resource-id="projects" src="http://localhost:8090/api/projects">
+      <div class="projects-bar">
+        <x-project-selector-consumer>
+          <x-select label="Project" placeholder="Select a project"></x-select>
+        </x-project-selector-consumer>
+        <x-project-form-consumer>
+          <x-button data-role="open">New project</x-button>
+          <x-modal size="md" label="New project">
+            <x-typography slot="header" variant="h6">New project</x-typography>
+            <x-spacer size="1rem"></x-spacer>
+            <x-form novalidate>
+              <x-form-field name="name" type="text" label="Project name"></x-form-field>
+              <x-spacer size="1rem"></x-spacer>
+              <x-form-field name="description" type="text" label="Description"></x-form-field>
+              <x-button type="submit">Create</x-button>
+            </x-form>
+          </x-modal>
+        </x-project-form-consumer>
+      </div>
+    </server-resource>
+
+    <server-resource resource-id="tasks" src="http://localhost:8090/api/tasks">
+      <x-board-consumer>
+        <p class="board-prompt">Select a project to see its board.</p>
+        <div class="board">
+          <section class="column" style="--accent: #6366f1;">
+            <div class="column-header"><span class="dot"></span> To do</div>
+            <x-drop-zone value="todo" accepts="task" label="To do" animate-moves>
+              <span slot="empty" class="column-empty">Nothing to do yet</span>
+            </x-drop-zone>
+            <x-task-quickadd-consumer>
+              <x-button class="quickadd-open" data-role="open" variant="ghost" size="sm">+ Add a task</x-button>
+              <div class="quickadd-form" hidden>
+                <x-form novalidate>
+                  <x-form-field name="title" type="text" label="Title" placeholder="Card title"></x-form-field>
+                  <x-spacer size="0.5rem"></x-spacer>
+                  <x-form-field name="owner" type="text" label="Name" placeholder="Assigned to"></x-form-field>
+                  <div class="quickadd-actions">
+                    <x-button type="submit" size="sm">Add</x-button>
+                    <x-button data-role="cancel" variant="ghost" size="sm">Cancel</x-button>
+                  </div>
+                </x-form>
+              </div>
+            </x-task-quickadd-consumer>
+          </section>
+          <section class="column" style="--accent: #f59e0b;">
+            <div class="column-header"><span class="dot"></span> In progress</div>
+            <x-drop-zone value="doing" accepts="task" label="In progress" animate-moves>
+              <span slot="empty" class="column-empty">Nothing in progress</span>
+            </x-drop-zone>
+          </section>
+          <section class="column" style="--accent: #10b981;">
+            <div class="column-header"><span class="dot"></span> Done</div>
+            <x-drop-zone value="done" accepts="task" label="Done" animate-moves>
+              <span slot="empty" class="column-empty">Nothing done</span>
+            </x-drop-zone>
+          </section>
+        </div>
+      </x-board-consumer>
+    </server-resource>
+  </main>
+
+  <script type="module">
+    import { init } from "../dist/demo.js";
+    init();
+  </script>
+</body>
+</html>

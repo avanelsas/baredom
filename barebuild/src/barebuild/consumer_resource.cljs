@@ -13,9 +13,13 @@
 (def ^:private k-submit-write  "__xConsumerSubmitWrite")
 
 (defn submit-intent!
-  "Send an intent patch from a gesture handler back to the server-resource."
-  [^js consumer patch]
-  ((du/getv consumer k-submit-intent) patch))
+  "Send an intent patch from a gesture handler back to a server-resource. With no `target-id`
+   the patch drives the consumer's own resource; with one, it drives the named sibling resource
+   through its URL projection — explicit, URL-mediated cross-resource coordination."
+  ([^js consumer patch]
+   ((du/getv consumer k-submit-intent) patch))
+  ([^js consumer patch target-id]
+   ((du/getv consumer k-submit-intent) patch target-id)))
 
 (defn submit-write!
   "Send a write from a gesture handler back to the server-resource."

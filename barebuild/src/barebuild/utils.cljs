@@ -1,15 +1,30 @@
 (ns barebuild.utils
   (:require [clojure.string :as str]))
 
+(defn url-prefix
+  "The URL key prefix for a resource id: `<id>.` for a named resource, or \"\" for the unnamed
+  root resource, whose keys are bare."
+  [resource-id]
+  (if (str/blank? resource-id) "" (str resource-id ".")))
+
+(defn owned-url-keys
+  "The keys in `all-keys` a resource owns: its `<id>.`-prefixed keys when named, or the bare
+  undotted keys when unnamed (blank id). Bare and namespaced keys never overlap, so an unnamed
+  root resource and named siblings can share one URL without colliding."
+  [resource-id all-keys]
+  (if (str/blank? resource-id)
+    (filterv #(not (str/includes? % ".")) all-keys)
+    (let [prefix (str resource-id ".")]
+      (filterv #(str/starts-with? % prefix) all-keys))))
+
 (defn build-scoped-url
-  "Build the url from parameter set in the resource using the resource-id.
-  e.g. {:sort \"start\" :direction \"asc\" -> tasks.sort=start&tasks.direction=asc"
+  "Build the url from the resource's params, scoped by its resource-id. A named resource owns
+  `<id>.`-prefixed keys (e.g. tasks.sort=start); an unnamed (blank id) resource owns the bare
+  keys and writes them without a prefix (sort=start)."
   [search pathname resource-id new-params]
   (let [params (js/URLSearchParams. search)
-        prefix (str resource-id ".")
-        owned  (filterv #(str/starts-with? % prefix)
-                        (js/Array.from (.keys params)))]
-    (doseq [k owned]
+        prefix (url-prefix resource-id)]
+    (doseq [k (owned-url-keys resource-id (js/Array.from (.keys params)))]
       (.delete params k))
     (doseq [[k v] new-params]
       (.set params (str prefix (name k)) (str v)))

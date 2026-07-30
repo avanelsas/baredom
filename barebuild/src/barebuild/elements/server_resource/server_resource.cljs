@@ -18,12 +18,12 @@
 
 (defn- construct-url-intent [resource-id]
   (let [current-url-params (js/URLSearchParams. (.-search js/location))
-        prefix             (str resource-id ".")
-        resource-id-keys   (filterv #(str/starts-with? % prefix)
-                                    (js/Array.from (.keys current-url-params)))]
+        prefix             (utils/url-prefix resource-id)
+        owned              (utils/owned-url-keys resource-id
+                                                 (js/Array.from (.keys current-url-params)))]
     (utils/canonicalize-query
      (into {}
-           (for [k resource-id-keys]
+           (for [k owned]
              [(keyword (subs k (count prefix)))
               (.get current-url-params k)])))))
 
@@ -74,10 +74,23 @@
       (.catch (fn [^js _e]
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
+(defn- find-resource
+  "The <server-resource> on the page whose resolved id is `target-id`, or nil."
+  [target-id]
+  (some (fn [^js e]
+          (when (= target-id (:resource/id (du/getv e k-resource))) e))
+        (array-seq (.querySelectorAll js/document model/tag-name))))
+
 (defn- notify-consumers! [^js el r]
-  (let [consumers (du/getv el k-consumers)
-        ctx       {:submit-intent! (fn [patch]   (handle-event! el [:intent-patch patch]))
-                   :submit-write!  (fn [payload]  (handle-event! el [:submit-write payload]))}]
+  (let [own-id    (:resource/id r)
+        consumers (du/getv el k-consumers)
+        ctx       {:submit-intent! (fn [patch & [target-id]]
+                                     (let [target (if (model/targets-sibling? own-id target-id)
+                                                    (find-resource target-id)
+                                                    el)]
+                                       (when target
+                                         (handle-event! target [:intent-patch patch]))))
+                   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
     (doseq [^js c consumers]
       (.applyResource c r ctx))))
 
@@ -157,7 +170,7 @@
   have to be processed to get the element in the right state (e.g. table sorting).
   If there is an embedderd version, load that first."
   [^js el]
-  (let [resource-id    "tasks"
+  (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         history-policy {:navigation :push}
         on-popstate    (fn [_e] (handle-popstate el resource-id))
         embed          (read-boot-embed el)]
@@ -184,6 +197,10 @@
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
+;; The replay hook. BareReplay's dock calls el.projectResource(value) to push a reconstructed
+;; (time-travelled) resource value at the consumers, so the components paint that historical
+;; state. It reuses the same notify path a live step uses. The sole caller is
+;; barereplay.dock, a sibling project.
 (defn- setup-prototype! [^js proto]
   (.defineProperty js/Object proto "projectResource"
                    #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))

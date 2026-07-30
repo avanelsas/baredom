@@ -1,9 +1,10 @@
 # BareBuild
 
-**A tool that supports presenting data in a Web Component based UI using only server state [BareDOM](https://github.com/avanelsas/baredom).**
+**A tool that supports presenting data in a [BareDOM](https://github.com/avanelsas/baredom) Web Component based UI using only server state.**
 
 BareBuild attempts to support presentational web components using **server state only**. A client
-does not need business logic, store or runtime framework. The two main parts of BareBuild are:
+does not need business logic, store or runtime framework. This leads to an extremely thin client,
+and powerful timeline/replay capabilities for the UI. The two main parts of BareBuild are:
 
 - **`<server-resource>`**: a non-visual custom element that holds one immutable resource
   value, coordinates network delivery, and projects user intent into the URL.
@@ -14,6 +15,11 @@ are thin elements that translate/project an accepted server value onto a specifi
 
 The idea behind BareBuild is that you write a pure projection and a render function. BareBuild owns the whole lifecycle.
 A server holds all state and is the only source of truth.
+
+## Disclaimer
+
+- The code for BareBuild has been entirely written by me.
+- I used Claude as a brainstorming tool to sharpen my thoughts and ideas.
 
 ## The loop
 
@@ -83,15 +89,15 @@ flowchart LR
 
 - **Pure**: Every decision lives in `step` and is visible in the returned effects.
   The executor only performs them (fetch, write, history, notify, abort, diagnostics).
-  `step` is testable and replayable from an event log.
+  `step` is testable and replayable from an event log (see [BareReplay](https://github.com/avanelsas/baredom/barereplay)).
 - **Writes are the same loop**: a consumer calls `submit-write!`, `step` emits a `:write`
   effect, and the ack comes back as `:write-ack` and triggers a refetch. What is
   rendered always comes from the server, never from a local guess. `writing?` derives from
   the value exactly as `pending?` does. Write payloads are validated first against the
-  `:shape` the server sent. The op, create, update or delete, is a row in a table that
+  `:shape` the server sent. The op, create, update, delete or move, is a row in a table that
   `step` resolves into a method, a URL and an optional body, so the edge performs the
   request and decides nothing about it.
-- **One request in flight**: `start-request` mints a monotonic `:request/id`; `pending?`
+- **One request in flight**: `start-request` mints a monotonic `:request/id`. `pending?`
   and `installable?` derive purely from the value. A response is installed only if its id
   matches the live request. A gesture made mid-flight is picked up by a single trailing
   fetch once the in-flight request clears.
@@ -103,19 +109,56 @@ flowchart LR
 > example, see [`docs/architecture-diagram.md`](./docs/architecture-diagram.md); to write a
 > consumer, see [`docs/authoring-a-consumer.md`](./docs/authoring-a-consumer.md).
 
+## Coordinating multiple resources
+
+One page can hold several `<server-resource>` elements, each owning a slice of the URL. A named
+resource writes its intent under its **`resource-id`**, so give each one an id and their query
+keys never collide: `projects.*` for one, `tasks.*` for another. A single unnamed resource keeps
+the bare root keys (`?sort=…`), so name a resource only when it shares a page or is a target.
+Every view is still a single shareable link, and the back button still works.
+
+Consumers coordinate by **naming a sibling**. A gesture handler calls `submit-intent!` with a
+target id, which drives that sibling's URL projection and refetch. There is no shared store and
+no direct element reference, only the URL:
+
+```clojure
+;; selecting a project drives the tasks resource, not this one
+(consumer-resource/submit-intent!
+  el {:query-patch {:project id} :gesture-class :navigation} "tasks")
+```
+
+```html
+<server-resource resource-id="projects" src="/api/projects">
+  <x-project-selector-consumer>
+    <x-select label="Project"></x-select>
+  </x-project-selector-consumer>
+</server-resource>
+
+<server-resource resource-id="tasks" src="/api/tasks">
+  <x-board-consumer><!-- three drop-zones of draggable cards --></x-board-consumer>
+</server-resource>
+```
+
+Picking a project writes `tasks.project` into the URL, the tasks resource refetches its filtered
+set, and the board repaints. The demo's kanban board is built entirely this way. The step
+function is unchanged: coordination is just two resources each running the same pure loop, joined
+through the one place they already share, the URL.
+
 ## Status
 
 **Reads and writes both work end to end**: fetch, sort, filter, page, URL round-trip, create,
-update, delete, shape-driven validation, and keep-last-good on failure. Update is a **full
-replace** (PUT). There is no PATCH and no optimistic rendering.
+update, delete, move, shape-driven validation, and keep-last-good on failure. Update is a **full
+replace** (PUT). Move is a **positional command** (PATCH) that repositions a member by its
+server-owned rank, carrying only the destination. There is no optimistic rendering: a write is
+submitted, acked, and then observed through a refetch.
 
-BareBuild tries to be component-agnostic by design: a consumer only reads attributes and sets
+BareBuild tries to be component-agnostic by design. A consumer only reads attributes and sets
 attributes or properties, so nothing in the runtime knows what it drives. In practice
-**14 of BareDOM's 105 components** have been used end to end: `x-stat`, `x-progress`,
+**16 of BareDOM's 106 components** have been used end to end: `x-stat`, `x-progress`,
 `x-table` + `x-table-row` + `x-table-cell`, `x-search-field`, `x-pagination`, `x-alert`,
-`x-form`, `x-form-field`, `x-select`, `x-date-picker`, `x-modal`, `x-button`. Components
-with imperative-only APIs, canvas rendering, or internal animation state may need consumer
-patterns that do not exist yet.
+`x-form`, `x-form-field`, `x-select`, `x-date-picker`, `x-modal`, `x-button`, `x-drag-panel`,
+`x-drop-zone`. Components with imperative-only APIs, canvas rendering, or internal animation
+state may need consumer patterns that do not exist yet.
 
 Published to Clojars for ClojureScript host apps.
 
@@ -132,7 +175,7 @@ action.
 
 ```clojure
 ;; deps.edn
-{:deps {com.github.avanelsas/barebuild {:mvn/version "0.3.0"}}}
+{:deps {com.github.avanelsas/barebuild {:mvn/version "0.4.0"}}}
 ```
 
 This brings `com.github.avanelsas/baredom` with it, since BareBuild uses a handful of its
@@ -166,7 +209,7 @@ utilities. Register the runtime and your own consumers from your app's entry nam
 | Path | What |
 |---|---|
 | `src/barebuild/` | **the product** — the pure core (`resource`, `wire`, `utils`), the `register!` mechanism (`consumer_resource`), and the `<server-resource>` element |
-| `demo/` | **the demo** — example consumers, a Babashka dev-server, and a live page (showcase; never shipped) |
+| `demo/` | **the demo** — example consumers, a Babashka dev-server, and a live page (showcase, not shipped) |
 | `docs/` | [`server-contract.md`](./docs/server-contract.md), [`architecture-diagram.md`](./docs/architecture-diagram.md), [`authoring-a-consumer.md`](./docs/authoring-a-consumer.md) |
 | `test/barebuild/` | product unit tests |
 
@@ -182,7 +225,7 @@ npm test          # run the unit tests under Node
 Lint: `clj-kondo --lint src test demo/src demo/test`.
 
 BareBuild imports a few BareDOM utilities (one shared `du`, no fork). The local dev loop
-compiles them from the sibling `../src` path; the published jar declares
+compiles them from the sibling `../src` path. The published jar declares
 `com.github.avanelsas/baredom` as a real dependency instead. Keep the two in step. Only
 use BareDOM utilities that exist in the version `deps.edn` pins, or a local build will pass
 while every consumer's fails. (An app whose consumers drive BareDOM *components* installs

@@ -35,9 +35,9 @@
 
 (def ^:private statuses ["todo" "doing" "done"])
 
-;; Title vocab, deliberately free of any owner name, status word or date fragment as a
-;; substring: `filter-tasks` searches titles too, so a collision here would silently change
-;; the result sets the search tests pin.
+;; Title vocab, one per task so every task title is unique. Deliberately free of any owner name,
+;; status word or date fragment as a substring: `filter-tasks` searches titles too, so a collision
+;; here would silently change the result sets the search tests pin.
 (def ^:private titles
   ["Audit build pipeline"    "Migrate legacy schema"   "Refactor parser core"
    "Write onboarding guide"  "Fix flaky test suite"    "Profile query latency"
@@ -45,24 +45,95 @@
    "Document error codes"    "Batch import jobs"       "Retire unused flags"
    "Split monolith module"   "Cache lookup results"    "Tune retry backoff"
    "Chart usage metrics"     "Patch upload limits"     "Verify backup restore"
-   "Seed staging fixtures"   "Polish empty states"])
+   "Seed staging fixtures"   "Polish empty states"     "Compress asset bundles"
+   "Rotate access keys"      "Sanitize user input"     "Throttle write bursts"
+   "Prune stale sessions"    "Validate schema types"   "Refresh cache layers"
+   "Isolate flaky mocks"     "Compact log storage"     "Restructure module graph"
+   "Capture slow traces"     "Warm lookup tables"      "Shard heavy queries"
+   "Backfill missing rows"   "Simplify build steps"    "Escape shell args"
+   "Merge feature flags"     "Trace memory leaks"      "Bump upstream libs"
+   "Publish release notes"])
+
+;; --- related collections: users and projects (relational board demo) -------
+;; Two server-owned collections the board demo projects alongside tasks, over ONE shared
+;; backend with the flat table demo. A task references a user and a project by opaque string
+;; id; the server denormalizes their display names onto each task row on read, so a consumer
+;; renders a name without joining across resources.
+
+(def users-revision "users:v1")
+(def projects-revision "projects:v1")
+
+(def ^:private users
+  [{:id "u-1" :name "Alice"  :email "alice@example.com"}
+   {:id "u-2" :name "Bob"    :email "bob@example.com"}
+   {:id "u-3" :name "Carmen" :email "carmen@example.com"}
+   {:id "u-4" :name "Dev"    :email "dev@example.com"}
+   {:id "u-5" :name "Erin"   :email "erin@example.com"}])
+
+(def ^:private initial-projects
+  [{:id "p-1" :name "Website Redesign" :description "Marketing site refresh"}
+   {:id "p-2" :name "Mobile App"       :description "iOS and Android client"}
+   {:id "p-3" :name "Data Platform"    :description "Warehouse and pipelines"}])
+
+;; Projects are writable: the board demo creates them (POST /api/projects), so they live in an
+;; atom like tasks. Users stay read-only.
+(def projects (atom initial-projects))
+
+(defn reset-projects!
+  "Restore the pristine three-project set — a test seam mirroring reset-tasks!."
+  []
+  (reset! projects initial-projects))
+
+(def users-shape
+  {:idKey  "id"
+   :fields [{:key "name"  :type "string" :required true}
+            {:key "email" :type "string"}]})
+
+(def projects-shape
+  {:idKey  "id"
+   :fields [{:key "name"        :type "string" :required true}
+            {:key "description" :type "string"}]})
+
+(def ^:private user-ids (mapv :id users))
+(def ^:private project-ids (mapv :id initial-projects))
+
+(defn- user-name [id]
+  (some #(when (= (:id %) id) (:name %)) users))
+
+(defn- project-name [id]
+  (some #(when (= (:id %) id) (:name %)) @projects))
 
 (defn- gen-task
-  "Deterministic demo task for 1-based id `i`."
+  "Deterministic demo task for 1-based id `i`. `projectId` is decorrelated from `status` (a
+   different cycle) so every project spans all three status columns rather than collapsing
+   into one; `owner` and `status` keep their original cycles so the flat-demo counts hold."
   [i]
   (let [day (inc (mod (dec i) 28))]
-    {:id     i
-     :title  (nth titles (mod (dec i) (count titles)))
-     :owner  (nth owners (mod (dec i) (count owners)))
-     :start  (format "2026-01-%02d" day)
-     :end    (format "2026-02-%02d" day)
-     :status (nth statuses (mod (dec i) 3))}))
+    {:id         i
+     :title      (nth titles (mod (dec i) (count titles)))
+     :owner      (nth owners (mod (dec i) (count owners)))
+     :start      (format "2026-01-%02d" day)
+     :end        (format "2026-02-%02d" day)
+     :status     (nth statuses (mod (dec i) 3))
+     :projectId  (nth project-ids (mod (quot (dec i) 3) (count project-ids)))
+     :assigneeId (nth user-ids (mod (dec i) (count user-ids)))}))
 
 ;; 40 rows so pagination is worth demoing. The set is mutable server state — a delete
 ;; (step W1a) removes a row — so it lives in an atom. This is honest backend state, NOT a
 ;; BareBuild value/step: the stateless-component rule governs the client runtime, not the
 ;; oracle. `initial-tasks` is the pristine set the tests reset to between cases.
-(def ^:private initial-tasks (mapv gen-task (range 1 41)))
+(defn- seed-ranks
+  "Assign a dense 0-based rank to each task within its (projectId, status) column, by id order,
+   then restore the set's natural id order. Rank places a card within its board column; the
+   server owns it."
+  [ts]
+  (->> (vals (group-by (juxt :projectId :status) ts))
+       (mapcat (fn [group]
+                 (map-indexed (fn [idx t] (assoc t :rank idx)) (sort-by :id group))))
+       (sort-by :id)
+       vec))
+
+(def ^:private initial-tasks (seed-ranks (mapv gen-task (range 1 41))))
 (def tasks (atom initial-tasks))
 
 (defn reset-tasks!
@@ -134,6 +205,18 @@
                ts))
     ts))
 
+(defn- project-term
+  "The trimmed `project` param, or nil when absent or blank. Opaque id of the project whose
+   board is being viewed; a nil term leaves the task set unfiltered."
+  [params]
+  (let [p (some-> (get params "project") str/trim)]
+    (when-not (str/blank? p) p)))
+
+(defn filter-by-project
+  "Rows whose :projectId is `proj`. A nil proj leaves the set untouched. Applied before search."
+  [ts proj]
+  (if proj (filterv #(= (:projectId %) proj) ts) ts))
+
 ;; --- query handling (steps 2a + 4a) ----------------------------------------
 
 (defn normalize-query
@@ -148,8 +231,12 @@
   [params tp]
   (let [sort (get params "sort")
         term (search-term params)
+        proj (project-term params)
         page (parse-page params tp)]
     (cond-> {}
+      proj
+      (assoc "project" proj)
+
       term
       (assoc "search" term)
 
@@ -201,7 +288,7 @@
 
 (def ^:private cors-headers
   {"access-control-allow-origin"  "*"
-   "access-control-allow-methods" "GET,POST,PUT,DELETE,OPTIONS"
+   "access-control-allow-methods" "GET,POST,PUT,PATCH,DELETE,OPTIONS"
    "access-control-allow-headers" "content-type"})
 
 (defn- parse-query [qs]
@@ -218,28 +305,54 @@
    :headers (merge {"content-type" "application/json"} cors-headers)
    :body    (json/generate-string body)})
 
+(defn- denormalize-task
+  "Add the server-owned display names for a task's user and project references, so a consumer
+   renders a name without joining across resources. A nil reference yields a nil name; the
+   presentation layer decides any fallback (a board card shows :owner when there is no user)."
+  [t]
+  (assoc t
+         :assigneeName (user-name (:assigneeId t))
+         :projectName  (project-name (:projectId t))))
+
 (defn accepted-envelope
-  "Build the complete accepted envelope: rows are filtered by the search term (7a), then
-   sorted, then sliced to the requested page. The query echo is the server-normalized query,
-   and `pageInfo` reflects the FILTERED set (current page, page size, total pages/rows) so
-   the client's pagination and any count display follow the search."
+  "Build the complete accepted envelope: rows are filtered by project (board reads) and by the
+   search term (7a), then sorted, then — for the flat, unfiltered view — sliced to the requested
+   page. A `?project=` read is the whole column set UNPAGINATED: a board places every card, so
+   paging it would hide cards. The query echo is the server-normalized query; `pageInfo` reflects
+   the FILTERED set. Each returned row carries its denormalized user and project names."
   [params]
-  (let [term     (search-term params)
-        filtered (filter-tasks @tasks term)
-        tp       (total-pages (count filtered))
+  (let [proj     (project-term params)
+        term     (search-term params)
+        filtered (-> (filter-by-project @tasks proj)
+                     (filter-tasks term))
+        paged?   (nil? proj)
+        tp       (if paged? (total-pages (count filtered)) 1)
         nq       (normalize-query params tp)
         page     (parse-page params tp)
-        sorted   (sort-tasks filtered nq)]
+        sorted   (sort-tasks filtered nq)
+        rows     (if paged? (paginate sorted page) sorted)]
     {:outcome   "accepted"
      :requestId (get params "requestId" "server-boot")
      :revision  revision
      :query     nq
-     :value     (paginate sorted page)
+     :value     (mapv denormalize-task rows)
      :shape     shape
-     :pageInfo  {:page       page
-                 :pageSize   page-size
+     :pageInfo  {:page       (if paged? page 1)
+                 :pageSize   (if paged? page-size (count rows))
                  :totalPages tp
                  :totalCount (count filtered)}}))
+
+(defn collection-envelope
+  "The read envelope for a small related collection (users, projects): the full set, no paging,
+   search or sort. The same §6.5 accepted shape as tasks, so one consumer mechanism drives all."
+  [params rev rows shape]
+  {:outcome   "accepted"
+   :requestId (get params "requestId" "server-boot")
+   :revision  rev
+   :query     {}
+   :value     rows
+   :shape     shape
+   :pageInfo  {:page 1 :pageSize (count rows) :totalPages 1 :totalCount (count rows)}})
 
 ;; --- writes: acks ----------------------------------------------------------
 
@@ -250,12 +363,14 @@
 (defn write-rejected-ack
   "The §8 rejected write ack: the accepted fields plus a structured `error {code, message,
    details}`. Still HTTP 200 — the outcome carries the verdict; `details` names the offending
-   field so the client can map it back onto the form."
-  [params error]
-  {:outcome   "rejected"
-   :requestId (get params "requestId" "server-boot")
-   :revision  revision
-   :error     error})
+   field so the client can map it back onto the form. `rev` defaults to the tasks revision;
+   a project write passes its own."
+  ([params error] (write-rejected-ack params error revision))
+  ([params error rev]
+   {:outcome   "rejected"
+    :requestId (get params "requestId" "server-boot")
+    :revision  rev
+    :error     error}))
 
 ;; --- writes: delete (step W1a) ---------------------------------------------
 
@@ -310,8 +425,9 @@
   "First structural violation (required / type / enum) of a write record against `shape`, or
    nil. Defense-in-depth per WRITES-PLAN decision #7: the client runs the same checks locally
    via `validate-payload`, but the server is the authority and never trusts the client. Checked
-   independently in Clojure — the oracle is an honest second implementation, not the bijection."
-  [record]
+   independently in Clojure — the oracle is an honest second implementation, not the bijection.
+   Shape is a parameter so the same validator serves tasks and projects."
+  [shape record]
   (some (fn [{:keys [key type required enum]}]
           (let [v (get record key)]
             (cond
@@ -349,7 +465,7 @@
    update run the same checks — an update is a full replace, so its payload is a complete
    record and the shape validates it exactly as it validates a create."
   [record]
-  (or (structural-error record) (range-error record)))
+  (or (structural-error shape record) (range-error record)))
 
 (defn update-error
   "First error for an update of `id` in `ts` with `record`. A missing target comes first:
@@ -365,38 +481,143 @@
      :details {:id raw-id}}))
 
 (defn- record->row
-  "The stored row fields for a write `record` (opaque string keys). Blank optional fields
-   normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is)."
+  "The client-owned row fields for a write `record` (opaque string keys). Blank optional fields
+   normalize to nil so the row stays read-contract valid (\"\" is not a valid :date; nil is).
+   Rank is NOT here — it is server-owned and set only by :move."
   [record]
   (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
-    {:title  (field "title")
-     :owner  (field "owner")
-     :start  (field "start")
-     :end    (field "end")
-     :status (field "status")}))
+    {:title      (field "title")
+     :owner      (field "owner")
+     :start      (field "start")
+     :end        (field "end")
+     :status     (field "status")
+     :projectId  (field "projectId")
+     :assigneeId (field "assigneeId")}))
 
 (defn- next-id
   "Server-assigned id for a new task: one past the current max (ids are 1-based)."
   [ts]
   (inc (reduce max 0 (map :id ts))))
 
+(defn- column-of
+  "The (projectId, status) column a task lives in. Rank is dense within it."
+  [t]
+  [(:projectId t) (:status t)])
+
+(defn- append-rank
+  "The next rank at the bottom of a `col` (projectId, status): one past the current max, or 0
+   for an empty column. A board create lands its card below the others, and rank stays
+   server-owned, minted here rather than sent by the client."
+  [ts col]
+  (let [ranks (->> ts (filter #(= (column-of %) col)) (keep :rank))]
+    (if (seq ranks) (inc (reduce max ranks)) 0)))
+
 (defn create-task
-  "Append a task built from `record` with a server-minted id. Returns the updated set.
-   Duplicate-on-retry is an accepted edge for now (WRITES-PLAN decision #5)."
+  "Append a task built from `record` with a server-minted id and a server-minted rank at the
+   bottom of its column. Returns the updated set. Duplicate-on-retry is an accepted edge for now
+   (WRITES-PLAN decision #5)."
   [ts record]
-  (conj ts (merge {:id (next-id ts)} (record->row record))))
+  (let [row (record->row record)]
+    (conj ts (merge {:id   (next-id ts)
+                     :rank (append-rank ts (column-of row))}
+                    row))))
 
 (defn update-task
-  "Replace the row whose id is `id` with `record`, keeping its id and its position in the
-   set. PUT semantics: a full replace, so every field comes from the record — a key the
-   client omitted becomes nil rather than keeping its old value. An id matching no row
+  "Replace the row whose id is `id` with `record`. PUT semantics: a full replace of the
+   client-owned fields, so a key the client omitted becomes nil. The server-owned fields — id
+   and rank — are preserved across the replace; only :move changes rank. An id matching no row
    leaves the set untouched (the handler rejects that case before calling this)."
   [ts id record]
   (mapv (fn [t]
           (if (= (:id t) id)
-            (merge {:id id} (record->row record))
+            (merge {:id id :rank (:rank t)} (record->row record))
             t))
         ts))
+
+;; --- writes: the :move op (server-owned rank) ------------------------------
+;; Rank is a card's position within its (projectId, status) column, and it belongs to the SERVER
+;; — the client never sends it in a record. A :move carries only the destination (status + index);
+;; the server places the card there and re-denses the affected columns so ranks stay a clean 0..n.
+
+(defn- place-and-dense
+  "Renumber the ranks of `col`'s tasks to a dense 0-based sequence. When `place-id` names a task
+   in the column, it is inserted at `place-rank` (clamped) instead of at its stored rank;
+   otherwise the stored rank order is kept — used to close the gap in a vacated column."
+  [ts col place-id place-rank]
+  (let [in?     (fn [t] (= (column-of t) col))
+        others  (->> ts (filter in?) (remove #(= (:id %) place-id)) (sort-by :rank) vec)
+        placed  (some #(when (and (in? %) (= (:id %) place-id)) %) ts)
+        ordered (if placed
+                  (let [i (max 0 (min (count others) (int place-rank)))]
+                    (vec (concat (subvec others 0 i) [placed] (subvec others i))))
+                  others)
+        rank-of (into {} (map-indexed (fn [idx t] [(:id t) idx]) ordered))]
+    (mapv (fn [t] (if (in? t) (assoc t :rank (rank-of (:id t))) t)) ts)))
+
+(defn reindex-columns
+  "After a board move of task `id`, re-dense its destination column (placing the task at its
+   requested rank) and its old column (closing the gap it left behind)."
+  [ts id old-col]
+  (let [moved    (first (filter #(= (:id %) id) ts))
+        dest-col (column-of moved)]
+    (cond-> (place-and-dense ts dest-col id (:rank moved))
+      (not= old-col dest-col) (place-and-dense old-col nil nil))))
+
+(defn move-error
+  "First error for a :move of `id`: a missing target (a move, like an update, is not idempotent
+   over an absent row), or a destination status outside the enum. The index is clamped by
+   place-and-dense, so it needs no bound check."
+  [ts id raw-id record]
+  (let [statuses (set (:enum (some #(when (= "status" (:key %)) %) (:fields shape))))]
+    (cond
+      (not (some #(= (:id %) id) ts))
+      {:code "not-found" :message (str "No task with id \"" raw-id "\".") :details {:id raw-id}}
+
+      (not (contains? statuses (get record "status")))
+      {:code    "invalid-value"
+       :message (str "\"" (get record "status") "\" is not a status.")
+       :details {:field "status"}})))
+
+(defn move-task
+  "Reposition task `id` to the destination status + index the :move record carries. Only status
+   and rank change; every other field is kept. The destination and vacated columns are re-densed."
+  [ts id record]
+  (let [old-row (first (filter #(= (:id %) id) ts))
+        old-col (column-of old-row)
+        index   (or (get record "index") (count ts))
+        moved   (assoc old-row :status (get record "status") :rank index)
+        ts*     (mapv (fn [t] (if (= (:id t) id) moved t)) ts)]
+    (reindex-columns ts* id old-col)))
+
+;; --- writes: create project ------------------------------------------------
+;; The board demo creates projects. Same §6.5 write contract as tasks, validated against
+;; projects-shape; an accepted create returns the full post-mutation projects collection.
+
+(defn project-error
+  "First structural violation of a project write record against projects-shape, or nil.
+   Projects carry no cross-field rule, so structural validation is the whole check."
+  [record]
+  (structural-error projects-shape record))
+
+(defn- project->row
+  "The client-owned fields for a project write record. Blank optional fields normalize to nil."
+  [record]
+  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
+    {:name        (field "name")
+     :description (field "description")}))
+
+(defn- next-project-id
+  "Server-assigned id for a new project: `p-` plus one past the current max numeric suffix."
+  [ps]
+  (let [n (reduce (fn [m p]
+                    (max m (try (Integer/parseInt (subs (:id p) 2)) (catch Exception _ 0))))
+                  0 ps)]
+    (str "p-" (inc n))))
+
+(defn create-project
+  "Append a project built from `record` with a server-minted id. Returns the updated set."
+  [ps record]
+  (conj ps (merge {:id (next-project-id ps)} (project->row record))))
 
 ;; --- fixtures (step 5a): controlled failure modes for the client (5b) ------
 
@@ -442,7 +663,7 @@
          "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
          "<title>BareBuild — SSR boot</title></head>\n<body>\n"
          "  <h1>BareBuild — SSR boot demo</h1>\n"
-         "  <server-resource resource-id=\"tasks\" src=\"/api/tasks\">\n"
+         "  <server-resource src=\"/api/tasks\">\n"
          "    <script type=\"application/json\">" envelope "</script>\n"
          "    <x-table-consumer>\n"
          "      <x-table caption=\"Tasks\" bordered></x-table>\n"
@@ -485,6 +706,29 @@
       (str/starts-with? uri "/dist/")
       (serve-dist uri)
 
+      ;; GET /api/users, /api/projects — the related collections the board projects alongside
+      ;; tasks. Same accepted envelope; a task references these by opaque string id. Users are
+      ;; read-only; projects also accept a create (POST) below.
+      (= "/api/users" uri)
+      (json-response 200 (collection-envelope (parse-query (:query-string req))
+                                              users-revision users users-shape))
+
+      (and (= :get (:request-method req)) (= "/api/projects" uri))
+      (json-response 200 (collection-envelope (parse-query (:query-string req))
+                                              projects-revision @projects projects-shape))
+
+      ;; POST /api/projects — create a project from the JSON record body. Structural validation
+      ;; against projects-shape; a rejection carries the projects revision and field details.
+      ;; An accepted create appends the project and returns the full post-mutation collection.
+      (and (= :post (:request-method req)) (= "/api/projects" uri))
+      (let [params (parse-query (:query-string req))
+            record (request-record req)]
+        (if-let [error (project-error record)]
+          (json-response 200 (write-rejected-ack params error projects-revision))
+          (do (swap! projects create-project record)
+              (json-response 200 (collection-envelope params projects-revision
+                                                      @projects projects-shape)))))
+
       ;; POST /api/tasks — create a task from the JSON record body. Server-only semantic
       ;; validation (end >= start) yields a rejected ack + field details; otherwise the record
       ;; is appended with a server-minted id and the full post-mutation envelope, shaped by the
@@ -508,6 +752,19 @@
         (if-let [error (update-error @tasks id (task-id-str uri) record)]
           (json-response 200 (write-rejected-ack params error))
           (do (swap! tasks update-task id record)
+              (json-response 200 (accepted-envelope params)))))
+
+      ;; PATCH /api/tasks/:id — the :move op. Repositions a card (server-owned rank) to the
+      ;; destination status + index the body carries; every other field is left as-is. HTTP 200,
+      ;; the full post-mutation envelope, like the other writes.
+      (and (= :patch (:request-method req))
+           (str/starts-with? uri "/api/tasks/"))
+      (let [params (parse-query (:query-string req))
+            id     (task-id-from-uri uri)
+            record (request-record req)]
+        (if-let [error (move-error @tasks id (task-id-str uri) record)]
+          (json-response 200 (write-rejected-ack params error))
+          (do (swap! tasks move-task id record)
               (json-response 200 (accepted-envelope params)))))
 
       (= "/api/tasks" uri)

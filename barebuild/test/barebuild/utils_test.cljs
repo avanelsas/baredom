@@ -24,6 +24,25 @@
   (testing "empty starting search + new params"
     (is (= "/t?tasks.page=2" (utils/build-scoped-url "" "/t" "tasks" {:page "2"})))))
 
+(deftest build-scoped-url-unnamed-writes-bare-keys
+  (testing "a blank id owns the root namespace: keys are written and replaced without a prefix"
+    (is (= "/t?sort=owner"
+           (utils/build-scoped-url "?sort=STALE" "/t" nil {:sort "owner"})))
+    (is (= "/t?sort=owner" (utils/build-scoped-url "?sort=STALE" "/t" "" {:sort "owner"}))))
+  (testing "an unnamed resource touches only bare keys, leaving a named sibling's keys intact"
+    (is (= "/t?projects.name=x&sort=owner"
+           (utils/build-scoped-url "?projects.name=x&sort=old" "/t" nil {:sort "owner"})))))
+
+(deftest url-prefix-and-owned-keys
+  (testing "a named resource prefixes with `<id>.`, an unnamed one uses no prefix"
+    (is (= "tasks." (utils/url-prefix "tasks")))
+    (is (= "" (utils/url-prefix nil)))
+    (is (= "" (utils/url-prefix ""))))
+  (testing "owned keys split bare from namespaced so root and named siblings never collide"
+    (let [ks ["sort" "page" "projects.name" "tasks.sort"]]
+      (is (= ["projects.name"] (utils/owned-url-keys "projects" ks)))
+      (is (= ["sort" "page"] (utils/owned-url-keys nil ks))))))
+
 ;; --- request: the shared request builder -----------------------------------
 
 (deftest request-builds-a-collection-get-with-the-query
