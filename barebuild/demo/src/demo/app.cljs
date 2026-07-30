@@ -21,6 +21,7 @@
    [baredom.components.x-table-cell.x-table-cell :as x-table-cell]
    [baredom.components.x-typography.x-typography :as x-typography]
    [demo.x-board-consumer.x-board-consumer :as x-board-consumer]
+   [demo.x-project-form-consumer.x-project-form-consumer :as x-project-form-consumer]
    [demo.x-project-selector-consumer.x-project-selector-consumer :as x-project-selector-consumer]
    [demo.x-progress-consumer.x-progress-consumer :as x-progress-consumer]
    [demo.x-search-field-consumer.x-search-field-consumer :as x-search-field-consumer]
@@ -59,6 +60,7 @@
 
   ;; the demo's consumers (host-app code, not part of BareBuild)
   (x-board-consumer/init!)
+  (x-project-form-consumer/init!)
   (x-project-selector-consumer/init!)
   (x-progress-consumer/init!)
   (x-search-field-consumer/init!)

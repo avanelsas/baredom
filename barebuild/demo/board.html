@@ -103,6 +103,7 @@
     .board-prompt { color: var(--muted); margin-top: 1rem; }
 
     x-select { max-width: 22rem; }
+    .projects-bar { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
   </style>
 </head>
 <body>
@@ -118,9 +119,24 @@
 
   <main id="app">
     <server-resource resource-id="projects" src="http://localhost:8090/api/projects">
-      <x-project-selector-consumer>
-        <x-select label="Project" placeholder="Select a project"></x-select>
-      </x-project-selector-consumer>
+      <div class="projects-bar">
+        <x-project-selector-consumer>
+          <x-select label="Project" placeholder="Select a project"></x-select>
+        </x-project-selector-consumer>
+        <x-project-form-consumer>
+          <x-button data-role="open">New project</x-button>
+          <x-modal size="md" label="New project">
+            <x-typography slot="header" variant="h6">New project</x-typography>
+            <x-spacer size="1rem"></x-spacer>
+            <x-form novalidate>
+              <x-form-field name="name" type="text" label="Project name"></x-form-field>
+              <x-spacer size="1rem"></x-spacer>
+              <x-form-field name="description" type="text" label="Description"></x-form-field>
+              <x-button type="submit">Create</x-button>
+            </x-form>
+          </x-modal>
+        </x-project-form-consumer>
+      </div>
     </server-resource>
 
     <server-resource src="http://localhost:8090/api/tasks">
