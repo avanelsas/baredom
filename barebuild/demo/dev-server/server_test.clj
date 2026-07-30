@@ -6,9 +6,9 @@
             [cheshire.core :as json]
             [server]))
 
-;; The delete tests mutate the in-memory set; reset before each case so the count-based
+;; The write tests mutate the in-memory sets; reset before each case so the count-based
 ;; read assertions hold regardless of run order.
-(use-fixtures :each (fn [t] (server/reset-tasks!) (t)))
+(use-fixtures :each (fn [t] (server/reset-tasks!) (server/reset-projects!) (t)))
 
 (defn- get-raw [uri qs]
   (server/handler {:request-method :get :uri uri :query-string qs}))
@@ -211,6 +211,36 @@
     (is (= 3 (count (:value body))) "all projects, unpaged")
     (is (some #(= "p-1" (:id %)) (:value body)))))
 
+(deftest create-project-appends-and-returns-collection
+  (let [resp (post-raw "/api/projects" "requestId=cp-1"
+                       (record-json {"name" "Growth Experiments" "description" "A/B tests"}))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a write response is HTTP 200")
+    (is (= "accepted" (:outcome body)) "a valid create is accepted")
+    (is (= "cp-1" (:requestId body)) "echoes the client request id")
+    (is (= "projects:v1" (:revision body)) "carries the projects revision")
+    (is (= 4 (count (:value body))) "the new project is in the returned collection")
+    (let [made (last (:value body))]
+      (is (= "p-4" (:id made)) "server mints the next project id")
+      (is (= "Growth Experiments" (:name made))))))
+
+(deftest create-project-mutates-the-set
+  (post-raw "/api/projects" "requestId=cp-2" (record-json {"name" "Growth Experiments"}))
+  (let [[_ body] (get-json "/api/projects" nil)]
+    (is (= 4 (count (:value body))) "the created project is observable on a later read")
+    (is (some #(= "Growth Experiments" (:name %)) (:value body)))))
+
+(deftest create-project-with-blank-name-is-rejected
+  (let [resp (post-raw "/api/projects" "requestId=cp-3" (record-json {"name" ""}))
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)) "a rejected write is still HTTP 200")
+    (is (= "rejected" (:outcome body)))
+    (is (= "projects:v1" (:revision body)) "the rejection carries the projects revision")
+    (is (= "missing-required" (get-in body [:error :code])))
+    (is (= "name" (get-in body [:error :details :field])) "details name the offending field")
+    (is (= 3 (get-in (second (get-json "/api/projects" nil)) [:pageInfo :totalCount]))
+        "a rejected create does not mutate the set")))
+
 (deftest flat-read-shape-fields-are-unchanged
   (let [[_ body] (get-json "/api/tasks" nil)]
     (is (= ["title" "owner" "start" "end" "status"]
@@ -384,6 +414,30 @@
         (is (= "Ship the release" (:title row)))
         (is (= "Zoe" (:owner row)))
         (is (= 41 (:id row)) "server assigns the next id")))))
+
+(deftest board-create-lands-at-bottom-of-its-column
+  (let [before (count (:value (second (get-json "/api/tasks" "project=p-1"))))]
+    (post-raw "/api/tasks" "requestId=w-b1"
+              (record-json {"title" "New board card" "owner" "Zoe" "start" "2026-03-01"
+                            "status" "todo" "projectId" "p-1"}))
+    (let [[_ body] (get-json "/api/tasks" "project=p-1")
+          todo     (filter #(= "todo" (:status %)) (:value body))
+          made     (first (filter #(= "New board card" (:title %)) todo))]
+      (is (= (inc before) (count (:value body))) "the card is added to the project board")
+      (is (some? made) "the new card is in the To Do column")
+      (is (= (dec (count todo)) (:rank made)) "it lands at the bottom of the column")
+      (is (= (set (range (count todo))) (set (map :rank todo)))
+          "the column ranks stay dense 0..n-1"))))
+
+(deftest board-create-shows-the-typed-name-without-a-user
+  (post-raw "/api/tasks" "requestId=w-b2"
+            (record-json {"title" "Named card" "owner" "Wendy" "start" "2026-03-01"
+                          "status" "todo" "projectId" "p-1"}))
+  (let [[_ body] (get-json "/api/tasks" "project=p-1")
+        made     (first (filter #(= "Named card" (:title %)) (:value body)))]
+    (is (nil? (:assigneeId made)) "the board create carries no user reference")
+    (is (= "Wendy" (:assigneeName made))
+        "the typed name falls through to the denormalized assignee name")))
 
 (deftest create-with-end-before-start-is-rejected
   (let [bad  (assoc new-task "start" "2026-03-10" "end" "2026-03-01")

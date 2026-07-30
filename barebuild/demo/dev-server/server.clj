@@ -70,10 +70,19 @@
    {:id "u-4" :name "Dev"    :email "dev@example.com"}
    {:id "u-5" :name "Erin"   :email "erin@example.com"}])
 
-(def ^:private projects
+(def ^:private initial-projects
   [{:id "p-1" :name "Website Redesign" :description "Marketing site refresh"}
    {:id "p-2" :name "Mobile App"       :description "iOS and Android client"}
    {:id "p-3" :name "Data Platform"    :description "Warehouse and pipelines"}])
+
+;; Projects are writable: the board demo creates them (POST /api/projects), so they live in an
+;; atom like tasks. Users stay read-only.
+(def projects (atom initial-projects))
+
+(defn reset-projects!
+  "Restore the pristine three-project set — a test seam mirroring reset-tasks!."
+  []
+  (reset! projects initial-projects))
 
 (def users-shape
   {:idKey  "id"
@@ -86,13 +95,13 @@
             {:key "description" :type "string"}]})
 
 (def ^:private user-ids (mapv :id users))
-(def ^:private project-ids (mapv :id projects))
+(def ^:private project-ids (mapv :id initial-projects))
 
 (defn- user-name [id]
   (some #(when (= (:id %) id) (:name %)) users))
 
 (defn- project-name [id]
-  (some #(when (= (:id %) id) (:name %)) projects))
+  (some #(when (= (:id %) id) (:name %)) @projects))
 
 (defn- gen-task
   "Deterministic demo task for 1-based id `i`. `projectId` is decorrelated from `status` (a
@@ -298,10 +307,11 @@
 
 (defn- denormalize-task
   "Add the server-owned display names for a task's user and project references, so a consumer
-   renders a name without joining across resources. A nil reference yields a nil name."
+   renders a name without joining across resources. A task with no assignee user falls back to
+   its own :owner, so a board card created with just a typed name still shows that name."
   [t]
   (assoc t
-         :assigneeName (user-name (:assigneeId t))
+         :assigneeName (or (user-name (:assigneeId t)) (:owner t))
          :projectName  (project-name (:projectId t))))
 
 (defn accepted-envelope
@@ -353,12 +363,14 @@
 (defn write-rejected-ack
   "The §8 rejected write ack: the accepted fields plus a structured `error {code, message,
    details}`. Still HTTP 200 — the outcome carries the verdict; `details` names the offending
-   field so the client can map it back onto the form."
-  [params error]
-  {:outcome   "rejected"
-   :requestId (get params "requestId" "server-boot")
-   :revision  revision
-   :error     error})
+   field so the client can map it back onto the form. `rev` defaults to the tasks revision;
+   a project write passes its own."
+  ([params error] (write-rejected-ack params error revision))
+  ([params error rev]
+   {:outcome   "rejected"
+    :requestId (get params "requestId" "server-boot")
+    :revision  rev
+    :error     error}))
 
 ;; --- writes: delete (step W1a) ---------------------------------------------
 
@@ -413,8 +425,9 @@
   "First structural violation (required / type / enum) of a write record against `shape`, or
    nil. Defense-in-depth per WRITES-PLAN decision #7: the client runs the same checks locally
    via `validate-payload`, but the server is the authority and never trusts the client. Checked
-   independently in Clojure — the oracle is an honest second implementation, not the bijection."
-  [record]
+   independently in Clojure — the oracle is an honest second implementation, not the bijection.
+   Shape is a parameter so the same validator serves tasks and projects."
+  [shape record]
   (some (fn [{:keys [key type required enum]}]
           (let [v (get record key)]
             (cond
@@ -452,7 +465,7 @@
    update run the same checks — an update is a full replace, so its payload is a complete
    record and the shape validates it exactly as it validates a create."
   [record]
-  (or (structural-error record) (range-error record)))
+  (or (structural-error shape record) (range-error record)))
 
 (defn update-error
   "First error for an update of `id` in `ts` with `record`. A missing target comes first:
@@ -486,11 +499,25 @@
   [ts]
   (inc (reduce max 0 (map :id ts))))
 
+(defn- append-rank
+  "The next rank at the bottom of a task's (projectId, status) column: one past the current
+   max, or 0 for an empty column. A board create lands its card below the others in its column;
+   rank stays server-owned, minted here rather than sent by the client."
+  [ts project-id status]
+  (let [ranks (->> ts
+                   (filter #(and (= (:projectId %) project-id) (= (:status %) status)))
+                   (keep :rank))]
+    (if (seq ranks) (inc (reduce max ranks)) 0)))
+
 (defn create-task
-  "Append a task built from `record` with a server-minted id. Returns the updated set.
-   Duplicate-on-retry is an accepted edge for now (WRITES-PLAN decision #5)."
+  "Append a task built from `record` with a server-minted id and a server-minted rank at the
+   bottom of its column. Returns the updated set. Duplicate-on-retry is an accepted edge for now
+   (WRITES-PLAN decision #5)."
   [ts record]
-  (conj ts (merge {:id (next-id ts)} (record->row record))))
+  (let [row (record->row record)]
+    (conj ts (merge {:id   (next-id ts)
+                     :rank (append-rank ts (:projectId row) (:status row))}
+                    row))))
 
 (defn update-task
   "Replace the row whose id is `id` with `record`. PUT semantics: a full replace of the
@@ -563,6 +590,36 @@
         moved   (assoc old-row :status (get record "status") :rank index)
         ts*     (mapv (fn [t] (if (= (:id t) id) moved t)) ts)]
     (reindex-columns ts* id old-col)))
+
+;; --- writes: create project ------------------------------------------------
+;; The board demo creates projects. Same §6.5 write contract as tasks, validated against
+;; projects-shape; an accepted create returns the full post-mutation projects collection.
+
+(defn project-error
+  "First structural violation of a project write record against projects-shape, or nil.
+   Projects carry no cross-field rule, so structural validation is the whole check."
+  [record]
+  (structural-error projects-shape record))
+
+(defn- project->row
+  "The client-owned fields for a project write record. Blank optional fields normalize to nil."
+  [record]
+  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
+    {:name        (field "name")
+     :description (field "description")}))
+
+(defn- next-project-id
+  "Server-assigned id for a new project: `p-` plus one past the current max numeric suffix."
+  [ps]
+  (let [n (reduce (fn [m p]
+                    (max m (try (Integer/parseInt (subs (:id p) 2)) (catch Exception _ 0))))
+                  0 ps)]
+    (str "p-" (inc n))))
+
+(defn create-project
+  "Append a project built from `record` with a server-minted id. Returns the updated set."
+  [ps record]
+  (conj ps (merge {:id (next-project-id ps)} (project->row record))))
 
 ;; --- fixtures (step 5a): controlled failure modes for the client (5b) ------
 
@@ -651,15 +708,28 @@
       (str/starts-with? uri "/dist/")
       (serve-dist uri)
 
-      ;; GET /api/users, /api/projects — the related read-only collections the board projects
-      ;; alongside tasks. Same accepted envelope; a task references these by opaque string id.
+      ;; GET /api/users, /api/projects — the related collections the board projects alongside
+      ;; tasks. Same accepted envelope; a task references these by opaque string id. Users are
+      ;; read-only; projects also accept a create (POST) below.
       (= "/api/users" uri)
       (json-response 200 (collection-envelope (parse-query (:query-string req))
                                               users-revision users users-shape))
 
-      (= "/api/projects" uri)
+      (and (= :get (:request-method req)) (= "/api/projects" uri))
       (json-response 200 (collection-envelope (parse-query (:query-string req))
-                                              projects-revision projects projects-shape))
+                                              projects-revision @projects projects-shape))
+
+      ;; POST /api/projects — create a project from the JSON record body. Structural validation
+      ;; against projects-shape; a rejection carries the projects revision and field details.
+      ;; An accepted create appends the project and returns the full post-mutation collection.
+      (and (= :post (:request-method req)) (= "/api/projects" uri))
+      (let [params (parse-query (:query-string req))
+            record (request-record req)]
+        (if-let [error (project-error record)]
+          (json-response 200 (write-rejected-ack params error projects-revision))
+          (do (swap! projects create-project record)
+              (json-response 200 (collection-envelope params projects-revision
+                                                      @projects projects-shape)))))
 
       ;; POST /api/tasks — create a task from the JSON record body. Server-only semantic
       ;; validation (end >= start) yields a rejected ack + field details; otherwise the record
