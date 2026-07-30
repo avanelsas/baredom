@@ -91,11 +91,16 @@ cards that are out of place will mutate and animate-move."
 (defn- project-selected? []
   (some? (.get (js/URLSearchParams. (.-search js/location)) "tasks.project")))
 
+(def ^:private empty-columns
+  (into {} (map (fn [s] [s []]) model/statuses)))
+
 (defn- render! [_child accepted ^js this]
   (du/setv! this k-rows
             (into {} (map (fn [r] [(str (get r "id")) r]) (:value accepted))))
-  (du/set-attr! this "data-empty" (if (project-selected?) "false" "true"))
-  (place-cards! this (model/columns accepted)))
+  ;; Only fill the board when a project is selected and it is visible.
+  (let [selected? (project-selected?)]
+    (du/set-attr! this "data-empty" (if selected? "false" "true"))
+    (place-cards! this (if selected? (model/columns accepted) empty-columns))))
 
 ;; --- drop: reserve -> write -> release ----------------------------------------
 
