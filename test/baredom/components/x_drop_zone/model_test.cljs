@@ -115,6 +115,22 @@
       (is (nil? (model/caret-offset b nil)))
       (is (nil? (model/caret-offset [] 0))))))
 
+;; ── animate-moves (FLIP) ─────────────────────────────────────────────────────
+(deftest flip-delta-test
+  (testing "a real move yields the old-minus-new translation"
+    (is (= {:dx 40 :dy 12}
+           (model/flip-delta {:left 100 :top 60 :width 200 :height 40}
+                             {:left 60  :top 48 :width 200 :height 40}))))
+  (testing "no movement yields nil, so a settled panel is not animated"
+    (is (nil? (model/flip-delta {:left 60 :top 48 :width 200 :height 40}
+                                {:left 60 :top 48 :width 200 :height 40}))))
+  (testing "a zero-size old box (measured while hidden) never animates in from (0,0)"
+    (is (nil? (model/flip-delta {:left 0  :top 0  :width 0   :height 0}
+                                {:left 60 :top 48 :width 200 :height 40}))))
+  (testing "a zero-size new box (now hidden) is not animated either"
+    (is (nil? (model/flip-delta {:left 60 :top 48 :width 200 :height 40}
+                                {:left 0  :top 0  :width 0   :height 0})))))
+
 ;; ── Event details ────────────────────────────────────────────────────────────
 (deftest hover-detail-test
   (let [d (model/hover-detail "task" "t-1")]
