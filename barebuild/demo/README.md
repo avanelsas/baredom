@@ -1,70 +1,88 @@
-# BareBuild — demo
+# BareBuild — demos
 
-A showcase for [BareBuild](../README.md): a live page that drives several BareDOM
-components from one `<server-resource>`, backed by a small tasks server. It exists to
-demonstrate the runtime. **It is not part of BareBuild itself** (`demo.*`
-namespaces).
+Two live showcases for [BareBuild](../README.md), both driving BareDOM components from server
+state over one shared backend. They exist to demonstrate the runtime. **They are not part of
+BareBuild itself** (`demo.*` namespaces).
 
-## What it shows
+- **Table** (`index.html`) — one `<server-resource>` driving five consumers: reads plus create,
+  edit and delete of a flat task list.
+- **Board** (`board.html`) — a relational kanban board proving **two `<server-resource>`
+  elements coordinate through the URL**: pick a project and its board loads, drag a card to
+  another column, create a project, add a task.
 
-The demo shows a task x-table that can be sorted and whose rows can be edited or deleted, an
-x-stat with the nr of tasks, an x-progress that displays the current page position, an
-x-search-field to filter tasks in the table, and an x-modal with an x-form to create a new task
-or edit an existing one.
+## Disclaimer
 
-The code uses one `<server-resource>` that manages five independent **consumers**, each a thin element
-that projects the same server value onto a different component.
+- The code for the BareBuild demos has been written by me.
+- I used Claude as a brainstorming tool to sharpen my thoughts and ideas, and to assist in writing the demo server needed to implement the BareBuild contract for the demos.
+
+## Table demo (`index.html`)
+
+One `<server-resource>` manages five independent **consumers**, each a thin element that
+projects the same server value onto a different component.
 
 | Consumer | Drives | Shows |
 |---|---|---|
 | `x-stat-consumer` | `x-stat` | total task count (a scalar) |
-| `x-progress-consumer` | `x-progress` | page position (bounded numeric; indeterminate while loading) |
+| `x-progress-consumer` | `x-progress` | page position (bounded numeric, indeterminate while loading) |
 | `x-table-consumer` | `x-table` | the task list, with sortable columns, per-row edit and delete, and a dynamically created `x-pagination` |
 | `x-search-field-consumer` | `x-search-field` | a debounced free-text filter |
 | `x-task-form-consumer` | `x-modal` + `x-form` | create or edit a task, with the form fields validated against the `shape` the server sends |
 
-Adding the four read components led to no BareBuild code changes at all. The write half did
-need product work: `submit-write!`, the `:write` effect and `validation.cljs`, but that
-machinery is domain-agnostic, so the task-form consumer itself is ordinary host-app code.
+Sort, page, filter, create, edit and delete all round-trip through the server, and the query
+lands in the URL. Invalid queries and network failures keep the last good view on screen.
 
-User gestures like sort, page, filter, create, edit and delete all round-trip through the
-server, and the query lands in the URL. Invalid queries and network failures keep the last good view on screen.
+## Board demo (`board.html`)
 
-## To run the demo
+Two `<server-resource>` elements share the page and the URL: a **projects** resource and a
+**tasks** resource. Each owns its own query namespace (`projects.*`, `tasks.*`), and consumers
+coordinate by naming a sibling rather than through a shared store. This is a relational case
+the table demo cannot show.
+
+| Consumer | Resource | Drives | Shows |
+|---|---|---|---|
+| `x-project-selector-consumer` | projects | `x-select` | the project list. Selecting one sends a targeted intent to the tasks resource, writing `tasks.project` into the URL |
+| `x-project-form-consumer` | projects | `x-modal` + `x-form` | create a project |
+| `x-board-consumer` | tasks | three `x-drop-zone`s of `x-drag-panel` cards | the selected project's board, grouped into To do / In progress / Done |
+| `x-task-quickadd-consumer` | tasks | inline `x-form` | add a task to the To Do column |
+
+Dragging a card between columns is a **move**: the board reserves the slot, submits a PATCH
+positional command (server-owned rank), and only relocates the card once the server confirms, no
+optimism. Creating a project and quick-adding a task are ordinary create writes, both observed
+back through a refetch.
+
+[BareReplay](../../barereplay/README.md), the time-travel dock, is wired into the demo app: scrub,
+step, and jump through every event, and watch each resource reconstruct its past state.
+
+## To run
 
 ```sh
 # from barebuild/
 npm run compile          # build the demo bundle into dist/ (dist/demo.js)
+# or: npx shadow-cljs watch lib
 
-# or
-npx shadow-cljs watch lib
-
-# Then
-npm run server           # tasks API + SSR boot page on http://localhost:8090
+npm run server           # tasks + projects API (and SSR boot page) on http://localhost:8090
+python3 -m http.server 8095   # from barebuild/, in another shell
 ```
 
-Then open the demo one of two ways:
+- **Table**: <http://localhost:8095/demo/index.html>
+- **Board**: <http://localhost:8095/demo/board.html>
+- **SSR variant** (the table, first response embedded so it paints with no initial fetch):
+  <http://localhost:8090/demo/boot>
 
-- **The page**: Serve `barebuild/` over http and open `demo/index.html`:
-  ```sh
-  # Run
-  python3 -m http.server 8095      # from barebuild/, in another shell
-
-  # open http://localhost:8095/demo/index.html
-  ```
-- **The SSR variant**: Open <http://localhost:8090/demo/boot> directly. The dev-server
-  serves it with the first response embedded, so the table paints with no initial fetch.
+Hard-refresh after a rebuild to clear the ES-module cache.
 
 ## Layout
 
 ```
 demo/
-  index.html                 ; the demo page
-  dev-server/                ; Babashka tasks state + API (server.clj) + handler tests
+  index.html                 ; the table demo page
+  board.html                 ; the kanban board demo page
+  dev-server/                ; Babashka tasks + projects state + API (server.clj) + handler tests
   src/demo/
-    app.cljs                ; registers the driven components + consumers, then barebuild.core/init
-    x_<name>_consumer/       ; the five example consumers (pure model.cljs + element file)
-  test/demo/            ; consumer model tests
+    app.cljs                 ; registers the driven components + consumers, then barebuild.core/init
+    consumer_form.cljs       ; shared glue for the three write forms
+    x_<name>_consumer/       ; the example consumers (pure model.cljs + element file)
+  test/demo/                 ; consumer model tests
 ```
 
 ## Test & lint
@@ -78,5 +96,5 @@ clj-kondo --lint demo/src demo/test
 
 ## Write your own consumer
 
-The consumers here are examples bound to the tasks domain. To build one for your own domain
-and components, see [`../docs/authoring-a-consumer.md`](../docs/authoring-a-consumer.md).
+The consumers here are examples bound to the tasks and projects domains. To build one for your
+own domain and components, see [`../docs/authoring-a-consumer.md`](../docs/authoring-a-consumer.md).
