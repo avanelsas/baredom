@@ -35,9 +35,9 @@
 
 (def ^:private statuses ["todo" "doing" "done"])
 
-;; Title vocab, deliberately free of any owner name, status word or date fragment as a
-;; substring: `filter-tasks` searches titles too, so a collision here would silently change
-;; the result sets the search tests pin.
+;; Title vocab, one per task so every task title is unique. Deliberately free of any owner name,
+;; status word or date fragment as a substring: `filter-tasks` searches titles too, so a collision
+;; here would silently change the result sets the search tests pin.
 (def ^:private titles
   ["Audit build pipeline"    "Migrate legacy schema"   "Refactor parser core"
    "Write onboarding guide"  "Fix flaky test suite"    "Profile query latency"
@@ -45,7 +45,14 @@
    "Document error codes"    "Batch import jobs"       "Retire unused flags"
    "Split monolith module"   "Cache lookup results"    "Tune retry backoff"
    "Chart usage metrics"     "Patch upload limits"     "Verify backup restore"
-   "Seed staging fixtures"   "Polish empty states"])
+   "Seed staging fixtures"   "Polish empty states"     "Compress asset bundles"
+   "Rotate access keys"      "Sanitize user input"     "Throttle write bursts"
+   "Prune stale sessions"    "Validate schema types"   "Refresh cache layers"
+   "Isolate flaky mocks"     "Compact log storage"     "Restructure module graph"
+   "Capture slow traces"     "Warm lookup tables"      "Shard heavy queries"
+   "Backfill missing rows"   "Simplify build steps"    "Escape shell args"
+   "Merge feature flags"     "Trace memory leaks"      "Bump upstream libs"
+   "Publish release notes"])
 
 ;; --- related collections: users and projects (relational board demo) -------
 ;; Two server-owned collections the board demo projects alongside tasks, over ONE shared

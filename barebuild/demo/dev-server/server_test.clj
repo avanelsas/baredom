@@ -77,6 +77,11 @@
     (is (= {} (:query body)) "no owned params (default page 1) -> empty query echo")
     (is (= (vec (range 1 11)) (ids body)) "no sort -> natural id order, first page")))
 
+(deftest seeded-titles-are-unique
+  (let [titles (map :title @server/tasks)]
+    (is (= 40 (count titles)) "the full seeded set")
+    (is (= (count titles) (count (distinct titles))) "every task has a unique title")))
+
 ;; --- step 2a: sorting + normalized echo ------------------------------------
 
 (deftest sort-owner-ascending
