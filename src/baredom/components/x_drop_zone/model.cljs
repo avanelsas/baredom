@@ -196,6 +196,20 @@
   (when (and (seq boundaries) index)
     (nth boundaries (max 0 (min index (dec (count boundaries)))))))
 
+;; ── animate-moves (FLIP) ─────────────────────────────────────────────────────
+(defn flip-delta
+  "The FLIP translation to animate a panel from its previous box to its current one, both given
+  as {:left :top :width :height}, or nil when there is nothing to animate. Returns nil when
+  either box was measured while not laid out (zero size, e.g. inside a display:none subtree), so
+  a panel never animates in from a stale (0,0) origin, and nil when the panel did not move."
+  [old-box new-box]
+  (let [laid-out? (fn [{:keys [width height]}] (and (pos? (or width 0)) (pos? (or height 0))))]
+    (when (and (laid-out? old-box) (laid-out? new-box))
+      (let [dx (- (:left old-box) (:left new-box))
+            dy (- (:top old-box) (:top new-box))]
+        (when (or (not= 0 dx) (not= 0 dy))
+          {:dx dx :dy dy})))))
+
 ;; ── Event details ────────────────────────────────────────────────────────────
 (defn hover-detail
   "Build the x-drop-zone-enter / x-drop-zone-leave CustomEvent detail."

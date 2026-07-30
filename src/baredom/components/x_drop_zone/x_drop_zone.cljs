@@ -322,15 +322,17 @@
                  #js {"transform" "none"}]
             #js {"duration" move-duration-ms "easing" "ease"}))
 
+(defn- rect->box [^js r]
+  {:left (.-left r) :top (.-top r) :width (.-width r) :height (.-height r)})
+
 (defn- flip! [^js el]
   (when-let [^js prev (du/getv el k-rects)]
     (doseq [^js child (panel-children el)]
       (when-let [^js old-rect (.get prev child)]
-        (let [^js new-rect (.getBoundingClientRect child)
-              dx           (- (.-left old-rect) (.-left new-rect))
-              dy           (- (.-top old-rect) (.-top new-rect))]
-          (when (or (not= 0 dx) (not= 0 dy))
-            (animate-child! child dx dy))))))
+        (when-let [{:keys [dx dy]} (model/flip-delta
+                                    (rect->box old-rect)
+                                    (rect->box (.getBoundingClientRect child)))]
+          (animate-child! child dx dy)))))
   (capture-rects! el))
 
 (defn- stop-observer! [^js el]
