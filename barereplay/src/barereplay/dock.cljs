@@ -5,8 +5,7 @@
    [baredom.utils.dom :as du]
    [barereplay.label :as label]
    [barereplay.reconstruct :as reconstruct]
-   [barereplay.store :as store]
-   [clojure.string :as str]))
+   [barereplay.store :as store]))
 
 (def ^:private styles
   "
@@ -184,16 +183,11 @@
 (defn- reconstructed-url
   "Reconstruct the current replay url from its pathname and params"
   [entries n]
-  (let [params   (js/URLSearchParams. (.-search js/location))
-        pathname (.-pathname js/location)]
-    (doseq [[rid {:keys [value]}] (reconstruct/resources-at entries n)]
-      (doseq [k (utils/owned-url-keys rid (js/Array.from (.keys params)))]
-        (.delete params k))
-      (let [prefix (utils/url-prefix rid)]
-        (doseq [[k v] (:url-intent value)]
-          (.set params (str prefix (name k)) (str v)))))
-    (let [qs (.toString params)]
-      (if (str/blank? qs) pathname (str pathname "?" qs)))))
+  (let [params (reduce (fn [^js p [rid {:keys [value]}]]
+                         (utils/scope-params! p rid (:url-intent value)))
+                       (js/URLSearchParams. (.-search js/location))
+                       (reconstruct/resources-at entries n))]
+    (utils/params->url params (.-pathname js/location))))
 
 (defn- sync-url!
   "Update the URL during a replay. If n>=total we are back at the live url."
