@@ -26,7 +26,7 @@
   [^js consumer payload]
   ((du/getv consumer k-submit-write) payload))
 
-(defn- install-apply-resource! [^js proto render-key render on-failure on-pending on-writing]
+(defn- install-apply-resource! [^js proto render-key render on-failure on-pending on-writing on-apply]
   (.defineProperty js/Object proto "applyResource"
                    #js {:value
                         (fn apply-resource [resource-value ctx]
@@ -53,7 +53,9 @@
                              (when (and on-writing
                                         (not= writing (du/getv this k-writing)))
                                (on-writing (du/getv this k-child) writing this)
-                               (du/setv! this k-writing writing)))))
+                               (du/setv! this k-writing writing))
+                             (when on-apply
+                               (on-apply (du/getv this k-child) resource-value this)))))
                         :writable true :configurable true}))
 
 (defn register!
@@ -65,11 +67,14 @@
   with failure nil on recovery so the component can clear its UI
   :on-pending (fn [child pending this]), optional, called when :pending? changes
   :on-writing (fn [child writing this]), optional, called when :writing? changes
+  :on-apply   (fn [child resource-value this]), optional, called on every projection, so a consumer 
+  can re-derive state that does not depend on :last-accepted being
+  present (e.g. an empty gate driven by the URL).
   :on-connect (fn [this]), optional extra wiring
   :render-key (fn [accepted]) -> the slice render draws, so render only fires when it changes.
   Defaults to the whole accepted value minus the per-request id
   :observed-attributes — optional, defaults to #js []"
-  [{:keys [tag child-tag render on-failure on-pending on-connect on-writing observed-attributes render-key]}]
+  [{:keys [tag child-tag render on-failure on-pending on-connect on-writing on-apply observed-attributes render-key]}]
   (component/register!
    tag
    {:observed-attributes  (or observed-attributes #js [])
@@ -79,4 +84,4 @@
     :attribute-changed-fn (fn [_el _name _old _new] nil)
     :setup-prototype-fn   (fn [^js proto]
                             (install-apply-resource! proto (or render-key resource/render-key)
-                                                     render on-failure on-pending on-writing))}))
+                                                     render on-failure on-pending on-writing on-apply))}))
