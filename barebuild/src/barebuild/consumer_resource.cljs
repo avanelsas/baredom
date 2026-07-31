@@ -14,8 +14,8 @@
 
 (defn submit-intent!
   "Send an intent patch from a gesture handler back to a server-resource. With no `target-id`
-   the patch drives the consumer's own resource; with one, it drives the named sibling resource
-   through its URL projection — explicit, URL-mediated cross-resource coordination."
+   the patch drives the consumer's own resource. With one, it drives the named sibling resource
+   through its URL projection. This is explicit, URL-mediated cross-resource coordination."
   ([^js consumer patch]
    ((du/getv consumer k-submit-intent) patch))
   ([^js consumer patch target-id]
@@ -26,6 +26,15 @@
   [^js consumer payload]
   ((du/getv consumer k-submit-write) payload))
 
+(defn- diff-notify!
+  "Change-guard for when `new-value` differs from the value last
+   cached under `field-key`. If so, invoke `callback` with the driven child and cache it. No-op when
+   `callback` is nil."
+  [^js this callback field-key new-value]
+  (when (and callback (not= new-value (du/getv this field-key)))
+    (callback (du/getv this k-child) new-value this)
+    (du/setv! this field-key new-value)))
+
 (defn- install-apply-resource! [^js proto render-key render on-failure on-pending on-writing on-apply]
   (.defineProperty js/Object proto "applyResource"
                    #js {:value
@@ -34,26 +43,15 @@
                            ^js this
                            (du/setv! this k-submit-intent (:submit-intent! ctx))
                            (du/setv! this k-submit-write (:submit-write! ctx))
-                           (let [{:keys [last-accepted last-failure]} resource-value
-                                 pending            (resource/pending? resource-value)
-                                 writing            (resource/writing? resource-value)]
-                             (when (and on-failure
-                                        (not= last-failure (du/getv this k-last-failure)))
-                               (on-failure (du/getv this k-child) last-failure this)
-                               (du/setv! this k-last-failure last-failure))
+                           (let [{:keys [last-accepted]} resource-value]
+                             (diff-notify! this on-failure k-last-failure (:last-failure resource-value))
                              (when (and render last-accepted)
                                (let [rkey [(render-key last-accepted)]]
                                  (when (not= rkey (du/getv this k-last-rendered))
                                    (render (du/getv this k-child) last-accepted this)
                                    (du/setv! this k-last-rendered rkey))))
-                             (when (and on-pending
-                                        (not= pending (du/getv this k-pending)))
-                               (on-pending (du/getv this k-child) pending this)
-                               (du/setv! this k-pending pending))
-                             (when (and on-writing
-                                        (not= writing (du/getv this k-writing)))
-                               (on-writing (du/getv this k-child) writing this)
-                               (du/setv! this k-writing writing))
+                             (diff-notify! this on-pending k-pending (resource/pending? resource-value))
+                             (diff-notify! this on-writing k-writing (resource/writing? resource-value))
                              (when on-apply
                                (on-apply (du/getv this k-child) resource-value this)))))
                         :writable true :configurable true}))
@@ -67,7 +65,7 @@
   with failure nil on recovery so the component can clear its UI
   :on-pending (fn [child pending this]), optional, called when :pending? changes
   :on-writing (fn [child writing this]), optional, called when :writing? changes
-  :on-apply   (fn [child resource-value this]), optional, called on every projection, so a consumer 
+  :on-apply   (fn [child resource-value this]), optional, called on every projection, so a consumer
   can re-derive state that does not depend on :last-accepted being
   present (e.g. an empty gate driven by the URL).
   :on-connect (fn [this]), optional extra wiring

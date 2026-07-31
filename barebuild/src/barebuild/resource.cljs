@@ -53,13 +53,11 @@
   (let [{:keys [shape value]} payload
         ;; use this to skip checks inside the value. No use to look further if this is firing
         value-errors (validate-value value)]
-
-    (vec (concat (validate-shape shape)
-                 value-errors
-                 (when-not (seq value-errors)
-                   (validate-ids (:id-key shape) value))
-                 (when-not (seq value-errors)
-                   (validate-rows (:fields shape) value))))))
+    (into (vec (validate-shape shape))
+          (if (seq value-errors)
+            value-errors
+            (concat (validate-ids (:id-key shape) value)
+                    (validate-rows (:fields shape) value))))))
 
 (defn- read-request [r]
   (let [{:keys [query] rid :request/id} (:active-request r)]
@@ -82,10 +80,20 @@
   [r]
   (get-in r [:active-request :query]))
 
+(defn- fresh-request?
+  "True when `request-id` matches the id of the in-flight read request."
+  [r request-id]
+  (= request-id (get-in r [:active-request :request/id])))
+
+(defn- fresh-write?
+  "True when `write-id` matches the id of the in-flight write request."
+  [r write-id]
+  (= write-id (get-in r [:active-write :write/id])))
+
 (defn installable?
   "Ensure that the live request matches the in-flight request id."
   [r response]
-  (= (:request/id response) (get-in r [:active-request :request/id])))
+  (fresh-request? r (:request/id response)))
 
 (defn drifted?
   "If a new intent appeared while an old one was still in flight, signal it"
@@ -171,10 +179,8 @@
     {:resource (if adopt?
                  (assoc installed :url-intent echo)
                  installed)
-     :correct? (and adopt? 
+     :correct? (and adopt?
                     (not= echo (:url-intent resource)))}))
-
-
 
 (defn- write-drifted? [r]
   (not= (:url-intent r) (get-in r [:active-write :query])))
@@ -184,6 +190,17 @@
     (if correct?
       [[:url-write {:resource/id (:resource/id resource) :params echo :mode :replace}] notify]
       [notify])))
+
+(defn- diagnostic
+  "A diagnostic effect value. The executor only console.debugs it — it drives no state."
+  [code]
+  [:diagnostic {:code code}])
+
+(defn- record-failure
+  "Clear the in-flight slot (:active-request or :active-write), stash the failure, notify."
+  [resource slot-key failure]
+  (let [resource* (assoc resource :last-failure failure slot-key nil)]
+    {:resource resource* :effects [[:notify-consumers {:resource resource*}]]}))
 
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
@@ -212,18 +229,14 @@
 
       :response
       (if-not (installable? resource payload)
-        {:resource resource :effects [[:diagnostic :stale-response]]}
+        {:resource resource :effects [(diagnostic :stale-response)]}
         (case (:outcome payload)
           :accepted
           (let [errors (validate-contract payload)]
             (if (seq errors)
               (with-trailing-fetch
-                (let [resource* (assoc resource
-                                       :last-failure {:failure :contract
-                                                      :response payload
-                                                      :errors   errors}
-                                       :active-request nil)]
-                  {:resource resource* :effects [[:notify-consumers {:resource resource*}]]}))
+                (record-failure resource :active-request
+                                {:failure :contract :response payload :errors errors}))
               (let [adopt? (not (drifted? resource))
                     {:keys [resource correct?]} (install-accepted (assoc resource :active-request nil)
                                                                   payload adopt?)]
@@ -277,26 +290,22 @@
                      :always (conj [:notify-consumers {:resource r*}]))})
 
       :protocol-failed
-      (if-not (= (:request/id payload) (get-in resource [:active-request :request/id]))
-        {:resource resource :effects [[:diagnostic :stale-failure]]}
+      (if-not (fresh-request? resource (:request/id payload))
+        {:resource resource :effects [(diagnostic :stale-failure)]}
         (with-trailing-fetch
-          (let [resource* (assoc resource
-                                 :last-failure {:failure :protocol
-                                                :detail  (:protocol-failure payload)
-                                                :query   (requested-query resource)}
-                                 :active-request nil)]
-            {:resource resource* :effects [[:notify-consumers {:resource resource*}]]})))
+          (record-failure resource :active-request
+                          {:failure :protocol
+                           :detail  (:protocol-failure payload)
+                           :query   (requested-query resource)})))
 
       :network-failed
-      (if-not (= (:request/id payload) (get-in resource [:active-request :request/id]))
-        {:resource resource :effects [[:diagnostic :stale-failure]]}
+      (if-not (fresh-request? resource (:request/id payload))
+        {:resource resource :effects [(diagnostic :stale-failure)]}
         (with-trailing-fetch
-          (let [resource* (assoc resource
-                                 :last-failure {:failure :network
-                                                :error (:error payload)
-                                                :query (requested-query resource)}
-                                 :active-request nil)]
-            {:resource resource* :effects [[:notify-consumers {:resource resource*}]]})))
+          (record-failure resource :active-request
+                          {:failure :network
+                           :error (:error payload)
+                           :query (requested-query resource)})))
 
       :disconnected
       (if-let [id (get-in resource [:active-request :request/id])]
@@ -315,52 +324,35 @@
              :effects  [[:notify-consumers {:resource resource*}]
                         [:write write-req]]}
             {:resource resource
-             :effects  [[:diagnostic :unsupported-write]]}))
+             :effects  [(diagnostic :unsupported-write)]}))
         {:resource resource
-         :effects  [[:diagnostic :stale-write]]})
+         :effects  [(diagnostic :stale-write)]})
 
       :write-ack
-      (let [write-id        (:write/id payload)
-            active-write-id (get-in resource [:active-write :write/id])]
-        (if (= write-id active-write-id)
-          (if (= :accepted (:outcome payload))
-            (let [errors (validate-contract payload)]
-              (if (seq errors)
+      (if (fresh-write? resource (:write/id payload))
+        (if (= :accepted (:outcome payload))
+          (let [errors (validate-contract payload)]
+            (if (seq errors)
+              (with-trailing-fetch
+                (record-failure resource :active-write
+                                {:failure :contract :response payload :errors errors}))
+              (let [adopt? (not (write-drifted? resource))
+                    {:keys [resource correct?]} (install-accepted (assoc resource :active-write nil)
+                                                                  payload adopt?)]
                 (with-trailing-fetch
-                  (let [resource* (assoc resource
-                                         :last-failure {:failure :contract
-                                                        :response payload
-                                                        :errors   errors}
-                                         :active-write nil)]
-                    {:resource resource* :effects [[:notify-consumers {:resource resource*}]]}))
-                (let [adopt? (not (write-drifted? resource))
-                      {:keys [resource correct?]} (install-accepted (assoc resource :active-write nil)
-                                                                    payload adopt?)]
-                  (with-trailing-fetch
-                    {:resource resource
-                     :effects  (accepted-effects resource (:query payload) correct?)}))))
-            (let [resource* (assoc resource
-                                   :active-write nil
-                                   :last-failure {:failure :rejected
-                                                  :response payload})]
-              {:resource resource*
-               :effects  [[:notify-consumers {:resource resource*}]]}))
-
-          {:resource resource
-           :effects  [[:diagnostic :stale-write]]}))
+                  {:resource resource
+                   :effects  (accepted-effects resource (:query payload) correct?)}))))
+          (record-failure resource :active-write {:failure :rejected :response payload}))
+        {:resource resource
+         :effects  [(diagnostic :stale-write)]})
 
       :write-failed
-      (let [write-id        (:write/id payload)
-            active-write-id (get-in resource [:active-write :write/id])]
-        (if (= write-id active-write-id)
-          (let [failure   (if-let [detail (:protocol-failure payload)]
-                            {:failure :protocol :detail detail :write (:active-write resource)}
-                            {:failure :network :error (:error payload) :write (:active-write resource)})
-                resource* (assoc resource :last-failure failure :active-write nil)]
-            {:resource resource*
-             :effects  [[:notify-consumers {:resource resource*}]]})
-          {:resource resource
-           :effects [[:diagnostic :stale-write]]}))
+      (if (fresh-write? resource (:write/id payload))
+        (let [failure (if-let [detail (:protocol-failure payload)]
+                        {:failure :protocol :detail detail :write (:active-write resource)}
+                        {:failure :network :error (:error payload) :write (:active-write resource)})]
+          (record-failure resource :active-write failure))
+        {:resource resource
+         :effects [(diagnostic :stale-write)]})
 
-      {:resource resource
-       :effects    []})))
+      {:resource resource :effects []})))
