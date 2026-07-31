@@ -15,11 +15,15 @@
     "compile": "npx shadow-cljs compile lib",
     "build": "npx shadow-cljs release lib",
     "test": "npx shadow-cljs compile test && node out/node-tests.cjs",
+    "test:browser": "npx shadow-cljs compile test-karma && npx karma start karma.conf.cjs --single-run",
     "test:server": "bb run test:server",
     "server": "bb run server"
   },
   "exports": {},
   "devDependencies": {
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-cljs-test": "^0.1.0",
     "shadow-cljs": "^3.4.11"
   }
 }
