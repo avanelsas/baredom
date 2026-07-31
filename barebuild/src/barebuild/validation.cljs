@@ -25,6 +25,11 @@
   (or (nil? s)
       (str/blank? s)))
 
+(defn- field-err
+  "A write-side validation error for `field`."
+  [field code message]
+  {:field (:key field) :code code :message message})
+
 ; notice that error mapping is intentionally different for write (vs read)
 (defn validate-payload [payload shape]
   (mapcat (fn [{:keys [key] :as field}]
@@ -32,22 +37,19 @@
               (cond
                 (and (:required field)
                      (blank-or-nil? v))
-                [{:field (:key field)
-                  :code :missing-required
-                  :message (str "Required field " key " is missing.")}]
+                [(field-err field :missing-required
+                            (str "Required field " key " is missing."))]
 
                 (and (not (blank-or-nil? v))
                      (not (validate-value-type v (:type field))))
-                [{:field (:key field)
-                  :code :wrong-type
-                  :message (str "The field " key " has the wrong type. Should be " (:type field))}]
+                [(field-err field :wrong-type
+                            (str "The field " key " has the wrong type. Should be " (:type field)))]
 
                 (and (:enum field)
                      (not (blank-or-nil? v))
                      (not (some #(= v %) (:enum field))))
-                [{:field (:key field)
-                  :code :not-in-enum
-                  :message (str "The field " key " is not in the enum " (:enum field))}]
+                [(field-err field :not-in-enum
+                            (str "The field " key " is not in the enum " (:enum field)))]
 
                 :else [])))
           (:fields shape)))
