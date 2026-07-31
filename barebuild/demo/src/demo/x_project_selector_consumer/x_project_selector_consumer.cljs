@@ -38,11 +38,27 @@
     (when (not= id (current-project-id))
       (consumer-resource/submit-intent! el (model/translate-project-gesture id) tasks-resource-id))))
 
+(defn- show-selection!
+  "Drive the x-select to the current URL selection. A user pick updates only the inner
+  <select>, never the value attribute, so the attribute can be stale (e.g. \"\" at load while
+  the box shows a project). Setting the attribute to a value it already holds is a no-op that
+  never re-applies, so when the displayed value differs we remove first to force a re-apply."
+  [^js x-select]
+  (let [desired (current-project-id)]
+    (when (not= desired (.-value x-select))
+      (du/remove-attr! x-select "value")
+      (du/set-attr! x-select "value" desired))))
+
 (defn- on-connect! [^js el]
   (let [x-select (.querySelector el "x-select")]
     (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
-    (.addEventListener js/window "popstate"
-                       (fn [_e] (du/set-attr! x-select "value" (current-project-id))))))
+    (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select)))))
+
+(defn- apply!
+  "Apply ensures that selector content is replayed properly with every
+  projected step, not just with accepted data changes"
+  [^js x-select _value _this]
+  (show-selection! x-select))
 
 (defn init! []
   (consumer-resource/register!
@@ -51,4 +67,5 @@
     :observed-attributes model/observed-attributes
     :render-key          model/project-options
     :render              render!
+    :on-apply            apply!
     :on-connect          on-connect!}))

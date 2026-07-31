@@ -63,8 +63,8 @@
 
 (defn- reconcile-zone!
   "Reconciles card movements in a zone. Server decides the order, here we try to materialise
-them by reusing the current content (pool) and refreshing it with the server state received. Only
-cards that are out of place will mutate and animate-move."
+  them by reusing the current content (pool) and refreshing it with the server state received. Only
+  cards that are out of place will mutate and animate-move."
   [^js zone rows pool]
   (let [wanted (mapv (fn [row]
                        (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
@@ -76,7 +76,7 @@ cards that are out of place will mutate and animate-move."
         (if (identical? panel anchor)
           (recur (rest ws) (next-panel anchor))
           (do (.insertBefore zone panel anchor)
-              (recur (rest ws) anchor)))
+            (recur (rest ws) anchor)))
         (loop [^js n anchor]
           (when n
             (let [^js nxt (next-panel n)]
@@ -93,14 +93,6 @@ cards that are out of place will mutate and animate-move."
 
 (def ^:private empty-columns
   (into {} (map (fn [s] [s []]) model/statuses)))
-
-(defn- render! [_child accepted ^js this]
-  (du/setv! this k-rows
-            (into {} (map (fn [r] [(str (get r "id")) r]) (:value accepted))))
-  ;; Only fill the board when a project is selected and it is visible.
-  (let [selected? (project-selected?)]
-    (du/set-attr! this "data-empty" (if selected? "false" "true"))
-    (place-cards! this (if selected? (model/columns accepted) empty-columns))))
 
 ;; --- drop: reserve -> write -> release ----------------------------------------
 
@@ -129,12 +121,23 @@ cards that are out of place will mutate and animate-move."
 (defn- on-connect! [^js el]
   (.addEventListener el "x-drop-zone-drop" (fn [e] (on-drop! el e))))
 
+(defn- apply!
+  "Apply ensures that board content is replayed properly with every
+  projected step, not just with accepted data changes"
+  [_child value ^js this]
+  (let [accepted  (:last-accepted value)
+        selected? (project-selected?)]
+    (du/setv! this k-rows
+              (into {} (map (fn [r] [(str (get r "id")) r]) (:value accepted))))
+    (du/set-attr! this "data-empty" (if selected? "false" "true"))
+    (when-not (write-pending? this)
+      (place-cards! this (if (and selected? accepted) (model/columns accepted) empty-columns)))))
+
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-drop-zone"
     :observed-attributes model/observed-attributes
-    :render-key          model/columns
-    :render              render!
+    :on-apply            apply!
     :on-writing          on-writing!
     :on-connect          on-connect!}))
