@@ -9,6 +9,21 @@ gesture submission.
 The value your projection reads is the accepted server envelope — its exact shape is the
 [server contract](./server-contract.md).
 
+## What BareBuild provides, what you write
+
+BareBuild ships the runtime and the consumer mechanism, plus two pure validators you can lean
+on: accepted values are contract-checked automatically upstream (you never call it), and
+`validation/validate-payload` checks a write payload against the shape before you submit.
+
+It does not ship a generic projection or formatter layer. There is no built-in `project`,
+`format-vm`, or formatter registry. Turning an accepted value into what the component wants,
+including any date, number, or nil formatting, is plain code in your `model.cljs` projection
+and `render!`. That is the one place per consumer that differs.
+
+A consumer therefore works for any component you can drive by setting attributes or properties
+from a value. A component with an imperative-only API, canvas rendering, or internal animation
+state may need a pattern that does not exist yet.
+
 ## The two files
 
 ```
