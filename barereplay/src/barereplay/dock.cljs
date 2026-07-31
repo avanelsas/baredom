@@ -112,11 +112,9 @@
     "No request/response at this step."))
 
 (defn- project! [entries n]
-  (doseq [[_ m] (reconstruct/resources-at entries n)]
-    (let [^js el (:el m)
-          value  (:value m)]
-      (when (and el value)
-        (.projectResource el value)))))
+  (doseq [{:keys [el value]} (vals (reconstruct/resources-at entries n))]
+    (when (and el value)
+      (.projectResource ^js el value))))
 
 (defn- set-disabled! [^js btn disabled?]
   (if disabled?
@@ -201,13 +199,19 @@
         (du/setv! el k-live-url (str (.-pathname js/location) (.-search js/location))))
       (.replaceState js/history nil "" (reconstructed-url entries n)))))
 
+(defn- scrub-move?
+  "True when the step moved to a real replay position, not merely the live tail advancing
+   as new events arrive"
+  [prev n total]
+  (and (not= (:n prev) n)
+       (not (and (= (:n prev) (:total prev)) (= n total)))))
+
 (defn- render! [^js el refs entries n]
   (let [total (count entries)
         view  {:n n :total total}
         prev  (du/getv el k-view)]
     (when (not= view prev)
-      (when (and (not= (:n prev) n)
-                 (not (and (= (:n prev) (:total prev)) (= n total))))
+      (when (scrub-move? prev n total)
         (sync-url! el entries n total)
         (project! entries n))
       (du/setv! el k-view view)
