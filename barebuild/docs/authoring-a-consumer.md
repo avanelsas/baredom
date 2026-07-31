@@ -9,6 +9,21 @@ gesture submission.
 The value your projection reads is the accepted server envelope — its exact shape is the
 [server contract](./server-contract.md).
 
+## What BareBuild provides, what you write
+
+BareBuild ships the runtime and the consumer mechanism, plus two pure validators you can lean
+on: accepted values are contract-checked automatically upstream (you never call it), and
+`validation/validate-payload` checks a write payload against the shape before you submit.
+
+It does not ship a generic projection or formatter layer. There is no built-in `project`,
+`format-vm`, or formatter registry. Turning an accepted value into what the component wants,
+including any date, number, or nil formatting, is plain code in your `model.cljs` projection
+and `render!`. That is the one place per consumer that differs.
+
+A consumer therefore works for any component you can drive by setting attributes or properties
+from a value. A component with an imperative-only API, canvas rendering, or internal animation
+state may need a pattern that does not exist yet.
+
 ## The two files
 
 ```
@@ -34,6 +49,7 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
   :on-failure          on-failure!           ; optional
   :on-pending          on-pending!           ; optional
   :on-writing          on-writing!           ; optional
+  :on-apply            on-apply!             ; optional
   :on-connect          on-connect!})         ; optional
 ```
 
@@ -46,6 +62,7 @@ element, `this` is the consumer host.
 | `:on-failure` | `(child failure this)` | `:last-failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
 | `:on-pending` | `(child pending this)` | `pending?` changes.  `pending` is a boolean, show/hide loading |
 | `:on-writing` | `(child writing this)` | `writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
+| `:on-apply` | `(child resource-value this)` | every projection (not change-guarded).  `resource-value` is the whole resource value, use it to re-derive state that does not depend on `:last-accepted`, like a URL-driven empty gate |
 
 What you get for free:
 - **Keep-stale is automatic.** A failure leaves `:last-accepted` untouched, so `render`
