@@ -1,10 +1,12 @@
 (ns barereplay.dock
   (:require
+   [barebuild.utils :as utils]
    [baredom.utils.component :as comp]
    [baredom.utils.dom :as du]
    [barereplay.label :as label]
    [barereplay.reconstruct :as reconstruct]
-   [barereplay.store :as store]))
+   [barereplay.store :as store]
+   [clojure.string :as str]))
 
 (def ^:private styles
   "
@@ -98,6 +100,7 @@
 (def ^:private tag "barereplay-dock")
 (def ^:private k-state "__brDockState")
 (def ^:private k-view "__brDockView")
+(def ^:private k-live-url "__brDockLiveUrl")
 
 (def ^:private svg-start "M6 6h2v12H6zm3.5 6l8.5 6V6z")
 (def ^:private svg-prev  "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z")
@@ -178,6 +181,32 @@
     (du/set-attr! slider "max" (str total))
     (du/set-attr! slider "value" (str n))))
 
+(defn- reconstructed-url
+  "Reconstruct the current replay url from its pathname and params"
+  [entries n]
+  (let [params   (js/URLSearchParams. (.-search js/location))
+        pathname (.-pathname js/location)]
+    (doseq [[rid {:keys [value]}] (reconstruct/resources-at entries n)]
+      (doseq [k (utils/owned-url-keys rid (js/Array.from (.keys params)))]
+        (.delete params k))
+      (let [prefix (utils/url-prefix rid)]
+        (doseq [[k v] (:url-intent value)]
+          (.set params (str prefix (name k)) (str v)))))
+    (let [qs (.toString params)]
+      (if (str/blank? qs) pathname (str pathname "?" qs)))))
+
+(defn- sync-url!
+ "Update the URL during a replay. If n>=total we are back at the live url."
+  [^js el entries n total]
+  (if (>= n total)
+    (when-let [saved (du/getv el k-live-url)]
+      (.replaceState js/history nil "" saved)
+      (du/setv! el k-live-url nil))
+    (do
+      (when-not (du/getv el k-live-url)
+        (du/setv! el k-live-url (str (.-pathname js/location) (.-search js/location))))
+      (.replaceState js/history nil "" (reconstructed-url entries n)))))
+
 (defn- render! [^js el refs entries n]
   (let [total (count entries)
         view  {:n n :total total}
@@ -185,6 +214,7 @@
     (when (not= view prev)
       (when (and (not= (:n prev) n)
                  (not (and (= (:n prev) (:total prev)) (= n total))))
+        (sync-url! el entries n total)
         (project! entries n))
       (du/setv! el k-view view)
       (render-status! refs entries n)
@@ -308,7 +338,10 @@
     (set! (.-innerHTML root) (markup))
     (wire! el root)))
 
-(defn- disconnected! [^js _el]
+(defn- disconnected! [^js el]
+  (when-let [saved (du/getv el k-live-url)]
+    (.replaceState js/history nil "" saved)
+    (du/setv! el k-live-url nil))
   (store/unsubscribe!))
 
 (def ^:private element-opts
