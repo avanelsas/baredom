@@ -77,6 +77,12 @@ jobs:
         working-directory: barebuild
         run: npm test
 
+      - name: Browser tests (headless Chrome)
+        working-directory: barebuild
+        run: npm run test:browser
+        env:
+          CHROMIUM_FLAGS: "--no-sandbox"
+
       - name: Server handler tests
         working-directory: barebuild
         run: npm run test:server

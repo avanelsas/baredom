@@ -22,9 +22,16 @@
            :depends-on #{:core}}}}
 
   ;; Fast pure-CLJS unit tests under Node (the pure core is DOM-free).
-  ;; Element/integration tests will use a browser/karma target later.
   ;; .cjs so Node runs the CommonJS test bundle despite package.json "type":"module".
+  ;; Excludes the barebuild.browser.* element tests, which need a real DOM (:test-karma).
   :test
   {:target    :node-test
    :output-to "out/node-tests.cjs"
-   :ns-regexp "-test$"}}}
+   :ns-regexp "^(?!barebuild\\.browser\\.).*-test$"}
+
+  ;; Element/integration tests in a real browser (headless Chrome via karma).
+  ;; Only the barebuild.browser.* namespaces, so node and karma pick disjoint sets.
+  :test-karma
+  {:target    :karma
+   :output-to "out/karma/test.js"
+   :ns-regexp "^barebuild\\.browser\\..*-test$"}}}
