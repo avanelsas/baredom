@@ -160,10 +160,11 @@
             (owned-by? el c))))))
 
 (defn- custom-element-tags [^js el]
-  (->> (element-descendants el)
-    (map (fn [^js node] (.. node -tagName toLowerCase)))
-    (filter (fn [tag] (str/includes? tag "-")))
-    distinct))
+  (into []
+        (comp (map (fn [^js node] (.. node -tagName toLowerCase)))
+              (filter (fn [tag] (str/includes? tag "-")))
+              (distinct))
+        (element-descendants el)))
 
 (defn- boot!
   "When reloading, read the current url and see if there are url parameters that

@@ -44,8 +44,7 @@
           fields))
 
 (defn- validate-rows [fields value]
-  (mapcat (fn [[idx row]] (validate-row idx row fields))
-          (map-indexed vector value)))
+  (into [] (comp (map-indexed (fn [idx row] (validate-row idx row fields))) cat) value))
 
 (defn- validate-contract
   "verifies if an accepted payload contains the right shape"

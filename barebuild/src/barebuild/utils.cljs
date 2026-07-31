@@ -36,10 +36,10 @@
   Entries whose value is nil or blank are dropped"
   [q]
   (into {}
-        (for [[k v] q
-              :let  [s (str v)]
-              :when (and (some? v) (not= "" s))]
-          [(keyword k) s])))
+        (keep (fn [[k v]]
+                (let [s (str v)]
+                  (when-not (= "" s) [(keyword k) s]))))
+        q))
 
 (defn- map->query-params
   "Take a map of k v and turn it into a url query parameter string, key-sorted so the
