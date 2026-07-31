@@ -5,8 +5,7 @@
    [baredom.utils.dom :as du]
    [barereplay.label :as label]
    [barereplay.reconstruct :as reconstruct]
-   [barereplay.store :as store]
-   [clojure.string :as str]))
+   [barereplay.store :as store]))
 
 (def ^:private styles
   "
@@ -113,11 +112,9 @@
     "No request/response at this step."))
 
 (defn- project! [entries n]
-  (doseq [[_ m] (reconstruct/resources-at entries n)]
-    (let [^js el (:el m)
-          value  (:value m)]
-      (when (and el value)
-        (.projectResource el value)))))
+  (doseq [{:keys [el value]} (vals (reconstruct/resources-at entries n))]
+    (when (and el value)
+      (.projectResource ^js el value))))
 
 (defn- set-disabled! [^js btn disabled?]
   (if disabled?
@@ -184,19 +181,14 @@
 (defn- reconstructed-url
   "Reconstruct the current replay url from its pathname and params"
   [entries n]
-  (let [params   (js/URLSearchParams. (.-search js/location))
-        pathname (.-pathname js/location)]
-    (doseq [[rid {:keys [value]}] (reconstruct/resources-at entries n)]
-      (doseq [k (utils/owned-url-keys rid (js/Array.from (.keys params)))]
-        (.delete params k))
-      (let [prefix (utils/url-prefix rid)]
-        (doseq [[k v] (:url-intent value)]
-          (.set params (str prefix (name k)) (str v)))))
-    (let [qs (.toString params)]
-      (if (str/blank? qs) pathname (str pathname "?" qs)))))
+  (let [params (reduce (fn [^js p [rid {:keys [value]}]]
+                         (utils/scope-params! p rid (:url-intent value)))
+                       (js/URLSearchParams. (.-search js/location))
+                       (reconstruct/resources-at entries n))]
+    (utils/params->url params (.-pathname js/location))))
 
 (defn- sync-url!
- "Update the URL during a replay. If n>=total we are back at the live url."
+  "Update the URL during a replay. If n>=total we are back at the live url."
   [^js el entries n total]
   (if (>= n total)
     (when-let [saved (du/getv el k-live-url)]
@@ -207,13 +199,19 @@
         (du/setv! el k-live-url (str (.-pathname js/location) (.-search js/location))))
       (.replaceState js/history nil "" (reconstructed-url entries n)))))
 
+(defn- scrub-move?
+  "True when the step moved to a real replay position, not merely the live tail advancing
+   as new events arrive"
+  [prev n total]
+  (and (not= (:n prev) n)
+       (not (and (= (:n prev) (:total prev)) (= n total)))))
+
 (defn- render! [^js el refs entries n]
   (let [total (count entries)
         view  {:n n :total total}
         prev  (du/getv el k-view)]
     (when (not= view prev)
-      (when (and (not= (:n prev) n)
-                 (not (and (= (:n prev) (:total prev)) (= n total))))
+      (when (scrub-move? prev n total)
         (sync-url! el entries n total)
         (project! entries n))
       (du/setv! el k-view view)

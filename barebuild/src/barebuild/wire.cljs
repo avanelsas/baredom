@@ -29,6 +29,13 @@
   [js-obj]
   (some? (gobj/get js-obj "error")))
 
+(defn- ->field
+  "Transforms a js field descriptor to a CLJS field map."
+  [^js f]
+  (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
+    (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
+    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))))
+
 (defn- ->accepted
   "Transforms js object to accepted CLJS map"
   [js-obj]
@@ -40,11 +47,7 @@
      :value      (js->clj (gobj/get js-obj "value"))
      :page-info  (replace-js-keys (js->clj (gobj/get js-obj "pageInfo")))
      :shape      {:id-key (gobj/get shape "idKey")
-                  :fields (mapv (fn [f]
-                                  (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
-                                    (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
-                                    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))))
-                                (gobj/get shape "fields"))}}))
+                  :fields (mapv ->field (gobj/get shape "fields"))}}))
 
 (defn- ->rejected
   "Transforms js object to error CLJS map"

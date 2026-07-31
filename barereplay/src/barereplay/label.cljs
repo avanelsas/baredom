@@ -22,12 +22,6 @@
     {:live? (>= n total) :n n :total total
      :event (when (pos? n) (:event (nth entries (dec n))))}))
 
-(defn readout
-  [entries n]
-  (let [{:keys [live? n total event]} (status entries n)]
-    (str (if live? "LIVE" "REPLAYING") " " n " / " total
-         (when event (str " · " (event->label event))))))
-
 (defn detail-at [entries n]
   (when (pos? n)
     (let [{:keys [event effects]} (nth entries (dec n))

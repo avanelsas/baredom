@@ -184,7 +184,7 @@
       (is (= accepted (:last-accepted resource)))
       (is (= {:request/id "tasks:9" :query nil} (:active-request resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic :stale-response]] effects)))))
+      (is (= [[:diagnostic {:code :stale-response}]] effects)))))
 
 (deftest second-gesture-fetches-after-a-response
   (let [after-connect (:resource (resource/step base [:connected {}]))          ; live request tasks:1
@@ -292,7 +292,7 @@
       (is (= {:request/id "tasks:2" :query {:sort "owner"}} (:active-request resource)))
       (is (nil? (:last-failure resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic :stale-failure]] effects)))))
+      (is (= [[:diagnostic {:code :stale-failure}]] effects)))))
 
 (deftest protocol-failed-records-protocol-failure-and-notifies
   (let [prior  (assoc base :last-accepted accepted
@@ -318,7 +318,7 @@
       (is (= {:request/id "tasks:2" :query {:sort "owner"}} (:active-request resource)))
       (is (nil? (:last-failure resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic :stale-failure]] effects)))))
+      (is (= [[:diagnostic {:code :stale-failure}]] effects)))))
 
 ;; --- C3: echo-adoption (T5/T6) + trailing-fetch + failure adjudication ------
 
@@ -511,7 +511,7 @@
       (is (= base resource))
       (is (false? (resource/writing? resource))))
     (testing "it surfaces as its own diagnostic, distinct from the double-click case"
-      (is (= [[:diagnostic :unsupported-write]] effects)))))
+      (is (= [[:diagnostic {:code :unsupported-write}]] effects)))))
 
 (deftest submit-write-without-a-member-id-leaves-the-resource-untouched
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete}])]
@@ -519,7 +519,7 @@
               unknown op — no :active-write, so the single-flight slot stays free"
       (is (= base resource))
       (is (false? (resource/writing? resource))))
-    (is (= [[:diagnostic :unsupported-write]] effects))))
+    (is (= [[:diagnostic {:code :unsupported-write}]] effects))))
 
 ;; --- U1b: write-request — the op table as data -----------------------------
 
@@ -583,7 +583,7 @@
         {:keys [resource effects]} (resource/step r [:submit-write {:op :delete :id 9}])]
     (testing "a second write while one is in flight does not start another (guards the double-click)"
       (is (= r resource))
-      (is (= [[:diagnostic :stale-write]] effects)))))
+      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-ack-accepted-installs-the-returned-state
   (let [r       (assoc base :url-intent {:sort "owner"} :write-count 1
@@ -656,7 +656,7 @@
     (testing "an ack that doesn't answer the in-flight write never touches state"
       (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic :stale-write]] effects)))))
+      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-records-failure-keeps-stale-and-clears-writing
   (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}
@@ -678,7 +678,7 @@
     (testing "a failure for a superseded write does not touch state"
       (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic :stale-write]] effects)))))
+      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-protocol-is-labelled-protocol-not-network
   (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}

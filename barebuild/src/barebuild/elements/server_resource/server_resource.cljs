@@ -37,21 +37,27 @@
              headers (assoc :headers headers)
              body    (assoc :body (js/JSON.stringify (clj->js body))))))
 
+(defn- fetch-envelope
+  "Fetch, reject a non-ok status, read the body as text (not .json), and parse it into an envelope. A nil body parses to an empty-body marker.
+  Returns a promise of the parsed result"
+  [url init]
+  (-> (js/fetch url init)
+    (.then (fn [^js resp]
+             (if (.-ok resp)
+               (.text resp)
+               (throw (js/Error. (str "HTTP " (.-status resp)))))))
+    (.then (fn [^js body]
+             (wire/parse-envelope (try (js/JSON.parse body) (catch :default _ nil)))))))
+
 (defn- execute-fetch! [^js el m]
   (let [controller (js/AbortController.)
         request-id (:request/id m)]
     (du/setv-untraced! el k-abort controller)
-    (-> (js/fetch (:url m) (js/Object.assign (fetch-init m) #js {:signal (.-signal controller)}))
-      (.then (fn [^js resp]
-               (if (.-ok resp)
-                 (.text resp) ; text, not .json
-                 (throw (js/Error. (str "HTTP " (.-status resp)))))))
-      (.then (fn [^js body]
-               (let [obj    (try (js/JSON.parse body) (catch :default _ nil))
-                     result (wire/parse-envelope obj)] ; obj nil -> empty-body marker
-                 (if (:protocol-failure result)
-                   (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
-                   (handle-event! el [:response result])))))
+    (-> (fetch-envelope (:url m) (js/Object.assign (fetch-init m) #js {:signal (.-signal controller)}))
+      (.then (fn [result]
+               (if (:protocol-failure result)
+                 (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
+                 (handle-event! el [:response result]))))
       (.catch (fn [^js e]
                 ;; an aborted fetch is intentional (disconnect / supersede), not a failure
                 (when-not (= "AbortError" (.-name e))
@@ -59,15 +65,9 @@
 
 (defn- execute-write! [^js el m]
   (let [write-id (:write/id m)]
-    (-> (js/fetch (:url m) (fetch-init m))
-      (.then (fn [^js resp]
-               (if (.-ok resp)
-                 (.text resp) ; text, not .json
-                 (throw (js/Error. (str "HTTP " (.-status resp)))))))
-      (.then (fn [^js body]
-               (let [obj     (try (js/JSON.parse body) (catch :default _ nil))
-                     result  (wire/parse-envelope obj)
-                     result* (assoc result :write/id write-id)] ; obj nil -> empty-body marker
+    (-> (fetch-envelope (:url m) (fetch-init m))
+      (.then (fn [result]
+               (let [result* (assoc result :write/id write-id)]
                  (if (:protocol-failure result*)
                    (handle-event! el [:write-failed result*])
                    (handle-event! el [:write-ack result*])))))
@@ -122,7 +122,7 @@
       (execute-write! el m)
 
       :diagnostic
-      (js/console.debug "[server-resource]" (name m))
+      (js/console.debug "[server-resource]" (name (:code m)))
 
       nil)))
 
@@ -160,10 +160,11 @@
             (owned-by? el c))))))
 
 (defn- custom-element-tags [^js el]
-  (->> (element-descendants el)
-    (map (fn [^js node] (.. node -tagName toLowerCase)))
-    (filter (fn [tag] (str/includes? tag "-")))
-    distinct))
+  (into []
+        (comp (map (fn [^js node] (.. node -tagName toLowerCase)))
+              (filter (fn [tag] (str/includes? tag "-")))
+              (distinct))
+        (element-descendants el)))
 
 (defn- boot!
   "When reloading, read the current url and see if there are url parameters that

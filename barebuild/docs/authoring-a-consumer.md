@@ -18,7 +18,7 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 ```
 
 - **`model.cljs`** holds `tag-name`, `observed-attributes` (usually `#js []`), and a pure
-  projection function (accepted response → whatever the child needs). No DOM. This is where
+  projection function (accepted response -> whatever the child needs). No DOM. This is where
   unit tests live.
 - **`x_<name>_consumer.cljs`** holds the DOM effects (render, failure UI, loading) and calls
   `consumer-resource/register!` from `init!`.
@@ -43,9 +43,9 @@ element, `this` is the consumer host.
 | Hook | Signature | Fires when… |
 |---|---|---|
 | `:render` | `(child accepted this)` | `:last-accepted` changes |
-| `:on-failure` | `(child failure this)` | `:last-failure` changes — `failure` is **nil on recovery**, so clear your failure UI |
-| `:on-pending` | `(child pending this)` | `pending?` changes — `pending` is a boolean; show/hide loading |
-| `:on-writing` | `(child writing this)` | `writing?` changes — `writing` is a boolean; disable the submit control, and use the true→false edge to close a form on success |
+| `:on-failure` | `(child failure this)` | `:last-failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
+| `:on-pending` | `(child pending this)` | `pending?` changes.  `pending` is a boolean, show/hide loading |
+| `:on-writing` | `(child writing this)` | `writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
 
 What you get for free:
 - **Keep-stale is automatic.** A failure leaves `:last-accepted` untouched, so `render`
@@ -80,9 +80,10 @@ A write is the same shape of gesture, submitted with `submit-write!` instead:
 
 The payload is `{:op :delete :id <id>}` or `{:op :create :record {…}}`, where `record` is a
 map keyed by the **shape's field keys** (opaque domain strings, not keywords). `step` turns
-it into a `:write` effect. The ack comes back as `:write-ack`, which triggers a refetch. So
-you never render a write's result yourself. It arrives through `render` like any other
-accepted value. Writes never touch the URL.
+it into a `:write` effect. The ack comes back as `:write-ack`. An accepted ack already carries
+the server's new collection state (value + shape), which step installs directly as :last-accepted,
+so no separate refetch is issued. You never render a write's result yourself. It arrives
+through `render` like any other accepted value. Writes never touch the URL.
 
 Validate a create payload before submitting, against the shape the server sent:
 
@@ -134,5 +135,5 @@ payload locally, submits with `submit-write!`, uses `on-writing!` to disable the
 button and close the modal on success, and `on-failure!` to map a server rejection back onto
 the offending field.
 
-All three are driven by the same 70-line `consumer_resource.cljs` — the difference between
+All three are driven by the same 70-line `consumer_resource.cljs`. The difference between
 them is exactly their projection and their hooks.

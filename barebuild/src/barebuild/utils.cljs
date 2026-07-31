@@ -17,29 +17,41 @@
     (let [prefix (str resource-id ".")]
       (filterv #(str/starts-with? % prefix) all-keys))))
 
+(defn scope-params!
+  "Replace the keys `resource-id` owns in `params` with `new-params`, each prefixed by the
+  resource scope. Mutates and returns `params`."
+  [^js params resource-id new-params]
+  (doseq [k (owned-url-keys resource-id (js/Array.from (.keys params)))]
+    (.delete params k))
+  (let [prefix (url-prefix resource-id)]
+    (doseq [[k v] new-params]
+      (.set params (str prefix (name k)) (str v))))
+  params)
+
+(defn params->url
+  "Render `params` onto `pathname`, dropping the ? when the query is empty."
+  [^js params pathname]
+  (let [qs (.toString params)]
+    (if (str/blank? qs) pathname (str pathname "?" qs))))
+
 (defn build-scoped-url
   "Build the url from the resource's params, scoped by its resource-id. A named resource owns
   `<id>.`-prefixed keys (e.g. tasks.sort=start); an unnamed (blank id) resource owns the bare
   keys and writes them without a prefix (sort=start)."
   [search pathname resource-id new-params]
-  (let [params (js/URLSearchParams. search)
-        prefix (url-prefix resource-id)]
-    (doseq [k (owned-url-keys resource-id (js/Array.from (.keys params)))]
-      (.delete params k))
-    (doseq [[k v] new-params]
-      (.set params (str prefix (name k)) (str v)))
-    (let [qs (.toString params)]
-      (if (str/blank? qs) pathname (str pathname "?" qs)))))
+  (-> (js/URLSearchParams. search)
+      (scope-params! resource-id new-params)
+      (params->url pathname)))
 
 (defn canonicalize-query
   "Public function that ensures all query keys are keywords and values are non-blank strings.
   Entries whose value is nil or blank are dropped"
   [q]
   (into {}
-        (for [[k v] q
-              :let  [s (str v)]
-              :when (and (some? v) (not= "" s))]
-          [(keyword k) s])))
+        (keep (fn [[k v]]
+                (let [s (str v)]
+                  (when-not (= "" s) [(keyword k) s]))))
+        q))
 
 (defn- map->query-params
   "Take a map of k v and turn it into a url query parameter string, key-sorted so the
