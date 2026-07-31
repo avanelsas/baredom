@@ -2,8 +2,8 @@
 
 **A tool that supports presenting data in a [BareDOM](https://github.com/avanelsas/baredom) Web Component based UI using only server state.**
 
-BareBuild attempts to support presentational web components using **server state only**. A client
-does not need business logic, store or runtime framework. This leads to an extremely thin client,
+BareBuild attempts to support presentational web components using **server state only**. A BareBuild client
+does not need business logic, store or runtime frameworks. This leads to an extremely thin client,
 and powerful timeline/replay capabilities for the UI. The two main parts of BareBuild are:
 
 - **`<server-resource>`**: a non-visual custom element that holds one immutable resource
@@ -104,7 +104,7 @@ flowchart LR
 - **Two conversions**: JSON<->CLJS at the network edge, CLJS->DOM at the component edge.
   CLJS values in between.
 
-> **Integrating a server?** The endpoint must return a specific JSON envelope — see the
+> **Integrating a server?** The endpoint must return a specific JSON envelope. See the
 > [server contract](./docs/server-contract.md). For the full data flow with a worked consumer
 > example, see [`docs/architecture-diagram.md`](./docs/architecture-diagram.md); to write a
 > consumer, see [`docs/authoring-a-consumer.md`](./docs/authoring-a-consumer.md).
@@ -160,14 +160,14 @@ attributes or properties, so nothing in the runtime knows what it drives. In pra
 `x-drop-zone`. Components with imperative-only APIs, canvas rendering, or internal animation
 state may need consumer patterns that do not exist yet.
 
-Published to Clojars for ClojureScript host apps.
+Published to Clojars.
 
 ## Debugging
 
 [BareReplay](../barereplay/README.md) is a companion time-travel debugger for
 BareBuild apps. It records the event log and reconstructs any past state by
 replaying the pure `step`, then re-projects it onto the live components. Add it in
-one call and scrub, step, and jump through everything the app has done, with the
+one call and scrub, step, and jump through and replay everything the app has done, with the
 request and response behind each step. See the BareBuild demo to see BareReplay in
 action.
 
@@ -208,8 +208,8 @@ utilities. Register the runtime and your own consumers from your app's entry nam
 
 | Path | What |
 |---|---|
-| `src/barebuild/` | **the product** — the pure core (`resource`, `wire`, `utils`), the `register!` mechanism (`consumer_resource`), and the `<server-resource>` element |
-| `demo/` | **the demo** — example consumers, a Babashka dev-server, and a live page (showcase, not shipped) |
+| `src/barebuild/` | **the product**. The pure core (`resource`, `wire`, `utils`), the `register!` mechanism (`consumer_resource`), and the `<server-resource>` element |
+| `demo/` | **the demo**. Example consumers, a Babashka dev-server, and a live page (showcase, not shipped) |
 | `docs/` | [`server-contract.md`](./docs/server-contract.md), [`architecture-diagram.md`](./docs/architecture-diagram.md), [`authoring-a-consumer.md`](./docs/authoring-a-consumer.md) |
 | `test/barebuild/` | product unit tests |
 
@@ -243,4 +243,4 @@ its own guide, see [`demo/README.md`](./demo/README.md).
 
 ## License
 
-[MIT](./LICENSE) — same as BareDOM.
+[MIT](./LICENSE), same as BareDOM.

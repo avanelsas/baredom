@@ -1,12 +1,12 @@
-# BareBuild — demos
+# BareBuild demos
 
 Two live showcases for [BareBuild](../README.md), both driving BareDOM components from server
 state over one shared backend. They exist to demonstrate the runtime. **They are not part of
 BareBuild itself** (`demo.*` namespaces).
 
-- **Table** (`index.html`) — one `<server-resource>` driving five consumers: reads plus create,
+- **Table** (`index.html`). One `<server-resource>` driving five consumers: reads plus create,
   edit and delete of a flat task list.
-- **Board** (`board.html`) — a relational kanban board proving **two `<server-resource>`
+- **Board** (`board.html`). A relational kanban board proving **two `<server-resource>`
   elements coordinate through the URL**: pick a project and its board loads, drag a card to
   another column, create a project, add a task.
 
