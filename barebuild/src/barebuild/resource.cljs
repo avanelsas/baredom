@@ -215,6 +215,54 @@
   (let [resource* (assoc resource :last-failure failure slot-key nil)]
     {:resource resource* :effects [(notify-fx resource*)]}))
 
+;; CONNECT / SSR boot embed (§7.4) ----------------------------------------------
+
+(defn- boot-fetch
+  "The initial connect fetch for the current intent, with an optional leading diagnostic for an
+  embed that was ignored (broken, or a stale rejection)."
+  [resource diag-code]
+  (let [r* (start-request resource (:url-intent resource))]
+    {:resource r*
+     :effects  (cond-> []
+                 diag-code (conj (diagnostic diag-code))
+                 :always   (conj (fetch-fx r*) (notify-fx r*)))}))
+
+(defn- connect-accepted-embed
+  "Install an accepted boot embed exactly as a network response: validate the contract, a broken
+  payload adjudicates as a contract failure, a valid one installs and fetches only when the URL
+  has moved past what was embedded."
+  [resource embed]
+  (let [errors (validate-contract embed)]
+    (if (seq errors)
+      (with-trailing-fetch
+        (record-failure resource :active-request
+                        {:failure :contract :response embed :errors errors}))
+      (let [installed (assoc resource :last-accepted embed :last-failure nil)]
+        (if (pending? installed)
+          (let [r* (start-request installed (:url-intent installed))]
+            {:resource r* :effects [(notify-fx r*) (fetch-fx r*)]})
+          {:resource installed :effects [(notify-fx installed)]})))))
+
+(defn- connect-rejected-embed
+  "A rejected boot embed the server already adjudicated. When its echo matches intent it installs
+  as the failure and answers the intent, so no boot fetch. A stale rejection (the URL moved) is
+  diagnostics only, then a normal fetch."
+  [resource embed]
+  (if (= (:query embed) (:url-intent resource))
+    (let [r* (assoc resource :last-failure {:failure :rejected :response embed})]
+      {:resource r* :effects [(notify-fx r*)]})
+    (boot-fetch resource :stale-rejected-embed)))
+
+(defn- connect
+  "The :connected transition. An SSR boot embed, if present and usable, installs first; otherwise
+  a plain first fetch for the current intent."
+  [resource embed]
+  (cond
+    (:protocol-failure embed)      (boot-fetch resource :broken-embed)
+    (= :accepted (:outcome embed)) (connect-accepted-embed resource embed)
+    (= :rejected (:outcome embed)) (connect-rejected-embed resource embed)
+    :else                          (boot-fetch resource nil)))
+
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
   and the effects that need to be called. Each step gets a unique resource/id"
@@ -223,17 +271,7 @@
     (case event-k
       ;; reads
       :connected
-      (let [embed  (:embed payload)
-            intent (:url-intent resource)]
-        (if (= :accepted (:outcome embed))
-          (let [installed (assoc resource :last-accepted embed :last-failure nil)]
-            (if (pending? installed)
-              (let [r* (start-request installed intent)]
-                {:resource r* :effects [(notify-fx r*) (fetch-fx r*)]})
-              {:resource installed :effects [(notify-fx installed)]}))
-          ;; no usable embed -> last-accepted nil -> always pending -> always fetch
-          (let [r* (start-request resource intent)]
-            {:resource r* :effects [(fetch-fx r*) (notify-fx r*)]})))
+      (connect resource (:embed payload))
 
       :response
       (if-not (installable? resource payload)

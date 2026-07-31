@@ -91,9 +91,48 @@
   (let [marker {:protocol-failure {:reason :unknown-outcome}}
         {:keys [resource effects]} (resource/step base [:connected {:embed marker}])]
     (is (nil? (:last-accepted resource)) "a broken embed is not installed")
-    (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
+    (is (= [[:diagnostic {:code :broken-embed}]
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
             [:notify-consumers {:resource resource}]] effects)
-        "falls back to a normal fetch")))
+        "diagnoses the broken embed, then falls back to a normal fetch")))
+
+(deftest connected-with-rejected-embed-installs-failure-and-skips-fetch
+  (let [r     (assoc base :url-intent {:sort "nope"})
+        embed {:outcome :rejected :request/id "req-1" :query {:sort "nope"}
+               :error   {:code :invalid-query :message "no"}}
+        {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
+    (testing "the server already adjudicated this query at render time"
+      (is (= {:failure :rejected :response embed} (:last-failure resource)))
+      (is (nil? (:last-accepted resource))))
+    (testing "the failure adjudicates the intent, so there is no boot fetch"
+      (is (nil? (:active-request resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
+
+(deftest connected-with-stale-rejected-embed-diagnoses-and-fetches
+  (let [r     (assoc base :url-intent {:sort "owner"})   ; the URL moved since the server rendered
+        embed {:outcome :rejected :request/id "req-1" :query {:sort "stale"}
+               :error   {:code :invalid-query :message "no"}}
+        {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
+    (testing "a stale rejection is not installed"
+      (is (nil? (:last-failure resource)))
+      (is (nil? (:last-accepted resource)))
+      (is (= {:request/id "tasks:1" :query {:sort "owner"}} (:active-request resource))))
+    (is (= [[:diagnostic {:code :stale-rejected-embed}]
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]
+            [:notify-consumers {:resource resource}]]
+           effects)
+        "diagnoses the stale rejection, then fetches the current intent")))
+
+(deftest connected-with-invalid-accepted-embed-records-contract-failure
+  (let [r     (assoc base :url-intent {})
+        embed (assoc accepted :query {} :value [{"id" 1}])   ; declared field "owner" missing from the row
+        {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
+    (testing "a contract-broken accepted embed adjudicates as a failure, not installed data"
+      (is (= :contract (get-in resource [:last-failure :failure])))
+      (is (nil? (:last-accepted resource))))
+    (testing "the failure adjudicates the intent (echo = intent), so no boot fetch"
+      (is (nil? (:active-request resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)))))
 
 (deftest intent-patch-merges-writes-url-and-fetches
   (let [r     (assoc base :url-intent {:sort "owner" :direction "asc"})
