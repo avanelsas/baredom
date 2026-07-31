@@ -196,7 +196,7 @@
       (if (str/blank? qs) pathname (str pathname "?" qs)))))
 
 (defn- sync-url!
- "Update the URL during a replay. If n>=total we are back at the live url."
+  "Update the URL during a replay. If n>=total we are back at the live url."
   [^js el entries n total]
   (if (>= n total)
     (when-let [saved (du/getv el k-live-url)]
