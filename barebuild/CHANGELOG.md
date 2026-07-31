@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Adds an optional `:on-apply` hook to `consumer-resource/register!`, called on every projection, so a consumer can re-derive state that does not depend on `:last-accepted` being present (an empty gate driven by the URL, for example).
+- Refactors the pure core and the executor edge for readability and efficiency, with no change to behavior beyond the new hook.
+
 ## 0.4.0
 
 - Multiple `<server-resource>` elements coordinate on one page. A named resource namespaces its URL keys under its `resource-id` (`tasks.sort`, `projects.name`), and an unnamed one owns the bare root keys. A consumer sends a targeted `submit-intent!` to a named sibling, so coordination runs through the URL with no shared store.
