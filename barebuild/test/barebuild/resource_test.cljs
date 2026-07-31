@@ -215,6 +215,15 @@
     (testing "notify-consumers carries the same updated resource value"
       (is (= [[:notify-consumers {:resource resource}]] effects)))))
 
+(deftest installable-gates-on-request-id-only
+  (let [r (assoc base :url-intent {:sort "owner"}
+                      :active-request {:request/id "tasks:1" :query {:sort "owner"}})]
+    (testing "a matching id installs even when the server normalized the echo past intent and the
+              query as sent, so echo adoption (T5) can still take it"
+      (is (resource/installable? r {:request/id "tasks:1" :query {:sort "owner" :direction "asc"}})))
+    (testing "a non-matching id never installs"
+      (is (not (resource/installable? r {:request/id "tasks:9" :query {:sort "owner"}}))))))
+
 (deftest stale-response-is-dropped
   (let [r (assoc base :active-request {:request/id "tasks:9" :query nil}
                       :last-accepted accepted)

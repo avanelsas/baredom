@@ -105,7 +105,7 @@
   (= write-id (get-in r [:active-write :write/id])))
 
 (defn installable?
-  "Ensure that the live request matches the in-flight request id."
+  "True when `response` answers the in-flight read request, matched by request id alone."
   [r response]
   (fresh-request? r (:request/id response)))
 
