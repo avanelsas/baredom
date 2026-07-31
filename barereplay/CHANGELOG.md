@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+Restores the URL projection while replaying, so walking the timeline back drives the URL to each past intent. Pins BareBuild 0.5.0 for the new on-apply consumer hook and BareDOM 3.7.0.
+
 ## 0.2.1
 
 Projects reconstructed state only while replaying, not on every live event. The live view and its animations are left untouched during normal use.
