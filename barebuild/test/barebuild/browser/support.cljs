@@ -1,14 +1,17 @@
 (ns barebuild.browser.support
-  "Fixtures for the browser element tests: a once-registered <server-resource> and a spy
-   consumer, a fetch stub that echoes the request id, and mount / settle / teardown helpers."
+  "Fixtures for the browser element tests: a once-registered <server-resource>, a spy consumer
+   and a throwing consumer, a fetch stub that echoes the request id, a console.error capture, and
+   mount / settle / teardown helpers."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [barebuild.elements.server-resource.server-resource :as server-resource]))
 
-(defonce spy-calls   (atom []))   ; accepted values handed to the spy consumer's render
-(defonce fetch-calls (atom []))   ; urls the stubbed fetch received
+(defonce spy-calls    (atom []))   ; accepted values handed to the spy consumer's render
+(defonce fetch-calls  (atom []))   ; urls the stubbed fetch received
+(defonce error-calls  (atom []))   ; args passed to a stubbed console.error
 
 (defonce real-fetch (.-fetch js/window))
+(defonce real-error (.-error js/console))
 
 ;; Custom elements cannot be re-defined, so register once and reuse across tests.
 (defonce registered
@@ -20,6 +23,11 @@
        {:tag       "x-spy-consumer"
         :child-tag "div"
         :render    (fn [_child accepted _this] (swap! spy-calls conj accepted))}))
+    (when-not (js/customElements.get "x-throwing-consumer")
+      (consumer-resource/register!
+       {:tag       "x-throwing-consumer"
+        :child-tag "div"
+        :render    (fn [_child _accepted _this] (throw (js/Error. "consumer boom")))}))
     true))
 
 (defn- request-id [url]
@@ -38,26 +46,39 @@
 (defn restore-fetch! []
   (set! (.-fetch js/window) real-fetch))
 
+(defn capture-errors! []
+  (set! (.-error js/console)
+        (fn [& args] (swap! error-calls conj (vec args)))))
+
+(defn restore-error! []
+  (set! (.-error js/console) real-error))
+
 (defn reset-state! []
   (reset! spy-calls [])
-  (reset! fetch-calls []))
+  (reset! fetch-calls [])
+  (reset! error-calls []))
 
 (defn reset-url! []
   (.replaceState js/history nil "" "/"))
 
-(defn mount!
-  "Append a <server-resource resource-id=id src=src> with one spy consumer to the document,
-   and return the host element."
-  [resource-id src]
-  (let [host     (js/document.createElement "server-resource")
-        consumer (js/document.createElement "x-spy-consumer")
-        child    (js/document.createElement "div")]
+(defn mount-consumers!
+  "Append a <server-resource resource-id=id src=src> hosting one consumer per tag in
+   `consumer-tags` (document order), each wrapping a <div> child. Returns the host element."
+  [resource-id src consumer-tags]
+  (let [host (js/document.createElement "server-resource")]
     (.setAttribute host "resource-id" resource-id)
     (.setAttribute host "src" src)
-    (.appendChild consumer child)
-    (.appendChild host consumer)
+    (doseq [tag consumer-tags]
+      (let [consumer (js/document.createElement tag)]
+        (.appendChild consumer (js/document.createElement "div"))
+        (.appendChild host consumer)))
     (.appendChild js/document.body host)
     host))
+
+(defn mount!
+  "Append a <server-resource> with one spy consumer to the document, and return the host element."
+  [resource-id src]
+  (mount-consumers! resource-id src ["x-spy-consumer"]))
 
 (defn unmount-all! []
   (doseq [^js el (array-seq (js/document.querySelectorAll "server-resource"))]

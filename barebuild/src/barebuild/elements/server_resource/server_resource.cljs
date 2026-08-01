@@ -81,6 +81,15 @@
           (when (= target-id (:resource/id (du/getv e k-resource))) e))
         (array-seq (.querySelectorAll js/document model/tag-name))))
 
+(defn- apply-consumer!
+  "Notify one consumer, isolating a throwing applyResource so later consumers still run."
+  [^js c r ctx own-id]
+  (try
+    (.applyResource c r ctx)
+    (catch :default e
+      (js/console.error "[server-resource]" (or own-id "(unnamed)")
+                        "consumer applyResource threw:" e))))
+
 (defn- notify-consumers! [^js el r]
   (let [own-id    (:resource/id r)
         consumers (du/getv el k-consumers)
@@ -92,7 +101,7 @@
                                          (handle-event! target [:intent-patch patch]))))
                    :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
     (doseq [^js c consumers]
-      (.applyResource c r ctx))))
+      (apply-consumer! c r ctx own-id))))
 
 (defn- run-effects!
   [^js el effects]
@@ -182,7 +191,10 @@
                              :history-policy history-policy})
     (du/setv! el k-popstate on-popstate)
     (.addEventListener js/window "popstate" on-popstate)
-    (du/setv! el k-consumers (collect-consumers el))
+    (let [consumers (collect-consumers el)]
+      (when (empty? consumers)
+        (js/console.error "[server-resource]" (or resource-id "(unnamed)") "has no consumers"))
+      (du/setv! el k-consumers consumers))
     (handle-event! el [:connected {:embed embed}])))
 
 (defn- disconnected! [^js el]
