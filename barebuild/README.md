@@ -117,6 +117,11 @@ keys never collide: `projects.*` for one, `tasks.*` for another. A single unname
 the bare root keys (`?sort=…`), so name a resource only when it shares a page or is a target.
 Every view is still a single shareable link, and the back button still works.
 
+Naming also isolates a resource's requests: a named resource reads and sends only its own
+`<id>.`-prefixed keys, so unrelated or tracking params on the URL (`utm_source`, `fbclid`) never
+reach its API. The unnamed root owns every bare key and forwards them all, so prefer a named
+resource on any page that also carries params it does not own.
+
 Consumers coordinate by **naming a sibling**. A gesture handler calls `submit-intent!` with a
 target id, which drives that sibling's URL projection and refetch. There is no shared store and
 no direct element reference, only the URL:
