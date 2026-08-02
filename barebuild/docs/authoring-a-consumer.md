@@ -83,7 +83,9 @@ submit it:
 ```
 
 `:gesture-class` is `:refinement` (-> replace history) or `:navigation` (-> push history);
-`step` resolves it to a URL-write mode. Display-only consumers have no gestures.
+`step` resolves it to a URL-write mode. This mapping is fixed: a `:navigation` gesture pushes a
+history entry, everything else replaces. It is not configurable per resource. Display-only
+consumers have no gestures.
 
 ## Writes (create / delete)
 
