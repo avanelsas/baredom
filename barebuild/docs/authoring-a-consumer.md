@@ -85,17 +85,25 @@ read `:error` to tell the kinds apart:
                                (401 403) "Your session has expired."   ; re-auth here
                                404       "Not found."
                                "Server error, please try again.")
+                :timeout     "The server took too long, please try again."
+                :decorator   "Couldn't sign you in, please try again."
                 "Couldn't reach the server.")                ; :offline
     :protocol "The server sent an unexpected response."
     :contract "The server's data did not match the expected format."))
 ```
 
 `:network` carries `:error {:kind ...}`: `:offline` for a transport failure (the request never
-reached a server), and `:http-status` with a `:status` code for a non-ok response. This is how a
+reached a server), `:http-status` with a `:status` code for a non-ok response, `:timeout` with
+the `:after` budget in milliseconds when the request outlived its
+[timeout](./request-configuration.md#timeout), and `:decorator`
+when a registered [request decorator](./request-configuration.md#a-request-decorator) could not
+produce its headers, in which case the request was never sent at all. This is how a
 consumer tells "you are offline" from "your session expired" (401). BareBuild surfaces the failure,
 what a 401 *means* (redirect to login, refresh a token and re-submit intent) is your app's call.
 A non-ok response is always a `:network`/`:http-status` failure, a query the server *rejects* comes
-back as a normal 2xx envelope with `:outcome :rejected`, not an HTTP error status.
+back as a normal 2xx envelope with `:outcome :rejected`, not an HTTP error status. For attaching
+the credential in the first place, see
+[request configuration](./request-configuration.md).
 
 ## Gestures (interactive consumers)
 
@@ -130,6 +138,13 @@ it into a `:write` effect. The ack comes back as `:write-ack`. An accepted ack a
 the server's new collection state (value + shape), which step installs directly as :last-accepted,
 so no separate refetch is issued. You never render a write's result yourself. It arrives
 through `render` like any other accepted value. Writes never touch the URL.
+
+**A write that fails without the server saying no is re-read automatically.** If the connection
+drops, the budget runs out, or the body comes back unreadable, the client cannot know whether the
+write committed, so it fetches the collection again and your `render` is called with whatever the
+server actually has. Your `on-failure` still fires first, so tell the user the write failed, but
+do not assume the old view is still accurate while you do. Only a `:rejected` ack, the server
+explicitly refusing, skips the re-read, because there its answer is already definitive.
 
 Validate a create payload before submitting, against the shape the server sent:
 

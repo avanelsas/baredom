@@ -4,11 +4,13 @@
    capture, url / popstate / submit helpers, and mount / settle / teardown helpers."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
+   [barebuild.decorator :as decorator]
    [barebuild.elements.server-resource.server-resource :as server-resource]))
 
 (defonce spy-calls     (atom []))   ; accepted values handed to the spy consumer's render
 (defonce failure-calls (atom []))   ; last-failure values handed to the spy consumer's on-failure
 (defonce fetch-calls   (atom []))   ; urls the stubbed fetch received
+(defonce fetch-inits   (atom []))   ; the init objects alongside them, positionally matched
 (defonce error-calls   (atom []))   ; args passed to a stubbed console.error
 (defonce aborted-calls (atom []))   ; urls whose in-flight request was aborted
 (defonce pending       (atom []))   ; controlled-stub entries {:url :resolve}, awaiting resolution
@@ -58,13 +60,20 @@
   (let [json (js/JSON.stringify (clj->js envelope))]
     #js {:ok true :text (fn [] (js/Promise.resolve json))}))
 
+(defn- record-call!
+  "Record one stubbed call, so every stub captures the same thing and a test can read the init
+   whichever stub it installed."
+  [url init]
+  (swap! fetch-calls conj url)
+  (swap! fetch-inits conj init))
+
 (defn respond-with!
   "Stub window.fetch with `responder`: (fn [url method body]) -> envelope-map | promise<envelope-map>.
-   Records the url and resolves an ok text response."
+   Records the call and resolves an ok text response."
   [responder]
   (set! (.-fetch js/window)
         (fn [url ^js init]
-          (swap! fetch-calls conj url)
+          (record-call! url init)
           (let [method (or (some-> init .-method) "GET")
                 body   (some-> init .-body)]
             (-> (js/Promise.resolve (responder url method body))
@@ -80,33 +89,48 @@
   "Stub window.fetch to answer every request with a non-ok HTTP `status` and no body."
   [status]
   (set! (.-fetch js/window)
-        (fn [url _init]
-          (swap! fetch-calls conj url)
+        (fn [url init]
+          (record-call! url init)
           (js/Promise.resolve #js {:ok false :status status}))))
 
 (defn stub-reject!
   "Stub window.fetch to reject every request, as a genuine transport failure (offline) does."
   []
   (set! (.-fetch js/window)
-        (fn [url _init]
-          (swap! fetch-calls conj url)
+        (fn [url init]
+          (record-call! url init)
           (js/Promise.reject (js/Error. "network down")))))
+
+(defn- abort-reason
+  "What a real fetch rejects with when its signal aborts: the signal's own reason, which is a
+   caller-supplied error when abort was given one (a timeout, say) and a plain AbortError when
+   it was not."
+  [^js signal]
+  (or (some-> signal .-reason)
+      (doto (js/Error. "aborted") (aset "name" "AbortError"))))
 
 (defn stub-controlled!
   "Stub window.fetch so each call is withheld in `pending` until resolve-nth! releases it, and its
-   AbortSignal (if any) records the url in aborted-calls. Use to hold a request in flight."
+   AbortSignal (if any) records the url in aborted-calls. A signal that is *already* aborted when
+   the call arrives rejects at once, as the real fetch does. Use to hold a request in flight."
   []
   (set! (.-fetch js/window)
         (fn [url ^js init]
-          (swap! fetch-calls conj url)
+          (record-call! url init)
           (js/Promise.
            (fn [resolve reject]
-             (swap! pending conj {:url url :resolve resolve})
-             (when-let [signal (some-> init .-signal)]
-               (.addEventListener signal "abort"
-                                  (fn []
-                                    (swap! aborted-calls conj url)
-                                    (reject (doto (js/Error. "aborted") (aset "name" "AbortError")))))))))))
+             (let [^js signal (some-> init .-signal)]
+               (cond
+                 (some-> signal .-aborted)
+                 (do (swap! aborted-calls conj url) (reject (abort-reason signal)))
+
+                 :else
+                 (do (swap! pending conj {:url url :resolve resolve})
+                     (when signal
+                       (.addEventListener signal "abort"
+                                          (fn []
+                                            (swap! aborted-calls conj url)
+                                            (reject (abort-reason signal)))))))))))))
 
 (defn resolve-nth!
   "Release the n-th still-pending controlled request with an accepted envelope of value + shape."
@@ -128,9 +152,11 @@
   (reset! spy-calls [])
   (reset! failure-calls [])
   (reset! fetch-calls [])
+  (reset! fetch-inits [])
   (reset! error-calls [])
   (reset! aborted-calls [])
-  (reset! pending []))
+  (reset! pending [])
+  (decorator/set-request-decorator! nil))
 
 (defn reset-url! []
   (.replaceState js/history nil "" "/"))
@@ -161,22 +187,26 @@
 
 (defn mount-consumers!
   "Append a <server-resource resource-id=id src=src> hosting one consumer per tag in
-   `consumer-tags` (document order), each wrapping a <div> child. Returns the host element."
-  [resource-id src consumer-tags]
-  (let [host (js/document.createElement "server-resource")]
-    (.setAttribute host "resource-id" resource-id)
-    (.setAttribute host "src" src)
-    (doseq [tag consumer-tags]
-      (let [consumer (js/document.createElement tag)]
-        (.appendChild consumer (js/document.createElement "div"))
-        (.appendChild host consumer)))
-    (.appendChild js/document.body host)
-    host))
+   `consumer-tags` (document order), each wrapping a <div> child. `attrs` is a map of extra
+   attribute name -> value set before the element connects. Returns the host element."
+  ([resource-id src consumer-tags] (mount-consumers! resource-id src consumer-tags {}))
+  ([resource-id src consumer-tags attrs]
+   (let [host (js/document.createElement "server-resource")]
+     (.setAttribute host "resource-id" resource-id)
+     (.setAttribute host "src" src)
+     (doseq [[k v] attrs]
+       (.setAttribute host k v))
+     (doseq [tag consumer-tags]
+       (let [consumer (js/document.createElement tag)]
+         (.appendChild consumer (js/document.createElement "div"))
+         (.appendChild host consumer)))
+     (.appendChild js/document.body host)
+     host)))
 
 (defn mount!
   "Append a <server-resource> with one spy consumer to the document, and return the host element."
-  [resource-id src]
-  (mount-consumers! resource-id src ["x-spy-consumer"]))
+  ([resource-id src] (mount! resource-id src {}))
+  ([resource-id src attrs] (mount-consumers! resource-id src ["x-spy-consumer"] attrs)))
 
 (defn unmount-all! []
   (doseq [^js el (array-seq (js/document.querySelectorAll "server-resource"))]
