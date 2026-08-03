@@ -142,3 +142,30 @@
                        "disconnecting aborts the pending request")
                    (done)))
           (.catch (fn [e] (is false (str "in-flight request was not aborted: " e)) (done)))))))
+
+(defn- first-failure []
+  (first (remove nil? @support/failure-calls)))
+
+(deftest an-http-error-surfaces-with-its-status
+  (async done
+    (support/stub-status! 401)
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(seq (remove nil? @support/failure-calls)))
+        (.then (fn []
+                 (let [f (first-failure)]
+                   (is (= :network (:failure f)) "an http error is a network failure")
+                   (is (= :http-status (get-in f [:error :kind])) "carrying the http-status kind")
+                   (is (= 401 (get-in f [:error :status])) "and the status code, so a consumer can react"))
+                 (done)))
+        (.catch (fn [e] (is false (str "http error did not surface: " e)) (done))))))
+
+(deftest a-transport-rejection-surfaces-as-offline
+  (async done
+    (support/stub-reject!)
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(seq (remove nil? @support/failure-calls)))
+        (.then (fn []
+                 (is (= :offline (get-in (first-failure) [:error :kind]))
+                     "a genuine transport rejection is offline, distinct from an http status")
+                 (done)))
+        (.catch (fn [e] (is false (str "transport rejection did not surface: " e)) (done))))))

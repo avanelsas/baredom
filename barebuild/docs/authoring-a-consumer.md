@@ -70,6 +70,33 @@ What you get for free:
 - **One request in flight, stale-drop, echo-adoption, trailing-fetch, revert** all handled
   by the pure `step` upstream. The consumer only ever sees the resulting value.
 
+## Rendering failures
+
+The `failure` your `on-failure` receives is a value tagged by `:failure`, one of
+`#{:rejected :network :protocol :contract}`. Dispatch on the tag, and for a `:network` failure
+read `:error` to tell the kinds apart:
+
+```clojure
+(defn- message [failure]
+  (case (:failure failure)
+    :rejected (get-in failure [:response :error :message])   ; the server's rejection message
+    :network  (case (get-in failure [:error :kind])
+                :http-status (case (get-in failure [:error :status])
+                               (401 403) "Your session has expired."   ; re-auth here
+                               404       "Not found."
+                               "Server error, please try again.")
+                "Couldn't reach the server.")                ; :offline
+    :protocol "The server sent an unexpected response."
+    :contract "The server's data did not match the expected format."))
+```
+
+`:network` carries `:error {:kind ...}`: `:offline` for a transport failure (the request never
+reached a server), and `:http-status` with a `:status` code for a non-ok response. This is how a
+consumer tells "you are offline" from "your session expired" (401). BareBuild surfaces the failure,
+what a 401 *means* (redirect to login, refresh a token and re-submit intent) is your app's call.
+A non-ok response is always a `:network`/`:http-status` failure, a query the server *rejects* comes
+back as a normal 2xx envelope with `:outcome :rejected`, not an HTTP error status.
+
 ## Gestures (interactive consumers)
 
 In a DOM event handler, translate the gesture into an intent patch (a `model` function) and

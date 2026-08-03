@@ -8,10 +8,18 @@
 
 (declare x-table-cell-sort-event)
 
+(defn- network-message [error]
+  (case (:kind error)
+    :http-status (case (:status error)
+                   (401 403) "Your session has expired. Please sign in again."
+                   404       "That resource was not found."
+                   "The server returned an error. Please try again.")
+    "Couldn't reach the server. Please try again."))
+
 (defn- failure-message [last-failure]
   (case (:failure last-failure)
     :rejected (get-in last-failure [:response :error :message])
-    :network  "Couldn't reach the server — please try again."
+    :network  (network-message (:error last-failure))
     :protocol "The server sent an unexpected response."
     :contract "The server's data didn't match the expected format."
     "Something went wrong."))

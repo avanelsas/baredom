@@ -37,40 +37,55 @@
              headers (assoc :headers headers)
              body    (assoc :body (js/JSON.stringify (clj->js body))))))
 
+(defn- parse-body
+  "Read the ok response body as text (not .json) and parse it into an envelope. A nil body parses
+  to an empty-body protocol marker."
+  [^js resp]
+  (.then (.text resp)
+         (fn [^js body]
+           (wire/parse-envelope (try (js/JSON.parse body) (catch :default _ nil))))))
+
 (defn- fetch-envelope
-  "Fetch, reject a non-ok status, read the body as text (not .json), and parse it into an envelope. A nil body parses to an empty-body marker.
-  Returns a promise of the parsed result"
+  "Fetch and classify the outcome as a value: a parsed envelope on a 2xx response, a
+  network-failure marker carrying the HTTP status on a non-ok response, or a protocol-failure
+  marker on an unparseable body. A genuine transport rejection (offline, DNS, CORS, abort) rejects
+  the promise and is classified by the caller. Returns a promise of the classified result."
   [url init]
-  (-> (js/fetch url init)
-    (.then (fn [^js resp]
-             (if (.-ok resp)
-               (.text resp)
-               (throw (js/Error. (str "HTTP " (.-status resp)))))))
-    (.then (fn [^js body]
-             (wire/parse-envelope (try (js/JSON.parse body) (catch :default _ nil)))))))
+  (.then (js/fetch url init)
+         (fn [^js resp]
+           (if (.-ok resp)
+             (parse-body resp)
+             {:network-failure {:kind :http-status :status (.-status resp)}}))))
+
+(defn- deliver-read! [^js el result request-id]
+  (cond
+    (:protocol-failure result) (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
+    (:network-failure result)  (handle-event! el [:network-failed {:request/id request-id
+                                                                    :error      (:network-failure result)}])
+    :else                      (handle-event! el [:response result])))
 
 (defn- execute-fetch! [^js el m]
   (let [controller (js/AbortController.)
         request-id (:request/id m)]
     (du/setv-untraced! el k-abort controller)
     (-> (fetch-envelope (:url m) (js/Object.assign (fetch-init m) #js {:signal (.-signal controller)}))
-      (.then (fn [result]
-               (if (:protocol-failure result)
-                 (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
-                 (handle-event! el [:response result]))))
+      (.then (fn [result] (deliver-read! el result request-id)))
       (.catch (fn [^js e]
                 ;; an aborted fetch is intentional (disconnect / supersede), not a failure
                 (when-not (= "AbortError" (.-name e))
                   (handle-event! el [:network-failed {:request/id request-id :error {:kind :offline}}])))))))
 
+(defn- deliver-write! [^js el result write-id]
+  (cond
+    (:protocol-failure result) (handle-event! el [:write-failed (assoc result :write/id write-id)])
+    (:network-failure result)  (handle-event! el [:write-failed {:write/id write-id
+                                                                  :error    (:network-failure result)}])
+    :else                      (handle-event! el [:write-ack (assoc result :write/id write-id)])))
+
 (defn- execute-write! [^js el m]
   (let [write-id (:write/id m)]
     (-> (fetch-envelope (:url m) (fetch-init m))
-      (.then (fn [result]
-               (let [result* (assoc result :write/id write-id)]
-                 (if (:protocol-failure result*)
-                   (handle-event! el [:write-failed result*])
-                   (handle-event! el [:write-ack result*])))))
+      (.then (fn [result] (deliver-write! el result write-id)))
       (.catch (fn [^js _e]
                 (handle-event! el [:write-failed {:write/id write-id :error {:kind :offline}}]))))))
 
