@@ -98,6 +98,26 @@ rewind the address bar. A consumer that obeys this replays correctly by construc
 `:intent` is what makes that possible. A gate like "no project is selected yet" is
 `(some? (:project intent))`, not a `URLSearchParams` lookup.
 
+### The view is per resource
+
+A view carries **its own resource's** state. Coordination between resources is deliberately
+one-directional: `submit-intent!` with a target id lets a consumer **drive** a named sibling,
+and there is no counterpart for **reading** one.
+
+So a consumer that needs to *display* state owned by a sibling has no supported route to it,
+and reading the URL is the only way out. That consumer is then outside the replay guarantee:
+a projection rewinds its view, but not the address bar it is really reading.
+
+`x-project-selector-consumer` in the demo is exactly this case. It lives in the `projects`
+resource, drives `tasks`, and has to show the `tasks.project` selection it just set.
+
+**Prefer to model your way around it.** A resource should own the state it displays. If a
+component needs a sibling's state to paint, that usually means the state is modelled on the
+wrong resource, or the two components should be one per resource rather than one spanning both.
+Reach for the URL only when neither is possible, and expect that component not to time-travel.
+
+Adding cross-resource reads later would be additive, so nothing written today forecloses it.
+
 ### `render-key`
 
 `render` fires only when the slice you name changes, so `render-key` is where you state what
