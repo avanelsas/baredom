@@ -107,7 +107,7 @@
                :error   {:code :invalid-query :message "no"}}
         {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
     (testing "the server already adjudicated this query at render time"
-      (is (= {:failure :rejected :response embed} (:last-failure resource)))
+      (is (= {:failure :rejected :response embed :query (:query embed)} (:last-failure resource)))
       (is (nil? (:last-accepted resource))))
     (testing "the failure adjudicates the intent, so there is no boot fetch"
       (is (nil? (:active-request resource)))
@@ -262,7 +262,7 @@
   (let [r (expecting base rejected)
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded as a :rejected failure wrapping the response"
-      (is (= {:failure :rejected :response rejected} (:last-failure resource))))
+      (is (= {:failure :rejected :response rejected :query (:query rejected)} (:last-failure resource))))
     (testing ":active-request is cleared; :last-accepted is left untouched"
       (is (nil? (:active-request resource)))
       (is (nil? (:last-accepted resource))))
@@ -454,7 +454,7 @@
                   :error   {:code :invalid-query :message "nope"}}
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded and the request cleared"
-      (is (= {:failure :rejected :response rejected} (:last-failure resource)))
+      (is (= {:failure :rejected :response rejected :query (:query rejected)} (:last-failure resource)))
       (is (nil? (:active-request resource))))
     (testing "url-intent reverts to the last accepted query (T8)"
       (is (= {:sort "owner" :direction "asc"} (:url-intent resource))))
@@ -725,11 +725,12 @@
   (let [r   (assoc base :last-accepted accepted
                         :write-count 1
                         :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
-        ack {:outcome :rejected :write/id "tasks:w1"
+        ack {:outcome :rejected :write/id "tasks:w1" :query {:sort "owner"}
              :error   {:code :conflict :message "nope"}}
         {:keys [resource effects]} (resource/step r [:write-ack ack])]
-    (testing "the rejection is recorded as a :rejected failure wrapping the ack"
-      (is (= {:failure :rejected :response ack} (:last-failure resource))))
+    (testing "the rejection is recorded as a :rejected failure wrapping the ack, with the query
+              it concerns lifted to the top level like every other failure"
+      (is (= {:failure :rejected :response ack :query {:sort "owner"}} (:last-failure resource))))
     (testing "writing? clears so the button re-enables (the regression that bit twice)"
       (is (nil? (:active-write resource)))
       (is (false? (resource/writing? resource))))
@@ -747,12 +748,13 @@
       (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-records-failure-keeps-stale-and-clears-writing
-  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
         r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
         {:keys [resource effects]} (resource/step r [:write-failed {:write/id "tasks:w1"
                                                                     :error    {:kind :offline}}])]
     (testing "records a :network failure carrying the error kind and the in-flight write"
-      (is (= {:failure :network :error {:kind :offline} :write aw} (:last-failure resource))))
+      (is (= {:failure :network :error {:kind :offline} :write aw :query {:sort "owner"}}
+             (:last-failure resource))))
     (testing "writing? clears; last-accepted kept (pessimistic -> nothing to roll back)"
       (is (nil? (:active-write resource)))
       (is (= accepted (:last-accepted resource))))
@@ -818,17 +820,73 @@
       (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-protocol-is-labelled-protocol-not-network
-  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
         r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
         {:keys [resource]} (resource/step r [:write-failed {:write/id "tasks:w1"
                                                             :protocol-failure {:reason :empty-body}}])]
     (testing "a broken ack envelope is a :protocol failure carrying its detail, not a nil-error :network one"
-      (is (= {:failure :protocol :detail {:reason :empty-body} :write aw} (:last-failure resource))))))
+      (is (= {:failure :protocol :detail {:reason :empty-body} :write aw :query {:sort "owner"}}
+             (:last-failure resource))))))
 
 (deftest unknown-event-is-a-noop
   (is (= {:resource base :effects []}
          (resource/step base [:some-future-event {}]))
       "events step doesn't handle leave the resource untouched with no effects"))
+
+;; --- every failure names the query it concerns -----------------------------
+
+(defn- failure-of
+  "The :last-failure a resource lands in after `event`, starting from `r`."
+  [r event]
+  (:last-failure (:resource (resource/step r event))))
+
+(deftest every-failure-carries-its-query-at-the-top-level
+  (testing "the query used to hide under :response for rejected and contract, at :query for
+            network and protocol, and nowhere at all for writes. One place means a reader never
+            has to know the tag to find it"
+    (let [q        {:sort "owner"}
+          in-fligh (assoc base :url-intent q :request-count 1
+                               :active-request {:request/id "tasks:1" :query q})
+          writing  (assoc base :url-intent q :last-accepted (assoc accepted :query q)
+                               :write-count 1
+                               :active-write {:write/id "tasks:w1" :query q
+                                              :payload {:op :delete :id 7}})]
+      (testing "read: rejected"
+        (is (= q (:query (failure-of in-fligh [:response {:outcome :rejected :request/id "tasks:1"
+                                                          :query q :error {:code :bad}}])))))
+      (testing "read: contract"
+        (is (= q (:query (failure-of in-fligh [:response (assoc accepted :request/id "tasks:1"
+                                                                :query q :value [{"id" 1}])])))))
+      (testing "read: network"
+        (is (= q (:query (failure-of in-fligh [:network-failed {:request/id "tasks:1"
+                                                                :error {:kind :offline}}])))))
+      (testing "read: protocol"
+        (is (= q (:query (failure-of in-fligh [:protocol-failed {:request/id "tasks:1"
+                                                                 :protocol-failure {:reason :empty-body}}])))))
+      (testing "write: rejected ack"
+        (is (= q (:query (failure-of writing [:write-ack {:write/id "tasks:w1" :outcome :rejected
+                                                          :query q :error {:code :conflict}}])))))
+      (testing "write: network"
+        (is (= q (:query (failure-of writing [:write-failed {:write/id "tasks:w1"
+                                                             :error {:kind :timeout :after 60000}}])))))
+      (testing "write: protocol"
+        (is (= q (:query (failure-of writing [:write-failed {:write/id "tasks:w1"
+                                                             :protocol-failure {:reason :empty-body}}]))))))))
+
+(deftest a-write-failure-does-not-answer-a-read-intent
+  (testing "a write failure names the query it was issued for, but that says nothing about
+            whether the current intent has been fetched, so pending? must ignore it. Counting it
+            would leave an unfetched view looking answered"
+    (let [r (assoc base :url-intent {:sort "owner"}
+                        :last-failure {:failure :network :error {:kind :offline}
+                                       :query {:sort "owner"}
+                                       :write {:write/id "tasks:w1" :query {:sort "owner"}}})]
+      (is (true? (resource/pending? r))))
+    (testing "the same failure without a :write is a read failure, and does answer it"
+      (let [r (assoc base :url-intent {:sort "owner"}
+                          :last-failure {:failure :network :error {:kind :offline}
+                                         :query {:sort "owner"}})]
+        (is (false? (resource/pending? r)))))))
 
 ;; --- project: what a consumer is allowed to see ----------------------------
 

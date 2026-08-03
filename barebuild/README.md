@@ -128,7 +128,13 @@ resource on any page that also carries params it does not own.
 
 Consumers coordinate by **naming a sibling**. A gesture handler calls `submit-intent!` with a
 target id, which drives that sibling's URL projection and refetch. There is no shared store and
-no direct element reference, only the URL:
+no direct element reference, only the URL.
+
+Coordination is **write-only**: a consumer can drive a named sibling but cannot read one. Its
+view carries its own resource's state and nothing else. Model so that a resource owns the state
+it displays, and see
+[the view is per resource](./docs/authoring-a-consumer.md#the-view-is-per-resource) for what to
+do when you cannot.
 
 ```clojure
 ;; selecting a project drives the tasks resource, not this one

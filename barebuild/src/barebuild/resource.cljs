@@ -115,17 +115,17 @@
   [r]
   (not= (:url-intent r) (requested-query r)))
 
-(defn- failure-query [f]
-  (case (:failure f)
-    (:rejected :contract) (get-in f [:response :query])
-    (:network :protocol)  (:query f)
-    nil))
+(defn- read-failure-query
+  "The query a *read* failure concerns. A write failure answers nothing about whether the current
+  intent has been fetched, so it does not count towards pending?."
+  [f]
+  (when-not (:write f) (:query f)))
 
 (defn pending? [r]
   (or (some? (:active-request r))
       (let [intent (:url-intent r)]
         (and (not= intent (get-in r [:last-accepted :query]))
-             (not= intent (failure-query (:last-failure r)))))))
+             (not= intent (read-failure-query (:last-failure r)))))))
 
 (defn- with-trailing-fetch
   "If there is a current intent, still not answered, fire it again if a transition had cleared
@@ -261,7 +261,7 @@
     (if (seq errors)
       (with-trailing-fetch
         (record-failure resource :active-request
-                        {:failure :contract :response embed :errors errors}))
+                        {:failure :contract :response embed :errors errors :query (:query embed)}))
       (let [installed (assoc resource :last-accepted embed :last-failure nil)]
         (if (pending? installed)
           (let [r* (start-request installed (:url-intent installed))]
@@ -274,7 +274,7 @@
   diagnostics only, then a normal fetch."
   [resource embed]
   (if (= (:query embed) (:url-intent resource))
-    (let [r* (assoc resource :last-failure {:failure :rejected :response embed})]
+    (let [r* (assoc resource :last-failure {:failure :rejected :response embed :query (:query embed)})]
       {:resource r* :effects [(notify-fx r*)]})
     (boot-fetch resource :stale-rejected-embed)))
 
@@ -307,7 +307,7 @@
             (if (seq errors)
               (with-trailing-fetch
                 (record-failure resource :active-request
-                                {:failure :contract :response payload :errors errors}))
+                                {:failure :contract :response payload :errors errors :query (:query payload)}))
               (let [adopt? (not (drifted? resource))
                     {:keys [resource correct?]} (install-accepted (assoc resource :active-request nil)
                                                                   payload adopt?)]
@@ -320,7 +320,7 @@
                 revert?        (and (= (:query payload) (:url-intent resource))
                                     (some? (:last-accepted resource)))
                 cleared        (assoc resource
-                                      :last-failure {:failure :rejected :response payload}
+                                      :last-failure {:failure :rejected :response payload :query (:query payload)}
                                       :active-request nil)
                 resource*      (if revert? (assoc cleared :url-intent accepted-query) cleared)]
             (with-trailing-fetch
@@ -401,14 +401,14 @@
             (if (seq errors)
               (with-trailing-fetch
                 (record-failure resource :active-write
-                                {:failure :contract :response payload :errors errors}))
+                                {:failure :contract :response payload :errors errors :query (:query payload)}))
               (let [adopt? (not (write-drifted? resource))
                     {:keys [resource correct?]} (install-accepted (assoc resource :active-write nil)
                                                                   payload adopt?)]
                 (with-trailing-fetch
                   {:resource resource
                    :effects  (accepted-effects resource (:query payload) correct?)}))))
-          (record-failure resource :active-write {:failure :rejected :response payload}))
+          (record-failure resource :active-write {:failure :rejected :response payload :query (:query payload)}))
         {:resource resource
          :effects  [(diagnostic :stale-write)]})
 
@@ -417,9 +417,11 @@
       ;; unreadable. Only an explicit :rejected ack, handled above, is the server saying no.
       :write-failed
       (if (fresh-write? resource (:write/id payload))
-        (let [failure (if-let [detail (:protocol-failure payload)]
-                        {:failure :protocol :detail detail :write (:active-write resource)}
-                        {:failure :network :error (:error payload) :write (:active-write resource)})]
+        (let [write   (:active-write resource)
+              failure (if-let [detail (:protocol-failure payload)]
+                        {:failure :protocol :detail detail :write write :query (:query write)}
+                        {:failure :network :error (:error payload) :write write
+                         :query (:query write)})]
           (with-reconciling-fetch (record-failure resource :active-write failure)))
         {:resource resource
          :effects [(diagnostic :stale-write)]})

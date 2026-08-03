@@ -29,12 +29,19 @@
   [js-obj]
   (some? (gobj/get js-obj "error")))
 
+(defn- ->option
+  "One selectable value for a field. `value` is opaque domain data and stays a string, `label` is
+  what a control shows for it."
+  [^js o]
+  {:value (gobj/get o "value") :label (gobj/get o "label")})
+
 (defn- ->field
   "Transforms a js field descriptor to a CLJS field map."
   [^js f]
   (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
     (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
-    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))))
+    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))
+    (some? (gobj/get f "options"))  (assoc :options (mapv ->option (gobj/get f "options")))))
 
 (defn- ->accepted
   "Transforms js object to accepted CLJS map"

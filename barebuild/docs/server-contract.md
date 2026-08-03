@@ -150,6 +150,22 @@ stays domain-agnostic. It never hardcodes field names. The shape tells it what t
 - **`required`** *(optional, boolean)*: the field must be present and non-blank in a create
   payload.
 - **`enum`** *(optional, array)*: the only permitted values for the field.
+- **`options`** *(optional, array)*: the values of the field and what to call each one, each
+  `{"value": …, "label": …}`. Use it when the values need a human label, a status code or an
+  opaque id, so a client can both offer them in a control and show them in a table without
+  knowing the domain.
+
+```json
+{ "key": "projectId", "type": "string",
+  "options": [ { "value": "p-1", "label": "Website Redesign" },
+               { "value": "p-2", "label": "Mobile App" } ] }
+```
+
+`enum` and `options` answer different questions. `enum` is a **constraint**, the only permitted
+values, and it is what write validation checks against. `options` is a **catalogue**, what a
+control should offer and what to call each entry. A field may carry both, one, or neither. Give
+a field `options` when the same list would otherwise have to be fetched as a second resource,
+which is the case a per-resource consumer cannot reach across to read.
 
 `required` and `enum` drive **writes**, not reads: a consumer can build a create form from
 the shape and check the payload before submitting. They are advisory to the client and
