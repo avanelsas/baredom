@@ -87,8 +87,9 @@
 
 (defn- render! [^js form {accepted :accepted} ^js this]
   (du/setv! this k-accepted accepted)
-  ;; populate the select + stash shape once
-  (when-not (du/getv this k-populated?)
+  ;; populate the select + stash shape once. Not before a response: there are no choices to
+  ;; offer yet, and marking it populated would leave the select empty for good
+  (when (and accepted (not (du/getv this k-populated?)))
     (let [enum   (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first :enum)
           select (.querySelector form "x-select")]
       (doseq [v enum]

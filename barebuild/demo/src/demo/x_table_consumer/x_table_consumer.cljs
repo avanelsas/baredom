@@ -203,8 +203,11 @@
     (apply-plan! table (model/reconcile-plan (current-row-ids table) rows) columns)))
 
 (defn- render! [^js table {accepted :accepted} ^js this]
-  (render-table! (model/accepted-response->view-model accepted) table)
-  (maybe-set-x-pagination! (:page-info accepted) this))
+  ;; the view is projected before the first response, and a table with no shape has no columns.
+  ;; Building the header from an empty column list would fix it at one column for good
+  (when accepted
+    (render-table! (model/accepted-response->view-model accepted) table)
+    (maybe-set-x-pagination! (:page-info accepted) this)))
 
 (defn- on-failure! [_child failure ^js this]
   (delete-x-alert! this)
