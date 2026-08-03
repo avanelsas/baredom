@@ -48,7 +48,7 @@
   (consumer-resource/register!
    {:tag        model/tag-name
     :child-tag  "x-form"
-    :render-key (constantly true)
+    :render-key (fn [view] (get-in view [:accepted :shape]))
     :on-connect connect!
     :render     render!
     :on-writing on-writing!
