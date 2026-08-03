@@ -23,6 +23,11 @@
   (assoc r :active-request {:request/id (:request/id response)
                             :query      (:query response)}))
 
+(defn- effect-value
+  "The value of the first `k` effect in `effects`, or nil when step emitted none."
+  [effects k]
+  (some (fn [[fx m]] (when (= k fx) m)) effects))
+
 ;; --- render-key: the change-guard projection -------------------------------
 
 (deftest render-key-ignores-transport-ids
@@ -579,51 +584,86 @@
               :url      "/api/tasks?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record} nil))))
+             (resource/write-request base "tasks:w1" {:op :create :record record} nil))))
     (testing "update: member-addressed PUT carrying the record"
       (is (= {:write/id "tasks:w1"
               :method   "PUT"
               :url      "/api/tasks/7?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :update :id 7 :record record} nil))))
+             (resource/write-request base "tasks:w1" {:op :update :id 7 :record record} nil))))
     (testing "delete: member-addressed DELETE, no body and so no content-type"
       (is (= {:write/id "tasks:w1"
               :method   "DELETE"
               :url      "/api/tasks/7?requestId=tasks:w1"}
-             (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 7} nil))))))
+             (resource/write-request base "tasks:w1" {:op :delete :id 7} nil))))))
 
 (deftest write-request-carries-the-current-query
   (testing "the write is issued for the current view, so its query rides the URL like a read's"
     (is (= "/api/tasks?requestId=tasks:w1&direction=desc&sort=owner"
-           (:url (resource/write-request "/api/tasks" "tasks:w1"
+           (:url (resource/write-request base "tasks:w1"
                                          {:op :create :record {"title" "x"}}
                                          {:sort "owner" :direction "desc"}))))))
 
 (deftest write-request-of-an-unknown-op-is-nil
   (testing "the table is the whole write vocabulary — nil is how step learns it can't build one"
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :frobnicate :id 7} nil)))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:id 7} nil)))))
+    (is (nil? (resource/write-request base "tasks:w1" {:op :frobnicate :id 7} nil)))
+    (is (nil? (resource/write-request base "tasks:w1" {:id 7} nil)))))
 
 (deftest write-request-of-a-member-op-without-an-id-is-nil
   (testing "no id would address the collection instead — a DELETE that reads as
             'delete everything' to any server implementing collection-level delete"
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete} nil)))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :update :record {"title" "x"}} nil)))
-    (is (nil? (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id ""} nil))))
+    (is (nil? (resource/write-request base "tasks:w1" {:op :delete} nil)))
+    (is (nil? (resource/write-request base "tasks:w1" {:op :update :record {"title" "x"}} nil)))
+    (is (nil? (resource/write-request base "tasks:w1" {:op :delete :id ""} nil))))
   (testing "a collection op needs no id"
-    (is (some? (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record {"title" "x"}} nil))))
+    (is (some? (resource/write-request base "tasks:w1" {:op :create :record {"title" "x"}} nil))))
   (testing "0 is a legitimate id, not a missing one"
     (is (= "/api/tasks/0?requestId=tasks:w1"
-           (:url (resource/write-request "/api/tasks" "tasks:w1" {:op :delete :id 0} nil))))))
+           (:url (resource/write-request base "tasks:w1" {:op :delete :id 0} nil))))))
 
 (deftest write-request-passes-the-record-through-unconverted
   (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an
             =-comparable effect is what makes the write spine testable at all"
     (let [record {"title" "Ship it" "status" "todo"}
-          req    (resource/write-request "/api/tasks" "tasks:w1" {:op :create :record record} nil)]
+          req    (resource/write-request base "tasks:w1" {:op :create :record record} nil)]
       (is (map? (:body req)))
       (is (= record (:body req))))))
+
+;; --- transport config: step emits complete requests ------------------------
+
+(def ^:private configured
+  (assoc base :url-intent {}
+              :transport {:credentials "include" :headers {"x-api-key" "k"} :timeout 5000}))
+
+(deftest transport-config-rides-every-request
+  (testing "a read: the :fetch value step returns already describes the whole call, so the
+            executor translates it and decides nothing"
+    (let [{:keys [effects]} (resource/step configured [:connected {}])
+          req               (effect-value effects :fetch)]
+      (is (= "include" (:credentials req)))
+      (is (= {"x-api-key" "k"} (:headers req)))))
+  (testing "a write: the same config, with the protocol's content-type merged on top"
+    (let [{:keys [effects]} (resource/step configured [:submit-write {:op :create
+                                                                     :record {"title" "x"}}])
+          req               (effect-value effects :write)]
+      (is (= "include" (:credentials req)))
+      (is (= {"x-api-key" "k" "content-type" "application/json"} (:headers req)))))
+  (testing "the budget is on both, so a hung write cannot block every later write either"
+    (let [read-req  (effect-value (:effects (resource/step configured [:connected {}])) :fetch)
+          write-req (effect-value (:effects (resource/step configured [:submit-write
+                                                                      {:op :delete :id 7}]))
+                                  :write)]
+      (is (= 5000 (:timeout read-req)))
+      (is (= 5000 (:timeout write-req))))))
+
+(deftest an-unconfigured-resource-emits-the-requests-it-always-did
+  (testing "no transport -> no :credentials and no :headers on a read, so adding config
+            changed nothing for a resource that declares none"
+    (let [{:keys [effects]} (resource/step (assoc base :url-intent {}) [:connected {}])
+          req               (effect-value effects :fetch)]
+      (is (nil? (:credentials req)))
+      (is (nil? (:headers req))))))
 
 (deftest submit-write-while-writing-is-a-noop
   (let [r (assoc base :write-count 1
@@ -716,8 +756,57 @@
     (testing "writing? clears; last-accepted kept (pessimistic -> nothing to roll back)"
       (is (nil? (:active-write resource)))
       (is (= accepted (:last-accepted resource))))
-    (testing "consumers are notified with the updated resource"
-      (is (= [[:notify-consumers {:resource resource}]] effects)))))
+    (testing "consumers are notified, and a re-read follows to find out whether the write landed"
+      (is (= [:notify-consumers {:resource (dissoc resource :request-count :active-request)}]
+             (first effects)))
+      (is (= :fetch (first (second effects)))))))
+
+;; --- reconciling a write whose outcome is unknown --------------------------
+
+(defn- write-failure-effects
+  "The effects of `failure-payload` landing on a resource with a live write and a good last view."
+  [failure-payload]
+  (:effects (resource/step (assoc base :last-accepted accepted
+                                       :url-intent (:query accepted)
+                                       :write-count 1
+                                       :active-write {:write/id "tasks:w1"
+                                                      :payload {:op :create :record {"t" "x"}}})
+                           [:write-failed (merge {:write/id "tasks:w1"} failure-payload)])))
+
+(deftest an-unknown-outcome-write-is-reconciled-by-a-re-read
+  (testing "a timed-out write may well have committed before the client gave up. Leaving the old
+            view on screen would hide a row the server has, and the retry the failure invites
+            would then write it twice"
+    (is (some? (effect-value (write-failure-effects {:error {:kind :timeout :after 60000}}) :fetch))))
+  (testing "the same holds for a dropped connection and for an unreadable body: the server may
+            have committed either way, so both observe rather than assume"
+    (is (some? (effect-value (write-failure-effects {:error {:kind :offline}}) :fetch)))
+    (is (some? (effect-value (write-failure-effects {:protocol-failure {:reason :empty-body}})
+                             :fetch)))))
+
+(deftest a-rejected-write-is-not-reconciled
+  (testing "an explicit rejection is the server saying no, the one write failure whose outcome is
+            known, so re-reading would only cost a round trip"
+    (let [{:keys [effects]} (resource/step (assoc base :last-accepted accepted
+                                                       :url-intent (:query accepted)
+                                                       :write-count 1
+                                                       :active-write {:write/id "tasks:w1"
+                                                                      :payload {:op :delete :id 7}})
+                                           [:write-ack {:write/id "tasks:w1"
+                                                        :outcome  :rejected
+                                                        :error    {:code :conflict}}])]
+      (is (nil? (effect-value effects :fetch))))))
+
+(deftest reconciling-does-not-open-a-second-request
+  (testing "a read already in flight is the observation we need, so single-flight holds"
+    (let [{:keys [effects]}
+          (resource/step (assoc base :last-accepted accepted
+                                     :write-count 1
+                                     :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+                                     :request-count 1
+                                     :active-request {:request/id "tasks:1" :query {}})
+                         [:write-failed {:write/id "tasks:w1" :error {:kind :offline}}])]
+      (is (nil? (effect-value effects :fetch))))))
 
 (deftest write-failed-for-superseded-write-is-dropped
   (let [r (assoc base :active-write {:write/id "tasks:w2" :payload {:op :delete :id 7}})

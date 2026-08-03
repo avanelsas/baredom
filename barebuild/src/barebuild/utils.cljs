@@ -63,14 +63,34 @@
       (.append params (name k) (str v)))
     (.toString params)))
 
+(defn- request-headers
+  [transport-headers body?]
+  (let [headers (cond-> (or transport-headers {})
+                  body? (assoc "content-type" "application/json"))]
+    (when (seq headers) headers)))
+
 (defn request
   "build a request value for the executor from the parts provided
-  .e.g. -> {:method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner&direction=asc\"}"
-  [{:keys [endpoint segment method query body request-id]}]
-  (cond-> {:method method
-           :url    (str endpoint
-                        (when segment
-                          (str "/" (js/encodeURIComponent segment)))
-                        "?requestId=" request-id (when (seq query) (str "&" (map->query-params query))))}
-    body (assoc :body body
-                :headers {"content-type" "application/json"})))
+  .e.g. -> {:method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner&direction=asc\"}
+  `transport` is the resource's static config."
+  [{:keys [endpoint segment method query body request-id transport]}]
+  (let [headers     (request-headers (:headers transport) (some? body))
+        credentials (:credentials transport)
+        timeout     (:timeout transport)]
+    (cond-> {:method method
+             :url    (str endpoint
+                          (when segment
+                            (str "/" (js/encodeURIComponent segment)))
+                          "?requestId=" request-id (when (seq query) (str "&" (map->query-params query))))}
+      body        (assoc :body body)
+      headers     (assoc :headers headers)
+      credentials (assoc :credentials credentials)
+      timeout     (assoc :timeout timeout))))
+
+(defn merge-request-headers
+  "Merge `extra` headers into a built request, more specific headers winning over the ones already
+  there, and the protocol's content-type still winning over both on a bodied request."
+  [request extra]
+  (let [headers (request-headers (merge (:headers request) extra) (some? (:body request)))]
+    (cond-> request
+      headers (assoc :headers headers))))

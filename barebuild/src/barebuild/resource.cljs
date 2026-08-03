@@ -63,6 +63,7 @@
     (assoc (utils/request {:endpoint   (:endpoint r)
                            :method     "GET"
                            :query      query
+                           :transport  (:transport r)
                            :request-id rid})
            :request/id rid)))
 
@@ -142,6 +143,18 @@
   [accepted]
   (dissoc accepted :request/id :write/id))
 
+(defn- with-reconciling-fetch
+  "Follow a write whose outcome the client cannot know with a re-read. The request may have
+  reached the server and committed before the failure, so observing the server is the only way to
+  learn whether it did, and rendering the old view as if nothing happened would make the user's
+  retry a duplicate. Skipped while a read is already in flight, since one is on its way."
+  [{:keys [resource effects] :as result}]
+  (if (:active-request resource)
+    result
+    (let [r* (start-request resource (:url-intent resource))]
+      {:resource r*
+       :effects  (conj (vec effects) (fetch-fx r*))})))
+
 ;; WRITE functionality ----------------------------------------------------------
 
 ;; The write vocabulary as data: each op maps to its method, whether it addresses the
@@ -158,16 +171,18 @@
    :move   {:method "PATCH"  :target :member     :body? true}})
 
 (defn write-request
-  "The :write effect value for a write payload, or nil when none can be built"
-  [endpoint write-id {:keys [op id record]} query]
+  "The :write effect value for a write payload, or nil when none can be built. Reads the endpoint
+  and the transport config off the resource"
+  [resource write-id {:keys [op id record]} query]
   (when-let [{:keys [method target body?]} (get write-ops op)]
     (let [member? (= target :member)]
       (when (or (not member?) (seq (str id)))
-        (assoc (utils/request {:endpoint endpoint
-                               :segment (when member? id)
-                               :method method
-                               :query query
-                               :body (when body? record)
+        (assoc (utils/request {:endpoint   (:endpoint resource)
+                               :segment    (when member? id)
+                               :method     method
+                               :query      query
+                               :body       (when body? record)
+                               :transport  (:transport resource)
                                :request-id write-id})
                :write/id write-id)))))
 
@@ -359,7 +374,7 @@
       (if-not (writing? resource)
         (let [resource* (start-write resource payload (:url-intent resource))
               id        (get-in resource* [:active-write :write/id])
-              write-req (write-request (:endpoint resource*) id payload (:url-intent resource))]
+              write-req (write-request resource* id payload (:url-intent resource))]
           (if write-req
             {:resource resource*
              :effects  [(notify-fx resource*)
@@ -387,12 +402,15 @@
         {:resource resource
          :effects  [(diagnostic :stale-write)]})
 
+      ;; Every failure reaching here left the write's outcome unknown: the request may have
+      ;; committed before the connection dropped, the budget ran out, or the body came back
+      ;; unreadable. Only an explicit :rejected ack, handled above, is the server saying no.
       :write-failed
       (if (fresh-write? resource (:write/id payload))
         (let [failure (if-let [detail (:protocol-failure payload)]
                         {:failure :protocol :detail detail :write (:active-write resource)}
                         {:failure :network :error (:error payload) :write (:active-write resource)})]
-          (record-failure resource :active-write failure))
+          (with-reconciling-fetch (record-failure resource :active-write failure)))
         {:resource resource
          :effects [(diagnostic :stale-write)]})
 

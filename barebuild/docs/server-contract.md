@@ -168,6 +168,13 @@ failure*: the response is not installed and the last good view stays.
 the status code. A `4xx` / `5xx` is read as a **transport failure**, not a rejection. So don't
 return `400` for an invalid query, return `200` with `outcome: "rejected"`.
 
+A `401` is therefore a network failure a consumer can branch on, never a rejection. BareBuild
+never retries it. If your endpoint needs a cookie or a static header to authenticate at all, the
+client side of that is one attribute, see
+[request configuration](./request-configuration.md). A cross-origin endpoint reading a cookie
+must also answer with `Access-Control-Allow-Credentials: true` and a concrete
+`Access-Control-Allow-Origin`.
+
 ### The query echo is load-bearing
 
 The server must **echo the query it honored**, normalized, in the accepted `query`
@@ -185,10 +192,21 @@ BareBuild distinguishes four, and **all keep the last good view on screen**:
 | **rejected** | `outcome: "rejected"` with an `error`. On a read or on a write |
 | **contract** | an accepted envelope (read or write) whose records don't match the declared `shape` |
 | **protocol** | the body isn't a valid envelope (unparseable JSON, or an accepted outcome missing `value` + `shape`, or a rejected one missing `error`) |
-| **network** | no response, or a non-2xx status |
+| **network** | no response, a non-2xx status, or a request that outlived its budget |
 
 A failed write leaves the resource untouched: nothing was rendered optimistically, so there
 is nothing to roll back.
+
+Expect a **GET straight after a failed write**, unless the failure was a `rejected` ack. A write
+that dies on a dropped connection, a spent budget or an unreadable body may still have committed
+on your side, so the client re-reads rather than guessing. Your write handlers do not need to be
+idempotent for this, it is only a read, but do make sure a write that commits still reports its
+outcome, since a committed-but-unreported write is what this exists to detect.
+
+**Answer within 60 seconds.** BareBuild abandons a request after that and reports a timeout, so
+an endpoint that legitimately takes longer, a large export or a cold-start function, needs the
+page to widen or remove the budget. See
+[request configuration](./request-configuration.md#timeout).
 
 ## The round-trip
 

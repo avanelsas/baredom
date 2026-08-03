@@ -88,7 +88,9 @@ flowchart LR
 ```
 
 - **Pure**: Every decision lives in `step` and is visible in the returned effects.
-  The executor only performs them (fetch, write, history, notify, abort, diagnostics).
+  The executor only performs them (fetch, write, history, notify, abort, diagnostics). Its one
+  deliberate exception is the optional [request decorator](./docs/request-configuration.md),
+  a host-app hook for credentials that change on their own schedule rather than with the value.
   `step` is testable and replayable from an event log (see [BareReplay](https://github.com/avanelsas/baredom/barereplay)).
 - **Writes are the same loop**: a consumer calls `submit-write!`, `step` emits a `:write`
   effect, and the ack comes back as `:write-ack` and triggers a refetch. What is
@@ -101,13 +103,15 @@ flowchart LR
   and `installable?` derive purely from the value. A response is installed only if its id
   matches the live request. A gesture made mid-flight is picked up by a single trailing
   fetch once the in-flight request clears.
-- **Two conversions**: JSON<->CLJS at the network edge, CLJS->DOM at the component edge.
-  CLJS values in between.
+- **Two conversions**: JSON<->CLJS on the way in (a response, an SSR boot embed, a config
+  attribute), CLJS->DOM at the component edge. CLJS values in between.
 
 > **Integrating a server?** The endpoint must return a specific JSON envelope. See the
 > [server contract](./docs/server-contract.md). For the full data flow with a worked consumer
 > example, see [`docs/architecture-diagram.md`](./docs/architecture-diagram.md); to write a
-> consumer, see [`docs/authoring-a-consumer.md`](./docs/authoring-a-consumer.md).
+> consumer, see [`docs/authoring-a-consumer.md`](./docs/authoring-a-consumer.md). To send
+> cookies or static headers with every request, see
+> [`docs/request-configuration.md`](./docs/request-configuration.md).
 
 ## Coordinating multiple resources
 
@@ -215,7 +219,7 @@ utilities. Register the runtime and your own consumers from your app's entry nam
 |---|---|
 | `src/barebuild/` | **the product**. The pure core (`resource`, `wire`, `utils`), the `register!` mechanism (`consumer_resource`), and the `<server-resource>` element |
 | `demo/` | **the demo**. Example consumers, a Babashka dev-server, and a live page (showcase, not shipped) |
-| `docs/` | [`server-contract.md`](./docs/server-contract.md), [`architecture-diagram.md`](./docs/architecture-diagram.md), [`authoring-a-consumer.md`](./docs/authoring-a-consumer.md) |
+| `docs/` | [`server-contract.md`](./docs/server-contract.md), [`architecture-diagram.md`](./docs/architecture-diagram.md), [`authoring-a-consumer.md`](./docs/authoring-a-consumer.md), [`request-configuration.md`](./docs/request-configuration.md) |
 | `test/barebuild/` | product unit tests |
 
 ## Develop
