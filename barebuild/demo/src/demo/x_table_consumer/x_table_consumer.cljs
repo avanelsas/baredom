@@ -202,7 +202,7 @@
   (when table
     (apply-plan! table (model/reconcile-plan (current-row-ids table) rows) columns)))
 
-(defn- render! [^js table accepted ^js this]
+(defn- render! [^js table {accepted :accepted} ^js this]
   (render-table! (model/accepted-response->view-model accepted) table)
   (maybe-set-x-pagination! (:page-info accepted) this))
 

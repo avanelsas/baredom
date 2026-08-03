@@ -85,7 +85,7 @@
                        (fn [e]
                          (submit! e)))))
 
-(defn- render! [^js form accepted ^js this]
+(defn- render! [^js form {accepted :accepted} ^js this]
   (du/setv! this k-accepted accepted)
   ;; populate the select + stash shape once
   (when-not (du/getv this k-populated?)

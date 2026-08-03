@@ -14,7 +14,7 @@
                        (fn [_e]
                          (consumer-resource/submit-intent! el (model/translate-search-gesture ""))))))
 
-(defn- render! [^js x-search-field accepted-response _this]
+(defn- render! [^js x-search-field {accepted-response :accepted} _this]
   (let [term    (or (model/project-search-value accepted-response) "")
         current (.-value x-search-field)]
     (when (and (not= term current)
@@ -26,6 +26,6 @@
    {:tag                 model/tag-name
     :child-tag           "x-search-field"
     :observed-attributes model/observed-attributes
-    :render-key          model/project-search-value
+    :render-key          (fn [view] (model/project-search-value (:accepted view)))
     :render              render!
     :on-connect          on-connect!}))
