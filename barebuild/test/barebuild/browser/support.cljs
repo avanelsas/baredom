@@ -7,6 +7,7 @@
    [barebuild.elements.server-resource.server-resource :as server-resource]))
 
 (defonce spy-calls     (atom []))   ; accepted values handed to the spy consumer's render
+(defonce failure-calls (atom []))   ; last-failure values handed to the spy consumer's on-failure
 (defonce fetch-calls   (atom []))   ; urls the stubbed fetch received
 (defonce error-calls   (atom []))   ; args passed to a stubbed console.error
 (defonce aborted-calls (atom []))   ; urls whose in-flight request was aborted
@@ -22,9 +23,10 @@
       (server-resource/init!))
     (when-not (js/customElements.get "x-spy-consumer")
       (consumer-resource/register!
-       {:tag       "x-spy-consumer"
-        :child-tag "div"
-        :render    (fn [_child accepted _this] (swap! spy-calls conj accepted))}))
+       {:tag        "x-spy-consumer"
+        :child-tag  "div"
+        :render     (fn [_child accepted _this] (swap! spy-calls conj accepted))
+        :on-failure (fn [_child failure _this] (swap! failure-calls conj failure))}))
     (when-not (js/customElements.get "x-throwing-consumer")
       (consumer-resource/register!
        {:tag       "x-throwing-consumer"
@@ -74,6 +76,22 @@
   [value shape]
   (respond-with! (fn [url _method _body] (accepted url value shape))))
 
+(defn stub-status!
+  "Stub window.fetch to answer every request with a non-ok HTTP `status` and no body."
+  [status]
+  (set! (.-fetch js/window)
+        (fn [url _init]
+          (swap! fetch-calls conj url)
+          (js/Promise.resolve #js {:ok false :status status}))))
+
+(defn stub-reject!
+  "Stub window.fetch to reject every request, as a genuine transport failure (offline) does."
+  []
+  (set! (.-fetch js/window)
+        (fn [url _init]
+          (swap! fetch-calls conj url)
+          (js/Promise.reject (js/Error. "network down")))))
+
 (defn stub-controlled!
   "Stub window.fetch so each call is withheld in `pending` until resolve-nth! releases it, and its
    AbortSignal (if any) records the url in aborted-calls. Use to hold a request in flight."
@@ -108,6 +126,7 @@
 
 (defn reset-state! []
   (reset! spy-calls [])
+  (reset! failure-calls [])
   (reset! fetch-calls [])
   (reset! error-calls [])
   (reset! aborted-calls [])
