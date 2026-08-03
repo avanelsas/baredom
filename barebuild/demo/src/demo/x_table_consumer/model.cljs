@@ -8,6 +8,21 @@
 
 (def method-api {})
 
+(defn- labeller
+  "A value -> display text fn for one field. When the shape gives the field `options`, they name
+   its values, so a cell shows the same text the form's control offers. An unlisted value shows
+   as itself rather than blank."
+  [{:keys [options]}]
+  (if (seq options)
+    (let [by-value (into {} (map (juxt :value :label)) options)]
+      (fn [v] (get by-value v v)))
+    identity))
+
+(defn- row-cells
+  "The displayed cell text per declared field."
+  [fields row]
+  (into {} (map (fn [{:keys [key] :as field}] [key ((labeller field) (get row key))])) fields))
+
 (defn accepted-response->view-model
   [accepted-response]
   (let [{:keys [query shape]} accepted-response
@@ -23,11 +38,10 @@
                                       sort-direction
                                       "none")})
                  fields)
-        field-keys (map :key fields)
         rows (mapv
               (fn [row]
                 {:id (get row id-key)
-                 :cells (select-keys row field-keys)})
+                 :cells (row-cells fields row)})
               (:value accepted-response))]
     {:columns columns
      :rows rows}))

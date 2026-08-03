@@ -85,17 +85,25 @@
                        (fn [e]
                          (submit! e)))))
 
+(defn- field-choices
+  "What the status select should offer. A field's :options are the catalogue, each with the
+   value to submit and the label to show. Falling back to :enum keeps a server that declares
+   only the constraint working, with the raw value as its own label."
+  [field]
+  (or (:options field)
+      (mapv (fn [v] {:value v :label v}) (:enum field))))
+
 (defn- render! [^js form {accepted :accepted} ^js this]
   (du/setv! this k-accepted accepted)
   ;; populate the select + stash shape once. Not before a response: there are no choices to
   ;; offer yet, and marking it populated would leave the select empty for good
   (when (and accepted (not (du/getv this k-populated?)))
-    (let [enum   (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first :enum)
+    (let [status (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first)
           select (.querySelector form "x-select")]
-      (doseq [v enum]
+      (doseq [{:keys [value label]} (field-choices status)]
         (let [opt (.createElement js/document "option")]
-          (set! (.-value opt) v)
-          (set! (.-textContent opt) v)
+          (set! (.-value opt) value)
+          (set! (.-textContent opt) label)
           (.appendChild select opt)))
       (du/setv! this k-populated? true)
       (du/setv! this k-shape (:shape accepted)))))

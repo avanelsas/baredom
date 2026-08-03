@@ -66,6 +66,29 @@
     (testing "a field WITHOUT constraints stays bare — no nil :required/:enum keys (W2 decision #2)"
       (is (= {:key "end" :type :date} end)))))
 
+(deftest shape-carries-field-options
+  (let [js (clj->js
+            {"outcome"   "accepted"
+             "requestId" "req-9"
+             "query"     {}
+             "value"     []
+             "shape"     {"idKey"  "id"
+                          "fields" [{"key"     "projectId" "type" "string"
+                                     "options" [{"value" "p-1" "label" "Website Redesign"}
+                                                {"value" "p-2" "label" "Mobile App"}]}
+                                    {"key" "title" "type" "string"}]}})
+        [project title] (get-in (wire/parse-envelope js) [:shape :fields])]
+    (testing "options carry a value and a label, so a control can offer server-owned choices
+              without a second resource. The value stays an opaque domain string, only the
+              protocol's own vocabulary becomes keywords"
+      (is (= {:key     "projectId"
+              :type    :string
+              :options [{:value "p-1" :label "Website Redesign"}
+                        {:value "p-2" :label "Mobile App"}]}
+             project)))
+    (testing "a field without options stays bare, as it does for required and enum"
+      (is (= {:key "title" :type :string} title)))))
+
 (deftest revision-is-optional
   (let [r (wire/parse-envelope
            (clj->js {"outcome" "accepted"

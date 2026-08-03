@@ -87,3 +87,23 @@
       "into an empty table every row is new")
   (is (= ["1" "2"] (:remove (model/reconcile-plan ["1" "2"] [])))
       "clearing the rows removes them all"))
+
+(deftest cells-show-the-label-a-field-declares-for-its-value
+  (let [labelled (assoc-in accepted [:shape :fields 3 :options]
+                           [{:value "todo"  :label "To do"}
+                            {:value "doing" :label "In progress"}])
+        {:keys [rows]} (model/accepted-response->view-model labelled)]
+    (testing "a field with options names its values, so a cell reads the same as the form
+              control that offers them rather than showing the raw domain value"
+      (is (= "In progress" (get-in (first rows) [:cells "status"])))
+      (is (= "To do" (get-in (second rows) [:cells "status"]))))
+    (testing "fields without options are untouched"
+      (is (= "Refactor parser core" (get-in (first rows) [:cells "title"]))))))
+
+(deftest a-value-missing-from-the-options-shows-as-itself
+  (let [labelled (assoc-in accepted [:shape :fields 3 :options]
+                           [{:value "todo" :label "To do"}])
+        {:keys [rows]} (model/accepted-response->view-model labelled)]
+    (testing "an unlisted value is shown raw rather than blanked, so a server that adds a
+              status before it adds its label does not empty the column"
+      (is (= "doing" (get-in (first rows) [:cells "status"]))))))

@@ -154,7 +154,10 @@
             {:key "owner"  :type "string" :required true}
             {:key "start"  :type "date"   :required true}
             {:key "end"    :type "date"}
-            {:key "status" :type "string" :required true :enum ["todo" "doing" "done"]}]})
+            {:key "status" :type "string" :required true :enum ["todo" "doing" "done"]
+             :options [{:value "todo"  :label "To do"}
+                       {:value "doing" :label "In progress"}
+                       {:value "done"  :label "Done"}]}]})
 
 ;; Fields the server can sort by — derived from the shape (id-key + display fields).
 (def ^:private sortable-fields
