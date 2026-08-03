@@ -12,7 +12,12 @@
 
 ;; --- the current selection, read from the shared URL projection ---------------
 
-(defn- current-project-id []
+(defn- current-project-id
+  "The selection lives in the TASKS resource's URL scope, and this consumer belongs to PROJECTS,
+  so its own projected intent cannot carry it. Reading the address bar is the only route a
+  per-resource view leaves open, and it is why this one component does not rewind with a
+  time-travel projection the way the board does."
+  []
   (or (.get (js/URLSearchParams. (.-search js/location)) "tasks.project")
       model/all-projects-value))
 
@@ -24,7 +29,7 @@
     (set! (.-textContent opt) name)
     opt))
 
-(defn- render! [^js x-select accepted _this]
+(defn- render! [^js x-select {accepted :accepted} _this]
   (set! (.-innerHTML x-select) "")
   (.appendChild x-select (make-option! {:id model/all-projects-value :name all-label}))
   (doseq [o (model/project-options accepted)]
@@ -54,18 +59,11 @@
     (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
     (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select)))))
 
-(defn- apply!
-  "Apply ensures that selector content is replayed properly with every
-  projected step, not just with accepted data changes"
-  [^js x-select _value _this]
-  (show-selection! x-select))
-
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-select"
     :observed-attributes model/observed-attributes
-    :render-key          model/project-options
+    :render-key          (fn [view] [(model/project-options (:accepted view)) (current-project-id)])
     :render              render!
-    :on-apply            apply!
     :on-connect          on-connect!}))

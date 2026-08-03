@@ -41,7 +41,7 @@
     (.addEventListener form "x-form-submit"
                        (fn [e] (submit! e)))))
 
-(defn- render! [^js _form accepted ^js this]
+(defn- render! [^js _form {accepted :accepted} ^js this]
   (du/setv! this k-shape (:shape accepted)))
 
 (defn init! []

@@ -46,7 +46,7 @@ flowchart TB
   WIRE -->|"CLJS response, or protocol-failure marker"| STEP
   STEP -->|"effects: fetch · write · url-write · notify · abort · diagnostic"| EXEC
   EXEC -->|"url-write: push/replaceState (scoped)"| URL
-  EXEC -->|"notify-consumers: applyResource(resource, ctx)"| PROJ
+  EXEC -->|"notify-consumers: applyResource(view, ctx)"| PROJ
   PROJ --> C2
   C2 -->|"x-table-row / x-table-cell children"| TABLE
   TABLE -->|"x-table-cell-sort (direction) · page-request · delete"| CONS
@@ -72,8 +72,9 @@ flowchart TB
 - **step → executor** — the pure result: a next resource value plus effects as data.
 - **executor → URL** — a `:url-write` reflects the (adopted, normalized) query back into
   the address bar via `build-scoped-url` + `history`.
-- **executor → consumer** — a `:notify-consumers` calls `applyResource`, handing over the
-  whole resource value.
+- **executor → consumer** — a `:notify-consumers` projects the resource into a view
+  (`:accepted :failure :intent :pending? :writing?`) and calls `applyResource` with it. The
+  machine's own bookkeeping never crosses this edge.
 - **consumer → x-table** — `project` builds a `{:columns :rows}` view-model; Conversion 2
   renders it as `x-table-row`/`x-table-cell` children.
 - **x-table → consumer → step** — a sort/page gesture becomes an intent patch via
@@ -121,14 +122,14 @@ flowchart LR
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart TB
-  SR["&lt;server-resource&gt;<br/>notify-consumers → applyResource(resource)"]
+  SR["&lt;server-resource&gt;<br/>notify-consumers → project → applyResource(view)"]
 
   subgraph MECH["consumer-resource/register! — shared mechanism (one file)"]
     APPLY["applyResource<br/>child caching · submit-intent! · submit-write! · four change-guards"]
-    G1["render — on :last-accepted change"]
-    G2["on-failure — on :last-failure change (nil = recover)"]
-    G3["on-pending — on pending? change"]
-    G4["on-writing — on writing? change"]
+    G1["render, on render-key slice of the view change"]
+    G2["on-failure, on :failure change (nil = recover)"]
+    G3["on-pending, on :pending? change"]
+    G4["on-writing, on :writing? change"]
     APPLY --> G1
     APPLY --> G2
     APPLY --> G3

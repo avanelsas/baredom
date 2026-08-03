@@ -110,10 +110,10 @@
   [m]
   (if-let [decorate (decorator/current)]
     (-> (js/Promise.resolve)
-        (.then (fn [] (decorate m)))
-        (.then (fn [extra]
-                 (fetch-init (utils/merge-request-headers m (decorator-headers extra)))))
-        (.catch decorator-failed!))
+      (.then (fn [] (decorate m)))
+      (.then (fn [extra]
+               (fetch-init (utils/merge-request-headers m (decorator-headers extra)))))
+      (.catch decorator-failed!))
     (js/Promise.resolve (fetch-init m))))
 
 (def ^:private abort-error-name "AbortError")
@@ -154,7 +154,7 @@
         racers (cond-> [operation (aborted controller)]
                  ms (conj (expiring ms controller timer)))]
     (-> (js/Promise.race (into-array racers))
-        (.finally (fn [] (js/clearTimeout @timer))))))
+      (.finally (fn [] (js/clearTimeout @timer))))))
 
 (defn- transport-error
   "Classify a rejected request: a spent budget, or a transport failure."
@@ -187,7 +187,7 @@
   (cond
     (:protocol-failure result) (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
     (:network-failure result)  (handle-event! el [:network-failed {:request/id request-id
-                                                                    :error      (:network-failure result)}])
+                                                                   :error      (:network-failure result)}])
     :else                      (handle-event! el [:response result])))
 
 (defn- perform!
@@ -195,12 +195,12 @@
   runs out. Resolves to a classified result, or rejects for the caller to classify."
   [m ^js controller]
   (bounded (-> (request-init m)
-               (.then (fn [init]
-                        (if (:network-failure init)
-                          init
-                          (fetch-envelope (:url m)
-                                          (js/Object.assign init
-                                                            #js {:signal (.-signal controller)}))))))
+             (.then (fn [init]
+                      (if (:network-failure init)
+                        init
+                        (fetch-envelope (:url m)
+                                        (js/Object.assign init
+                                                          #js {:signal (.-signal controller)}))))))
            (:timeout m)
            controller))
 
@@ -222,7 +222,7 @@
   (cond
     (:protocol-failure result) (handle-event! el [:write-failed (assoc result :write/id write-id)])
     (:network-failure result)  (handle-event! el [:write-failed {:write/id write-id
-                                                                  :error    (:network-failure result)}])
+                                                                 :error    (:network-failure result)}])
     :else                      (handle-event! el [:write-ack (assoc result :write/id write-id)])))
 
 (defn- execute-write! [^js el m]
@@ -245,9 +245,9 @@
 
 (defn- apply-consumer!
   "Notify one consumer, isolating a throwing applyResource so later consumers still run."
-  [^js c r ctx own-id]
+  [^js c view ctx own-id]
   (try
-    (.applyResource c r ctx)
+    (.applyResource c view ctx)
     (catch :default e
       (js/console.error "[server-resource]" (or own-id "(unnamed)")
                         "consumer applyResource threw:" e))))
@@ -261,9 +261,10 @@
                                                     el)]
                                        (when target
                                          (handle-event! target [:intent-patch patch]))))
-                   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}]
+                   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}
+        view      (resource/project r)]
     (doseq [^js c consumers]
-      (apply-consumer! c r ctx own-id))))
+      (apply-consumer! c view ctx own-id))))
 
 (defn- run-effects!
   [^js el effects]

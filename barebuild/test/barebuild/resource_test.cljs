@@ -829,3 +829,60 @@
   (is (= {:resource base :effects []}
          (resource/step base [:some-future-event {}]))
       "events step doesn't handle leave the resource untouched with no effects"))
+
+;; --- project: what a consumer is allowed to see ----------------------------
+
+(def ^:private view-keys #{:accepted :failure :intent :pending? :writing?})
+
+(deftest project-always-has-the-same-shape
+  (testing "absent values arrive as nil or false rather than as missing keys, so a consumer can
+            destructure without checking first and two views compare meaningfully"
+    (is (= view-keys (set (keys (resource/project {})))))
+    (is (= view-keys (set (keys (resource/project (assoc base :last-accepted accepted
+                                                              :url-intent {:sort "owner"}))))))))
+
+(deftest project-hides-the-machine
+  (testing "the resource's own bookkeeping is not part of the contract. Handing it to consumers
+            makes it a promise, and 1.0 would freeze internals the runtime needs to keep changing"
+    (let [view (resource/project (assoc base
+                                        :url-intent     {}
+                                        :transport      {:credentials "include"
+                                                         :headers {"authorization" "Bearer t"}}
+                                        :history-policy {:navigation :push}
+                                        :request-count  3
+                                        :write-count    1
+                                        :active-request {:request/id "tasks:3" :query {}}
+                                        :active-write   {:write/id "tasks:w1"}))]
+      (doseq [k [:endpoint :transport :history-policy :request-count :write-count
+                 :active-request :active-write :resource/id]]
+        (is (not (contains? view k)) (str k " leaked into the consumer's view"))))))
+
+(deftest project-carries-what-a-consumer-renders-from
+  (let [failure {:failure :network :error {:kind :offline} :query {}}
+        view    (resource/project (assoc base :last-accepted accepted
+                                              :last-failure  failure
+                                              :url-intent    {:sort "owner"}))]
+    (is (= accepted (:accepted view)) "the accepted envelope passes through whole")
+    (is (= failure (:failure view)) "so does the failure")
+    (testing "intent passes through untouched, nil included: a resource that has not booted and
+              one booted with an empty query are different states, and flattening them would
+              hide the difference from a consumer that gates on the URL"
+      (is (= {:sort "owner"} (:intent view)))
+      (is (nil? (:intent (resource/project base)))))))
+
+(deftest project-derives-the-two-flags-as-booleans
+  (testing "answered intent and no write in flight -> both false, checked strictly because a
+            truthy non-boolean would pass a consumer's `if` and fail its `false?`"
+    (let [idle (resource/project (assoc base :last-accepted accepted
+                                             :url-intent (:query accepted)))]
+      (is (false? (:pending? idle)))
+      (is (false? (:writing? idle)))))
+  (testing "a read and a write both in flight -> both true"
+    (let [busy (resource/project (assoc base :active-request {:request/id "tasks:1" :query {}}
+                                             :active-write   {:write/id "tasks:w1"}))]
+      (is (true? (:pending? busy)))
+      (is (true? (:writing? busy))))))
+
+(deftest project-survives-a-resource-that-has-not-booted
+  (testing "the element can project before any event has run, so this must not throw"
+    (is (= view-keys (set (keys (resource/project {})))))))

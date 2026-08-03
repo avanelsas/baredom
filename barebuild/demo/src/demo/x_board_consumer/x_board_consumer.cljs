@@ -6,6 +6,7 @@
    [baredom.utils.dom :as du]))
 
 (def ^:private k-rows         "__xBoardRows")
+(def ^:private k-cols         "__xBoardCols")
 (def ^:private k-pending-zone "__xBoardPendingZone")
 
 ;; --- card building ------------------------------------------------------------
@@ -88,8 +89,10 @@
     (doseq [^js zone (array-seq (.querySelectorAll this "x-drop-zone"))]
       (reconcile-zone! zone (get cols (du/get-attr zone "value") []) pool))))
 
-(defn- project-selected? []
-  (some? (.get (js/URLSearchParams. (.-search js/location)) "tasks.project")))
+(defn- project-selected?
+  "Read from the projected intent."
+  [intent]
+  (some? (:project intent)))
 
 (def ^:private empty-columns
   (into {} (map (fn [s] [s []]) model/statuses)))
@@ -116,28 +119,34 @@
 (defn- on-writing! [_child writing ^js this]
   (when-let [^js zone (and (not writing) (du/getv this k-pending-zone))]
     (.release zone)
-    (du/setv! this k-pending-zone nil)))
+    (du/setv! this k-pending-zone nil)
+    ;; the ack's render ran while the drop was still reserved, so it deferred placing to here
+    (when-let [cols (du/getv this k-cols)]
+      (place-cards! this cols))))
 
 (defn- on-connect! [^js el]
   (.addEventListener el "x-drop-zone-drop" (fn [e] (on-drop! el e))))
 
-(defn- apply!
-  "Apply ensures that board content is replayed properly with every
-  projected step, not just with accepted data changes"
-  [_child value ^js this]
-  (let [accepted  (:last-accepted value)
-        selected? (project-selected?)]
+(defn- render!
+  "The board paints from the accepted rows and from whether a project is selected, so its
+  render-key names both. Either one changing is a repaint."
+  [_child {:keys [accepted intent]} ^js this]
+  (let [selected? (project-selected? intent)
+        cols      (if (and selected? accepted) (model/columns accepted) empty-columns)]
     (du/setv! this k-rows
               (into {} (map (fn [r] [(str (get r "id")) r]) (:value accepted))))
+    (du/setv! this k-cols cols)
     (du/set-attr! this "data-empty" (if selected? "false" "true"))
     (when-not (write-pending? this)
-      (place-cards! this (if (and selected? accepted) (model/columns accepted) empty-columns)))))
+      (place-cards! this cols))))
 
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-drop-zone"
     :observed-attributes model/observed-attributes
-    :on-apply            apply!
+    :render-key          (fn [{:keys [accepted intent]}]
+                           [(:value accepted) (project-selected? intent)])
+    :render              render!
     :on-writing          on-writing!
     :on-connect          on-connect!}))

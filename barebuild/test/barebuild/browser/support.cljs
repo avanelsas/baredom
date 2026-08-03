@@ -7,7 +7,8 @@
    [barebuild.decorator :as decorator]
    [barebuild.elements.server-resource.server-resource :as server-resource]))
 
-(defonce spy-calls     (atom []))   ; accepted values handed to the spy consumer's render
+(defonce spy-calls     (atom []))   ; views handed to the spy consumer's render
+(defonce order-calls   (atom []))   ; hook names in the order applyResource invoked them
 (defonce failure-calls (atom []))   ; last-failure values handed to the spy consumer's on-failure
 (defonce fetch-calls   (atom []))   ; urls the stubbed fetch received
 (defonce fetch-inits   (atom []))   ; the init objects alongside them, positionally matched
@@ -27,8 +28,16 @@
       (consumer-resource/register!
        {:tag        "x-spy-consumer"
         :child-tag  "div"
-        :render     (fn [_child accepted _this] (swap! spy-calls conj accepted))
+        :render     (fn [_child view _this] (swap! spy-calls conj view))
         :on-failure (fn [_child failure _this] (swap! failure-calls conj failure))}))
+    (when-not (js/customElements.get "x-order-consumer")
+      (consumer-resource/register!
+       {:tag        "x-order-consumer"
+        :child-tag  "div"
+        :render     (fn [_child _view _this]    (swap! order-calls conj :render))
+        :on-failure (fn [_child _failure _this] (swap! order-calls conj :on-failure))
+        :on-pending (fn [_child _pending _this] (swap! order-calls conj :on-pending))
+        :on-writing (fn [_child _writing _this] (swap! order-calls conj :on-writing))}))
     (when-not (js/customElements.get "x-throwing-consumer")
       (consumer-resource/register!
        {:tag       "x-throwing-consumer"
@@ -150,6 +159,7 @@
 
 (defn reset-state! []
   (reset! spy-calls [])
+  (reset! order-calls [])
   (reset! failure-calls [])
   (reset! fetch-calls [])
   (reset! fetch-inits [])

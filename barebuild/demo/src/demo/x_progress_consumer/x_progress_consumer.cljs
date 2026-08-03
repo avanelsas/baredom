@@ -4,15 +4,16 @@
    [demo.x-progress-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
-(defn- render! [^js x-progress accepted-response _this]
-  (let [{:keys [max value]} (model/project-progress (:page-info accepted-response))]
-    (du/set-attr! x-progress "max" max)
-    (du/set-attr! x-progress "value" value)))
+(defn- render! [^js x-progress {accepted-response :accepted} _this]
+  (when accepted-response
+    (let [{:keys [max value]} (model/project-progress (:page-info accepted-response))]
+      (du/set-attr! x-progress "max" max)
+      (du/set-attr! x-progress "value" value))))
 
 (defn init! []
   (consumer-resource/register!
    {:tag                 model/tag-name
     :child-tag           "x-progress"
     :observed-attributes model/observed-attributes
-    :render-key          (fn [accepted] (model/project-progress (:page-info accepted)))
+    :render-key          (fn [view] (model/project-progress (:page-info (:accepted view))))
     :render              render!}))

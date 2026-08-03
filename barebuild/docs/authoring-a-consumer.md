@@ -6,8 +6,8 @@ render function, and register with `consumer-resource/register!`. The shared mec
 supplies everything else: the `applyResource` method, the change-guards, child caching, and
 gesture submission.
 
-The value your projection reads is the accepted server envelope — its exact shape is the
-[server contract](./server-contract.md).
+The value your projection reads is the accepted server envelope, carried on the view described
+below. Its exact shape is the [server contract](./server-contract.md).
 
 ## What BareBuild provides, what you write
 
@@ -49,7 +49,7 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
   :on-failure          on-failure!           ; optional
   :on-pending          on-pending!           ; optional
   :on-writing          on-writing!           ; optional
-  :on-apply            on-apply!             ; optional
+  :render-key          render-key            ; optional
   :on-connect          on-connect!})         ; optional
 ```
 
@@ -58,14 +58,65 @@ element, `this` is the consumer host.
 
 | Hook | Signature | Fires when… |
 |---|---|---|
-| `:render` | `(child accepted this)` | `:last-accepted` changes |
-| `:on-failure` | `(child failure this)` | `:last-failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
-| `:on-pending` | `(child pending this)` | `pending?` changes.  `pending` is a boolean, show/hide loading |
-| `:on-writing` | `(child writing this)` | `writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
-| `:on-apply` | `(child resource-value this)` | every projection (not change-guarded).  `resource-value` is the whole resource value, use it to re-derive state that does not depend on `:last-accepted`, like a URL-driven empty gate |
+| `:render` | `(child view this)` | the `render-key` slice of the view changes |
+| `:on-failure` | `(child failure this)` | `:failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
+| `:on-pending` | `(child pending this)` | `:pending?` changes.  `pending` is a boolean, show/hide loading |
+| `:on-writing` | `(child writing this)` | `:writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
+
+### Hook order is part of the contract
+
+Within one projection the hooks run in the order of that table: `on-failure`, then `render`,
+then `on-pending` and `on-writing`. The data is painted before the flags describing the
+transition that produced it.
+
+The practical consequence: **when `on-writing` fires false, the value that write returned is
+already rendered.** A component that suppresses work while a write is in flight, a board
+holding a reserved drop zone say, can resume on that edge and find the new value in place.
+The reverse does not hold, so do not expect `render` to see a flag that a later hook is about
+to set.
+
+## The view
+
+`render` receives a **view**, and the view is the whole of what a consumer may read:
+
+```clojure
+{:accepted  <the accepted envelope, or nil before the first response>
+ :failure   <the current failure, or nil>
+ :intent    <the current query as a map, unprefixed keys>
+ :pending?  <boolean>
+ :writing?  <boolean>}
+```
+
+Everything else in the resource is the runtime's own bookkeeping and is deliberately not
+handed to you.
+
+**Paint from the view and from nothing else.** Reading `js/location`, `document`, or any other
+ambient state inside a consumer makes it render a mixture of two moments, because a
+[BareReplay](../../barereplay/README.md) time-travel projection rewinds the view but cannot
+rewind the address bar. A consumer that obeys this replays correctly by construction.
+
+`:intent` is what makes that possible. A gate like "no project is selected yet" is
+`(some? (:project intent))`, not a `URLSearchParams` lookup.
+
+### `render-key`
+
+`render` fires only when the slice you name changes, so `render-key` is where you state what
+your component actually paints from:
+
+```clojure
+:render-key (fn [{:keys [accepted intent]}]
+              [(:value accepted) (some? (:project intent))])
+```
+
+It defaults to the accepted envelope minus the per-request ids, which is right for a component
+that draws server data and nothing else.
+
+A consumer is projected once at connect, **before any response**, with `:accepted` nil. That is
+what lets a component paint its empty state from the intent alone. If yours has nothing to draw
+without data, say so with a plain `(when accepted …)`.
 
 What you get for free:
-- **Keep-stale is automatic.** A failure leaves `:last-accepted` untouched, so `render`
+- **Keep-stale is automatic.** A failure leaves `:accepted` untouched, so `render`
   simply no-ops during failures. The last good view stays on screen.
 - **One request in flight, stale-drop, echo-adoption, trailing-fetch, revert** all handled
   by the pure `step` upstream. The consumer only ever sees the resulting value.
@@ -135,9 +186,10 @@ A write is the same shape of gesture, submitted with `submit-write!` instead:
 The payload is `{:op :delete :id <id>}` or `{:op :create :record {…}}`, where `record` is a
 map keyed by the **shape's field keys** (opaque domain strings, not keywords). `step` turns
 it into a `:write` effect. The ack comes back as `:write-ack`. An accepted ack already carries
-the server's new collection state (value + shape), which step installs directly as :last-accepted,
-so no separate refetch is issued. You never render a write's result yourself. It arrives
-through `render` like any other accepted value. Writes never touch the URL.
+the server's new collection state (value + shape), which step installs directly, so no separate
+refetch is issued. You never render a write's result yourself. It arrives on the view's
+`:accepted` and reaches you through `render` like any other accepted value. Writes never touch
+the URL.
 
 **A write that fails without the server saying no is re-read automatically.** If the connection
 drops, the budget runs out, or the body comes back unreadable, the client cannot know whether the
@@ -195,6 +247,10 @@ row delete via `submit-write!`.
 payload locally, submits with `submit-write!`, uses `on-writing!` to disable the submit
 button and close the modal on success, and `on-failure!` to map a server rejection back onto
 the offending field.
+
+**Intent-driven, `x-board-consumer`**: paints from the accepted rows *and* from whether a
+project is selected, so its `render-key` names both and its empty gate reads `(:project intent)`
+rather than the URL. It is the reference for a component whose view is not server data alone.
 
 All three are driven by the same 70-line `consumer_resource.cljs`. The difference between
 them is exactly their projection and their hooks.

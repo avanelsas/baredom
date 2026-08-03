@@ -23,16 +23,17 @@
   (async done
     (support/stub-accepted! [{"id" 1 "owner" "Alice"}] owner-shape)
     (support/mount! "tasks" "/api/tasks")
-    (-> (support/settle #(seq @support/spy-calls))
+    (-> (support/settle #(some (comp :accepted) @support/spy-calls))
         (.then (fn []
                  (is (= 1 (count @support/fetch-calls))
                      "exactly one fetch is issued on connect")
                  (is (re-find #"/api/tasks\?requestId=tasks:1" (first @support/fetch-calls))
                      "the fetch carries the endpoint and the minted request id")
-                 (is (= 1 (count @support/spy-calls))
-                     "the consumer renders once, from the accepted response")
-                 (is (= [{"id" 1 "owner" "Alice"}] (:value (first @support/spy-calls)))
-                     "the rendered value is the parsed server payload")
+                 (is (nil? (:accepted (first @support/spy-calls)))
+                     "the consumer is projected at connect, before any response, so it can paint
+                      an empty state from the view rather than waiting on data")
+                 (is (= [{"id" 1 "owner" "Alice"}] (:value (:accepted (last @support/spy-calls))))
+                     "and again once the parsed server payload is installed")
                  (done)))
         (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done))))))
 
@@ -41,9 +42,9 @@
     (support/stub-accepted! [{"id" 1 "owner" "Alice"}] owner-shape)
     ;; throwing consumer is first in document order, spy consumer second
     (support/mount-consumers! "tasks" "/api/tasks" ["x-throwing-consumer" "x-spy-consumer"])
-    (-> (support/settle #(seq @support/spy-calls))
+    (-> (support/settle #(some (comp :accepted) @support/spy-calls))
         (.then (fn []
-                 (is (= 1 (count @support/spy-calls))
+                 (is (= [{"id" 1 "owner" "Alice"}] (:value (:accepted (last @support/spy-calls))))
                      "the later consumer still renders despite the earlier one throwing")
                  (is (error-logged? #"applyResource threw")
                      "the throwing consumer is reported as a diagnostic")
@@ -102,13 +103,17 @@
                            [{"id" 1 "title" "a"}]
                            [{"id" 1 "title" "a"} {"id" 2 "title" "b"}])
                          {"idKey" "id" "fields" [{"key" "title" "type" "string"}]})))
-    (let [host (support/mount! "tasks" "/api/tasks")]
-      (-> (support/settle #(= 1 (count @support/spy-calls)))
+    (let [host      (support/mount! "tasks" "/api/tasks")
+          ;; settle on the rows rendered, not on a call count: the count now passes through the
+          ;; empty connect projection too, and polling for an exact count can step over it
+          rows-shown (fn [n] #(some (fn [v] (= n (count (:value (:accepted v)))))
+                                    @support/spy-calls))]
+      (-> (support/settle (rows-shown 1))
           (.then (fn []
                    (support/submit-write! host {:op :create :record {"title" "b"}})
-                   (support/settle #(= 2 (count @support/spy-calls)))))
+                   (support/settle (rows-shown 2))))
           (.then (fn []
-                   (is (= 2 (count (:value (last @support/spy-calls))))
+                   (is (= 2 (count (:value (:accepted (last @support/spy-calls)))))
                        "the consumer re-renders the post-write collection the ack returned")
                    (done)))
           (.catch (fn [e] (is false (str "write did not install: " e)) (done)))))))
@@ -171,6 +176,35 @@
                      "a genuine transport rejection is offline, distinct from an http status")
                  (done)))
         (.catch (fn [e] (is false (str "transport rejection did not surface: " e)) (done))))))
+
+(deftest a-write-renders-before-it-reports-that-writing-finished
+  (async done
+    (support/respond-with!
+     (fn [url method _body]
+       (support/accepted url
+                         (if (= method "GET") [{"id" 1 "title" "a"}] [{"id" 1 "title" "a"}
+                                                                      {"id" 2 "title" "b"}])
+                         {"idKey" "id" "fields" [{"key" "title" "type" "string"}]})))
+    (let [host        (support/mount-consumers! "tasks" "/api/tasks"
+                                                ["x-spy-consumer" "x-order-consumer"])
+          writings    (fn [] (count (filter #{:on-writing} @support/order-calls)))
+          last-idx-of (fn [k] (last (keep-indexed (fn [i c] (when (= k c) i))
+                                                  @support/order-calls)))]
+      (-> (support/settle #(some :accepted @support/spy-calls))
+          (.then (fn []
+                   (support/submit-write! host {:op :create :record {"title" "b"}})
+                   ;; on-writing fires twice: true when the write is submitted, false on the ack
+                   (support/settle #(= 2 (writings)) 200)))
+          (.then (fn []
+                   ;; nil sorts below any number in CLJS, so prove both hooks actually ran
+                   (is (some? (last-idx-of :render)) "the order consumer rendered")
+                   (is (some? (last-idx-of :on-writing)) "and was told about the write")
+                   (is (< (last-idx-of :render) (last-idx-of :on-writing))
+                       "the post-write data is painted before a consumer is told the write
+                        finished, so a component that defers work while a write is in flight can
+                        resume on the true->false edge and find the new value already rendered")
+                   (done)))
+          (.catch (fn [e] (is false (str "write ordering never settled: " e)) (done)))))))
 
 ;; --- transport config: attributes reach fetch ------------------------------
 

@@ -230,6 +230,16 @@
   (let [resource* (assoc resource :last-failure failure slot-key nil)]
     {:resource resource* :effects [(notify-fx resource*)]}))
 
+;; Projection  ------ What a consumer sees
+(defn project
+  "The fields a consumer may depend on, everything else is internal resource bookkeeping."
+  [resource]
+  {:accepted  (:last-accepted resource)
+   :failure   (:last-failure resource)
+   :intent    (:url-intent resource)
+   :pending?  (pending? resource)
+   :writing?  (writing? resource)})
+
 ;; CONNECT / SSR boot embed (§7.4) ----------------------------------------------
 
 (defn- boot-fetch
