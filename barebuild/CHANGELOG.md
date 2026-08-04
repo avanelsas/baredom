@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0
+
+- Breaking. `barebuild.utils` is split into `barebuild.utils.url`, `barebuild.utils.query` and `barebuild.utils.request`.
+- Breaking. The `:on-apply` hook added in 0.5.0 is removed. A consumer is handed a projected view carrying `:accepted`, `:failure`, `:intent`, `:pending?` and `:writing?`, which is the state `:on-apply` existed to reach.
+- Breaking. The accepted envelope a consumer sees no longer carries `:request/id`, and `resource/render-key` is removed with it. `:render-key` defaults to the accepted envelope itself.
+- Fixes an endless refetch. A server that honours less of a query than it was asked no longer leaves the intent looking unanswered, so a failed request is not reissued forever.
+- Fixes a boot that outlived its connection. An element removed or re-attached while it waits for the custom elements inside it to be defined no longer fetches for a connection that has ended or leaves a popstate listener behind.
+- A `<server-resource>` reports what used to pass in silence: an intent naming a resource that is not on the page, an event or effect outside its vocabulary, and custom elements inside it that are never defined.
+- Configures how requests are sent, through `credentials`, `headers` and `timeout` attributes and a request decorator for credentials that change independently of the resource value.
+- Network failures carry their HTTP status, every failure names the query it concerns, and a rejected or broken SSR boot embed is adjudicated on connect.
+- `shape.fields[].options` names each value a field may take, alongside `enum` which constrains it.
+
 ## 0.5.0
 
 - Adds an optional `:on-apply` hook to `consumer-resource/register!`, called on every projection, so a consumer can re-derive state that does not depend on `:last-accepted` being present (an empty gate driven by the URL, for example).
