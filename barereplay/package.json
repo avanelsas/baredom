@@ -1,6 +1,6 @@
 {
   "name": "@vanelsas/barereplay",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Time-travel replay and debug tool for BareBuild — records the event log, reconstructs any state by replaying the pure step, and re-projects it onto live components.",
   "private": true,
   "type": "module",
