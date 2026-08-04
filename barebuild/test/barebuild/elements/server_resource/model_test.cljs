@@ -1,7 +1,7 @@
 (ns barebuild.elements.server-resource.model-test
-  "The server-resource element's pure decisions: how it resolves its id, when an intent is
-   cross-resource coordination vs a self-drive, and how its transport attributes become the
-   config value a request carries."
+  "The server-resource element's pure decisions: how it resolves its id, and how its request
+   attributes become the config a request carries. Whether an intent is cross-resource
+   coordination or a self-drive is step's call, tested in barebuild.resource-test."
   (:require [cljs.test :refer-macros [deftest is testing]]
             [barebuild.elements.server-resource.model :as model]))
 
@@ -13,21 +13,7 @@
     (is (nil? (model/resolve-resource-id "")))
     (is (nil? (model/resolve-resource-id "   ")))))
 
-(deftest targets-sibling?-with-an-unnamed-resource
-  (testing "an unnamed resource driving itself is not a sibling hop"
-    (is (false? (model/targets-sibling? nil nil))))
-  (testing "an unnamed resource naming a sibling still coordinates"
-    (is (true? (model/targets-sibling? nil "tasks")))))
-
-(deftest targets-sibling?-only-when-naming-another-resource
-  (testing "no target -> drive self"
-    (is (false? (model/targets-sibling? "tasks" nil))))
-  (testing "target equal to own id -> drive self, not a sibling hop"
-    (is (false? (model/targets-sibling? "tasks" "tasks"))))
-  (testing "a different named target -> cross-resource coordination"
-    (is (true? (model/targets-sibling? "projects" "tasks")))))
-
-;; --- transport config ------------------------------------------------------
+;; --- request config --------------------------------------------------------
 
 (deftest resolve-credentials-accepts-only-the-three-fetch-modes
   (testing "each fetch mode is kept verbatim"
@@ -75,17 +61,6 @@
   (testing "a headers attribute holding valid JSON that is not an object is not headers"
     (is (nil? (model/normalize-headers [1 2])))
     (is (nil? (model/normalize-headers "x-api-key")))))
-
-(deftest transport-is-nil-when-nothing-is-configured
-  (testing "nothing configured and no budget -> no transport at all"
-    (is (nil? (model/transport nil nil nil))))
-  (testing "any one alone is enough to carry"
-    (is (= {:credentials "include"} (model/transport "include" nil nil)))
-    (is (= {:headers {"x-api-key" "k"}} (model/transport nil {"x-api-key" "k"} nil)))
-    (is (= {:timeout 60000} (model/transport nil nil 60000))))
-  (testing "all three together"
-    (is (= {:credentials "omit" :headers {"x-api-key" "k"} :timeout 5000}
-           (model/transport "omit" {"x-api-key" "k"} 5000)))))
 
 ;; --- the request budget ----------------------------------------------------
 

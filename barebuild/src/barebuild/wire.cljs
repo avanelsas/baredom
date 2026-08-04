@@ -1,11 +1,11 @@
 (ns barebuild.wire
   (:require
-   [barebuild.utils :as utils]
+   [barebuild.utils.query :as query]
    [goog.object :as gobj]
    [clojure.string :as str]))
 
-(def outcome-accepted "accepted")
-(def outcome-rejected "rejected")
+(def ^:private outcome-accepted "accepted")
+(def ^:private outcome-rejected "rejected")
 
 (defn- camel->kebab-keyword [s]
   (-> s
@@ -50,7 +50,7 @@
     {:outcome    :accepted
      :request/id (gobj/get js-obj "requestId")
      :revision   (gobj/get js-obj "revision")
-     :query      (utils/canonicalize-query (js->clj (gobj/get js-obj "query")))
+     :query      (query/canonicalize-query (js->clj (gobj/get js-obj "query")))
      :value      (js->clj (gobj/get js-obj "value"))
      :page-info  (replace-js-keys (js->clj (gobj/get js-obj "pageInfo")))
      :shape      {:id-key (gobj/get shape "idKey")
@@ -63,7 +63,7 @@
     {:outcome    :rejected
      :request/id (gobj/get js-obj "requestId")
      :revision   (gobj/get js-obj "revision")
-     :query      (utils/canonicalize-query (js->clj (gobj/get js-obj "query")))
+     :query      (query/canonicalize-query (js->clj (gobj/get js-obj "query")))
      :error      {:code    (keyword (gobj/get error "code"))
                   :message (gobj/get error "message")
                   :details (js->clj (gobj/get error "details"))}}))

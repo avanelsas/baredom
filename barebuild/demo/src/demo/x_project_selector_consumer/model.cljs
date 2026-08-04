@@ -4,10 +4,6 @@
 
 (def observed-attributes #js [])
 
-(def event-schema {})
-
-(def method-api {})
-
 (def all-projects-value "")
 
 (defn translate-project-gesture

@@ -4,10 +4,6 @@
 
 (def observed-attributes #js [])
 
-(def event-schema {})
-
-(def method-api {})
-
 (def statuses ["todo" "doing" "done"])
 
 (defn columns

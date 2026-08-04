@@ -1,6 +1,6 @@
 (ns barereplay.dock
   (:require
-   [barebuild.utils :as utils]
+   [barebuild.utils.url :as url]
    [baredom.utils.component :as comp]
    [baredom.utils.dom :as du]
    [barereplay.label :as label]
@@ -182,10 +182,10 @@
   "Reconstruct the current replay url from its pathname and params"
   [entries n]
   (let [params (reduce (fn [^js p [rid {:keys [value]}]]
-                         (utils/scope-params! p rid (:url-intent value)))
+                         (url/scope-params! p rid (:url-intent value)))
                        (js/URLSearchParams. (.-search js/location))
                        (reconstruct/resources-at entries n))]
-    (utils/params->url params (.-pathname js/location))))
+    (url/params->url params (.-pathname js/location))))
 
 (defn- sync-url!
   "Update the URL during a replay. If n>=total we are back at the live url."

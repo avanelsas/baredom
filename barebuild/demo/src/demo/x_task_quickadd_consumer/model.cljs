@@ -4,10 +4,6 @@
 
 (def observed-attributes #js [])
 
-(def event-schema {})
-
-(def method-api {})
-
 (defn new-task-record
   "The create record for a quick-add."
   [form-values project-id today]

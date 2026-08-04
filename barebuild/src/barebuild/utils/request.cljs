@@ -1,0 +1,37 @@
+(ns barebuild.utils.request
+  "The request value `step` hands the executor on a :fetch or a :write effect. Everything past
+  :url is absent rather than nil when it does not apply, so two requests that mean the same
+  thing compare equal."
+  (:require [barebuild.utils.query :as query]))
+
+(defn- request-headers
+  [static-headers body?]
+  (let [headers (cond-> (or static-headers {})
+                  body? (assoc "content-type" "application/json"))]
+    (when (seq headers) headers)))
+
+(defn request
+  "Build a request value for the executor from the parts provided, e.g.
+  {:method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner&direction=asc\"}.
+  `credentials` and `headers` say what the request carries on the wire, `timeout` says how long
+  the executor may wait for it."
+  [{:keys [endpoint segment method query body request-id credentials headers timeout]}]
+  (let [headers (request-headers headers (some? body))]
+    (cond-> {:method method
+             :url    (str endpoint
+                          (when segment
+                            (str "/" (js/encodeURIComponent segment)))
+                          "?requestId=" request-id
+                          (when (seq query) (str "&" (query/->query-string query))))}
+      body        (assoc :body body)
+      headers     (assoc :headers headers)
+      credentials (assoc :credentials credentials)
+      timeout     (assoc :timeout timeout))))
+
+(defn merge-request-headers
+  "Merge `extra` headers into a built request, more specific headers winning over the ones already
+  there, and the protocol's content-type still winning over both on a bodied request."
+  [request extra]
+  (let [headers (request-headers (merge (:headers request) extra) (some? (:body request)))]
+    (cond-> request
+      headers (assoc :headers headers))))
