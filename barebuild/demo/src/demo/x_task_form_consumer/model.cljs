@@ -3,7 +3,3 @@
 (def tag-name "x-task-form-consumer")
 
 (def observed-attributes #js [])
-
-(def event-schema {})
-
-(def method-api {})

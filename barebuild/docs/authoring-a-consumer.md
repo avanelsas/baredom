@@ -128,8 +128,10 @@ your component actually paints from:
               [(:value accepted) (some? (:project intent))])
 ```
 
-It defaults to the accepted envelope minus the per-request ids, which is right for a component
-that draws server data and nothing else.
+It defaults to the accepted envelope, which is right for a component that draws server data and
+nothing else. The envelope you get has no `:request/id` on it: that names the exchange that
+fetched the value rather than the value, so two identical refetches compare equal and your
+component does not repaint on a poll that changed nothing.
 
 A consumer is projected once at connect, **before any response**, with `:accepted` nil. That is
 what lets a component paint its empty state from the intent alone. If yours has nothing to draw
@@ -144,8 +146,9 @@ What you get for free:
 ## Rendering failures
 
 The `failure` your `on-failure` receives is a value tagged by `:failure`, one of
-`#{:rejected :network :protocol :contract}`. Dispatch on the tag, and for a `:network` failure
-read `:error` to tell the kinds apart:
+`#{:rejected :network :protocol :contract}`, and by `:for`, either `:read` or `:write`, saying
+which kind of request it came from. Every failure also carries the `:query` it concerns.
+Dispatch on the tag, and for a `:network` failure read `:error` to tell the kinds apart:
 
 ```clojure
 (defn- message [failure]

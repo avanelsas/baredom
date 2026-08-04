@@ -4,25 +4,28 @@
    [barebuild.elements.server-resource.model :as model]
    [barebuild.recorder :as recorder]
    [barebuild.resource :as resource]
-   [barebuild.utils :as utils]
+   [barebuild.utils.query :as query]
+   [barebuild.utils.request :as request]
+   [barebuild.utils.url :as url]
    [barebuild.wire :as wire]
    [baredom.utils.component :as component]
    [baredom.utils.dom :as du]
    [clojure.string :as str]))
 
 ;; ── Instance-field keys ──────────────────────────────────────────────────────
-(def ^:private k-resource  "__xServerResource")
-(def ^:private k-consumers "__xConsumers")
-(def ^:private k-popstate  "__xPopstate")
-(def ^:private k-abort     "__xAbort")
-(declare handle-event!)
+(def ^:private k-resource   "__xServerResource")
+(def ^:private k-consumers  "__xConsumers")
+(def ^:private k-popstate   "__xPopstate")
+(def ^:private k-abort      "__xAbort")
+(def ^:private k-generation "__xConnectGeneration")
+(declare ^:private handle-event!)
 
 (defn- construct-url-intent [resource-id]
   (let [current-url-params (js/URLSearchParams. (.-search js/location))
-        prefix             (utils/url-prefix resource-id)
-        owned              (utils/owned-url-keys resource-id
+        prefix             (url/url-prefix resource-id)
+        owned              (url/owned-url-keys resource-id
                                                  (js/Array.from (.keys current-url-params)))]
-    (utils/canonicalize-query
+    (query/canonicalize-query
      (into {}
            (for [k owned]
              [(keyword (subs k (count prefix)))
@@ -71,12 +74,6 @@
                         "is not a number of milliseconds, keeping the default:" text))
     (model/resolve-timeout text)))
 
-(defn- read-transport
-  "The transport config every request this resource issues will carry. Read once at connect,
-  like the endpoint, so the value step builds from cannot change under an in-flight request."
-  [^js el]
-  (model/transport (read-credentials el) (read-headers el) (read-timeout el)))
-
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
 (defn- fetch-init [{:keys [method headers body credentials]}]
@@ -90,7 +87,7 @@
   branches on it like any other. The request is never sent."
   [e]
   (js/console.error "[server-resource] request decorator failed, request not sent:" e)
-  {:network-failure {:kind :decorator}})
+  {:failure {:network-failure {:kind :decorator}}})
 
 (defn- decorator-headers
   "The headers a decorator returned. A JS object is read as readily as a CLJS map, since either is
@@ -103,18 +100,19 @@
     (model/normalize-headers returned)))
 
 (defn- request-init
-  "A promise of the fetch init for request `m`, with the registered decorator's headers merged on
-  top of the resource's own. Resolves to a network-failure value when the decorator throws or
-  rejects, classified at the edge exactly as a bad response is. Without a decorator registered
-  there is nothing to await, so an app that uses none pays nothing."
+  "A promise of `{:init <fetch init>}` for request `m`, with the registered decorator's headers
+  merged on top of the resource's own, or `{:failure <network-failure value>}` when the decorator
+  throws or rejects, classified at the edge exactly as a bad response is. The two arms are tagged
+  rather than told apart by shape, because one is a JS object and the other a CLJS map. Without a
+  decorator registered there is nothing to await, so an app that uses none pays nothing."
   [m]
   (if-let [decorate (decorator/current)]
     (-> (js/Promise.resolve)
       (.then (fn [] (decorate m)))
       (.then (fn [extra]
-               (fetch-init (utils/merge-request-headers m (decorator-headers extra)))))
+               {:init (fetch-init (request/merge-request-headers m (decorator-headers extra)))}))
       (.catch decorator-failed!))
-    (js/Promise.resolve (fetch-init m))))
+    (js/Promise.resolve {:init (fetch-init m)})))
 
 (def ^:private abort-error-name "AbortError")
 (def ^:private timeout-error-name "TimeoutError")
@@ -195,12 +193,11 @@
   runs out. Resolves to a classified result, or rejects for the caller to classify."
   [m ^js controller]
   (bounded (-> (request-init m)
-             (.then (fn [init]
-                      (if (:network-failure init)
-                        init
-                        (fetch-envelope (:url m)
-                                        (js/Object.assign init
-                                                          #js {:signal (.-signal controller)}))))))
+             (.then (fn [{:keys [init failure]}]
+                      (or failure
+                          (fetch-envelope (:url m)
+                                          (js/Object.assign init
+                                                            #js {:signal (.-signal controller)}))))))
            (:timeout m)
            controller))
 
@@ -208,8 +205,9 @@
   (let [controller (js/AbortController.)
         request-id (:request/id m)]
     ;; stashed before the decorator is awaited, so an abort landing in that window still reaches
-    ;; this request: fetch rejects immediately on an already-aborted signal
-    (du/setv-untraced! el k-abort controller)
+    ;; this request: fetch rejects immediately on an already-aborted signal. Kept with its request
+    ;; id so the :abort effect aborts the request it names rather than whatever is stashed.
+    (du/setv-untraced! el k-abort {:request/id request-id :controller controller})
     (-> (perform! m controller)
       (.then (fn [result] (deliver-read! el result request-id)))
       (.catch (fn [^js e]
@@ -220,20 +218,20 @@
 
 (defn- deliver-write! [^js el result write-id]
   (cond
-    (:protocol-failure result) (handle-event! el [:write-failed (assoc result :write/id write-id)])
-    (:network-failure result)  (handle-event! el [:write-failed {:write/id write-id
+    (:protocol-failure result) (handle-event! el [:write-failed (assoc result :request/id write-id)])
+    (:network-failure result)  (handle-event! el [:write-failed {:request/id write-id
                                                                  :error    (:network-failure result)}])
-    :else                      (handle-event! el [:write-ack (assoc result :write/id write-id)])))
+    :else                      (handle-event! el [:write-ack (assoc result :request/id write-id)])))
 
 (defn- execute-write! [^js el m]
   ;; the write's controller exists only so its budget can cancel it. It is never stashed in
   ;; k-abort, so a disconnect or a superseding read still leaves an in-flight write alone
   (let [controller (js/AbortController.)
-        write-id   (:write/id m)]
+        write-id   (:request/id m)]
     (-> (perform! m controller)
       (.then (fn [result] (deliver-write! el result write-id)))
       (.catch (fn [^js e]
-                (handle-event! el [:write-failed {:write/id write-id
+                (handle-event! el [:write-failed {:request/id write-id
                                                   :error    (transport-error e (:timeout m))}]))))))
 
 (defn- find-resource
@@ -256,47 +254,64 @@
   (let [own-id    (:resource/id r)
         consumers (du/getv el k-consumers)
         ctx       {:submit-intent! (fn [patch & [target-id]]
-                                     (let [target (if (model/targets-sibling? own-id target-id)
-                                                    (find-resource target-id)
-                                                    el)]
-                                       (when target
-                                         (handle-event! target [:intent-patch patch]))))
+                                     (handle-event! el [:intent-patch
+                                                        (cond-> patch
+                                                          target-id (assoc :target-id target-id))]))
                    :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}
         view      (resource/project r)]
     (doseq [^js c consumers]
       (apply-consumer! c view ctx own-id))))
 
+(defn- notify-effect! [^js el m]
+  (notify-consumers! el (:resource m)))
+
+(defn- url-write! [^js _el m]
+  (let [new-url (url/build-scoped-url (.-search js/location)
+                                      (.-pathname js/location)
+                                      (:resource/id m)
+                                      (:params m))]
+    (if (= (:mode m) :push)
+      (.pushState js/history nil "" new-url)
+      (.replaceState js/history nil "" new-url))))
+
+(defn- abort-request! [^js el m]
+  (when-let [pending (du/getv el k-abort)]
+    (when (= (:request/id m) (:request/id pending))
+      (.abort ^js (:controller pending))
+      (du/setv-untraced! el k-abort nil))))
+
+(defn- route-intent!
+  "Resolve the name `step` chose to an element and hand the patch over. A name that resolves to
+  nothing goes back in as an event, so the lost gesture reaches the trace."
+  [^js el m]
+  (if-let [^js target (find-resource (:resource/id m))]
+    (handle-event! target [:intent-patch (:patch m)])
+    (handle-event! el [:intent-unroutable {:resource/id (:resource/id m)}])))
+
+(defn- diagnostic! [^js _el m]
+  (if-let [detail (:detail m)]
+    (js/console.debug "[server-resource]" (name (:code m)) (clj->js detail))
+    (js/console.debug "[server-resource]" (name (:code m)))))
+
+;; The executor, as data: one performer per effect tag, each taking the host and the effect value
+;; and deciding nothing. `effect-handlers-cover-the-vocabulary` pins these keys against
+;; resource/effect-tags, so an effect `step` learns to emit cannot go quietly unperformed.
+;; Public for test purposes only
+(def effect-handlers
+  {:fetch            execute-fetch!
+   :write            execute-write!
+   :abort            abort-request!
+   :url-write        url-write!
+   :route-intent     route-intent!
+   :notify-consumers notify-effect!
+   :diagnostic       diagnostic!})
+
 (defn- run-effects!
   [^js el effects]
   (doseq [[fx m] effects]
-    (case fx
-      :fetch
-      (execute-fetch! el m)
-
-      :notify-consumers
-      (notify-consumers! el (:resource m))
-
-      :url-write
-      (let [new-url (utils/build-scoped-url (.-search js/location)
-                                            (.-pathname js/location)
-                                            (:resource/id m)
-                                            (:params m))]
-        (if (= (:mode m) :push)
-          (.pushState js/history nil "" new-url)
-          (.replaceState js/history nil "" new-url)))
-
-      :abort
-      (when-let [^js controller (du/getv el k-abort)]
-        (.abort controller)
-        (du/setv-untraced! el k-abort nil))
-
-      :write
-      (execute-write! el m)
-
-      :diagnostic
-      (js/console.debug "[server-resource]" (name (:code m)))
-
-      nil)))
+    (if-let [perform! (get effect-handlers fx)]
+      (perform! el m)
+      (js/console.error "[server-resource] no performer for effect" (str fx)))))
 
 (defn- handle-event!
   [^js el event]
@@ -343,9 +358,13 @@
   have to be processed to get the element in the right state (e.g. table sorting).
   If there is an embedderd version, load that first."
   [^js el]
+  ;; Read once at connect, like the endpoint, so the value step builds from cannot change under
+  ;; an in-flight request.
   (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         history-policy {:navigation :push}
-        transport      (read-transport el)
+        credentials    (read-credentials el)
+        headers        (read-headers el)
+        timeout        (read-timeout el)
         on-popstate    (fn [_e] (handle-popstate el resource-id))
         embed          (read-boot-embed el)]
     (du/setv! el k-resource (cond-> {:resource/id    resource-id
@@ -353,7 +372,9 @@
                                      :last-accepted  nil
                                      :url-intent     (construct-url-intent resource-id)
                                      :history-policy history-policy}
-                              transport (assoc :transport transport)))
+                              credentials (assoc :credentials credentials)
+                              headers     (assoc :headers headers)
+                              timeout     (assoc :timeout timeout)))
     (du/setv! el k-popstate on-popstate)
     (.addEventListener js/window "popstate" on-popstate)
     (let [consumers (collect-consumers el)]
@@ -362,15 +383,52 @@
       (du/setv! el k-consumers consumers))
     (handle-event! el [:connected {:embed embed}])))
 
+(defn- next-generation!
+  "Open a new lifecycle generation on `el` and return it. Every connect and every disconnect
+  starts one, so a deferred boot can tell whether the connection it was scheduled for is still
+  the current one."
+  [^js el]
+  (let [n (inc (or (du/getv el k-generation) 0))]
+    (du/setv! el k-generation n)
+    n))
+
 (defn- disconnected! [^js el]
-  (handle-event! el [:disconnected {}])
-  (.removeEventListener js/window "popstate" (du/getv el k-popstate))
-  (du/setv! el k-popstate nil))
+  (next-generation! el)
+  ;; A connect whose boot never ran leaves nothing to tear down, and stepping a resource that was
+  ;; never built would record a transition that did not happen.
+  (when (du/getv el k-resource)
+    (handle-event! el [:disconnected {}])
+    (.removeEventListener js/window "popstate" (du/getv el k-popstate))
+    (du/setv! el k-popstate nil)))
+
+(def ^:private undefined-tags-budget-ms 5000)
+
+(defn- report-undefined-tags!
+  "Name the tags still undefined after the budget. Until every custom element inside the host is
+  defined the boot cannot run, so one unregistered component leaves the resource issuing no
+  request at all, with nothing to see."
+  [^js el tags generation]
+  (js/setTimeout
+   (fn []
+     (when (= generation (du/getv el k-generation))
+       (when-let [missing (seq (remove #(js/customElements.get %) tags))]
+         (js/console.error "[server-resource]"
+                           (or (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
+                               "(unnamed)")
+                           "cannot boot, these custom elements inside it are never defined:"
+                           (clj->js (vec missing))))))
+   undefined-tags-budget-ms))
 
 (defn- connected! [^js el]
-  (let [tags (custom-element-tags el)]
+  (let [tags       (custom-element-tags el)
+        generation (next-generation! el)]
+    (report-undefined-tags! el tags generation)
     (-> (js/Promise.all (clj->js (map #(js/customElements.whenDefined %) tags)))
-      (.then (fn [] (boot! el))))))
+      (.then (fn []
+               ;; the connection this boot was scheduled for may have ended, or been replaced by
+               ;; a later one, while the definitions were awaited
+               (when (= generation (du/getv el k-generation))
+                 (boot! el)))))))
 
 ;; register! always installs attributeChangedCallback and calls this — so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)

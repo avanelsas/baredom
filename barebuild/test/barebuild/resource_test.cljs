@@ -28,27 +28,37 @@
   [effects k]
   (some (fn [[fx m]] (when (= k fx) m)) effects))
 
-;; --- render-key: the change-guard projection -------------------------------
+;; --- the accepted envelope a consumer compares -----------------------------
 
-(deftest render-key-ignores-transport-ids
-  (testing "two responses identical but for :request/id compare equal, so a refetch that
+(defn- projected-accepted
+  "The accepted envelope as a consumer sees it: the :accepted of the view projected from a
+   resource holding `envelope`. This is the slice the default render-key compares."
+  [envelope]
+  (:accepted (resource/project (assoc base :last-accepted envelope))))
+
+(deftest projected-accepted-drops-the-exchange-id
+  (testing "the id names the request that fetched the value, not the value, so it is gone from
+            the view rather than merely ignored by the consumer that compares it"
+    (is (nil? (:request/id (projected-accepted accepted)))))
+  (testing "two responses identical but for :request/id project equal, so a refetch that
             returns unchanged data does not re-render"
-    (is (= (resource/render-key (assoc accepted :request/id "tasks:1"))
-           (resource/render-key (assoc accepted :request/id "tasks:2")))))
-  (testing "a write install's :write/id is transport too — an identical read after a write
-            does not re-render"
-    (is (= (resource/render-key (assoc accepted :write/id "tasks:w1"))
-           (resource/render-key accepted)))))
+    (is (= (projected-accepted (assoc accepted :request/id "tasks:1"))
+           (projected-accepted (assoc accepted :request/id "tasks:2")))))
+  (testing "a write install's :request/id is an exchange id too, so an identical read after a
+            write does not re-render"
+    (is (= (projected-accepted (assoc accepted :request/id "tasks:w1"))
+           (projected-accepted accepted)))))
 
-(deftest render-key-tracks-every-drawn-field
-  (let [k (resource/render-key accepted)]
-    (testing "a change in any field a consumer draws yields a different key"
-      (is (not= k (resource/render-key (assoc accepted :value [{"id" 2 "owner" "Bob"}]))))
-      (is (not= k (resource/render-key (assoc accepted :query {:sort "start"}))))
-      (is (not= k (resource/render-key (assoc accepted :page-info {:page 2}))))
-      (is (not= k (resource/render-key (assoc accepted :shape {:id-key "id" :fields []})))))
-    (testing "revision stays in the key — a consumer may draw it, so it is not excluded"
-      (is (not= k (resource/render-key (assoc accepted :revision "tasks:v2")))))))
+(deftest projected-accepted-keeps-every-drawn-field
+  (let [k (projected-accepted accepted)]
+    (testing "a change in any field a consumer draws yields a different value"
+      (is (not= k (projected-accepted (assoc accepted :value [{"id" 2 "owner" "Bob"}]))))
+      (is (not= k (projected-accepted (assoc accepted :query {:sort "start"}))))
+      (is (not= k (projected-accepted (assoc accepted :page-info {:page 2}))))
+      (is (not= k (projected-accepted (assoc accepted :shape {:id-key "id" :fields []})))))
+    (testing "revision stays, it is the server's claim about the content rather than a name for
+              the exchange, and a consumer may draw it"
+      (is (not= k (projected-accepted (assoc accepted :revision "tasks:v2")))))))
 
 (deftest connected-emits-fetch
   (let [r* (assoc base :request-count 1
@@ -107,7 +117,7 @@
                :error   {:code :invalid-query :message "no"}}
         {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
     (testing "the server already adjudicated this query at render time"
-      (is (= {:failure :rejected :response embed :query (:query embed)} (:last-failure resource)))
+      (is (= {:failure :rejected :for :read :response embed :query (:query embed)} (:last-failure resource)))
       (is (nil? (:last-accepted resource))))
     (testing "the failure adjudicates the intent, so there is no boot fetch"
       (is (nil? (:active-request resource)))
@@ -199,6 +209,44 @@
                                   (= "/api/tasks?requestId=tasks:1" (:url m))))
                 effects)))))
 
+;; --- routing a cross-resource intent ---------------------------------------
+
+(deftest intent-patch-naming-a-sibling-routes-instead-of-applying
+  (testing "a targeted intent is not this resource's to apply. step names the target in an effect
+            and leaves its own value untouched, so the routing is visible rather than decided in
+            a closure at the edge"
+    (let [r (assoc base :url-intent {:sort "owner"})
+          {:keys [resource effects]} (resource/step r [:intent-patch
+                                                       {:query-patch {:project "p-1"}
+                                                        :target-id   "projects"}])]
+      (is (= r resource) "the sending resource does not move")
+      (is (= [[:route-intent {:resource/id "projects"
+                              :patch       {:query-patch {:project "p-1"}}}]]
+             effects)
+          "the target is dropped from the patch that travels, it addressed the hop not the query"))))
+
+(deftest intent-patch-targeting-self-is-applied-not-routed
+  (testing "no target, or a target equal to the resource's own id, drives the resource itself"
+    (doseq [payload [{:query-patch {:sort "start"}}
+                     {:query-patch {:sort "start"} :target-id "tasks"}]]
+      (let [{:keys [resource effects]} (resource/step (assoc base :url-intent {}) [:intent-patch payload])]
+        (is (= {:sort "start"} (:url-intent resource)))
+        (is (not-any? (fn [[fx _]] (= :route-intent fx)) effects))))))
+
+(deftest an-unnamed-resource-can-still-name-a-sibling
+  (testing "the root resource has a nil id, so any named target is a hop rather than a self-drive"
+    (let [{:keys [effects]} (resource/step (assoc base :resource/id nil :url-intent {})
+                                           [:intent-patch {:query-patch {:sort "start"}
+                                                           :target-id   "tasks"}])]
+      (is (= :route-intent (ffirst effects))))))
+
+(deftest intent-unroutable-diagnoses-rather-than-vanishing
+  (testing "the executor could not resolve the target. The gesture is lost either way, but it
+            reaches the recorder as an event instead of evaporating in a closure"
+    (let [{:keys [resource effects]} (resource/step base [:intent-unroutable {:resource/id "ghost"}])]
+      (is (= base resource))
+      (is (= [[:diagnostic {:code :unroutable-intent :detail {:resource/id "ghost"}}]] effects)))))
+
 (deftest url-changed-replaces-intent-and-fetches-without-writing
   (let [r (assoc base :url-intent {:sort "owner"})
         {:keys [resource effects]} (resource/step r [:url-changed {:page "2"}])]
@@ -262,7 +310,7 @@
   (let [r (expecting base rejected)
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded as a :rejected failure wrapping the response"
-      (is (= {:failure :rejected :response rejected :query (:query rejected)} (:last-failure resource))))
+      (is (= {:failure :rejected :for :read :response rejected :query (:query rejected)} (:last-failure resource))))
     (testing ":active-request is cleared; :last-accepted is left untouched"
       (is (nil? (:active-request resource)))
       (is (nil? (:last-accepted resource))))
@@ -329,7 +377,7 @@
         {:keys [resource effects]} (resource/step prior [:network-failed {:request/id "tasks:1"
                                                                           :error {:kind :offline}}])]
     (testing "records a :network failure carrying the error kind and the adjudicated query"
-      (is (= {:failure :network :error {:kind :offline} :query {:sort "owner"}} (:last-failure resource))))
+      (is (= {:failure :network :for :read :error {:kind :offline} :query {:sort "owner"}} (:last-failure resource))))
     (testing ":active-request cleared; :last-accepted left untouched (keep-stale)"
       (is (nil? (:active-request resource)))
       (is (= accepted (:last-accepted resource))))
@@ -354,7 +402,7 @@
                 :request/id "tasks:1"}
         {:keys [resource effects]} (resource/step prior [:protocol-failed marker])]
     (testing "records a :protocol failure carrying the parse-failure detail and adjudicated query"
-      (is (= {:failure :protocol :detail {:reason :unknown-outcome :outcome "banana"} :query {:sort "owner"}}
+      (is (= {:failure :protocol :for :read :detail {:reason :unknown-outcome :outcome "banana"} :query {:sort "owner"}}
              (:last-failure resource))))
     (testing ":active-request cleared; :last-accepted left untouched (keep-stale)"
       (is (nil? (:active-request resource)))
@@ -454,7 +502,7 @@
                   :error   {:code :invalid-query :message "nope"}}
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded and the request cleared"
-      (is (= {:failure :rejected :response rejected :query (:query rejected)} (:last-failure resource)))
+      (is (= {:failure :rejected :for :read :response rejected :query (:query rejected)} (:last-failure resource)))
       (is (nil? (:active-request resource))))
     (testing "url-intent reverts to the last accepted query (T8)"
       (is (= {:sort "owner" :direction "asc"} (:url-intent resource))))
@@ -520,12 +568,12 @@
 (deftest submit-write-starts-write-and-emits-write-effect
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete :id 7}])]
     (testing "an active write is recorded under a namespaced id, carrying the payload"
-      (is (= {:write/id "tasks:w1" :payload {:op :delete :id 7} :query nil} (:active-write resource)))
+      (is (= {:request/id "tasks:w1" :payload {:op :delete :id 7} :query nil} (:active-write resource)))
       (is (true? (resource/writing? resource))))
     (testing "notify first (so the button disables), then the :write effect — which carries the
               request step already decided, not the payload for the executor to interpret"
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:write/id "tasks:w1"
+              [:write {:request/id "tasks:w1"
                        :method   "DELETE"
                        :url      "/api/tasks/7?requestId=tasks:w1"}]]
              effects)))))
@@ -536,9 +584,9 @@
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
-      (is (= {:write/id "tasks:w1" :payload payload :query nil} (:active-write resource)))
+      (is (= {:request/id "tasks:w1" :payload payload :query nil} (:active-write resource)))
       (is (= [[:notify-consumers {:resource resource}]
-              [:write {:write/id "tasks:w1"
+              [:write {:request/id "tasks:w1"
                        :method   "POST"
                        :url      "/api/tasks?requestId=tasks:w1"
                        :body     record
@@ -549,7 +597,7 @@
   (testing "update is one row in the op table: PUT, member-addressed, body-carrying"
     (let [record  {"title" "Ship it" "status" "done"}
           {:keys [effects]} (resource/step base [:submit-write {:op :update :id 7 :record record}])]
-      (is (= [:write {:write/id "tasks:w1"
+      (is (= [:write {:request/id "tasks:w1"
                       :method   "PUT"
                       :url      "/api/tasks/7?requestId=tasks:w1"
                       :body     record
@@ -579,21 +627,21 @@
 (deftest write-request-resolves-each-op
   (let [record {"title" "Ship it"}]
     (testing "create: collection-addressed POST carrying the record"
-      (is (= {:write/id "tasks:w1"
+      (is (= {:request/id "tasks:w1"
               :method   "POST"
               :url      "/api/tasks?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
              (resource/write-request base "tasks:w1" {:op :create :record record} nil))))
     (testing "update: member-addressed PUT carrying the record"
-      (is (= {:write/id "tasks:w1"
+      (is (= {:request/id "tasks:w1"
               :method   "PUT"
               :url      "/api/tasks/7?requestId=tasks:w1"
               :body     record
               :headers  {"content-type" "application/json"}}
              (resource/write-request base "tasks:w1" {:op :update :id 7 :record record} nil))))
     (testing "delete: member-addressed DELETE, no body and so no content-type"
-      (is (= {:write/id "tasks:w1"
+      (is (= {:request/id "tasks:w1"
               :method   "DELETE"
               :url      "/api/tasks/7?requestId=tasks:w1"}
              (resource/write-request base "tasks:w1" {:op :delete :id 7} nil))))))
@@ -630,13 +678,15 @@
       (is (map? (:body req)))
       (is (= record (:body req))))))
 
-;; --- transport config: step emits complete requests ------------------------
+;; --- request config: step emits complete requests --------------------------
 
 (def ^:private configured
   (assoc base :url-intent {}
-              :transport {:credentials "include" :headers {"x-api-key" "k"} :timeout 5000}))
+              :credentials "include"
+              :headers {"x-api-key" "k"}
+              :timeout 5000))
 
-(deftest transport-config-rides-every-request
+(deftest request-config-rides-every-request
   (testing "a read: the :fetch value step returns already describes the whole call, so the
             executor translates it and decides nothing"
     (let [{:keys [effects]} (resource/step configured [:connected {}])
@@ -658,7 +708,7 @@
       (is (= 5000 (:timeout write-req))))))
 
 (deftest an-unconfigured-resource-emits-the-requests-it-always-did
-  (testing "no transport -> no :credentials and no :headers on a read, so adding config
+  (testing "no config -> no :credentials and no :headers on a read, so adding config
             changed nothing for a resource that declares none"
     (let [{:keys [effects]} (resource/step (assoc base :url-intent {}) [:connected {}])
           req               (effect-value effects :fetch)]
@@ -667,7 +717,7 @@
 
 (deftest submit-write-while-writing-is-a-noop
   (let [r (assoc base :write-count 1
-                      :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
+                      :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7}})
         {:keys [resource effects]} (resource/step r [:submit-write {:op :delete :id 9}])]
     (testing "a second write while one is in flight does not start another (guards the double-click)"
       (is (= r resource))
@@ -675,8 +725,8 @@
 
 (deftest write-ack-accepted-installs-the-returned-state
   (let [r       (assoc base :url-intent {:sort "owner"} :write-count 1
-                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
-        payload (assoc accepted :query {:sort "owner"} :write/id "tasks:w1")
+                            :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        payload (assoc accepted :query {:sort "owner"} :request/id "tasks:w1")
         {:keys [resource effects]} (resource/step r [:write-ack payload])]
     (testing "the write clears -> writing? false"
       (is (nil? (:active-write resource)))
@@ -687,8 +737,8 @@
 
 (deftest write-ack-accepted-adopts-a-clamped-echo
   (let [r       (assoc base :url-intent {:page "4"} :write-count 1
-                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:page "4"}})
-        payload (assoc accepted :query {:page "3"} :write/id "tasks:w1")
+                            :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:page "4"}})
+        payload (assoc accepted :query {:page "3"} :request/id "tasks:w1")
         {:keys [resource effects]} (resource/step r [:write-ack payload])]
     (testing "not drifted, so the clamped echo is adopted and written to the URL"
       (is (= {:page "3"} (:url-intent resource)))
@@ -697,8 +747,8 @@
 
 (deftest write-ack-accepted-does-not-adopt-a-drifted-echo
   (let [r       (assoc base :url-intent {:sort "start"} :request-count 3 :write-count 1
-                            :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
-        payload (assoc accepted :query {:sort "owner"} :write/id "tasks:w1")
+                            :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        payload (assoc accepted :query {:sort "owner"} :request/id "tasks:w1")
         {:keys [resource effects]} (resource/step r [:write-ack payload])]
     (testing "the user moved during the write, so its old-query echo is not adopted"
       (is (= {:sort "start"} (:url-intent resource)))
@@ -711,26 +761,58 @@
 
 (deftest write-ack-accepted-with-broken-contract-keeps-stale
   (let [r      (assoc base :url-intent {:sort "owner"} :last-accepted accepted :write-count 1
-                           :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
-        broken (assoc accepted :query {:sort "owner"} :write/id "tasks:w1" :value [{"owner" "Alice"}])
+                           :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}})
+        broken (assoc accepted :query {:sort "owner"} :request/id "tasks:w1" :value [{"owner" "Alice"}])
         {:keys [resource effects]} (resource/step r [:write-ack broken])]
     (testing "the returned envelope fails the shape, so it is not installed"
       (is (= accepted (:last-accepted resource)))
       (is (= :contract (get-in resource [:last-failure :failure]))))
     (testing "the write clears and the stale view is kept"
-      (is (nil? (:active-write resource)))
+      (is (nil? (:active-write resource))))
+    (testing "a re-read follows: the write landed, but the envelope describing the new state was
+              unusable, so the current view is not backed by valid data. It cannot loop, since a
+              read that also fails the contract records a :read failure that answers the intent"
+      (is (= :notify-consumers (ffirst effects)))
+      (is (= :fetch (first (second effects)))))))
+
+(deftest failure-of-a-normalized-query-answers-the-intent-and-does-not-spin
+  (testing "a server may honor less of a query than was asked and echo only what it honored. The
+            failure records what was *asked*, so the intent reads as answered and no trailing
+            fetch reissues the same doomed request. Recording the echo here spun forever"
+    (let [asked  {:fixture "contract"}
+          r      (assoc base :url-intent asked :request-count 1
+                             :active-request {:request/id "tasks:1" :query asked})
+          broken (assoc accepted :request/id "tasks:1" :query {} :value [{"id" 1}])
+          {:keys [resource effects]} (resource/step r [:response broken])]
+      (is (= :contract (get-in resource [:last-failure :failure])))
+      (is (= asked (get-in resource [:last-failure :query]))
+          "the failure names the query the request was issued for, not the server's echo")
+      (is (false? (resource/pending? resource)))
+      (is (= [[:notify-consumers {:resource resource}]] effects)
+          "no trailing fetch: the intent has been answered, badly")))
+  (testing "the same holds for a rejection whose echo came back narrower than the intent"
+    (let [asked {:sort "bogus" :extra "dropped"}
+          r     (assoc base :url-intent asked :request-count 1
+                            :active-request {:request/id "tasks:1" :query asked})
+          {:keys [resource effects]} (resource/step r [:response {:outcome :rejected
+                                                                  :request/id "tasks:1"
+                                                                  :query {:sort "bogus"}
+                                                                  :error {:code :invalid-query}}])]
+      (is (= asked (get-in resource [:last-failure :query])))
+      (is (false? (resource/pending? resource)))
       (is (= [[:notify-consumers {:resource resource}]] effects)))))
 
 (deftest write-ack-rejected-records-failure-keeps-stale-and-clears-writing
   (let [r   (assoc base :last-accepted accepted
                         :write-count 1
-                        :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}})
-        ack {:outcome :rejected :write/id "tasks:w1" :query {:sort "owner"}
+                        :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7}
+                                       :query {:sort "owner"}})
+        ack {:outcome :rejected :request/id "tasks:w1" :query {:sort "owner"}
              :error   {:code :conflict :message "nope"}}
         {:keys [resource effects]} (resource/step r [:write-ack ack])]
     (testing "the rejection is recorded as a :rejected failure wrapping the ack, with the query
               it concerns lifted to the top level like every other failure"
-      (is (= {:failure :rejected :response ack :query {:sort "owner"}} (:last-failure resource))))
+      (is (= {:failure :rejected :for :write :response ack :query {:sort "owner"}} (:last-failure resource))))
     (testing "writing? clears so the button re-enables (the regression that bit twice)"
       (is (nil? (:active-write resource)))
       (is (false? (resource/writing? resource))))
@@ -740,20 +822,20 @@
 
 (deftest write-ack-for-superseded-write-is-dropped
   (let [r (assoc base :write-count 2
-                      :active-write {:write/id "tasks:w2" :payload {:op :delete :id 7}})
-        {:keys [resource effects]} (resource/step r [:write-ack {:outcome :accepted :write/id "tasks:w1"}])]
+                      :active-write {:request/id "tasks:w2" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:write-ack {:outcome :accepted :request/id "tasks:w1"}])]
     (testing "an ack that doesn't answer the in-flight write never touches state"
-      (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
+      (is (= {:request/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
       (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-records-failure-keeps-stale-and-clears-writing
-  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
+  (let [aw {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
         r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
-        {:keys [resource effects]} (resource/step r [:write-failed {:write/id "tasks:w1"
+        {:keys [resource effects]} (resource/step r [:write-failed {:request/id "tasks:w1"
                                                                     :error    {:kind :offline}}])]
     (testing "records a :network failure carrying the error kind and the in-flight write"
-      (is (= {:failure :network :error {:kind :offline} :write aw :query {:sort "owner"}}
+      (is (= {:failure :network :for :write :error {:kind :offline} :write aw :query {:sort "owner"}}
              (:last-failure resource))))
     (testing "writing? clears; last-accepted kept (pessimistic -> nothing to roll back)"
       (is (nil? (:active-write resource)))
@@ -771,9 +853,9 @@
   (:effects (resource/step (assoc base :last-accepted accepted
                                        :url-intent (:query accepted)
                                        :write-count 1
-                                       :active-write {:write/id "tasks:w1"
+                                       :active-write {:request/id "tasks:w1"
                                                       :payload {:op :create :record {"t" "x"}}})
-                           [:write-failed (merge {:write/id "tasks:w1"} failure-payload)])))
+                           [:write-failed (merge {:request/id "tasks:w1"} failure-payload)])))
 
 (deftest an-unknown-outcome-write-is-reconciled-by-a-re-read
   (testing "a timed-out write may well have committed before the client gave up. Leaving the old
@@ -792,9 +874,9 @@
     (let [{:keys [effects]} (resource/step (assoc base :last-accepted accepted
                                                        :url-intent (:query accepted)
                                                        :write-count 1
-                                                       :active-write {:write/id "tasks:w1"
+                                                       :active-write {:request/id "tasks:w1"
                                                                       :payload {:op :delete :id 7}})
-                                           [:write-ack {:write/id "tasks:w1"
+                                           [:write-ack {:request/id "tasks:w1"
                                                         :outcome  :rejected
                                                         :error    {:code :conflict}}])]
       (is (nil? (effect-value effects :fetch))))))
@@ -804,34 +886,36 @@
     (let [{:keys [effects]}
           (resource/step (assoc base :last-accepted accepted
                                      :write-count 1
-                                     :active-write {:write/id "tasks:w1" :payload {:op :delete :id 7}}
+                                     :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7}}
                                      :request-count 1
                                      :active-request {:request/id "tasks:1" :query {}})
-                         [:write-failed {:write/id "tasks:w1" :error {:kind :offline}}])]
+                         [:write-failed {:request/id "tasks:w1" :error {:kind :offline}}])]
       (is (nil? (effect-value effects :fetch))))))
 
 (deftest write-failed-for-superseded-write-is-dropped
-  (let [r (assoc base :active-write {:write/id "tasks:w2" :payload {:op :delete :id 7}})
-        {:keys [resource effects]} (resource/step r [:write-failed {:write/id "tasks:w1"
+  (let [r (assoc base :active-write {:request/id "tasks:w2" :payload {:op :delete :id 7}})
+        {:keys [resource effects]} (resource/step r [:write-failed {:request/id "tasks:w1"
                                                                     :error    {:kind :offline}}])]
     (testing "a failure for a superseded write does not touch state"
-      (is (= {:write/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
+      (is (= {:request/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
       (is (= [[:diagnostic {:code :stale-write}]] effects)))))
 
 (deftest write-failed-protocol-is-labelled-protocol-not-network
-  (let [aw {:write/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
+  (let [aw {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
         r  (assoc base :last-accepted accepted :write-count 1 :active-write aw)
-        {:keys [resource]} (resource/step r [:write-failed {:write/id "tasks:w1"
+        {:keys [resource]} (resource/step r [:write-failed {:request/id "tasks:w1"
                                                             :protocol-failure {:reason :empty-body}}])]
     (testing "a broken ack envelope is a :protocol failure carrying its detail, not a nil-error :network one"
-      (is (= {:failure :protocol :detail {:reason :empty-body} :write aw :query {:sort "owner"}}
+      (is (= {:failure :protocol :for :write :detail {:reason :empty-body} :write aw :query {:sort "owner"}}
              (:last-failure resource))))))
 
-(deftest unknown-event-is-a-noop
-  (is (= {:resource base :effects []}
-         (resource/step base [:some-future-event {}]))
-      "events step doesn't handle leave the resource untouched with no effects"))
+(deftest unknown-event-leaves-the-resource-untouched
+  (is (= base (:resource (resource/step base [:some-future-event {}])))
+      "events step doesn't handle leave the resource untouched")
+  (is (= [[:diagnostic {:code :unknown-event :detail {:event :some-future-event}}]]
+         (:effects (resource/step base [:some-future-event {}])))
+      "and are reported rather than silently swallowed"))
 
 ;; --- every failure names the query it concerns -----------------------------
 
@@ -849,7 +933,7 @@
                                :active-request {:request/id "tasks:1" :query q})
           writing  (assoc base :url-intent q :last-accepted (assoc accepted :query q)
                                :write-count 1
-                               :active-write {:write/id "tasks:w1" :query q
+                               :active-write {:request/id "tasks:w1" :query q
                                               :payload {:op :delete :id 7}})]
       (testing "read: rejected"
         (is (= q (:query (failure-of in-fligh [:response {:outcome :rejected :request/id "tasks:1"
@@ -864,13 +948,13 @@
         (is (= q (:query (failure-of in-fligh [:protocol-failed {:request/id "tasks:1"
                                                                  :protocol-failure {:reason :empty-body}}])))))
       (testing "write: rejected ack"
-        (is (= q (:query (failure-of writing [:write-ack {:write/id "tasks:w1" :outcome :rejected
+        (is (= q (:query (failure-of writing [:write-ack {:request/id "tasks:w1" :outcome :rejected
                                                           :query q :error {:code :conflict}}])))))
       (testing "write: network"
-        (is (= q (:query (failure-of writing [:write-failed {:write/id "tasks:w1"
+        (is (= q (:query (failure-of writing [:write-failed {:request/id "tasks:w1"
                                                              :error {:kind :timeout :after 60000}}])))))
       (testing "write: protocol"
-        (is (= q (:query (failure-of writing [:write-failed {:write/id "tasks:w1"
+        (is (= q (:query (failure-of writing [:write-failed {:request/id "tasks:w1"
                                                              :protocol-failure {:reason :empty-body}}]))))))))
 
 (deftest a-write-failure-does-not-answer-a-read-intent
@@ -878,13 +962,13 @@
             whether the current intent has been fetched, so pending? must ignore it. Counting it
             would leave an unfetched view looking answered"
     (let [r (assoc base :url-intent {:sort "owner"}
-                        :last-failure {:failure :network :error {:kind :offline}
-                                       :query {:sort "owner"}
-                                       :write {:write/id "tasks:w1" :query {:sort "owner"}}})]
+                        :last-failure {:failure :network :for :write :error {:kind :offline}
+                                       :query {:sort "owner"}})]
       (is (true? (resource/pending? r))))
-    (testing "the same failure without a :write is a read failure, and does answer it"
+    (testing "the same failure tagged :read does answer it. The tag is what decides, not whether
+              some other key happens to be present"
       (let [r (assoc base :url-intent {:sort "owner"}
-                          :last-failure {:failure :network :error {:kind :offline}
+                          :last-failure {:failure :network :for :read :error {:kind :offline}
                                          :query {:sort "owner"}})]
         (is (false? (resource/pending? r)))))))
 
@@ -904,15 +988,16 @@
             makes it a promise, and 1.0 would freeze internals the runtime needs to keep changing"
     (let [view (resource/project (assoc base
                                         :url-intent     {}
-                                        :transport      {:credentials "include"
-                                                         :headers {"authorization" "Bearer t"}}
+                                        :credentials    "include"
+                                        :headers        {"authorization" "Bearer t"}
+                                        :timeout        5000
                                         :history-policy {:navigation :push}
                                         :request-count  3
                                         :write-count    1
                                         :active-request {:request/id "tasks:3" :query {}}
-                                        :active-write   {:write/id "tasks:w1"}))]
-      (doseq [k [:endpoint :transport :history-policy :request-count :write-count
-                 :active-request :active-write :resource/id]]
+                                        :active-write   {:request/id "tasks:w1"}))]
+      (doseq [k [:endpoint :credentials :headers :timeout :history-policy :request-count
+                 :write-count :active-request :active-write :resource/id]]
         (is (not (contains? view k)) (str k " leaked into the consumer's view"))))))
 
 (deftest project-carries-what-a-consumer-renders-from
@@ -920,7 +1005,8 @@
         view    (resource/project (assoc base :last-accepted accepted
                                               :last-failure  failure
                                               :url-intent    {:sort "owner"}))]
-    (is (= accepted (:accepted view)) "the accepted envelope passes through whole")
+    (is (= (dissoc accepted :request/id) (:accepted view))
+        "the accepted envelope passes through, minus the id of the exchange that fetched it")
     (is (= failure (:failure view)) "so does the failure")
     (testing "intent passes through untouched, nil included: a resource that has not booted and
               one booted with an empty query are different states, and flattening them would
@@ -937,7 +1023,7 @@
       (is (false? (:writing? idle)))))
   (testing "a read and a write both in flight -> both true"
     (let [busy (resource/project (assoc base :active-request {:request/id "tasks:1" :query {}}
-                                             :active-write   {:write/id "tasks:w1"}))]
+                                             :active-write   {:request/id "tasks:w1"}))]
       (is (true? (:pending? busy)))
       (is (true? (:writing? busy))))))
 

@@ -33,6 +33,7 @@
 
 (def attr-timeout "timeout")
 
+;; Public for test purposes only
 (def default-timeout-ms 60000)
 
 (defn- timeout-ms
@@ -59,29 +60,9 @@
       (pos? ms)  ms
       :else      default-timeout-ms)))
 
-(defn transport
-  "The transport config a request carries: the fetch credentials mode, the static headers, and
-  the timeout budget."
-  [credentials headers timeout]
-  (let [t (cond-> {}
-            credentials (assoc :credentials credentials)
-            headers     (assoc :headers headers)
-            timeout     (assoc :timeout timeout))]
-    (when (seq t) t)))
-
 (defn resolve-resource-id
   "The element's resource id from its `resource-id` attribute, or nil when absent or blank."
   [attr-id]
   (when-not (str/blank? attr-id) attr-id))
 
-(defn targets-sibling?
-  "True when an intent names a resource other than its own, cross-resource coordination. A nil
-  target (or one equal to the own id) drives the resource itself."
-  [own-id target-id]
-  (boolean (and target-id (not= target-id own-id))))
-
 (def observed-attributes #js [])
-
-(def event-schema {})
-
-(def method-api {})

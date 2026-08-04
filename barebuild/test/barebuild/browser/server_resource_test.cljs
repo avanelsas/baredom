@@ -6,7 +6,10 @@
    [barebuild.browser.support :as support]
    [barebuild.core :as core]
    [barebuild.decorator :as decorator]
-   [cljs.test :refer-macros [deftest is use-fixtures async]]))
+   [barebuild.elements.server-resource.server-resource :as server-resource]
+   [barebuild.resource :as resource]
+   [baredom.utils.component :as component]
+   [cljs.test :refer-macros [deftest is testing use-fixtures async]]))
 
 (use-fixtures :each
   {:before (fn [] (support/reset-state!) (support/capture-errors!))
@@ -36,6 +39,30 @@
                      "and again once the parsed server payload is installed")
                  (done)))
         (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done))))))
+
+(deftest effect-handlers-cover-the-vocabulary-exactly
+  (testing "step decides and the executor performs, so the two vocabularies are one. An effect
+            step learns to emit with no performer would be silently unperformed, and a performer
+            for an effect step never emits is dead weight that reads as supported"
+    (is (= resource/effect-tags (set (keys server-resource/effect-handlers))))))
+
+(deftest a-notification-that-changes-nothing-does-not-re-render
+  (async done
+    (support/stub-accepted! [{"id" 1 "owner" "Alice"}] owner-shape)
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(some (comp :accepted) @support/spy-calls))
+        (.then (fn []
+                 (let [renders (count @support/spy-calls)]
+                   ;; three navigations to the url the resource already holds. Each one notifies
+                   ;; consumers and none of them changes the value, so the guard has to hold.
+                   ;; This runs synchronously: popstate to step to notify to applyResource.
+                   (dotimes [_ 3] (support/pop-to! ""))
+                   (is (= renders (count @support/spy-calls))
+                       "render fires when the slice it draws changes, not on every notification")
+                   (is (= 1 (count @support/fetch-calls))
+                       "and an already-answered intent issues no new request")
+                   (done))))
+        (.catch (fn [e] (is false (str "guard never settled: " e)) (done))))))
 
 (deftest a-throwing-consumer-does-not-starve-a-later-consumer
   (async done
@@ -76,6 +103,50 @@
                    (is (not (re-find #"owner" proj-url)) "projects did not leak the tasks param"))
                  (done)))
         (.catch (fn [e] (is false (str "resources did not both fetch: " e)) (done))))))
+
+(deftest a-targeted-intent-drives-the-named-sibling-not-the-sender
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (let [projects (support/mount-consumers! "projects" "/api/projects" ["x-spy-consumer"])]
+      (support/mount-consumers! "tasks" "/api/tasks" ["x-spy-consumer"])
+      (-> (support/settle #(= 2 (count @support/fetch-calls)))
+          (.then (fn []
+                   ;; a gesture in the projects resource selecting a project for the tasks one
+                   (support/submit-intent! projects {:query-patch {:project "p-1"}} "tasks")
+                   (support/settle #(= 3 (count @support/fetch-calls)))))
+          (.then (fn []
+                   (let [refetch (last @support/fetch-calls)]
+                     (is (re-find #"/api/tasks" refetch)
+                         "the sibling named in the patch is the one that refetched")
+                     (is (re-find #"[?&]project=p-1" refetch)
+                         "carrying the routed patch as its own query"))
+                   (is (re-find #"[?&]tasks\.project=p-1" (.-search js/location))
+                       "and the url is written in the target's scope, not the sender's")
+                   (done)))
+          (.catch (fn [e] (is false (str "the intent did not reach the sibling: " e)) (done)))))))
+
+(deftest an-intent-naming-a-resource-that-is-not-there-does-not-vanish-silently
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (let [host (support/mount! "tasks" "/api/tasks")]
+      (-> (support/settle #(= 1 (count @support/fetch-calls)))
+          (.then (fn []
+                   ;; routing is synchronous: submit, then read what it did
+                   (support/capture-records!)
+                   (support/submit-intent! host {:query-patch {:sort "owner"}} "ghost")
+                   (let [events (support/recorded-events)]
+                     (is (some (fn [[k _]] (= :intent-unroutable k)) events)
+                         "the undeliverable gesture reaches the trace as an event rather than
+                          evaporating in a closure at the edge")
+                     (is (= {:resource/id "ghost"}
+                            (some (fn [[k m]] (when (= :intent-unroutable k) m)) events))
+                         "naming the target that could not be resolved"))
+                   (is (= 1 (count @support/fetch-calls))
+                       "an unroutable intent issues no request")
+                   (is (= "" (.-search js/location))
+                       "and never writes the sender's url with a patch meant for someone else")
+                   (done)))
+          (.catch (fn [e] (is false (str "unroutable intent misbehaved: " e)) (done)))))))
 
 (deftest back-navigation-refetches-the-restored-intent
   (async done
@@ -149,6 +220,69 @@
                        "disconnecting aborts the pending request")
                    (done)))
           (.catch (fn [e] (is false (str "in-flight request was not aborted: " e)) (done)))))))
+
+;; --- boot is tied to the connection that asked for it ----------------------
+;;
+;; connectedCallback defers boot until every custom element inside the host is defined, so a
+;; disconnect can land in that window. These mount a host containing a tag that is deliberately
+;; undefined at mount time, so the boot is still pending when the test moves the element, and
+;; define it afterwards to release the boot.
+
+(defonce ^:private late-tag-counter (atom 0))
+
+(defn- define-late!
+  "Define `tag` as a do-nothing custom element, releasing any boot awaiting it."
+  [tag]
+  (component/register! tag {:observed-attributes  #js []
+                            :connected-fn         (fn [_el] nil)
+                            :attribute-changed-fn (fn [_el _n _o _v] nil)}))
+
+(defn- mount-awaiting!
+  "A <server-resource> holding a spy consumer plus a child whose tag is not defined yet, so its
+   boot stays pending. Returns [host tag]."
+  []
+  (let [tag  (str "x-late-" (swap! late-tag-counter inc))
+        host (support/mount! "tasks" "/api/tasks")]
+    (.appendChild host (js/document.createElement tag))
+    [host tag]))
+
+(deftest a-boot-that-resolves-after-removal-does-not-run
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (let [[host tag] (mount-awaiting!)]
+      (is (zero? (count @support/fetch-calls)) "boot is pending on the undefined child")
+      (.remove host)
+      (define-late! tag)
+      (-> (support/settle #(true? true))
+          (.then (fn []
+                   (is (zero? (count @support/fetch-calls))
+                       "a boot whose connection already ended issues no request")
+                   (support/pop-to! "?tasks.sort=owner")
+                   (support/settle #(true? true))))
+          (.then (fn []
+                   (is (zero? (count @support/fetch-calls))
+                       "and left no popstate listener behind on a detached element")
+                   (done)))
+          (.catch (fn [e] (is false (str "detached boot misbehaved: " e)) (done)))))))
+
+(deftest a-reattached-element-boots-once-and-listens-once
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (let [[host tag] (mount-awaiting!)]
+      (.remove host)
+      (.appendChild js/document.body host)          ; re-attached before the boot is released
+      (define-late! tag)
+      (-> (support/settle #(= 1 (count @support/fetch-calls)))
+          (.then (fn []
+                   (is (= 1 (count @support/fetch-calls))
+                       "only the live connection boots, the superseded one is dropped")
+                   (support/pop-to! "?tasks.sort=owner")
+                   (support/settle #(= 2 (count @support/fetch-calls)))))
+          (.then (fn []
+                   (is (= 2 (count @support/fetch-calls))
+                       "one popstate listener, so a navigation refetches once, not twice")
+                   (done)))
+          (.catch (fn [e] (is false (str "re-attach left duplicate listeners: " e)) (done)))))))
 
 (defn- first-failure []
   (first (remove nil? @support/failure-calls)))

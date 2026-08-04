@@ -5,7 +5,8 @@
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [barebuild.decorator :as decorator]
-   [barebuild.elements.server-resource.server-resource :as server-resource]))
+   [barebuild.elements.server-resource.server-resource :as server-resource]
+   [barebuild.recorder :as recorder]))
 
 (defonce spy-calls     (atom []))   ; views handed to the spy consumer's render
 (defonce order-calls   (atom []))   ; hook names in the order applyResource invoked them
@@ -15,6 +16,7 @@
 (defonce error-calls   (atom []))   ; args passed to a stubbed console.error
 (defonce aborted-calls (atom []))   ; urls whose in-flight request was aborted
 (defonce pending       (atom []))   ; controlled-stub entries {:url :resolve}, awaiting resolution
+(defonce records       (atom []))   ; recorder entries, when a test opts in with capture-records!
 
 (defonce real-fetch (.-fetch js/window))
 (defonce real-error (.-error js/console))
@@ -157,6 +159,17 @@
 (defn restore-error! []
   (set! (.-error js/console) real-error))
 
+(defn capture-records!
+  "Install a recorder so a test can assert what reached the trace, which is the only place an
+   event that changes no state is visible at all."
+  []
+  (recorder/set-recorder! (fn [entry] (swap! records conj entry))))
+
+(defn recorded-events
+  "The event vectors the recorder saw, in order."
+  []
+  (mapv :event @records))
+
 (defn reset-state! []
   (reset! spy-calls [])
   (reset! order-calls [])
@@ -166,7 +179,9 @@
   (reset! error-calls [])
   (reset! aborted-calls [])
   (reset! pending [])
-  (decorator/set-request-decorator! nil))
+  (reset! records [])
+  (decorator/set-request-decorator! nil)
+  (recorder/set-recorder! nil))
 
 (defn reset-url! []
   (.replaceState js/history nil "" "/"))
@@ -186,9 +201,12 @@
   (.querySelector host "x-spy-consumer"))
 
 (defn submit-intent!
-  "Submit an intent patch through the host's spy consumer, as a gesture handler would."
-  [^js host patch]
-  (consumer-resource/submit-intent! (consumer-in host) patch))
+  "Submit an intent patch through the host's spy consumer, as a gesture handler would. With a
+   `target-id` the patch names a sibling resource rather than the host's own."
+  ([^js host patch]
+   (consumer-resource/submit-intent! (consumer-in host) patch))
+  ([^js host patch target-id]
+   (consumer-resource/submit-intent! (consumer-in host) patch target-id)))
 
 (defn submit-write!
   "Submit a write through the host's spy consumer, as a gesture handler would."
