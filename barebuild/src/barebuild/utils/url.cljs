@@ -1,7 +1,8 @@
 (ns barebuild.utils.url
   "The URL projection: how a resource reads its query out of the address bar and writes it back,
   scoped so several resources can share one URL without colliding."
-  (:require [clojure.string :as str]))
+  (:require [barebuild.utils.query :as query]
+            [clojure.string :as str]))
 
 (defn url-prefix
   "The URL key prefix for a resource id: `<id>.` for a named resource, or \"\" for the unnamed
@@ -44,3 +45,15 @@
   (-> (js/URLSearchParams. search)
       (scope-params! resource-id new-params)
       (params->url pathname)))
+
+(defn parse-scoped-query
+  "The query a resource owns in `search`: its `<id>.`-prefixed keys with the prefix stripped, or
+  the bare undotted keys when unnamed. The inverse of build-scoped-url, in the query's normal
+  form, so what comes off the address bar compares equal to a server's echo of the same query."
+  [search resource-id]
+  (let [params (js/URLSearchParams. search)
+        prefix (url-prefix resource-id)]
+    (query/canonicalize-query
+     (into {}
+           (map (fn [k] [(subs k (count prefix)) (.get params k)]))
+           (owned-url-keys resource-id (js/Array.from (.keys params)))))))

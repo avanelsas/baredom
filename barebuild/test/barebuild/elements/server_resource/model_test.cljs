@@ -35,39 +35,49 @@
 
 ;; --- the request budget ----------------------------------------------------
 
-(deftest resolve-timeout-defaults-when-the-attribute-is-absent
+(defn- timeout-ms [attr-value] (:ms (model/parse-timeout attr-value)))
+(defn- timeout-valid? [attr-value] (:valid? (model/parse-timeout attr-value)))
+
+(deftest parse-timeout-defaults-when-the-attribute-is-absent
   (testing "every resource gets a budget without asking, so a request that never settles cannot
             wedge the resource for the life of the element"
-    (is (= 60000 (model/resolve-timeout nil)))
-    (is (= 60000 (model/resolve-timeout "")))
-    (is (= 60000 (model/resolve-timeout "   ")))
-    (is (= model/default-timeout-ms (model/resolve-timeout nil)))))
+    (is (= 60000 (timeout-ms nil)))
+    (is (= 60000 (timeout-ms "")))
+    (is (= 60000 (timeout-ms "   ")))
+    (is (= model/default-timeout-ms (timeout-ms nil)))))
 
-(deftest resolve-timeout-takes-a-positive-value
-  (is (= 5000 (model/resolve-timeout "5000")))
+(deftest parse-timeout-takes-a-positive-value
+  (is (= 5000 (timeout-ms "5000")))
   (testing "surrounding whitespace is not part of the number"
-    (is (= 5000 (model/resolve-timeout " 5000 ")))))
+    (is (= 5000 (timeout-ms " 5000 ")))))
 
-(deftest resolve-timeout-treats-zero-as-no-budget
+(deftest parse-timeout-treats-zero-as-no-budget
   (testing "0 removes the limit, the same spelling XMLHttpRequest.timeout uses, so an endpoint
             that is legitimately slow has an escape hatch"
-    (is (nil? (model/resolve-timeout "0")))))
+    (is (nil? (timeout-ms "0")))))
 
-(deftest resolve-timeout-keeps-the-default-for-an-unusable-value
+(deftest parse-timeout-keeps-the-default-for-an-unusable-value
   (testing "a typo must not silently remove the budget, which is what falling back to nil
             would do"
-    (is (= 60000 (model/resolve-timeout "10 seconds")))
-    (is (= 60000 (model/resolve-timeout "abc")))
-    (is (= 60000 (model/resolve-timeout "5.5")))
-    (is (= 60000 (model/resolve-timeout "-1")))))
+    (is (= 60000 (timeout-ms "10 seconds")))
+    (is (= 60000 (timeout-ms "abc")))
+    (is (= 60000 (timeout-ms "5.5")))
+    (is (= 60000 (timeout-ms "-1")))))
 
-(deftest valid-timeout?-is-what-decides-whether-to-report
+(deftest parse-timeout-validity-is-what-decides-whether-to-report
   (testing "absent and well-formed values are silent"
-    (is (true? (model/valid-timeout? nil)))
-    (is (true? (model/valid-timeout? "")))
-    (is (true? (model/valid-timeout? "0")))
-    (is (true? (model/valid-timeout? "5000"))))
+    (is (true? (timeout-valid? nil)))
+    (is (true? (timeout-valid? "")))
+    (is (true? (timeout-valid? "0")))
+    (is (true? (timeout-valid? "5000"))))
   (testing "anything that cannot be read as milliseconds is reported"
-    (is (false? (model/valid-timeout? "10 seconds")))
-    (is (false? (model/valid-timeout? "5.5")))
-    (is (false? (model/valid-timeout? "-1")))))
+    (is (false? (timeout-valid? "10 seconds")))
+    (is (false? (timeout-valid? "5.5")))
+    (is (false? (timeout-valid? "-1")))))
+
+(deftest parse-timeout-reads-the-attribute-once
+  (testing "the budget and whether it was readable are two facts about one parse, so they are
+            answered together and cannot drift apart"
+    (is (= {:ms 5000 :valid? true} (model/parse-timeout "5000")))
+    (is (= {:ms nil :valid? true} (model/parse-timeout "0")))
+    (is (= {:ms model/default-timeout-ms :valid? false} (model/parse-timeout "nope")))))

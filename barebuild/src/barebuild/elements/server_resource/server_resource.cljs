@@ -4,7 +4,6 @@
    [barebuild.recorder :as recorder]
    [barebuild.resource :as resource]
    [barebuild.transport :as transport]
-   [barebuild.utils.query :as query]
    [barebuild.utils.request :as request]
    [barebuild.utils.url :as url]
    [barebuild.wire :as wire]
@@ -20,19 +19,14 @@
 (def ^:private k-generation "__xConnectGeneration")
 (declare ^:private handle-event!)
 
-(defn- construct-url-intent [resource-id]
-  (let [current-url-params (js/URLSearchParams. (.-search js/location))
-        prefix             (url/url-prefix resource-id)
-        owned              (url/owned-url-keys resource-id
-                                                 (js/Array.from (.keys current-url-params)))]
-    (query/canonicalize-query
-     (into {}
-           (for [k owned]
-             [(keyword (subs k (count prefix)))
-              (.get current-url-params k)])))))
+(defn- current-url-intent
+  "The resource's query as the address bar currently holds it. The only place this element reads
+  the address bar, the projection itself being `url/parse-scoped-query`."
+  [resource-id]
+  (url/parse-scoped-query (.-search js/location) resource-id))
 
 (defn- handle-popstate [^js el resource-id]
-  (handle-event! el [:url-changed (construct-url-intent resource-id)]))
+  (handle-event! el [:url-changed (current-url-intent resource-id)]))
 
 ;; ── Transport config ─────────────────────────────────────────────────────────
 
@@ -42,37 +36,60 @@
   (let [parsed (try (js/JSON.parse text) (catch :default _ nil))]
     (when (object? parsed) parsed)))
 
-(defn- read-headers
-  "The static headers from the `headers` attribute. A malformed attribute is reported and treated
-  as absent."
-  [^js el]
-  (let [text (du/get-attr el model/attr-headers)
-        obj  (json-object text)]
-    (when-not (or (str/blank? text) obj)
-      (js/console.error "[server-resource]" model/attr-headers
-                        "is not a JSON object, ignoring it:" text))
-    (request/normalize-headers (js->clj obj))))
+(defn- parse-headers
+  "The static headers the `headers` attribute declares, and whether it was a JSON object to read
+  them from."
+  [text]
+  (let [obj (json-object text)]
+    {:value (request/normalize-headers (js->clj obj)) :usable? (some? obj)}))
 
-(defn- read-credentials
-  "The fetch credentials mode from the `credentials` attribute. An unrecognised mode is reported
-  and ignored rather than passed to fetch, which would throw on every request."
-  [^js el]
-  (let [text (du/get-attr el model/attr-credentials)
-        mode (model/resolve-credentials text)]
-    (when (and (nil? mode) (not (str/blank? text)))
-      (js/console.error "[server-resource]" model/attr-credentials
-                        "is not a fetch credentials mode, ignoring it:" text))
-    mode))
+(defn- parse-credentials
+  "The fetch credentials mode the `credentials` attribute declares. An unrecognised mode is not
+  usable, and is never passed to fetch, which would throw on every request."
+  [text]
+  (let [mode (model/resolve-credentials text)]
+    {:value mode :usable? (some? mode)}))
 
-(defn- read-timeout
-  "The request budget from the `timeout` attribute. An unusable value is reported and the default
-  budget kept, so a typo cannot leave requests running unbounded."
+(defn- parse-timeout
+  "The request budget the `timeout` attribute declares. An unusable value keeps the default, so a
+  typo cannot leave requests running unbounded."
+  [text]
+  (let [{:keys [ms valid?]} (model/parse-timeout text)]
+    {:value ms :usable? valid?}))
+
+;; The request configuration the host declares as attributes: which attribute carries each one,
+;; which key it becomes in the resource value, how to read it, and what to say when the attribute
+;; is there but cannot be read. A new knob is a row here, not a fourth reader and a fourth line
+;; in boot!.
+(def ^:private request-config
+  [{:key :credentials :attr model/attr-credentials :parse parse-credentials
+    :complaint "is not a fetch credentials mode, ignoring it:"}
+   {:key :headers :attr model/attr-headers :parse parse-headers
+    :complaint "is not a JSON object, ignoring it:"}
+   {:key :timeout :attr model/attr-timeout :parse parse-timeout
+    :complaint "is not a number of milliseconds, keeping the default:"}])
+
+(defn- read-config-attr
+  "One configured attribute as the value it declares. A blank attribute declares nothing, which is
+  not a complaint. A present one that cannot be read is reported and treated as absent."
+  [^js el {:keys [attr parse complaint]}]
+  (let [text                    (du/get-attr el attr)
+        {:keys [value usable?]} (parse text)]
+    (when-not (or (str/blank? text) usable?)
+      (js/console.error "[server-resource]" attr complaint text))
+    value))
+
+(defn- read-request-config
+  "The request configuration the host declared, as the keys the resource value carries. An
+  attribute declaring nothing usable contributes no key at all, so what a request is built from
+  stays absent rather than nil wherever the host said nothing."
   [^js el]
-  (let [text (du/get-attr el model/attr-timeout)]
-    (when-not (model/valid-timeout? text)
-      (js/console.error "[server-resource]" model/attr-timeout
-                        "is not a number of milliseconds, keeping the default:" text))
-    (model/resolve-timeout text)))
+  (reduce (fn [m row]
+            (if-let [value (read-config-attr el row)]
+              (assoc m (:key row) value)
+              m))
+          {}
+          request-config))
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
@@ -83,12 +100,30 @@
   [e]
   (js/console.error "[server-resource] delivering a result threw:" e))
 
-(defn- deliver-read! [^js el result request-id]
-  (cond
-    (:protocol-failure result) (handle-event! el [:protocol-failed (assoc result :request/id request-id)])
-    (:network-failure result)  (handle-event! el [:network-failed {:request/id request-id
-                                                                   :error      (:network-failure result)}])
-    :else                      (handle-event! el [:response result])))
+;; What a request can come back as, and the event each outcome becomes for a read and for a
+;; write. A write reports both failures as one event, since either leaves its outcome unknown,
+;; while a read tells them apart.
+(def ^:private delivery-events
+  {:read  {:protocol :protocol-failed :network :network-failed :ok :response}
+   :write {:protocol :write-failed    :network :write-failed   :ok :write-ack}})
+
+(defn- deliver!
+  "Classify what came back for a request of `kind` and hand it in as the event it names. Every
+  outcome is named by the id this client minted, never by the server's echo of it: one fetch is
+  one promise, so the local id already correlates the answer with its request, and a server that
+  garbles the echo would otherwise leave every response looking stale."
+  [^js el kind result request-id]
+  (let [events (delivery-events kind)]
+    (cond
+      (:protocol-failure result)
+      (handle-event! el [(:protocol events) (assoc result :request/id request-id)])
+
+      (:network-failure result)
+      (handle-event! el [(:network events) {:request/id request-id
+                                            :error      (:network-failure result)}])
+
+      :else
+      (handle-event! el [(:ok events) (assoc result :request/id request-id)]))))
 
 (defn- read-rejected!
   "Report a read that never arrived. An abort is intentional, a disconnect or a supersede, so it
@@ -110,16 +145,9 @@
     ;; id so the :abort effect aborts the request it names rather than whatever is stashed.
     (du/setv-untraced! el k-abort {:request/id request-id :controller controller})
     (-> (.then (transport/perform! m controller)
-               (fn [result] (deliver-read! el result request-id))
+               (fn [result] (deliver! el :read result request-id))
                (fn [^js e] (read-rejected! el request-id (:timeout m) e)))
       (.catch delivery-threw!))))
-
-(defn- deliver-write! [^js el result write-id]
-  (cond
-    (:protocol-failure result) (handle-event! el [:write-failed (assoc result :request/id write-id)])
-    (:network-failure result)  (handle-event! el [:write-failed {:request/id write-id
-                                                                 :error    (:network-failure result)}])
-    :else                      (handle-event! el [:write-ack (assoc result :request/id write-id)])))
 
 (defn- write-rejected!
   "Report a write whose outcome the client never learned."
@@ -136,7 +164,7 @@
   (let [controller (js/AbortController.)
         write-id   (:request/id m)]
     (-> (.then (transport/perform! m controller)
-               (fn [result] (deliver-write! el result write-id))
+               (fn [result] (deliver! el :write result write-id))
                (fn [^js e] (write-rejected! el write-id (:timeout m) e)))
       (.catch delivery-threw!))))
 
@@ -268,19 +296,14 @@
   ;; an in-flight request.
   (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         history-policy {:navigation :push}
-        credentials    (read-credentials el)
-        headers        (read-headers el)
-        timeout        (read-timeout el)
         on-popstate    (fn [_e] (handle-popstate el resource-id))
         embed          (read-boot-embed el)]
-    (du/setv! el k-resource (cond-> {:resource/id    resource-id
-                                     :endpoint       (du/get-attr el model/attr-src)
-                                     :last-accepted  nil
-                                     :url-intent     (construct-url-intent resource-id)
-                                     :history-policy history-policy}
-                              credentials (assoc :credentials credentials)
-                              headers     (assoc :headers headers)
-                              timeout     (assoc :timeout timeout)))
+    (du/setv! el k-resource (merge {:resource/id    resource-id
+                                    :endpoint       (du/get-attr el model/attr-src)
+                                    :last-accepted  nil
+                                    :url-intent     (current-url-intent resource-id)
+                                    :history-policy history-policy}
+                                   (read-request-config el)))
     (du/setv! el k-popstate on-popstate)
     (.addEventListener js/window "popstate" on-popstate)
     (let [consumers (collect-consumers el)]

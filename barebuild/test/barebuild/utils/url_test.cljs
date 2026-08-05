@@ -26,6 +26,29 @@
     (is (= "/t?projects.name=x&sort=owner"
            (url/build-scoped-url "?projects.name=x&sort=old" "/t" nil {:sort "owner"})))))
 
+(deftest parse-scoped-query-reads-only-what-the-resource-owns
+  (testing "a named resource reads its prefixed keys, with the prefix stripped"
+    (is (= {:sort "owner" :direction "asc"}
+           (url/parse-scoped-query "?tasks.sort=owner&tasks.direction=asc" "tasks"))))
+  (testing "a sibling's keys and the bare root keys are not this resource's to read"
+    (is (= {:sort "owner"}
+           (url/parse-scoped-query "?tasks.sort=owner&projects.sort=name&page=2" "tasks"))))
+  (testing "an unnamed resource owns the bare keys and leaves every namespaced one alone"
+    (is (= {:sort "owner"} (url/parse-scoped-query "?sort=owner&tasks.sort=start" nil)))
+    (is (= {:sort "owner"} (url/parse-scoped-query "?sort=owner&tasks.sort=start" ""))))
+  (testing "an empty address bar, and one holding nothing this resource owns, are both empty"
+    (is (= {} (url/parse-scoped-query "" "tasks")))
+    (is (= {} (url/parse-scoped-query "?projects.sort=name" "tasks"))))
+  (testing "the query's normal form: a key carrying no value is not an entry"
+    (is (= {} (url/parse-scoped-query "?tasks.sort=" "tasks")))))
+
+(deftest build-and-parse-are-inverses
+  (testing "parsing what build-scoped-url wrote gives back the query it was handed"
+    (doseq [id ["tasks" "" nil]
+            q  [{} {:sort "owner"} {:sort "owner" :direction "asc" :page "2"}]]
+      (is (= q (url/parse-scoped-query (url/build-scoped-url "" "" id q) id))
+          (str "round trip for id " (pr-str id) " and query " (pr-str q))))))
+
 (deftest url-prefix-and-owned-keys
   (testing "a named resource prefixes with `<id>.`, an unnamed one uses no prefix"
     (is (= "tasks." (url/url-prefix "tasks")))
