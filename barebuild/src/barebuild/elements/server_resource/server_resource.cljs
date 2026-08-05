@@ -294,9 +294,6 @@
   [^js el]
   (select-keys (du/getv el k-resource) [:active-write :write-count]))
 
-;; Which gesture classes push a history entry rather than replace one.
-(def ^:private default-history-policy {:navigation :push})
-
 (defn- boot!
   "Build the resource value from the host's attributes and the current URL, wire the popstate
   listener and the consumer context, collect the consumers, and hand in :connected. An SSR embed,
@@ -308,13 +305,12 @@
         on-popstate (fn [_e] (handle-popstate el resource-id))
         embed       (read-boot-embed el)
         carried     (carried-write el)]
-    (du/setv! el k-resource (merge {:resource/id    resource-id
-                                    :endpoint       (du/get-attr el model/attr-src)
-                                    :last-accepted  nil
-                                    :url-intent     (current-url-intent resource-id)
-                                    :history-policy default-history-policy}
-                                   (read-request-config el)
-                                   carried))
+    (du/setv! el k-resource
+              (resource/initial {:resource/id    resource-id
+                                 :endpoint       (du/get-attr el model/attr-src)
+                                 :url-intent     (current-url-intent resource-id)
+                                 :request-config (read-request-config el)
+                                 :carried        carried}))
     (du/setv! el k-popstate on-popstate)
     (du/setv! el k-ctx (consumer-ctx el))
     (.addEventListener js/window "popstate" on-popstate)
