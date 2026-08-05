@@ -98,9 +98,15 @@
     (testing "the embed still installs (it is genuinely the last accepted value)"
       (is (= embed (:last-accepted resource))))
     (testing "notifies AND fetches the current intent under a fresh id"
-      (is (= [[:notify-consumers {:resource resource}]
+      (is (= [[:notify-consumers {:resource (dissoc resource :request-count :active-request)}]
               [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
-             effects)))))
+             effects)))
+    (testing "the notify runs before the read opens, so it carries the installed value rather
+              than the one holding the request. An installed embed answers something, so pending?
+              already reads true and the consumer sees the same view either way"
+      (is (true? (resource/pending? (get-in (first effects) [1 :resource]))))
+      (is (= (resource/project resource)
+             (resource/project (get-in (first effects) [1 :resource])))))))
 
 (deftest connected-with-broken-embed-fetches
   (let [marker {:protocol-failure {:reason :unknown-outcome}}
