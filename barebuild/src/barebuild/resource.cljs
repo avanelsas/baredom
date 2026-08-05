@@ -64,16 +64,19 @@
   [r kind]
   (assoc r (:slot (request-kinds kind)) nil))
 
+(defn- transport-fields
+  "What every request off this resource carries whatever it is asking for: where to send it, what
+  it goes on the wire with, and how long the executor may wait. A new one of these is a key here
+  rather than a line in each builder below."
+  [r]
+  (select-keys r [:endpoint :credentials :headers :timeout]))
+
 (defn- read-request [r]
   (let [{:keys [query] rid :request/id} (in-flight r :read)]
-    (assoc (request/request {:endpoint    (:endpoint r)
-                           :method      "GET"
-                           :query       query
-                           :credentials (:credentials r)
-                           :headers     (:headers r)
-                           :timeout     (:timeout r)
-                           :request-id  rid})
-           :request/id rid)))
+    (request/request (assoc (transport-fields r)
+                            :method     "GET"
+                            :query      query
+                            :request-id rid))))
 
 (defn- fetch-fx
   "The :fetch effect for r's in-flight read request. The one effect whose payload is computed
@@ -131,18 +134,32 @@
   [f]
   (when (= :read (:for f)) (:query f)))
 
+(defn- answered?
+  "True when the value already holds an answer for the current intent, accepted or refused. An
+  answer has to exist to count: a resource that has fetched nothing answers nothing, whatever its
+  intent is, so this stays total rather than resting on the element always seeding :url-intent
+  with a map."
+  [r]
+  (let [intent (:url-intent r)]
+    (or (and (some? (:last-accepted r))
+             (= intent (get-in r [:last-accepted :query])))
+        (and (some? (:last-failure r))
+             (= intent (read-failure-query (:last-failure r)))))))
+
 ;; Public for test purposes only
 (defn pending? [r]
   (or (some? (in-flight r :read))
-      (let [intent (:url-intent r)]
-        (and (not= intent (get-in r [:last-accepted :query]))
-             (not= intent (read-failure-query (:last-failure r)))))))
+      (not (answered? r))))
 
 (defn- with-read
   "Open a read for the current intent when `wanted?`, appending its :fetch to `outcome`. Skipped
   while a read is already in flight, since one is on its way. Every read a transition decides to
-  open goes through here bar one, `boot-fetch`, which cannot: it has to notify from the value that
-  already holds the read."
+  open goes through here.
+
+  The :fetch lands after effects the transition already built, so a :notify-consumers among them
+  carries the value from *before* the read opened. That is safe, and it is the invariant holding
+  it up: a read only opens when `pending?` is already true, and opening one cannot turn it false,
+  so both values project the same view. Nothing else `start` touches is projected at all."
   [{:keys [resource effects] :as outcome} wanted?]
   (if (and wanted? (nil? (in-flight resource :read)))
     (let [r* (start resource :read (:url-intent resource))]
@@ -185,39 +202,22 @@
   (when-let [{:keys [method target body?]} (get write-ops op)]
     (let [member? (= target :member)]
       (when (or (not member?) (seq (str id)))
-        (assoc (request/request {:endpoint    (:endpoint resource)
-                               :segment     (when member? id)
-                               :method      method
-                               :query       query
-                               :body        (when body? record)
-                               :credentials (:credentials resource)
-                               :headers     (:headers resource)
-                               :timeout     (:timeout resource)
-                               :request-id  write-id})
-               :request/id write-id)))))
+        (request/request (assoc (transport-fields resource)
+                                :segment    (when member? id)
+                                :method     method
+                                :query      query
+                                :body       (when body? record)
+                                :request-id write-id))))))
 
 ;; Public for test purposes only
 (defn writing? [r]
   (some? (in-flight r :write)))
 
-(defn- install-accepted
-  "Install an accepted envelope: set last-accepted and, when adopt?, adopt the query echo as
-  intent. Returns `{:installed <resource> :correct? <bool>}`, the second saying whether the URL
-  needs a corrective write. Deliberately not keyed `:resource`, which is the step outcome's
-  spelling and this is not one."
-  [resource payload adopt?]
-  (let [echo      (:query payload)
-        installed (assoc resource :last-accepted payload :last-failure nil)]
-    {:installed (if adopt?
-                  (assoc installed :url-intent echo)
-                  installed)
-     :correct?  (and adopt?
-                     (not= echo (:url-intent resource)))}))
-
-(defn- accepted-effects [resource echo correct?]
-  (if correct?
-    [(url-write-fx resource echo :replace) (effect/notify-consumers resource)]
-    [(effect/notify-consumers resource)]))
+(defn- accept
+  "Hold `payload` as the value this resource answers with. A good value retires whatever failure
+  preceded it, so a consumer that drew an error clears it."
+  [resource payload]
+  (assoc resource :last-accepted payload :last-failure nil))
 
 (defn- record-failure
   "Clear the in-flight request of `kind`, stash the failure, notify."
@@ -238,17 +238,22 @@
   "Install an accepted envelope that answered the request of `kind`. Since a write returns the full
   post-mutation state, an accepted ack is the same envelope a read returns, so both install the
   same way: check the contract, record a violation as a failure, and otherwise install, adopting
-  the query echo unless the intent drifted while the request was in flight."
+  the query echo unless the intent drifted while the request was in flight. Adopting an echo the
+  URL does not already hold is what makes the URL wrong, so that is exactly when it is corrected."
   [resource kind payload]
   (let [errors (validation/validate-contract payload)]
     (if (seq errors)
       (record-failure resource kind
                       (failure :contract kind (:query (in-flight resource kind))
                                {:response payload :errors errors}))
-      (let [adopt?                       (not (drifted? resource kind))
-            {:keys [installed correct?]} (install-accepted (clear-in-flight resource kind)
-                                                           payload adopt?)]
-        (result installed (accepted-effects installed (:query payload) correct?))))))
+      (let [echo     (:query payload)
+            adopt?   (not (drifted? resource kind))
+            correct? (and adopt? (not= echo (:url-intent resource)))
+            r*       (cond-> (accept (clear-in-flight resource kind) payload)
+                       adopt? (assoc :url-intent echo))]
+        (result r* (cond-> []
+                     correct? (conj (url-write-fx r* echo :replace))
+                     :always  (conj (effect/notify-consumers r*))))))))
 
 ;; Projection  ------ What a consumer sees
 (defn project
@@ -265,19 +270,15 @@
 
 ;; CONNECT / SSR boot embed (§7.4) ----------------------------------------------
 
-(defn- boot-fetch
-  "The initial connect fetch for the current intent, with an optional leading diagnostic for an
-  embed that was ignored (broken, or a stale rejection).
-
-  The only read not opened through `with-read`, and it notifies after starting rather than before.
-  On a bare boot URL the intent is empty and nothing is accepted yet, which `pending?` reads as
-  answered, so notifying from the pre-start value would tell the first paint it is not loading.
-  The value carrying the read is the one that reports the truth."
+(defn- boot
+  "The initial connect for the current intent, with an optional leading diagnostic for an embed
+  that was ignored (broken, or a stale rejection). Nothing is accepted yet, so the intent is
+  unanswered and the trailing read always opens."
   [resource diag-code]
-  (let [r* (start resource :read (:url-intent resource))]
-    (result r* (cond-> []
-                 diag-code (conj (effect/diagnostic diag-code))
-                 :always   (conj (fetch-fx r*) (effect/notify-consumers r*))))))
+  (with-trailing-fetch
+    (result resource (cond-> []
+                       diag-code (conj (effect/diagnostic diag-code))
+                       :always   (conj (effect/notify-consumers resource))))))
 
 (defn- connect-accepted-embed
   "Install an accepted boot embed exactly as a network response: validate the contract, a broken
@@ -291,9 +292,7 @@
                         (failure :contract :read (:query embed) {:response embed :errors errors})))
       ;; An embed never adopts its query echo and never corrects the URL: there is no in-flight
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
-      ;; An installed embed answers something, so `pending?` reports the truth before the read
-      ;; opens and this goes through with-read like every other transition.
-      (let [installed (:installed (install-accepted resource embed false))]
+      (let [installed (accept resource embed)]
         (with-trailing-fetch (result installed [(effect/notify-consumers installed)]))))))
 
 (defn- connect-rejected-embed
@@ -305,17 +304,17 @@
     (let [r* (assoc resource :last-failure
                     (failure :rejected :read (:query embed) {:response embed}))]
       (result r* [(effect/notify-consumers r*)]))
-    (boot-fetch resource :stale-rejected-embed)))
+    (boot resource :stale-rejected-embed)))
 
 (defn- connect
   "The :connected transition. An SSR boot embed, if present and usable, installs first; otherwise
   a plain first fetch for the current intent."
   [resource embed]
   (cond
-    (:protocol-failure embed)      (boot-fetch resource :broken-embed)
+    (:protocol-failure embed)      (boot resource :broken-embed)
     (= :accepted (:outcome embed)) (connect-accepted-embed resource embed)
     (= :rejected (:outcome embed)) (connect-rejected-embed resource embed)
-    :else                          (boot-fetch resource nil)))
+    :else                          (boot resource nil)))
 
 (defn- targets-sibling?
   "True when an intent names a resource other than the one it was submitted to, cross-resource

@@ -27,17 +27,19 @@
 
 (defn request
   "Build a request value for the executor from the parts provided, e.g.
-  {:method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner&direction=asc\"}.
+  {:request/id \"tasks:1\" :method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner\"}.
   `credentials` and `headers` say what the request carries on the wire, `timeout` says how long
-  the executor may wait for it."
+  the executor may wait for it. The id rides the value as well as the URL: the executor names
+  every outcome by it, so a caller would otherwise have to remember to put it back."
   [{:keys [endpoint segment method query body request-id credentials headers timeout]}]
   (let [headers (request-headers headers (some? body))]
-    (cond-> {:method method
-             :url    (str endpoint
-                          (when segment
-                            (str "/" (js/encodeURIComponent segment)))
-                          "?requestId=" request-id
-                          (when (seq query) (str "&" (query/->query-string query))))}
+    (cond-> {:request/id request-id
+             :method     method
+             :url        (str endpoint
+                              (when segment
+                                (str "/" (js/encodeURIComponent segment)))
+                              "?requestId=" request-id
+                              (when (seq query) (str "&" (query/->query-string query))))}
       body        (assoc :body body)
       headers     (assoc :headers headers)
       credentials (assoc :credentials credentials)

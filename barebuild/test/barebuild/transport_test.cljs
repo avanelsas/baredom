@@ -38,7 +38,7 @@
   (is (false? (transport/abort-error? (js/DOMException. "x" "TimeoutError"))))
   (is (false? (transport/abort-error? (js/Error. "boom")))))
 
-;; --- bounded: the three-way race -------------------------------------------
+;; --- bounded: the operation against what ends it early ---------------------
 
 (deftest bounded-resolves-when-the-operation-settles-first
   (async done

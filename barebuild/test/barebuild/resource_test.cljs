@@ -64,20 +64,33 @@
   (let [r* (assoc base :request-count 1
                        :active-request {:request/id "tasks:1" :query nil})]
     (is (= {:resource r*
-            :effects  [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
-                       [:notify-consumers {:resource r*}]]}
+            :effects  [[:notify-consumers {:resource base}]
+                       [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]]}
            (resource/step base [:connected {}]))
-        "connect fetches the endpoint, records a fresh live request, carries the empty intent")))
+        "connect notifies, then fetches the endpoint, recording a fresh live request")))
+
+(deftest connected-notifies-a-loading-view-before-the-read-opens
+  (testing "boot opens its read through the same combinator every other transition uses, so the
+            notify carries the pre-start value. A resource that has fetched nothing answers
+            nothing, so that value already reports pending? and the first paint says loading"
+    (let [{:keys [resource effects]} (resource/step base [:connected {}])
+          notified                   (get-in (first effects) [1 :resource])]
+      (is (true? (resource/pending? base)))
+      (is (true? (resource/pending? notified)))
+      (is (= (resource/project resource) (resource/project notified))
+          "the read is invisible to a consumer, so notifying either side of it is the same view"))))
 
 (deftest connected-carries-url-intent
   (let [r (assoc base :url-intent {:sort "start" :direction "desc"})
         {:keys [resource effects]} (resource/step r [:connected {}])]
-    (is (= [[:fetch {:method     "GET"
+    (is (= [[:notify-consumers {:resource r}]
+            [:fetch {:method     "GET"
                      :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=start"
-                     :request/id "tasks:1"}]
-            [:notify-consumers {:resource resource}]]
+                     :request/id "tasks:1"}]]
            effects)
-        "a resource booted from a sorted URL fetches that query on connect")))
+        "a resource booted from a sorted URL fetches that query on connect")
+    (is (= {:request/id "tasks:1" :query {:sort "start" :direction "desc"}}
+           (:active-request resource)))))
 
 ;; --- 5b-4: SSR boot embed (T1) ---------------------------------------------
 
@@ -113,8 +126,8 @@
         {:keys [resource effects]} (resource/step base [:connected {:embed marker}])]
     (is (nil? (:last-accepted resource)) "a broken embed is not installed")
     (is (= [[:diagnostic {:code :broken-embed}]
-            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
-            [:notify-consumers {:resource resource}]] effects)
+            [:notify-consumers {:resource base}]
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]] effects)
         "diagnoses the broken embed, then falls back to a normal fetch")))
 
 (deftest connected-with-rejected-embed-installs-failure-and-skips-fetch
@@ -139,8 +152,8 @@
       (is (nil? (:last-accepted resource)))
       (is (= {:request/id "tasks:1" :query {:sort "owner"}} (:active-request resource))))
     (is (= [[:diagnostic {:code :stale-rejected-embed}]
-            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]
-            [:notify-consumers {:resource resource}]]
+            [:notify-consumers {:resource r}]
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
            effects)
         "diagnoses the stale rejection, then fetches the current intent")))
 
@@ -329,7 +342,9 @@
    :error      {:code :invalid-query :message "Sorting by \"bogus\" is not supported."}})
 
 (deftest rejected-response-records-failure-and-notifies
-  (let [r (expecting base rejected)
+  ;; the intent is what the read was issued for, as the element always holds it. Without it the
+  ;; rejection answers a question nobody asked and a trailing fetch follows, correctly.
+  (let [r (assoc (expecting base rejected) :url-intent (:query rejected))
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded as a :rejected failure wrapping the response"
       (is (= {:failure :rejected :for :read :response rejected :query (:query rejected)} (:last-failure resource))))
@@ -993,6 +1008,18 @@
                           :last-failure {:failure :network :for :read :error {:kind :offline}
                                          :query {:sort "owner"}})]
         (is (false? (resource/pending? r)))))))
+
+(deftest a-value-that-has-fetched-nothing-is-pending-whatever-its-intent
+  (testing "answering is holding an answer, not merely agreeing with a query nobody asked. A
+            fresh resource has neither an accepted envelope nor a failure, so it is pending
+            however its intent is spelled, and boot needs no special case to report loading"
+    (doseq [intent [nil {} {:sort "owner"}]]
+      (is (true? (resource/pending? (assoc base :url-intent intent)))
+          (str "unfetched with intent " (pr-str intent)))))
+  (testing "an answer that matches settles it, whichever kind of answer it is"
+    (is (false? (resource/pending? (assoc base :url-intent {} :last-accepted (assoc accepted :query {})))))
+    (is (false? (resource/pending? (assoc base :url-intent {}
+                                               :last-failure {:failure :rejected :for :read :query {}}))))))
 
 ;; --- project: what a consumer is allowed to see ----------------------------
 
