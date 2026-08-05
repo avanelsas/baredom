@@ -22,29 +22,52 @@
   ([resource code] (result resource [(diagnostic code)]))
   ([resource code detail] (result resource [(diagnostic code detail)])))
 
+;; The failure value -----------------------------------------------------------
+;; What `project` hands a consumer as :failure, and the only shape it takes. Every failure is
+;; built by `failure` below, so a consumer reads this one place rather than the seven transitions
+;; that can produce one.
+;;
+;;   :failure  what went wrong, one of
+;;             :rejected  the server adjudicated the request and said no  (carries :response)
+;;             :contract  it accepted, but the payload broke the shape    (carries :response, :errors)
+;;             :protocol  the answer could not be read                    (carries :detail)
+;;             :network   no answer arrived                               (carries :error)
+;;   :for      the kind of request that failed, :read or :write. This is the discriminator a
+;;             consumer branches on, never the presence of one of the members above.
+;;   :query    the query the failed request was issued for, never the server's echo of it. A
+;;             server is free to normalise a query it does not honor, and an echo would then never
+;;             equal the current intent.
+;;   :write    the in-flight write record, present only on a :write failure whose outcome the
+;;             client never learned.
+(defn- failure
+  "A failure value. `cause` is what went wrong, `kind` the kind of request it happened to, `query`
+  the query that request was issued for, and `extra` the members that cause carries."
+  ([cause kind query] (failure cause kind query nil))
+  ([cause kind query extra]
+   (merge {:failure cause :for kind :query query} extra)))
+
 ;; READ functionality ----------------------------------------------------------
 (defn- resolve-history-mode
   "Push for navigations, replace otherwise (default)."
   [resource gesture-class]
   (get (:history-policy resource) gesture-class :replace))
 
-;; read-write-data — one in-flight vocabulary for reads and writes
-;; The two kinds of requests as data: where each one's in-flight record lives, where its counter
-;; lives, and how its ids are named. A read and a write differ in those three places. Using this
-;; mapa llows us to reuse the same read/write functions for both operations.
-(def ^:private read-write-data
+;; The two kinds of request as data: where each one's in-flight record lives, where its counter
+;; lives, and how its ids are named. A read and a write differ in those three places and nowhere
+;; else, so one set of functions serves both, told apart only by the kind they are handed.
+(def ^:private request-kinds
   {:read  {:slot :active-request :counter :request-count :id-prefix ""}
    :write {:slot :active-write   :counter :write-count   :id-prefix "w"}})
 
 (defn- in-flight
-  "The in-flight record for the `kind` read-write-data in `r`, or nil when none is."
+  "The in-flight request of `kind` in `r`, or nil when none is."
   [r kind]
-  (get r (:slot (read-write-data kind))))
+  (get r (:slot (request-kinds kind))))
 
 (defn- clear-in-flight
-  "Drop the `kind` read-write-data from `r`, it is no longer in flight."
+  "Drop r's in-flight request of `kind`, it is no longer in flight."
   [r kind]
-  (assoc r (:slot (read-write-data kind)) nil))
+  (assoc r (:slot (request-kinds kind)) nil))
 
 (defn- read-request [r]
   (let [{:keys [query] rid :request/id} (in-flight r :read)]
@@ -93,7 +116,7 @@
   write's payload above all."
   ([r kind query] (start r kind query nil))
   ([r kind query extra]
-   (let [{:keys [slot counter id-prefix]} (read-write-data kind)
+   (let [{:keys [slot counter id-prefix]} (request-kinds kind)
          n                                (inc (or (counter r) 0))]
      (assoc r
             counter n
@@ -106,7 +129,7 @@
   (:query (in-flight r :read)))
 
 (defn- fresh?
-  "True when `request-id` names the read-write-data of `kind` that is currently in flight."
+  "True when `request-id` names the request of `kind` that is currently in flight."
   [r kind request-id]
   (= request-id (:request/id (in-flight r kind))))
 
@@ -117,7 +140,7 @@
   (fresh? r :read (:request/id response)))
 
 (defn- drifted?
-  "True when the intent moved on while the `kind` read-write-data was still in flight, so what comes
+  "True when the intent moved on while the request of `kind` was still in flight, so what comes
   back answers a question the URL has already left behind."
   [r kind]
   (not= (:url-intent r) (:query (in-flight r kind))))
@@ -142,7 +165,8 @@
 (defn- with-read
   "Open a read for the current intent when `wanted?`, appending its :fetch to `outcome`. Skipped
   while a read is already in flight, since one is on its way. Every read a transition decides to
-  open goes through here, so the decision is written down once and only its `wanted?` varies."
+  open goes through here bar one, `boot-fetch`, which cannot: it has to notify from the value that
+  already holds the read."
   [{:keys [resource effects] :as outcome} wanted?]
   (if (and wanted? (nil? (in-flight resource :read)))
     (let [r* (start resource :read (:url-intent resource))]
@@ -218,31 +242,31 @@
     [(notify-fx resource)]))
 
 (defn- record-failure
-  "Clear the in-flight `kind` read-write-data, stash the failure, notify."
+  "Clear the in-flight request of `kind`, stash the failure, notify."
   [resource kind failure]
   (let [resource* (assoc (clear-in-flight resource kind) :last-failure failure)]
     (result resource* [(notify-fx resource*)])))
 
-(defn- failure-detail
-  "The part of a failure value that says what went wrong: a server whose answer could not be read
-  (:protocol), or an answer that never arrived (:network). Reads and writes classify the same two
-  ways, so both build it here."
-  [kind payload]
-  (case kind
-    :protocol {:failure :protocol :detail (:protocol-failure payload)}
-    :network  {:failure :network  :error  (:error payload)}))
+(defn- transport-members
+  "What a `cause` that produced no readable answer carries: the unreadable answer itself
+  (:protocol), or the reason none arrived (:network). Reads and writes classify the same two ways,
+  so both build it here."
+  [cause payload]
+  (case cause
+    :protocol {:detail (:protocol-failure payload)}
+    :network  {:error  (:error payload)}))
 
 (defn- install-envelope
-  "Install an accepted envelope that answered the `kind` read-write-data. Since a write returns the full
+  "Install an accepted envelope that answered the request of `kind`. Since a write returns the full
   post-mutation state, an accepted ack is the same envelope a read returns, so both install the
   same way: check the contract, record a violation as a failure, and otherwise install, adopting
-  the query echo unless the intent drifted while the read-write-data was in flight."
+  the query echo unless the intent drifted while the request was in flight."
   [resource kind payload]
   (let [errors (validation/validate-contract payload)]
     (if (seq errors)
       (record-failure resource kind
-                      {:failure :contract :for kind :response payload :errors errors
-                       :query   (:query (in-flight resource kind))})
+                      (failure :contract kind (:query (in-flight resource kind))
+                               {:response payload :errors errors}))
       (let [adopt?                      (not (drifted? resource kind))
             {:keys [resource correct?]} (install-accepted (clear-in-flight resource kind)
                                                           payload adopt?)]
@@ -251,9 +275,9 @@
 ;; Projection  ------ What a consumer sees
 (defn project
   "The fields a consumer may depend on, everything else is internal resource bookkeeping.
-  The accepted envelope loses its :request/id on the way out. That id names the read-write-data
-  that fetched the value, not the value, so two identical refetches project equal views and
-  a consumer comparing them does not repaint."
+  The accepted envelope loses its :request/id on the way out. That id names the request that
+  fetched the value, not the value, so two identical refetches project equal views and a consumer
+  comparing them does not repaint."
   [resource]
   {:accepted  (dissoc (:last-accepted resource) :request/id)
    :failure   (:last-failure resource)
@@ -265,7 +289,12 @@
 
 (defn- boot-fetch
   "The initial connect fetch for the current intent, with an optional leading diagnostic for an
-  embed that was ignored (broken, or a stale rejection)."
+  embed that was ignored (broken, or a stale rejection).
+
+  The only read not opened through `with-read`, and it notifies after starting rather than before.
+  On a bare boot URL the intent is empty and nothing is accepted yet, which `pending?` reads as
+  answered, so notifying from the pre-start value would tell the first paint it is not loading.
+  The value carrying the read is the one that reports the truth."
   [resource diag-code]
   (let [r* (start resource :read (:url-intent resource))]
     (result r* (cond-> []
@@ -281,14 +310,13 @@
     (if (seq errors)
       (with-trailing-fetch
         (record-failure resource :read
-                        {:failure :contract :for :read :response embed :errors errors :query (:query embed)}))
+                        (failure :contract :read (:query embed) {:response embed :errors errors})))
       ;; An embed never adopts its query echo and never corrects the URL: there is no in-flight
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
+      ;; An installed embed answers something, so `pending?` reports the truth before the read
+      ;; opens and this goes through with-read like every other transition.
       (let [installed (:resource (install-accepted resource embed false))]
-        (if (pending? installed)
-          (let [r* (start installed :read (:url-intent installed))]
-            (result r* [(notify-fx r*) (fetch-fx r*)]))
-          (result installed [(notify-fx installed)]))))))
+        (with-trailing-fetch (result installed [(notify-fx installed)]))))))
 
 (defn- connect-rejected-embed
   "A rejected boot embed the server already adjudicated. When its echo matches intent it installs
@@ -296,7 +324,8 @@
   diagnostics only, then a normal fetch."
   [resource embed]
   (if (= (:query embed) (:url-intent resource))
-    (let [r* (assoc resource :last-failure {:failure :rejected :for :read :response embed :query (:query embed)})]
+    (let [r* (assoc resource :last-failure
+                    (failure :rejected :read (:query embed) {:response embed}))]
       (result r* [(notify-fx r*)]))
     (boot-fetch resource :stale-rejected-embed)))
 
@@ -326,8 +355,8 @@
         revert?        (and (= (:query payload) (:url-intent resource))
                             (some? (:last-accepted resource)))
         cleared        (assoc (clear-in-flight resource :read)
-                              :last-failure {:failure :rejected :for :read :response payload
-                                             :query (requested-query resource)})
+                              :last-failure (failure :rejected :read (requested-query resource)
+                                                     {:response payload}))
         resource*      (if revert? (assoc cleared :url-intent accepted-query) cleared)]
     (result resource*
             (if revert?
@@ -383,16 +412,15 @@
     (apply-intent-patch resource payload)))
 
 (defn- fail-read
-  "The :protocol-failed and :network-failed transitions, which differ only in `kind`. Either way
+  "The :protocol-failed and :network-failed transitions, which differ only in `cause`. Either way
   the read produced no answer, so the intent is still unanswered and a fresh read follows."
-  [resource payload kind]
+  [resource payload cause]
   (if-not (fresh? resource :read (:request/id payload))
     (ignored resource :stale-failure)
     (with-trailing-fetch
       (record-failure resource :read
-                      (assoc (failure-detail kind payload)
-                             :for   :read
-                             :query (requested-query resource))))))
+                      (failure cause :read (requested-query resource)
+                               (transport-members cause payload))))))
 
 (defn- disconnect
   "The :disconnected transition. An in-flight read is abandoned, since nothing is left to render
@@ -423,8 +451,8 @@
     (if (= :accepted (:outcome payload))
       (with-trailing-fetch (install-envelope resource :write payload))
       (record-failure resource :write
-                      {:failure :rejected :for :write :response payload
-                       :query   (:query (in-flight resource :write))}))))
+                      (failure :rejected :write (:query (in-flight resource :write))
+                               {:response payload})))))
 
 (defn- fail-write
   "The :write-failed transition. Every failure reaching here left the write's outcome unknown: the
@@ -435,13 +463,11 @@
   (if-not (fresh? resource :write (:request/id payload))
     (ignored resource :stale-write)
     (let [write (in-flight resource :write)
-          kind  (if (:protocol-failure payload) :protocol :network)]
+          cause (if (:protocol-failure payload) :protocol :network)]
       (with-reconciling-fetch
         (record-failure resource :write
-                        (assoc (failure-detail kind payload)
-                               :for   :write
-                               :write write
-                               :query (:query write)))))))
+                        (failure cause :write (:query write)
+                                 (assoc (transport-members cause payload) :write write)))))))
 
 ;; Public for test purposes only
 (def effect-tags

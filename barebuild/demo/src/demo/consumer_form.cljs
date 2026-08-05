@@ -83,7 +83,7 @@
     (and (pending? this) (= :rejected (:failure failure)))
     (apply-rejection! form host failure this)
 
-    (and (pending? this) (:write failure))
+    (and (pending? this) (= :write (:for failure)))
     (do (show-alert! host (write-failure-message failure))
         (set-pending! this false))))
 
