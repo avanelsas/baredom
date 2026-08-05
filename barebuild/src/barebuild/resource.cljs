@@ -9,56 +9,6 @@
   [resource gesture-class]
   (get (:history-policy resource) gesture-class :replace))
 
-;; contract validation
-
-(defn- validate-shape [shape]
-  (cond-> []
-    (not (:id-key shape)) (conj (validation/err [:shape :id-key] :missing-id-key "shape is missing :id-key"))
-    (not (:fields shape)) (conj (validation/err [:shape :fields] :missing-fields "shape is missing :fields"))))
-
-(defn- validate-value [v]
-  (cond
-    (not (sequential? v)) [(validation/err [:value] :not-a-list "value is not a list")]
-    (not (every? map? v)) [(validation/err [:value] :not-maps "value is not a list of maps")]
-    :else []))
-
-(defn- validate-ids [id-key value]
-  (let [ids (map #(get % id-key) value)]
-    (cond-> []
-      (some nil? ids)
-      (conj (validation/err [:value] :missing-id (str "some rows are missing \"" id-key "\"")))
-      (not= (count ids) (count (distinct ids)))
-      (conj (validation/err [:value] :duplicate-id "row ids are not unique")))))
-
-(defn- validate-row [row-idx row fields]
-  (mapcat (fn [{:keys [key type]}]
-            (cond
-              (not (contains? row key))
-              [(validation/err [:value row-idx key] :missing-field
-                               (str "row " row-idx " is missing field \"" key "\""))]
-
-              (not (validation/validate-value-type (get row key) type))
-              [(validation/err [:value row-idx key] :wrong-type
-                               (str "row " row-idx " field \"" key "\" is not a " (name type)))]
-
-              :else []))
-          fields))
-
-(defn- validate-rows [fields value]
-  (into [] (comp (map-indexed (fn [idx row] (validate-row idx row fields))) cat) value))
-
-(defn- validate-contract
-  "verifies if an accepted payload contains the right shape"
-  [payload]
-  (let [{:keys [shape value]} payload
-        ;; use this to skip checks inside the value. No use to look further if this is firing
-        value-errors (validate-value value)]
-    (into (vec (validate-shape shape))
-          (if (seq value-errors)
-            value-errors
-            (concat (validate-ids (:id-key shape) value)
-                    (validate-rows (:fields shape) value))))))
-
 ;; read-write-data — one in-flight vocabulary for reads and writes
 ;; The two kinds of requests as data: where each one's in-flight record lives, where its counter
 ;; lives, and how its ids are named. A read and a write differ in those three places. Using this
@@ -155,27 +105,31 @@
         (and (not= intent (get-in r [:last-accepted :query]))
              (not= intent (read-failure-query (:last-failure r)))))))
 
-(defn- with-trailing-fetch
-  "If there is a current intent, still not answered, fire it again if a transition had cleared
-  the active-request. Do nothing if the active-request is still set"
-  [{:keys [resource effects] :as result}]
-  (if (and (nil? (in-flight resource :read)) (pending? resource))
+(defn- with-read
+  "Open a read for the current intent when `wanted?`, appending its :fetch to `result`. Skipped
+  while a read is already in flight, since one is on its way. Every read a transition decides to
+  open goes through here, so the decision is written down once and only its `wanted?` varies."
+  [{:keys [resource effects] :as result} wanted?]
+  (if (and wanted? (nil? (in-flight resource :read)))
     (let [r* (start resource :read (:url-intent resource))]
       {:resource r*
        :effects  (conj (vec effects) (fetch-fx r*))})
     result))
 
+(defn- with-trailing-fetch
+  "Follow a transition that cleared the active request with a read for the current intent, when
+  the value does not already answer it."
+  [{:keys [resource] :as result}]
+  (with-read result (pending? resource)))
+
 (defn- with-reconciling-fetch
   "Follow a write whose outcome the client cannot know with a re-read. The request may have
   reached the server and committed before the failure, so observing the server is the only way to
   learn whether it did, and rendering the old view as if nothing happened would make the user's
-  retry a duplicate. Skipped while a read is already in flight, since one is on its way."
-  [{:keys [resource effects] :as result}]
-  (if (in-flight resource :read)
-    result
-    (let [r* (start resource :read (:url-intent resource))]
-      {:resource r*
-       :effects  (conj (vec effects) (fetch-fx r*))})))
+  retry a duplicate. Wanted whatever the value claims to answer, since what it claims is exactly
+  what the failed write may have invalidated."
+  [result]
+  (with-read result true))
 
 ;; WRITE functionality ----------------------------------------------------------
 
@@ -248,7 +202,7 @@
   same way: check the contract, record a violation as a failure, and otherwise install, adopting
   the query echo unless the intent drifted while the read-write-data was in flight."
   [resource kind payload]
-  (let [errors (validate-contract payload)]
+  (let [errors (validation/validate-contract payload)]
     (if (seq errors)
       (record-failure resource kind
                       {:failure :contract :for kind :response payload :errors errors
@@ -289,7 +243,7 @@
   payload adjudicates as a contract failure, a valid one installs and fetches only when the URL
   has moved past what was embedded."
   [resource embed]
-  (let [errors (validate-contract embed)]
+  (let [errors (validation/validate-contract embed)]
     (if (seq errors)
       (with-trailing-fetch
         (record-failure resource :read
@@ -353,15 +307,19 @@
   (let [new-intent (query/canonicalize-query (merge (:url-intent resource) (:query-patch payload)))
         merged     (assoc resource :url-intent new-intent)
         mode       (resolve-history-mode resource (:gesture-class payload))
-        moved?     (not= new-intent (:url-intent resource))
-        fetch?     (and (nil? (in-flight resource :read))
-                        (pending? merged))
-        r*         (if fetch? (start merged :read new-intent) merged)]
-    {:resource r*
-     :effects  (cond-> []
-                 moved?  (conj (url-write-fx r* new-intent mode))
-                 fetch?  (conj (fetch-fx r*))
-                 :always (conj (notify-fx r*)))}))
+        moved?     (not= new-intent (:url-intent resource))]
+    (with-trailing-fetch
+      {:resource merged
+       :effects  (cond-> []
+                   moved?  (conj (url-write-fx merged new-intent mode))
+                   :always (conj (notify-fx merged)))})))
+
+(defn- replace-intent
+  "The :url-changed transition. The address bar has already moved, so the intent is replaced
+  outright rather than merged, and never written back."
+  [resource intent]
+  (let [replaced (assoc resource :url-intent intent)]
+    (with-trailing-fetch {:resource replaced :effects [(notify-fx replaced)]})))
 
 (defn- route-intent
   "Hand a patch that names another resource to the executor, which resolves the name to an
@@ -408,14 +366,7 @@
       {:resource resource :effects [(diagnostic :unroutable-intent payload)]}
 
       :url-changed
-      (let [replaced (assoc resource :url-intent payload)
-            fetch?   (and (nil? (in-flight resource :read))
-                          (pending? replaced))
-            r*       (if fetch? (start replaced :read payload) replaced)]
-        {:resource r*
-         :effects  (cond-> []
-                     fetch? (conj (fetch-fx r*))
-                     :always (conj (notify-fx r*)))})
+      (replace-intent resource payload)
 
       :protocol-failed
       (if-not (fresh? resource :read (:request/id payload))

@@ -155,14 +155,18 @@
         {:keys [resource effects]} (resource/step r [:intent-patch patch])]
     (testing "the patch merges into :url-intent (sort preserved, direction updated)"
       (is (= {:sort "owner" :direction "desc"} (:url-intent resource))))
-    (testing "emits a scoped :replace url-write then a fetch for the new intent"
+    (testing "emits a scoped :replace url-write, notifies, then fetches the new intent. The
+              notify names the resource as the gesture left it, before the read opened: an intent
+              the value does not answer already reads as pending, so opening the read does not
+              change what a consumer sees"
       (is (= [[:url-write {:resource/id "tasks"
                            :params      {:sort "owner" :direction "desc"}
                            :mode        :replace}]
+              [:notify-consumers {:resource (assoc base :url-intent {:sort      "owner"
+                                                                     :direction "desc"})}]
               [:fetch {:method     "GET"
                        :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=owner"
-                       :request/id "tasks:1"}]
-              [:notify-consumers {:resource resource}]]
+                       :request/id "tasks:1"}]]
              effects)))))
 
 (deftest intent-patch-from-empty-intent
@@ -252,9 +256,21 @@
         {:keys [resource effects]} (resource/step r [:url-changed {:page "2"}])]
     (testing "the URL-derived intent replaces :url-intent (not merged)"
       (is (= {:page "2"} (:url-intent resource))))
-    (testing "fetches the new intent and does NOT write the URL (browser already moved)"
-      (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]
-              [:notify-consumers {:resource resource}]] effects)))))
+    (testing "notifies, then fetches the new intent, and does NOT write the URL (browser already
+              moved). The notify names the resource as the address bar left it, before the read
+              opened, which a consumer cannot tell apart: the new intent already reads as pending"
+      (is (= [[:notify-consumers {:resource (assoc base :url-intent {:page "2"})}]
+              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]]
+             effects)))))
+
+(deftest opening-a-read-does-not-change-the-projected-view
+  (testing "every transition that trails a fetch notifies before opening the read, so the notify
+            names the resource without it. That is safe because an intent the value does not
+            answer already projects as pending, which is what a consumer reads"
+    (let [before (assoc base :url-intent {:page "2"})
+          after  (:resource (resource/step before [:url-changed {:page "2"}]))]
+      (is (some? (:active-request after)) "the read did open")
+      (is (= (resource/project before) (resource/project after))))))
 
 (deftest accepted-response-installs-and-notifies
   (let [r (expecting base accepted)
@@ -351,25 +367,25 @@
       (is (= :contract (get-in resource [:last-failure :failure])))
       (is (nil? (:last-accepted resource)))
       (is (nil? (:active-request resource))))
-    (testing "the failure carries a structured :missing-field error with its path"
-      (let [errs (get-in resource [:last-failure :errors])]
-        (is (some #(and (= :missing-field (:code %))
-                        (= [:value 0 "status"] (:path %)))
-                  errs))))
+    (testing "the failure carries the errors that adjudicated it (which rule fired for which
+              payload is asserted directly in barebuild.validation-test)"
+      (is (seq (get-in resource [:last-failure :errors]))))
     (testing "consumers are notified"
       (is (= [[:notify-consumers {:resource resource}]] effects)))))
 
-(deftest accepted-wrong-type-is-a-contract-failure
-  (let [bad (assoc-in valid-accepted [:value 0 "owner"] 42)   ; owner should be a string
-        {:keys [resource]} (resource/step (expecting base bad) [:response bad])]
-    (is (= :contract (get-in resource [:last-failure :failure])))
-    (is (some #(= :wrong-type (:code %)) (get-in resource [:last-failure :errors])))))
-
-(deftest accepted-duplicate-id-is-a-contract-failure
-  (let [bad (assoc-in valid-accepted [:value 1 "id"] 1)   ; both rows now id 1
-        {:keys [resource]} (resource/step (expecting base bad) [:response bad])]
-    (is (= :contract (get-in resource [:last-failure :failure])))
-    (is (some #(= :duplicate-id (:code %)) (get-in resource [:last-failure :errors])))))
+(deftest a-shape-without-a-field-list-does-not-install
+  (testing "a shape carrying no field list declares nothing to check the rows against, so the
+            payload cannot be trusted and is not installed"
+    (let [bad (assoc valid-accepted :shape {:id-key "id"})
+          {:keys [resource]} (resource/step (expecting base bad) [:response bad])]
+      (is (= :contract (get-in resource [:last-failure :failure])))
+      (is (nil? (:last-accepted resource)))))
+  (testing "a shape declaring an EMPTY field list makes the opposite claim, that there is
+            nothing to check, and installs"
+    (let [ok (assoc valid-accepted :shape {:id-key "id" :fields []})
+          {:keys [resource]} (resource/step (expecting base ok) [:response ok])]
+      (is (= ok (:last-accepted resource)))
+      (is (nil? (:last-failure resource))))))
 
 (deftest network-failed-records-network-failure-and-notifies
   (let [prior (assoc base :last-accepted accepted

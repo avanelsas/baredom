@@ -7,6 +7,26 @@
 (def ^:private outcome-accepted "accepted")
 (def ^:private outcome-rejected "rejected")
 
+;; Conversion 1 reads every member the server sent, so every member is read through one of these
+;; guards. A member of the wrong kind yields nothing to read rather than throwing: a throw here
+;; rejects the fetch promise, and the edge classifies a rejected fetch as a transport failure,
+;; which would tell the user the server could not be reached when it answered.
+(defn- object->map
+  "`x` as a CLJS map when it is a JSON object, nil for anything else."
+  [x]
+  (when (object? x) (js->clj x)))
+
+(defn- array->vec
+  "`x` mapped through `f` when it is a JSON array, nil for anything else. An empty array maps to
+  an empty vector, so a list declared empty stays distinct from one not declared at all."
+  [f x]
+  (when (array? x) (mapv f x)))
+
+(defn- readable-object?
+  "True when a member is absent, so there is nothing to read, or is a JSON object, so it can be."
+  [x]
+  (or (nil? x) (object? x)))
+
 (defn- camel->kebab-keyword [s]
   (-> s
     (str/replace #"([a-z0-9])([A-Z])" "$1-$2")
@@ -18,16 +38,25 @@
   [m]
   (into {} (for [[k v] m] [(camel->kebab-keyword k) v])))
 
-(defn- accepted-structure-correct?
-  "Check if outcome has a value and a shape"
+(defn- accepted-defect
+  "The reason an accepted envelope cannot be read, or nil when it can. The query echo has to be
+  an object because an unreadable one coerced to the empty query would adopt as intent and
+  rewrite the address bar on the strength of a broken response. What a readable shape then
+  declares is the contract's business rather than the envelope's."
   [js-obj]
-  (and (some? (gobj/get js-obj "value"))
-       (some? (gobj/get js-obj "shape"))))
+  (let [shape (gobj/get js-obj "shape")]
+    (cond
+      (or (nil? (gobj/get js-obj "value"))
+          (nil? shape))                                  :missing-accepted-members
+      (not (object? shape))                              :malformed-shape
+      (not (readable-object? (gobj/get js-obj "query"))) :malformed-query)))
 
-(defn- rejected-structure-correct?
-  "Check to see if error has a value"
+(defn- rejected-defect
+  "The reason a rejected envelope cannot be read, or nil when it can."
   [js-obj]
-  (some? (gobj/get js-obj "error")))
+  (cond
+    (nil? (gobj/get js-obj "error"))                   :missing-rejected-members
+    (not (readable-object? (gobj/get js-obj "query"))) :malformed-query))
 
 (defn- ->option
   "One selectable value for a field. `value` is opaque domain data and stays a string, `label` is
@@ -36,25 +65,29 @@
   {:value (gobj/get o "value") :label (gobj/get o "label")})
 
 (defn- ->field
-  "Transforms a js field descriptor to a CLJS field map."
+  "Transforms a js field descriptor to a CLJS field map. Options that are not a list are read as
+  no options at all, leaving the field bare exactly as an absent list does."
   [^js f]
-  (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
-    (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
-    (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))
-    (some? (gobj/get f "options"))  (assoc :options (mapv ->option (gobj/get f "options")))))
+  (let [options (array->vec ->option (gobj/get f "options"))]
+    (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
+      (some? (gobj/get f "required")) (assoc :required (gobj/get f "required"))
+      (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))
+      options                         (assoc :options options))))
 
 (defn- ->accepted
-  "Transforms js object to accepted CLJS map"
+  "Transforms js object to accepted CLJS map. A shape that declares no list of fields yields a
+  nil :fields, which the contract check reads as the missing declaration it is. An empty list
+  stays an empty list, a shape that genuinely declares nothing to check."
   [js-obj]
   (let [shape (gobj/get js-obj "shape")]
     {:outcome    :accepted
      :request/id (gobj/get js-obj "requestId")
      :revision   (gobj/get js-obj "revision")
-     :query      (query/canonicalize-query (js->clj (gobj/get js-obj "query")))
+     :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))
      :value      (js->clj (gobj/get js-obj "value"))
-     :page-info  (replace-js-keys (js->clj (gobj/get js-obj "pageInfo")))
+     :page-info  (replace-js-keys (object->map (gobj/get js-obj "pageInfo")))
      :shape      {:id-key (gobj/get shape "idKey")
-                  :fields (mapv ->field (gobj/get shape "fields"))}}))
+                  :fields (array->vec ->field (gobj/get shape "fields"))}}))
 
 (defn- ->rejected
   "Transforms js object to error CLJS map"
@@ -63,7 +96,7 @@
     {:outcome    :rejected
      :request/id (gobj/get js-obj "requestId")
      :revision   (gobj/get js-obj "revision")
-     :query      (query/canonicalize-query (js->clj (gobj/get js-obj "query")))
+     :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))
      :error      {:code    (keyword (gobj/get error "code"))
                   :message (gobj/get error "message")
                   :details (js->clj (gobj/get error "details"))}}))
@@ -82,14 +115,14 @@
     (let [outcome (gobj/get js-obj "outcome")]
       (cond
         (= outcome outcome-accepted)
-        (if (accepted-structure-correct? js-obj)
-          (->accepted js-obj)
-          (protocol-failure :missing-accepted-members {:outcome outcome}))
+        (if-let [defect (accepted-defect js-obj)]
+          (protocol-failure defect {:outcome outcome})
+          (->accepted js-obj))
 
         (= outcome outcome-rejected)
-        (if (rejected-structure-correct? js-obj)
-          (->rejected js-obj)
-          (protocol-failure :missing-rejected-members {:outcome outcome}))
+        (if-let [defect (rejected-defect js-obj)]
+          (protocol-failure defect {:outcome outcome})
+          (->rejected js-obj))
 
         :else
         (protocol-failure :unknown-outcome {:outcome outcome})))))
