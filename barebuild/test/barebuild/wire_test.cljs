@@ -105,6 +105,59 @@
     (is (= {"field" "bogus"} (get-in r [:error :details])) "details opaque -> string keys")
     (is (nil? (:protocol-failure r)) "a rejected response is NOT a protocol failure")))
 
+(defn- accepted-with
+  "A minimal accepted envelope carrying `extra`, for probing one member at a time."
+  [extra]
+  (clj->js (merge {"outcome" "accepted"
+                   "value"   []
+                   "shape"   {"idKey" "id" "fields" []}}
+                  extra)))
+
+(deftest fields-declared-empty-differ-from-fields-not-declared
+  (testing "an empty list is a shape declaring there is nothing to check"
+    (is (= [] (get-in (wire/parse-envelope (accepted-with {})) [:shape :fields]))))
+  (testing "no list at all declares nothing, which the contract check reports as missing"
+    (is (nil? (get-in (wire/parse-envelope
+                       (clj->js {"outcome" "accepted" "value" [] "shape" {"idKey" "id"}}))
+                      [:shape :fields]))))
+  (testing "a fields member that is not a list is no declaration either, and does not throw"
+    (is (nil? (get-in (wire/parse-envelope
+                       (clj->js {"outcome" "accepted" "value" []
+                                 "shape"   {"idKey" "id" "fields" {"owner" "string"}}}))
+                      [:shape :fields])))))
+
+(deftest a-member-of-the-wrong-kind-does-not-crash-the-parse
+  (testing "page info that is not an object reads as none. A throw here would reject the fetch
+            promise, and the edge classifies a rejected fetch as an unreachable server, so a
+            server that answered would be reported as one that could not be reached"
+    (is (= {} (:page-info (wire/parse-envelope (accepted-with {"pageInfo" 7}))))))
+  (testing "options that are not a list leave the field bare, exactly as absent options do"
+    (let [[field] (get-in (wire/parse-envelope
+                           (clj->js {"outcome" "accepted" "value" []
+                                     "shape"   {"idKey"  "id"
+                                                "fields" [{"key"     "projectId"
+                                                           "type"    "string"
+                                                           "options" "p-1"}]}}))
+                          [:shape :fields])]
+      (is (= {:key "projectId" :type :string} field)))))
+
+(deftest an-unreadable-envelope-member-is-a-protocol-failure
+  (testing "a shape that is not an object carries no declaration to read"
+    (is (= :malformed-shape
+           (get-in (wire/parse-envelope
+                    (clj->js {"outcome" "accepted" "value" [] "shape" "id"}))
+                   [:protocol-failure :reason]))))
+  (testing "an unreadable query echo fails the envelope rather than coercing to the empty query.
+            The empty query would adopt as intent and rewrite the address bar on the strength of
+            a broken response"
+    (is (= :malformed-query
+           (get-in (wire/parse-envelope (accepted-with {"query" 7}))
+                   [:protocol-failure :reason])))
+    (is (= :malformed-query
+           (get-in (wire/parse-envelope
+                    (clj->js {"outcome" "rejected" "error" {"code" "nope"} "query" [1 2]}))
+                   [:protocol-failure :reason])))))
+
 (deftest protocol-failures
   (testing "nil / empty body"
     (is (= {:reason :empty-body} (:protocol-failure (wire/parse-envelope nil)))))
