@@ -1,9 +1,9 @@
 (ns barebuild.elements.server-resource.server-resource
   (:require
-   [barebuild.decorator :as decorator]
    [barebuild.elements.server-resource.model :as model]
    [barebuild.recorder :as recorder]
    [barebuild.resource :as resource]
+   [barebuild.transport :as transport]
    [barebuild.utils.query :as query]
    [barebuild.utils.request :as request]
    [barebuild.utils.url :as url]
@@ -51,7 +51,7 @@
     (when-not (or (str/blank? text) obj)
       (js/console.error "[server-resource]" model/attr-headers
                         "is not a JSON object, ignoring it:" text))
-    (model/normalize-headers (js->clj obj))))
+    (request/normalize-headers (js->clj obj))))
 
 (defn- read-credentials
   "The fetch credentials mode from the `credentials` attribute. An unrecognised mode is reported
@@ -76,110 +76,12 @@
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
-(defn- fetch-init [{:keys [method headers body credentials]}]
-  (clj->js (cond-> {:method method}
-             headers     (assoc :headers headers)
-             credentials (assoc :credentials credentials)
-             body        (assoc :body (js/JSON.stringify (clj->js body))))))
-
-(defn- decorator-failed!
-  "Classify a decorator that could not produce headers as a network failure value, so a consumer
-  branches on it like any other. The request is never sent."
+(defn- delivery-threw!
+  "A throw while delivering a result is a defect in this code, not something the transport did.
+  Classifying it as a transport failure reported a server that could not be reached for a server
+  that had answered."
   [e]
-  (js/console.error "[server-resource] request decorator failed, request not sent:" e)
-  {:failure {:network-failure {:kind :decorator}}})
-
-(defn- decorator-headers
-  "The headers a decorator returned. A JS object is read as readily as a CLJS map, since either is
-  natural to write at the edge. Nil and an empty map both mean 'attach nothing', anything else
-  that is not a map is reported rather than silently attaching nothing."
-  [extra]
-  (let [returned (js->clj extra)]
-    (when-not (or (nil? returned) (map? returned))
-      (js/console.error "[server-resource] request decorator returned no map of headers:" extra))
-    (model/normalize-headers returned)))
-
-(defn- request-init
-  "A promise of `{:init <fetch init>}` for request `m`, with the registered decorator's headers
-  merged on top of the resource's own, or `{:failure <network-failure value>}` when the decorator
-  throws or rejects, classified at the edge exactly as a bad response is. The two arms are tagged
-  rather than told apart by shape, because one is a JS object and the other a CLJS map. Without a
-  decorator registered there is nothing to await, so an app that uses none pays nothing."
-  [m]
-  (if-let [decorate (decorator/current)]
-    (-> (js/Promise.resolve)
-      (.then (fn [] (decorate m)))
-      (.then (fn [extra]
-               {:init (fetch-init (request/merge-request-headers m (decorator-headers extra)))}))
-      (.catch decorator-failed!))
-    (js/Promise.resolve {:init (fetch-init m)})))
-
-(def ^:private abort-error-name "AbortError")
-(def ^:private timeout-error-name "TimeoutError")
-
-(defn- timeout-error [ms]
-  (js/DOMException. (str "request exceeded its " ms "ms budget") timeout-error-name))
-
-(defn- aborted
-  "A promise that rejects once `controller` aborts, carrying the signal's own reason. Without it a
-  teardown could not end an operation that has no fetch to reject yet, a decorator still waiting
-  on its token, and the request would stay pending until its budget elapsed."
-  [^js controller]
-  (js/Promise.
-   (fn [_resolve reject]
-     (let [^js signal (.-signal controller)
-           fail       (fn [] (reject (.-reason signal)))]
-       (if (.-aborted signal)
-         (fail)
-         (.addEventListener signal "abort" fail))))))
-
-(defn- expiring
-  "A promise that rejects once `ms` has passed, aborting `controller` on the way so the socket is
-  released. The same TimeoutError travels both paths, so whichever of the racers settles first
-  classifies identically. Stamps its handle into `timer` for the caller to cancel."
-  [ms ^js controller timer]
-  (js/Promise.
-   (fn [_resolve reject]
-     (let [e (timeout-error ms)]
-       (reset! timer (js/setTimeout (fn [] (.abort controller e) (reject e)) ms))))))
-
-(defn- bounded
-  "Race `operation` against the two things that end a request early: an abort, which a disconnect
-  raises, and the budget running out. Racing rather than leaving it to the fetch to reject is what
-  covers a decorator that never settles, where there is no fetch yet for either to cancel."
-  [operation ms ^js controller]
-  (let [timer  (atom nil)
-        racers (cond-> [operation (aborted controller)]
-                 ms (conj (expiring ms controller timer)))]
-    (-> (js/Promise.race (into-array racers))
-      (.finally (fn [] (js/clearTimeout @timer))))))
-
-(defn- transport-error
-  "Classify a rejected request: a spent budget, or a transport failure."
-  [^js e ms]
-  (if (= timeout-error-name (.-name e))
-    {:kind :timeout :after ms}
-    {:kind :offline}))
-
-(defn- parse-body
-  "Read the ok response body as text (not .json) and parse it into an envelope. A nil body parses
-  to an empty-body protocol marker."
-  [^js resp]
-  (.then (.text resp)
-         (fn [^js body]
-           (wire/parse-envelope (try (js/JSON.parse body) (catch :default _ nil))))))
-
-(defn- fetch-envelope
-  "Fetch and classify the outcome as a value: a parsed envelope on a 2xx response, a
-  network-failure marker carrying the HTTP status on a non-ok response, or a protocol-failure
-  marker on an unparseable body. A genuine transport rejection (offline, DNS, CORS, abort) rejects
-  the promise and is classified by the caller. Returns a promise of the classified result."
-  [url init]
-  (.then (js/fetch url init)
-         (fn [^js resp]
-           (if (.-ok resp)
-             (parse-body resp)
-             {:network-failure {:kind :http-status :status (.-status resp)}}))))
+  (js/console.error "[server-resource] delivering a result threw:" e))
 
 (defn- deliver-read! [^js el result request-id]
   (cond
@@ -188,33 +90,29 @@
                                                                    :error      (:network-failure result)}])
     :else                      (handle-event! el [:response result])))
 
-(defn- perform!
-  "The request pipeline shared by reads and writes: decorate, send, and give up when the budget
-  runs out. Resolves to a classified result, or rejects for the caller to classify."
-  [m ^js controller]
-  (bounded (-> (request-init m)
-             (.then (fn [{:keys [init failure]}]
-                      (or failure
-                          (fetch-envelope (:url m)
-                                          (js/Object.assign init
-                                                            #js {:signal (.-signal controller)}))))))
-           (:timeout m)
-           controller))
+(defn- read-rejected!
+  "Report a read that never arrived. An abort is intentional, a disconnect or a supersede, so it
+  is not a failure."
+  [^js el request-id timeout ^js e]
+  (when-not (transport/abort-error? e)
+    (handle-event! el [:network-failed {:request/id request-id
+                                        :error      (transport/transport-error e timeout)}])))
 
-(defn- execute-fetch! [^js el m]
+(defn- execute-fetch!
+  "Send a read and deliver what comes back. The rejection handler rides `then` rather than a
+  trailing `catch`, so it sees only what the request did and never what delivering its result
+  did."
+  [^js el m]
   (let [controller (js/AbortController.)
         request-id (:request/id m)]
     ;; stashed before the decorator is awaited, so an abort landing in that window still reaches
     ;; this request: fetch rejects immediately on an already-aborted signal. Kept with its request
     ;; id so the :abort effect aborts the request it names rather than whatever is stashed.
     (du/setv-untraced! el k-abort {:request/id request-id :controller controller})
-    (-> (perform! m controller)
-      (.then (fn [result] (deliver-read! el result request-id)))
-      (.catch (fn [^js e]
-                ;; an aborted fetch is intentional (disconnect / supersede), not a failure
-                (when-not (= abort-error-name (.-name e))
-                  (handle-event! el [:network-failed {:request/id request-id
-                                                      :error      (transport-error e (:timeout m))}])))))))
+    (-> (.then (transport/perform! m controller)
+               (fn [result] (deliver-read! el result request-id))
+               (fn [^js e] (read-rejected! el request-id (:timeout m) e)))
+      (.catch delivery-threw!))))
 
 (defn- deliver-write! [^js el result write-id]
   (cond
@@ -223,16 +121,24 @@
                                                                  :error    (:network-failure result)}])
     :else                      (handle-event! el [:write-ack (assoc result :request/id write-id)])))
 
-(defn- execute-write! [^js el m]
+(defn- write-rejected!
+  "Report a write whose outcome the client never learned."
+  [^js el write-id timeout ^js e]
+  (handle-event! el [:write-failed {:request/id write-id
+                                    :error      (transport/transport-error e timeout)}]))
+
+(defn- execute-write!
+  "Send a write and deliver its ack. As with a read, the rejection handler rides `then`, so a
+  throw while delivering is not reported as a write that failed."
+  [^js el m]
   ;; the write's controller exists only so its budget can cancel it. It is never stashed in
   ;; k-abort, so a disconnect or a superseding read still leaves an in-flight write alone
   (let [controller (js/AbortController.)
         write-id   (:request/id m)]
-    (-> (perform! m controller)
-      (.then (fn [result] (deliver-write! el result write-id)))
-      (.catch (fn [^js e]
-                (handle-event! el [:write-failed {:request/id write-id
-                                                  :error    (transport-error e (:timeout m))}]))))))
+    (-> (.then (transport/perform! m controller)
+               (fn [result] (deliver-write! el result write-id))
+               (fn [^js e] (write-rejected! el write-id (:timeout m) e)))
+      (.catch delivery-threw!))))
 
 (defn- find-resource
   "The <server-resource> on the page whose resolved id is `target-id`, or nil."

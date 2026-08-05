@@ -2,7 +2,22 @@
   "The request value `step` hands the executor on a :fetch or a :write effect. Everything past
   :url is absent rather than nil when it does not apply, so two requests that mean the same
   thing compare equal."
-  (:require [barebuild.utils.query :as query]))
+  (:require [barebuild.utils.query :as query]
+            [clojure.string :as str]))
+
+(defn- normalize-header
+  "One header entry as a lowercase-keyed string pair, or nil when the key or the value is blank."
+  [[k v]]
+  (let [header-name (-> (str k) str/trim str/lower-case)
+        value       (str v)]
+    (when-not (or (str/blank? header-name) (str/blank? value))
+      [header-name value])))
+
+(defn normalize-headers
+  [m]
+  (when (map? m)
+    (let [headers (into {} (keep normalize-header) m)]
+      (when (seq headers) headers))))
 
 (defn- request-headers
   [static-headers body?]

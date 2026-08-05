@@ -17,20 +17,6 @@
   [attr-value]
   (credentials-modes (str/trim (str attr-value))))
 
-(defn- normalize-header
-  "One header entry as a lowercase-keyed string pair, or nil when the key or the value is blank."
-  [[k v]]
-  (let [header-name (-> (str k) str/trim str/lower-case)
-        value       (str v)]
-    (when-not (or (str/blank? header-name) (str/blank? value))
-      [header-name value])))
-
-(defn normalize-headers
-  [m]
-  (when (map? m)
-    (let [headers (into {} (keep normalize-header) m)]
-      (when (seq headers) headers))))
-
 (def attr-timeout "timeout")
 
 ;; Public for test purposes only
