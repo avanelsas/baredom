@@ -31,13 +31,16 @@
     (callback (du/getv this k-child) (slice view) this)))
 
 (defn- install-apply-resource!
-  "Install the applyResource method a <server-resource> calls with each projected view.
+  "Install the applyResource method a <server-resource> calls with each projected view. Reads the
+   render and hook slots straight out of `register!`'s own config map, so adding a hook is a key
+   here rather than a seventh positional argument.
 
    The hook order is part of the contract: on-failure, then render, then on-pending and
    on-writing. The data is painted before the flags describing the transition that produced it,
    so when a consumer learns a write finished, the value that write returned is already on
    screen. A component that defers work while writing relies on this to resume."
-  [^js proto render-key render on-failure on-pending on-writing]
+  [^js proto {:keys [render render-key on-failure on-pending on-writing]
+              :or   {render-key :accepted}}]
   (.defineProperty js/Object proto "applyResource"
                    #js {:value
                         (fn apply-resource [view ctx]
@@ -71,7 +74,7 @@
   :render-key (fn [view]) -> the slice render draws, so render only fires when it changes.
   Defaults to the accepted envelope
   :observed-attributes — optional, defaults to #js []"
-  [{:keys [tag child-tag render on-failure on-pending on-connect on-writing observed-attributes render-key]}]
+  [{:keys [tag child-tag on-connect observed-attributes] :as config}]
   (component/register!
    tag
    {:observed-attributes  (or observed-attributes #js [])
@@ -80,5 +83,4 @@
                             (when on-connect (on-connect el)))
     :attribute-changed-fn (fn [_el _name _old _new] nil)
     :setup-prototype-fn   (fn [^js proto]
-                            (install-apply-resource! proto (or render-key :accepted)
-                                                     render on-failure on-pending on-writing))}))
+                            (install-apply-resource! proto config))}))
