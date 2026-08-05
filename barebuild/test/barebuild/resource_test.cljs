@@ -4,15 +4,18 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [barebuild.resource :as resource]))
 
+;; Built through the same constructor the element boots with, so a fixture cannot claim a shape
+;; the runtime never produces.
 (def base
-  {:resource/id   "tasks"
-   :endpoint      "/api/tasks"
-   :last-accepted nil})
+  (resource/initial {:resource/id "tasks"
+                     :endpoint    "/api/tasks"
+                     :url-intent  {}}))
 
 (def accepted
   {:outcome    :accepted
    :request/id "req-1"
    :revision   "tasks:v1"
+   :query      {}
    :value      [{"id" 1 "owner" "Alice"}]
    :shape      {:id-key "id" :fields [{:key "owner" :type :string}]}})
 
@@ -62,7 +65,7 @@
 
 (deftest connected-emits-fetch
   (let [r* (assoc base :request-count 1
-                       :active-request {:request/id "tasks:1" :query nil})]
+                       :active-request {:request/id "tasks:1" :query {}})]
     (is (= {:resource r*
             :effects  [[:notify-consumers {:resource base}]
                        [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]]}
@@ -195,8 +198,8 @@
         "merging a patch into a nil url-intent yields just the patch")))
 
 (deftest intent-patch-history-mode-from-gesture-class
-  (let [r (assoc base :history-policy {:navigation :push})]
-    (testing ":navigation resolves to :push via the resource's :history-policy"
+  (let [r base]
+    (testing ":navigation resolves to :push via the default :history-policy every boot carries"
       (let [{:keys [effects]} (resource/step r [:intent-patch {:query-patch {:page "2"}
                                                                :gesture-class :navigation}])
             [_ params] (first effects)]
@@ -367,6 +370,7 @@
   {:outcome    :accepted
    :request/id "req-3"
    :revision   "tasks:v1"
+   :query      {}
    :value      [{"id" 1 "owner" "Alice" "status" "todo"}
                 {"id" 2 "owner" "Bob"   "status" "done"}]
    :shape      {:id-key "id"
@@ -410,6 +414,7 @@
 
 (deftest network-failed-records-network-failure-and-notifies
   (let [prior (assoc base :last-accepted accepted
+                          :url-intent {:sort "owner"}
                           :active-request {:request/id "tasks:1" :query {:sort "owner"}})
         {:keys [resource effects]} (resource/step prior [:network-failed {:request/id "tasks:1"
                                                                           :error {:kind :offline}}])]
@@ -434,6 +439,7 @@
 
 (deftest protocol-failed-records-protocol-failure-and-notifies
   (let [prior  (assoc base :last-accepted accepted
+                           :url-intent {:sort "owner"}
                            :active-request {:request/id "tasks:1" :query {:sort "owner"}})
         marker {:protocol-failure {:reason :unknown-outcome :outcome "banana"}
                 :request/id "tasks:1"}
@@ -543,12 +549,14 @@
       (is (nil? (:active-request resource))))
     (testing "url-intent reverts to the last accepted query (T8)"
       (is (= {:sort "owner" :direction "asc"} (:url-intent resource))))
-    (testing "a corrective :replace url-write restores the URL; nothing trails; good value kept"
-      (is (some (fn [[fx m]] (and (= :url-write fx)
-                                  (= {:sort "owner" :direction "asc"} (:params m))
-                                  (= :replace (:mode m))))
-                effects))
-      (is (not-any? (fn [[fx _]] (= :fetch fx)) effects))
+    (testing "a corrective :replace url-write restores the URL and lands before the notify, so a
+              consumer is handed the reverted value with the address bar already matching it.
+              Nothing trails, and the good value is kept"
+      (is (= [[:url-write {:resource/id "tasks"
+                           :params      {:sort "owner" :direction "asc"}
+                           :mode        :replace}]
+              [:notify-consumers {:resource resource}]]
+             effects))
       (is (= good (:last-accepted resource))))))
 
 (deftest rejected-first-load-has-no-revert
@@ -605,7 +613,7 @@
 (deftest submit-write-starts-write-and-emits-write-effect
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete :id 7}])]
     (testing "an active write is recorded under a namespaced id, carrying the payload"
-      (is (= {:request/id "tasks:w1" :payload {:op :delete :id 7} :query nil} (:active-write resource)))
+      (is (= {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {}} (:active-write resource)))
       (is (true? (resource/writing? resource))))
     (testing "notify first (so the button disables), then the :write effect — which carries the
               request step already decided, not the payload for the executor to interpret"
@@ -621,7 +629,7 @@
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
-      (is (= {:request/id "tasks:w1" :payload payload :query nil} (:active-write resource)))
+      (is (= {:request/id "tasks:w1" :payload payload :query {}} (:active-write resource)))
       (is (= [[:notify-consumers {:resource resource}]
               [:write {:request/id "tasks:w1"
                        :method   "POST"
@@ -1061,7 +1069,7 @@
               one booted with an empty query are different states, and flattening them would
               hide the difference from a consumer that gates on the URL"
       (is (= {:sort "owner"} (:intent view)))
-      (is (nil? (:intent (resource/project base)))))))
+      (is (nil? (:intent (resource/project {})))))))
 
 (deftest project-derives-the-two-flags-as-booleans
   (testing "answered intent and no write in flight -> both false, checked strictly because a

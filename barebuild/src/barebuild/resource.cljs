@@ -4,6 +4,25 @@
             [barebuild.utils.request :as request]
             [barebuild.validation :as validation]))
 
+;; The resource value ----------------------------------------------------------
+
+;; Which gesture classes push a history entry rather than replace one.
+(def ^:private default-history-policy {:navigation :push})
+
+(defn initial
+  "The resource a fresh connection starts from, and the one place its shape is written down, so a
+  test fixture and what the element boots with cannot drift apart. `request-config` is whatever the
+  host declared as attributes, `carried` the write bookkeeping a reconnect inherits from the
+  connection before it. Both may name keys this does not, and both win over the defaults."
+  [{:keys [resource/id endpoint url-intent history-policy request-config carried]}]
+  (merge {:resource/id    id
+          :endpoint       endpoint
+          :last-accepted  nil
+          :url-intent     url-intent
+          :history-policy (or history-policy default-history-policy)}
+         request-config
+         carried))
+
 ;; The step outcome ------------------------------------------------------------
 ;; Every transition returns this shape: the resource the event left behind, and the effects the
 ;; executor must perform. Built here and nowhere else, so :effects is always a vector and a
@@ -36,11 +55,7 @@
   ([cause kind query extra]
    (merge extra {:failure cause :for kind :query query})))
 
-;; READ functionality ----------------------------------------------------------
-(defn- resolve-history-mode
-  "The history mode for `gesture-class`: :push for navigations, :replace otherwise."
-  [resource gesture-class]
-  (get (:history-policy resource) gesture-class :replace))
+;; Requests in flight, read and write alike ------------------------------------
 
 ;; The two kinds of request as data: where each one's in-flight record lives, where its counter
 ;; lives, and how its ids are named. One set of functions serves both, told apart only by the kind
@@ -69,23 +84,6 @@
   :headers, :timeout."
   [r]
   (select-keys r [:endpoint :credentials :headers :timeout]))
-
-(defn- read-request [r]
-  (let [{:keys [query] rid :request/id} (in-flight r :read)]
-    (request/request (assoc (transport-fields r)
-                            :method     "GET"
-                            :query      query
-                            :request-id rid))))
-
-(defn- fetch-fx
-  "The :fetch effect for r's in-flight read request."
-  [r]
-  (effect/fetch (read-request r)))
-
-(defn- url-write-fx
-  "The :url-write effect projecting `params` onto `resource`'s own URL scope, in `mode`."
-  [resource params mode]
-  (effect/url-write (:resource/id resource) params mode))
 
 (defn- start
   "`r` with an in-flight request of `kind` opened for `query`, numbered from that kind's counter
@@ -116,6 +114,20 @@
   "True when the intent moved on while the request of `kind` was in flight."
   [r kind]
   (not= (:url-intent r) (in-flight-query r kind)))
+
+;; The read, and when one is wanted --------------------------------------------
+
+(defn- read-request [r]
+  (let [{:keys [query] rid :request/id} (in-flight r :read)]
+    (request/request (assoc (transport-fields r)
+                            :method     "GET"
+                            :query      query
+                            :request-id rid))))
+
+(defn- fetch-fx
+  "The :fetch effect for r's in-flight read request."
+  [r]
+  (effect/fetch (read-request r)))
 
 (defn- read-failure-query
   "The query a read failure concerns, nil for a write failure. A write answers nothing about
@@ -164,7 +176,19 @@
   [outcome]
   (with-read outcome true))
 
-;; WRITE functionality ----------------------------------------------------------
+;; The URL projection ----------------------------------------------------------
+
+(defn- resolve-history-mode
+  "The history mode for `gesture-class`: :push for navigations, :replace otherwise."
+  [resource gesture-class]
+  (get (:history-policy resource) gesture-class :replace))
+
+(defn- url-write-fx
+  "The :url-write effect projecting `params` onto `resource`'s own URL scope, in `mode`."
+  [resource params mode]
+  (effect/url-write (:resource/id resource) params mode))
+
+;; Writes ----------------------------------------------------------------------
 
 ;; The write vocabulary as data: each op's method, whether it addresses the collection or a
 ;; member, and whether it carries a body. :move repositions a member and carries only the
@@ -196,16 +220,25 @@
   [r]
   (some? (in-flight r :write)))
 
+;; Installing an answer, read or write -----------------------------------------
+
 (defn- accept
   "`resource` holding `payload` as the value it answers with, retiring whatever failure preceded
   it."
   [resource payload]
   (assoc resource :last-accepted payload :last-failure nil))
 
-(defn- record-failure
-  "Clear the in-flight request of `kind`, stash `failure`, notify."
+(defn- with-failure
+  "`resource` with the in-flight request of `kind` dropped and `failure` stashed as what it now
+  answers with."
   [resource kind failure]
-  (let [resource* (assoc (clear-in-flight resource kind) :last-failure failure)]
+  (assoc (clear-in-flight resource kind) :last-failure failure))
+
+(defn- record-failure
+  "`with-failure`, notified. What every transition that only records a failure wants. One that
+  also moves the intent builds its own outcome off `with-failure` instead."
+  [resource kind failure]
+  (let [resource* (with-failure resource kind failure)]
     (result resource* [(effect/notify-consumers resource*)])))
 
 (defn- transport-members
@@ -237,7 +270,8 @@
                      correct? (conj (url-write-fx r* echo :replace))
                      :always  (conj (effect/notify-consumers r*))))))))
 
-;; Projection  ------ What a consumer sees
+;; What a consumer sees --------------------------------------------------------
+
 (defn project
   "The fields a consumer may depend on, everything else being internal bookkeeping. The accepted
   envelope loses its :request/id on the way out, so two identical refetches project equal views."
@@ -248,7 +282,8 @@
    :pending?  (pending? resource)
    :writing?  (writing? resource)})
 
-;; CONNECT / SSR boot embed (§7.4) ----------------------------------------------
+;; Transition helpers ----------------------------------------------------------
+;; The first three are the SSR boot embed (§7.4).
 
 (defn- boot
   "The initial connect for the current intent, with an optional leading diagnostic for an ignored
@@ -284,15 +319,6 @@
       (result r* [(effect/notify-consumers r*)]))
     (boot resource :stale-rejected-embed)))
 
-(defn- on-connected
-  "A usable SSR boot embed installs first, otherwise a plain first fetch for the current intent."
-  [resource embed]
-  (cond
-    (:protocol-failure embed)      (boot resource :broken-embed)
-    (= :accepted (:outcome embed)) (install-accepted-embed resource embed)
-    (= :rejected (:outcome embed)) (install-rejected-embed resource embed)
-    :else                          (boot resource nil)))
-
 (defn- targets-sibling?
   "True when `target-id` names a resource other than `resource`'s own. A nil target, or its own
   id, drives the resource itself."
@@ -307,14 +333,14 @@
   (let [accepted-query (get-in resource [:last-accepted :query])
         revert?        (and (= (:query payload) (:url-intent resource))
                             (some? (:last-accepted resource)))
-        cleared        (assoc (clear-in-flight resource :read)
-                              :last-failure (failure :rejected :read (in-flight-query resource :read)
-                                                     {:response payload}))
-        resource*      (if revert? (assoc cleared :url-intent accepted-query) cleared)]
-    (result resource*
-            (if revert?
-              [(url-write-fx resource* accepted-query :replace) (effect/notify-consumers resource*)]
-              [(effect/notify-consumers resource*)]))))
+        cleared        (with-failure resource :read
+                                     (failure :rejected :read (in-flight-query resource :read)
+                                              {:response payload}))
+        r*             (cond-> cleared
+                         revert? (assoc :url-intent accepted-query))]
+    (result r* (cond-> []
+                 revert? (conj (url-write-fx r* accepted-query :replace))
+                 :always (conj (effect/notify-consumers r*))))))
 
 (defn- apply-intent-patch
   "Merge a patch into the resource's own intent. The URL is written whenever the intent moved, and
@@ -336,6 +362,15 @@
   (result resource [(effect/route-intent (:target-id payload) (dissoc payload :target-id))]))
 
 ;; Transitions, one per event, each named after it, each returning a `result` -------
+
+(defn- on-connected
+  "A usable SSR boot embed installs first, otherwise a plain first fetch for the current intent."
+  [resource embed]
+  (cond
+    (:protocol-failure embed)      (boot resource :broken-embed)
+    (= :accepted (:outcome embed)) (install-accepted-embed resource embed)
+    (= :rejected (:outcome embed)) (install-rejected-embed resource embed)
+    :else                          (boot resource nil)))
 
 (defn- on-url-changed
   "The address bar has already moved, so the intent is replaced outright rather than merged, and
