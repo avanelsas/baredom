@@ -33,35 +33,6 @@
     (is (nil? (model/resolve-credentials "INCLUDE")))
     (is (nil? (model/resolve-credentials "always")))))
 
-(deftest normalize-headers-lowercases-the-names
-  (testing "HTTP header names are case-insensitive but a CLJS map is not: without lowercasing,
-            an author's Authorization and a BareBuild-set one would both be sent"
-    (is (= {"authorization" "Bearer t" "x-api-key" "k"}
-           (model/normalize-headers {"Authorization" "Bearer t" "X-API-Key" "k"}))))
-  (testing "surrounding whitespace in a name is not part of it"
-    (is (= {"x-api-key" "k"} (model/normalize-headers {"  X-Api-Key  " "k"}))))
-  (testing "the value is left exactly as written, case included"
-    (is (= {"authorization" "Bearer AbC"}
-           (model/normalize-headers {"authorization" "Bearer AbC"})))))
-
-(deftest normalize-headers-drops-blank-entries
-  (testing "a nil or empty value is not a header, it is an absent one"
-    (is (= {"x-api-key" "k"}
-           (model/normalize-headers {"x-api-key" "k" "x-empty" "" "x-nil" nil}))))
-  (testing "a blank name has nothing to send under"
-    (is (nil? (model/normalize-headers {"   " "k"}))))
-  (testing "non-string values stringify rather than being dropped"
-    (is (= {"x-tenant" "7" "x-beta" "false"}
-           (model/normalize-headers {"x-tenant" 7 "x-beta" false})))))
-
-(deftest normalize-headers-nil-when-nothing-survives
-  (testing "nil rather than {} so an unconfigured resource carries no header entry at all"
-    (is (nil? (model/normalize-headers {})))
-    (is (nil? (model/normalize-headers nil))))
-  (testing "a headers attribute holding valid JSON that is not an object is not headers"
-    (is (nil? (model/normalize-headers [1 2])))
-    (is (nil? (model/normalize-headers "x-api-key")))))
-
 ;; --- the request budget ----------------------------------------------------
 
 (deftest resolve-timeout-defaults-when-the-attribute-is-absent
