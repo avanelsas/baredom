@@ -3,6 +3,25 @@
             [barebuild.utils.request :as request]
             [barebuild.validation :as validation]))
 
+;; The step outcome ------------------------------------------------------------
+;; Every transition returns this one shape: the resource the event left behind and the effects
+;; the executor must perform. Built here and nowhere else, so the two keys have one spelling.
+(defn- result
+  ([resource] (result resource []))
+  ([resource effects] {:resource resource :effects effects}))
+
+(defn- diagnostic
+  "A diagnostic effect value, optionally carrying `detail` the executor prints beside the code.
+  The executor only console.debugs it, it drives no state."
+  ([code] [:diagnostic {:code code}])
+  ([code detail] [:diagnostic {:code code :detail detail}]))
+
+(defn- ignored
+  "The event moved nothing, `code` names why. Every event this resource declines to act on is
+  answered this way rather than in silence, so a gesture that went nowhere still reaches the log."
+  ([resource code] (result resource [(diagnostic code)]))
+  ([resource code detail] (result resource [(diagnostic code detail)])))
+
 ;; READ functionality ----------------------------------------------------------
 (defn- resolve-history-mode
   "Push for navigations, replace otherwise (default)."
@@ -52,6 +71,21 @@
   "The :url-write effect projecting `params` onto the resource's URL scope, in `mode`."
   [resource params mode]
   [:url-write {:resource/id (:resource/id resource) :params params :mode mode}])
+
+(defn- abort-fx
+  "The :abort effect ending the request named by `request-id`."
+  [request-id]
+  [:abort {:request/id request-id}])
+
+(defn- write-fx
+  "The :write effect carrying a built write `request`."
+  [request]
+  [:write request])
+
+(defn- route-intent-fx
+  "The :route-intent effect handing `patch` to the resource named `target-id`."
+  [target-id patch]
+  [:route-intent {:resource/id target-id :patch patch}])
 
 (defn- start
   "Open an in-flight request of `kind` in `r`, numbered from that kind's counter and named from
@@ -106,21 +140,20 @@
              (not= intent (read-failure-query (:last-failure r)))))))
 
 (defn- with-read
-  "Open a read for the current intent when `wanted?`, appending its :fetch to `result`. Skipped
+  "Open a read for the current intent when `wanted?`, appending its :fetch to `outcome`. Skipped
   while a read is already in flight, since one is on its way. Every read a transition decides to
   open goes through here, so the decision is written down once and only its `wanted?` varies."
-  [{:keys [resource effects] :as result} wanted?]
+  [{:keys [resource effects] :as outcome} wanted?]
   (if (and wanted? (nil? (in-flight resource :read)))
     (let [r* (start resource :read (:url-intent resource))]
-      {:resource r*
-       :effects  (conj (vec effects) (fetch-fx r*))})
-    result))
+      (result r* (conj (vec effects) (fetch-fx r*))))
+    outcome))
 
 (defn- with-trailing-fetch
   "Follow a transition that cleared the active request with a read for the current intent, when
   the value does not already answer it."
-  [{:keys [resource] :as result}]
-  (with-read result (pending? resource)))
+  [{:keys [resource] :as outcome}]
+  (with-read outcome (pending? resource)))
 
 (defn- with-reconciling-fetch
   "Follow a write whose outcome the client cannot know with a re-read. The request may have
@@ -128,8 +161,8 @@
   learn whether it did, and rendering the old view as if nothing happened would make the user's
   retry a duplicate. Wanted whatever the value claims to answer, since what it claims is exactly
   what the failed write may have invalidated."
-  [result]
-  (with-read result true))
+  [outcome]
+  (with-read outcome true))
 
 ;; WRITE functionality ----------------------------------------------------------
 
@@ -184,17 +217,20 @@
     [(url-write-fx resource echo :replace) (notify-fx resource)]
     [(notify-fx resource)]))
 
-(defn- diagnostic
-  "A diagnostic effect value, optionally carrying `detail` the executor prints beside the code.
-  The executor only console.debugs it, it drives no state."
-  ([code] [:diagnostic {:code code}])
-  ([code detail] [:diagnostic {:code code :detail detail}]))
-
 (defn- record-failure
   "Clear the in-flight `kind` read-write-data, stash the failure, notify."
   [resource kind failure]
   (let [resource* (assoc (clear-in-flight resource kind) :last-failure failure)]
-    {:resource resource* :effects [(notify-fx resource*)]}))
+    (result resource* [(notify-fx resource*)])))
+
+(defn- failure-detail
+  "The part of a failure value that says what went wrong: a server whose answer could not be read
+  (:protocol), or an answer that never arrived (:network). Reads and writes classify the same two
+  ways, so both build it here."
+  [kind payload]
+  (case kind
+    :protocol {:failure :protocol :detail (:protocol-failure payload)}
+    :network  {:failure :network  :error  (:error payload)}))
 
 (defn- install-envelope
   "Install an accepted envelope that answered the `kind` read-write-data. Since a write returns the full
@@ -210,8 +246,7 @@
       (let [adopt?                      (not (drifted? resource kind))
             {:keys [resource correct?]} (install-accepted (clear-in-flight resource kind)
                                                           payload adopt?)]
-        {:resource resource
-         :effects  (accepted-effects resource (:query payload) correct?)}))))
+        (result resource (accepted-effects resource (:query payload) correct?))))))
 
 ;; Projection  ------ What a consumer sees
 (defn project
@@ -233,10 +268,9 @@
   embed that was ignored (broken, or a stale rejection)."
   [resource diag-code]
   (let [r* (start resource :read (:url-intent resource))]
-    {:resource r*
-     :effects  (cond-> []
+    (result r* (cond-> []
                  diag-code (conj (diagnostic diag-code))
-                 :always   (conj (fetch-fx r*) (notify-fx r*)))}))
+                 :always   (conj (fetch-fx r*) (notify-fx r*))))))
 
 (defn- connect-accepted-embed
   "Install an accepted boot embed exactly as a network response: validate the contract, a broken
@@ -253,8 +287,8 @@
       (let [installed (:resource (install-accepted resource embed false))]
         (if (pending? installed)
           (let [r* (start installed :read (:url-intent installed))]
-            {:resource r* :effects [(notify-fx r*) (fetch-fx r*)]})
-          {:resource installed :effects [(notify-fx installed)]})))))
+            (result r* [(notify-fx r*) (fetch-fx r*)]))
+          (result installed [(notify-fx installed)]))))))
 
 (defn- connect-rejected-embed
   "A rejected boot embed the server already adjudicated. When its echo matches intent it installs
@@ -263,7 +297,7 @@
   [resource embed]
   (if (= (:query embed) (:url-intent resource))
     (let [r* (assoc resource :last-failure {:failure :rejected :for :read :response embed :query (:query embed)})]
-      {:resource r* :effects [(notify-fx r*)]})
+      (result r* [(notify-fx r*)]))
     (boot-fetch resource :stale-rejected-embed)))
 
 (defn- connect
@@ -295,10 +329,10 @@
                               :last-failure {:failure :rejected :for :read :response payload
                                              :query (requested-query resource)})
         resource*      (if revert? (assoc cleared :url-intent accepted-query) cleared)]
-    {:resource resource*
-     :effects  (if revert?
-                 [(url-write-fx resource* accepted-query :replace) (notify-fx resource*)]
-                 [(notify-fx resource*)])}))
+    (result resource*
+            (if revert?
+              [(url-write-fx resource* accepted-query :replace) (notify-fx resource*)]
+              [(notify-fx resource*)]))))
 
 (defn- apply-intent-patch
   "Merge a patch into the resource's own intent. The URL is written whenever the intent moved,
@@ -309,25 +343,105 @@
         mode       (resolve-history-mode resource (:gesture-class payload))
         moved?     (not= new-intent (:url-intent resource))]
     (with-trailing-fetch
-      {:resource merged
-       :effects  (cond-> []
-                   moved?  (conj (url-write-fx merged new-intent mode))
-                   :always (conj (notify-fx merged)))})))
+      (result merged (cond-> []
+                       moved?  (conj (url-write-fx merged new-intent mode))
+                       :always (conj (notify-fx merged)))))))
 
 (defn- replace-intent
   "The :url-changed transition. The address bar has already moved, so the intent is replaced
   outright rather than merged, and never written back."
   [resource intent]
   (let [replaced (assoc resource :url-intent intent)]
-    (with-trailing-fetch {:resource replaced :effects [(notify-fx replaced)]})))
+    (with-trailing-fetch (result replaced [(notify-fx replaced)]))))
 
 (defn- route-intent
   "Hand a patch that names another resource to the executor, which resolves the name to an
   element. This resource's own value does not move."
   [resource payload]
-  {:resource resource
-   :effects  [[:route-intent {:resource/id (:target-id payload)
-                              :patch       (dissoc payload :target-id)}]]})
+  (result resource [(route-intent-fx (:target-id payload) (dissoc payload :target-id))]))
+
+;; Transitions — one per event, each named, each returning a `result` --------------
+
+(defn- install-response
+  "The :response transition. A response for a request no longer in flight answers a question the
+  resource has already left behind, so it is ignored."
+  [resource payload]
+  (if-not (installable? resource payload)
+    (ignored resource :stale-response)
+    (case (:outcome payload)
+      :accepted (with-trailing-fetch (install-envelope resource :read payload))
+      :rejected (with-trailing-fetch (install-rejection resource payload))
+      (result resource))))
+
+(defn- patch-intent
+  "The :intent-patch transition. An intent naming a sibling is not this resource's to apply. `step`
+  says where it goes and the executor only resolves that name to an element, so the routing is in
+  the effect value."
+  [resource payload]
+  (if (targets-sibling? resource (:target-id payload))
+    (route-intent resource payload)
+    (apply-intent-patch resource payload)))
+
+(defn- fail-read
+  "The :protocol-failed and :network-failed transitions, which differ only in `kind`. Either way
+  the read produced no answer, so the intent is still unanswered and a fresh read follows."
+  [resource payload kind]
+  (if-not (fresh? resource :read (:request/id payload))
+    (ignored resource :stale-failure)
+    (with-trailing-fetch
+      (record-failure resource :read
+                      (assoc (failure-detail kind payload)
+                             :for   :read
+                             :query (requested-query resource))))))
+
+(defn- disconnect
+  "The :disconnected transition. An in-flight read is abandoned, since nothing is left to render
+  it into. An in-flight write is left alone: its outcome still matters to whoever reconnects."
+  [resource]
+  (if-let [id (:request/id (in-flight resource :read))]
+    (result (clear-in-flight resource :read) [(abort-fx id)])
+    (result resource)))
+
+(defn- submit-write
+  "The :submit-write transition. One write at a time, so a submit landing while another is in
+  flight is ignored, and a payload the op vocabulary cannot express is reported rather than sent."
+  [resource payload]
+  (if (writing? resource)
+    (ignored resource :stale-write)
+    (let [resource* (start resource :write (:url-intent resource) {:payload payload})
+          write-id  (:request/id (in-flight resource* :write))]
+      (if-let [request (write-request resource* write-id payload (:url-intent resource))]
+        (result resource* [(notify-fx resource*) (write-fx request)])
+        (ignored resource :unsupported-write)))))
+
+(defn- install-ack
+  "The :write-ack transition. An accepted ack carries the full post-mutation state, so it installs
+  exactly as a read's envelope does. A rejection is the server saying no, and stands."
+  [resource payload]
+  (if-not (fresh? resource :write (:request/id payload))
+    (ignored resource :stale-write)
+    (if (= :accepted (:outcome payload))
+      (with-trailing-fetch (install-envelope resource :write payload))
+      (record-failure resource :write
+                      {:failure :rejected :for :write :response payload
+                       :query   (:query (in-flight resource :write))}))))
+
+(defn- fail-write
+  "The :write-failed transition. Every failure reaching here left the write's outcome unknown: the
+  request may have committed before the connection dropped, the budget ran out, or the body came
+  back unreadable. Only an explicit :rejected ack, which `install-ack` handles, is the server
+  saying no."
+  [resource payload]
+  (if-not (fresh? resource :write (:request/id payload))
+    (ignored resource :stale-write)
+    (let [write (in-flight resource :write)
+          kind  (if (:protocol-failure payload) :protocol :network)]
+      (with-reconciling-fetch
+        (record-failure resource :write
+                        (assoc (failure-detail kind payload)
+                               :for   :write
+                               :write write
+                               :query (:query write)))))))
 
 ;; Public for test purposes only
 (def effect-tags
@@ -342,96 +456,21 @@
   (let [[event-k payload] event]
     (case event-k
       ;; reads
-      :connected
-      (connect resource (:embed payload))
-
-      :response
-      (if-not (installable? resource payload)
-        {:resource resource :effects [(diagnostic :stale-response)]}
-        (case (:outcome payload)
-          :accepted (with-trailing-fetch (install-envelope resource :read payload))
-          :rejected (with-trailing-fetch (install-rejection resource payload))
-          {:resource resource :effects []}))
-
-      ;; An intent naming a sibling is not this resource's to apply. step says where it goes and
-      ;; the executor only resolves that name to an element, so the routing is in the effect value.
-      :intent-patch
-      (if (targets-sibling? resource (:target-id payload))
-        (route-intent resource payload)
-        (apply-intent-patch resource payload))
-
+      :connected         (connect resource (:embed payload))
+      :response          (install-response resource payload)
+      :intent-patch      (patch-intent resource payload)
       ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
       ;; way, so we register it here.
-      :intent-unroutable
-      {:resource resource :effects [(diagnostic :unroutable-intent payload)]}
-
-      :url-changed
-      (replace-intent resource payload)
-
-      :protocol-failed
-      (if-not (fresh? resource :read (:request/id payload))
-        {:resource resource :effects [(diagnostic :stale-failure)]}
-        (with-trailing-fetch
-          (record-failure resource :read
-                          {:failure :protocol
-                           :for     :read
-                           :detail  (:protocol-failure payload)
-                           :query   (requested-query resource)})))
-
-      :network-failed
-      (if-not (fresh? resource :read (:request/id payload))
-        {:resource resource :effects [(diagnostic :stale-failure)]}
-        (with-trailing-fetch
-          (record-failure resource :read
-                          {:failure :network
-                           :for   :read
-                           :error (:error payload)
-                           :query (requested-query resource)})))
-
-      :disconnected
-      (if-let [id (:request/id (in-flight resource :read))]
-        {:resource (clear-in-flight resource :read)
-         :effects  [[:abort {:request/id id}]]}
-        {:resource resource :effects []})
+      :intent-unroutable (ignored resource :unroutable-intent payload)
+      :url-changed       (replace-intent resource payload)
+      :protocol-failed   (fail-read resource payload :protocol)
+      :network-failed    (fail-read resource payload :network)
+      :disconnected      (disconnect resource)
 
       ;; writes
-      :submit-write
-      (if-not (writing? resource)
-        (let [resource* (start resource :write (:url-intent resource) {:payload payload})
-              id        (:request/id (in-flight resource* :write))
-              write-req (write-request resource* id payload (:url-intent resource))]
-          (if write-req
-            {:resource resource*
-             :effects  [(notify-fx resource*)
-                        [:write write-req]]}
-            {:resource resource
-             :effects  [(diagnostic :unsupported-write)]}))
-        {:resource resource
-         :effects  [(diagnostic :stale-write)]})
-
-      :write-ack
-      (if (fresh? resource :write (:request/id payload))
-        (if (= :accepted (:outcome payload))
-          (with-trailing-fetch (install-envelope resource :write payload))
-          (record-failure resource :write
-                          {:failure :rejected :for :write :response payload
-                           :query (:query (in-flight resource :write))}))
-        {:resource resource
-         :effects  [(diagnostic :stale-write)]})
-
-      ;; Every failure reaching here left the write's outcome unknown: the request may have
-      ;; committed before the connection dropped, the budget ran out, or the body came back
-      ;; unreadable. Only an explicit :rejected ack, handled above, is the server saying no.
-      :write-failed
-      (if (fresh? resource :write (:request/id payload))
-        (let [write   (in-flight resource :write)
-              failure (if-let [detail (:protocol-failure payload)]
-                        {:failure :protocol :for :write :detail detail :write write :query (:query write)}
-                        {:failure :network :for :write :error (:error payload) :write write
-                         :query (:query write)})]
-          (with-reconciling-fetch (record-failure resource :write failure)))
-        {:resource resource
-         :effects [(diagnostic :stale-write)]})
+      :submit-write      (submit-write resource payload)
+      :write-ack         (install-ack resource payload)
+      :write-failed      (fail-write resource payload)
 
       ;; An event this vocabulary does not contain changes nothing, and says so.
-      {:resource resource :effects [(diagnostic :unknown-event {:event event-k})]})))
+      (ignored resource :unknown-event {:event event-k}))))
