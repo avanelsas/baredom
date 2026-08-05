@@ -22,29 +22,21 @@
 ;; Public for test purposes only
 (def default-timeout-ms 60000)
 
-(defn- timeout-ms
+(defn parse-timeout
+  "The request budget the `timeout` attribute declares, read once. `:ms` is the budget in
+  milliseconds, nil meaning no budget at all, and `:valid?` says whether the attribute was
+  something a budget could be read from, which is what decides whether to report it. A positive
+  value sets the budget, 0 removes it, and an absent or unusable attribute leaves the default in
+  place, so a typo cannot silently drop it."
   [attr-value]
-  (let [text (str/trim (str attr-value))]
-    (when-not (str/blank? text)
-      (parse-long text))))
-
-(defn valid-timeout?
-  [attr-value]
-  (let [text (str/trim (str attr-value))]
-    (or (str/blank? text)
-        (boolean (some-> (timeout-ms text) (>= 0))))))
-
-(defn resolve-timeout
-  "The budget in milliseconds a request gets before it is abandoned. A positive attribute value
-  sets it, 0 removes it, and an absent or unusable one leaves the default in place,
-  so a typo cannot silently drop the budget."
-  [attr-value]
-  (let [ms (timeout-ms attr-value)]
+  (let [text (str/trim (str attr-value))
+        ms   (when-not (str/blank? text) (parse-long text))]
     (cond
-      (nil? ms)  default-timeout-ms
-      (zero? ms) nil
-      (pos? ms)  ms
-      :else      default-timeout-ms)))
+      (str/blank? text) {:ms default-timeout-ms :valid? true}
+      (nil? ms)         {:ms default-timeout-ms :valid? false}
+      (neg? ms)         {:ms default-timeout-ms :valid? false}
+      (zero? ms)        {:ms nil                :valid? true}
+      :else             {:ms ms                 :valid? true})))
 
 (defn resolve-resource-id
   "The element's resource id from its `resource-id` attribute, or nil when absent or blank."

@@ -87,13 +87,13 @@ flowchart TB
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart LR
-  EVENTS["Events in (closed set)<br/><br/>:connected (embed)<br/>:intent-patch (query-patch, gesture-class)<br/>:url-changed (query)<br/>:response<br/>:protocol-failed<br/>:network-failed<br/>:submit-write<br/>:write-ack<br/>:write-failed<br/>:disconnected"]
+  EVENTS["Events in (closed set)<br/><br/>:connected (embed)<br/>:intent-patch (query-patch, gesture-class, target-id)<br/>:intent-unroutable (resource/id)<br/>:url-changed (query)<br/>:response<br/>:protocol-failed<br/>:network-failed<br/>:submit-write<br/>:write-ack<br/>:write-failed<br/>:disconnected"]
 
-  STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count · :shape<br/>:history-policy · :endpoint"]
+  STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count<br/>:resource/id · :endpoint · :history-policy"]
 
-  EFFECTS["Effects out (data)<br/><br/>:fetch (request/id, method, url)<br/>:write (write/id, method, url, headers, body)<br/>:url-write (params, mode)<br/>:notify-consumers (resource)<br/>:abort (request/id)<br/>:diagnostic (stale-*, unsupported-write)"]
+  EFFECTS["Effects out (data)<br/><br/>:fetch (request/id, method, url)<br/>:write (write/id, method, url, headers, body)<br/>:url-write (params, mode)<br/>:route-intent (resource/id, patch)<br/>:notify-consumers (resource)<br/>:abort (request/id)<br/>:diagnostic (stale-*, unsupported-write)"]
 
-  EXEC["executor (decisionless edge)<br/><br/>fetch · write · history push/replace<br/>applyResource · AbortController<br/>console diagnostics"]
+  EXEC["executor (decisionless edge)<br/><br/>fetch · write · history push/replace<br/>applyResource · AbortController<br/>resolve route target · console diagnostics"]
 
   EVENTS --> STEP --> EFFECTS --> EXEC
   EXEC -->|"response · failure · gesture · popstate"| EVENTS
@@ -109,7 +109,7 @@ flowchart LR
   `:active-write` exactly as `pending?` derives from `:active-request`, and a stale ack is
   dropped by the same id-match rule. Nothing is rendered optimistically, so no rollback
   path exists to get wrong.
-- **One request in flight.** `start-request` mints a monotonic `:request/id` into
+- **One request in flight.** `start` mints a monotonic `:request/id` into
   `:active-request`; `pending?`/`installable?` derive purely from the value. A response is
   installed iff its id matches the live request; a gesture made mid-flight is picked up by
   the single trailing fetch once the in-flight request clears.

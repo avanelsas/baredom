@@ -40,6 +40,28 @@
                  (done)))
         (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done))))))
 
+(deftest a-garbled-request-id-echo-still-installs
+  (async done
+    (testing "the client matches a response to its request by the id it minted, not by the
+              server's echo. A server that garbles the echo used to leave every response looking
+              stale, and since a stale response clears nothing, the read stayed in flight and the
+              element hung pending for good"
+      (support/respond-with!
+       (fn [url _method _body]
+         (assoc (support/accepted url [{"id" 1 "owner" "Alice"}] owner-shape)
+                "requestId" "not-the-id-we-minted")))
+      (support/mount! "tasks" "/api/tasks")
+      (-> (support/settle #(some (comp :accepted) @support/spy-calls))
+          (.then (fn []
+                   (let [view (last @support/spy-calls)]
+                     (is (= [{"id" 1 "owner" "Alice"}] (:value (:accepted view)))
+                         "the response installs")
+                     (is (false? (:pending? view))
+                         "and the resource has stopped pending, rather than waiting on a read
+                          that can never be answered"))
+                   (done)))
+          (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done)))))))
+
 (deftest effect-handlers-cover-the-vocabulary-exactly
   (testing "step decides and the executor performs, so the two vocabularies are one. An effect
             step learns to emit with no performer would be silently unperformed, and a performer
