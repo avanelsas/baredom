@@ -87,6 +87,7 @@
   {:field key :code code :message message})
 
 ; notice that error mapping is intentionally different for write (vs read)
+;; Public for test purposes only, `conform-payload` below is the write-side entry point
 (defn validate-payload
   "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`."
   [payload shape]
@@ -107,3 +108,39 @@
                     (field-err key :not-in-enum
                                (str "The field " key " is not in the enum " enum))))))
         (:fields shape)))
+
+;; Reading a record as its shape declares it ----------------------------------
+;; A read arrives as JSON, so a field the shape calls a number is already one. A write starts in
+;; a form, where every field is a string because that is what the DOM holds. The declared type is
+;; the same on both sides, so the two are reconciled here rather than by every consumer that
+;; builds a record.
+
+(defn- coerce-value
+  "`v` read as the declared `type`. A value that cannot be read as its type is returned exactly as
+  it came, so `validate-payload` reports it as the wrong type instead of a NaN reaching the wire."
+  [v type]
+  (if (and (= :number type) (string? v) (not (str/blank? v)))
+    (or (parse-double v) v)
+    v))
+
+(defn- coerce-record
+  "`record` with every field the shape declares read as its declared type. A field the record does
+  not carry stays absent rather than appearing as nil."
+  [record shape]
+  (reduce (fn [m {:keys [key type]}]
+            (if (contains? m key)
+              (update m key coerce-value type)
+              m))
+          record
+          (:fields shape)))
+
+(defn conform-payload
+  "The write-side entry point: `record` read as `shape` declares it, with whatever still does not
+  fit. Returns `{:record <conformed> :errors [...]}`, the first being what to send and the second
+  what to show. Validating before coercing would report every number field as the wrong type, and
+  coercing in each consumer would have each of them rediscover the types the shape already
+  declares, so the order is settled here once."
+  [record shape]
+  (let [conformed (coerce-record record shape)]
+    {:record conformed
+     :errors (validate-payload conformed shape)}))

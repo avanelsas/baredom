@@ -3,6 +3,7 @@
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [barebuild.validation :as validation]
+   [demo.selector :as selector]
    [baredom.utils.dom :as du]
    [goog.object :as gobj]))
 
@@ -41,11 +42,14 @@
     "Something went wrong."))
 
 (defn write-plan
-  "Given a `record`, its `shape`, and the `payload` to send, return {:errors [...]} when
-  the record fails the shape, else {:payload payload}."
+  "Given a `record`, its `shape`, and the `payload` to send, return {:errors [...]} when the
+  record fails the shape, else {:payload payload} carrying the record as the shape declares it,
+  so a field the shape calls a number leaves the form as one."
   [record shape payload]
-  (let [errors (validation/validate-payload record shape)]
-    (if (seq errors) {:errors errors} {:payload payload})))
+  (let [{:keys [errors] conformed :record} (validation/conform-payload record shape)]
+    (if (seq errors)
+      {:errors errors}
+      {:payload (assoc payload :record conformed)})))
 
 (defn- show-field-errors! [^js form errors]
   (doseq [{:keys [field message]} errors]
@@ -66,7 +70,7 @@
 (defn- apply-rejection! [^js form ^js host failure ^js this]
   (let [{:keys [message details]} (get-in failure [:response :error])
         field                     (get details "field")]
-    (if (and field (.querySelector form (str "[name='" field "']")))
+    (if (and field (.querySelector form (selector/attr= "name" field)))
       (.setFieldError form field message)
       (show-alert! host message))
     (set-pending! this false)))

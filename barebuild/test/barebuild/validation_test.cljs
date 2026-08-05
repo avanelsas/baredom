@@ -151,3 +151,45 @@
            (pairs (validation/validate-payload
                    (-> valid (dissoc "owner") (assoc "status" "nope"))
                    shape))))))
+
+;; --- conform-payload: reading a form record as its shape declares it -------
+
+(def ^:private estimate-shape
+  {:id-key "id"
+   :fields [{:key "title"    :type :string :required true}
+            {:key "estimate" :type :number}]})
+
+(deftest a-number-field-arrives-from-a-form-as-a-string-and-is-read-as-a-number
+  (testing "the DOM holds every field as a string, so a number field submits as one. Validating
+            without reading it first reported every number field as the wrong type, and the
+            server, which checks the parsed body the same way, rejected what did get through"
+    (let [{:keys [record errors]} (validation/conform-payload
+                                   {"title" "Ship it" "estimate" "5"} estimate-shape)]
+      (is (= [] errors))
+      (is (= 5 (get record "estimate"))
+          "the value that goes on the wire is a JSON number, not the string the form held")
+      (is (number? (get record "estimate"))))))
+
+(deftest a-number-that-cannot-be-read-is-left-alone-and-reported
+  (testing "coercing to NaN would ship null, so an unreadable value stays as it came and the
+            existing type check is what tells the user about it"
+    (let [{:keys [record errors]} (validation/conform-payload
+                                   {"title" "Ship it" "estimate" "abc"} estimate-shape)]
+      (is (= "abc" (get record "estimate")) "untouched, so the error can describe what was typed")
+      (is (= [["estimate" :wrong-type]] (pairs errors))))))
+
+(deftest conforming-touches-only-what-the-shape-declares
+  (testing "a field the record does not carry is not introduced, and a field of another type is
+            passed through, so conforming is not a rewrite of the record"
+    (let [{:keys [record]} (validation/conform-payload {"title" "Ship it"} estimate-shape)]
+      (is (= {"title" "Ship it"} record) "no nil :estimate appears"))
+    (let [{:keys [record]} (validation/conform-payload
+                            {"title" "Ship it" "extra" "kept"} estimate-shape)]
+      (is (= "kept" (get record "extra")) "an undeclared key rides along untouched"))))
+
+(deftest a-number-already-numeric-conforms-unchanged
+  (testing "the same function serves a record built in code rather than typed into a form"
+    (let [{:keys [record errors]} (validation/conform-payload
+                                   {"title" "Ship it" "estimate" 5} estimate-shape)]
+      (is (= [] errors))
+      (is (= 5 (get record "estimate"))))))

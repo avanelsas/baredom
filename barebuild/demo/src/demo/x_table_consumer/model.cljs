@@ -42,6 +42,19 @@
     {:columns columns
      :rows rows}))
 
+(defn grid-template
+  "The table's `columns` template: the declared fields share the width evenly, and the actions
+   column takes exactly what its buttons need.
+
+   Passing the column *count* instead makes every track `minmax(0,1fr)`, the actions column
+   included, and those tracks may shrink below their content. Each field the server declares
+   takes another share, so the buttons are eventually narrower than themselves and clipped by
+   the table's own `overflow:hidden`. `max-content` takes the actions column out of the split."
+  [columns]
+  (if (seq columns)
+    (str "repeat(" (count columns) ",minmax(0,1fr)) max-content")
+    "max-content"))
+
 (defn reconcile-plan
   "Diff current row ids against desired rows: ids to remove, and the desired order flagged new/existing."
   [old-ids new-rows]

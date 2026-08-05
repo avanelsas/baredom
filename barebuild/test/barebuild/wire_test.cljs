@@ -130,7 +130,14 @@
   (testing "page info that is not an object reads as none. A throw here would reject the fetch
             promise, and the edge classifies a rejected fetch as an unreachable server, so a
             server that answered would be reported as one that could not be reached"
-    (is (= {} (:page-info (wire/parse-envelope (accepted-with {"pageInfo" 7}))))))
+    (is (nil? (:page-info (wire/parse-envelope (accepted-with {"pageInfo" 7}))))
+        "nothing to read is nothing, not an empty bag the server never sent"))
+  (testing "and page info the server did not send at all reads the same way"
+    (is (nil? (:page-info (wire/parse-envelope (accepted-with {}))))))
+  (testing "page info the server did send is read, with its keys kebabed"
+    (is (= {:total-count 42 :page 2}
+           (:page-info (wire/parse-envelope
+                        (accepted-with {"pageInfo" {"totalCount" 42 "page" 2}}))))))
   (testing "options that are not a list leave the field bare, exactly as absent options do"
     (let [[field] (get-in (wire/parse-envelope
                            (clj->js {"outcome" "accepted" "value" []

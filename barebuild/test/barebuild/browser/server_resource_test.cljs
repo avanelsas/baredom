@@ -147,6 +147,27 @@
                    (done)))
           (.catch (fn [e] (is false (str "the intent did not reach the sibling: " e)) (done)))))))
 
+(deftest a-targeted-intent-reaches-an-id-that-would-break-a-selector
+  (testing "the target is resolved by an attribute selector built from the id it was named by, so
+            an id carrying a quote has to be escaped into it. Unescaped, the quote closes the
+            selector's string early and querySelector throws instead of routing"
+    (async done
+      (support/stub-accepted! [] empty-shape)
+      (let [odd-id "od\"d"
+            sender (support/mount-consumers! "tasks" "/api/tasks" ["x-spy-consumer"])]
+        (support/mount-consumers! odd-id "/api/odd" ["x-spy-consumer"])
+        (-> (support/settle #(= 2 (count @support/fetch-calls)))
+            (.then (fn []
+                     (support/submit-intent! sender {:query-patch {:sort "owner"}} odd-id)
+                     (support/settle #(= 3 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (is (re-find #"/api/odd" (last @support/fetch-calls))
+                         "the sibling named by the awkward id is the one that refetched")
+                     (done)))
+            (.catch (fn [e]
+                      (is false (str "the intent did not reach the odd id: " e))
+                      (done))))))))
+
 (deftest an-intent-naming-a-resource-that-is-not-there-does-not-vanish-silently
   (async done
     (support/stub-accepted! [] empty-shape)
@@ -305,6 +326,57 @@
                        "one popstate listener, so a navigation refetches once, not twice")
                    (done)))
           (.catch (fn [e] (is false (str "re-attach left duplicate listeners: " e)) (done)))))))
+
+(deftest a-write-in-flight-survives-a-reconnect-and-its-ack-still-lands
+  (testing "disconnect leaves an in-flight write running because its outcome still matters, so
+            the boot carries the slot and counter naming it. Without that the rebuilt value knows
+            of no write, the restarted counter mints the orphan's own id for the next one, and
+            that ack installs as though it answered a write the user made after reconnecting"
+    (async done
+      (support/stub-controlled!)
+      (let [shape  {"idKey" "id" "fields" [{"key" "title" "type" "string"}]}
+            view   (fn [] (last @support/spy-calls))
+            rows   (fn [] (:value (:accepted (view))))
+            titles (fn [] (mapv #(get % "title") (rows)))
+            host   (support/mount! "tasks" "/api/tasks")]
+        (-> (support/settle #(= 1 (count @support/fetch-calls)))
+            (.then (fn []
+                     (support/resolve-nth! 0 [{"id" 1 "title" "a"}] shape)      ; the boot read
+                     (support/settle #(= 1 (count (rows))))))
+            (.then (fn []
+                     (support/submit-write! host {:op :create :record {"title" "orphan"}})
+                     (support/settle #(= 2 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (.remove host)                          ; the write is still in flight
+                     (.appendChild js/document.body host)    ; and outlives the connection
+                     (support/settle #(= 3 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (support/resolve-nth! 2 [{"id" 1 "title" "a"}] shape)      ; the reboot read
+                     (support/settle #(= 1 (count (rows))))))
+            (.then (fn []
+                     (is (true? (:writing? (view)))
+                         "the reconnected element still reports the write it never heard back on")
+                     ;; single flight spans the reconnect too, so this one is refused rather than
+                     ;; sent under an id the orphan would answer to
+                     (support/submit-write! host {:op :create :record {"title" "refused"}})
+                     (support/resolve-nth! 1 [{"id" 1 "title" "a"} {"id" 2 "title" "ORPHAN"}] shape)
+                     (support/settle #(= 2 (count (rows))))))
+            (.then (fn []
+                     (is (= ["a" "ORPHAN"] (titles))
+                         "the ack the user was waiting on installs instead of being dropped")
+                     (is (= 3 (count @support/fetch-calls))
+                         "the second write never went out, one write is in flight at a time")
+                     (is (false? (:writing? (view))) "and the slot is free again")
+                     (support/submit-write! host {:op :create :record {"title" "next"}})
+                     (support/settle #(= 4 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (is (re-find #"requestId=tasks:w2$" (nth @support/fetch-calls 3))
+                         "the counter kept counting across the boot, so the next write cannot
+                          mint an id an earlier one already answers to")
+                     (done)))
+            (.catch (fn [e]
+                      (is false (str "reconnect write test did not settle: " e))
+                      (done))))))))
 
 (defn- first-failure []
   (first (remove nil? @support/failure-calls)))

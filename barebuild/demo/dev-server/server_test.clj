@@ -241,11 +241,15 @@
     (is (= 3 (get-in (second (get-json "/api/projects" nil)) [:pageInfo :totalCount]))
         "a rejected create does not mutate the set")))
 
-(deftest flat-read-shape-fields-are-unchanged
-  (let [[_ body] (get-json "/api/tasks" nil)]
-    (is (= ["title" "owner" "start" "end" "status"]
-           (mapv :key (get-in body [:shape :fields])))
-        "the flat demo's declared columns are untouched — the new task keys are not :fields")))
+(deftest flat-read-shape-declares-only-display-columns
+  (let [[_ body] (get-json "/api/tasks" nil)
+        declared (mapv :key (get-in body [:shape :fields]))]
+    (is (= ["title" "owner" "start" "end" "est" "status"] declared)
+        "the flat demo's declared columns")
+    (is (empty? (filterv #{"projectId" "assigneeId" "rank" "assigneeName" "projectName"} declared))
+        "the board demo's task keys stay row data rather than declarations. x-table-consumer
+         builds its columns from :fields, so declaring one would put a raw id column in the
+         flat table")))
 
 (deftest tasks-carry-refs-and-denormalized-names
   (let [[_ body]  (get-json "/api/tasks" nil)
@@ -396,6 +400,37 @@
 
 (def ^:private new-task
   {"title" "Ship the release" "owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
+
+(deftest a-number-field-must-arrive-as-a-number
+  (testing "the server checks the parsed body against the declared type, so a number field sent
+            as the string a form holds is refused. This is what the client's conform step exists
+            to prevent, checked here independently rather than taken on the client's word"
+    (let [resp (post-raw "/api/tasks" "requestId=w-n1"
+                         (record-json (assoc new-task "est" "5")))
+          body (json/parse-string (:body resp) true)]
+      (is (= "rejected" (:outcome body)))
+      (is (= "invalid-type" (get-in body [:error :code])))
+      (is (= "est" (get-in body [:error :details :field])))))
+  (testing "the same value as a JSON number is accepted, and comes back as a number"
+    (let [resp (post-raw "/api/tasks" "requestId=w-n2"
+                         (record-json (assoc new-task "est" 5)))
+          body (json/parse-string (:body resp) true)]
+      (is (= "accepted" (:outcome body)))
+      (let [[_ zoe] (get-json "/api/tasks" "search=Zoe")
+            row     (first (:value zoe))]
+        (is (= 5 (:est row)) "the written value round-trips as a JSON number")))))
+
+(deftest an-updated-number-field-survives-the-replace
+  (testing "update is a full replace of the client-owned fields, so a number field has to be
+            carried through it as much as through a create. Reopening an edited row prefills
+            from what the server holds, so a field the replace dropped reads as never set"
+    (let [resp (put-raw "/api/tasks/1" "requestId=w-n3"
+                        (record-json (assoc new-task "est" 7)))
+          body (json/parse-string (:body resp) true)]
+      (is (= "accepted" (:outcome body)))
+      (let [[_ read] (get-json "/api/tasks" nil)
+            row      (first (filter #(= 1 (:id %)) (:value read)))]
+        (is (= 7 (:est row)) "the written estimate is what a later read returns")))))
 
 (deftest create-appends-and-returns-post-mutation-envelope
   (let [resp (post-raw "/api/tasks" "requestId=w-c1" (record-json new-task))

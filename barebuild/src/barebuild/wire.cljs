@@ -33,11 +33,6 @@
     str/lower-case
     keyword))
 
-(defn- replace-js-keys
-  "Change js map keys (strings) to kebab-keywords"
-  [m]
-  (into {} (for [[k v] m] [(camel->kebab-keyword k) v])))
-
 (defn- accepted-defect
   "The reason an accepted envelope cannot be read, or nil when it can. The query echo has to be
   an object because an unreadable one coerced to the empty query would adopt as intent and
@@ -77,7 +72,9 @@
 (defn- ->accepted
   "Transforms js object to accepted CLJS map. A shape that declares no list of fields yields a
   nil :fields, which the contract check reads as the missing declaration it is. An empty list
-  stays an empty list, a shape that genuinely declares nothing to check."
+  stays an empty list, a shape that genuinely declares nothing to check. Page info follows the
+  same rule: absent or unreadable, it is nothing at all rather than an empty bag the server never
+  sent."
   [js-obj]
   (let [shape (gobj/get js-obj "shape")]
     {:outcome    :accepted
@@ -85,7 +82,8 @@
      :revision   (gobj/get js-obj "revision")
      :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))
      :value      (js->clj (gobj/get js-obj "value"))
-     :page-info  (replace-js-keys (object->map (gobj/get js-obj "pageInfo")))
+     :page-info  (some-> (object->map (gobj/get js-obj "pageInfo"))
+                   (update-keys camel->kebab-keyword))
      :shape      {:id-key (gobj/get shape "idKey")
                   :fields (array->vec ->field (gobj/get shape "fields"))}}))
 
