@@ -1,9 +1,88 @@
 (ns barebuild.validation-test
-  "validate-payload tests: a write record vs a shape (type + required + enum).
-   Pure, =-asserted. The shape mirrors what wire/->accepted produces — :type is a
-   keyword, and absent :required/:enum mean 'no constraint'."
+  "Both checkers over a declared shape, pure and =-asserted.
+   validate-contract: an accepted envelope the server sent, errors located by a :path.
+   validate-payload: a write record the client is about to send, errors located by a :field.
+   Shapes mirror what wire/->accepted produces — :type is a keyword, and absent
+   :required/:enum mean 'no constraint'."
   (:require [cljs.test :refer-macros [deftest is testing]]
             [barebuild.validation :as validation]))
+
+;; --- validate-contract: an accepted envelope vs the shape it declares -------
+
+(def accepted
+  "An accepted payload as wire/->accepted produces it. Only :shape and :value are read."
+  {:shape {:id-key "id"
+           :fields [{:key "owner"  :type :string}
+                    {:key "status" :type :string}]}
+   :value [{"id" 1 "owner" "Alice" "status" "todo"}
+           {"id" 2 "owner" "Bob"   "status" "done"}]})
+
+(defn- paths
+  "Reduce contract errors to [path code] tuples for order-sensitive =-assertions."
+  [errs]
+  (mapv (juxt :path :code) errs))
+
+(deftest valid-accepted-payload-has-no-errors
+  (is (= [] (validation/validate-contract accepted))))
+
+(deftest shape-must-declare-an-id-key
+  (testing "without one, nothing says which member of a row names it"
+    (is (= [[[:shape :id-key] :missing-id-key]]
+           (paths (validation/validate-contract {:shape {:fields []} :value []}))))))
+
+(deftest shape-must-declare-a-field-list
+  (testing "no field list at all is a missing declaration"
+    (is (= [[[:shape :fields] :missing-fields]]
+           (paths (validation/validate-contract {:shape {:id-key "id"} :value []})))))
+  (testing "an empty one is the opposite claim, that there is nothing to check"
+    (is (= [] (validation/validate-contract {:shape {:id-key "id" :fields []} :value []})))))
+
+(deftest value-must-be-a-list-of-maps
+  (testing "a value that is not a list at all"
+    (is (= [[[:value] :not-a-list]]
+           (paths (validation/validate-contract (assoc accepted :value {"id" 1}))))))
+  (testing "a list of things that are not rows"
+    (is (= [[[:value] :not-maps]]
+           (paths (validation/validate-contract (assoc accepted :value [1 2])))))))
+
+(deftest rows-must-carry-a-unique-non-nil-id
+  (testing "a row without the declared id key cannot be told apart from another"
+    (is (= [[[:value] :missing-id]]
+           (paths (validation/validate-contract
+                   (assoc accepted :value [{"owner" "Alice" "status" "todo"}]))))))
+  (testing "two rows sharing an id"
+    (is (= [[[:value] :duplicate-id]]
+           (paths (validation/validate-contract (assoc-in accepted [:value 1 "id"] 1)))))))
+
+(deftest rows-must-carry-every-declared-field-at-its-declared-type
+  (testing "a missing field is reported at the path of the row and key that lack it"
+    (is (= [[[:value 0 "status"] :missing-field]]
+           (paths (validation/validate-contract
+                   (update-in accepted [:value 0] dissoc "status"))))))
+  (testing "a declared field holding the wrong type"
+    (is (= [[[:value 0 "owner"] :wrong-type]]
+           (paths (validation/validate-contract
+                   (assoc-in accepted [:value 0 "owner"] 42)))))))
+
+(deftest a-field-declaring-no-type-constrains-nothing
+  (let [untyped (assoc-in accepted [:shape :fields 0] {:key "owner"})]
+    (testing "an absent :type is an absent constraint, as an absent :required or :enum is. Before
+              this, rendering the wrong-type message for an undeclared type threw, and the throw
+              escaped step to be classified at the edge as an unreachable server"
+      (is (= [] (validation/validate-contract (assoc-in untyped [:value 0 "owner"] 42)))))
+    (testing "the field must still be present in the row, only the type check is skipped"
+      (is (= [[[:value 0 "owner"] :missing-field]]
+             (paths (validation/validate-contract
+                     (update-in untyped [:value 0] dissoc "owner"))))))))
+
+(deftest a-value-level-error-stops-the-id-and-row-checks
+  (testing "there is no use looking inside a value that is not a list of rows, so those checks
+            are skipped. The shape's own errors are independent of the value and still surface"
+    (is (= [[[:shape :id-key] :missing-id-key]
+            [[:value] :not-a-list]]
+           (paths (validation/validate-contract {:shape {:fields []} :value "nope"}))))))
+
+;; --- validate-payload: a write record vs the same shape ---------------------
 
 (def shape
   {:id-key "id"
@@ -60,6 +139,11 @@
       (is (= [] (validation/validate-payload {} free-shape)) "absent + not required -> ok")
       (is (= [] (validation/validate-payload {"note" "anything"} free-shape))
           "present, no enum -> no membership check"))))
+
+(deftest a-field-declaring-no-type-is-unconstrained-on-write-too
+  (testing "both checkers read an absent :type the same way, they share the type check"
+    (let [untyped {:id-key "id" :fields [{:key "note"}]}]
+      (is (= [] (validation/validate-payload {"note" 42} untyped))))))
 
 (deftest errors-accumulate-in-field-order
   (testing "multiple bad fields surface together, ordered by the shape's :fields"
