@@ -1,5 +1,6 @@
 (ns barebuild.resource
-  (:require [barebuild.utils.query :as query]
+  (:require [barebuild.effect :as effect]
+            [barebuild.utils.query :as query]
             [barebuild.utils.request :as request]
             [barebuild.validation :as validation]))
 
@@ -10,17 +11,11 @@
   ([resource] (result resource []))
   ([resource effects] {:resource resource :effects effects}))
 
-(defn- diagnostic
-  "A diagnostic effect value, optionally carrying `detail` the executor prints beside the code.
-  The executor only console.debugs it, it drives no state."
-  ([code] [:diagnostic {:code code}])
-  ([code detail] [:diagnostic {:code code :detail detail}]))
-
 (defn- ignored
   "The event moved nothing, `code` names why. Every event this resource declines to act on is
   answered this way rather than in silence, so a gesture that went nowhere still reaches the log."
-  ([resource code] (result resource [(diagnostic code)]))
-  ([resource code detail] (result resource [(diagnostic code detail)])))
+  ([resource code] (result resource [(effect/diagnostic code)]))
+  ([resource code detail] (result resource [(effect/diagnostic code detail)])))
 
 ;; The failure value -----------------------------------------------------------
 ;; What `project` hands a consumer as :failure, and the only shape it takes. Every failure is
@@ -80,35 +75,16 @@
                            :request-id  rid})
            :request/id rid)))
 
-(defn- notify-fx
-  "The :notify-consumers effect for resource value `r`."
-  [r]
-  [:notify-consumers {:resource r}])
-
 (defn- fetch-fx
-  "The :fetch effect for r's in-flight read request."
+  "The :fetch effect for r's in-flight read request. The one effect whose payload is computed
+  rather than passed in, since only this namespace knows which fields of a resource make a read."
   [r]
-  [:fetch (read-request r)])
+  (effect/fetch (read-request r)))
 
 (defn- url-write-fx
-  "The :url-write effect projecting `params` onto the resource's URL scope, in `mode`."
+  "The :url-write effect projecting `params` onto `resource`'s own URL scope, in `mode`."
   [resource params mode]
-  [:url-write {:resource/id (:resource/id resource) :params params :mode mode}])
-
-(defn- abort-fx
-  "The :abort effect ending the request named by `request-id`."
-  [request-id]
-  [:abort {:request/id request-id}])
-
-(defn- write-fx
-  "The :write effect carrying a built write `request`."
-  [request]
-  [:write request])
-
-(defn- route-intent-fx
-  "The :route-intent effect handing `patch` to the resource named `target-id`."
-  [target-id patch]
-  [:route-intent {:resource/id target-id :patch patch}])
+  (effect/url-write (:resource/id resource) params mode))
 
 (defn- start
   "Open an in-flight request of `kind` in `r`, numbered from that kind's counter and named from
@@ -240,14 +216,14 @@
 
 (defn- accepted-effects [resource echo correct?]
   (if correct?
-    [(url-write-fx resource echo :replace) (notify-fx resource)]
-    [(notify-fx resource)]))
+    [(url-write-fx resource echo :replace) (effect/notify-consumers resource)]
+    [(effect/notify-consumers resource)]))
 
 (defn- record-failure
   "Clear the in-flight request of `kind`, stash the failure, notify."
   [resource kind failure]
   (let [resource* (assoc (clear-in-flight resource kind) :last-failure failure)]
-    (result resource* [(notify-fx resource*)])))
+    (result resource* [(effect/notify-consumers resource*)])))
 
 (defn- transport-members
   "What a `cause` that produced no readable answer carries: the unreadable answer itself
@@ -300,8 +276,8 @@
   [resource diag-code]
   (let [r* (start resource :read (:url-intent resource))]
     (result r* (cond-> []
-                 diag-code (conj (diagnostic diag-code))
-                 :always   (conj (fetch-fx r*) (notify-fx r*))))))
+                 diag-code (conj (effect/diagnostic diag-code))
+                 :always   (conj (fetch-fx r*) (effect/notify-consumers r*))))))
 
 (defn- connect-accepted-embed
   "Install an accepted boot embed exactly as a network response: validate the contract, a broken
@@ -318,7 +294,7 @@
       ;; An installed embed answers something, so `pending?` reports the truth before the read
       ;; opens and this goes through with-read like every other transition.
       (let [installed (:installed (install-accepted resource embed false))]
-        (with-trailing-fetch (result installed [(notify-fx installed)]))))))
+        (with-trailing-fetch (result installed [(effect/notify-consumers installed)]))))))
 
 (defn- connect-rejected-embed
   "A rejected boot embed the server already adjudicated. When its echo matches intent it installs
@@ -328,7 +304,7 @@
   (if (= (:query embed) (:url-intent resource))
     (let [r* (assoc resource :last-failure
                     (failure :rejected :read (:query embed) {:response embed}))]
-      (result r* [(notify-fx r*)]))
+      (result r* [(effect/notify-consumers r*)]))
     (boot-fetch resource :stale-rejected-embed)))
 
 (defn- connect
@@ -362,8 +338,8 @@
         resource*      (if revert? (assoc cleared :url-intent accepted-query) cleared)]
     (result resource*
             (if revert?
-              [(url-write-fx resource* accepted-query :replace) (notify-fx resource*)]
-              [(notify-fx resource*)]))))
+              [(url-write-fx resource* accepted-query :replace) (effect/notify-consumers resource*)]
+              [(effect/notify-consumers resource*)]))))
 
 (defn- apply-intent-patch
   "Merge a patch into the resource's own intent. The URL is written whenever the intent moved,
@@ -376,20 +352,20 @@
     (with-trailing-fetch
       (result merged (cond-> []
                        moved?  (conj (url-write-fx merged new-intent mode))
-                       :always (conj (notify-fx merged)))))))
+                       :always (conj (effect/notify-consumers merged)))))))
 
 (defn- replace-intent
   "The :url-changed transition. The address bar has already moved, so the intent is replaced
   outright rather than merged, and never written back."
   [resource intent]
   (let [replaced (assoc resource :url-intent intent)]
-    (with-trailing-fetch (result replaced [(notify-fx replaced)]))))
+    (with-trailing-fetch (result replaced [(effect/notify-consumers replaced)]))))
 
 (defn- route-intent
   "Hand a patch that names another resource to the executor, which resolves the name to an
   element. This resource's own value does not move."
   [resource payload]
-  (result resource [(route-intent-fx (:target-id payload) (dissoc payload :target-id))]))
+  (result resource [(effect/route-intent (:target-id payload) (dissoc payload :target-id))]))
 
 ;; Transitions — one per event, each named, each returning a `result` --------------
 
@@ -433,7 +409,7 @@
   it into. An in-flight write is left alone: its outcome still matters to whoever reconnects."
   [resource]
   (if-let [id (:request/id (in-flight resource :read))]
-    (result (clear-in-flight resource :read) [(abort-fx id)])
+    (result (clear-in-flight resource :read) [(effect/abort id)])
     (result resource)))
 
 (defn- submit-write
@@ -445,7 +421,7 @@
     (let [resource* (start resource :write (:url-intent resource) {:payload payload})
           write-id  (:request/id (in-flight resource* :write))]
       (if-let [request (write-request resource* write-id payload (:url-intent resource))]
-        (result resource* [(notify-fx resource*) (write-fx request)])
+        (result resource* [(effect/notify-consumers resource*) (effect/write request)])
         (ignored resource :unsupported-write)))))
 
 (defn- install-ack
@@ -474,12 +450,6 @@
         (record-failure resource :write
                         (failure cause :write (:query write)
                                  (assoc (transport-members cause payload) :write write)))))))
-
-;; Public for test purposes only
-(def effect-tags
-  "Every effect `step` can return. The executor performs these and nothing else, so an executor
-  that covers a different set has drifted from the vocabulary rather than merely lagged it."
-  #{:fetch :write :abort :url-write :route-intent :notify-consumers :diagnostic})
 
 (defn step
   "Takes a resource and event and returns (a possibly updated) resource
