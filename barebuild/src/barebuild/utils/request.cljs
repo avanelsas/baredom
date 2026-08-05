@@ -1,7 +1,7 @@
 (ns barebuild.utils.request
   "The request value `step` hands the executor on a :fetch or a :write effect. Everything past
   :url is absent rather than nil when it does not apply, so two requests that mean the same
-  thing compare equal."
+  compare equal."
   (:require [barebuild.utils.query :as query]
             [clojure.string :as str]))
 
@@ -26,11 +26,10 @@
     (when (seq headers) headers)))
 
 (defn request
-  "Build a request value for the executor from the parts provided, e.g.
+  "The request value for the executor, e.g.
   {:request/id \"tasks:1\" :method \"GET\" :url \"/api/tasks?requestId=tasks:1&sort=owner\"}.
-  `credentials` and `headers` say what the request carries on the wire, `timeout` says how long
-  the executor may wait for it. The id rides the value as well as the URL: the executor names
-  every outcome by it, so a caller would otherwise have to remember to put it back."
+  `credentials` and `headers` say what it carries on the wire, `timeout` how long the executor
+  may wait. The id rides the value as well as the URL, the executor naming every outcome by it."
   [{:keys [endpoint segment method query body request-id credentials headers timeout]}]
   (let [headers (request-headers headers (some? body))]
     (cond-> {:request/id request-id

@@ -22,7 +22,7 @@
 
 (defn- current-url-intent
   "The resource's query as the address bar currently holds it. The only place this element reads
-  the address bar, the projection itself being `url/parse-scoped-query`."
+  the address bar."
   [resource-id]
   (url/parse-scoped-query (.-search js/location) resource-id))
 
@@ -38,30 +38,27 @@
     (when (object? parsed) parsed)))
 
 (defn- parse-headers
-  "The static headers the `headers` attribute declares, and whether it was a JSON object to read
-  them from."
+  "The static headers the `headers` attribute declares, and whether it was a JSON object."
   [text]
   (let [obj (json-object text)]
     {:value (request/normalize-headers (js->clj obj)) :usable? (some? obj)}))
 
 (defn- parse-credentials
   "The fetch credentials mode the `credentials` attribute declares. An unrecognised mode is not
-  usable, and is never passed to fetch, which would throw on every request."
+  usable and is never passed to fetch."
   [text]
   (let [mode (model/resolve-credentials text)]
     {:value mode :usable? (some? mode)}))
 
 (defn- parse-timeout
-  "The request budget the `timeout` attribute declares. An unusable value keeps the default, so a
-  typo cannot leave requests running unbounded."
+  "The request budget the `timeout` attribute declares. An unusable value keeps the default."
   [text]
   (let [{:keys [ms valid?]} (model/parse-timeout text)]
     {:value ms :usable? valid?}))
 
 ;; The request configuration the host declares as attributes: which attribute carries each one,
 ;; which key it becomes in the resource value, how to read it, and what to say when the attribute
-;; is there but cannot be read. A new knob is a row here, not a fourth reader and a fourth line
-;; in boot!.
+;; is there but cannot be read. A new knob is a row here.
 (def ^:private request-config
   [{:key :credentials :attr model/attr-credentials :parse parse-credentials
     :complaint "is not a fetch credentials mode, ignoring it:"}
@@ -71,8 +68,8 @@
     :complaint "is not a number of milliseconds, keeping the default:"}])
 
 (defn- read-config-attr
-  "One configured attribute as the value it declares. A blank attribute declares nothing, which is
-  not a complaint. A present one that cannot be read is reported and treated as absent."
+  "One configured attribute as the value it declares. A blank attribute declares nothing. A
+  present one that cannot be read is reported and treated as absent."
   [^js el {:keys [attr parse complaint]}]
   (let [text                    (du/get-attr el attr)
         {:keys [value usable?]} (parse text)]
@@ -82,22 +79,19 @@
 
 (defn- read-request-config
   "The request configuration the host declared, as the keys the resource value carries. An
-  attribute declaring nothing usable contributes no key at all, so what a request is built from
-  stays absent rather than nil wherever the host said nothing."
+  attribute declaring nothing usable contributes no key at all."
   [^js el]
-  (reduce (fn [m row]
-            (if-let [value (read-config-attr el row)]
-              (assoc m (:key row) value)
-              m))
-          {}
-          request-config))
+  (into {}
+        (keep (fn [row]
+                (when-let [value (read-config-attr el row)]
+                  [(:key row) value])))
+        request-config))
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 
 (defn- delivery-threw!
-  "A throw while delivering a result is a defect in this code, not something the transport did.
-  Classifying it as a transport failure reported a server that could not be reached for a server
-  that had answered."
+  "Report a throw while delivering a result. It is a defect in this code, not a transport
+  failure."
   [e]
   (js/console.error "[server-resource] delivering a result threw:" e))
 
@@ -110,9 +104,7 @@
 
 (defn- deliver!
   "Classify what came back for a request of `kind` and hand it in as the event it names. Every
-  outcome is named by the id this client minted, never by the server's echo of it: one fetch is
-  one promise, so the local id already correlates the answer with its request, and a server that
-  garbles the echo would otherwise leave every response looking stale."
+  outcome is named by the id this client minted, never by the server's echo of it."
   [^js el kind result request-id]
   (let [events (delivery-events kind)]
     (cond
@@ -126,53 +118,48 @@
       :else
       (handle-event! el [(:ok events) (assoc result :request/id request-id)]))))
 
+(defn- perform-request!
+  "Send `m` under `controller` and hand what comes back in as `kind`'s event, `on-reject`
+  classifying a rejection. The rejection handler rides `then` rather than a trailing `catch`, so
+  it sees only what the request did."
+  [^js el kind m ^js controller on-reject]
+  (let [id (:request/id m)]
+    (-> (.then (transport/perform! m controller)
+               (fn [result] (deliver! el kind result id))
+               (fn [^js e] (on-reject el id (:timeout m) e)))
+      (.catch delivery-threw!))))
+
 (defn- read-rejected!
-  "Report a read that never arrived. An abort is intentional, a disconnect or a supersede, so it
-  is not a failure."
+  "Report a read that never arrived. An abort is intentional, so it is not a failure."
   [^js el request-id timeout ^js e]
   (when-not (transport/abort-error? e)
     (handle-event! el [:network-failed {:request/id request-id
                                         :error      (transport/transport-error e timeout)}])))
 
 (defn- execute-fetch!
-  "Send a read and deliver what comes back. The rejection handler rides `then` rather than a
-  trailing `catch`, so it sees only what the request did and never what delivering its result
-  did."
+  "Send a read, stashing its controller so a disconnect or a supersede can abort it."
   [^js el m]
-  (let [controller (js/AbortController.)
-        request-id (:request/id m)]
+  (let [controller (js/AbortController.)]
     ;; stashed before the decorator is awaited, so an abort landing in that window still reaches
-    ;; this request: fetch rejects immediately on an already-aborted signal. Kept with its request
-    ;; id so the :abort effect aborts the request it names rather than whatever is stashed.
-    (du/setv-untraced! el k-abort {:request/id request-id :controller controller})
-    (-> (.then (transport/perform! m controller)
-               (fn [result] (deliver! el :read result request-id))
-               (fn [^js e] (read-rejected! el request-id (:timeout m) e)))
-      (.catch delivery-threw!))))
+    ;; this request. Kept with its request id so the :abort effect aborts the request it names.
+    (du/setv-untraced! el k-abort {:request/id (:request/id m) :controller controller})
+    (perform-request! el :read m controller read-rejected!)))
 
 (defn- write-rejected!
-  "Report a write whose outcome the client never learned."
+  "Report a write whose outcome the client never learned. An aborted write is reported where an
+  aborted read is not, a write having possibly committed before it ended."
   [^js el write-id timeout ^js e]
   (handle-event! el [:write-failed {:request/id write-id
                                     :error      (transport/transport-error e timeout)}]))
 
 (defn- execute-write!
-  "Send a write and deliver its ack. As with a read, the rejection handler rides `then`, so a
-  throw while delivering is not reported as a write that failed."
+  "Send a write. Its controller is never stashed in k-abort, so a disconnect or a superseding read
+  leaves an in-flight write alone and only its own budget can end it."
   [^js el m]
-  ;; the write's controller exists only so its budget can cancel it. It is never stashed in
-  ;; k-abort, so a disconnect or a superseding read still leaves an in-flight write alone
-  (let [controller (js/AbortController.)
-        write-id   (:request/id m)]
-    (-> (.then (transport/perform! m controller)
-               (fn [result] (deliver! el :write result write-id))
-               (fn [^js e] (write-rejected! el write-id (:timeout m) e)))
-      (.catch delivery-threw!))))
+  (perform-request! el :write m (js/AbortController.) write-rejected!))
 
 (defn- find-resource
-  "The <server-resource> on the page whose resolved id is `target-id`, or nil. A resource's id is
-  its attribute, so the DOM already indexes this: no scan of every host on the page, and no
-  reaching into another element's instance storage to ask what it calls itself. A blank name
+  "The <server-resource> on the page whose resolved id is `target-id`, or nil. A blank name
   resolves to no id at all, so it names nothing rather than matching a blank attribute."
   [target-id]
   (when-let [id (model/resolve-resource-id target-id)]
@@ -190,14 +177,14 @@
                         "consumer applyResource threw:" e))))
 
 (defn- patch-intent!
-  "Hand a consumer's intent patch back in as an event. With a `target-id` the patch names a
-  sibling resource, which `step` routes."
+  "Hand a consumer's intent patch back in as an event. A `target-id` names a sibling resource,
+  which `step` routes."
   ([^js el patch] (handle-event! el [:intent-patch patch]))
   ([^js el patch target-id] (handle-event! el [:intent-patch (assoc patch :target-id target-id)])))
 
 (defn- consumer-ctx
-  "What a consumer may call back into. The same two closures for the element's whole life, so it
-  is built once at boot rather than rebuilt for every consumer of every notification."
+  "What a consumer may call back into. Built once at boot, the same two closures for the element's
+  whole life."
   [^js el]
   {:submit-intent! (fn submit-intent
                      ([patch] (patch-intent! el patch))
@@ -231,7 +218,7 @@
 
 (defn- route-intent!
   "Resolve the name `step` chose to an element and hand the patch over. A name that resolves to
-  nothing goes back in as an event, so the lost gesture reaches the trace."
+  nothing goes back in as an event."
   [^js el m]
   (if-let [^js target (find-resource (:resource/id m))]
     (handle-event! target [:intent-patch (:patch m)])
@@ -244,7 +231,7 @@
 
 ;; The executor, as data: one performer per effect tag, each taking the host and the effect value
 ;; and deciding nothing. `effect-handlers-cover-the-vocabulary` pins these keys against
-;; effect/tags, so an effect `step` learns to emit cannot go quietly unperformed.
+;; effect/tags.
 ;; Public for test purposes only
 (def effect-handlers
   {:fetch            execute-fetch!
@@ -267,19 +254,16 @@
   (let [r                          (du/getv el k-resource)
         {:keys [resource effects]} (resource/step r event)]
     (du/setv! el k-resource resource)
-    ;; Note: if no recorder is set then this is won't record anything
+    ;; Note: with no recorder set this records nothing
     (recorder/record! {:el el :event event :before r :after resource :effects effects})
     (run-effects! el effects)))
 
 (defn- read-boot-embed
-  "Read the <script type=\"application/json\"> embed inside the host and
-  run it through the same parse path as a network response. Returns the parsed response
-  value (or a protocol-failure marker for a broken embed), or nil when there is no embed."
+  "The <script type=\"application/json\"> embed inside the host, read through the same parse path
+  as a network response. Nil when there is no embed."
   [^js el]
   (when-let [^js script (.querySelector el "script[type=\"application/json\"]")]
-    (let [text (.-textContent script)
-          obj  (try (js/JSON.parse text) (catch :default _ nil))]
-      (wire/parse-envelope obj))))
+    (wire/parse-envelope (json-object (.-textContent script)))))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- element-descendants [^js el]
@@ -304,32 +288,31 @@
 
 (defn- carried-write
   "The write bookkeeping a reconnect inherits from the connection before it, and the only part of
-  the old value that survives a boot. `disconnect` leaves an in-flight write running because its
-  outcome still matters, so the slot naming it has to still be there when the ack lands, and the
-  counter has to keep counting or the next write would mint an id the orphan already answers to.
-
-  Reads need none of this: a disconnect aborts the in-flight one, so none outlives the connection
-  and the read counter is free to restart."
+  the old value that survives a boot. The slot naming an in-flight write has to still be there
+  when its ack lands, and the counter has to keep counting so the next write cannot mint an id the
+  orphan already answers to. Reads need none of this, a disconnect aborts the in-flight one."
   [^js el]
   (select-keys (du/getv el k-resource) [:active-write :write-count]))
 
+;; Which gesture classes push a history entry rather than replace one.
+(def ^:private default-history-policy {:navigation :push})
+
 (defn- boot!
-  "When reloading, read the current url and see if there are url parameters that
-  have to be processed to get the element in the right state (e.g. table sorting).
-  If there is an embedderd version, load that first."
+  "Build the resource value from the host's attributes and the current URL, wire the popstate
+  listener and the consumer context, collect the consumers, and hand in :connected. An SSR embed,
+  if present, is read first."
   [^js el]
   ;; Read once at connect, like the endpoint, so the value step builds from cannot change under
   ;; an in-flight request.
-  (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
-        history-policy {:navigation :push}
-        on-popstate    (fn [_e] (handle-popstate el resource-id))
-        embed          (read-boot-embed el)
-        carried        (carried-write el)]
+  (let [resource-id (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
+        on-popstate (fn [_e] (handle-popstate el resource-id))
+        embed       (read-boot-embed el)
+        carried     (carried-write el)]
     (du/setv! el k-resource (merge {:resource/id    resource-id
                                     :endpoint       (du/get-attr el model/attr-src)
                                     :last-accepted  nil
                                     :url-intent     (current-url-intent resource-id)
-                                    :history-policy history-policy}
+                                    :history-policy default-history-policy}
                                    (read-request-config el)
                                    carried))
     (du/setv! el k-popstate on-popstate)
@@ -343,8 +326,7 @@
 
 (defn- next-generation!
   "Open a new lifecycle generation on `el` and return it. Every connect and every disconnect
-  starts one, so a deferred boot can tell whether the connection it was scheduled for is still
-  the current one."
+  starts one, so a deferred boot can tell whether its connection is still the current one."
   [^js el]
   (let [n (inc (or (du/getv el k-generation) 0))]
     (du/setv! el k-generation n)
@@ -362,9 +344,8 @@
 (def ^:private undefined-tags-budget-ms 5000)
 
 (defn- report-undefined-tags!
-  "Name the tags still undefined after the budget. Until every custom element inside the host is
-  defined the boot cannot run, so one unregistered component leaves the resource issuing no
-  request at all, with nothing to see."
+  "Name the tags still undefined after the budget. The boot waits on every custom element inside
+  the host, so one unregistered component leaves the resource issuing no request at all."
   [^js el tags generation]
   (js/setTimeout
    (fn []
@@ -388,13 +369,12 @@
                (when (= generation (du/getv el k-generation))
                  (boot! el)))))))
 
-;; register! always installs attributeChangedCallback and calls this — so it must exist.
+;; register! always installs attributeChangedCallback and calls this, so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
 
 ;; The replay hook. BareReplay's dock calls el.projectResource(value) to push a reconstructed
-;; (time-travelled) resource value at the consumers, so the components paint that historical
-;; state. It reuses the same notify path a live step uses. The sole caller is
-;; barereplay.dock, a sibling project.
+;; resource value at the consumers, reusing the same notify path a live step uses. The sole
+;; caller is barereplay.dock, a sibling project.
 (defn- setup-prototype! [^js proto]
   (.defineProperty js/Object proto "projectResource"
                    #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))

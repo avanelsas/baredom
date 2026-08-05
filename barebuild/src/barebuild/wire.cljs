@@ -4,13 +4,10 @@
    [goog.object :as gobj]
    [clojure.string :as str]))
 
-(def ^:private outcome-accepted "accepted")
-(def ^:private outcome-rejected "rejected")
-
-;; Conversion 1 reads every member the server sent, so every member is read through one of these
-;; guards. A member of the wrong kind yields nothing to read rather than throwing: a throw here
-;; rejects the fetch promise, and the edge classifies a rejected fetch as a transport failure,
-;; which would tell the user the server could not be reached when it answered.
+;; Conversion 1 reads every member the server sent through one of these guards. A member of the
+;; wrong kind yields nothing to read rather than throwing, since the edge classifies a rejected
+;; fetch as a transport failure and would report a server that answered as one that could not be
+;; reached.
 (defn- object->map
   "`x` as a CLJS map when it is a JSON object, nil for anything else."
   [x]
@@ -18,7 +15,7 @@
 
 (defn- array->vec
   "`x` mapped through `f` when it is a JSON array, nil for anything else. An empty array maps to
-  an empty vector, so a list declared empty stays distinct from one not declared at all."
+  an empty vector, distinct from a list not declared at all."
   [f x]
   (when (array? x) (mapv f x)))
 
@@ -34,10 +31,8 @@
     keyword))
 
 (defn- accepted-defect
-  "The reason an accepted envelope cannot be read, or nil when it can. The query echo has to be
-  an object because an unreadable one coerced to the empty query would adopt as intent and
-  rewrite the address bar on the strength of a broken response. What a readable shape then
-  declares is the contract's business rather than the envelope's."
+  "The reason an accepted envelope cannot be read, or nil when it can. What a readable shape then
+  declares is the contract's business, not the envelope's."
   [js-obj]
   (let [shape (gobj/get js-obj "shape")]
     (cond
@@ -54,14 +49,14 @@
     (not (readable-object? (gobj/get js-obj "query"))) :malformed-query))
 
 (defn- ->option
-  "One selectable value for a field. `value` is opaque domain data and stays a string, `label` is
-  what a control shows for it."
+  "One selectable value for a field. `value` stays an opaque string, `label` is what a control
+  shows for it."
   [^js o]
   {:value (gobj/get o "value") :label (gobj/get o "label")})
 
 (defn- ->field
-  "Transforms a js field descriptor to a CLJS field map. Options that are not a list are read as
-  no options at all, leaving the field bare exactly as an absent list does."
+  "A js field descriptor as a CLJS field map. Options that are not a list read as no options at
+  all, leaving the field bare exactly as an absent list does."
   [^js f]
   (let [options (array->vec ->option (gobj/get f "options"))]
     (cond-> {:key (gobj/get f "key") :type (keyword (gobj/get f "type"))}
@@ -69,58 +64,56 @@
       (some? (gobj/get f "enum"))     (assoc :enum (js->clj (gobj/get f "enum")))
       options                         (assoc :options options))))
 
+(defn- envelope-head
+  "The members every envelope carries whatever its outcome."
+  [js-obj outcome]
+  {:outcome    outcome
+   :request/id (gobj/get js-obj "requestId")
+   :revision   (gobj/get js-obj "revision")
+   :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))})
+
 (defn- ->accepted
-  "Transforms js object to accepted CLJS map. A shape that declares no list of fields yields a
-  nil :fields, which the contract check reads as the missing declaration it is. An empty list
-  stays an empty list, a shape that genuinely declares nothing to check. Page info follows the
-  same rule: absent or unreadable, it is nothing at all rather than an empty bag the server never
-  sent."
+  "A js accepted envelope as a CLJS map. A shape declaring no field list yields a nil :fields,
+  which the contract check reads as the missing declaration it is. An empty list stays an empty
+  list. Page info follows the same rule."
   [js-obj]
   (let [shape (gobj/get js-obj "shape")]
-    {:outcome    :accepted
-     :request/id (gobj/get js-obj "requestId")
-     :revision   (gobj/get js-obj "revision")
-     :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))
-     :value      (js->clj (gobj/get js-obj "value"))
-     :page-info  (some-> (object->map (gobj/get js-obj "pageInfo"))
-                   (update-keys camel->kebab-keyword))
-     :shape      {:id-key (gobj/get shape "idKey")
-                  :fields (array->vec ->field (gobj/get shape "fields"))}}))
+    (assoc (envelope-head js-obj :accepted)
+           :value     (js->clj (gobj/get js-obj "value"))
+           :page-info (some-> (object->map (gobj/get js-obj "pageInfo"))
+                        (update-keys camel->kebab-keyword))
+           :shape     {:id-key (gobj/get shape "idKey")
+                       :fields (array->vec ->field (gobj/get shape "fields"))})))
 
 (defn- ->rejected
-  "Transforms js object to error CLJS map"
+  "A js rejected envelope as a CLJS map."
   [js-obj]
   (let [error (gobj/get js-obj "error")]
-    {:outcome    :rejected
-     :request/id (gobj/get js-obj "requestId")
-     :revision   (gobj/get js-obj "revision")
-     :query      (query/canonicalize-query (object->map (gobj/get js-obj "query")))
-     :error      {:code    (keyword (gobj/get error "code"))
-                  :message (gobj/get error "message")
-                  :details (js->clj (gobj/get error "details"))}}))
+    (assoc (envelope-head js-obj :rejected)
+           :error {:code    (keyword (gobj/get error "code"))
+                   :message (gobj/get error "message")
+                   :details (js->clj (gobj/get error "details"))})))
 
 (defn- protocol-failure
-  "Return protocol failure map"
+  "A protocol-failure marker naming `reason`."
   [reason extra]
   {:protocol-failure (merge {:reason reason} extra)})
 
+;; The envelope vocabulary as data: each outcome the protocol defines, what makes one unreadable,
+;; and how a readable one is read. An outcome not in the table is one this client does not speak.
+(def ^:private envelope-kinds
+  {"accepted" {:defect accepted-defect :parse ->accepted}
+   "rejected" {:defect rejected-defect :parse ->rejected}})
+
 (defn parse-envelope
-  "Parses a server JS object to a CLJS map
-  Returns protocol failures if something is amiss"
+  "A server JS object as an accepted or rejected envelope, or a protocol-failure marker when it
+  cannot be read."
   [js-obj]
   (if (nil? js-obj)
     (protocol-failure :empty-body {})
     (let [outcome (gobj/get js-obj "outcome")]
-      (cond
-        (= outcome outcome-accepted)
-        (if-let [defect (accepted-defect js-obj)]
-          (protocol-failure defect {:outcome outcome})
-          (->accepted js-obj))
-
-        (= outcome outcome-rejected)
-        (if-let [defect (rejected-defect js-obj)]
-          (protocol-failure defect {:outcome outcome})
-          (->rejected js-obj))
-
-        :else
+      (if-let [{:keys [defect parse]} (envelope-kinds outcome)]
+        (if-let [reason (defect js-obj)]
+          (protocol-failure reason {:outcome outcome})
+          (parse js-obj))
         (protocol-failure :unknown-outcome {:outcome outcome})))))

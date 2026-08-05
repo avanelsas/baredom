@@ -23,11 +23,10 @@
 (def default-timeout-ms 60000)
 
 (defn parse-timeout
-  "The request budget the `timeout` attribute declares, read once. `:ms` is the budget in
-  milliseconds, nil meaning no budget at all, and `:valid?` says whether the attribute was
-  something a budget could be read from, which is what decides whether to report it. A positive
-  value sets the budget, 0 removes it, and an absent or unusable attribute leaves the default in
-  place, so a typo cannot silently drop it."
+  "The request budget the `timeout` attribute declares. `:ms` is the budget in milliseconds, nil
+  meaning no budget at all, and `:valid?` says whether a budget could be read from the attribute.
+  A positive value sets the budget, 0 removes it, and an absent or unusable attribute leaves the
+  default in place."
   [attr-value]
   (let [text (str/trim (str attr-value))
         ms   (when-not (str/blank? text) (parse-long text))]
