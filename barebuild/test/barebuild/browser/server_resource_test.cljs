@@ -168,6 +168,39 @@
                       (is false (str "the intent did not reach the odd id: " e))
                       (done))))))))
 
+(deftest a-consumer-moved-under-another-resource-submits-through-that-one
+  (testing "a consumer caches the ctx it is applied with, so the cache has to follow the ctx it is
+            handed. Cached write-once, a consumer that changes hands keeps calling back into the
+            resource it left and its gestures drive the wrong element"
+    (async done
+      (support/stub-accepted! [] empty-shape)
+      (let [alpha (support/mount-consumers! "alpha" "/api/alpha" ["x-spy-consumer"])
+            beta  (js/document.createElement "server-resource")]
+        (.setAttribute beta "resource-id" "beta")
+        (.setAttribute beta "src" "/api/beta")
+        (-> (support/settle #(some (comp :accepted) @support/spy-calls))
+            (.then (fn []
+                     ;; the move. beta collects the consumer at its own boot and applies its ctx,
+                     ;; over the one alpha left behind
+                     (.appendChild beta (.querySelector alpha "x-spy-consumer"))
+                     (.appendChild js/document.body beta)
+                     (support/settle #(= 2 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (support/submit-intent! beta {:query-patch {:sort "owner"}})
+                     (support/settle #(= 3 (count @support/fetch-calls)))))
+            (.then (fn []
+                     (let [refetch (last @support/fetch-calls)]
+                       (is (re-find #"/api/beta" refetch)
+                           "the gesture drives the resource the consumer now belongs to")
+                       (is (not (re-find #"/api/alpha" refetch))
+                           "and not the one that applied it first"))
+                     (is (re-find #"[?&]beta\.sort=owner" (.-search js/location))
+                         "with the url written in the new resource's scope")
+                     (done)))
+            (.catch (fn [e]
+                      (is false (str "the moved consumer did not repoint: " e))
+                      (done))))))))
+
 (deftest an-intent-naming-a-resource-that-is-not-there-does-not-vanish-silently
   (async done
     (support/stub-accepted! [] empty-shape)

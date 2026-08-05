@@ -1,18 +1,16 @@
 (ns barebuild.effect
   "The effect vocabulary: every value `step` may hand back for the executor to perform, and
-  nothing else. Each constructor takes the parts of its effect already computed, so this
-  namespace knows what an effect *is* while `resource` knows when to emit one and what to put in
-  it. The executor in `elements/server-resource` performs exactly `tags` and decides nothing.")
+  nothing else. This namespace knows what an effect is, `resource` knows when to emit one and
+  what to put in it, and the executor in `elements/server-resource` performs exactly `tags`.")
 
 ;; Public for test purposes only
 (def tags
-  "Every effect a transition can return. An executor covering a different set has drifted from
-  the vocabulary rather than merely lagged it, which is what pins these two together."
+  "Every effect a transition can return, pinned against the executor's handlers."
   #{:fetch :write :abort :url-write :route-intent :notify-consumers :diagnostic})
 
 (defn diagnostic
   "Say something happened without changing anything, optionally carrying `detail` the executor
-  prints beside the code. The executor only console.debugs it, it drives no state."
+  prints beside the code. The executor only console.debugs it."
   ([code] [:diagnostic {:code code}])
   ([code detail] [:diagnostic {:code code :detail detail}]))
 

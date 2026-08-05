@@ -12,8 +12,8 @@
 
 (defn owned-url-keys
   "The keys in `all-keys` a resource owns: its `<id>.`-prefixed keys when named, or the bare
-  undotted keys when unnamed (blank id). Bare and namespaced keys never overlap, so an unnamed
-  root resource and named siblings can share one URL without colliding."
+  undotted keys when unnamed (blank id). The two never overlap, so a root resource and named
+  siblings share one URL without colliding."
   [resource-id all-keys]
   (if (str/blank? resource-id)
     (filterv #(not (str/includes? % ".")) all-keys)
@@ -38,8 +38,8 @@
     (if (str/blank? qs) pathname (str pathname "?" qs))))
 
 (defn build-scoped-url
-  "Build the url from the resource's params, scoped by its resource-id. A named resource owns
-  `<id>.`-prefixed keys (e.g. tasks.sort=start); an unnamed (blank id) resource owns the bare
+  "The url built from the resource's params, scoped by its resource-id. A named resource owns
+  `<id>.`-prefixed keys (e.g. tasks.sort=start), an unnamed (blank id) resource owns the bare
   keys and writes them without a prefix (sort=start)."
   [search pathname resource-id new-params]
   (-> (js/URLSearchParams. search)
@@ -48,8 +48,8 @@
 
 (defn parse-scoped-query
   "The query a resource owns in `search`: its `<id>.`-prefixed keys with the prefix stripped, or
-  the bare undotted keys when unnamed. The inverse of build-scoped-url, in the query's normal
-  form, so what comes off the address bar compares equal to a server's echo of the same query."
+  the bare undotted keys when unnamed. The inverse of `build-scoped-url`, in the query's normal
+  form."
   [search resource-id]
   (let [params (js/URLSearchParams. search)
         prefix (url-prefix resource-id)]

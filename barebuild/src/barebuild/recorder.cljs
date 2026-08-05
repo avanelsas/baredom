@@ -7,5 +7,7 @@
 
 (defn record! [entry]
   (when-some [f @hook]
-    (try (f entry) (catch :default _ nil)))
+    (try (f entry)
+         (catch :default e
+           (js/console.error "[barebuild] the recorder threw:" e))))
   nil)

@@ -1,6 +1,6 @@
 (ns barebuild.recorder-test
   "The dev-only recording seam: nil hook by default, set via set-recorder!,
-   and a hook that throws must never propagate into the runtime."
+   and a hook that throws is reported without propagating into the runtime."
   (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [barebuild.recorder :as recorder]))
 
@@ -18,7 +18,14 @@
     (testing "every entry reaches the set recorder, in order"
       (is (= [{:event [:a]} {:event [:b]}] @seen)))))
 
-(deftest a-throwing-recorder-is-swallowed
-  (recorder/set-recorder! (fn [_] (throw (js/Error. "boom"))))
-  (testing "a buggy recorder cannot break the runtime — record! swallows it and returns nil"
-    (is (nil? (recorder/record! {:event [:a]})))))
+(deftest a-throwing-recorder-is-reported-not-propagated
+  (let [errors     (atom [])
+        real-error (.-error js/console)]
+    (set! (.-error js/console) (fn [& args] (swap! errors conj (vec args))))
+    (try
+      (recorder/set-recorder! (fn [_] (throw (js/Error. "boom"))))
+      (testing "a buggy recorder cannot break the runtime, record! isolates it and returns nil"
+        (is (nil? (recorder/record! {:event [:a]}))))
+      (testing "and says so rather than failing in silence"
+        (is (= 1 (count @errors))))
+      (finally (set! (.-error js/console) real-error)))))

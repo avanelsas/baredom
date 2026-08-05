@@ -7,8 +7,8 @@
 
 (defn- valid-datestr? [date-str]
   ;; Intentionally lenient. js/Date.parse accepts more than the server's strict ISO
-  ;; LocalDate/parse, so the client may pass a date the server rejects. That is ok,
-  ;; the server is the authority. This local check is only for a faster UX.
+  ;; LocalDate/parse, so the client may pass a date the server rejects. The server is the
+  ;; authority, this check is only for a faster UX.
   (not (js/isNaN (.parse js/Date date-str))))
 
 (defn- validate-value-type
@@ -32,9 +32,9 @@
   {:path path :code code :message message})
 
 (defn- validate-shape
-  "The declaration errors in `shape`. A nil :fields is a shape that carried no field list at all,
-  so there is nothing to check the rows against and the payload cannot be trusted. An empty list
-  is a shape that declares nothing to check, which is a different claim and a valid one."
+  "The declaration errors in `shape`. A nil :fields carried no field list at all, so there is
+  nothing to check the rows against. An empty list declares nothing to check, a different claim
+  and a valid one."
   [shape]
   (cond-> []
     (not (:id-key shape)) (conj (path-err [:shape :id-key] :missing-id-key "shape is missing :id-key"))
@@ -61,7 +61,9 @@
             (path-err [:value row-idx key] :missing-field
                       (str "row " row-idx " is missing field \"" key "\""))
 
-            (not (validate-value-type (get row key) type))
+            ;; a field declaring no type has no type error, which is also what makes `name` below
+            ;; safe to call
+            (and type (not (validate-value-type (get row key) type)))
             (path-err [:value row-idx key] :wrong-type
                       (str "row " row-idx " field \"" key "\" is not a " (name type)))))
         fields))
@@ -70,10 +72,10 @@
   (into [] (comp (map-indexed (fn [idx row] (validate-row idx row fields))) cat) value))
 
 (defn validate-contract
-  "verifies if an accepted payload contains the right shape"
+  "The contract errors in an accepted `payload`, as a vector."
   [payload]
   (let [{:keys [shape value]} payload
-        ;; use this to skip checks inside the value. No use to look further if this is firing
+        ;; a broken value stops the row checks, there is nothing further to look into
         value-errors (validate-value value)]
     (into (vec (validate-shape shape))
           (if (seq value-errors)
@@ -86,7 +88,7 @@
   [key code message]
   {:field key :code code :message message})
 
-; notice that error mapping is intentionally different for write (vs read)
+;; Error mapping is intentionally different for write and read.
 ;; Public for test purposes only, `conform-payload` below is the write-side entry point
 (defn validate-payload
   "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`."
@@ -110,14 +112,13 @@
         (:fields shape)))
 
 ;; Reading a record as its shape declares it ----------------------------------
-;; A read arrives as JSON, so a field the shape calls a number is already one. A write starts in
-;; a form, where every field is a string because that is what the DOM holds. The declared type is
-;; the same on both sides, so the two are reconciled here rather than by every consumer that
+;; A read arrives as JSON with its types intact. A write starts in a form, where every field is a
+;; string because that is what the DOM holds. Reconciled here rather than in every consumer that
 ;; builds a record.
 
 (defn- coerce-value
-  "`v` read as the declared `type`. A value that cannot be read as its type is returned exactly as
-  it came, so `validate-payload` reports it as the wrong type instead of a NaN reaching the wire."
+  "`v` read as the declared `type`. A value that cannot be read as its type comes back exactly as
+  it came, for `validate-payload` to report as the wrong type."
   [v type]
   (if (and (= :number type) (string? v) (not (str/blank? v)))
     (or (parse-double v) v)
@@ -125,7 +126,7 @@
 
 (defn- coerce-record
   "`record` with every field the shape declares read as its declared type. A field the record does
-  not carry stays absent rather than appearing as nil."
+  not carry stays absent."
   [record shape]
   (reduce (fn [m {:keys [key type]}]
             (if (contains? m key)
@@ -135,11 +136,9 @@
           (:fields shape)))
 
 (defn conform-payload
-  "The write-side entry point: `record` read as `shape` declares it, with whatever still does not
-  fit. Returns `{:record <conformed> :errors [...]}`, the first being what to send and the second
-  what to show. Validating before coercing would report every number field as the wrong type, and
-  coercing in each consumer would have each of them rediscover the types the shape already
-  declares, so the order is settled here once."
+  "The write-side entry point. Returns {:record <`record` read as `shape` declares it> :errors
+  [...]}, the first being what to send and the second what to show. Coercing precedes validating,
+  so a number field arriving from a form as a string is not reported as the wrong type."
   [record shape]
   (let [conformed (coerce-record record shape)]
     {:record conformed
