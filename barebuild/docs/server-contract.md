@@ -146,7 +146,11 @@ stays domain-agnostic. It never hardcodes field names. The shape tells it what t
 - **`idKey`**: The field that uniquely identifies a record. Every record must have it, and ids must
   be unique.
 - **`fields`**: The declared, consumable fields. Each has a `key` and a `type`, one of
-  **`string` · `number` · `date` · `url`**. `null` is allowed for any field.
+  **`string` · `number` · `date` · `url`**. `null` is allowed for any field. `fields` is
+  **mandatory**. A shape that carries no field list declares nothing to check the records
+  against, and is a contract failure rather than a response whose records go unchecked. Send
+  `[]` to say there is genuinely nothing to check. A field whose `type` is absent is checked
+  for presence only, exactly as an absent `required` or `enum` constrains nothing.
 - **`required`** *(optional, boolean)*: the field must be present and non-blank in a create
   payload.
 - **`enum`** *(optional, array)*: the only permitted values for the field.
@@ -175,6 +179,12 @@ server-side.
 On every accepted response BareBuild **validates the records against this shape** (id present and
 unique, each declared field present, each value the declared type). A mismatch is a *contract
 failure*: the response is not installed and the last good view stays.
+
+`shape` and `query` must both be JSON **objects**, and `fields` and `options` must both be JSON
+**arrays**. A member of the wrong kind is a *protocol failure*, a broken envelope, rather than a
+contract failure: there is no readable declaration to check anything against. The two reach a
+consumer as different tags, so it can say "the server sent an unexpected response" rather than
+"the server's data did not match the expected format".
 
 ## Two rules to keep in mind
 
