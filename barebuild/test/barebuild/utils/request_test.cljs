@@ -38,12 +38,20 @@
 ;; --- request: the shared request builder -----------------------------------
 
 (deftest request-builds-a-collection-get-with-the-query
-  (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1&direction=asc&sort=owner"}
+  (is (= {:request/id "tasks:1"
+          :method     "GET"
+          :url        "/api/tasks?requestId=tasks:1&direction=asc&sort=owner"}
          (request/request {:endpoint   "/api/tasks"
                          :method     "GET"
                          :request-id "tasks:1"
                          :query      {:sort "owner" :direction "asc"}}))
-      "no segment -> the collection; requestId leads, then the query, key-sorted"))
+      "no segment -> the collection, requestId leads, then the query, key-sorted"))
+
+(deftest request-carries-its-id-as-a-key-not-only-in-the-url
+  (testing "the executor names every outcome by the id it minted, so the id belongs to the
+            request value. Leaving it in the URL alone made each caller assoc it back on"
+    (is (= "tasks:w1" (:request/id (request/request {:endpoint "/api/tasks" :method "DELETE"
+                                                   :segment 7 :request-id "tasks:w1"}))))))
 
 (deftest request-omits-an-empty-query
   (testing "an empty query contributes nothing — no dangling separator"
@@ -65,19 +73,20 @@
       (is (re-find #"requestId=tasks:" (:url (request/request parts)))))))
 
 (deftest request-appends-a-member-segment
-  (is (= {:method "DELETE" :url "/api/tasks/7?requestId=tasks:w1"}
+  (is (= {:request/id "tasks:w1" :method "DELETE" :url "/api/tasks/7?requestId=tasks:w1"}
          (request/request {:endpoint "/api/tasks" :segment 7
                          :method "DELETE" :request-id "tasks:w1"}))
-      "a member op addresses /endpoint/id — and carries no body or headers"))
+      "a member op addresses /endpoint/id, and carries no body or headers"))
 
 (deftest request-with-a-body-adds-the-content-type
   (let [record {"title" "Ship it" "status" "todo"}
         req    (request/request {:endpoint "/api/tasks" :segment 7 :method "PUT"
                                :request-id "tasks:w1" :body record})]
-    (is (= {:method  "PUT"
-            :url     "/api/tasks/7?requestId=tasks:w1"
-            :body    record
-            :headers {"content-type" "application/json"}}
+    (is (= {:request/id "tasks:w1"
+            :method     "PUT"
+            :url        "/api/tasks/7?requestId=tasks:w1"
+            :body       record
+            :headers    {"content-type" "application/json"}}
            req))
     (testing "the body passes through as CLJS — serialization belongs at the network edge,
               and an =-comparable value is what makes the whole write spine testable"
@@ -86,36 +95,44 @@
 (deftest request-without-config-is-unchanged
   (testing "an unconfigured resource builds exactly the request it built before request
             config existed, no empty :headers, no :credentials key"
-    (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1"}
+    (is (= {:request/id "tasks:1" :method "GET" :url "/api/tasks?requestId=tasks:1"}
            (request/request {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"
                            :credentials nil :headers nil :timeout nil})))
-    (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1"}
+    (is (= {:request/id "tasks:1" :method "GET" :url "/api/tasks?requestId=tasks:1"}
            (request/request {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"})))))
 
 (deftest request-carries-what-goes-on-the-wire-and-how-long-to-wait
   (testing "static headers ride a bodiless read"
-    (is (= {:method  "GET"
-            :url     "/api/tasks?requestId=tasks:1"
-            :headers {"x-api-key" "k"}}
+    (is (= {:request/id "tasks:1"
+            :method     "GET"
+            :url        "/api/tasks?requestId=tasks:1"
+            :headers    {"x-api-key" "k"}}
            (request/request {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"
                            :headers {"x-api-key" "k"}}))))
   (testing "the credentials mode is a request key, not a header"
-    (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1" :credentials "include"}
+    (is (= {:request/id  "tasks:1"
+            :method      "GET"
+            :url         "/api/tasks?requestId=tasks:1"
+            :credentials "include"}
            (request/request {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"
                            :credentials "include"}))))
   (testing "the budget rides along too, so the executor reads how long to wait off the request
             rather than deciding it. It is never sent, unlike the two above"
-    (is (= {:method "GET" :url "/api/tasks?requestId=tasks:1" :timeout 5000}
+    (is (= {:request/id "tasks:1"
+            :method     "GET"
+            :url        "/api/tasks?requestId=tasks:1"
+            :timeout    5000}
            (request/request {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"
                            :timeout 5000})))))
 
 (deftest request-content-type-wins-over-a-configured-one
   (testing "the write contract is plain JSON, so BareBuild owns content-type. Every other
             header is the author's and passes through beside it"
-    (is (= {:method  "POST"
-            :url     "/api/tasks?requestId=tasks:w1"
-            :body    {"title" "x"}
-            :headers {"x-api-key" "k" "content-type" "application/json"}}
+    (is (= {:request/id "tasks:w1"
+            :method     "POST"
+            :url        "/api/tasks?requestId=tasks:w1"
+            :body       {"title" "x"}
+            :headers    {"x-api-key" "k" "content-type" "application/json"}}
            (request/request {:endpoint "/api/tasks" :method "POST" :request-id "tasks:w1"
                            :body {"title" "x"}
                            :headers {"x-api-key"    "k"

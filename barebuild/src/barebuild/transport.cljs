@@ -68,24 +68,20 @@
          (fail)
          (.addEventListener signal "abort" fail))))))
 
-(defn- expiring
-  "A promise that rejects once `ms` has passed, aborting `controller` on the way so the socket is
-  released. Stamps its handle into `timer` for the caller to cancel."
-  [ms ^js controller timer]
-  (js/Promise.
-   (fn [_resolve reject]
-     (let [e (timeout-error ms)]
-       (reset! timer (js/setTimeout (fn [] (.abort controller e) (reject e)) ms))))))
-
 (defn bounded
   "Race `operation` against the two things that end a request early: an abort, which a disconnect
-  raises, and the budget running out."
+  raises, and the budget running out.
+
+  Both end the same way. A spent budget aborts the controller *with the timeout error as the
+  reason*, and `aborted` rejects with whatever reason the signal carries, so the budget needs no
+  racer of its own. It is a timer, not a promise, and the only thing to undo when the operation
+  wins first is the timer itself."
   [operation ms ^js controller]
-  (let [timer  (atom nil)
-        racers (cond-> [operation (aborted controller)]
-                 ms (conj (expiring ms controller timer)))]
-    (-> (js/Promise.race (into-array racers))
-      (.finally (fn [] (js/clearTimeout @timer))))))
+  (let [race (js/Promise.race #js [operation (aborted controller)])]
+    (if-not ms
+      race
+      (let [timer (js/setTimeout (fn [] (.abort controller (timeout-error ms))) ms)]
+        (.finally race (fn [] (js/clearTimeout timer)))))))
 
 (defn transport-error
   "Classify a rejected request: a spent budget, or a transport failure."
@@ -114,15 +110,18 @@
              (parse-body resp)
              {:network-failure {:kind :http-status :status (.-status resp)}}))))
 
+(defn- send!
+  "Send the decorated request under `controller`'s signal, unless decorating it already failed, in
+  which case that failure is the result and nothing goes out."
+  [m ^js controller {:keys [init failure]}]
+  (or failure
+      (fetch-envelope (:url m)
+                      (js/Object.assign init #js {:signal (.-signal controller)}))))
+
 (defn perform!
   "The request pipeline shared by reads and writes: decorate, send, and give up when the budget
   runs out. Resolves to a classified result, or rejects for the caller to classify."
   [m ^js controller]
-  (bounded (-> (request-init m)
-             (.then (fn [{:keys [init failure]}]
-                      (or failure
-                          (fetch-envelope (:url m)
-                                          (js/Object.assign init
-                                                            #js {:signal (.-signal controller)}))))))
+  (bounded (.then (request-init m) (fn [decorated] (send! m controller decorated)))
            (:timeout m)
            controller))
