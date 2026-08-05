@@ -44,7 +44,7 @@ flowchart TB
   API -->|"JSON envelope: value · shape · query echo · requestId"| WIRE
   API -->|"JSON ack: outcome · requestId · revision"| WIRE
   WIRE -->|"CLJS response, or protocol-failure marker"| STEP
-  STEP -->|"effects: fetch · write · url-write · notify · abort · diagnostic"| EXEC
+  STEP -->|"effects: fetch · write · url-write · route-intent · notify · abort · diagnostic"| EXEC
   EXEC -->|"url-write: push/replaceState (scoped)"| URL
   EXEC -->|"notify-consumers: applyResource(view, ctx)"| PROJ
   PROJ --> C2

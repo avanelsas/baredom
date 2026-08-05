@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- An envelope member of the wrong kind is reported as a protocol failure rather than as a server that could not be reached. A `shape` or `query` that is not an object, and a `fields` or `options` that is not a list, no longer end the request as a transport failure.
+- `shape.fields` is mandatory. A shape carrying no field list is a contract failure rather than a response whose records go unchecked.
+- A field that declares no `type` is checked for presence only, as an absent `required` or `enum` constrains nothing.
+- A defect while delivering a response is reported as itself rather than as a network failure.
+- `normalize-headers` moves from the server-resource model to `barebuild.utils.request`, and the request pipeline moves to a new `barebuild.transport`.
+
 ## 0.6.0
 
 - Breaking. `barebuild.utils` is split into `barebuild.utils.url`, `barebuild.utils.query` and `barebuild.utils.request`.
