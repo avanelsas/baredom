@@ -229,7 +229,7 @@
 
 ;; The executor, as data: one performer per effect tag, each taking the host and the effect value
 ;; and deciding nothing. `effect-handlers-cover-the-vocabulary` pins these keys against
-;; resource/effect-tags, so an effect `step` learns to emit cannot go quietly unperformed.
+;; effect/tags, so an effect `step` learns to emit cannot go quietly unperformed.
 ;; Public for test purposes only
 (def effect-handlers
   {:fetch            execute-fetch!
