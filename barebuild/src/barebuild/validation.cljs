@@ -55,18 +55,16 @@
       (conj (path-err [:value] :duplicate-id "row ids are not unique")))))
 
 (defn- validate-row [row-idx row fields]
-  (mapcat (fn [{:keys [key type]}]
-            (cond
-              (not (contains? row key))
-              [(path-err [:value row-idx key] :missing-field
-                    (str "row " row-idx " is missing field \"" key "\""))]
+  (keep (fn [{:keys [key type]}]
+          (cond
+            (not (contains? row key))
+            (path-err [:value row-idx key] :missing-field
+                      (str "row " row-idx " is missing field \"" key "\""))
 
-              (not (validate-value-type (get row key) type))
-              [(path-err [:value row-idx key] :wrong-type
-                    (str "row " row-idx " field \"" key "\" is not a " (name type)))]
-
-              :else []))
-          fields))
+            (not (validate-value-type (get row key) type))
+            (path-err [:value row-idx key] :wrong-type
+                      (str "row " row-idx " field \"" key "\" is not a " (name type)))))
+        fields))
 
 (defn- validate-rows [fields value]
   (into [] (comp (map-indexed (fn [idx row] (validate-row idx row fields))) cat) value))
@@ -83,35 +81,29 @@
             (concat (validate-ids (:id-key shape) value)
                     (validate-rows (:fields shape) value))))))
 
-(defn- blank-or-nil? [s]
-  (or (nil? s)
-      (str/blank? s)))
-
 (defn- field-err
-  "A write-side validation error for `field`."
-  [field code message]
-  {:field (:key field) :code code :message message})
+  "A write-side validation error for the field named `key`."
+  [key code message]
+  {:field key :code code :message message})
 
 ; notice that error mapping is intentionally different for write (vs read)
-(defn validate-payload [payload shape]
-  (mapcat (fn [{:keys [key] :as field}]
-            (let [v (get payload key)]
-              (cond
-                (and (:required field)
-                     (blank-or-nil? v))
-                [(field-err field :missing-required
-                            (str "Required field " key " is missing."))]
+(defn validate-payload
+  "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`."
+  [payload shape]
+  (into []
+        (keep (fn [{:keys [key type required enum]}]
+                (let [v     (get payload key)
+                      given (not (str/blank? v))]
+                  (cond
+                    (and required (str/blank? v))
+                    (field-err key :missing-required
+                               (str "Required field " key " is missing."))
 
-                (and (not (blank-or-nil? v))
-                     (not (validate-value-type v (:type field))))
-                [(field-err field :wrong-type
-                            (str "The field " key " has the wrong type. Should be " (:type field)))]
+                    (and given (not (validate-value-type v type)))
+                    (field-err key :wrong-type
+                               (str "The field " key " has the wrong type. Should be " type))
 
-                (and (:enum field)
-                     (not (blank-or-nil? v))
-                     (not (some #(= v %) (:enum field))))
-                [(field-err field :not-in-enum
-                            (str "The field " key " is not in the enum " (:enum field)))]
-
-                :else [])))
-          (:fields shape)))
+                    (and enum given (not (some #(= v %) enum)))
+                    (field-err key :not-in-enum
+                               (str "The field " key " is not in the enum " enum))))))
+        (:fields shape)))

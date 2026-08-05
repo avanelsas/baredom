@@ -225,16 +225,18 @@
   (some? (in-flight r :write)))
 
 (defn- install-accepted
-  "Install an accepted envelope: set last-accepted and, when adopt?, adopt the query echo
-  as intent. Returns the resource and whether the URL needs a corrective write."
+  "Install an accepted envelope: set last-accepted and, when adopt?, adopt the query echo as
+  intent. Returns `{:installed <resource> :correct? <bool>}`, the second saying whether the URL
+  needs a corrective write. Deliberately not keyed `:resource`, which is the step outcome's
+  spelling and this is not one."
   [resource payload adopt?]
   (let [echo      (:query payload)
         installed (assoc resource :last-accepted payload :last-failure nil)]
-    {:resource (if adopt?
-                 (assoc installed :url-intent echo)
-                 installed)
-     :correct? (and adopt?
-                    (not= echo (:url-intent resource)))}))
+    {:installed (if adopt?
+                  (assoc installed :url-intent echo)
+                  installed)
+     :correct?  (and adopt?
+                     (not= echo (:url-intent resource)))}))
 
 (defn- accepted-effects [resource echo correct?]
   (if correct?
@@ -267,10 +269,10 @@
       (record-failure resource kind
                       (failure :contract kind (:query (in-flight resource kind))
                                {:response payload :errors errors}))
-      (let [adopt?                      (not (drifted? resource kind))
-            {:keys [resource correct?]} (install-accepted (clear-in-flight resource kind)
-                                                          payload adopt?)]
-        (result resource (accepted-effects resource (:query payload) correct?))))))
+      (let [adopt?                       (not (drifted? resource kind))
+            {:keys [installed correct?]} (install-accepted (clear-in-flight resource kind)
+                                                           payload adopt?)]
+        (result installed (accepted-effects installed (:query payload) correct?))))))
 
 ;; Projection  ------ What a consumer sees
 (defn project
@@ -315,7 +317,7 @@
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
       ;; An installed embed answers something, so `pending?` reports the truth before the read
       ;; opens and this goes through with-read like every other transition.
-      (let [installed (:resource (install-accepted resource embed false))]
+      (let [installed (:installed (install-accepted resource embed false))]
         (with-trailing-fetch (result installed [(notify-fx installed)]))))))
 
 (defn- connect-rejected-embed
@@ -400,7 +402,11 @@
     (case (:outcome payload)
       :accepted (with-trailing-fetch (install-envelope resource :read payload))
       :rejected (with-trailing-fetch (install-rejection resource payload))
-      (result resource))))
+      ;; `wire/parse-envelope` yields one of the two above or a protocol-failure marker, which
+      ;; arrives as :protocol-failed instead, so nothing should reach here. Said out loud rather
+      ;; than passed over, since a response that changes nothing in silence is the one gesture
+      ;; that would not reach the log.
+      (ignored resource :unknown-outcome {:outcome (:outcome payload)}))))
 
 (defn- patch-intent
   "The :intent-patch transition. An intent naming a sibling is not this resource's to apply. `step`
