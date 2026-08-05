@@ -36,10 +36,12 @@
 ;;             client never learned.
 (defn- failure
   "A failure value. `cause` is what went wrong, `kind` the kind of request it happened to, `query`
-  the query that request was issued for, and `extra` the members that cause carries."
+  the query that request was issued for, and `extra` the members that cause carries. The three
+  named members are merged last, so the shape written down above is what a failure has and a
+  cause's own members cannot quietly redefine the key consumers branch on."
   ([cause kind query] (failure cause kind query nil))
   ([cause kind query extra]
-   (merge {:failure cause :for kind :query query} extra)))
+   (merge extra {:failure cause :for kind :query query})))
 
 ;; READ functionality ----------------------------------------------------------
 (defn- resolve-history-mode
@@ -113,7 +115,7 @@
   (= request-id (:request/id (in-flight r kind))))
 
 ;; Public for test purposes only
-(defn installable?
+(defn answers-in-flight-read?
   "True when `response` answers the in-flight read request, matched by request id alone."
   [r response]
   (fresh? r :read (:request/id response)))
@@ -372,7 +374,7 @@
   "The :response transition. A response for a request no longer in flight answers a question the
   resource has already left behind, so it is ignored."
   [resource payload]
-  (if-not (installable? resource payload)
+  (if-not (answers-in-flight-read? resource payload)
     (ignored resource :stale-response)
     (case (:outcome payload)
       :accepted (with-trailing-fetch (install-envelope resource :read payload))
@@ -405,7 +407,10 @@
 
 (defn- disconnect
   "The :disconnected transition. An in-flight read is abandoned, since nothing is left to render
-  it into. An in-flight write is left alone: its outcome still matters to whoever reconnects."
+  it into. An in-flight write is left alone: its outcome still matters to whoever reconnects, and
+  the element carries the slot and counter naming it across the boot so the ack still lands. Until
+  it does the resource is still writing, so the single-flight rule refuses a second write exactly
+  as it would have without the reconnect."
   [resource]
   (if-let [id (:request/id (in-flight resource :read))]
     (result (clear-in-flight resource :read) [(effect/abort id)])

@@ -114,6 +114,7 @@
      :owner      (nth owners (mod (dec i) (count owners)))
      :start      (format "2026-01-%02d" day)
      :end        (format "2026-02-%02d" day)
+     :est        (inc (mod (dec i) 8))
      :status     (nth statuses (mod (dec i) 3))
      :projectId  (nth project-ids (mod (quot (dec i) 3) (count project-ids)))
      :assigneeId (nth user-ids (mod (dec i) (count user-ids)))}))
@@ -154,6 +155,7 @@
             {:key "owner"  :type "string" :required true}
             {:key "start"  :type "date"   :required true}
             {:key "end"    :type "date"}
+            {:key "est"    :type "number"}
             {:key "status" :type "string" :required true :enum ["todo" "doing" "done"]
              :options [{:value "todo"  :label "To do"}
                        {:value "doing" :label "In progress"}
@@ -493,6 +495,7 @@
      :owner      (field "owner")
      :start      (field "start")
      :end        (field "end")
+     :est        (field "est")
      :status     (field "status")
      :projectId  (field "projectId")
      :assigneeId (field "assigneeId")}))

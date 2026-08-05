@@ -107,3 +107,16 @@
     (testing "an unlisted value is shown raw rather than blanked, so a server that adds a
               status before it adds its label does not empty the column"
       (is (= "doing" (get-in (first rows) [:cells "status"]))))))
+
+(deftest grid-template-keeps-the-actions-column-off-the-even-split
+  (testing "the declared fields share the width, the actions column takes what its buttons need.
+            Splitting it evenly with the rest shrank it below the buttons as fields were added,
+            and the table's overflow:hidden clipped them"
+    (is (= "repeat(6,minmax(0,1fr)) max-content"
+           (model/grid-template [{:key "title"} {:key "owner"} {:key "start"}
+                                 {:key "end"} {:key "est"} {:key "status"}])))
+    (is (= "repeat(1,minmax(0,1fr)) max-content" (model/grid-template [{:key "title"}]))))
+  (testing "a shape declaring no fields still leaves the actions column a track of its own,
+            rather than a repeat(0,...) the browser discards along with the whole template"
+    (is (= "max-content" (model/grid-template [])))
+    (is (= "max-content" (model/grid-template nil)))))

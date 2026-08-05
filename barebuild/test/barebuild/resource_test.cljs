@@ -18,7 +18,7 @@
 
 (defn- expecting
   "Put r in flight for `response`: a live request whose id and query the response answers,
-   so (installable? r response) holds."
+   so (answers-in-flight-read? r response) holds."
   [r response]
   (assoc r :active-request {:request/id (:request/id response)
                             :query      (:query response)}))
@@ -308,9 +308,9 @@
                       :active-request {:request/id "tasks:1" :query {:sort "owner"}})]
     (testing "a matching id installs even when the server normalized the echo past intent and the
               query as sent, so echo adoption (T5) can still take it"
-      (is (resource/installable? r {:request/id "tasks:1" :query {:sort "owner" :direction "asc"}})))
+      (is (resource/answers-in-flight-read? r {:request/id "tasks:1" :query {:sort "owner" :direction "asc"}})))
     (testing "a non-matching id never installs"
-      (is (not (resource/installable? r {:request/id "tasks:9" :query {:sort "owner"}}))))))
+      (is (not (resource/answers-in-flight-read? r {:request/id "tasks:9" :query {:sort "owner"}}))))))
 
 (deftest stale-response-is-dropped
   (let [r (assoc base :active-request {:request/id "tasks:9" :query nil}

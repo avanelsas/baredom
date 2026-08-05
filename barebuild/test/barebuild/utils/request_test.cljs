@@ -64,7 +64,7 @@
                                  :request-id "tasks:1"}))))))
 
 (deftest request-carries-the-request-id-in-every-shape
-  (testing "the id is always in the URL — the server echoes it and installable? guards on it"
+  (testing "the id is always in the URL — the server echoes it and answers-in-flight-read? guards on it"
     (doseq [parts [{:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"}
                    {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1" :query {:page "2"}}
                    {:endpoint "/api/tasks" :method "DELETE" :request-id "tasks:w1" :segment 7}

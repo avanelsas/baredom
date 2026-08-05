@@ -1,6 +1,7 @@
 (ns demo.x-table-consumer.x-table-consumer
   (:require
    [barebuild.consumer-resource :as consumer-resource]
+   [demo.selector :as selector]
    [demo.x-table-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
@@ -105,35 +106,40 @@
     (set! (.-textContent cell) (str s))
     cell))
 
-(defn- create-actions-table-cell!
-  [is-header id]
-  (let [cell (.createElement js/document "x-table-cell")]
-    (if is-header
-      (do
-        (du/set-attr! cell "type" "header")
-        (set! (.-textContent cell) "Actions"))
-      (let [delete-button (.createElement js/document "x-button")
-            edit-button   (.createElement js/document "x-button")
-            actions       (.createElement js/document "span")]
-        ; edit
-        (du/set-attr! edit-button "variant" "primary")
-        (du/set-attr! edit-button "size" "sm")
-        (du/set-attr! edit-button "data-row-id" (str id))
-        (set! (.-textContent edit-button) "Edit")
-        (.addEventListener edit-button "press" edit-row-request!)
-        ; delete
-        (du/set-attr! delete-button "variant" "danger")
-        (du/set-attr! delete-button "size" "sm")
-        (du/set-attr! delete-button "data-row-id" (str id))
-        (set! (.-textContent delete-button) "Delete")
-        (.addEventListener delete-button "press" delete-row-request!)
+;; What a row offers, in the order it is shown. A third action is a row here.
+(def ^:private row-actions
+  [{:label "Edit"   :variant "primary" :on-press edit-row-request!}
+   {:label "Delete" :variant "danger"  :on-press delete-row-request!}])
 
-        (.setProperty (.-style actions) "display" "inline-flex")
-        (.setProperty (.-style actions) "gap" "0.2rem")
-        (.appendChild actions edit-button)
-        (.appendChild actions delete-button)
-        (.appendChild cell actions)))
+(defn- create-action-button!
+  [{:keys [label variant on-press]} id]
+  (let [button (.createElement js/document "x-button")]
+    (du/set-attr! button "variant" variant)
+    (du/set-attr! button "size" "sm")
+    (du/set-attr! button "data-row-id" (str id))
+    (set! (.-textContent button) label)
+    (.addEventListener button "press" on-press)
+    button))
+
+(defn- create-actions!
+  "The row's buttons, laid out side by side."
+  [id]
+  (let [actions (.createElement js/document "span")]
+    (.setProperty (.-style actions) "display" "inline-flex")
+    (.setProperty (.-style actions) "gap" "0.2rem")
+    (doseq [action row-actions]
+      (.appendChild actions (create-action-button! action id)))
+    actions))
+
+(defn- create-header-actions-cell! []
+  (let [cell (.createElement js/document "x-table-cell")]
+    (du/set-attr! cell "type" "header")
+    (set! (.-textContent cell) "Actions")
     cell))
+
+(defn- create-body-actions-cell! [id]
+  (doto (.createElement js/document "x-table-cell")
+    (.appendChild (create-actions! id))))
 
 (defn- create-header-row!
   [columns]
@@ -142,7 +148,7 @@
       (let [cell (create-table-cell! label true sort-direction)]
         (du/set-attr! cell k-data-field-key k)
         (.appendChild row cell)))
-    (.appendChild row (create-actions-table-cell! true nil))
+    (.appendChild row (create-header-actions-cell!))
     row))
 
 (defn- create-body-row!
@@ -152,7 +158,7 @@
     (doseq [v values]
       (let [cell (create-table-cell! v false nil)]
         (.appendChild row cell)))
-    (.appendChild row (create-actions-table-cell! false id))
+    (.appendChild row (create-body-actions-cell! id))
     row))
 
 (defn- current-row-ids [^js table]
@@ -161,16 +167,17 @@
     (mapv #(du/get-attr % "data-row-id"))))
 
 (defn- find-row [^js table id]
-  (.querySelector table (str "x-table-row[data-row-id='" id "']")))
+  (.querySelector table (str "x-table-row" (selector/attr= "data-row-id" id))))
 
 (defn- ensure-header! [^js table columns]
+  ;; the template tracks the declared fields, so it is written on every render rather than only
+  ;; when the header is built. x-table's own change guard makes the repeat writes free.
+  (du/set-attr! table "columns" (model/grid-template columns))
   (if-let [header (.querySelector table "x-table-row:not([data-row-id])")]
     (doseq [{:keys [key sort-direction]} columns]
-      (when-let [cell (.querySelector header (str "x-table-cell[" k-data-field-key "='" key "']"))]
+      (when-let [cell (.querySelector header (str "x-table-cell" (selector/attr= k-data-field-key key)))]
         (du/set-attr! cell "sort-direction" sort-direction)))
-    (do
-      (du/set-attr! table "columns" (str (inc (count columns))))
-      (.appendChild table (create-header-row! columns)))))
+    (.appendChild table (create-header-row! columns))))
 
 (defn- update-cells! [^js row cells columns]
   (doseq [[i {:keys [key]}] (map-indexed vector columns)]

@@ -17,6 +17,7 @@
 (def ^:private k-popstate   "__xPopstate")
 (def ^:private k-abort      "__xAbort")
 (def ^:private k-generation "__xConnectGeneration")
+(def ^:private k-ctx        "__xConsumerCtx")
 (declare ^:private handle-event!)
 
 (defn- current-url-intent
@@ -169,11 +170,15 @@
       (.catch delivery-threw!))))
 
 (defn- find-resource
-  "The <server-resource> on the page whose resolved id is `target-id`, or nil."
+  "The <server-resource> on the page whose resolved id is `target-id`, or nil. A resource's id is
+  its attribute, so the DOM already indexes this: no scan of every host on the page, and no
+  reaching into another element's instance storage to ask what it calls itself. A blank name
+  resolves to no id at all, so it names nothing rather than matching a blank attribute."
   [target-id]
-  (some (fn [^js e]
-          (when (= target-id (:resource/id (du/getv e k-resource))) e))
-        (array-seq (.querySelectorAll js/document model/tag-name))))
+  (when-let [id (model/resolve-resource-id target-id)]
+    (.querySelector js/document
+                    (str model/tag-name
+                         "[" model/attr-resource-id "=\"" (js/CSS.escape id) "\"]"))))
 
 (defn- apply-consumer!
   "Notify one consumer, isolating a throwing applyResource so later consumers still run."
@@ -184,16 +189,26 @@
       (js/console.error "[server-resource]" (or own-id "(unnamed)")
                         "consumer applyResource threw:" e))))
 
+(defn- patch-intent!
+  "Hand a consumer's intent patch back in as an event. With a `target-id` the patch names a
+  sibling resource, which `step` routes."
+  ([^js el patch] (handle-event! el [:intent-patch patch]))
+  ([^js el patch target-id] (handle-event! el [:intent-patch (assoc patch :target-id target-id)])))
+
+(defn- consumer-ctx
+  "What a consumer may call back into. The same two closures for the element's whole life, so it
+  is built once at boot rather than rebuilt for every consumer of every notification."
+  [^js el]
+  {:submit-intent! (fn submit-intent
+                     ([patch] (patch-intent! el patch))
+                     ([patch target-id] (patch-intent! el patch target-id)))
+   :submit-write!  (fn submit-write [payload] (handle-event! el [:submit-write payload]))})
+
 (defn- notify-consumers! [^js el r]
-  (let [own-id    (:resource/id r)
-        consumers (du/getv el k-consumers)
-        ctx       {:submit-intent! (fn [patch & [target-id]]
-                                     (handle-event! el [:intent-patch
-                                                        (cond-> patch
-                                                          target-id (assoc :target-id target-id))]))
-                   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))}
-        view      (resource/project r)]
-    (doseq [^js c consumers]
+  (let [own-id (:resource/id r)
+        ctx    (du/getv el k-ctx)
+        view   (resource/project r)]
+    (doseq [^js c (du/getv el k-consumers)]
       (apply-consumer! c view ctx own-id))))
 
 (defn- notify-effect! [^js el m]
@@ -287,6 +302,17 @@
               (distinct))
         (element-descendants el)))
 
+(defn- carried-write
+  "The write bookkeeping a reconnect inherits from the connection before it, and the only part of
+  the old value that survives a boot. `disconnect` leaves an in-flight write running because its
+  outcome still matters, so the slot naming it has to still be there when the ack lands, and the
+  counter has to keep counting or the next write would mint an id the orphan already answers to.
+
+  Reads need none of this: a disconnect aborts the in-flight one, so none outlives the connection
+  and the read counter is free to restart."
+  [^js el]
+  (select-keys (du/getv el k-resource) [:active-write :write-count]))
+
 (defn- boot!
   "When reloading, read the current url and see if there are url parameters that
   have to be processed to get the element in the right state (e.g. table sorting).
@@ -297,14 +323,17 @@
   (let [resource-id    (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         history-policy {:navigation :push}
         on-popstate    (fn [_e] (handle-popstate el resource-id))
-        embed          (read-boot-embed el)]
+        embed          (read-boot-embed el)
+        carried        (carried-write el)]
     (du/setv! el k-resource (merge {:resource/id    resource-id
                                     :endpoint       (du/get-attr el model/attr-src)
                                     :last-accepted  nil
                                     :url-intent     (current-url-intent resource-id)
                                     :history-policy history-policy}
-                                   (read-request-config el)))
+                                   (read-request-config el)
+                                   carried))
     (du/setv! el k-popstate on-popstate)
+    (du/setv! el k-ctx (consumer-ctx el))
     (.addEventListener js/window "popstate" on-popstate)
     (let [consumers (collect-consumers el)]
       (when (empty? consumers)
