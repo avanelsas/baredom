@@ -139,7 +139,9 @@
                :error   {:code :invalid-query :message "no"}}
         {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
     (testing "the server already adjudicated this query at render time"
-      (is (= {:cause :rejected :for :read :response embed :query (:query embed)} (:last-failure resource)))
+      (is (= {:cause :rejected :for :read
+              :response (dissoc embed :request/id) :query (:query embed)}
+             (:last-failure resource)))
       (is (nil? (:last-accepted resource))))
     (testing "the failure adjudicates the intent, so there is no boot fetch"
       (is (nil? (:active-request resource)))
@@ -348,8 +350,11 @@
   ;; rejection answers a question nobody asked and a trailing fetch follows, correctly.
   (let [r (assoc (expecting base rejected) :url-intent (:query rejected))
         {:keys [resource effects]} (resource/step r [:response rejected])]
-    (testing "the rejection is recorded as a :rejected failure wrapping the response"
-      (is (= {:cause :rejected :for :read :response rejected :query (:query rejected)} (:last-failure resource))))
+    (testing "the rejection is recorded as a :rejected failure wrapping the response, with the id
+              of the exchange taken back off so two identical refusals compare equal"
+      (is (= {:cause :rejected :for :read
+              :response (dissoc rejected :request/id) :query (:query rejected)}
+             (:last-failure resource))))
     (testing ":active-request is cleared; :last-accepted is left untouched"
       (is (nil? (:active-request resource)))
       (is (nil? (:last-accepted resource))))
@@ -565,7 +570,9 @@
                   :error   {:code :invalid-query :message "nope"}}
         {:keys [resource effects]} (resource/step r [:response rejected])]
     (testing "the rejection is recorded and the request cleared"
-      (is (= {:cause :rejected :for :read :response rejected :query (:query rejected)} (:last-failure resource)))
+      (is (= {:cause :rejected :for :read
+              :response (dissoc rejected :request/id) :query (:query rejected)}
+             (:last-failure resource)))
       (is (nil? (:active-request resource))))
     (testing "url-intent reverts to the last accepted query (T8)"
       (is (= {:sort "owner" :direction "asc"} (:url-intent resource))))
@@ -689,68 +696,47 @@
               op the vocabulary lacks"
       (is (= [[:diagnostic {:code :member-write-without-id}]] effects)))))
 
-;; --- U1b: write-request — the op table as data -----------------------------
+;; --- U1b: the op table as data, read through the :write effect -------------
 
-(deftest write-request-resolves-each-op
-  (let [record {"title" "Ship it"}]
-    (testing "create: collection-addressed POST carrying the record"
-      (is (= {:request/id "tasks:w1"
-              :method   "POST"
-              :url      "/api/tasks?requestId=tasks:w1"
-              :body     record
-              :headers  {"content-type" "application/json"}}
-             (:request (resource/write-request base "tasks:w1" {:op :create :record record} nil)))))
-    (testing "update: member-addressed PUT carrying the record"
-      (is (= {:request/id "tasks:w1"
-              :method   "PUT"
-              :url      "/api/tasks/7?requestId=tasks:w1"
-              :body     record
-              :headers  {"content-type" "application/json"}}
-             (:request (resource/write-request base "tasks:w1" {:op :update :id 7 :record record} nil)))))
-    (testing "delete: member-addressed DELETE, no body and so no content-type"
-      (is (= {:request/id "tasks:w1"
-              :method   "DELETE"
-              :url      "/api/tasks/7?requestId=tasks:w1"}
-             (:request (resource/write-request base "tasks:w1" {:op :delete :id 7} nil)))))))
+(defn- written
+  "The :write effect a submit of `payload` against `r` produces, or nil when step refused it."
+  [r payload]
+  (effect-value (:effects (resource/step r [:submit-write payload])) :write))
 
-(deftest write-request-carries-the-current-query
+(defn- refused
+  "The effects a submit of `payload` against `base` produces when step will not build a request."
+  [payload]
+  (:effects (resource/step base [:submit-write payload])))
+
+(deftest a-write-carries-the-current-query
   (testing "the write is issued for the current view, so its query rides the URL like a read's"
     (is (= "/api/tasks?requestId=tasks:w1&direction=desc&sort=owner"
-           (get-in (resource/write-request base "tasks:w1"
-                                           {:op :create :record {"title" "x"}}
-                                           {:sort "owner" :direction "desc"})
-                   [:request :url])))))
+           (:url (written (assoc base :url-intent {:sort "owner" :direction "desc"})
+                          {:op :create :record {"title" "x"}}))))))
 
-(deftest write-request-of-an-unknown-op-is-a-vocabulary-defect
+(deftest an-op-outside-the-table-is-a-vocabulary-defect
   (testing "the table is the whole write vocabulary, and the defect names that as the reason"
-    (is (= {:defect :unsupported-write}
-           (resource/write-request base "tasks:w1" {:op :frobnicate :id 7} nil)))
-    (is (= {:defect :unsupported-write}
-           (resource/write-request base "tasks:w1" {:id 7} nil)))))
+    (is (= [[:diagnostic {:code :unsupported-write}]] (refused {:op :frobnicate :id 7})))
+    (is (= [[:diagnostic {:code :unsupported-write}]] (refused {:id 7})))))
 
-(deftest write-request-of-a-member-op-without-an-id-is-its-own-defect
-  (testing "no id would address the collection instead — a DELETE that reads as
+(deftest a-member-op-without-an-id-is-its-own-defect
+  (testing "no id would address the collection instead, a DELETE that reads as
             'delete everything' to any server implementing collection-level delete. The op is
             one this client speaks, so it is a different mistake and says so"
-    (is (= {:defect :member-write-without-id}
-           (resource/write-request base "tasks:w1" {:op :delete} nil)))
-    (is (= {:defect :member-write-without-id}
-           (resource/write-request base "tasks:w1" {:op :update :record {"title" "x"}} nil)))
-    (is (= {:defect :member-write-without-id}
-           (resource/write-request base "tasks:w1" {:op :delete :id ""} nil))))
+    (is (= [[:diagnostic {:code :member-write-without-id}]] (refused {:op :delete})))
+    (is (= [[:diagnostic {:code :member-write-without-id}]]
+           (refused {:op :update :record {"title" "x"}})))
+    (is (= [[:diagnostic {:code :member-write-without-id}]] (refused {:op :delete :id ""}))))
   (testing "a collection op needs no id"
-    (is (some? (:request (resource/write-request base "tasks:w1"
-                                                 {:op :create :record {"title" "x"}} nil)))))
+    (is (some? (written base {:op :create :record {"title" "x"}}))))
   (testing "0 is a legitimate id, not a missing one"
-    (is (= "/api/tasks/0?requestId=tasks:w1"
-           (get-in (resource/write-request base "tasks:w1" {:op :delete :id 0} nil)
-                   [:request :url])))))
+    (is (= "/api/tasks/0?requestId=tasks:w1" (:url (written base {:op :delete :id 0}))))))
 
-(deftest write-request-passes-the-record-through-unconverted
-  (testing "the body stays a CLJS value — JSON serialization is the executor's job, and an
+(deftest a-write-passes-the-record-through-unconverted
+  (testing "the body stays a CLJS value, JSON serialization is the executor's job, and an
             =-comparable effect is what makes the write spine testable at all"
     (let [record {"title" "Ship it" "status" "todo"}
-          req    (:request (resource/write-request base "tasks:w1" {:op :create :record record} nil))]
+          req    (written base {:op :create :record record})]
       (is (map? (:body req)))
       (is (= record (:body req))))))
 
@@ -795,9 +781,10 @@
   (let [r (assoc base :write-count 1
                       :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7}})
         {:keys [resource effects]} (resource/step r [:submit-write {:op :delete :id 9}])]
-    (testing "a second write while one is in flight does not start another (guards the double-click)"
+    (testing "a second write while one is in flight does not start another (guards the double-click).
+              It is refused rather than stale, so it says so under its own code"
       (is (= r resource))
-      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
+      (is (= [[:diagnostic {:code :write-in-flight}]] effects)))))
 
 (deftest write-ack-accepted-installs-the-returned-state
   (let [r       (assoc base :url-intent {:sort "owner"} :write-count 1
@@ -888,7 +875,9 @@
         {:keys [resource effects]} (resource/step r [:write-ack ack])]
     (testing "the rejection is recorded as a :rejected failure wrapping the ack, with the query
               it concerns lifted to the top level like every other failure"
-      (is (= {:cause :rejected :for :write :response ack :query {:sort "owner"}} (:last-failure resource))))
+      (is (= {:cause :rejected :for :write
+              :response (dissoc ack :request/id) :query {:sort "owner"}}
+             (:last-failure resource))))
     (testing "writing? clears so the button re-enables (the regression that bit twice)"
       (is (nil? (:active-write resource)))
       (is (false? (resource/writing? resource))))
@@ -957,16 +946,22 @@
                                                         :error    {:code :conflict}}])]
       (is (nil? (effect-value effects :fetch))))))
 
-(deftest reconciling-does-not-open-a-second-request
-  (testing "a read already in flight is the observation we need, so single-flight holds"
-    (let [{:keys [effects]}
+(deftest reconciling-replaces-a-read-that-predates-the-write
+  (testing "a read already in flight was issued before the write was, so the server may well have
+            served it before the commit the write may have made. It cannot be the observation, and
+            is abandoned and replaced rather than waited on"
+    (let [{:keys [resource effects]}
           (resource/step (assoc base :last-accepted accepted
                                      :write-count 1
                                      :active-write {:request/id "tasks:w1" :payload {:op :delete :id 7}}
                                      :request-count 1
                                      :active-request {:request/id "tasks:1" :query {}})
                          [:write-failed {:request/id "tasks:w1" :error {:kind :offline}}])]
-      (is (nil? (effect-value effects :fetch))))))
+      (testing "the older read is aborted, and that lands before the read replacing it goes out"
+        (is (= [:abort {:request/id "tasks:1"}] (second effects)))
+        (is (= :fetch (first (last effects)))))
+      (testing "single-flight still holds, the new read being the only one in the value"
+        (is (= {:request/id "tasks:2" :query {}} (:active-request resource)))))))
 
 (deftest write-failed-for-superseded-write-is-dropped
   (let [r (assoc base :active-write {:request/id "tasks:w2" :payload {:op :delete :id 7}})
