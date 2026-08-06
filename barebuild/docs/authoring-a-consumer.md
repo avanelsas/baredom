@@ -145,14 +145,14 @@ What you get for free:
 
 ## Rendering failures
 
-The `failure` your `on-failure` receives is a value tagged by `:failure`, one of
+The `failure` your `on-failure` receives is a value tagged by `:cause`, one of
 `#{:rejected :network :protocol :contract}`, and by `:for`, either `:read` or `:write`, saying
 which kind of request it came from. Every failure also carries the `:query` it concerns.
 Dispatch on the tag, and for a `:network` failure read `:error` to tell the kinds apart:
 
 ```clojure
 (defn- message [failure]
-  (case (:failure failure)
+  (case (:cause failure)
     :rejected (get-in failure [:response :error :message])   ; the server's rejection message
     :network  (case (get-in failure [:error :kind])
                 :http-status (case (get-in failure [:error :status])

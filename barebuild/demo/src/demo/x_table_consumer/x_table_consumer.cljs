@@ -18,7 +18,7 @@
     "Couldn't reach the server. Please try again."))
 
 (defn- failure-message [last-failure]
-  (case (:failure last-failure)
+  (case (:cause last-failure)
     :rejected (get-in last-failure [:response :error :message])
     :network  (network-message (:error last-failure))
     :protocol "The server sent an unexpected response."
@@ -197,12 +197,12 @@
   (ensure-header! table columns)
   (doseq [id remove]
     (when-let [row (find-row table id)] (.remove row)))
-  (reduce (fn [anchor row-vm]
-            (let [el (row-element table columns row-vm)]
-              (.insertBefore table el anchor)
-              el))
-          nil
-          (reverse order)))
+  (loop [[row-vm & rest-vms] (reverse order)
+         ^js anchor          nil]
+    (when row-vm
+      (let [^js el (row-element table columns row-vm)]
+        (.insertBefore table el anchor)
+        (recur rest-vms el)))))
 
 (defn- render-table!
   [{:keys [columns rows]} ^js table]

@@ -297,6 +297,24 @@
                    (done)))
           (.catch (fn [e] (is false (str "in-flight request was not aborted: " e)) (done)))))))
 
+(deftest a-disconnect-during-the-notify-still-aborts-the-read-that-step-opened
+  (async done
+    (support/stub-controlled!)
+    ;; The consumer removes the host from inside its render, and removal fires
+    ;; disconnectedCallback synchronously, so :disconnected is stepped while the connect's own
+    ;; effects are still being performed.
+    (support/mount-consumers! "tasks" "/api/tasks" ["x-self-removing-consumer"])
+    (-> (support/settle #(seq @support/aborted-calls))
+        (.then (fn []
+                 (is (= 1 (count @support/fetch-calls))
+                     "the read step chose is still issued, the nested step does not cancel it")
+                 (is (re-find #"/api/tasks" (first @support/aborted-calls))
+                     "and the abort reaches it rather than finding nothing to abort")
+                 (done)))
+        (.catch (fn [e]
+                  (is false (str "the read outlived the disconnect that ordered its abort: " e))
+                  (done))))))
+
 ;; --- boot is tied to the connection that asked for it ----------------------
 ;;
 ;; connectedCallback defers boot until every custom element inside the host is defined, so a
@@ -421,7 +439,7 @@
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
                  (let [f (first-failure)]
-                   (is (= :network (:failure f)) "an http error is a network failure")
+                   (is (= :network (:cause f)) "an http error is a network failure")
                    (is (= :http-status (get-in f [:error :kind])) "carrying the http-status kind")
                    (is (= 401 (get-in f [:error :status])) "and the status code, so a consumer can react"))
                  (done)))
@@ -627,7 +645,7 @@
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
                  (let [f (first-failure)]
-                   (is (= :network (:failure f)) "it reaches the consumer as a network failure")
+                   (is (= :network (:cause f)) "it reaches the consumer as a network failure")
                    (is (= :decorator (get-in f [:error :kind]))
                        "with its own kind, so an app can tell it from being offline"))
                  (is (empty? @support/fetch-calls)
@@ -675,7 +693,7 @@
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
                  (let [f (first-failure)]
-                   (is (= :network (:failure f)) "a spent budget reaches the consumer as a failure")
+                   (is (= :network (:cause f)) "a spent budget reaches the consumer as a failure")
                    (is (= :timeout (get-in f [:error :kind]))
                        "with its own kind, distinct from being offline")
                    (is (= 30 (get-in f [:error :after])) "carrying the budget it outlived"))

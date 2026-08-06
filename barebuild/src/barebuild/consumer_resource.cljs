@@ -47,16 +47,19 @@
 (defn- apply-resource!
   "One projected view applied to a consumer. The hook order is part of the contract: on-failure,
    then render, then on-pending and on-writing. The data is painted before the flags describing
-   the transition that produced it."
+   the transition that produced it.
+
+   `view` is recorded before the hooks run, not after, so a hook that submits and re-enters here
+   compares against it rather than against the apply before it."
   [^js this {:keys [render render-key on-failure on-pending on-writing]
              :or   {render-key :accepted}} view ctx]
   (let [last-view (du/getv this k-last-view)]
     (install-ctx! this ctx)
+    (du/setv! this k-last-view view)
     (notify-on-change!    this on-failure :failure  view last-view)
     (render-when-changed! this render render-key    view last-view)
     (notify-on-change!    this on-pending :pending? view last-view)
-    (notify-on-change!    this on-writing :writing? view last-view)
-    (du/setv! this k-last-view view)))
+    (notify-on-change!    this on-writing :writing? view last-view)))
 
 (defn- install-apply-resource!
   "Install the applyResource method a <server-resource> calls with each projected view. The render

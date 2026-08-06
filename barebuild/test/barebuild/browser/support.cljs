@@ -17,6 +17,7 @@
 (defonce aborted-calls (atom []))   ; urls whose in-flight request was aborted
 (defonce pending       (atom []))   ; controlled-stub entries {:url :resolve}, awaiting resolution
 (defonce records       (atom []))   ; recorder entries, when a test opts in with capture-records!
+(defonce removed-host? (atom false)) ; the self-removing consumer fires once per test
 
 (defonce real-fetch (.-fetch js/window))
 (defonce real-error (.-error js/console))
@@ -40,6 +41,13 @@
         :on-failure (fn [_child _failure _this] (swap! order-calls conj :on-failure))
         :on-pending (fn [_child _pending _this] (swap! order-calls conj :on-pending))
         :on-writing (fn [_child _writing _this] (swap! order-calls conj :on-writing))}))
+    (when-not (js/customElements.get "x-self-removing-consumer")
+      (consumer-resource/register!
+       {:tag       "x-self-removing-consumer"
+        :child-tag "div"
+        :render    (fn [_child _view ^js this]
+                     (when (compare-and-set! removed-host? false true)
+                       (.remove (.closest this "server-resource"))))}))
     (when-not (js/customElements.get "x-throwing-consumer")
       (consumer-resource/register!
        {:tag       "x-throwing-consumer"
@@ -180,6 +188,7 @@
   (reset! aborted-calls [])
   (reset! pending [])
   (reset! records [])
+  (reset! removed-host? false)
   (decorator/set-request-decorator! nil)
   (recorder/set-recorder! nil))
 

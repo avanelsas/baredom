@@ -88,17 +88,26 @@
   [key code message]
   {:field key :code code :message message})
 
+(defn- given?
+  "True when the author supplied a value. An empty form field reaches here as a blank string, and
+  anything else is a value, a coerced zero included."
+  [v]
+  (if (string? v)
+    (not (str/blank? v))
+    (some? v)))
+
 ;; Error mapping is intentionally different for write and read.
 ;; Public for test purposes only, `conform-payload` below is the write-side entry point
 (defn validate-payload
-  "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`."
+  "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`.
+  Runs after `coerce-record`, so a value here is already of its declared type."
   [payload shape]
   (into []
         (keep (fn [{:keys [key type required enum]}]
                 (let [v     (get payload key)
-                      given (not (str/blank? v))]
+                      given (given? v)]
                   (cond
-                    (and required (str/blank? v))
+                    (and required (not given))
                     (field-err key :missing-required
                                (str "Required field " key " is missing."))
 
@@ -106,7 +115,7 @@
                     (field-err key :wrong-type
                                (str "The field " key " has the wrong type. Should be " type))
 
-                    (and enum given (not (some #(= v %) enum)))
+                    (and enum given (not (contains? (set enum) v)))
                     (field-err key :not-in-enum
                                (str "The field " key " is not in the enum " enum))))))
         (:fields shape)))

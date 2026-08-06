@@ -16,11 +16,11 @@
   siblings share one URL without colliding."
   [resource-id all-keys]
   (if (str/blank? resource-id)
-    (filterv #(not (str/includes? % ".")) all-keys)
+    (vec (remove #(str/includes? % ".") all-keys))
     (let [prefix (str resource-id ".")]
       (filterv #(str/starts-with? % prefix) all-keys))))
 
-(defn scope-params!
+(defn- scope-params!
   "Replace the keys `resource-id` owns in `params` with `new-params`, each prefixed by the
   resource scope. Mutates and returns `params`."
   [^js params resource-id new-params]
@@ -31,7 +31,7 @@
       (.set params (str prefix (name k)) (str v))))
   params)
 
-(defn params->url
+(defn- params->url
   "Render `params` onto `pathname`, dropping the ? when the query is empty."
   [^js params pathname]
   (let [qs (.toString params)]
