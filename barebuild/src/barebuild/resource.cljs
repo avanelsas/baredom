@@ -12,8 +12,8 @@
 (defn initial
   "The resource a fresh connection starts from, and the one place its shape is written down, so a
   test fixture and what the element boots with cannot drift apart. `request-config` is whatever the
-  host declared as attributes, `carried` the write bookkeeping a reconnect inherits from the
-  connection before it. Both may name keys this does not, and both win over the defaults."
+  host declared as attributes, `carried` what `carry-over` selected out of the connection before
+  this one. Both may name keys this does not, and both win over the defaults."
   [{:keys [resource/id endpoint url-intent history-policy request-config carried]}]
   (merge {:resource/id    id
           :endpoint       endpoint
@@ -39,7 +39,7 @@
 ;; The failure value -----------------------------------------------------------
 ;; What `project` hands a consumer as :failure, and the only shape it takes.
 ;;
-;;   :failure  what went wrong, one of
+;;   :cause    what went wrong, one of
 ;;             :rejected  the server said no                        (carries :response)
 ;;             :contract  accepted, but the payload broke the shape (carries :response, :errors)
 ;;             :protocol  the answer could not be read              (carries :detail)
@@ -53,7 +53,7 @@
   redefine them."
   ([cause kind query] (failure cause kind query nil))
   ([cause kind query extra]
-   (merge extra {:failure cause :for kind :query query})))
+   (merge extra {:cause cause :for kind :query query})))
 
 ;; Requests in flight, read and write alike ------------------------------------
 
@@ -63,6 +63,15 @@
 (def ^:private request-kinds
   {:read  {:slot :active-request :counter :request-count :id-prefix ""}
    :write {:slot :active-write   :counter :write-count   :id-prefix "w"}})
+
+(defn carry-over
+  "The part of `resource` the next connection inherits, and the only part that survives a boot. An
+  in-flight write's slot has to still be there when its ack lands, and its counter has to keep
+  counting so the next write cannot mint an id the orphan already answers to. Reads need neither, a
+  disconnect aborts the in-flight one. Read off the table so a renamed slot moves both halves."
+  [resource]
+  (let [{:keys [slot counter]} (request-kinds :write)]
+    (select-keys resource [slot counter])))
 
 (defn- in-flight
   "The in-flight request of `kind` in `r`, or nil."
@@ -201,24 +210,45 @@
 
 ;; Public for test purposes only
 (defn write-request
-  "The request value for a write payload, or nil when the op is unknown or a member op carries no
-  id."
+  "What a write payload resolves to: {:request <the request value>} when the op vocabulary can
+  express it, else {:defect <why it cannot>}. An op this client does not speak and a member op
+  arriving without the member to address are different mistakes, so they get different defects."
   [resource write-id {:keys [op id record]} query]
-  (when-let [{:keys [method target body?]} (get write-ops op)]
+  (if-let [{:keys [method target body?]} (get write-ops op)]
     (let [member? (= target :member)]
-      (when (or (not member?) (seq (str id)))
-        (request/request (assoc (transport-fields resource)
-                                :segment    (when member? id)
-                                :method     method
-                                :query      query
-                                :body       (when body? record)
-                                :request-id write-id))))))
+      (if (and member? (empty? (str id)))
+        {:defect :member-write-without-id}
+        {:request (request/request (assoc (transport-fields resource)
+                                          :segment    (when member? id)
+                                          :method     method
+                                          :query      query
+                                          :body       (when body? record)
+                                          :request-id write-id))}))
+    {:defect :unsupported-write}))
 
 ;; Public for test purposes only
 (defn writing?
   "True while a write is in flight."
   [r]
   (some? (in-flight r :write)))
+
+;; What a consumer sees --------------------------------------------------------
+
+(defn project
+  "The fields a consumer may depend on, everything else being internal bookkeeping. The accepted
+  envelope loses its :request/id on the way out, so two identical refetches project equal views."
+  [resource]
+  {:accepted  (dissoc (:last-accepted resource) :request/id)
+   :failure   (:last-failure resource)
+   :intent    (:url-intent resource)
+   :pending?  (pending? resource)
+   :writing?  (writing? resource)})
+
+(defn- notify-fx
+  "The :notify-consumers effect for `r`. It carries the projection rather than the resource, so
+  what a consumer is handed is decided here and no internal bookkeeping rides the effect."
+  [r]
+  (effect/notify-consumers (:resource/id r) (project r)))
 
 ;; Installing an answer, read or write -----------------------------------------
 
@@ -239,7 +269,7 @@
   also moves the intent builds its own outcome off `with-failure` instead."
   [resource kind failure]
   (let [resource* (with-failure resource kind failure)]
-    (result resource* [(effect/notify-consumers resource*)])))
+    (result resource* [(notify-fx resource*)])))
 
 (defn- transport-members
   "The members a `cause` that produced no readable answer carries: :detail for :protocol, :error
@@ -268,19 +298,7 @@
                        adopt? (assoc :url-intent echo))]
         (result r* (cond-> []
                      correct? (conj (url-write-fx r* echo :replace))
-                     :always  (conj (effect/notify-consumers r*))))))))
-
-;; What a consumer sees --------------------------------------------------------
-
-(defn project
-  "The fields a consumer may depend on, everything else being internal bookkeeping. The accepted
-  envelope loses its :request/id on the way out, so two identical refetches project equal views."
-  [resource]
-  {:accepted  (dissoc (:last-accepted resource) :request/id)
-   :failure   (:last-failure resource)
-   :intent    (:url-intent resource)
-   :pending?  (pending? resource)
-   :writing?  (writing? resource)})
+                     :always  (conj (notify-fx r*))))))))
 
 ;; Transition helpers ----------------------------------------------------------
 ;; The first three are the SSR boot embed (§7.4).
@@ -292,7 +310,7 @@
   (with-trailing-fetch
     (result resource (cond-> []
                        diag-code (conj (effect/diagnostic diag-code))
-                       :always   (conj (effect/notify-consumers resource))))))
+                       :always   (conj (notify-fx resource))))))
 
 (defn- install-accepted-embed
   "Install an accepted boot embed exactly as a network response installs: a broken payload
@@ -307,7 +325,7 @@
       ;; An embed never adopts its query echo and never corrects the URL. There is no in-flight
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
       (let [installed (accept resource embed)]
-        (with-trailing-fetch (result installed [(effect/notify-consumers installed)]))))))
+        (with-trailing-fetch (result installed [(notify-fx installed)]))))))
 
 (defn- install-rejected-embed
   "Install a rejected boot embed. An echo matching the intent installs as the failure and answers
@@ -316,7 +334,7 @@
   (if (= (:query embed) (:url-intent resource))
     (let [r* (assoc resource :last-failure
                     (failure :rejected :read (:query embed) {:response embed}))]
-      (result r* [(effect/notify-consumers r*)]))
+      (result r* [(notify-fx r*)]))
     (boot resource :stale-rejected-embed)))
 
 (defn- targets-sibling?
@@ -340,7 +358,7 @@
                          revert? (assoc :url-intent accepted-query))]
     (result r* (cond-> []
                  revert? (conj (url-write-fx r* accepted-query :replace))
-                 :always (conj (effect/notify-consumers r*))))))
+                 :always (conj (notify-fx r*))))))
 
 (defn- apply-intent-patch
   "Merge a patch into the resource's own intent. The URL is written whenever the intent moved, and
@@ -353,7 +371,7 @@
     (with-trailing-fetch
       (result merged (cond-> []
                        moved?  (conj (url-write-fx merged new-intent mode))
-                       :always (conj (effect/notify-consumers merged)))))))
+                       :always (conj (notify-fx merged)))))))
 
 (defn- hand-to-sibling
   "Hand a patch naming another resource to the executor, which resolves the name to an element.
@@ -377,7 +395,7 @@
   never written back."
   [resource intent]
   (let [replaced (assoc resource :url-intent intent)]
-    (with-trailing-fetch (result replaced [(effect/notify-consumers replaced)]))))
+    (with-trailing-fetch (result replaced [(notify-fx replaced)]))))
 
 (defn- on-response
   "A response for a request no longer in flight is ignored."
@@ -426,11 +444,12 @@
   [resource payload]
   (if (writing? resource)
     (ignored resource :stale-write)
-    (let [resource* (start resource :write (:url-intent resource) {:payload payload})
-          write-id  (:request/id (in-flight resource* :write))]
-      (if-let [request (write-request resource* write-id payload (:url-intent resource))]
-        (result resource* [(effect/notify-consumers resource*) (effect/write request)])
-        (ignored resource :unsupported-write)))))
+    (let [resource*                (start resource :write (:url-intent resource) {:payload payload})
+          write-id                 (:request/id (in-flight resource* :write))
+          {:keys [request defect]} (write-request resource* write-id payload (:url-intent resource))]
+      (if request
+        (result resource* [(notify-fx resource*) (effect/write request)])
+        (ignored resource defect)))))
 
 (defn- on-write-ack
   "An accepted ack carries the full post-mutation state, so it installs exactly as a read's

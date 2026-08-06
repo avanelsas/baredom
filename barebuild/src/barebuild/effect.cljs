@@ -15,9 +15,10 @@
   ([code detail] [:diagnostic {:code code :detail detail}]))
 
 (defn notify-consumers
-  "Project `resource` at the consumers attached to this element."
-  [resource]
-  [:notify-consumers {:resource resource}])
+  "Hand `view` to the consumers attached to this element. `resource-id` names what it was projected
+  from, which the executor reports a throwing consumer against."
+  [resource-id view]
+  [:notify-consumers {:resource/id resource-id :view view}])
 
 (defn fetch
   "Send the built read `request`."

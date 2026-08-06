@@ -36,7 +36,7 @@
     (.insertBefore host alert (.querySelector host "x-form"))))
 
 (defn write-failure-message [failure]
-  (case (:failure failure)
+  (case (:cause failure)
     :network  "Couldn't reach the server, please try again."
     :protocol "The server sent an unexpected response."
     "Something went wrong."))
@@ -84,7 +84,7 @@
     (do (.clearErrors form)
         (remove-alert! host))
 
-    (and (pending? this) (= :rejected (:failure failure)))
+    (and (pending? this) (= :rejected (:cause failure)))
     (apply-rejection! form host failure this)
 
     (and (pending? this) (= :write (:for failure)))

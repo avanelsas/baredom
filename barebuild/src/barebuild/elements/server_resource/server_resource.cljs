@@ -18,6 +18,9 @@
 (def ^:private k-abort      "__xAbort")
 (def ^:private k-generation "__xConnectGeneration")
 (def ^:private k-ctx        "__xConsumerCtx")
+;; The effect drain. Transient bookkeeping with no diagnostic display value, so untraced.
+(def ^:private k-queue      "__xEffectQueue")
+(def ^:private k-draining   "__xDraining")
 (declare ^:private handle-event!)
 
 (defn- current-url-intent
@@ -191,15 +194,13 @@
                      ([patch target-id] (patch-intent! el patch target-id)))
    :submit-write!  (fn submit-write [payload] (handle-event! el [:submit-write payload]))})
 
-(defn- notify-consumers! [^js el r]
-  (let [own-id (:resource/id r)
-        ctx    (du/getv el k-ctx)
-        view   (resource/project r)]
+(defn- notify-consumers! [^js el view own-id]
+  (let [ctx (du/getv el k-ctx)]
     (doseq [^js c (du/getv el k-consumers)]
       (apply-consumer! c view ctx own-id))))
 
 (defn- notify-effect! [^js el m]
-  (notify-consumers! el (:resource m)))
+  (notify-consumers! el (:view m) (:resource/id m)))
 
 (defn- url-write! [^js _el m]
   (let [new-url (url/build-scoped-url (.-search js/location)
@@ -249,6 +250,22 @@
       (perform! el m)
       (js/console.error "[server-resource] no performer for effect" (str fx)))))
 
+(defn- drain-effects!
+  "Perform the queued effects, and whatever a re-entrant step queues while they run, until nothing
+  is left. A performer can hand an event straight back in: a consumer notified here may remove the
+  host, which fires `disconnectedCallback` synchronously. Draining in rounds puts the nested step's
+  effects after this one's, so an :abort cannot run before the :fetch it names has been issued."
+  [^js el]
+  (du/setv-untraced! el k-draining true)
+  (try
+    (loop []
+      (when-let [queued (seq (du/getv el k-queue))]
+        (du/setv-untraced! el k-queue [])
+        (run-effects! el queued)
+        (recur)))
+    (finally
+      (du/setv-untraced! el k-draining false))))
+
 (defn- handle-event!
   [^js el event]
   (let [r                          (du/getv el k-resource)
@@ -256,7 +273,9 @@
     (du/setv! el k-resource resource)
     ;; Note: with no recorder set this records nothing
     (recorder/record! {:el el :event event :before r :after resource :effects effects})
-    (run-effects! el effects)))
+    (du/setv-untraced! el k-queue (into (or (du/getv el k-queue) []) effects))
+    (when-not (du/getv el k-draining)
+      (drain-effects! el))))
 
 (defn- read-boot-embed
   "The <script type=\"application/json\"> embed inside the host, read through the same parse path
@@ -286,14 +305,6 @@
               (distinct))
         (element-descendants el)))
 
-(defn- carried-write
-  "The write bookkeeping a reconnect inherits from the connection before it, and the only part of
-  the old value that survives a boot. The slot naming an in-flight write has to still be there
-  when its ack lands, and the counter has to keep counting so the next write cannot mint an id the
-  orphan already answers to. Reads need none of this, a disconnect aborts the in-flight one."
-  [^js el]
-  (select-keys (du/getv el k-resource) [:active-write :write-count]))
-
 (defn- boot!
   "Build the resource value from the host's attributes and the current URL, wire the popstate
   listener and the consumer context, collect the consumers, and hand in :connected. An SSR embed,
@@ -304,7 +315,7 @@
   (let [resource-id (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
         on-popstate (fn [_e] (handle-popstate el resource-id))
         embed       (read-boot-embed el)
-        carried     (carried-write el)]
+        carried     (resource/carry-over (du/getv el k-resource))]
     (du/setv! el k-resource
               (resource/initial {:resource/id    resource-id
                                  :endpoint       (du/get-attr el model/attr-src)
@@ -369,11 +380,16 @@
 (defn- attribute-changed! [_el _name _old _new] nil)
 
 ;; The replay hook. BareReplay's dock calls el.projectResource(value) to push a reconstructed
-;; resource value at the consumers, reusing the same notify path a live step uses. The sole
+;; resource value at the consumers, reusing the same notify path a live step uses. It hands in a
+;; resource rather than a view, so this is the one place outside `step` that projects. The sole
 ;; caller is barereplay.dock, a sibling project.
 (defn- setup-prototype! [^js proto]
   (.defineProperty js/Object proto "projectResource"
-                   #js {:value        (fn [value] (this-as ^js el (notify-consumers! el value)))
+                   #js {:value        (fn [value]
+                                        (this-as ^js el
+                                          (notify-consumers! el
+                                                             (resource/project value)
+                                                             (:resource/id value))))
                         :writable     true
                         :configurable true}))
 

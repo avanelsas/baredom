@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Breaking. A failure names its cause under `:cause` rather than under `:failure`. A consumer branching on the tag reads `(:cause failure)`.
+- Fixes a read that outlived the disconnect that ordered its abort. A consumer that removes its host while being notified fires `disconnectedCallback` in the middle of the connect's own effects, and the abort that step emits now reaches the request rather than running before it was issued.
+- A member write arriving without the member to address is reported as `:member-write-without-id` rather than as an op the vocabulary lacks.
 - An envelope member of the wrong kind is reported as a protocol failure rather than as a server that could not be reached. A `shape` or `query` that is not an object, and a `fields` or `options` that is not a list, no longer end the request as a transport failure.
 - `shape.fields` is mandatory. A shape carrying no field list is a contract failure rather than a response whose records go unchecked.
 - A field that declares no `type` is checked for presence only, as an absent `required` or `enum` constrains nothing.
