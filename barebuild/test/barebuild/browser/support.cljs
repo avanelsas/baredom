@@ -75,9 +75,13 @@
    "value"     value
    "shape"     shape})
 
+(defn- text-response
+  "An ok response whose body reads back as `text` verbatim."
+  [text]
+  #js {:ok true :text (fn [] (js/Promise.resolve text))})
+
 (defn- ok-response [envelope]
-  (let [json (js/JSON.stringify (clj->js envelope))]
-    #js {:ok true :text (fn [] (js/Promise.resolve json))}))
+  (text-response (js/JSON.stringify (clj->js envelope))))
 
 (defn- record-call!
   "Record one stubbed call, so every stub captures the same thing and a test can read the init
@@ -111,6 +115,15 @@
         (fn [url init]
           (record-call! url init)
           (js/Promise.resolve #js {:ok false :status status}))))
+
+(defn stub-body!
+  "Stub window.fetch to answer every request with an ok response carrying `text` verbatim, so a
+   test can send a body the wire edge cannot read."
+  [text]
+  (set! (.-fetch js/window)
+        (fn [url init]
+          (record-call! url init)
+          (js/Promise.resolve (text-response text)))))
 
 (defn stub-reject!
   "Stub window.fetch to reject every request, as a genuine transport failure (offline) does."
