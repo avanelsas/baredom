@@ -6,7 +6,12 @@
 (defn- record-log [el seed events]
   (:log (reduce (fn [{:keys [r log]} e]
                   (let [after (:resource (resource/step r e))]
-                    {:r after :log (conj log {:el el :event e :before r :after after})}))
+                    {:r   after
+                     :log (conj log {:resource/id (:resource/id r)
+                                     :el          el
+                                     :event       e
+                                     :before      r
+                                     :after       after})}))
                 {:r seed :log []}
                 events)))
 
