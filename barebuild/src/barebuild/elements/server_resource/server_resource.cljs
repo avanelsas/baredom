@@ -23,13 +23,18 @@
 (def ^:private k-draining   "__xDraining")
 (declare ^:private handle-event!)
 
+(defn- label
+  "How a resource is named in a console message, an unnamed one included."
+  [resource-id]
+  (or resource-id "(unnamed)"))
+
 (defn- current-url-intent
   "The resource's query as the address bar currently holds it. The only place this element reads
   the address bar."
   [resource-id]
   (url/parse-scoped-query (.-search js/location) resource-id))
 
-(defn- handle-popstate [^js el resource-id]
+(defn- handle-popstate! [^js el resource-id]
   (handle-event! el [:url-changed (current-url-intent resource-id)]))
 
 ;; ── Transport config ─────────────────────────────────────────────────────────
@@ -70,9 +75,9 @@
    {:key :timeout :attr model/attr-timeout :parse parse-timeout
     :complaint "is not a number of milliseconds, keeping the default:"}])
 
-(defn- read-config-attr
-  "One configured attribute as the value it declares. A blank attribute declares nothing. A
-  present one that cannot be read is reported and treated as absent."
+(defn- read-config-attr!
+  "One configured attribute as the value it declares, nil when it declares none. A present one that
+  cannot be read is reported, the row's parse deciding what it falls back to."
   [^js el {:keys [attr parse complaint]}]
   (let [text                    (du/get-attr el attr)
         {:keys [value usable?]} (parse text)]
@@ -80,13 +85,14 @@
       (js/console.error "[server-resource]" attr complaint text))
     value))
 
-(defn- read-request-config
-  "The request configuration the host declared, as the keys the resource value carries. An
-  attribute declaring nothing usable contributes no key at all."
+(defn- read-request-config!
+  "The request configuration the host declared, as the keys the resource value carries. A key is
+  present only when its attribute yielded a value. `timeout` is the one whose absence means
+  something: a budget of 0 drops the key, and no key is no budget."
   [^js el]
   (into {}
         (keep (fn [row]
-                (when-let [value (read-config-attr el row)]
+                (when-let [value (read-config-attr! el row)]
                   [(:key row) value])))
         request-config))
 
@@ -98,39 +104,15 @@
   [e]
   (js/console.error "[server-resource] delivering a result threw:" e))
 
-;; What a request can come back as, and the event each outcome becomes for a read and for a
-;; write. A write reports both failures as one event, since either leaves its outcome unknown,
-;; while a read tells them apart.
-(def ^:private delivery-events
-  {:read  {:protocol :protocol-failed :network :network-failed :ok :response}
-   :write {:protocol :write-failed    :network :write-failed   :ok :write-ack}})
-
-(defn- deliver!
-  "Classify what came back for a request of `kind` and hand it in as the event it names. Every
+(defn- delivery-outcome
+  "What came back for a request, as the outcome it is and the detail that outcome reports. Every
   outcome is named by the id this client minted, never by the server's echo of it."
-  [^js el kind result request-id]
-  (let [events (delivery-events kind)]
-    (cond
-      (:protocol-failure result)
-      (handle-event! el [(:protocol events) (assoc result :request/id request-id)])
-
-      (:network-failure result)
-      (handle-event! el [(:network events) {:request/id request-id
-                                            :error      (:network-failure result)}])
-
-      :else
-      (handle-event! el [(:ok events) (assoc result :request/id request-id)]))))
-
-(defn- perform-request!
-  "Send `m` under `controller` and hand what comes back in as `kind`'s event, `on-reject`
-  classifying a rejection. The rejection handler rides `then` rather than a trailing `catch`, so
-  it sees only what the request did."
-  [^js el kind m ^js controller on-reject]
-  (let [id (:request/id m)]
-    (-> (.then (transport/perform! m controller)
-               (fn [result] (deliver! el kind result id))
-               (fn [^js e] (on-reject el id (:timeout m) e)))
-      (.catch delivery-threw!))))
+  [result request-id]
+  (cond
+    (:protocol-failure result) [:protocol (assoc result :request/id request-id)]
+    (:network-failure result)  [:network {:request/id request-id
+                                          :error      (:network-failure result)}]
+    :else                      [:ok (assoc result :request/id request-id)]))
 
 (defn- read-rejected!
   "Report a read that never arrived. An abort is intentional, so it is not a failure."
@@ -139,15 +121,6 @@
     (handle-event! el [:network-failed {:request/id request-id
                                         :error      (transport/transport-error e timeout)}])))
 
-(defn- execute-fetch!
-  "Send a read, stashing its controller so a disconnect or a supersede can abort it."
-  [^js el m]
-  (let [controller (js/AbortController.)]
-    ;; stashed before the decorator is awaited, so an abort landing in that window still reaches
-    ;; this request. Kept with its request id so the :abort effect aborts the request it names.
-    (du/setv-untraced! el k-abort {:request/id (:request/id m) :controller controller})
-    (perform-request! el :read m controller read-rejected!)))
-
 (defn- write-rejected!
   "Report a write whose outcome the client never learned. An aborted write is reported where an
   aborted read is not, a write having possibly committed before it ended."
@@ -155,11 +128,46 @@
   (handle-event! el [:write-failed {:request/id write-id
                                     :error      (transport/transport-error e timeout)}]))
 
-(defn- execute-write!
+;; The two kinds of request as data: the event each outcome becomes, and who reports a rejection.
+;; A write reports both failures as one event, since either leaves its outcome unknown, while a
+;; read tells them apart. One row per kind, so a kind cannot be paired with the other's handler.
+(def ^:private delivery
+  {:read  {:events    {:protocol :protocol-failed :network :network-failed :ok :response}
+           :on-reject read-rejected!}
+   :write {:events    {:protocol :write-failed :network :write-failed :ok :write-ack}
+           :on-reject write-rejected!}})
+
+(defn- deliver!
+  "Hand what came back for a request of `kind` in as the event that outcome names."
+  [^js el kind result request-id]
+  (let [[outcome detail] (delivery-outcome result request-id)]
+    (handle-event! el [(get-in delivery [kind :events outcome]) detail])))
+
+(defn- perform-request!
+  "Send `m` under `controller` and hand what comes back in as `kind`'s event. The kind's rejection
+  handler rides `then` rather than a trailing `catch`, so it sees only what the request did."
+  [^js el kind m ^js controller]
+  (let [id        (:request/id m)
+        on-reject (get-in delivery [kind :on-reject])]
+    (-> (.then (transport/perform! m controller)
+               (fn [result] (deliver! el kind result id))
+               (fn [^js e] (on-reject el id (:timeout m) e)))
+      (.catch delivery-threw!))))
+
+(defn- fetch!
+  "Send a read, stashing its controller so a disconnect or a supersede can abort it."
+  [^js el m]
+  (let [controller (js/AbortController.)]
+    ;; stashed before the decorator is awaited, so an abort landing in that window still reaches
+    ;; this request. Kept with its request id so the :abort effect aborts the request it names.
+    (du/setv-untraced! el k-abort {:request/id (:request/id m) :controller controller})
+    (perform-request! el :read m controller)))
+
+(defn- write!
   "Send a write. Its controller is never stashed in k-abort, so a disconnect or a superseding read
   leaves an in-flight write alone and only its own budget can end it."
   [^js el m]
-  (perform-request! el :write m (js/AbortController.) write-rejected!))
+  (perform-request! el :write m (js/AbortController.)))
 
 (defn- find-resource
   "The <server-resource> on the page whose resolved id is `target-id`, or nil. A blank name
@@ -176,31 +184,29 @@
   (try
     (.applyResource c view ctx)
     (catch :default e
-      (js/console.error "[server-resource]" (or own-id "(unnamed)")
+      (js/console.error "[server-resource]" (label own-id)
                         "consumer applyResource threw:" e))))
 
-(defn- patch-intent!
+(defn- submit-intent!
   "Hand a consumer's intent patch back in as an event. A `target-id` names a sibling resource,
   which `step` routes."
   ([^js el patch] (handle-event! el [:intent-patch patch]))
-  ([^js el patch target-id] (handle-event! el [:intent-patch (assoc patch :target-id target-id)])))
+  ([^js el patch target-id] (submit-intent! el (assoc patch :target-id target-id))))
 
 (defn- consumer-ctx
   "What a consumer may call back into. Built once at boot, the same two closures for the element's
   whole life."
   [^js el]
-  {:submit-intent! (fn submit-intent
-                     ([patch] (patch-intent! el patch))
-                     ([patch target-id] (patch-intent! el patch target-id)))
-   :submit-write!  (fn submit-write [payload] (handle-event! el [:submit-write payload]))})
+  {:submit-intent! (partial submit-intent! el)
+   :submit-write!  (fn [payload] (handle-event! el [:submit-write payload]))})
 
-(defn- notify-consumers! [^js el view own-id]
+(defn- apply-consumers! [^js el view own-id]
   (let [ctx (du/getv el k-ctx)]
     (doseq [^js c (du/getv el k-consumers)]
       (apply-consumer! c view ctx own-id))))
 
-(defn- notify-effect! [^js el m]
-  (notify-consumers! el (:view m) (:resource/id m)))
+(defn- notify-consumers! [^js el m]
+  (apply-consumers! el (:view m) (:resource/id m)))
 
 (defn- url-write! [^js _el m]
   (let [new-url (url/build-scoped-url (.-search js/location)
@@ -211,7 +217,7 @@
       (.pushState js/history nil "" new-url)
       (.replaceState js/history nil "" new-url))))
 
-(defn- abort-request! [^js el m]
+(defn- abort! [^js el m]
   (when-let [pending (du/getv el k-abort)]
     (when (= (:request/id m) (:request/id pending))
       (.abort ^js (:controller pending))
@@ -230,17 +236,17 @@
     (js/console.debug "[server-resource]" (name (:code m)) (clj->js detail))
     (js/console.debug "[server-resource]" (name (:code m)))))
 
-;; The executor, as data: one performer per effect tag, each taking the host and the effect value
-;; and deciding nothing. `effect-handlers-cover-the-vocabulary` pins these keys against
-;; effect/tags.
+;; The executor, as data: one performer per effect tag, each named after the tag it performs like
+;; the constructors in `effect`, each taking the host and the effect value and deciding nothing.
+;; `effect-handlers-cover-the-vocabulary` pins these keys against effect/tags.
 ;; Public for test purposes only
 (def effect-handlers
-  {:fetch            execute-fetch!
-   :write            execute-write!
-   :abort            abort-request!
+  {:fetch            fetch!
+   :write            write!
+   :abort            abort!
    :url-write        url-write!
    :route-intent     route-intent!
-   :notify-consumers notify-effect!
+   :notify-consumers notify-consumers!
    :diagnostic       diagnostic!})
 
 (defn- run-effects!
@@ -308,31 +314,41 @@
               (distinct))
         (owned-descendants el)))
 
-(defn- boot!
-  "Build the resource value from the host's attributes and the current URL, wire the popstate
-  listener and the consumer context, collect the consumers, and hand in :connected. An SSR embed,
-  if present, is read first."
-  [^js el]
-  ;; Read once at connect, like the endpoint, so the value step builds from cannot change under
+(defn- install-resource!
+  "Build the resource value from the host's attributes and the current URL, carrying over what the
+  previous connection left in flight."
+  [^js el resource-id]
+  ;; Read once at connect, like the resource id, so the value step builds from cannot change under
   ;; an in-flight request.
-  (let [resource-id (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
-        on-popstate (fn [_e] (handle-popstate el resource-id))
-        embed       (read-boot-embed el)
-        carried     (resource/carry-over (du/getv el k-resource))]
-    (du/setv! el k-resource
-              (resource/initial {:resource/id    resource-id
-                                 :endpoint       (du/get-attr el model/attr-src)
-                                 :url-intent     (current-url-intent resource-id)
-                                 :request-config (read-request-config el)
-                                 :carried        carried}))
+  (du/setv! el k-resource
+            (resource/initial {:resource/id    resource-id
+                               :endpoint       (du/get-attr el model/attr-src)
+                               :url-intent     (current-url-intent resource-id)
+                               :request-config (read-request-config! el)
+                               :carried        (resource/carry-over (du/getv el k-resource))})))
+
+(defn- install-popstate! [^js el resource-id]
+  (let [on-popstate (fn [_e] (handle-popstate! el resource-id))]
     (du/setv! el k-popstate on-popstate)
-    (du/setv! el k-ctx (consumer-ctx el))
-    (.addEventListener js/window "popstate" on-popstate)
-    (let [consumers (collect-consumers el)]
-      (when (empty? consumers)
-        (js/console.error "[server-resource]" (or resource-id "(unnamed)") "has no consumers"))
-      (du/setv! el k-consumers consumers))
-    (handle-event! el [:connected {:embed embed}])))
+    (.addEventListener js/window "popstate" on-popstate)))
+
+(defn- install-consumers!
+  "Collect the consumers this element drives, reporting a host that drives none."
+  [^js el resource-id]
+  (let [consumers (collect-consumers el)]
+    (when (empty? consumers)
+      (js/console.error "[server-resource]" (label resource-id) "has no consumers"))
+    (du/setv! el k-consumers consumers)))
+
+(defn- boot!
+  "Install everything the element holds for the life of this connection, then hand in :connected
+  with the SSR embed the host carries, if any."
+  [^js el resource-id]
+  (install-resource! el resource-id)
+  (install-popstate! el resource-id)
+  (du/setv! el k-ctx (consumer-ctx el))
+  (install-consumers! el resource-id)
+  (handle-event! el [:connected {:embed (read-boot-embed el)}]))
 
 (defn- next-generation!
   "Open a new lifecycle generation on `el` and return it. Every connect and every disconnect
@@ -356,28 +372,37 @@
 (defn- report-undefined-tags!
   "Name the tags still undefined after the budget. The boot waits on every custom element inside
   the host, so one unregistered component leaves the resource issuing no request at all."
-  [^js el tags generation]
+  [^js el resource-id tags generation]
   (js/setTimeout
    (fn []
      (when (= generation (du/getv el k-generation))
        (when-let [missing (seq (remove #(js/customElements.get %) tags))]
-         (js/console.error "[server-resource]"
-                           (or (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
-                               "(unnamed)")
+         (js/console.error "[server-resource]" (label resource-id)
                            "cannot boot, these custom elements inside it are never defined:"
                            (clj->js (vec missing))))))
    undefined-tags-budget-ms))
 
+(defn- definitions-rejected!
+  "Report a boot that never ran. `whenDefined` rejects on a hyphenated tag that is not a legal
+  custom element name, `font-face` and `annotation-xml` among them."
+  [resource-id e]
+  (js/console.error "[server-resource]" (label resource-id)
+                    "cannot boot, waiting on its custom elements failed:" e))
+
 (defn- connected! [^js el]
-  (let [tags       (custom-element-tags el)
-        generation (next-generation! el)]
-    (report-undefined-tags! el tags generation)
-    (-> (js/Promise.all (clj->js (map #(js/customElements.whenDefined %) tags)))
-      (.then (fn []
-               ;; the connection this boot was scheduled for may have ended, or been replaced by
-               ;; a later one, while the definitions were awaited
-               (when (= generation (du/getv el k-generation))
-                 (boot! el)))))))
+  (let [resource-id (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
+        tags        (custom-element-tags el)
+        generation  (next-generation! el)]
+    (report-undefined-tags! el resource-id tags generation)
+    ;; the rejection handler rides `then`, so a throw out of `boot!` is not reported as a boot that
+    ;; never started
+    (.then (js/Promise.all (clj->js (map #(js/customElements.whenDefined %) tags)))
+           (fn []
+             ;; the connection this boot was scheduled for may have ended, or been replaced by
+             ;; a later one, while the definitions were awaited
+             (when (= generation (du/getv el k-generation))
+               (boot! el resource-id)))
+           (fn [e] (definitions-rejected! resource-id e)))))
 
 ;; register! always installs attributeChangedCallback and calls this, so it must exist.
 (defn- attribute-changed! [_el _name _old _new] nil)
@@ -390,9 +415,9 @@
   (.defineProperty js/Object proto "projectResource"
                    #js {:value        (fn [value]
                                         (this-as ^js el
-                                          (notify-consumers! el
-                                                             (resource/project value)
-                                                             (:resource/id value))))
+                                          (apply-consumers! el
+                                                            (resource/project value)
+                                                            (:resource/id value))))
                         :writable     true
                         :configurable true}))
 

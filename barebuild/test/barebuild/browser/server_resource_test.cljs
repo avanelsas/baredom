@@ -485,6 +485,27 @@
                  (done)))
         (.catch (fn [e] (is false (str "transport rejection did not surface: " e)) (done))))))
 
+(deftest an-unreadable-body-surfaces-as-a-protocol-failure
+  (async done
+    (testing "an ok response whose body is not an envelope is classified at the edge, before step
+              sees it. Handed in as a plain response instead, it reaches on-response carrying no
+              outcome and is diagnosed :unknown-outcome, which tells the consumer the server said
+              something unexpected rather than that the answer could not be read at all"
+      (support/stub-body! "not json at all")
+      (support/mount! "tasks" "/api/tasks")
+      (-> (support/settle #(seq (remove nil? @support/failure-calls)))
+          (.then (fn []
+                   (let [f (first-failure)]
+                     (is (= :protocol (:cause f))
+                         "an unreadable answer is a protocol failure, not the server saying no")
+                     (is (= :read (:for f))
+                         "and the read is what failed, the discriminator a consumer branches on")
+                     (is (= :malformed-json (get-in f [:detail :reason]))
+                         "carrying what made it unreadable, so an author can tell a truncated
+                          response from a proxy's html error page"))
+                   (done)))
+          (.catch (fn [e] (is false (str "an unreadable body never surfaced: " e)) (done)))))))
+
 (deftest a-write-renders-before-it-reports-that-writing-finished
   (async done
     (support/respond-with!
