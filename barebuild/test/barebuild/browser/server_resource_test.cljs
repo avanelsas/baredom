@@ -555,6 +555,35 @@
           (.catch (fn [e] (is false (str "the boot apply never initialised every hook: " e))
                     (done)))))))
 
+(deftest on-connect-is-handed-the-driven-child
+  (testing "on-connect is handed what every other hook is handed, the child the consumer declared,
+            so wiring a gesture never re-queries an element the config already names"
+    (support/stub-accepted! [] empty-shape)
+    (let [host          (support/mount-consumers! "tasks" "/api/tasks" ["x-connect-consumer"])
+          ^js consumer  (.querySelector host "x-connect-consumer")
+          [[child this]] @support/connect-calls]
+      (is (identical? (.querySelector consumer "div") child)
+          "the declared child, already cached when on-connect runs")
+      (is (identical? consumer this) "alongside the consumer itself"))))
+
+(deftest a-gesture-before-the-resource-boots-is-reported
+  (async done
+    (testing "a consumer's listeners are live the moment it connects, while its host is still
+              waiting on the custom elements inside it to be defined. A gesture in that window has
+              no resource to submit through, so it is reported like every other misuse rather than
+              thrown out of the handler"
+      (support/stub-accepted! [] empty-shape)
+      (let [host (support/mount! "tasks" "/api/tasks")]
+        ;; boot waits on whenDefined, so this runs before the first apply installs the ctx
+        (support/submit-intent! host {:query-patch {:sort "owner"}})
+        (is (error-logged? #"before its resource booted") "the gesture is reported")
+        (-> (support/settle #(= 1 (count @support/fetch-calls)))
+            (.then (fn []
+                     (is (not (re-find #"sort=owner" (first @support/fetch-calls)))
+                         "and it does not reach the resource once that boots")
+                     (done)))
+            (.catch (fn [e] (is false (str "the boot fetch never settled: " e)) (done))))))))
+
 ;; --- transport config: attributes reach fetch ------------------------------
 
 (defn- first-init [] (first @support/fetch-inits))

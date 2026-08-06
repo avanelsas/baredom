@@ -17,6 +17,7 @@
 (defonce aborted-calls (atom []))   ; urls whose in-flight request was aborted
 (defonce pending       (atom []))   ; controlled-stub entries {:url :resolve}, awaiting resolution
 (defonce records       (atom []))   ; recorder entries, when a test opts in with capture-records!
+(defonce connect-calls (atom []))   ; [child this] pairs the connect consumer's on-connect saw
 (defonce removed-host? (atom false)) ; the self-removing consumer fires once per test
 
 (defonce real-fetch (.-fetch js/window))
@@ -48,6 +49,11 @@
         :render    (fn [_child _view ^js this]
                      (when (compare-and-set! removed-host? false true)
                        (.remove (.closest this "server-resource"))))}))
+    (when-not (js/customElements.get "x-connect-consumer")
+      (consumer-resource/register!
+       {:tag        "x-connect-consumer"
+        :child-tag  "div"
+        :on-connect (fn [child this] (swap! connect-calls conj [child this]))}))
     (when-not (js/customElements.get "x-throwing-consumer")
       (consumer-resource/register!
        {:tag       "x-throwing-consumer"
@@ -201,6 +207,7 @@
   (reset! aborted-calls [])
   (reset! pending [])
   (reset! records [])
+  (reset! connect-calls [])
   (reset! removed-host? false)
   (decorator/set-request-decorator! nil)
   (recorder/set-recorder! nil))

@@ -85,7 +85,7 @@
       (.show ^js (:modal (refs el))))))
 
 (defn- connect!
-  [^js el]
+  [_child ^js el]
   (du/setv! el k-refs (find-refs el))
   ;; Listeners on the consumer's own subtree (trigger, modal, form) are GC'd with it. The edit
   ;; request is the exception: it is dispatched by the table consumer and caught on the resource.
