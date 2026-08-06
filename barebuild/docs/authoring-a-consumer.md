@@ -54,8 +54,8 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 A consumer drives its child from the view alone and never from an attribute, so a consumer
 element observes none and there is no `:observed-attributes` to declare.
 
-**All hooks share one signature: `(child value this)`** — `child` is the cached child
-element, `this` is the consumer host.
+**Every view hook shares one signature: `(child value this)`**. `child` is the cached child
+element, `this` is the consumer host. `on-connect` is handed the same two, with no value yet.
 
 | Hook | Signature | Fires when… |
 |---|---|---|
@@ -63,6 +63,7 @@ element, `this` is the consumer host.
 | `:on-failure` | `(child failure this)` | `:failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
 | `:on-pending` | `(child pending this)` | `:pending?` changes.  `pending` is a boolean, show/hide loading |
 | `:on-writing` | `(child writing this)` | `:writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
+| `:on-connect` | `(child this)` | the consumer element connects, before any view arrives.  Wire your listeners here |
 
 Every hook also fires **once on the first apply**, whatever its slice holds at that moment, so a
 hook is always given a starting value rather than only being told about later movement. Write
@@ -195,6 +196,10 @@ submit it:
         patch    (model/translate-gesture …)]   ; {:query-patch {…} :gesture-class :refinement}
     (consumer-resource/submit-intent! consumer patch)))
 ```
+
+A gesture is only submittable once the host has booted, which it does after every custom
+element inside it is defined. Your listeners are live before that, so a gesture fired in the
+gap is reported to the console and dropped rather than thrown out of your handler.
 
 `:gesture-class` is `:refinement` (-> replace history) or `:navigation` (-> push history);
 `step` resolves it to a URL-write mode. This mapping is fixed: a `:navigation` gesture pushes a

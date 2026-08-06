@@ -54,10 +54,9 @@
       (du/remove-attr! x-select "value")
       (du/set-attr! x-select "value" desired))))
 
-(defn- on-connect! [^js el]
-  (let [x-select (.querySelector el "x-select")]
-    (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
-    (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select)))))
+(defn- on-connect! [^js x-select ^js el]
+  (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
+  (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select))))
 
 (defn init! []
   (consumer-resource/register!

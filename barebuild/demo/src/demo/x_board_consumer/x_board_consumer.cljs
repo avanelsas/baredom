@@ -143,7 +143,7 @@
     (when-let [cols (du/getv this k-cols)]
       (place-cards! this cols))))
 
-(defn- on-connect! [^js el]
+(defn- on-connect! [_child ^js el]
   (.addEventListener el "x-drop-zone-drop" (fn [e] (on-drop! el e))))
 
 (defn- render!

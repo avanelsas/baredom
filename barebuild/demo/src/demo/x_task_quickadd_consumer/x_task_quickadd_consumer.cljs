@@ -15,7 +15,6 @@
 (defn- today-iso []
   (subs (.toISOString (js/Date.)) 0 10))
 
-(defn- form-el [^js el] (.querySelector el "x-form"))
 (defn- form-wrap [^js el] (.querySelector el ".quickadd-form"))
 (defn- open-link [^js el] (.querySelector el "[data-role='open']"))
 
@@ -46,11 +45,10 @@
 (defn- on-failure! [^js form failure ^js this]
   (consumer-form/on-failure! form (form-wrap this) failure this))
 
-(defn- connect! [^js el]
+(defn- connect! [^js form ^js el]
   (let [open-btn (open-link el)
         cancel   (.querySelector el "[data-role='cancel']")
-        add-btn  (.querySelector el "x-button[type='submit']")
-        form     (form-el el)]
+        add-btn  (.querySelector el "x-button[type='submit']")]
     (du/setv! el k-add-button add-btn)
     (.addEventListener open-btn "press" (fn [_e] (reveal! el)))
     (.addEventListener cancel "press" (fn [_e] (consumer-form/clear-form! form) (collapse! el)))

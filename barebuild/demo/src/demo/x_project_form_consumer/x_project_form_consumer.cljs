@@ -25,11 +25,10 @@
 (defn- on-failure! [^js form failure ^js this]
   (consumer-form/on-failure! form (du/getv this k-modal) failure this))
 
-(defn- connect! [^js el]
+(defn- connect! [^js form ^js el]
   (let [trigger    (.querySelector el "x-button[data-role='open']")
         submit-btn (.querySelector el "x-button[type='submit']")
-        modal      (.querySelector el "x-modal")
-        form       (.querySelector el "x-form")]
+        modal      (.querySelector el "x-modal")]
     (du/setv! el k-button submit-btn)
     (du/setv! el k-modal modal)
     (.addEventListener trigger "press"
