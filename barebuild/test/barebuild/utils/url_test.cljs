@@ -7,24 +7,36 @@
 (deftest build-scoped-url-reflects-the-new-params
   (testing "the new params win — the URL reflects the mutation, not the stale value (regression)"
     (is (= "/t?tasks.sort=owner"
-           (url/build-scoped-url "?tasks.sort=STALE" "/t" "tasks" {:sort "owner"}))))
+           (url/build-scoped-url "?tasks.sort=STALE" "/t" {"tasks" {:sort "owner"}}))))
   (testing "only this resource's prefixed params are replaced; others are preserved"
     (is (= "/tasks?other.x=1&tasks.sort=owner&tasks.direction=asc"
-           (url/build-scoped-url "?other.x=1&tasks.sort=old" "/tasks" "tasks"
-                                   {:sort "owner" :direction "asc"}))))
+           (url/build-scoped-url "?other.x=1&tasks.sort=old" "/tasks"
+                                 {"tasks" {:sort "owner" :direction "asc"}}))))
   (testing "clearing all owned params yields just the pathname (no dangling ?)"
-    (is (= "/t" (url/build-scoped-url "?tasks.sort=owner" "/t" "tasks" {}))))
+    (is (= "/t" (url/build-scoped-url "?tasks.sort=owner" "/t" {"tasks" {}}))))
   (testing "empty starting search + new params"
-    (is (= "/t?tasks.page=2" (url/build-scoped-url "" "/t" "tasks" {:page "2"})))))
+    (is (= "/t?tasks.page=2" (url/build-scoped-url "" "/t" {"tasks" {:page "2"}})))))
 
 (deftest build-scoped-url-unnamed-writes-bare-keys
   (testing "a blank id owns the root namespace: keys are written and replaced without a prefix"
     (is (= "/t?sort=owner"
-           (url/build-scoped-url "?sort=STALE" "/t" nil {:sort "owner"})))
-    (is (= "/t?sort=owner" (url/build-scoped-url "?sort=STALE" "/t" "" {:sort "owner"}))))
+           (url/build-scoped-url "?sort=STALE" "/t" {nil {:sort "owner"}})))
+    (is (= "/t?sort=owner" (url/build-scoped-url "?sort=STALE" "/t" {"" {:sort "owner"}}))))
   (testing "an unnamed resource touches only bare keys, leaving a named sibling's keys intact"
     (is (= "/t?projects.name=x&sort=owner"
-           (url/build-scoped-url "?projects.name=x&sort=old" "/t" nil {:sort "owner"})))))
+           (url/build-scoped-url "?projects.name=x&sort=old" "/t" {nil {:sort "owner"}})))))
+
+(deftest build-scoped-url-writes-every-resource-it-is-handed
+  (testing "a named resource and the unnamed root write side by side"
+    (let [u (url/build-scoped-url "" "" {"tasks" {:sort "owner"} nil {:page "2"}})]
+      (is (= {:sort "owner"} (url/parse-scoped-query u "tasks")))
+      (is (= {:page "2"} (url/parse-scoped-query u nil)))))
+  (testing "each replaces only its own stale keys, and a resource not handed in keeps its own"
+    (let [u (url/build-scoped-url "?tasks.sort=STALE&projects.name=STALE&page=1" ""
+                                  {"tasks" {:sort "owner"} "projects" {:name "x"}})]
+      (is (= {:sort "owner"} (url/parse-scoped-query u "tasks")))
+      (is (= {:name "x"} (url/parse-scoped-query u "projects")))
+      (is (= {:page "1"} (url/parse-scoped-query u nil))))))
 
 (deftest parse-scoped-query-reads-only-what-the-resource-owns
   (testing "a named resource reads its prefixed keys, with the prefix stripped"
@@ -46,7 +58,7 @@
   (testing "parsing what build-scoped-url wrote gives back the query it was handed"
     (doseq [id ["tasks" "" nil]
             q  [{} {:sort "owner"} {:sort "owner" :direction "asc" :page "2"}]]
-      (is (= q (url/parse-scoped-query (url/build-scoped-url "" "" id q) id))
+      (is (= q (url/parse-scoped-query (url/build-scoped-url "" "" {id q}) id))
           (str "round trip for id " (pr-str id) " and query " (pr-str q))))))
 
 (deftest url-prefix-and-owned-keys

@@ -181,11 +181,10 @@
 (defn- reconstructed-url
   "Reconstruct the current replay url from its pathname and params"
   [entries n]
-  (let [params (reduce (fn [^js p [rid {:keys [value]}]]
-                         (url/scope-params! p rid (:url-intent value)))
-                       (js/URLSearchParams. (.-search js/location))
-                       (reconstruct/resources-at entries n))]
-    (url/params->url params (.-pathname js/location))))
+  (url/build-scoped-url (.-search js/location)
+                        (.-pathname js/location)
+                        (update-vals (reconstruct/resources-at entries n)
+                                     (comp :url-intent :value))))
 
 (defn- sync-url!
   "Update the URL during a replay. If n>=total we are back at the live url."

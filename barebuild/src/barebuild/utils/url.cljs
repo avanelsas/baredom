@@ -38,12 +38,11 @@
     (if (str/blank? qs) pathname (str pathname "?" qs))))
 
 (defn build-scoped-url
-  "The url built from the resource's params, scoped by its resource-id. A named resource owns
-  `<id>.`-prefixed keys (e.g. tasks.sort=start), an unnamed (blank id) resource owns the bare
-  keys and writes them without a prefix (sort=start)."
-  [search pathname resource-id new-params]
-  (-> (js/URLSearchParams. search)
-      (scope-params! resource-id new-params)
+  "The url built from each resource's params in `params-by-id`, scoped by its resource-id. A named
+  resource owns `<id>.`-prefixed keys (e.g. tasks.sort=start), an unnamed (blank id) resource owns
+  the bare keys and writes them without a prefix (sort=start)."
+  [search pathname params-by-id]
+  (-> (reduce-kv scope-params! (js/URLSearchParams. search) params-by-id)
       (params->url pathname)))
 
 (defn parse-scoped-query
