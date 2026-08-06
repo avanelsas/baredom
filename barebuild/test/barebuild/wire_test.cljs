@@ -134,10 +134,17 @@
         "nothing to read is nothing, not an empty bag the server never sent"))
   (testing "and page info the server did not send at all reads the same way"
     (is (nil? (:page-info (wire/parse-envelope (accepted-with {}))))))
-  (testing "page info the server did send is read, with its keys kebabed"
+  (testing "page info the server did send is read, member by declared member"
     (is (= {:total-count 42 :page 2}
            (:page-info (wire/parse-envelope
                         (accepted-with {"pageInfo" {"totalCount" 42 "page" 2}}))))))
+  (testing "page info carries the members the protocol declares and nothing else, so what a
+            consumer may read is written down here rather than being whatever the server sent"
+    (is (= {:page 2 :page-size 10 :total-pages 4 :total-count 40}
+           (:page-info (wire/parse-envelope
+                        (accepted-with {"pageInfo" {"page"       2 "pageSize"   10
+                                                    "totalPages" 4 "totalCount" 40
+                                                    "cursor"     "opaque"}}))))))
   (testing "options that are not a list leave the field bare, exactly as absent options do"
     (let [[field] (get-in (wire/parse-envelope
                            (clj->js {"outcome" "accepted" "value" []
@@ -176,6 +183,11 @@
   (testing "a body that is JSON but carries no outcome to read, so it is not an envelope at all"
     (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-body "[1,2]"))))
     (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-envelope nil)))))
+  (testing "and `null` and `false` are JSON a client can read, so a server answering with either
+            answered unreadably rather than unparseably. Only a throw says the text was not JSON"
+    (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-body "null"))))
+    (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-body "false"))))
+    (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-body "0")))))
   (testing "a readable body parses through the same door"
     (is (= :accepted (:outcome (wire/parse-body (js/JSON.stringify accepted-js)))))))
 
@@ -184,9 +196,11 @@
     (let [r (wire/parse-envelope (clj->js {"outcome" "banana"}))]
       (is (= :unknown-outcome (get-in r [:protocol-failure :reason])))
       (is (= "banana" (get-in r [:protocol-failure :outcome])))))
-  (testing "accepted missing required members (no shape)"
+  (testing "a required member names itself, the outcome it belongs to being carried alongside"
     (let [r (wire/parse-envelope (clj->js {"outcome" "accepted" "value" []}))]
-      (is (= :missing-accepted-members (get-in r [:protocol-failure :reason])))))
-  (testing "rejected missing required members (no error)"
+      (is (= :missing-shape (get-in r [:protocol-failure :reason])))
+      (is (= "accepted" (get-in r [:protocol-failure :outcome]))))
+    (let [r (wire/parse-envelope (clj->js {"outcome" "accepted" "shape" {"idKey" "id"}}))]
+      (is (= :missing-value (get-in r [:protocol-failure :reason]))))
     (let [r (wire/parse-envelope (clj->js {"outcome" "rejected"}))]
-      (is (= :missing-rejected-members (get-in r [:protocol-failure :reason]))))))
+      (is (= :missing-error (get-in r [:protocol-failure :reason]))))))
