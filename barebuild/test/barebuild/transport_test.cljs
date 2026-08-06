@@ -10,7 +10,7 @@
 
 (use-fixtures :each
   {:after (fn []
-            (decorator/set-request-decorator! nil)
+            (decorator/install! nil)
             (set! (.-fetch js/globalThis) real-fetch))})
 
 (defn- stub-fetch! [f]
@@ -132,7 +132,7 @@
 (deftest perform-attaches-the-decorators-headers-to-the-request
   (async done
     (let [seen (atom nil)]
-      (decorator/set-request-decorator! (fn [_m] #js {"Authorization" "Bearer t"}))
+      (decorator/install! (fn [_m] #js {"Authorization" "Bearer t"}))
       (stub-fetch! (fn [_url ^js init]
                      (reset! seen (js->clj (.-headers init)))
                      (js/Promise.resolve #js {:ok false :status 204})))
@@ -147,7 +147,7 @@
             branches on it the same way. The request never leaves"
     (async done
       (let [sent (atom false)]
-        (decorator/set-request-decorator! (fn [_m] (throw (js/Error. "no token"))))
+        (decorator/install! (fn [_m] (throw (js/Error. "no token"))))
         (stub-fetch! (fn [_url _init]
                        (reset! sent true)
                        (js/Promise.resolve #js {:ok false :status 204})))

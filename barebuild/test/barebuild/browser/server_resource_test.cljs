@@ -657,7 +657,7 @@
 (deftest an-async-decorator-is-awaited-before-the-request-goes-out
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator!
+    (decorator/install!
      (fn [_request] (js/Promise.resolve {"Authorization" "Bearer fresh"})))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq @support/fetch-inits))
@@ -670,7 +670,7 @@
 (deftest a-decorator-may-return-headers-directly
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] {"authorization" "Bearer plain"}))
+    (decorator/install! (fn [_request] {"authorization" "Bearer plain"}))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq @support/fetch-inits))
         (.then (fn []
@@ -682,7 +682,7 @@
 (deftest a-decorator-may-return-a-js-object
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] #js {"Authorization" "Bearer js"}))
+    (decorator/install! (fn [_request] #js {"Authorization" "Bearer js"}))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq @support/fetch-inits))
         (.then (fn []
@@ -695,7 +695,7 @@
 (deftest a-decorator-returning-something-that-is-not-headers-is-reported
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] "authorization: nope"))
+    (decorator/install! (fn [_request] "authorization: nope"))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq @support/fetch-inits))
         (.then (fn []
@@ -710,7 +710,7 @@
   (async done
     (support/stub-accepted! [] empty-shape)
     (let [seen (atom nil)]
-      (decorator/set-request-decorator! (fn [request] (reset! seen request) nil))
+      (decorator/install! (fn [request] (reset! seen request) nil))
       (support/mount! "tasks" "/api/tasks")
       (-> (support/settle #(some? @seen))
           (.then (fn []
@@ -722,7 +722,7 @@
 (deftest a-decorator-outranks-the-static-header-but-not-the-content-type
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator!
+    (decorator/install!
      (fn [_request] {"x-api-key" "dynamic" "content-type" "text/plain"}))
     (let [host (support/mount! "tasks" "/api/tasks" {"headers" "{\"x-api-key\": \"static\"}"})]
       (-> (support/settle #(seq @support/spy-calls))
@@ -739,7 +739,7 @@
 (deftest a-failing-decorator-fails-the-request-instead-of-sending-it
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] (js/Promise.reject (js/Error. "no token"))))
+    (decorator/install! (fn [_request] (js/Promise.reject (js/Error. "no token"))))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
@@ -755,7 +755,7 @@
 (deftest a-throwing-decorator-fails-the-same-way-as-a-rejecting-one
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] (throw (js/Error. "boom"))))
+    (decorator/install! (fn [_request] (throw (js/Error. "boom"))))
     (support/mount! "tasks" "/api/tasks")
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
@@ -768,7 +768,7 @@
   (async done
     (support/stub-controlled!)
     (let [release (atom nil)]
-      (decorator/set-request-decorator!
+      (decorator/install!
        (fn [_request] (js/Promise. (fn [resolve _] (reset! release #(resolve nil))))))
       (let [host (support/mount! "tasks" "/api/tasks")]
         (-> (support/settle #(some? @release))
@@ -845,7 +845,7 @@
 (deftest a-decorator-that-never-answers-gives-up-on-the-budget
   (async done
     (support/stub-accepted! [] empty-shape)
-    (decorator/set-request-decorator! (fn [_request] (js/Promise. (fn [_resolve _reject] nil))))
+    (decorator/install! (fn [_request] (js/Promise. (fn [_resolve _reject] nil))))
     (support/mount! "tasks" "/api/tasks" {"timeout" "30"})
     (-> (support/settle #(seq (remove nil? @support/failure-calls)))
         (.then (fn []
@@ -880,6 +880,32 @@
                      "an app names the hook once, through the entry point it already calls")
                  (done)))
         (.catch (fn [e] (is false (str "init did not install the decorator: " e)) (done))))))
+
+(deftest init-without-the-key-leaves-the-installed-decorator-alone
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (decorator/install! (fn [_request] {"authorization" "Bearer standing"}))
+    (core/init)
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(seq @support/fetch-inits))
+        (.then (fn []
+                 (is (= {"authorization" "Bearer standing"} (headers-of (first-init)))
+                     "a second init that says nothing about the hook does not drop it")
+                 (done)))
+        (.catch (fn [e] (is false (str "init dropped the decorator: " e)) (done))))))
+
+(deftest init-clears-the-decorator-when-the-key-holds-nil
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (decorator/install! (fn [_request] {"authorization" "Bearer standing"}))
+    (core/init {:request-decorator nil})
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(seq @support/fetch-inits))
+        (.then (fn []
+                 (is (undefined? (.-headers ^js (first-init)))
+                     "naming the key sets the hook to what it holds, nil included")
+                 (done)))
+        (.catch (fn [e] (is false (str "init did not clear the decorator: " e)) (done))))))
 
 (deftest an-unknown-credentials-mode-is-reported-and-ignored
   (async done

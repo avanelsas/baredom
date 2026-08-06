@@ -209,7 +209,7 @@
   (reset! records [])
   (reset! connect-calls [])
   (reset! removed-host? false)
-  (decorator/set-request-decorator! nil)
+  (decorator/install! nil)
   (recorder/set-recorder! nil))
 
 (defn reset-url! []

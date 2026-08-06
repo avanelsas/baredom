@@ -160,6 +160,13 @@ can already discriminate on the request it is handed, and because a credential t
 mid-flight between a request being built and being sent is a source of confusion rather than
 flexibility. The function is fixed, the token inside it is free to vary.
 
+Naming `:request-decorator` sets the hook to whatever the key holds, so passing `nil` clears it.
+Leaving the key out says nothing about the hook and leaves whatever is installed in place, which
+is what keeps a second `init` from silently dropping the decorator an earlier one established.
+
+Whatever you register has to be callable. A value that is not is refused and reported when you
+register it, rather than accepted and then failing every request the page goes on to make.
+
 ## What BareBuild does and does not do about auth
 
 BareBuild **attaches** the credential you configure and **surfaces** what the server says back.
