@@ -12,8 +12,7 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-progress"
-    :observed-attributes model/observed-attributes
-    :render-key          (fn [view] (model/project-progress (:page-info (:accepted view))))
-    :render              render!}))
+   {:tag        model/tag-name
+    :child-tag  "x-progress"
+    :render-key (fn [view] (model/project-progress (:page-info (:accepted view))))
+    :render     render!}))

@@ -40,6 +40,35 @@
                  (done)))
         (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done))))))
 
+(deftest an-undefined-element-inside-a-nested-resource-does-not-block-the-boot
+  (async done
+    (testing "the boot waits for the custom elements inside the host to be defined, because a
+              consumer cannot be recognised before it is. It waits only for the ones it owns: an
+              element belonging to a nested <server-resource> is that resource's business, and
+              blocking on it would leave this one issuing no request at all"
+      (support/stub-accepted! [] empty-shape)
+      (let [host     (js/document.createElement "server-resource")
+            consumer (js/document.createElement "x-spy-consumer")
+            nested   (js/document.createElement "server-resource")]
+        (.setAttribute host "resource-id" "outer")
+        (.setAttribute host "src" "/api/outer")
+        (.appendChild consumer (js/document.createElement "div"))
+        (.appendChild host consumer)
+        (.setAttribute nested "resource-id" "inner")
+        (.setAttribute nested "src" "/api/inner")
+        (.appendChild nested (js/document.createElement "x-never-defined"))
+        (.appendChild host nested)
+        (.appendChild js/document.body host)
+        (-> (support/settle #(seq @support/fetch-calls))
+            (.then (fn []
+                     (is (= 1 (count @support/fetch-calls))
+                         "the outer resource booted and fetched")
+                     (is (re-find #"/api/outer" (first @support/fetch-calls))
+                         "and it is the outer resource that did, the inner one still waiting on
+                          the element it does own")
+                     (done)))
+            (.catch (fn [e] (is false (str "the boot never fetched: " e)) (done))))))))
+
 (deftest a-garbled-request-id-echo-still-installs
   (async done
     (testing "the client matches a response to its request by the id it minted, not by the
@@ -471,9 +500,12 @@
                                                   @support/order-calls)))]
       (-> (support/settle #(some :accepted @support/spy-calls))
           (.then (fn []
-                   (support/submit-write! host {:op :create :record {"title" "b"}})
-                   ;; on-writing fires twice: true when the write is submitted, false on the ack
-                   (support/settle #(= 2 (writings)) 200)))
+                   (let [before (writings)]
+                     (support/submit-write! host {:op :create :record {"title" "b"}})
+                     ;; the write adds two of its own: true when it is submitted, false again on
+                     ;; the ack. Counted from whatever the boot apply already reported, so this
+                     ;; waits for the ack rather than stopping on the submit
+                     (support/settle #(= (+ before 2) (writings)) 200))))
           (.then (fn []
                    ;; nil sorts below any number in CLJS, so prove both hooks actually ran
                    (is (some? (last-idx-of :render)) "the order consumer rendered")
@@ -484,6 +516,23 @@
                         resume on the true->false edge and find the new value already rendered")
                    (done)))
           (.catch (fn [e] (is false (str "write ordering never settled: " e)) (done)))))))
+
+(deftest every-hook-is-initialised-on-the-first-apply
+  (async done
+    (testing "one rule for every hook: it fires once on the first apply whatever its slice holds,
+              and after that only when that slice moves. Without it a hook whose slice starts at
+              its resting value (writing? false, failure nil) would never be called at all, and a
+              consumer could not tell being told nothing from being told false"
+      (support/stub-controlled!)
+      (support/mount-consumers! "tasks" "/api/tasks" ["x-order-consumer"])
+      (-> (support/settle #(= 4 (count @support/order-calls)))
+          (.then (fn []
+                   (is (= [:on-failure :render :on-pending :on-writing] @support/order-calls)
+                       "all four fire, in the contract order, from the boot apply alone. The read
+                        is still in flight, so nothing but that first apply has happened")
+                   (done)))
+          (.catch (fn [e] (is false (str "the boot apply never initialised every hook: " e))
+                    (done)))))))
 
 ;; --- transport config: attributes reach fetch ------------------------------
 

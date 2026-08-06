@@ -23,9 +23,8 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-search-field"
-    :observed-attributes model/observed-attributes
-    :render-key          (fn [view] (model/project-search-value (:accepted view)))
-    :render              render!
-    :on-connect          on-connect!}))
+   {:tag        model/tag-name
+    :child-tag  "x-search-field"
+    :render-key (fn [view] (model/project-search-value (:accepted view)))
+    :render     render!
+    :on-connect on-connect!}))

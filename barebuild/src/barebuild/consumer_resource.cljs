@@ -29,19 +29,24 @@
   (when-not (identical? ctx (du/getv this k-ctx))
     (du/setv! this k-ctx ctx)))
 
+(defn- first-apply-or-moved?
+  "True on the first apply whatever `slice` holds, and after that only when it moved. One rule for
+   every hook, so a consumer is initialised exactly once per hook it registers rather than only
+   when its slice happens to start at something other than its resting value."
+  [slice view last-view]
+  (or (nil? last-view)
+      (not= (slice view) (slice last-view))))
+
 (defn- notify-on-change!
-  "Invoke `callback` with `slice` of `view` when it differs from `slice` of `last-view`. No-op
-   when `callback` is nil."
+  "Invoke `callback` with `slice` of `view`. No-op when `callback` is nil."
   [^js this callback slice view last-view]
-  (when (and callback (not= (slice view) (slice last-view)))
+  (when (and callback (first-apply-or-moved? slice view last-view))
     (callback (du/getv this k-child) (slice view) this)))
 
 (defn- render-when-changed!
-  "Invoke `render` with the whole `view` when the render-key slice moved, and on the first apply
-   whatever that slice holds. No-op when `render` is nil."
+  "Invoke `render` with the whole `view`. No-op when `render` is nil."
   [^js this render render-key view last-view]
-  (when (and render (or (nil? last-view)
-                        (not= (render-key view) (render-key last-view))))
+  (when (and render (first-apply-or-moved? render-key view last-view))
     (render (du/getv this k-child) view this)))
 
 (defn- apply-resource!
@@ -85,11 +90,14 @@
   :on-connect (fn [this]), optional extra wiring
   :render-key (fn [view]) -> the slice render draws, so render only fires when it changes.
   Defaults to the accepted envelope
-  :observed-attributes, optional, defaults to #js []"
-  [{:keys [tag child-tag on-connect observed-attributes] :as config}]
+
+  Every hook fires once on the first apply, whatever its slice holds, and after that only when
+  that slice moves. A consumer drives its child from the view alone and never from an attribute,
+  so a consumer element observes none."
+  [{:keys [tag child-tag on-connect] :as config}]
   (component/register!
    tag
-   {:observed-attributes  (or observed-attributes #js [])
+   {:observed-attributes  #js []
     :connected-fn         (fn [^js el]
                             (du/setv! el k-child (.querySelector el child-tag))
                             (when on-connect (on-connect el)))

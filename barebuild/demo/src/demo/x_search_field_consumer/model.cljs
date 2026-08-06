@@ -2,8 +2,6 @@
 
 (def tag-name "x-search-field-consumer")
 
-(def observed-attributes #js [])
-
 (defn translate-search-gesture
   [value]
   {:query-patch {:search value} :gesture-class :refinement})

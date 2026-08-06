@@ -2,8 +2,6 @@
 
 (def tag-name "x-project-selector-consumer")
 
-(def observed-attributes #js [])
-
 (def all-projects-value "")
 
 (defn translate-project-gesture

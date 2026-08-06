@@ -165,9 +165,21 @@
                     (clj->js {"outcome" "rejected" "error" {"code" "nope"} "query" [1 2]}))
                    [:protocol-failure :reason])))))
 
+(deftest a-body-fails-in-three-distinguishable-ways
+  (testing "a body that is not there. The server answered and said nothing"
+    (is (= {:reason :empty-body} (:protocol-failure (wire/parse-body ""))))
+    (is (= {:reason :empty-body} (:protocol-failure (wire/parse-body nil)))))
+  (testing "a body that is not JSON. A different mistake from an absent one, and worth telling
+            apart: one is a server answering emptily, the other a server answering with something
+            no client of this protocol can read"
+    (is (= {:reason :malformed-json} (:protocol-failure (wire/parse-body "not json")))))
+  (testing "a body that is JSON but carries no outcome to read, so it is not an envelope at all"
+    (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-body "[1,2]"))))
+    (is (= {:reason :malformed-envelope} (:protocol-failure (wire/parse-envelope nil)))))
+  (testing "a readable body parses through the same door"
+    (is (= :accepted (:outcome (wire/parse-body (js/JSON.stringify accepted-js)))))))
+
 (deftest protocol-failures
-  (testing "nil / empty body"
-    (is (= {:reason :empty-body} (:protocol-failure (wire/parse-envelope nil)))))
   (testing "unknown outcome"
     (let [r (wire/parse-envelope (clj->js {"outcome" "banana"}))]
       (is (= :unknown-outcome (get-in r [:protocol-failure :reason])))

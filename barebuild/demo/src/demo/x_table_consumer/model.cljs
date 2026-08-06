@@ -2,8 +2,6 @@
 
 (def tag-name "x-table-consumer")
 
-(def observed-attributes #js [])
-
 (defn- labeller
   "A value -> display text fn for one field. When the shape gives the field `options`, they name
    its values, so a cell shows the same text the form's control offers. An unlisted value shows

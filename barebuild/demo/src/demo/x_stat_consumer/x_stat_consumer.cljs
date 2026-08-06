@@ -9,8 +9,7 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-stat"
-    :observed-attributes model/observed-attributes
-    :render-key          (fn [view] (model/project-stat (:accepted view)))
-    :render              render!}))
+   {:tag        model/tag-name
+    :child-tag  "x-stat"
+    :render-key (fn [view] (model/project-stat (:accepted view)))
+    :render     render!}))
