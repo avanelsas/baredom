@@ -126,7 +126,7 @@
                     #js {:ok true :text (fn [] (js/Promise.resolve "not json"))})))
     (-> (transport/perform! a-request (js/AbortController.))
       (.then (fn [result]
-               (is (= :empty-body (get-in result [:protocol-failure :reason])))
+               (is (= :malformed-json (get-in result [:protocol-failure :reason])))
                (done))))))
 
 (deftest perform-attaches-the-decorators-headers-to-the-request

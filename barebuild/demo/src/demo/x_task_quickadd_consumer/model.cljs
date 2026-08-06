@@ -2,8 +2,6 @@
 
 (def tag-name "x-task-quickadd-consumer")
 
-(def observed-attributes #js [])
-
 (defn new-task-record
   "The create record for a quick-add."
   [form-values project-id today]

@@ -107,13 +107,26 @@
 
 (defn parse-envelope
   "A server JS object as an accepted or rejected envelope, or a protocol-failure marker when it
-  cannot be read."
+  cannot be read. Anything that is not a JSON object carries no outcome to read and so is not an
+  envelope at all, rather than one whose outcome happens to be missing."
   [js-obj]
-  (if (nil? js-obj)
-    (protocol-failure :empty-body {})
+  (if-not (object? js-obj)
+    (protocol-failure :malformed-envelope {})
     (let [outcome (gobj/get js-obj "outcome")]
       (if-let [{:keys [defect parse]} (envelope-kinds outcome)]
         (if-let [reason (defect js-obj)]
           (protocol-failure reason {:outcome outcome})
           (parse js-obj))
         (protocol-failure :unknown-outcome {:outcome outcome})))))
+
+(defn parse-body
+  "Response or embed text as an envelope. The whole of the JSON-to-CLJS edge, shared by the network
+  edge and the boot embed so both read a body the same way. A body that is not there, one that is
+  not JSON, and one that is JSON but not an envelope are three different mistakes and are reported
+  as three."
+  [text]
+  (if (str/blank? text)
+    (protocol-failure :empty-body {})
+    (if-let [parsed (try (js/JSON.parse text) (catch :default _ nil))]
+      (parse-envelope parsed)
+      (protocol-failure :malformed-json {}))))

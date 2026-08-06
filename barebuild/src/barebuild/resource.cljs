@@ -9,15 +9,32 @@
 ;; Which gesture classes push a history entry rather than replace one.
 (def ^:private default-history-policy {:navigation :push})
 
+;; The two kinds of request as data: where each one's in-flight record lives, where its counter
+;; lives, and how its ids are named. One set of functions serves both, told apart only by the kind
+;; they are handed.
+(def ^:private request-kinds
+  {:read  {:slot :active-request :counter :request-count :id-prefix ""}
+   :write {:slot :active-write   :counter :write-count   :id-prefix "w"}})
+
+(def ^:private no-requests
+  "Both request kinds at rest: nothing in flight, nothing counted yet. Read off `request-kinds`
+  for the same reason `carry-over` reads off it, so a renamed slot cannot leave `initial`
+  declaring a key nothing else uses."
+  (into {}
+        (mapcat (fn [{:keys [slot counter]}] [[slot nil] [counter 0]]))
+        (vals request-kinds)))
+
 (defn initial
   "The resource a fresh connection starts from, and the one place its shape is written down, so a
   test fixture and what the element boots with cannot drift apart. `request-config` is whatever the
   host declared as attributes, `carried` what `carry-over` selected out of the connection before
   this one. Both may name keys this does not, and both win over the defaults."
   [{:keys [resource/id endpoint url-intent history-policy request-config carried]}]
-  (merge {:resource/id    id
+  (merge no-requests
+         {:resource/id    id
           :endpoint       endpoint
           :last-accepted  nil
+          :last-failure   nil
           :url-intent     url-intent
           :history-policy (or history-policy default-history-policy)}
          request-config
@@ -56,13 +73,6 @@
    (merge extra {:cause cause :for kind :query query})))
 
 ;; Requests in flight, read and write alike ------------------------------------
-
-;; The two kinds of request as data: where each one's in-flight record lives, where its counter
-;; lives, and how its ids are named. One set of functions serves both, told apart only by the kind
-;; they are handed.
-(def ^:private request-kinds
-  {:read  {:slot :active-request :counter :request-count :id-prefix ""}
-   :write {:slot :active-write   :counter :write-count   :id-prefix "w"}})
 
 (defn carry-over
   "The part of `resource` the next connection inherits, and the only part that survives a boot. An
@@ -252,11 +262,21 @@
 
 ;; Installing an answer, read or write -----------------------------------------
 
+(defn- retires-failure?
+  "True when an answer of `kind` settles the failure `resource` is holding. A write ack carries the
+  full post-mutation state, so it answers both the write it acknowledges and the read that state
+  belongs to. A read answers only the read, leaving a write whose outcome nothing has confirmed
+  still reported."
+  [resource kind]
+  (or (= :write kind)
+      (= :read (:for (:last-failure resource)))))
+
 (defn- accept
-  "`resource` holding `payload` as the value it answers with, retiring whatever failure preceded
-  it."
-  [resource payload]
-  (assoc resource :last-accepted payload :last-failure nil))
+  "`resource` holding `payload` as the value it answers with, retiring the failure before it when
+  that failure has been answered."
+  [resource kind payload]
+  (cond-> (assoc resource :last-accepted payload)
+    (retires-failure? resource kind) (assoc :last-failure nil)))
 
 (defn- with-failure
   "`resource` with the in-flight request of `kind` dropped and `failure` stashed as what it now
@@ -294,7 +314,7 @@
       (let [echo     (:query payload)
             adopt?   (not (drifted? resource kind))
             correct? (and adopt? (not= echo (:url-intent resource)))
-            r*       (cond-> (accept (clear-in-flight resource kind) payload)
+            r*       (cond-> (accept (clear-in-flight resource kind) kind payload)
                        adopt? (assoc :url-intent echo))]
         (result r* (cond-> []
                      correct? (conj (url-write-fx r* echo :replace))
@@ -324,7 +344,7 @@
                         (failure :contract :read (:query embed) {:response embed :errors errors})))
       ;; An embed never adopts its query echo and never corrects the URL. There is no in-flight
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
-      (let [installed (accept resource embed)]
+      (let [installed (accept resource :read embed)]
         (with-trailing-fetch (result installed [(notify-fx installed)]))))))
 
 (defn- install-rejected-embed

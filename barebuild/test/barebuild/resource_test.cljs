@@ -356,12 +356,33 @@
     (testing "consumers are notified with the updated resource"
       (is (= [(notified resource)] effects)))))
 
-(deftest accepted-response-clears-a-prior-failure
-  (let [failed (expecting (assoc base :last-failure {:cause :rejected :response rejected}) accepted)
+(deftest accepted-response-clears-a-prior-read-failure
+  (let [failed (expecting (assoc base :last-failure {:cause :rejected :for :read :response rejected})
+                          accepted)
         {:keys [resource]} (resource/step failed [:response accepted])]
     (is (= accepted (:last-accepted resource)) "the good value installs")
     (is (nil? (:last-failure resource))
         "a successful response clears the prior failure (T5)")))
+
+(deftest an-accepted-read-leaves-a-write-failure-standing
+  (testing "a failed write always opens a reconciling read, so the read that answers it arrives
+            moments later. If that read retired the failure, the report that a submit could not be
+            confirmed would delete itself one round trip after it appeared, before anyone read it.
+            A read answers the read, and says nothing about whether a write committed"
+    (let [write-failure {:cause :network :for :write :error {:kind :offline} :query {}}
+          failed        (expecting (assoc base :last-failure write-failure) accepted)
+          {:keys [resource]} (resource/step failed [:response accepted])]
+      (is (= accepted (:last-accepted resource)) "the good value still installs")
+      (is (= write-failure (:last-failure resource)) "and the write failure is still reported")))
+  (testing "an accepted write ack does retire it, carrying the full post-mutation state and so
+            answering both the write it acknowledges and the read that state belongs to"
+    (let [write-failure {:cause :network :for :write :error {:kind :offline} :query {}}
+          ack           (assoc accepted :request/id "tasks:w1")
+          writing       (assoc base :last-failure write-failure
+                                    :active-write {:request/id "tasks:w1" :query {}})
+          {:keys [resource]} (resource/step writing [:write-ack ack])]
+      (is (= ack (:last-accepted resource)))
+      (is (nil? (:last-failure resource))))))
 
 ;; --- 5b-3: contract validation (T7) ----------------------------------------
 

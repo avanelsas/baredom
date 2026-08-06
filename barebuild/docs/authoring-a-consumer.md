@@ -32,9 +32,8 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
   x_<name>_consumer.cljs  ; DOM: render + optional hooks + init! -> register!
 ```
 
-- **`model.cljs`** holds `tag-name`, `observed-attributes` (usually `#js []`), and a pure
-  projection function (accepted response -> whatever the child needs). No DOM. This is where
-  unit tests live.
+- **`model.cljs`** holds `tag-name` and a pure projection function (accepted response ->
+  whatever the child needs). No DOM. This is where unit tests live.
 - **`x_<name>_consumer.cljs`** holds the DOM effects (render, failure UI, loading) and calls
   `consumer-resource/register!` from `init!`.
 
@@ -42,16 +41,18 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 
 ```clojure
 (consumer-resource/register!
- {:tag                 "x-<name>-consumer"   ; the consumer element tag
-  :child-tag           "x-<child>"           ; the driven child, cached on connect
-  :observed-attributes model/observed-attributes
-  :render              render!               ; required
-  :on-failure          on-failure!           ; optional
-  :on-pending          on-pending!           ; optional
-  :on-writing          on-writing!           ; optional
-  :render-key          render-key            ; optional
-  :on-connect          on-connect!})         ; optional
+ {:tag        "x-<name>-consumer"   ; the consumer element tag
+  :child-tag  "x-<child>"           ; the driven child, cached on connect
+  :render     render!               ; required
+  :on-failure on-failure!           ; optional
+  :on-pending on-pending!           ; optional
+  :on-writing on-writing!           ; optional
+  :render-key render-key            ; optional
+  :on-connect on-connect!})         ; optional
 ```
+
+A consumer drives its child from the view alone and never from an attribute, so a consumer
+element observes none and there is no `:observed-attributes` to declare.
 
 **All hooks share one signature: `(child value this)`** — `child` is the cached child
 element, `this` is the consumer host.
@@ -62,6 +63,10 @@ element, `this` is the consumer host.
 | `:on-failure` | `(child failure this)` | `:failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
 | `:on-pending` | `(child pending this)` | `:pending?` changes.  `pending` is a boolean, show/hide loading |
 | `:on-writing` | `(child writing this)` | `:writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
+
+Every hook also fires **once on the first apply**, whatever its slice holds at that moment, so a
+hook is always given a starting value rather than only being told about later movement. Write
+your hooks to be idempotent: the boot call hands `on-failure` a nil and `on-writing` a false.
 
 ### Hook order is part of the contract
 
@@ -220,6 +225,11 @@ write committed, so it fetches the collection again and your `render` is called 
 server actually has. Your `on-failure` still fires first, so tell the user the write failed, but
 do not assume the old view is still accurate while you do. Only a `:rejected` ack, the server
 explicitly refusing, skips the re-read, because there its answer is already definitive.
+
+**That re-read does not retire the write failure.** A read answers the read and says nothing
+about whether a write committed, so the report survives the refetch that follows it and your
+failure UI stays up until something actually answers it: a later write that succeeds, or the
+user dismissing it. A read succeeding only retires a `:read` failure.
 
 Validate a create payload before submitting, against the shape the server sent:
 

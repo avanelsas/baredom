@@ -2,8 +2,6 @@
 
 (def tag-name "x-board-consumer")
 
-(def observed-attributes #js [])
-
 (def statuses ["todo" "doing" "done"])
 
 (defn columns
@@ -15,6 +13,21 @@
           (map (fn [s]
                  [s (vec (sort-by #(or (get % "rank") 0) (get by-status s [])))])
                statuses))))
+
+(defn board-plan
+  "The board's DOM plan against the card ids it is showing now: each status's card ids in the order
+   they belong there, and the ids no column claims any more. Removal is decided across the whole
+   board rather than one column at a time, so a card that only changed column is left for the
+   applier to move rather than destroyed and rebuilt, a rebuilt card having nowhere to animate
+   from."
+  [present-ids cols]
+  (let [order (into {}
+                    (map (fn [[status rows]]
+                           [status (mapv (fn [row] (str (get row "id"))) rows)]))
+                    cols)
+        kept  (into #{} cat (vals order))]
+    {:order  order
+     :remove (vec (remove kept present-ids))}))
 
 (defn- name-hue
   "A stable hue (0-359) derived from a name, so each assignee keeps one avatar colour."

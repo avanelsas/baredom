@@ -84,12 +84,10 @@
     {:kind :offline}))
 
 (defn- parse-body
-  "The ok response body read as text (not .json) and parsed into an envelope. A nil body parses to
-  an empty-body protocol marker."
+  "The ok response body read as text (not .json) and parsed into an envelope. Reading it as text is
+  what lets `wire/parse-body` tell an absent body from an unreadable one."
   [^js resp]
-  (.then (.text resp)
-         (fn [^js body]
-           (wire/parse-envelope (try (js/JSON.parse body) (catch :default _ nil))))))
+  (.then (.text resp) wire/parse-body))
 
 (defn- fetch-envelope
   "A promise of the classified outcome: a parsed envelope on a 2xx response, a network-failure

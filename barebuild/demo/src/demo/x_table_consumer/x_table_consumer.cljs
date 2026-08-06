@@ -225,8 +225,7 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-table"
-    :observed-attributes model/observed-attributes
-    :render              render!
-    :on-failure          on-failure!}))
+   {:tag        model/tag-name
+    :child-tag  "x-table"
+    :render     render!
+    :on-failure on-failure!}))

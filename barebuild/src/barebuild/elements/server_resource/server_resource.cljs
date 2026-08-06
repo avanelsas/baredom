@@ -282,7 +282,7 @@
   as a network response. Nil when there is no embed."
   [^js el]
   (when-let [^js script (.querySelector el "script[type=\"application/json\"]")]
-    (wire/parse-envelope (json-object (.-textContent script)))))
+    (wire/parse-body (.-textContent script))))
 
 ;; ── Element class ────────────────────────────────────────────────────────────
 (defn- element-descendants [^js el]
@@ -291,19 +291,22 @@
 (defn- owned-by? [^js el ^js node]
   (identical? el (.closest (.-parentElement node) model/tag-name)))
 
+(defn- owned-descendants
+  "The elements inside `el` that answer to it rather than to a nested <server-resource>. Both the
+  consumers it drives and the definitions it waits for are drawn from here, so it never blocks on
+  an element it does not own."
+  [^js el]
+  (filterv (fn [^js node] (owned-by? el node)) (element-descendants el)))
+
 (defn- collect-consumers [^js el]
-  (->> (element-descendants el)
-    (filterv
-     (fn [^js c]
-       (and (some? (.-applyResource c))
-            (owned-by? el c))))))
+  (filterv (fn [^js c] (some? (.-applyResource c))) (owned-descendants el)))
 
 (defn- custom-element-tags [^js el]
   (into []
         (comp (map (fn [^js node] (.. node -tagName toLowerCase)))
               (filter (fn [tag] (str/includes? tag "-")))
               (distinct))
-        (element-descendants el)))
+        (owned-descendants el)))
 
 (defn- boot!
   "Build the resource value from the host's attributes and the current URL, wire the popstate

@@ -61,9 +61,8 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-select"
-    :observed-attributes model/observed-attributes
-    :render-key          (fn [view] [(model/project-options (:accepted view)) (current-project-id)])
-    :render              render!
-    :on-connect          on-connect!}))
+   {:tag        model/tag-name
+    :child-tag  "x-select"
+    :render-key (fn [view] [(model/project-options (:accepted view)) (current-project-id)])
+    :render     render!
+    :on-connect on-connect!}))

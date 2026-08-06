@@ -38,9 +38,14 @@
     (set-card-content! panel row)
     panel))
 
-;; --- render: reconcile cards into their zones ---------------------------------
+;; --- render: apply the board plan to the zones --------------------------------
 
-(defn- panel-pool [^js this]
+(defn- zones [^js this]
+  (array-seq (.querySelectorAll this "x-drop-zone")))
+
+(defn- panel-pool
+  "Every card the board is showing now, by the id it carries."
+  [^js this]
   (into {} (map (fn [^js p] [(du/get-attr p "value") p])
                 (array-seq (.querySelectorAll this "x-drag-panel")))))
 
@@ -48,46 +53,61 @@
   (and (some? node)
        (= "x-drag-panel" (.. node -tagName toLowerCase))))
 
-(defn- first-panel [^js zone]
-  (loop [^js n (.-firstElementChild zone)]
+(defn- panel-from
+  "The first card at or after `node`, skipping whatever else a zone holds. Nil when there is none."
+  [^js node]
+  (loop [^js n node]
     (cond
-      (nil? n) nil
+      (nil? n)   nil
       (panel? n) n
-      :else (recur (.-nextElementSibling n)))))
+      :else      (recur (.-nextElementSibling n)))))
 
-(defn- next-panel [^js node]
-  (loop [^js n (.-nextElementSibling node)]
-    (cond
-      (nil? n) nil
-      (panel? n) n
-      :else (recur (.-nextElementSibling n)))))
+(defn- first-panel [^js zone] (panel-from (.-firstElementChild zone)))
+(defn- next-panel [^js node] (panel-from (.-nextElementSibling node)))
 
-(defn- reconcile-zone!
-  "Reconciles card movements in a zone. Server decides the order, here we try to materialise
-  them by reusing the current content (pool) and refreshing it with the server state received. Only
-  cards that are out of place will mutate and animate-move."
-  [^js zone rows pool]
-  (let [wanted (mapv (fn [row]
-                       (let [^js panel (or (get pool (str (get row "id"))) (make-card! row))]
-                         (set-card-content! panel row)
-                         panel))
-                     rows)]
-    (loop [ws wanted, ^js anchor (first-panel zone)]
-      (if-let [^js panel (first ws)]
-        (if (identical? panel anchor)
-          (recur (rest ws) (next-panel anchor))
-          (do (.insertBefore zone panel anchor)
-            (recur (rest ws) anchor)))
-        (loop [^js n anchor]
-          (when n
-            (let [^js nxt (next-panel n)]
-              (.remove n)
-              (recur nxt))))))))
+(defn- rows-by-id
+  "The rows the plan's ids name, by the same string id the plan uses."
+  [cols]
+  (into {} (map (fn [row] [(str (get row "id")) row])) (mapcat val cols)))
+
+(defn- card-for!
+  "The card showing `id`, reused from the pool or built, and refreshed from its row either way."
+  [pool rows id]
+  (let [row (get rows id)]
+    (doto ^js (or (get pool id) (make-card! row))
+      (set-card-content! row))))
+
+(defn- place-in-order!
+  "Insert `panels` into `zone` in the order given, skipping any already sitting where it belongs.
+  Only a card that actually moved is touched, so the zone animates the moves that happened rather
+  than every card on every render."
+  [^js zone panels]
+  (loop [remaining  panels
+         ^js anchor (first-panel zone)]
+    (when-let [^js panel (first remaining)]
+      (if (identical? panel anchor)
+        (recur (rest remaining) (next-panel anchor))
+        (do (.insertBefore zone panel anchor)
+            (recur (rest remaining) anchor))))))
+
+(defn- apply-board-plan!
+  "Perform `plan`: drop the cards no column claims, then order each zone. Dropping first means the
+  ordering pass only ever sees cards that belong somewhere."
+  [^js this {:keys [order remove]} pool rows]
+  (doseq [id remove]
+    (when-let [^js panel (get pool id)]
+      (.remove panel)))
+  (doseq [^js zone (zones this)]
+    (place-in-order! zone
+                     (mapv (fn [id] (card-for! pool rows id))
+                           (get order (du/get-attr zone "value") [])))))
 
 (defn- place-cards! [^js this cols]
   (let [pool (panel-pool this)]
-    (doseq [^js zone (array-seq (.querySelectorAll this "x-drop-zone"))]
-      (reconcile-zone! zone (get cols (du/get-attr zone "value") []) pool))))
+    (apply-board-plan! this
+                       (model/board-plan (keys pool) cols)
+                       pool
+                       (rows-by-id cols))))
 
 (defn- project-selected?
   "Read from the projected intent."
@@ -100,8 +120,7 @@
 ;; --- drop: reserve -> write -> release ----------------------------------------
 
 (defn- zone-for [^js this status]
-  (some (fn [^js z] (when (= status (du/get-attr z "value")) z))
-        (array-seq (.querySelectorAll this "x-drop-zone"))))
+  (some (fn [^js z] (when (= status (du/get-attr z "value")) z)) (zones this)))
 
 (defn- write-pending? [^js this]
   (some? (du/getv this k-pending-zone)))
@@ -142,11 +161,10 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-drop-zone"
-    :observed-attributes model/observed-attributes
-    :render-key          (fn [{:keys [accepted intent]}]
-                           [(:value accepted) (project-selected? intent)])
-    :render              render!
-    :on-writing          on-writing!
-    :on-connect          on-connect!}))
+   {:tag        model/tag-name
+    :child-tag  "x-drop-zone"
+    :render-key (fn [{:keys [accepted intent]}]
+                  [(:value accepted) (project-selected? intent)])
+    :render     render!
+    :on-writing on-writing!
+    :on-connect on-connect!}))

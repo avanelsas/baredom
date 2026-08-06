@@ -20,8 +20,7 @@
 
 (defn init! []
   (consumer-resource/register!
-   {:tag                 model/tag-name
-    :child-tag           "x-spinner"
-    :observed-attributes model/observed-attributes
-    :on-pending          on-pending!
-    :on-writing          on-writing!}))
+   {:tag        model/tag-name
+    :child-tag  "x-spinner"
+    :on-pending on-pending!
+    :on-writing on-writing!}))

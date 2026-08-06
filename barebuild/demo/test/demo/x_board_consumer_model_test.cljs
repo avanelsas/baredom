@@ -18,6 +18,27 @@
       (is (= [2 1] (mapv #(get % "id") (get cols "todo"))))
       (is (= [3] (mapv #(get % "id") (get cols "done")))))))
 
+(deftest board-plan-orders-each-column-and-drops-only-what-left-the-board
+  (let [cols (model/columns {:value rows})]
+    (testing "each column names its cards as the string ids the DOM carries, in the order
+              `columns` put them"
+      (is (= {"todo" ["2" "1"] "doing" [] "done" ["3"]} (:order (model/board-plan [] cols)))))
+    (testing "a card on the board that no column claims any more is dropped"
+      (is (= ["9"] (:remove (model/board-plan ["1" "2" "3" "9"] cols)))))
+    (testing "a card that only moved column is not dropped, the applier moves the one already
+              there. Deciding removal a column at a time would destroy and rebuild it, and a
+              rebuilt card has nowhere to animate from"
+      (let [moved (model/columns {:value (mapv #(if (= 1 (get % "id"))
+                                                  (assoc % "status" "done")
+                                                  %)
+                                               rows)})]
+        (is (= ["3" "1"] (get-in (model/board-plan ["1" "2" "3"] moved) [:order "done"]))
+            "the card is claimed by its new column, in rank order")
+        (is (= [] (:remove (model/board-plan ["1" "2" "3"] moved)))
+            "and so nothing is removed")))
+    (testing "an empty board claims nothing and drops everything it was showing"
+      (is (= ["1" "2"] (:remove (model/board-plan ["1" "2"] {})))))))
+
 (deftest card-vm-projects-card-fields
   (let [vm (model/card-vm (first rows))]
     (is (= "1" (:value vm)) "value is the id as a string")
