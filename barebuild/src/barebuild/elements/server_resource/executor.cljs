@@ -45,9 +45,9 @@
   [e]
   (js/console.error "[server-resource] delivering a result threw:" e))
 
-(defn- delivery-outcome
-  "What came back for a request, as the outcome it is and the detail that outcome reports. Every
-  outcome is named by the id this client minted, never by the server's echo of it."
+(defn- delivery-reason
+  "Why a request ended, as the reason it is and the detail that reason reports. Every one is named
+  by the id this client minted, never by the server's echo of it."
   [result request-id]
   (cond
     (:protocol-failure result) [:protocol (assoc result :request/id request-id)]
@@ -69,7 +69,7 @@
   (emit! el [:write-failed {:request/id write-id
                             :error      (transport/transport-error e timeout)}]))
 
-;; The two kinds of request as data: the event each outcome becomes, and who reports a rejection.
+;; The two kinds of request as data: the event each reason becomes, and who reports a rejection.
 ;; A write reports both failures as one event, since either leaves its outcome unknown, while a
 ;; read tells them apart. One row per kind, so a kind cannot be paired with the other's handler.
 (def ^:private delivery
@@ -79,10 +79,10 @@
            :on-reject write-rejected!}})
 
 (defn- deliver!
-  "Hand what came back for a request of `kind` in as the event that outcome names."
+  "Hand what came back for a request of `kind` in as the event its reason names."
   [emit! ^js el kind result request-id]
-  (let [[outcome detail] (delivery-outcome result request-id)]
-    (emit! el [(get-in delivery [kind :events outcome]) detail])))
+  (let [[reason detail] (delivery-reason result request-id)]
+    (emit! el [(get-in delivery [kind :events reason]) detail])))
 
 (defn- perform-request!
   "Send `m` under `controller` and hand what comes back in as `kind`'s event. The kind's rejection

@@ -7,8 +7,6 @@
 
 (def ^:private k-data-field-key "data-field-key")
 
-(declare x-table-cell-sort-event)
-
 (defn- network-message [error]
   (case (:kind error)
     :http-status (case (:status error)
@@ -39,7 +37,7 @@
   (when-let [existing (.querySelector parent "x-alert")]
     (.remove existing)))
 
-(defn- x-pagination-page-request
+(defn- request-page!
   [^js e]
   (let [new-page (.. e -detail -page)
         gesture  (model/translate-pagination-gesture (str new-page))
@@ -52,19 +50,19 @@
     (du/set-attr! pagination "page" page)
     (du/set-attr! pagination "total-pages" total-pages)
     (du/set-attr! pagination "size" size)
-    (.addEventListener pagination "page-change" x-pagination-page-request)
+    (.addEventListener pagination "page-change" request-page!)
     pagination))
 
-(defn- maybe-delete-x-pagination!
+(defn- delete-x-pagination!
   [^js parent]
   (when-let [existing (.querySelector parent "x-pagination")]
     (.remove existing)))
 
-(defn- maybe-set-x-pagination!
+(defn- apply-pagination!
   [{:keys [page total-pages]} ^js parent]
   (if (or (nil? total-pages)
           (<= total-pages 1))
-    (maybe-delete-x-pagination! parent)
+    (delete-x-pagination! parent)
     (let [existing-pagination (.querySelector parent "x-pagination")]
       (if existing-pagination
         (du/set-attr! existing-pagination "page" page)
@@ -74,7 +72,7 @@
           (.appendChild parent new-pagination)
           (du/set-attr! new-pagination "page" page))))))
 
-(defn- x-table-cell-sort-event
+(defn- request-sort!
   [^js e]
   (let [k         (du/get-attr (.-currentTarget e) k-data-field-key)
         direction (:direction (js->clj (.-detail e) :keywordize-keys true))
@@ -102,7 +100,7 @@
       (du/set-attr! cell "scope" "col")
       (du/set-attr! cell "sortable" "")
       (du/set-attr! cell "sort-direction" sort-direction)
-      (.addEventListener cell "x-table-cell-sort" x-table-cell-sort-event))
+      (.addEventListener cell "x-table-cell-sort" request-sort!))
     (set! (.-textContent cell) (str s))
     cell))
 
@@ -152,11 +150,12 @@
     row))
 
 (defn- create-body-row!
-  [values id]
+  [cells columns id]
   (let [row (.createElement js/document "x-table-row")]
     (du/set-attr! row "data-row-id" (str id))
-    (doseq [v values]
-      (let [cell (create-table-cell! v false nil)]
+    (doseq [{k :key} columns]
+      (let [cell (create-table-cell! (get cells k) false nil)]
+        (du/set-attr! cell k-data-field-key k)
         (.appendChild row cell)))
     (.appendChild row (create-body-actions-cell! id))
     row))
@@ -180,15 +179,15 @@
     (.appendChild table (create-header-row! columns))))
 
 (defn- update-cells! [^js row cells columns]
-  (doseq [[i {:keys [key]}] (map-indexed vector columns)]
-    (let [cell (aget (.-children row) i)
-          text (str (get cells key))]
-      (when (not= (.-textContent cell) text)
-        (set! (.-textContent cell) text)))))
+  (doseq [{:keys [key]} columns]
+    (when-let [^js cell (.querySelector row (str "x-table-cell" (selector/attr= k-data-field-key key)))]
+      (let [text (str (get cells key))]
+        (when (not= (.-textContent cell) text)
+          (set! (.-textContent cell) text))))))
 
 (defn- row-element [^js table columns {:keys [id cells new?]}]
   (if new?
-    (create-body-row! (map #(get cells (:key %)) columns) id)
+    (create-body-row! cells columns id)
     (doto (find-row table (str id))
       (update-cells! cells columns))))
 
@@ -214,7 +213,7 @@
   ;; Building the header from an empty column list would fix it at one column for good
   (when accepted
     (render-table! (model/accepted-response->view-model accepted) table)
-    (maybe-set-x-pagination! (:page-info accepted) this)))
+    (apply-pagination! (:page-info accepted) this)))
 
 (defn- on-failure! [_child {:keys [failure]} ^js this]
   (delete-x-alert! this)
