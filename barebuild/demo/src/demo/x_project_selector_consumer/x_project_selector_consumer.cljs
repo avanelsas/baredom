@@ -62,6 +62,6 @@
   (consumer-resource/register!
    {:tag        model/tag-name
     :child-tag  "x-select"
-    :render-key (fn [view] [(model/project-options (:accepted view)) (current-project-id)])
+    :render-key (fn [view] (model/project-options (:accepted view)))
     :render     render!
     :on-connect on-connect!}))
