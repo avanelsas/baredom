@@ -16,9 +16,9 @@
 (def ^:private k-resource   "__xServerResource")
 (def ^:private k-popstate   "__xPopstate")
 (def ^:private k-generation "__xConnectGeneration")
-;; The effect drain. Transient bookkeeping with no diagnostic display value, so untraced.
+;; The effects waiting for the running drain, or nil when none is running. Transient bookkeeping
+;; with no diagnostic display value, so untraced.
 (def ^:private k-queue      "__xEffectQueue")
-(def ^:private k-draining   "__xDraining")
 
 ;; ── The engine ───────────────────────────────────────────────────────────────
 ;; `handle-event!` drains through `effect-handlers`, which is built from `handle-event!`. The loop
@@ -26,20 +26,21 @@
 (declare ^:private effect-handlers)
 
 (defn- drain-effects!
-  "Perform the queued effects, and whatever a re-entrant step queues while they run, until nothing
-  is left. A performer can hand an event straight back in: a consumer notified here may remove the
-  host, which fires `disconnectedCallback` synchronously. Draining in rounds puts the nested step's
+  "Perform `effects`, and whatever a re-entrant step queues while they run, until nothing is left.
+  A performer can hand an event straight back in: a consumer notified here may remove the host,
+  which fires `disconnectedCallback` synchronously. Draining in rounds puts the nested step's
   effects after this one's, so an :abort cannot run before the :fetch it names has been issued."
-  [^js el]
-  (du/setv-untraced! el k-draining true)
+  [^js el effects]
+  (du/setv-untraced! el k-queue [])
   (try
-    (loop []
-      (when-let [queued (seq (du/getv el k-queue))]
-        (du/setv-untraced! el k-queue [])
-        (executor/run-effects! effect-handlers el queued)
-        (recur)))
+    (loop [round effects]
+      (when (seq round)
+        (executor/run-effects! effect-handlers el round)
+        (let [queued (du/getv el k-queue)]
+          (du/setv-untraced! el k-queue [])
+          (recur queued))))
     (finally
-      (du/setv-untraced! el k-draining false))))
+      (du/setv-untraced! el k-queue nil))))
 
 (defn- handle-event!
   [^js el event]
@@ -52,9 +53,9 @@
                        :before      r
                        :after       resource
                        :effects     effects})
-    (du/setv-untraced! el k-queue (into (or (du/getv el k-queue) []) effects))
-    (when-not (du/getv el k-draining)
-      (drain-effects! el))))
+    (if-let [queued (du/getv el k-queue)]
+      (du/setv-untraced! el k-queue (into queued effects))
+      (drain-effects! el effects))))
 
 (def ^:private effect-handlers (executor/performers handle-event!))
 

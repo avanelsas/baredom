@@ -17,18 +17,14 @@
    :write {:slot :active-write   :counter :write-count   :id-prefix "w"}})
 
 (def ^:private no-requests
-  "Both request kinds at rest: nothing in flight, nothing counted yet. Read off `request-kinds`
-  for the same reason `carry-over` reads off it, so a renamed slot cannot leave `initial`
-  declaring a key nothing else uses."
-  (into {}
-        (mapcat (fn [{:keys [slot counter]}] [[slot nil] [counter 0]]))
-        (vals request-kinds)))
+  "Both request kinds at rest: nothing in flight, nothing counted yet."
+  {:active-request nil :request-count 0
+   :active-write   nil :write-count   0})
 
 (defn initial
-  "The resource a fresh connection starts from, and the one place its shape is written down, so a
-  test fixture and what the element boots with cannot drift apart. `request-config` is whatever the
-  host declared as attributes, `carried` what `carry-over` selected out of the connection before
-  this one. Both may name keys this does not, and both win over the defaults."
+  "The resource a fresh connection starts from, and the one place its shape is written down.
+  `request-config` is whatever the host declared as attributes, `carried` what `carry-over`
+  selected out of the connection before this one. Both win over the defaults."
   [{:keys [resource/id endpoint url-intent history-policy request-config carried]}]
   (merge no-requests
          {:resource/id    id
@@ -41,16 +37,15 @@
          request-config
          carried))
 
-;; The step outcome ------------------------------------------------------------
-;; Every transition returns this shape: the resource the event left behind, and the effects the
-;; executor must perform. Built here and nowhere else, so :effects is always a vector and a
-;; transition appending to it can `conj`.
+;; The step result --------------------------------------------------------------
+;; The resource the event left behind, and the effects the executor must perform. Built here and
+;; nowhere else, so :effects is always a vector a transition can `conj` onto.
 (defn- result
   ([resource] (result resource []))
   ([resource effects] {:resource resource :effects effects}))
 
 (defn- ignored
-  "An outcome that moves nothing, carrying a diagnostic naming `code`."
+  "A result that moves nothing, carrying a diagnostic naming `code`."
   ([resource code] (result resource [(effect/diagnostic code)]))
   ([resource code detail] (result resource [(effect/diagnostic code detail)])))
 
@@ -67,8 +62,8 @@
 ;;   :query    the query the failed request was issued for, never the server's echo of it.
 ;;   :write    the in-flight write record, present only on a :write failure.
 ;;
-;; :response is the server's answer with the id this client minted for the exchange taken back off,
-;; the same strip `project` does to the accepted envelope, so two identical refusals compare equal.
+;; :response is the server's answer minus the id this client minted, so two identical refusals
+;; compare equal.
 (defn- failure
   "A failure value of the shape above. The three named members are merged last, so `extra` cannot
   redefine them."
@@ -84,8 +79,8 @@
   "The part of `resource` the next connection inherits, and the only part that survives a boot. An
   in-flight write's slot has to still be there when its ack lands, its counter has to keep counting
   so the next write cannot mint an id the orphan already answers to, and `:last-write` has to be
-  there for that ack to settle. Reads need none of it, a disconnect abandons the in-flight one.
-  Slot and counter are read off the table so a renamed slot moves both halves."
+  there for that ack to settle. Reads need none of it. Slot and counter come off the table so a
+  renamed slot moves both halves."
   [resource]
   (let [{:keys [slot counter]} (request-kinds :write)]
     (select-keys resource [slot counter :last-write])))
@@ -130,11 +125,21 @@
   [resource kind request-id]
   (= request-id (:request/id (in-flight resource kind))))
 
-;; Public for test purposes only
-(defn answers-in-flight-read?
-  "`answers-in-flight?` for a read, matching `response` to it by request id alone."
-  [resource response]
-  (answers-in-flight? resource :read (:request/id response)))
+;; Which kind of request each answering event answers. One naming a request no longer in flight is
+;; dropped by `step` before dispatching.
+(def ^:private answered-kind
+  {:response        :read
+   :protocol-failed :read
+   :network-failed  :read
+   :write-ack       :write
+   :write-failed    :write})
+
+(defn- stale-answer
+  "The kind `event` answers when the request it names is no longer in flight, nil otherwise."
+  [resource [event-k payload]]
+  (when-let [kind (answered-kind event-k)]
+    (when-not (answers-in-flight? resource kind (:request/id payload))
+      kind)))
 
 (defn- drifted?
   "True when the intent moved on while the request of `kind` was in flight."
@@ -179,39 +184,36 @@
       (not (answered? resource))))
 
 (defn- open-read
-  "`outcome` with a read for the current intent opened and its :fetch appended, unless one already
-  is in flight. Every read a transition opens goes through here, and the single-flight rule for
-  reads lives here rather than at the two callers.
-
-  The :fetch lands after effects the transition already built, so a :notify-consumers among them
-  carries the value from before the read opened. Safe because a read only opens when `pending?` is
-  already true, and opening one cannot turn it false."
-  [{:keys [resource effects] :as outcome}]
+  "`built` with a read for the current intent opened and its :fetch appended, unless one already is
+  in flight, so the single-flight rule for reads lives here rather than at the two callers. The
+  :fetch lands after effects the transition already built, so a :notify-consumers among them reports
+  the value from before the read opened."
+  [{:keys [resource effects] :as built}]
   (if (in-flight resource :read)
-    outcome
+    built
     (let [started (start resource :read (:url-intent resource))]
       (result started (conj effects (fetch-fx started))))))
 
 (defn- abandon-read
-  "`outcome` with any in-flight read dropped and an :abort for it appended. The answer to a read
+  "`built` with any in-flight read dropped and an :abort for it appended. The answer to a read
   nobody wants any more is ended rather than waited on."
-  [{:keys [resource effects] :as outcome}]
+  [{:keys [resource effects] :as built}]
   (if-let [request-id (:request/id (in-flight resource :read))]
     (result (clear-in-flight resource :read) (conj effects (effect/abort request-id)))
-    outcome))
+    built))
 
 (defn- with-trailing-fetch
-  "`outcome` followed by a read for the current intent, when the value does not already answer it."
-  [{:keys [resource] :as outcome}]
-  (cond-> outcome (pending? resource) open-read))
+  "`built` followed by a read for the current intent, when the value does not already answer it."
+  [{:keys [resource] :as built}]
+  (cond-> built (pending? resource) open-read))
 
 (defn- with-reconciling-fetch
-  "`outcome` followed by a read issued after the write was, always. A write whose outcome is unknown
+  "`built` followed by a read issued after the write was, always. A write whose outcome is unknown
   may have committed before it failed, so only the server can say whether it did. A read already in
-  flight cannot say it: it may have been served before that commit, so it is abandoned and replaced
-  rather than counted as the observation."
-  [outcome]
-  (open-read (abandon-read outcome)))
+  flight may have been served before that commit, so it is abandoned rather than counted as the
+  observation."
+  [built]
+  (open-read (abandon-read built)))
 
 ;; The URL projection ----------------------------------------------------------
 
@@ -238,9 +240,8 @@
 
 (defn- write-request
   "What the in-flight write resolves to: {:request <the request value>} when the op vocabulary can
-  express it, else {:defect <why it cannot>}. Everything it needs is in the record `start` just
-  opened, the same way `read-request` reads its own. An op this client does not speak and a member
-  op arriving without the member to address are different mistakes, so they get different defects."
+  express it, else {:defect <why it cannot>}. An op this client does not speak and a member op
+  arriving without the member to address are different mistakes, so they get different defects."
   [resource]
   (let [{:keys [query payload] rid :request/id} (in-flight resource :write)
         {:keys [op id record]}                  payload]
@@ -304,9 +305,8 @@
   (effect/notify-consumers (:resource/id resource) (project resource)))
 
 (defn- notified
-  "An outcome ending in a :notify-consumers for the very resource it returns. Every transition that
-  moves the value notifies from the value it moved to, so that pairing is made here rather than
-  spelled out, and got right, at each of them."
+  "A result ending in a :notify-consumers for the very resource it returns, so that pairing is made
+  here rather than got right at each transition that moves the value."
   ([resource] (notified resource []))
   ([resource effects] (result resource (conj effects (notify-fx resource)))))
 
@@ -314,9 +314,8 @@
 
 (defn- retires-failure?
   "True when an answer of `kind` settles the failure `resource` is holding. A write ack carries the
-  full post-mutation state, so it answers both the write it acknowledges and the read that state
-  belongs to. A read answers only the read, leaving a write whose outcome nothing has confirmed
-  still reported."
+  full post-mutation state, so it answers both the write and the read that state belongs to. A read
+  answers only the read, leaving an unconfirmed write still reported."
   [resource kind]
   (or (= :write kind)
       (= :read (:for (:last-failure resource)))))
@@ -335,8 +334,8 @@
   (assoc (clear-in-flight resource kind) :last-failure failure))
 
 (defn- record-failure
-  "`with-failure`, notified. What every transition that only records a failure wants. One that
-  also moves the intent builds its own outcome off `with-failure` instead."
+  "`with-failure`, notified. A transition that also moves the intent builds its own result off
+  `with-failure` instead."
   [resource kind failure]
   (notified (with-failure resource kind failure)))
 
@@ -349,11 +348,10 @@
     :network  {:error  (:error payload)}))
 
 (defn- install-envelope
-  "Install an accepted envelope that answered the request of `kind`. A write returns the full
-  post-mutation state, so an accepted ack is the same envelope a read returns and both install
-  the same way. A contract violation records as a failure. Otherwise the envelope installs,
-  adopting the query echo unless the intent drifted while the request was in flight, and
-  correcting the URL when the adopted echo is not what it already holds."
+  "Install an accepted envelope that answered the request of `kind`, a write's ack being the same
+  envelope a read returns. A contract violation records as a failure. Otherwise it installs,
+  adopting the query echo unless the intent drifted while the request was in flight, and correcting
+  the URL when the adopted echo is not what it already holds."
   [resource kind payload]
   (let [errors (validation/validate-contract payload)]
     (if (seq errors)
@@ -460,17 +458,14 @@
   (with-trailing-fetch (notified (assoc resource :url-intent intent))))
 
 (defn- on-response
-  "A response for a request no longer in flight is ignored."
   [resource payload]
-  (if-not (answers-in-flight-read? resource payload)
-    (ignored resource :stale-response)
-    (case (:outcome payload)
-      :accepted (with-trailing-fetch (install-envelope resource :read payload))
-      :rejected (with-trailing-fetch (install-rejection resource payload))
-      ;; `wire/parse-envelope` yields one of the two above or a protocol-failure marker, which
-      ;; arrives as :protocol-failed instead, so nothing should reach here. Said out loud rather
-      ;; than passed over in silence.
-      (ignored resource :unknown-outcome {:outcome (:outcome payload)}))))
+  (case (:outcome payload)
+    :accepted (with-trailing-fetch (install-envelope resource :read payload))
+    :rejected (with-trailing-fetch (install-rejection resource payload))
+    ;; `wire/parse-envelope` yields one of the two above or a protocol-failure marker, which
+    ;; arrives as :protocol-failed instead, so nothing should reach here. Said out loud rather
+    ;; than passed over in silence.
+    (ignored resource :unknown-outcome {:outcome (:outcome payload)})))
 
 (defn- on-intent-patch
   "A patch naming a sibling is routed rather than applied, and the routing is in the effect value
@@ -484,12 +479,10 @@
   "The :protocol-failed and :network-failed transitions, which differ only in `cause`. The read
   produced no answer, so the intent is still unanswered and a fresh read follows."
   [resource payload cause]
-  (if-not (answers-in-flight? resource :read (:request/id payload))
-    (ignored resource :stale-failure)
-    (with-trailing-fetch
-      (record-failure resource :read
-                      (failure cause :read (in-flight-query resource :read)
-                               (transport-members cause payload))))))
+  (with-trailing-fetch
+    (record-failure resource :read
+                    (failure cause :read (in-flight-query resource :read)
+                             (transport-members cause payload)))))
 
 (defn- on-disconnected
   "An in-flight read is abandoned. An in-flight write is left alone, and the element carries its
@@ -515,49 +508,47 @@
   "An accepted ack carries the full post-mutation state, so it installs exactly as a read's
   envelope does. A rejection stands. Either way the write it answers is recorded as settled."
   [resource payload]
-  (if-not (answers-in-flight? resource :write (:request/id payload))
-    (ignored resource :stale-write)
-    (if (= :accepted (:outcome payload))
-      (with-trailing-fetch (install-envelope (settled-write resource :accepted) :write payload))
-      (record-failure (settled-write resource :rejected) :write
-                      (failure :rejected :write (in-flight-query resource :write)
-                               {:response payload})))))
+  (if (= :accepted (:outcome payload))
+    (with-trailing-fetch (install-envelope (settled-write resource :accepted) :write payload))
+    (record-failure (settled-write resource :rejected) :write
+                    (failure :rejected :write (in-flight-query resource :write)
+                             {:response payload}))))
 
 (defn- on-write-failed
   "Every failure reaching here left the write's outcome unknown. Only an explicit :rejected ack,
   which `on-write-ack` handles, is the server saying no."
   [resource payload]
-  (if-not (answers-in-flight? resource :write (:request/id payload))
-    (ignored resource :stale-write)
-    (let [write (in-flight resource :write)
-          cause (if (:protocol-failure payload) :protocol :network)]
-      (with-reconciling-fetch
-        (record-failure (settled-write resource :failed) :write
-                        (failure cause :write (:query write)
-                                 (assoc (transport-members cause payload) :write write)))))))
+  (let [write (in-flight resource :write)
+        cause (if (:protocol-failure payload) :protocol :network)]
+    (with-reconciling-fetch
+      (record-failure (settled-write resource :failed) :write
+                      (failure cause :write (:query write)
+                               (assoc (transport-members cause payload) :write write))))))
 
 (defn step
   "Takes a resource and an event, returns {:resource <the resource the event left behind>
   :effects [<what the executor must perform>]}."
   [resource event]
-  (let [[event-k payload] event]
-    (case event-k
-      ;; reads
-      :connected         (on-connected resource (:embed payload))
-      :response          (on-response resource payload)
-      :intent-patch      (on-intent-patch resource payload)
-      ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
-      ;; way, so we register it here.
-      :intent-unroutable (ignored resource :unroutable-intent payload)
-      :url-changed       (on-url-changed resource payload)
-      :protocol-failed   (on-read-failed resource payload :protocol)
-      :network-failed    (on-read-failed resource payload :network)
-      :disconnected      (on-disconnected resource)
+  (if-let [kind (stale-answer resource event)]
+    (ignored resource :stale-answer {:for kind :event (first event)})
+    (let [[event-k payload] event]
+      (case event-k
+        ;; reads
+        :connected         (on-connected resource (:embed payload))
+        :response          (on-response resource payload)
+        :intent-patch      (on-intent-patch resource payload)
+        ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
+        ;; way, so we register it here.
+        :intent-unroutable (ignored resource :unroutable-intent payload)
+        :url-changed       (on-url-changed resource payload)
+        :protocol-failed   (on-read-failed resource payload :protocol)
+        :network-failed    (on-read-failed resource payload :network)
+        :disconnected      (on-disconnected resource)
 
-      ;; writes
-      :submit-write      (on-submit-write resource payload)
-      :write-ack         (on-write-ack resource payload)
-      :write-failed      (on-write-failed resource payload)
+        ;; writes
+        :submit-write      (on-submit-write resource payload)
+        :write-ack         (on-write-ack resource payload)
+        :write-failed      (on-write-failed resource payload)
 
-      ;; An event this vocabulary does not contain changes nothing, and says so.
-      (ignored resource :unknown-event {:event event-k}))))
+        ;; An event this vocabulary does not contain changes nothing, and says so.
+        (ignored resource :unknown-event {:event event-k})))))

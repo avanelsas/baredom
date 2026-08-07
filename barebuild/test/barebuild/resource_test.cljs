@@ -19,9 +19,17 @@
    :value      [{"id" 1 "owner" "Alice"}]
    :shape      {:id-key "id" :fields [{:key "owner" :type :string}]}})
 
+(deftest a-fresh-resource-declares-both-slots-and-both-counters
+  (testing "renaming a slot in one place and not the other leaves `carry-over` selecting a key
+            nothing declares, which this catches"
+    (is (= {:active-request nil :request-count 0 :active-write nil :write-count 0}
+           (select-keys base [:active-request :request-count :active-write :write-count])))
+    (is (= #{:active-write :write-count :last-write}
+           (set (keys (resource/carry-over base)))))))
+
 (defn- expecting
-  "Put r in flight for `response`: a live request whose id and query the response answers,
-   so (answers-in-flight-read? r response) holds."
+  "Put r in flight for `response`: a live request whose id and query the response answers, so
+   `step` treats it as timely rather than dropping it as a late answer."
   [r response]
   (assoc r :active-request {:request/id (:request/id response)
                             :query      (:query response)}))
@@ -308,13 +316,32 @@
       (is (= [(notified resource)] effects)))))
 
 (deftest installable-gates-on-request-id-only
-  (let [r (assoc base :url-intent {:sort "owner"}
-                      :active-request {:request/id "tasks:1" :query {:sort "owner"}})]
+  (let [r         (assoc base :url-intent {:sort "owner"}
+                              :active-request {:request/id "tasks:1" :query {:sort "owner"}})
+        answering (fn [id q] (assoc accepted :request/id id :query q))
+        installed (fn [response] (:last-accepted (:resource (resource/step r [:response response]))))]
     (testing "a matching id installs even when the server normalized the echo past intent and the
               query as sent, so echo adoption (T5) can still take it"
-      (is (resource/answers-in-flight-read? r {:request/id "tasks:1" :query {:sort "owner" :direction "asc"}})))
+      (let [drifted (answering "tasks:1" {:sort "owner" :direction "asc"})]
+        (is (= drifted (installed drifted)))))
     (testing "a non-matching id never installs"
-      (is (not (resource/answers-in-flight-read? r {:request/id "tasks:9" :query {:sort "owner"}}))))))
+      (is (nil? (installed (answering "tasks:9" {:sort "owner"})))))))
+
+(deftest a-notify-before-a-trailing-fetch-already-reports-pending
+  (testing "the :fetch is appended after effects the transition already built, so the view a
+            consumer is handed was projected before the read opened. It still reports pending?,
+            because a read only opens when the intent is unanswered"
+    (let [{:keys [effects]}          (resource/step base [:url-changed {:sort "owner"}])
+          [[fx-1 m-1] [fx-2]] effects]
+      (is (= [:notify-consumers :fetch] [fx-1 fx-2]))
+      (is (true? (:pending? (:view m-1)))))))
+
+(deftest only-events-that-answer-a-request-are-checked-for-being-late
+  (testing "the rule keys off the event, so one that carries no request id is dispatched whatever
+            is in flight. Guarding it too would drop a gesture for having arrived mid-request"
+    (let [busy (assoc base :active-request {:request/id "tasks:1" :query {}})
+          {:keys [resource]} (resource/step busy [:url-changed {:sort "owner"}])]
+      (is (= {:sort "owner"} (:url-intent resource)) "the navigation applied"))))
 
 (deftest stale-response-is-dropped
   (let [r (assoc base :active-request {:request/id "tasks:9" :query nil}
@@ -324,7 +351,7 @@
       (is (= accepted (:last-accepted resource)))
       (is (= {:request/id "tasks:9" :query nil} (:active-request resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic {:code :stale-response}]] effects)))))
+      (is (= [[:diagnostic {:code :stale-answer :detail {:for :read :event :response}}]] effects)))))
 
 (deftest second-gesture-fetches-after-a-response
   (let [after-connect (:resource (resource/step base [:connected {}]))          ; live request tasks:1
@@ -460,7 +487,7 @@
       (is (= {:request/id "tasks:2" :query {:sort "owner"}} (:active-request resource)))
       (is (nil? (:last-failure resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic {:code :stale-failure}]] effects)))))
+      (is (= [[:diagnostic {:code :stale-answer :detail {:for :read :event :network-failed}}]] effects)))))
 
 (deftest protocol-failed-records-protocol-failure-and-notifies
   (let [prior  (assoc base :last-accepted accepted
@@ -487,7 +514,7 @@
       (is (= {:request/id "tasks:2" :query {:sort "owner"}} (:active-request resource)))
       (is (nil? (:last-failure resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic {:code :stale-failure}]] effects)))))
+      (is (= [[:diagnostic {:code :stale-answer :detail {:for :read :event :protocol-failed}}]] effects)))))
 
 ;; --- C3: echo-adoption (T5/T6) + trailing-fetch + failure adjudication ------
 
@@ -959,7 +986,7 @@
     (testing "an ack that doesn't answer the in-flight write never touches state"
       (is (= {:request/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
+      (is (= [[:diagnostic {:code :stale-answer :detail {:for :write :event :write-ack}}]] effects)))))
 
 (deftest write-failed-records-failure-keeps-stale-and-clears-writing
   (let [aw {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
@@ -1037,7 +1064,7 @@
     (testing "a failure for a superseded write does not touch state"
       (is (= {:request/id "tasks:w2" :payload {:op :delete :id 7}} (:active-write resource))))
     (testing "it surfaces only as a diagnostic"
-      (is (= [[:diagnostic {:code :stale-write}]] effects)))))
+      (is (= [[:diagnostic {:code :stale-answer :detail {:for :write :event :write-failed}}]] effects)))))
 
 (deftest write-failed-protocol-is-labelled-protocol-not-network
   (let [aw {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {:sort "owner"}}
