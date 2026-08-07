@@ -230,6 +230,18 @@
                       (is false (str "the moved consumer did not repoint: " e))
                       (done))))))))
 
+(deftest every-record-names-the-resource-that-stepped
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (support/capture-records!)
+    (support/mount! "tasks" "/api/tasks")
+    (-> (support/settle #(seq @support/records))
+        (.then (fn []
+                 (is (= #{"tasks"} (set (map :resource/id @support/records)))
+                     "so a trace can be grouped by resource without reaching into the value")
+                 (done)))
+        (.catch (fn [e] (is false (str "nothing reached the recorder: " e)) (done))))))
+
 (deftest an-intent-naming-a-resource-that-is-not-there-does-not-vanish-silently
   (async done
     (support/stub-accepted! [] empty-shape)

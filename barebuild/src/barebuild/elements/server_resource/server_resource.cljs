@@ -277,8 +277,12 @@
   (let [r                          (du/getv el k-resource)
         {:keys [resource effects]} (resource/step r event)]
     (du/setv! el k-resource resource)
-    ;; Note: with no recorder set this records nothing
-    (recorder/record! {:el el :event event :before r :after resource :effects effects})
+    (recorder/record! {:resource/id (:resource/id r)
+                       :el          el
+                       :event       event
+                       :before      r
+                       :after       resource
+                       :effects     effects})
     (du/setv-untraced! el k-queue (into (or (du/getv el k-queue) []) effects))
     (when-not (du/getv el k-draining)
       (drain-effects! el))))

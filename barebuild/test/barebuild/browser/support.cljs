@@ -190,7 +190,7 @@
   "Install a recorder so a test can assert what reached the trace, which is the only place an
    event that changes no state is visible at all."
   []
-  (recorder/set-recorder! (fn [entry] (swap! records conj entry))))
+  (recorder/install! (fn [entry] (swap! records conj entry))))
 
 (defn recorded-events
   "The event vectors the recorder saw, in order."
@@ -210,7 +210,7 @@
   (reset! connect-calls [])
   (reset! removed-host? false)
   (decorator/install! nil)
-  (recorder/set-recorder! nil))
+  (recorder/install! nil))
 
 (defn reset-url! []
   (.replaceState js/history nil "" "/"))

@@ -17,7 +17,7 @@
 (defn init!
   "Record BareBuild events into the replay store."
   []
-  (recorder/set-recorder! store/record!)
+  (recorder/install! store/record!)
   (ensure! "x-floating-panel" x-floating-panel/init!)
   (ensure! "x-button" x-button/init!)
   (ensure! "x-code" x-code/init!)
