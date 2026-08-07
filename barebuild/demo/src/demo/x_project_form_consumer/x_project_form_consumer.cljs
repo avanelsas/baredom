@@ -8,22 +8,21 @@
 
 (def ^:private k-button "__xProjectFormButton")
 (def ^:private k-modal "__xProjectFormModal")
-(def ^:private k-shape "__xProjectFormShape")
 
 (defn- submit! [^js e]
   (let [record   (consumer-form/form-values e)
         form     (.-currentTarget e)
         consumer (.closest form model/tag-name)
-        shape    (du/getv consumer k-shape)]
+        shape    (get-in (consumer-resource/view consumer) [:accepted :shape])]
     (when shape
       (consumer-form/attempt-write! consumer form record shape {:op :create :record record}))))
 
-(defn- on-writing! [^js form writing ^js this]
-  (consumer-form/on-writing! form writing this (du/getv this k-button)
+(defn- on-writing! [^js form view ^js this]
+  (consumer-form/on-writing! form view this (du/getv this k-button)
                              (fn [] (.hide (du/getv this k-modal)))))
 
-(defn- on-failure! [^js form failure ^js this]
-  (consumer-form/on-failure! form (du/getv this k-modal) failure this))
+(defn- on-failure! [^js form view ^js this]
+  (consumer-form/on-failure! form (du/getv this k-modal) view this))
 
 (defn- connect! [^js form ^js el]
   (let [trigger    (.querySelector el "x-button[data-role='open']")
@@ -40,15 +39,11 @@
     (.addEventListener form "x-form-submit"
                        (fn [e] (submit! e)))))
 
-(defn- render! [^js _form {accepted :accepted} ^js this]
-  (du/setv! this k-shape (:shape accepted)))
-
+;; No :render: the form paints nothing from the resource, it only submits to it.
 (defn init! []
   (consumer-resource/register!
    {:tag        model/tag-name
     :child-tag  "x-form"
-    :render-key (fn [view] (get-in view [:accepted :shape]))
     :on-connect connect!
-    :render     render!
     :on-writing on-writing!
     :on-failure on-failure!}))

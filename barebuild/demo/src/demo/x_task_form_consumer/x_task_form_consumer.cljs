@@ -8,16 +8,14 @@
 
 (def ^:private k-refs "__xConsumerRefs")
 (def ^:private k-populated? "__xConsumerPopulated?")
-(def ^:private k-shape "__xConsumerShape")
 (def ^:private k-edit-id "__xConsumerEditId")
 (def ^:private k-edit-extras "__xConsumerEditExtras")
-(def ^:private k-accepted "__xConsumerAccepted")
 
 (defn- submit! [^js e]
   (let [entered  (consumer-form/form-values e)
         form     (.-currentTarget e)
         consumer (.closest form model/tag-name)
-        shape    (du/getv consumer k-shape)
+        shape    (get-in (consumer-resource/view consumer) [:accepted :shape])
         edit-id  (du/getv consumer k-edit-id)
         record   (merge entered (du/getv consumer k-edit-extras))]
     (when shape
@@ -32,12 +30,12 @@
   [^js el]
   (du/getv el k-refs))
 
-(defn- on-failure! [^js form failure ^js this]
-  (consumer-form/on-failure! form (:modal (refs this)) failure this))
+(defn- on-failure! [^js form view ^js this]
+  (consumer-form/on-failure! form (:modal (refs this)) view this))
 
-(defn- on-writing! [^js form writing ^js this]
+(defn- on-writing! [^js form view ^js this]
   (let [{:keys [^js modal submit]} (refs this)]
-    (consumer-form/on-writing! form writing this submit (fn [] (.hide modal)))))
+    (consumer-form/on-writing! form view this submit (fn [] (.hide modal)))))
 
 (defn- prefill-form! [^js form row fields]
   (doseq [{:keys [key]} fields]
@@ -76,7 +74,7 @@
     (first (filter #(= (str (get % id-key)) id) (:value accepted)))))
 
 (defn- open-edit! [^js el id]
-  (let [accepted (du/getv el k-accepted)]
+  (let [accepted (:accepted (consumer-resource/view el))]
     (when-let [row (row-by-id accepted id)]
       (du/setv! el k-edit-id id)
       (du/setv! el k-edit-extras (select-keys row ["projectId" "assigneeId"]))
@@ -105,9 +103,8 @@
       (mapv (fn [v] {:value v :label v}) (:enum field))))
 
 (defn- render! [^js form {accepted :accepted} ^js this]
-  (du/setv! this k-accepted accepted)
-  ;; populate the select + stash shape once. Not before a response: there are no choices to
-  ;; offer yet, and marking it populated would leave the select empty for good
+  ;; populate the select once. Not before a response: there are no choices to offer yet, and
+  ;; marking it populated would leave the select empty for good
   (when (and accepted (not (du/getv this k-populated?)))
     (let [status (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first)
           select (.querySelector form "x-select")]
@@ -116,8 +113,7 @@
           (set! (.-value opt) value)
           (set! (.-textContent opt) label)
           (.appendChild select opt)))
-      (du/setv! this k-populated? true)
-      (du/setv! this k-shape (:shape accepted)))))
+      (du/setv! this k-populated? true))))
 
 (defn init!
   []

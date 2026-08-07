@@ -35,6 +35,7 @@
           :endpoint       endpoint
           :last-accepted  nil
           :last-failure   nil
+          :last-write     nil
           :url-intent     url-intent
           :history-policy (or history-policy default-history-policy)}
          request-config
@@ -81,12 +82,13 @@
 
 (defn carry-over
   "The part of `resource` the next connection inherits, and the only part that survives a boot. An
-  in-flight write's slot has to still be there when its ack lands, and its counter has to keep
-  counting so the next write cannot mint an id the orphan already answers to. Reads need neither, a
-  disconnect abandons the in-flight one. Read off the table so a renamed slot moves both halves."
+  in-flight write's slot has to still be there when its ack lands, its counter has to keep counting
+  so the next write cannot mint an id the orphan already answers to, and `:last-write` has to be
+  there for that ack to settle. Reads need none of it, a disconnect abandons the in-flight one.
+  Slot and counter are read off the table so a renamed slot moves both halves."
   [resource]
   (let [{:keys [slot counter]} (request-kinds :write)]
-    (select-keys resource [slot counter])))
+    (select-keys resource [slot counter :last-write])))
 
 (defn- in-flight
   "The in-flight request of `kind` in `resource`, or nil."
@@ -260,18 +262,40 @@
   [resource]
   (some? (in-flight resource :write)))
 
+;; The write the resource last submitted, and how it ended. A sibling of :last-accepted and
+;; :last-failure, and like them not derivable. :active-write stays the single-flight slot and still
+;; clears on settlement, this is the history a consumer reads.
+
+(defn- opened-write
+  "`resource` with the write it just opened recorded as the one it last submitted."
+  [resource]
+  (assoc resource :last-write (assoc (in-flight resource :write) :status :in-flight)))
+
+(defn- settled-write
+  "`resource` with the write it last submitted recorded as having ended in `status`. Single-flight
+  and the staleness guard mean that is always the write now settling."
+  [resource status]
+  (assoc-in resource [:last-write :status] status))
+
 ;; What a consumer sees --------------------------------------------------------
 
+(defn- write-view
+  "The write the resource last submitted as a consumer sees it. Nil until one has been."
+  [resource]
+  (when-let [w (:last-write resource)]
+    (select-keys w [:payload :status])))
+
 (defn project
-  "The fields a consumer may depend on, everything else being internal bookkeeping. Neither the
-  accepted envelope nor a failure's :response keeps the id of the exchange that produced it, so two
-  identical refetches project equal views, and so do two identical refusals."
+  "The fields a consumer may depend on, everything else being internal bookkeeping. Nothing here
+  keeps the id of the exchange that produced it, so two identical refetches, refusals or writes
+  project equal views."
   [resource]
   {:accepted  (dissoc (:last-accepted resource) :request/id)
    :failure   (:last-failure resource)
    :intent    (:url-intent resource)
    :pending?  (pending? resource)
-   :writing?  (writing? resource)})
+   :writing?  (writing? resource)
+   :write     (write-view resource)})
 
 (defn- notify-fx
   "The :notify-consumers effect for `resource`. It carries the projection rather than the resource,
@@ -483,18 +507,19 @@
     (let [started                  (start resource :write (:url-intent resource) {:payload payload})
           {:keys [request defect]} (write-request started)]
       (if request
-        (result started [(notify-fx started) (effect/write request)])
+        (let [opened (opened-write started)]
+          (result opened [(notify-fx opened) (effect/write request)]))
         (ignored resource defect)))))
 
 (defn- on-write-ack
   "An accepted ack carries the full post-mutation state, so it installs exactly as a read's
-  envelope does. A rejection stands."
+  envelope does. A rejection stands. Either way the write it answers is recorded as settled."
   [resource payload]
   (if-not (answers-in-flight? resource :write (:request/id payload))
     (ignored resource :stale-write)
     (if (= :accepted (:outcome payload))
-      (with-trailing-fetch (install-envelope resource :write payload))
-      (record-failure resource :write
+      (with-trailing-fetch (install-envelope (settled-write resource :accepted) :write payload))
+      (record-failure (settled-write resource :rejected) :write
                       (failure :rejected :write (in-flight-query resource :write)
                                {:response payload})))))
 
@@ -507,7 +532,7 @@
     (let [write (in-flight resource :write)
           cause (if (:protocol-failure payload) :protocol :network)]
       (with-reconciling-fetch
-        (record-failure resource :write
+        (record-failure (settled-write resource :failed) :write
                         (failure cause :write (:query write)
                                  (assoc (transport-members cause payload) :write write)))))))
 

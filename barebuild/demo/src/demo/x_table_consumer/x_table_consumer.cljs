@@ -216,7 +216,7 @@
     (render-table! (model/accepted-response->view-model accepted) table)
     (maybe-set-x-pagination! (:page-info accepted) this)))
 
-(defn- on-failure! [_child failure ^js this]
+(defn- on-failure! [_child {:keys [failure]} ^js this]
   (delete-x-alert! this)
   (when failure
     (.appendChild this (create-x-alert! {:type        "error"

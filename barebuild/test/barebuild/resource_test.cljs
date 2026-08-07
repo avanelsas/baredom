@@ -885,6 +885,73 @@
       (is (= accepted (:last-accepted resource)))
       (is (= [(notified resource)] effects)))))
 
+;; --- the write a consumer reads back: :last-write and its :status ----------
+;; A write moves :writing? for every consumer the resource drives, so the record has to survive the
+;; exchange settling or nothing says which write finished.
+
+(defn- projected-write [resource]
+  (:write (resource/project resource)))
+
+(deftest submit-write-records-the-write-as-in-flight
+  (let [payload {:op :create :submitter "x-task-form-consumer" :record {"title" "Ship"}}
+        {:keys [resource]} (resource/step base [:submit-write payload])]
+    (is (= {:payload payload :status :in-flight} (projected-write resource))
+        "the payload the consumer submitted, and that it has not settled")))
+
+(deftest an-accepted-ack-settles-the-write-it-answers
+  (let [payload {:op :delete :submitter "x-table-consumer" :id 7}
+        submitted (:resource (resource/step base [:submit-write payload]))
+        {:keys [resource]} (resource/step submitted
+                                          [:write-ack {:outcome    :accepted
+                                                       :request/id "tasks:w1"
+                                                       :query      {}
+                                                       :value      []
+                                                       :shape      {:id-key "id" :fields []}}])]
+    (testing "the record outlives :active-write, so the falling edge of writing? still names the
+              write that produced the new state"
+      (is (nil? (:active-write resource)))
+      (is (false? (resource/writing? resource)))
+      (is (= {:payload payload :status :accepted} (projected-write resource))))))
+
+(deftest a-rejected-ack-and-a-transport-failure-settle-differently
+  (let [payload   {:op :update :submitter "x-task-form-consumer" :id 7 :record {"title" "x"}}
+        submitted (:resource (resource/step base [:submit-write payload]))]
+    (testing "the server said no"
+      (let [{:keys [resource]} (resource/step submitted [:write-ack {:outcome    :rejected
+                                                                     :request/id "tasks:w1"
+                                                                     :query      {}
+                                                                     :error      {:code :conflict}}])]
+        (is (= {:payload payload :status :rejected} (projected-write resource)))))
+    (testing "the outcome was never learned, which is a different fact from a refusal"
+      (let [{:keys [resource]} (resource/step submitted [:write-failed {:request/id "tasks:w1"
+                                                                        :error {:kind :offline}}])]
+        (is (= {:payload payload :status :failed} (projected-write resource)))))))
+
+(deftest the-write-record-is-carried-across-a-reconnect
+  (testing "a disconnect leaves an in-flight write alone, so the ack lands after the next boot.
+            Without the record coming along that ack would settle nothing"
+    (let [submitted (:resource (resource/step base [:submit-write {:op :delete :id 7}]))
+          rebooted  (resource/initial {:resource/id "tasks"
+                                       :endpoint    "/api/tasks"
+                                       :url-intent  {}
+                                       :carried     (resource/carry-over submitted)})
+          {:keys [resource]} (resource/step rebooted [:write-ack {:outcome    :accepted
+                                                                  :request/id "tasks:w1"
+                                                                  :query      {}
+                                                                  :value      []
+                                                                  :shape      {:id-key "id" :fields []}}])]
+      (is (= {:payload {:op :delete :id 7} :status :accepted} (projected-write resource))))))
+
+(deftest a-refused-write-records-nothing
+  (testing "an op that never started leaves the previous write's record alone"
+    (let [submitted (:resource (resource/step base [:submit-write {:op :delete :id 7}]))
+          settled   (:resource (resource/step submitted [:write-ack {:outcome    :rejected
+                                                                     :request/id "tasks:w1"
+                                                                     :query      {}
+                                                                     :error      {:code :conflict}}]))
+          {:keys [resource]} (resource/step settled [:submit-write {:op :frobnicate :id 7}])]
+      (is (= {:payload {:op :delete :id 7} :status :rejected} (projected-write resource))))))
+
 (deftest write-ack-for-superseded-write-is-dropped
   (let [r (assoc base :write-count 2
                       :active-write {:request/id "tasks:w2" :payload {:op :delete :id 7}})
@@ -1057,7 +1124,7 @@
 
 ;; --- project: what a consumer is allowed to see ----------------------------
 
-(def ^:private view-keys #{:accepted :failure :intent :pending? :writing?})
+(def ^:private view-keys #{:accepted :failure :intent :pending? :writing? :write})
 
 (deftest project-always-has-the-same-shape
   (testing "absent values arrive as nil or false rather than as missing keys, so a consumer can
@@ -1080,7 +1147,7 @@
                                         :active-request {:request/id "tasks:3" :query {}}
                                         :active-write   {:request/id "tasks:w1"}))]
       (doseq [k [:endpoint :credentials :headers :timeout :history-policy :request-count
-                 :write-count :active-request :active-write :resource/id]]
+                 :write-count :active-request :active-write :last-write :resource/id]]
         (is (not (contains? view k)) (str k " leaked into the consumer's view"))))))
 
 (deftest project-carries-what-a-consumer-renders-from

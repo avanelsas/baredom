@@ -5,8 +5,6 @@
    [demo.x-board-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
-(def ^:private k-rows         "__xBoardRows")
-(def ^:private k-cols         "__xBoardCols")
 (def ^:private k-pending-zone "__xBoardPendingZone")
 
 ;; --- card building ------------------------------------------------------------
@@ -117,31 +115,45 @@
 (def ^:private empty-columns
   (into {} (map (fn [s] [s []]) model/statuses)))
 
+(defn- columns-for
+  "The three ordered columns `view` paints, empty until a project is selected."
+  [{:keys [accepted intent]}]
+  (if (and (project-selected? intent) accepted)
+    (model/columns accepted)
+    empty-columns))
+
 ;; --- drop: reserve -> write -> release ----------------------------------------
 
 (defn- zone-for [^js this status]
   (some (fn [^js z] (when (= status (du/get-attr z "value")) z)) (zones this)))
 
-(defn- write-pending? [^js this]
-  (some? (du/getv this k-pending-zone)))
+(defn- reserved-zone
+  "The zone holding a gap open for a dropped card the server has not confirmed, or nil."
+  [^js this]
+  (du/getv this k-pending-zone))
 
 (defn- on-drop! [^js this ^js e]
   (let [^js detail (.-detail e)
-        row        (get (du/getv this k-rows) (.-value detail))
+        view       (consumer-resource/view this)
+        row        (get (rows-by-id (columns-for view)) (.-value detail))
         ^js zone   (zone-for this (.-to detail))]
-    (when (and row zone (not (write-pending? this)))
+    (when (and row zone (not (:writing? view)) (not (reserved-zone this)))
       (.reserve zone (.-panel detail) (.-index detail))
       (du/setv! this k-pending-zone zone)
       (consumer-resource/submit-write!
        this (model/translate-drop-gesture row (.-to detail) (.-index detail))))))
 
-(defn- on-writing! [_child writing ^js this]
-  (when-let [^js zone (and (not writing) (du/getv this k-pending-zone))]
+(defn- on-writing!
+  "Release the zone this board reserved once its own drop has settled. Another consumer's write
+  moves `:writing?` too, and releasing on that would drop the card back early."
+  [_child {:keys [writing?] :as view} ^js this]
+  (when-let [^js zone (and (not writing?)
+                           (consumer-resource/own-write? this view)
+                           (reserved-zone this))]
     (.release zone)
     (du/setv! this k-pending-zone nil)
     ;; the ack's render ran while the drop was still reserved, so it deferred placing to here
-    (when-let [cols (du/getv this k-cols)]
-      (place-cards! this cols))))
+    (place-cards! this (columns-for view))))
 
 (defn- on-connect! [_child ^js el]
   (.addEventListener el "x-drop-zone-drop" (fn [e] (on-drop! el e))))
@@ -149,15 +161,10 @@
 (defn- render!
   "The board paints from the accepted rows and from whether a project is selected, so its
   render-key names both. Either one changing is a repaint."
-  [_child {:keys [accepted intent]} ^js this]
-  (let [selected? (project-selected? intent)
-        cols      (if (and selected? accepted) (model/columns accepted) empty-columns)]
-    (du/setv! this k-rows
-              (into {} (map (fn [r] [(str (get r "id")) r]) (:value accepted))))
-    (du/setv! this k-cols cols)
-    (du/set-attr! this "data-empty" (if selected? "false" "true"))
-    (when-not (write-pending? this)
-      (place-cards! this cols))))
+  [_child {:keys [intent] :as view} ^js this]
+  (du/set-attr! this "data-empty" (if (project-selected? intent) "false" "true"))
+  (when-not (reserved-zone this)
+    (place-cards! this (columns-for view))))
 
 (defn init! []
   (consumer-resource/register!

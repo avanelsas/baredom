@@ -7,7 +7,6 @@
    [baredom.utils.dom :as du]))
 
 (def ^:private k-add-button "__xQuickAddButton")
-(def ^:private k-shape "__xQuickAddShape")
 
 (defn- current-project-id []
   (.get (js/URLSearchParams. (.-search js/location)) "tasks.project"))
@@ -32,18 +31,18 @@
   (let [entered  (consumer-form/form-values e)
         form     (.-currentTarget e)
         consumer (.closest form model/tag-name)
-        shape    (du/getv consumer k-shape)
+        shape    (get-in (consumer-resource/view consumer) [:accepted :shape])
         project  (current-project-id)]
     (when (and shape project)
       (let [record (model/new-task-record entered project (today-iso))]
         (consumer-form/attempt-write! consumer form record shape {:op :create :record record})))))
 
-(defn- on-writing! [^js form writing ^js this]
-  (consumer-form/on-writing! form writing this (du/getv this k-add-button)
+(defn- on-writing! [^js form view ^js this]
+  (consumer-form/on-writing! form view this (du/getv this k-add-button)
                              (fn [] (collapse! this))))
 
-(defn- on-failure! [^js form failure ^js this]
-  (consumer-form/on-failure! form (form-wrap this) failure this))
+(defn- on-failure! [^js form view ^js this]
+  (consumer-form/on-failure! form (form-wrap this) view this))
 
 (defn- connect! [^js form ^js el]
   (let [open-btn (open-link el)
@@ -54,15 +53,11 @@
     (.addEventListener cancel "press" (fn [_e] (consumer-form/clear-form! form) (collapse! el)))
     (.addEventListener form "x-form-submit" (fn [e] (submit! e)))))
 
-(defn- render! [^js _form {accepted :accepted} ^js this]
-  (du/setv! this k-shape (:shape accepted)))
-
+;; No :render: the form paints nothing from the resource, it only submits to it.
 (defn init! []
   (consumer-resource/register!
    {:tag        model/tag-name
     :child-tag  "x-form"
-    :render-key (fn [view] (get-in view [:accepted :shape]))
     :on-connect connect!
-    :render     render!
     :on-writing on-writing!
     :on-failure on-failure!}))
