@@ -64,6 +64,11 @@
            (paths (validation/validate-contract
                    (assoc-in accepted [:value 0 "owner"] 42)))))))
 
+(deftest a-declared-field-may-hold-null
+  (testing "a null passes every type, so what the row check reports is absence rather than
+            emptiness. The server is the authority on whether it should have sent one"
+    (is (= [] (validation/validate-contract (assoc-in accepted [:value 0 "owner"] nil))))))
+
 (deftest a-field-declaring-no-type-constrains-nothing
   (let [untyped (assoc-in accepted [:shape :fields 0] {:key "owner"})]
     (testing "an absent :type is an absent constraint, as an absent :required or :enum is. Before
@@ -114,7 +119,11 @@
 (deftest missing-required-field
   (testing "an absent required field is reported by its key"
     (is (= [["owner" :missing-required]]
-           (pairs (validation/validate-payload (dissoc valid "owner") shape))))))
+           (pairs (validation/validate-payload (dissoc valid "owner") shape)))))
+  (testing "and a null one, which the author never supplied. A read treats a null as a value the
+            server chose to send, a write treats it as nothing filled in"
+    (is (= [["owner" :missing-required]]
+           (pairs (validation/validate-payload (assoc valid "owner" nil) shape))))))
 
 (deftest blank-required-field
   (testing "an empty-string required field counts as missing (present ≠ filled)"

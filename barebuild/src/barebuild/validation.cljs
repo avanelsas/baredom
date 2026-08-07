@@ -1,7 +1,7 @@
 (ns barebuild.validation
-  "What a payload must satisfy. Two checkers over the same declared shape: `validate-contract`
-  reads an accepted envelope the server sent, `validate-payload` reads a record the client is
-  about to send."
+  "What a payload must satisfy, and how a record is read into its declared types. Two checkers
+  over the same declared shape: `validate-contract` for an accepted envelope the server sent,
+  `validate-payload` for a record the client is about to send."
   (:require [baredom.utils.model :as mu]
             [clojure.string :as str]))
 
@@ -13,7 +13,7 @@
 
 (defn- validate-value-type
   "True when `v` satisfies the declared `type`. A field that declares no type declares no type
-  constraint."
+  constraint, and a declared field is nullable, so a null passes every type."
   [v type]
   (or (nil? v)
       (nil? type)
@@ -61,9 +61,7 @@
             (path-err [:value row-idx key] :missing-field
                       (str "row " row-idx " is missing field \"" key "\""))
 
-            ;; a field declaring no type has no type error, which is also what makes `name` below
-            ;; safe to call
-            (and type (not (validate-value-type (get row key) type)))
+            (not (validate-value-type (get row key) type))
             (path-err [:value row-idx key] :wrong-type
                       (str "row " row-idx " field \"" key "\" is not a " (name type)))))
         fields))
@@ -77,7 +75,7 @@
   (let [{:keys [shape value]} payload
         ;; a broken value stops the row checks, there is nothing further to look into
         value-errors (validate-value value)]
-    (into (vec (validate-shape shape))
+    (into (validate-shape shape)
           (if (seq value-errors)
             value-errors
             (concat (validate-ids (:id-key shape) value)
@@ -96,7 +94,8 @@
     (not (str/blank? v))
     (some? v)))
 
-;; Error mapping is intentionally different for write and read.
+;; Read errors are diagnostics located by a path into the payload, write errors are user-facing
+;; and name a form field.
 ;; Public for test purposes only, `conform-payload` below is the write-side entry point
 (defn validate-payload
   "The write-side errors in `payload` against `shape`, as a vector, matching `validate-contract`.
@@ -113,7 +112,8 @@
 
                     (and given (not (validate-value-type v type)))
                     (field-err key :wrong-type
-                               (str "The field " key " has the wrong type. Should be " type))
+                               (str "The field " key " has the wrong type. Should be "
+                                    (name type)))
 
                     (and enum given (not (contains? (set enum) v)))
                     (field-err key :not-in-enum
