@@ -46,4 +46,9 @@
   (when-not (or (str/blank? attr-id) (re-find url-unsafe-in-id attr-id))
     attr-id))
 
+(defn label
+  "How a resource is named in a console message, an unnamed one included."
+  [resource-id]
+  (or resource-id "(unnamed)"))
+
 (def observed-attributes #js [])

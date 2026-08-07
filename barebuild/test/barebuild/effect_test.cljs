@@ -1,8 +1,9 @@
 (ns barebuild.effect-test
-  "The effect vocabulary: what each constructor builds, and that `tags` names exactly the
-   constructors this namespace has. The browser suite pins `tags` against the executor's handlers."
+  "The effect vocabulary: what each constructor builds, that `tags` names exactly the constructors
+   this namespace has, and that the executor performs exactly `tags`."
   (:require [cljs.test :refer-macros [deftest is testing]]
-            [barebuild.effect :as effect]))
+            [barebuild.effect :as effect]
+            [barebuild.elements.server-resource.executor :as executor]))
 
 (deftest tags-names-every-constructor-this-namespace-has
   (testing "a constructor left out of `tags` builds an effect no executor performs, which the
@@ -11,6 +12,12 @@
            (into #{}
                  (comp (remove #{'tags}) (map (comp keyword name)))
                  (keys (ns-publics 'barebuild.effect)))))))
+
+(deftest the-executor-performs-exactly-the-vocabulary
+  (testing "step decides and the executor performs, so the two vocabularies are one. An effect step
+            learns to emit with no performer would be silently unperformed, and a performer for an
+            effect step never emits is dead weight that reads as supported"
+    (is (= effect/tags (set (keys (executor/performers (fn [_el _event]))))))))
 
 (deftest each-constructor-builds-its-effect
   (testing "a read and a write carry the built request as their payload, unwrapped"

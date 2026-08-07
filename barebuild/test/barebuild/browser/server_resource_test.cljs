@@ -6,8 +6,6 @@
    [barebuild.browser.support :as support]
    [barebuild.core :as core]
    [barebuild.decorator :as decorator]
-   [barebuild.effect :as effect]
-   [barebuild.elements.server-resource.server-resource :as server-resource]
    [baredom.utils.component :as component]
    [cljs.test :refer-macros [deftest is testing use-fixtures async]]))
 
@@ -90,12 +88,6 @@
                           that can never be answered"))
                    (done)))
           (.catch (fn [e] (is false (str "pipeline failed to settle: " e)) (done)))))))
-
-(deftest effect-handlers-cover-the-vocabulary-exactly
-  (testing "step decides and the executor performs, so the two vocabularies are one. An effect
-            step learns to emit with no performer would be silently unperformed, and a performer
-            for an effect step never emits is dead weight that reads as supported"
-    (is (= effect/tags (set (keys server-resource/effect-handlers))))))
 
 (deftest a-notification-that-changes-nothing-does-not-re-render
   (async done
