@@ -211,8 +211,7 @@
 (defn- url-write! [^js _el m]
   (let [new-url (url/build-scoped-url (.-search js/location)
                                       (.-pathname js/location)
-                                      (:resource/id m)
-                                      (:params m))]
+                                      {(:resource/id m) (:params m)})]
     (if (= (:mode m) :push)
       (.pushState js/history nil "" new-url)
       (.replaceState js/history nil "" new-url))))
