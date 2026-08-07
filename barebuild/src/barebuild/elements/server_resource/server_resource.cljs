@@ -392,10 +392,20 @@
   (js/console.error "[server-resource]" (label resource-id)
                     "cannot boot, waiting on its custom elements failed:" e))
 
+(defn- report-unusable-id!
+  "Report a `resource-id` attribute the request query cannot carry. It is dropped, so the element
+  is the unnamed root until the author fixes it."
+  [declared resolved]
+  (when (and (not (str/blank? declared)) (nil? resolved))
+    (js/console.error "[server-resource]" model/attr-resource-id
+                      "cannot go in a request query, ignoring it:" declared)))
+
 (defn- connected! [^js el]
-  (let [resource-id (model/resolve-resource-id (du/get-attr el model/attr-resource-id))
+  (let [declared    (du/get-attr el model/attr-resource-id)
+        resource-id (model/resolve-resource-id declared)
         tags        (custom-element-tags el)
         generation  (next-generation! el)]
+    (report-unusable-id! declared resource-id)
     (report-undefined-tags! el resource-id tags generation)
     ;; the rejection handler rides `then`, so a throw out of `boot!` is not reported as a boot that
     ;; never started

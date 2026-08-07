@@ -12,12 +12,18 @@
              credentials (assoc :credentials credentials)
              body        (assoc :body (js/JSON.stringify (clj->js body))))))
 
+(defn- network-failure
+  "A network-failure marker naming `kind`. The kind is merged last, so `extra` cannot overwrite
+  it."
+  ([kind] (network-failure kind nil))
+  ([kind extra] {:network-failure (merge extra {:kind kind})}))
+
 (defn- decorator-failed!
   "A decorator that could not produce headers, as a network failure value. The request is never
   sent."
   [e]
   (js/console.error "[server-resource] request decorator failed, request not sent:" e)
-  {:failure {:network-failure {:kind :decorator}}})
+  {:failure (network-failure :decorator)})
 
 (defn- decorator-headers
   "The headers a decorator returned, read from either a JS object or a CLJS map. Nil and an empty
@@ -77,13 +83,14 @@
         (.finally race (fn [] (js/clearTimeout timer)))))))
 
 (defn transport-error
-  "Classify a rejected request: a spent budget, or a transport failure."
+  "Classify a rejected request: a spent budget, or a transport failure. An abort is neither and
+  reads as :offline, so a caller whose request can be aborted tests `abort-error?` first."
   [^js e ms]
   (if (= timeout-error-name (.-name e))
     {:kind :timeout :after ms}
     {:kind :offline}))
 
-(defn- parse-body
+(defn- read-envelope
   "The ok response body read as text (not .json) and parsed into an envelope. Reading it as text is
   what lets `wire/parse-body` tell an absent body from an unreadable one."
   [^js resp]
@@ -98,8 +105,8 @@
   (.then (js/fetch url init)
          (fn [^js resp]
            (if (.-ok resp)
-             (parse-body resp)
-             {:network-failure {:kind :http-status :status (.-status resp)}}))))
+             (read-envelope resp)
+             (network-failure :http-status {:status (.-status resp)})))))
 
 (defn- send!
   "Send the decorated request under `controller`'s signal, unless decorating it already failed, in
@@ -107,11 +114,12 @@
   [m ^js controller {:keys [init failure]}]
   (or failure
       (fetch-envelope (:url m)
-                      (js/Object.assign init #js {:signal (.-signal controller)}))))
+                      (js/Object.assign #js {} init #js {:signal (.-signal controller)}))))
 
 (defn perform!
   "The request pipeline shared by reads and writes: decorate, send, and give up when the budget
-  runs out. Resolves to a classified result, or rejects for the caller to classify."
+  runs out. Resolves to an envelope, a {:network-failure ...} or a {:protocol-failure ...}, and
+  rejects when the request never completed, for the caller to classify."
   [m ^js controller]
   (bounded (.then (request-init m) (fn [decorated] (send! m controller decorated)))
            (:timeout m)

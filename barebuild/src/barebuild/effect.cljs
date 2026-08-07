@@ -8,18 +8,6 @@
   "Every effect a transition can return, pinned against the executor's handlers."
   #{:fetch :write :abort :url-write :route-intent :notify-consumers :diagnostic})
 
-(defn diagnostic
-  "Say something happened without changing anything, optionally carrying `detail` the executor
-  prints beside the code. The executor only console.debugs it."
-  ([code] [:diagnostic {:code code}])
-  ([code detail] [:diagnostic {:code code :detail detail}]))
-
-(defn notify-consumers
-  "Hand `view` to the consumers attached to this element. `resource-id` names what it was projected
-  from, which the executor reports a throwing consumer against."
-  [resource-id view]
-  [:notify-consumers {:resource/id resource-id :view view}])
-
 (defn fetch
   "Send the built read `request`."
   [request]
@@ -45,3 +33,15 @@
   "Hand `patch` to the resource named `target-id`, which the executor resolves to an element."
   [target-id patch]
   [:route-intent {:resource/id target-id :patch patch}])
+
+(defn notify-consumers
+  "Hand `view` to the consumers attached to this element. The executor reports a throwing consumer
+  against `resource-id`, the resource the view was projected from."
+  [resource-id view]
+  [:notify-consumers {:resource/id resource-id :view view}])
+
+(defn diagnostic
+  "Say something happened without changing anything, optionally carrying `detail` the executor
+  prints beside the code. The executor only console.debugs it."
+  ([code] [:diagnostic {:code code}])
+  ([code detail] [:diagnostic {:code code :detail detail}]))

@@ -14,6 +14,9 @@
       [header-name value])))
 
 (defn normalize-headers
+  "`m` as wire-ready headers: names lowercased and trimmed, values stringified, blank entries
+  dropped. Nil when `m` is not a map or nothing survives, so absent headers are absent rather
+  than empty."
   [m]
   (when (map? m)
     (let [headers (into {} (keep normalize-header) m)]

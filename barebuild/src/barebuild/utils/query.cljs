@@ -20,6 +20,6 @@
   e.g. {tasks.sort \"end\"} -> \"tasks.sort=end\""
   [m]
   (let [params (js/URLSearchParams.)]
-    (doseq [[k v] (sort-by (comp name first) m)]
+    (doseq [[k v] (sort-by (comp name key) m)]
       (.append params (name k) (str v)))
     (.toString params)))

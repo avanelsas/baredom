@@ -13,6 +13,22 @@
     (is (nil? (model/resolve-resource-id "")))
     (is (nil? (model/resolve-resource-id "   ")))))
 
+(deftest resolve-resource-id-refuses-what-a-query-cannot-carry
+  (testing "the id is written into the request query verbatim, so a character that would split
+            that query is not an id at all"
+    (is (nil? (model/resolve-resource-id "a&b")))
+    (is (nil? (model/resolve-resource-id "a=b")))
+    (is (nil? (model/resolve-resource-id "a?b")))
+    (is (nil? (model/resolve-resource-id "a#b")))
+    (is (nil? (model/resolve-resource-id "a+b")))
+    (is (nil? (model/resolve-resource-id "a%2Fb")))
+    (is (nil? (model/resolve-resource-id "a b"))))
+  (testing "and everything an identifier normally is still passes, the colon the id format itself
+            uses included"
+    (is (= "tasks" (model/resolve-resource-id "tasks")))
+    (is (= "my-board_2.left" (model/resolve-resource-id "my-board_2.left")))
+    (is (= "ns:tasks" (model/resolve-resource-id "ns:tasks")))))
+
 ;; --- request config --------------------------------------------------------
 
 (deftest resolve-credentials-accepts-only-the-three-fetch-modes
