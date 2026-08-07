@@ -563,6 +563,64 @@
                    (done)))
           (.catch (fn [e] (is false (str "write ordering never settled: " e)) (done)))))))
 
+(defn- settled-writings
+  "What each writing consumer made of the write, the boot apply (no :write yet) dropped."
+  []
+  (remove (comp nil? :status) @support/writer-calls))
+
+(deftest a-settled-write-is-only-its-own-submitters
+  (async done
+    (testing "a write moves :writing? for every consumer the resource drives, so that edge alone
+              says only that some write finished. :write names the submitter, so own-write? tells
+              them apart without each keeping a flag"
+      (support/respond-with!
+       (fn [url _method _body]
+         (support/accepted url [{"id" 1 "title" "a"}]
+                           {"idKey" "id" "fields" [{"key" "title" "type" "string"}]})))
+      (let [host (support/mount-consumers! "tasks" "/api/tasks"
+                                           ["x-spy-consumer" "x-writer-a-consumer"
+                                            "x-writer-b-consumer"])]
+        (-> (support/settle #(some :accepted @support/spy-calls))
+            (.then (fn []
+                     (support/submit-write-from! host "x-writer-a-consumer"
+                                                 {:op :create :record {"title" "b"}})
+                     ;; both consumers see the write open and settle, so four in total
+                     (support/settle #(= 4 (count (settled-writings))) 200)))
+            (.then (fn []
+                     (let [by-tag (group-by :tag (settled-writings))]
+                       (is (= [{:tag "x-writer-a-consumer" :own? true :status :in-flight}
+                               {:tag "x-writer-a-consumer" :own? true :status :accepted}]
+                              (get by-tag "x-writer-a-consumer"))
+                           "the submitter recognises the write as its own, in flight and accepted")
+                       (is (= [{:tag "x-writer-b-consumer" :own? false :status :in-flight}
+                               {:tag "x-writer-b-consumer" :own? false :status :accepted}]
+                              (get by-tag "x-writer-b-consumer"))
+                           "the other is told about the same write and can see it is not its own"))
+                     (done)))
+            (.catch (fn [e] (is false (str "the write never settled: " e)) (done))))))))
+
+(deftest a-submitter-stamp-never-reaches-the-server
+  (async done
+    (testing "the stamp is how consumers tell their writes apart, not something the server was
+              asked about. A request body is built from the payload's :record alone"
+      (support/respond-with!
+       (fn [url _method _body]
+         (support/accepted url [] {"idKey" "id" "fields" []})))
+      (let [host  (support/mount-consumers! "tasks" "/api/tasks"
+                                            ["x-spy-consumer" "x-writer-a-consumer"])
+            posts (fn [] (filter #(= "POST" (.-method ^js %)) @support/fetch-inits))]
+        (-> (support/settle #(some :accepted @support/spy-calls))
+            (.then (fn []
+                     (support/submit-write-from! host "x-writer-a-consumer"
+                                                 {:op :create :record {"title" "b"}})
+                     (support/settle #(seq (posts)) 200)))
+            (.then (fn []
+                     (let [body (.-body ^js (first (posts)))]
+                       (is (= {"title" "b"} (js->clj (js/JSON.parse body)))
+                           "the record alone, no :submitter and no :op alongside it"))
+                     (done)))
+            (.catch (fn [e] (is false (str "the write never went out: " e)) (done))))))))
+
 (deftest every-hook-is-initialised-on-the-first-apply
   (async done
     (testing "one rule for every hook: it fires once on the first apply whatever its slice holds,

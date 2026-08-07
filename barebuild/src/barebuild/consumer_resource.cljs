@@ -23,10 +23,27 @@
   ([^js consumer patch]           (submit! consumer :submit-intent! [patch]))
   ([^js consumer patch target-id] (submit! consumer :submit-intent! [patch target-id])))
 
+(defn- consumer-tag [^js consumer]
+  (.. consumer -tagName toLowerCase))
+
 (defn submit-write!
-  "Send a write from a gesture handler back to the server-resource."
+  "Send a write from a gesture handler back to the server-resource. The payload is stamped with the
+   consumer's tag as its `:submitter` unless it already names one. The stamp never reaches the
+   server: a request body is built from `:record` alone."
   [^js consumer payload]
-  (submit! consumer :submit-write! [payload]))
+  (submit! consumer :submit-write! [(merge {:submitter (consumer-tag consumer)} payload)]))
+
+(defn own-write?
+  "True when the write `view` reports is the one this consumer submitted. A write moves `:writing?`
+   for every consumer the resource drives, so one acting on that movement asks this first."
+  [^js consumer view]
+  (= (consumer-tag consumer) (get-in view [:write :payload :submitter])))
+
+(defn view
+  "The view this consumer was last applied, or nil before the first apply. What a gesture handler
+   reads, since it fires from the DOM and is handed no view of its own."
+  [^js consumer]
+  (du/getv consumer k-last-view))
 
 (defn- install-ctx!
   "Cache the ctx this consumer submits through. A server-resource holds one for its whole life,
@@ -46,21 +63,22 @@
 
 (defn- hook-plan
   "The hooks `config` registered, in the order they fire: the data is painted before the flags
-   describing the transition that produced it. A row names what it calls, the slice whose movement
-   fires it, and what it is handed."
+   describing the transition that produced it. A row names what it calls and the slice whose
+   movement fires it."
   [{:keys [render render-key on-failure on-pending on-writing]
     :or   {render-key :accepted}}]
   (remove (comp nil? :callback)
-          [{:callback on-failure :slice :failure   :payload :failure}
-           {:callback render     :slice render-key :payload identity}
-           {:callback on-pending :slice :pending?  :payload :pending?}
-           {:callback on-writing :slice :writing?  :payload :writing?}]))
+          [{:callback on-failure :slice :failure}
+           {:callback render     :slice render-key}
+           {:callback on-pending :slice :pending?}
+           {:callback on-writing :slice :writing?}]))
 
 (defn- fire-hook!
-  "Invoke one hook with the driven child, its payload and the consumer, when its slice moved."
-  [^js this {:keys [callback slice payload]} view last-view]
+  "Invoke one hook with the driven child, the whole view and the consumer, when its slice moved. A
+   slice decides whether a hook fires, never what it may read."
+  [^js this {:keys [callback slice]} view last-view]
   (when (first-apply-or-moved? slice view last-view)
-    (callback (du/getv this k-child) (payload view) this)))
+    (callback (du/getv this k-child) view this)))
 
 (defn- apply-resource!
   "One projected view applied to a consumer. `view` is recorded before the hooks run, not after, so
@@ -86,16 +104,16 @@
   :child-tag  the driven child element, cached on connect and handed to every hook
   :render     (fn [child view this]), optional, called when the render-key slice changes
   :render-key (fn [view]) -> the slice render draws. Defaults to the accepted envelope
-  :on-failure (fn [child failure this]), optional, called when :failure changes, with failure nil
+  :on-failure (fn [child view this]), optional, called when :failure changes, with :failure nil
               on recovery so the component can clear its UI
-  :on-pending (fn [child pending this]), optional, called when :pending? changes
-  :on-writing (fn [child writing this]), optional, called when :writing? changes
+  :on-pending (fn [child view this]), optional, called when :pending? changes
+  :on-writing (fn [child view this]), optional, called when :writing? changes
   :on-connect (fn [child this]), optional extra wiring
 
-  `view` is the whole of what a consumer may read: {:accepted :failure :intent :pending? :writing?}.
-  Every hook fires once on the first apply, whatever its slice holds, and after that only when that
-  slice moves. A consumer drives its child from the view alone and never from an attribute, so a
-  consumer element observes none."
+  `view` is the whole of what a consumer may read:
+  {:accepted :failure :intent :pending? :writing? :write}. Every hook is handed all of it, its slice
+  deciding only when it fires: once on the first apply, then only when that slice moves. A consumer
+  drives its child from the view alone and never from an attribute, so it observes none."
   [{:keys [tag child-tag on-connect] :as config}]
   (let [hooks (hook-plan config)]
     (component/register!

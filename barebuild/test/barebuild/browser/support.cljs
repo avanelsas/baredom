@@ -19,9 +19,18 @@
 (defonce records       (atom []))   ; recorder entries, when a test opts in with capture-records!
 (defonce connect-calls (atom []))   ; [child this] pairs the connect consumer's on-connect saw
 (defonce removed-host? (atom false)) ; the self-removing consumer fires once per test
+(defonce writer-calls  (atom []))   ; {:tag :own? :status} each writing consumer's on-writing saw
 
 (defonce real-fetch (.-fetch js/window))
 (defonce real-error (.-error js/console))
+
+(defn- record-writing!
+  "What one writing consumer made of a view: whether the write it reports is its own, and how that
+   write ended."
+  [^js this view]
+  (swap! writer-calls conj {:tag    (.. this -tagName toLowerCase)
+                            :own?   (consumer-resource/own-write? this view)
+                            :status (get-in view [:write :status])}))
 
 ;; Custom elements cannot be re-defined, so register once and reuse across tests.
 (defonce registered
@@ -33,15 +42,15 @@
        {:tag        "x-spy-consumer"
         :child-tag  "div"
         :render     (fn [_child view _this] (swap! spy-calls conj view))
-        :on-failure (fn [_child failure _this] (swap! failure-calls conj failure))}))
+        :on-failure (fn [_child view _this] (swap! failure-calls conj (:failure view)))}))
     (when-not (js/customElements.get "x-order-consumer")
       (consumer-resource/register!
        {:tag        "x-order-consumer"
         :child-tag  "div"
-        :render     (fn [_child _view _this]    (swap! order-calls conj :render))
-        :on-failure (fn [_child _failure _this] (swap! order-calls conj :on-failure))
-        :on-pending (fn [_child _pending _this] (swap! order-calls conj :on-pending))
-        :on-writing (fn [_child _writing _this] (swap! order-calls conj :on-writing))}))
+        :render     (fn [_child _view _this] (swap! order-calls conj :render))
+        :on-failure (fn [_child _view _this] (swap! order-calls conj :on-failure))
+        :on-pending (fn [_child _view _this] (swap! order-calls conj :on-pending))
+        :on-writing (fn [_child _view _this] (swap! order-calls conj :on-writing))}))
     (when-not (js/customElements.get "x-self-removing-consumer")
       (consumer-resource/register!
        {:tag       "x-self-removing-consumer"
@@ -54,6 +63,12 @@
        {:tag        "x-connect-consumer"
         :child-tag  "div"
         :on-connect (fn [child this] (swap! connect-calls conj [child this]))}))
+    (doseq [tag ["x-writer-a-consumer" "x-writer-b-consumer"]]
+      (when-not (js/customElements.get tag)
+        (consumer-resource/register!
+         {:tag        tag
+          :child-tag  "div"
+          :on-writing (fn [_child view ^js this] (record-writing! this view))})))
     (when-not (js/customElements.get "x-throwing-consumer")
       (consumer-resource/register!
        {:tag       "x-throwing-consumer"
@@ -209,6 +224,7 @@
   (reset! records [])
   (reset! connect-calls [])
   (reset! removed-host? false)
+  (reset! writer-calls [])
   (decorator/install! nil)
   (recorder/install! nil))
 
@@ -241,6 +257,11 @@
   "Submit a write through the host's spy consumer, as a gesture handler would."
   [^js host payload]
   (consumer-resource/submit-write! (consumer-in host) payload))
+
+(defn submit-write-from!
+  "Submit a write through the host's `tag` consumer, so the payload is stamped with that tag."
+  [^js host tag payload]
+  (consumer-resource/submit-write! (.querySelector host tag) payload))
 
 (defn mount-consumers!
   "Append a <server-resource resource-id=id src=src> hosting one consumer per tag in

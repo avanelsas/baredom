@@ -175,7 +175,8 @@ consumer owns the other two:
   install, the four change-guards, child caching, intent and write submission. Written once.
 - **Calculation** (each `model.cljs`) — *resource → view data*: pure, node-tested projection.
 - **Effect** (each element file) — *view data → DOM*: the
-  `render`/`on-failure`/`on-pending`/`on-writing` hooks, all `(child value this)`.
+  `render`/`on-failure`/`on-pending`/`on-writing` hooks, all `(child view this)`, each handed the
+  whole view and told apart only by the slice whose movement fires it.
 
 Adding a component is therefore a projection plus a render fn (plus optional hooks) — the
 mechanism is untouched. x-stat (scalar, display-only), x-table (list, gestures, failure UI,

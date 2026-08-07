@@ -43,7 +43,7 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 (consumer-resource/register!
  {:tag        "x-<name>-consumer"   ; the consumer element tag
   :child-tag  "x-<child>"           ; the driven child, cached on connect
-  :render     render!               ; required
+  :render     render!               ; optional, but the usual reason to write a consumer
   :on-failure on-failure!           ; optional
   :on-pending on-pending!           ; optional
   :on-writing on-writing!           ; optional
@@ -54,20 +54,32 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 A consumer drives its child from the view alone and never from an attribute, so a consumer
 element observes none and there is no `:observed-attributes` to declare.
 
-**Every view hook shares one signature: `(child value this)`**. `child` is the cached child
-element, `this` is the consumer host. `on-connect` is handed the same two, with no value yet.
+**Every view hook shares one signature: `(child view this)`**, and every one is handed the *whole*
+view. `child` is the cached child element, `this` is the consumer host. `on-connect` is handed the
+same two, with no view yet.
 
-| Hook | Signature | Fires when… |
-|---|---|---|
-| `:render` | `(child view this)` | the `render-key` slice of the view changes |
-| `:on-failure` | `(child failure this)` | `:failure` changes.  `failure` is **nil on recovery**, so clear your failure UI |
-| `:on-pending` | `(child pending this)` | `:pending?` changes.  `pending` is a boolean, show/hide loading |
-| `:on-writing` | `(child writing this)` | `:writing?` changes.  `writing` is a boolean, disable the submit control, and use the true→false edge to close a form on success |
-| `:on-connect` | `(child this)` | the consumer element connects, before any view arrives.  Wire your listeners here |
+A hook's slice decides only **when** it fires, never what it may read. So `on-writing` sees
+`:accepted` too, and `render` sees `:writing?`. Nothing has to be cached on the element to be read
+back by a later hook.
+
+| Hook | Fires when… |
+|---|---|
+| `:render` | the `render-key` slice of the view changes |
+| `:on-failure` | `:failure` changes.  It is **nil on recovery**, so clear your failure UI |
+| `:on-pending` | `:pending?` changes.  Show or hide loading |
+| `:on-writing` | `:writing?` changes.  Disable the submit control, and use the true→false edge to close a form on success |
+| `:on-connect` | `(child this)`, the consumer element connects, before any view arrives.  Wire your listeners here |
 
 Every hook also fires **once on the first apply**, whatever its slice holds at that moment, so a
 hook is always given a starting value rather than only being told about later movement. Write
-your hooks to be idempotent: the boot call hands `on-failure` a nil and `on-writing` a false.
+your hooks to be idempotent: the boot call hands a view whose `:failure` is nil and whose
+`:writing?` is false.
+
+### Reading the view from a gesture handler
+
+A DOM listener fires from the DOM, not from an apply, so it is handed no view. Call
+`(consumer-resource/view this)` for the one this consumer last saw, rather than stashing a slice of
+it on the element during `render`.
 
 ### Hook order is part of the contract
 
@@ -90,11 +102,47 @@ to set.
  :failure   <the current failure, or nil>
  :intent    <the current query as a map, unprefixed keys>
  :pending?  <boolean>
- :writing?  <boolean>}
+ :writing?  <boolean>
+ :write     <the write last submitted, or nil before any was>}
 ```
 
 Everything else in the resource is the runtime's own bookkeeping and is deliberately not
 handed to you.
+
+### `:write`, and whose write it was
+
+A resource can drive several writing consumers, and a write moves `:writing?` for **all** of
+them. So `:writing?` alone cannot answer the question a form actually has, which is whether the
+write that just finished was its own.
+
+`:write` answers it. It is the write this resource last submitted and how that write ended:
+
+```clojure
+{:payload {:op :create :submitter "x-task-form-consumer" :record {...}}
+ :status  :in-flight}   ;; then :accepted, :rejected or :failed
+```
+
+`submit-write!` stamps `:submitter` with the submitting consumer's tag. The stamp is client-side
+only: a request body is built from the payload's `:record` alone, so it never reaches the server.
+Pass your own `:submitter` in the payload if one tag is not enough to tell two instances apart.
+
+Ask `(consumer-resource/own-write? this view)` rather than keeping a flag:
+
+```clojure
+(defn- on-writing! [^js form view ^js this]
+  (let [status (when (consumer-resource/own-write? this view)
+                 (get-in view [:write :status]))]
+    (if (= :in-flight status)
+      (du/set-attr! button "loading" "")
+      (do (du/remove-attr! button "loading")
+          (when (= :accepted status)
+            (close-and-clear! form))))))
+```
+
+`:status` distinguishes the three ways a write ends. `:rejected` is the server saying no.
+`:failed` is the outcome never being learned, which is **not** the same thing: the write may have
+committed. The runtime reconciles that case with a fresh read, so the value you paint next is
+still the server's, but a message you show the user should not claim the write did not happen.
 
 **Paint from the view and from nothing else.** Reading `js/location`, `document`, or any other
 ambient state inside a consumer makes it render a mixture of two moments, because a
