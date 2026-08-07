@@ -1,9 +1,6 @@
 (ns barereplay.reconstruct
   (:require [barebuild.resource :as resource]))
 
-(defn- resource-id-of [entry]
-  (:resource/id (:before entry)))
-
 (def ^:private step-rf
   (completing (fn [r e] (:resource (resource/step r e)))))
 
@@ -13,9 +10,9 @@
     (into {}
           (map (fn [[rid group]]
                  [rid {:el    (:el (first group))
-                       :value (transduce (comp (filter #(= rid (resource-id-of %)))
+                       :value (transduce (comp (filter #(= rid (:resource/id %)))
                                                (map :event))
                                          step-rf
                                          (:before (first group))
                                          taken)}]))
-          (group-by resource-id-of entries))))
+          (group-by :resource/id entries))))
