@@ -37,9 +37,13 @@
       (zero? ms)        {:ms nil                :valid? true}
       :else             {:ms ms                 :valid? true})))
 
+(def ^:private url-unsafe-in-id #"[&=?#+%\s]")
+
 (defn resolve-resource-id
-  "The element's resource id from its `resource-id` attribute, or nil when absent or blank."
+  "The element's resource id from its `resource-id` attribute, or nil when absent, blank, or
+  carrying a character that would break the query its request ids are written into."
   [attr-id]
-  (when-not (str/blank? attr-id) attr-id))
+  (when-not (or (str/blank? attr-id) (re-find url-unsafe-in-id attr-id))
+    attr-id))
 
 (def observed-attributes #js [])

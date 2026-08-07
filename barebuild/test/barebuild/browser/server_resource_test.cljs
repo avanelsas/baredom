@@ -242,6 +242,19 @@
                  (done)))
         (.catch (fn [e] (is false (str "nothing reached the recorder: " e)) (done))))))
 
+(deftest a-resource-id-a-query-cannot-carry-is-reported-and-dropped
+  (async done
+    (support/stub-accepted! [] empty-shape)
+    (support/mount! "a&b" "/api/tasks")
+    (-> (support/settle #(seq @support/fetch-calls))
+        (.then (fn []
+                 (is (error-logged? #"cannot go in a request query")
+                     "the author is told where the mistake is")
+                 (is (re-find #"requestId=:1" (first @support/fetch-calls))
+                     "and the id never reaches the query, the element booting unnamed instead")
+                 (done)))
+        (.catch (fn [e] (is false (str "the bad id was not reported: " e)) (done))))))
+
 (deftest an-intent-naming-a-resource-that-is-not-there-does-not-vanish-silently
   (async done
     (support/stub-accepted! [] empty-shape)

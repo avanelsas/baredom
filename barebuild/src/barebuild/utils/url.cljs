@@ -40,15 +40,17 @@
 (defn build-scoped-url
   "The url built from each resource's params in `params-by-id`, scoped by its resource-id. A named
   resource owns `<id>.`-prefixed keys (e.g. tasks.sort=start), an unnamed (blank id) resource owns
-  the bare keys and writes them without a prefix (sort=start)."
+  the bare keys and writes them without a prefix (sort=start). Key order follows the url it starts
+  from, unlike `query/->query-string`, which sorts."
   [search pathname params-by-id]
   (-> (reduce-kv scope-params! (js/URLSearchParams. search) params-by-id)
       (params->url pathname)))
 
 (defn parse-scoped-query
   "The query a resource owns in `search`: its `<id>.`-prefixed keys with the prefix stripped, or
-  the bare undotted keys when unnamed. The inverse of `build-scoped-url`, in the query's normal
-  form."
+  the bare undotted keys when unnamed, in the query's normal form. It reads a search string, so it
+  inverts the query `build-scoped-url` writes rather than that function's return value, which
+  carries the pathname too."
   [search resource-id]
   (let [params (js/URLSearchParams. search)
         prefix (url-prefix resource-id)]
