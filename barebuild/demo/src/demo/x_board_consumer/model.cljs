@@ -5,8 +5,7 @@
 (def statuses ["todo" "doing" "done"])
 
 (defn columns
-  "Tasks grouped by status into the three ordered columns, sorted by rank.
-  The board re-renders exactly when the grouped, ordered set changes."
+  "Tasks grouped by status into the three columns, each ordered by rank."
   [accepted-response]
   (let [by-status (group-by #(get % "status") (:value accepted-response))]
     (into {}
@@ -14,12 +13,35 @@
                  [s (vec (sort-by #(or (get % "rank") 0) (get by-status s [])))])
                statuses))))
 
+(def empty-columns
+  "The three columns, empty."
+  (into {} (map (fn [s] [s []]) statuses)))
+
+(defn project-selected?
+  "True when the intent names a project."
+  [intent]
+  (some? (:project intent)))
+
+(defn columns-for
+  "The columns `view` paints, empty until a project is selected."
+  [{:keys [accepted intent]}]
+  (if (and (project-selected? intent) accepted)
+    (columns accepted)
+    empty-columns))
+
+(defn render-key
+  "The slice the board repaints on: the rows, and whether a project is selected."
+  [{:keys [accepted intent]}]
+  [(:value accepted) (project-selected? intent)])
+
+(defn rows-by-id
+  "The rows of `cols`, keyed by the string id `board-plan` uses."
+  [cols]
+  (into {} (map (fn [row] [(str (get row "id")) row])) (mapcat val cols)))
+
 (defn board-plan
-  "The board's DOM plan against the card ids it is showing now: each status's card ids in the order
-   they belong there, and the ids no column claims any more. Removal is decided across the whole
-   board rather than one column at a time, so a card that only changed column is left for the
-   applier to move rather than destroyed and rebuilt, a rebuilt card having nowhere to animate
-   from."
+  "The DOM plan: `:order` is each status's card ids in order, `:remove` the ids no column claims.
+   Removal is decided board-wide, so a card that only changed column is moved, not rebuilt."
   [present-ids cols]
   (let [order (into {}
                     (map (fn [[status rows]]
@@ -30,13 +52,13 @@
      :remove (vec (remove kept present-ids))}))
 
 (defn- name-hue
-  "A stable hue (0-359) derived from a name, so each assignee keeps one avatar colour."
+  "A stable hue (0-359) per name, so an assignee keeps one avatar colour."
   [name]
   (let [s (str name)]
     (mod (reduce (fn [h i] (+ (* h 31) (.charCodeAt s i))) 7 (range (count s))) 360)))
 
 (defn card-vm
-  "Elements that render in a card."
+  "What a card renders."
   [row]
   (let [assignee (str (or (get row "assigneeName") (get row "owner")))]
     {:value    (str (get row "id"))
@@ -47,8 +69,7 @@
      :hue      (name-hue assignee)}))
 
 (defn translate-drop-gesture
-  "A move is a positional command, used when a user drops a card. Not an
-   edit, it carries only the destination"
+  "A drop as a move: a positional command carrying only the destination, not a record edit."
   [row to-status index]
   {:op     :move
    :id     (get row "id")

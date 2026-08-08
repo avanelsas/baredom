@@ -10,7 +10,7 @@
   {:query-patch {:project project-id} :gesture-class :navigation})
 
 (defn project-options
-  "The {:id :name} option list for the selector, projected from the projects value."
+  "The {:id :name} options, from the projects value."
   [accepted-response]
   (mapv (fn [p] {:id (get p "id") :name (get p "name")})
         (:value accepted-response)))

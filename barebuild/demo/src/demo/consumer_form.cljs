@@ -8,8 +8,7 @@
    [goog.object :as gobj]))
 
 (defn form-values
-  "The submitted values from an x-form-submit event as a CLJS map keyed by the form's string
-  field names."
+  "The x-form-submit values as a CLJS map keyed by field name."
   [^js e]
   (let [vals (.. e -detail -values)]
     (into {} (map (fn [k] [k (gobj/get vals k)]) (js/Object.keys vals)))))
@@ -37,9 +36,8 @@
     "Something went wrong."))
 
 (defn write-plan
-  "Given a `record`, its `shape`, and the `payload` to send, return {:errors [...]} when the
-  record fails the shape, else {:payload payload} carrying the record as the shape declares it,
-  so a field the shape calls a number leaves the form as one."
+  "{:errors [...]} when `record` fails `shape`, else {:payload ...} carrying the record coerced
+  to the types the shape declares."
   [record shape payload]
   (let [{:keys [errors] conformed :record} (validation/conform-payload record shape)]
     (if (seq errors)
@@ -51,8 +49,7 @@
     (.setFieldError form field message)))
 
 (defn attempt-write!
-  "Carry out the write-plan for `record`. A write already in flight is ignored, so a double click
-  cannot fire two writes."
+  "Carry out the write plan for `record`. A write already in flight is ignored."
   [^js consumer ^js form record shape payload]
   (when-not (:writing? (consumer-resource/view consumer))
     (.clearErrors form)
@@ -69,8 +66,8 @@
       (show-alert! host message))))
 
 (defn on-failure!
-  "Clears the UI on recovery, and reports this form's own write failing: a rejection as an inline
-  field error or an alert in `host`, a transport failure as an alert."
+  "Clear the UI on recovery, and report this form's own write failing: a rejection inline where
+  it names a field, else an alert in `host`."
   [^js form ^js host view ^js this]
   (let [failure (:failure view)]
     (cond
@@ -84,8 +81,8 @@
         (show-alert! host (write-failure-message failure))))))
 
 (defn on-writing!
-  "Drive the submit button's loading state from this form's own write, and on that write being
-  accepted run `on-success` (close or collapse the form) and clear it."
+  "Drive the submit button's loading state from this form's own write, running `on-success` and
+  clearing the form once it is accepted."
   [^js form view ^js this ^js button on-success]
   (let [status (when (consumer-resource/own-write? this view)
                  (get-in view [:write :status]))]

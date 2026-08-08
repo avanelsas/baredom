@@ -39,7 +39,7 @@
     (.addEventListener form "x-form-submit"
                        (fn [e] (submit! e)))))
 
-;; No :render: the form paints nothing from the resource, it only submits to it.
+;; No :render: the form only submits.
 (defn init! []
   (consumer-resource/register!
    {:tag        model/tag-name

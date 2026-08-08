@@ -4,7 +4,7 @@
    [demo.x-spinner-consumer.model :as model]))
 
 (defn- apply-busy!
-  "The spinner shows while the resource is doing anything, reading or writing."
+  "Shows while the resource is reading or writing."
   [^js spinner {:keys [pending? writing?]} _this]
   (set! (.. spinner -style -display) (if (or pending? writing?) "" "none")))
 

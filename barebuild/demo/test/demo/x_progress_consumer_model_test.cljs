@@ -1,5 +1,5 @@
 (ns demo.x-progress-consumer-model-test
-  "project-progress: the bounded-numeric projection — page-info to an x-progress value/max pair."
+  "project-progress: page-info to an x-progress value/max pair."
   (:require [cljs.test :refer-macros [deftest is testing]]
             [demo.x-progress-consumer.model :as model]))
 
@@ -17,6 +17,6 @@
            (model/project-progress {:page 2 :total-pages 7})))))
 
 (deftest project-progress-absent-page-info-yields-nil-bounds
-  (testing "a missing page-info projects nil value/max (x-progress falls back to its defaults)"
+  (testing "missing page-info projects nil bounds"
     (is (= {:value nil :max nil}
            (model/project-progress nil)))))
