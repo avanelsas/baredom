@@ -54,7 +54,7 @@
                                                    :segment 7 :request-id "tasks:w1"}))))))
 
 (deftest request-omits-an-empty-query
-  (testing "an empty query contributes nothing — no dangling separator"
+  (testing "an empty query contributes nothing, no dangling separator"
     (is (= "/api/tasks?requestId=tasks:1"
            (:url (request/request {:endpoint "/api/tasks" :method "GET"
                                  :request-id "tasks:1" :query {}})))))
@@ -64,7 +64,7 @@
                                  :request-id "tasks:1"}))))))
 
 (deftest request-carries-the-request-id-in-every-shape
-  (testing "the id is always in the URL — the server echoes it and answers-in-flight-read? guards on it"
+  (testing "the id is always in the URL, the server echoes it and answers-in-flight-read? guards on it"
     (doseq [parts [{:endpoint "/api/tasks" :method "GET" :request-id "tasks:1"}
                    {:endpoint "/api/tasks" :method "GET" :request-id "tasks:1" :query {:page "2"}}
                    {:endpoint "/api/tasks" :method "DELETE" :request-id "tasks:w1" :segment 7}
@@ -88,7 +88,7 @@
             :body       record
             :headers    {"content-type" "application/json"}}
            req))
-    (testing "the body passes through as CLJS — serialization belongs at the network edge,
+    (testing "the body passes through as CLJS, serialization belongs at the network edge,
               and an =-comparable value is what makes the whole write spine testable"
       (is (map? (:body req))))))
 
@@ -174,7 +174,7 @@
       "values go through URLSearchParams, so separators in a term can't break the query"))
 
 (deftest request-encodes-the-path-segment
-  (testing "an id is opaque server data — a separator inside it must not restructure the URL"
+  (testing "an id is opaque server data, a separator inside it must not restructure the URL"
     (is (= "/api/tasks/a%2Fb%3Fc?requestId=tasks:w1"
            (:url (request/request {:endpoint "/api/tasks" :segment "a/b?c"
                                  :method "DELETE" :request-id "tasks:w1"}))))

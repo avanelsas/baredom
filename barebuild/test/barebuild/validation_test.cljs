@@ -2,7 +2,7 @@
   "Both checkers over a declared shape, pure and =-asserted.
    validate-contract: an accepted envelope the server sent, errors located by a :path.
    validate-payload: a write record the client is about to send, errors located by a :field.
-   Shapes mirror what wire/->accepted produces — :type is a keyword, and absent
+   Shapes mirror what wire/->accepted produces, :type is a keyword, and absent
    :required/:enum mean 'no constraint'."
   (:require [cljs.test :refer-macros [deftest is testing]]
             [barebuild.validation :as validation]))
@@ -113,7 +113,7 @@
 
 (deftest optional-field-may-be-blank
   (testing "a blank optional field (form-associated inputs send \"\", not an absent key) is
-            not a type error — mirrors the server, which skips the type check when blank"
+            not a type error, mirroring the server, which skips the type check when blank"
     (is (= [] (validation/validate-payload (assoc valid "end" "") shape)))))
 
 (deftest missing-required-field

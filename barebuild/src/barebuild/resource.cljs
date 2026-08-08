@@ -185,9 +185,7 @@
 
 (defn- open-read
   "`built` with a read for the current intent opened and its :fetch appended, unless one already is
-  in flight, so the single-flight rule for reads lives here rather than at the two callers. The
-  :fetch lands after effects the transition already built, so a :notify-consumers among them reports
-  the value from before the read opened."
+  in flight, so the single-flight rule lives here rather than at the two callers."
   [{:keys [resource effects] :as built}]
   (if (in-flight resource :read)
     built
@@ -203,7 +201,8 @@
     built))
 
 (defn- with-trailing-fetch
-  "`built` followed by a read for the current intent, when the value does not already answer it."
+  "`built` followed by a read for the current intent, when the value does not already answer it.
+  `pending?` holds either side, so a notify already in `built` reports the same view."
   [{:keys [resource] :as built}]
   (cond-> built (pending? resource) open-read))
 
@@ -309,6 +308,11 @@
   here rather than got right at each transition that moves the value."
   ([resource] (notified resource []))
   ([resource effects] (result resource (conj effects (notify-fx resource)))))
+(defn- notify-last
+  "`built` with a :notify-consumers appended for the resource it ended on, so the view reports the
+  read the transition opened. `notified` cannot, taking a resource rather than a result."
+  [{:keys [resource effects]}]
+  (result resource (conj effects (notify-fx resource))))
 
 ;; Installing an answer, read or write -----------------------------------------
 
@@ -327,17 +331,17 @@
   (cond-> (assoc resource :last-accepted payload)
     (retires-failure? resource kind) (assoc :last-failure nil)))
 
-(defn- with-failure
+(defn- fail
   "`resource` with the in-flight request of `kind` dropped and `failure` stashed as what it now
-  answers with."
+  answers with. The sibling of `accept`, and like it a resource rather than a result."
   [resource kind failure]
   (assoc (clear-in-flight resource kind) :last-failure failure))
 
 (defn- record-failure
-  "`with-failure`, notified. A transition that also moves the intent builds its own result off
-  `with-failure` instead."
+  "`fail`, notified. A transition that also moves the intent, or that opens a read the notify must
+  report, builds its own result off `fail` instead."
   [resource kind failure]
-  (notified (with-failure resource kind failure)))
+  (notified (fail resource kind failure)))
 
 (defn- transport-members
   "The members a `cause` that produced no readable answer carries: :detail for :protocol, :error
@@ -414,7 +418,7 @@
   (let [accepted-query (get-in resource [:last-accepted :query])
         revert?        (and (= (:query payload) (:url-intent resource))
                             (some? (:last-accepted resource)))
-        cleared        (with-failure resource :read
+        cleared        (fail resource :read
                                      (failure :rejected :read (in-flight-query resource :read)
                                               {:response payload}))
         reverted       (cond-> cleared
@@ -516,14 +520,16 @@
 
 (defn- on-write-failed
   "Every failure reaching here left the write's outcome unknown. Only an explicit :rejected ack,
-  which `on-write-ack` handles, is the server saying no."
+  which `on-write-ack` handles, is the server saying no. Consumers are told after the reconciling
+  read opens, so the failure arrives with `:pending?` set rather than beside an idle-looking value."
   [resource payload]
   (let [write (in-flight resource :write)
         cause (if (:protocol-failure payload) :protocol :network)]
-    (with-reconciling-fetch
-      (record-failure (settled-write resource :failed) :write
-                      (failure cause :write (:query write)
-                               (assoc (transport-members cause payload) :write write))))))
+    (notify-last
+     (with-reconciling-fetch
+      (result (fail (settled-write resource :failed) :write
+                    (failure cause :write (:query write)
+                             (assoc (transport-members cause payload) :write write))))))))
 
 (defn step
   "Takes a resource and an event, returns {:resource <the resource the event left behind>

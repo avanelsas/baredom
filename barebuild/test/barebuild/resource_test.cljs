@@ -565,7 +565,7 @@
                                                                       :error {:kind :offline}}])]
     (testing "the failure records its query, so pending? sees the failed intent as adjudicated"
       (is (= {:sort "owner"} (get-in resource [:last-failure :query]))))
-    (testing "no trailing fetch — a failed request is not auto-retried (A.1)"
+    (testing "no trailing fetch, a failed request is not auto-retried (A.1)"
       (is (nil? (:active-request resource)))
       (is (not-any? (fn [[fx _]] (= :fetch fx)) effects)))))
 
@@ -662,14 +662,14 @@
          (resource/step base [:disconnected {}]))
       "nothing in flight -> disconnect is a clean no-op"))
 
-;; --- W1b: writes — submit-write / write-ack / write-failed -----------------
+;; --- W1b: writes, submit-write / write-ack / write-failed -----------------
 
 (deftest submit-write-starts-write-and-emits-write-effect
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete :id 7}])]
     (testing "an active write is recorded under a namespaced id, carrying the payload"
       (is (= {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {}} (:active-write resource)))
       (is (true? (resource/writing? resource))))
-    (testing "notify first (so the button disables), then the :write effect — which carries the
+    (testing "notify first (so the button disables), then the :write effect, which carries the
               request step already decided, not the payload for the executor to interpret"
       (is (= [(notified resource)
               [:write {:request/id "tasks:w1"
@@ -678,7 +678,7 @@
              effects)))))
 
 (deftest submit-write-decides-the-request-in-step
-  (testing "a create rides the same spine and step — not the executor — resolves it to a
+  (testing "a create rides the same spine and step, not the executor, resolves it to a
             POST with a body; the payload stays on :active-write, never in the effect"
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
@@ -705,7 +705,7 @@
 
 (deftest submit-write-of-an-unsupported-op-leaves-the-resource-untouched
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :frobnicate :id 7}])]
-    (testing "an op the table can't build never starts a write — no :active-write, no id burned.
+    (testing "an op the table can't build never starts a write, no :active-write, no id burned.
               Starting one would set writing? with no request to answer it, and the single-flight
               guard would then reject every later write for the life of the element"
       (is (= base resource))
@@ -716,7 +716,7 @@
 (deftest submit-write-without-a-member-id-leaves-the-resource-untouched
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :delete}])]
     (testing "an unbuildable member op is refused before start-write, exactly like an
-              unknown op — no :active-write, so the single-flight slot stays free"
+              unknown op, no :active-write, so the single-flight slot stays free"
       (is (= base resource))
       (is (false? (resource/writing? resource))))
     (testing "a spoken op arriving without the member to address is reported as that, not as an
@@ -821,7 +821,7 @@
     (testing "the write clears -> writing? false"
       (is (nil? (:active-write resource)))
       (is (false? (resource/writing? resource))))
-    (testing "the returned envelope is installed directly — no refetch, just notify"
+    (testing "the returned envelope is installed directly, no refetch, just notify"
       (is (= payload (:last-accepted resource)))
       (is (= [(notified resource)] effects)))))
 
@@ -999,10 +999,10 @@
     (testing "writing? clears; last-accepted kept (pessimistic -> nothing to roll back)"
       (is (nil? (:active-write resource)))
       (is (= accepted (:last-accepted resource))))
-    (testing "consumers are notified, and a re-read follows to find out whether the write landed"
-      (is (= (notified (dissoc resource :request-count :active-request))
-             (first effects)))
-      (is (= :fetch (first (second effects)))))))
+    (testing "a re-read follows to find out whether the write landed, and consumers are told after
+              it opened, so the failure does not arrive beside an idle-looking value"
+      (is (= :fetch (first (first effects))))
+      (is (= (notified resource) (last effects))))))
 
 ;; --- reconciling a write whose outcome is unknown --------------------------
 
@@ -1026,6 +1026,16 @@
     (is (some? (effect-value (write-failure-effects {:error {:kind :offline}}) :fetch)))
     (is (some? (effect-value (write-failure-effects {:protocol-failure {:reason :empty-body}})
                              :fetch)))))
+
+(deftest the-notify-a-write-failure-emits-reports-the-reconciling-read
+  (testing "this read opens unconditionally, unlike every other, so a notify built before it would
+            report `:pending? false` while a request is going out. It lands after the read instead"
+    (let [effects (write-failure-effects {:error {:kind :offline}})]
+      (is (= 1 (count (filter (fn [[fx]] (= :notify-consumers fx)) effects)))
+          "exactly one notify")
+      (is (= :notify-consumers (first (last effects))) "and it is the last effect")
+      (is (true? (:pending? (:view (second (last effects)))))
+          "and its view reports the read now in flight"))))
 
 (deftest a-rejected-write-is-not-reconciled
   (testing "an explicit rejection is the server saying no, the one write failure whose outcome is
@@ -1052,8 +1062,8 @@
                                      :active-request {:request/id "tasks:1" :query {}})
                          [:write-failed {:request/id "tasks:w1" :error {:kind :offline}}])]
       (testing "the older read is aborted, and that lands before the read replacing it goes out"
-        (is (= [:abort {:request/id "tasks:1"}] (second effects)))
-        (is (= :fetch (first (last effects)))))
+        (is (= [:abort {:request/id "tasks:1"}] (first effects)))
+        (is (= :fetch (first (second effects)))))
       (testing "single-flight still holds, the new read being the only one in the value"
         (is (= {:request/id "tasks:2" :query {}} (:active-request resource)))))))
 

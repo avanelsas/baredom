@@ -714,7 +714,7 @@
     (-> (support/settle #(seq @support/fetch-inits))
         (.then (fn []
                  (is (undefined? (.-headers ^js (first-init)))
-                     "the request still fires, without headers — config is not a hard failure")
+                     "the request still fires, without headers, config is not a hard failure")
                  (is (error-logged? #"is not a JSON object")
                      "and the author is told which attribute was ignored")
                  (done)))
