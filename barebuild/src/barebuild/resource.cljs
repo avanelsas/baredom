@@ -201,8 +201,7 @@
     built))
 
 (defn- with-trailing-fetch
-  "`built` followed by a read for the current intent, when the value does not already answer it.
-  `pending?` holds either side, so a notify already in `built` reports the same view."
+  "`built` followed by a read for the current intent, when the value does not already answer it."
   [{:keys [resource] :as built}]
   (cond-> built (pending? resource) open-read))
 
@@ -303,16 +302,13 @@
   [resource]
   (effect/notify-consumers (:resource/id resource) (project resource)))
 
-(defn- notified
-  "A result ending in a :notify-consumers for the very resource it returns, so that pairing is made
-  here rather than got right at each transition that moves the value."
-  ([resource] (notified resource []))
-  ([resource effects] (result resource (conj effects (notify-fx resource)))))
-(defn- notify-last
-  "`built` with a :notify-consumers appended for the resource it ended on, so the view reports the
-  read the transition opened. `notified` cannot, taking a resource rather than a result."
-  [{:keys [resource effects]}]
-  (result resource (conj effects (notify-fx resource))))
+(defn- announced
+  "`built` with a :notify-consumers appended when the view moved from `before`, or when `force?`
+  overrides that."
+  [before {:keys [resource effects]} force?]
+  (if (or force? (not= (project before) (project resource)))
+    (result resource (conj effects (notify-fx resource)))
+    (result resource effects)))
 
 ;; Installing an answer, read or write -----------------------------------------
 
@@ -338,10 +334,9 @@
   (assoc (clear-in-flight resource kind) :last-failure failure))
 
 (defn- record-failure
-  "`fail`, notified. A transition that also moves the intent, or that opens a read the notify must
-  report, builds its own result off `fail` instead."
+  "A result holding `failure` as what the resource now answers with."
   [resource kind failure]
-  (notified (fail resource kind failure)))
+  (result (fail resource kind failure)))
 
 (defn- transport-members
   "The members a `cause` that produced no readable answer carries: :detail for :protocol, :error
@@ -367,7 +362,7 @@
             correct?  (and adopt? (not= echo (:url-intent resource)))
             installed (cond-> (accept (clear-in-flight resource kind) kind payload)
                         adopt? (assoc :url-intent echo))]
-        (notified installed (cond-> []
+        (result installed (cond-> []
                               correct? (conj (url-write-fx installed echo :replace))))))))
 
 ;; Transition helpers ----------------------------------------------------------
@@ -378,7 +373,7 @@
   embed. Nothing is accepted yet, so the trailing read always opens."
   [resource diag-code]
   (with-trailing-fetch
-    (notified resource (cond-> []
+    (result resource (cond-> []
                          diag-code (conj (effect/diagnostic diag-code))))))
 
 (defn- install-accepted-embed
@@ -393,14 +388,14 @@
                         (failure :contract :read (:query embed) {:response embed :errors errors})))
       ;; An embed never adopts its query echo and never corrects the URL. There is no in-flight
       ;; request for the intent to have drifted from, so a mismatch is answered by fetching.
-      (with-trailing-fetch (notified (accept resource :read embed))))))
+      (with-trailing-fetch (result (accept resource :read embed))))))
 
 (defn- install-rejected-embed
   "Install a rejected boot embed. An echo matching the intent installs as the failure and answers
   it, so no boot fetch. A stale rejection is diagnostics only, then a normal fetch."
   [resource embed]
   (if (= (:query embed) (:url-intent resource))
-    (notified (assoc resource :last-failure
+    (result (assoc resource :last-failure
                      (failure :rejected :read (:query embed) {:response embed})))
     (boot resource :stale-rejected-embed)))
 
@@ -423,7 +418,7 @@
                                               {:response payload}))
         reverted       (cond-> cleared
                          revert? (assoc :url-intent accepted-query))]
-    (notified reverted (cond-> []
+    (result reverted (cond-> []
                          revert? (conj (url-write-fx reverted accepted-query :replace))))))
 
 (defn- apply-intent-patch
@@ -435,7 +430,7 @@
         mode       (resolve-history-mode resource (:gesture-class payload))
         moved?     (not= new-intent (:url-intent resource))]
     (with-trailing-fetch
-      (notified merged (cond-> []
+      (result merged (cond-> []
                          moved? (conj (url-write-fx merged new-intent mode)))))))
 
 (defn- hand-to-sibling
@@ -459,7 +454,7 @@
   "The address bar has already moved, so the intent is replaced outright rather than merged, and
   never written back."
   [resource intent]
-  (with-trailing-fetch (notified (assoc resource :url-intent intent))))
+  (with-trailing-fetch (result (assoc resource :url-intent intent))))
 
 (defn- on-response
   [resource payload]
@@ -505,7 +500,7 @@
           {:keys [request defect]} (write-request started)]
       (if request
         (let [opened (opened-write started)]
-          (result opened [(notify-fx opened) (effect/write request)]))
+          (result opened [(effect/write request)]))
         (ignored resource defect)))))
 
 (defn- on-write-ack
@@ -525,36 +520,48 @@
   [resource payload]
   (let [write (in-flight resource :write)
         cause (if (:protocol-failure payload) :protocol :network)]
-    (notify-last
-     (with-reconciling-fetch
-      (result (fail (settled-write resource :failed) :write
-                    (failure cause :write (:query write)
-                             (assoc (transport-members cause payload) :write write))))))))
+    (with-reconciling-fetch
+     (result (fail (settled-write resource :failed) :write
+                   (failure cause :write (:query write)
+                            (assoc (transport-members cause payload) :write write)))))))
+
+(defn- transition
+  "The result `event` leaves behind, before anything is announced."
+  [resource [event-k payload]]
+  (case event-k
+    ;; reads
+    :connected         (on-connected resource (:embed payload))
+    :response          (on-response resource payload)
+    :intent-patch      (on-intent-patch resource payload)
+    ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
+    ;; way, so we register it here.
+    :intent-unroutable (ignored resource :unroutable-intent payload)
+    :url-changed       (on-url-changed resource payload)
+    :protocol-failed   (on-read-failed resource payload :protocol)
+    :network-failed    (on-read-failed resource payload :network)
+    :disconnected      (on-disconnected resource)
+
+    ;; writes
+    :submit-write      (on-submit-write resource payload)
+    :write-ack         (on-write-ack resource payload)
+    :write-failed      (on-write-failed resource payload)
+
+    ;; An event this vocabulary does not contain changes nothing, and says so.
+    (ignored resource :unknown-event {:event event-k})))
+
+;; The two events the moved-view rule cannot decide. :connected has nothing projected before it, so
+;; its view never reads as moved. :disconnected leaves no consumer to hand a view to.
+(def ^:private announce-rule {:connected :always :disconnected :never})
 
 (defn step
   "Takes a resource and an event, returns {:resource <the resource the event left behind>
-  :effects [<what the executor must perform>]}."
+  :effects [<what the executor must perform>]}. The :notify-consumers is appended here, once, when
+  the view moved, so no transition places one."
   [resource event]
   (if-let [kind (stale-answer resource event)]
     (ignored resource :stale-answer {:for kind :event (first event)})
-    (let [[event-k payload] event]
-      (case event-k
-        ;; reads
-        :connected         (on-connected resource (:embed payload))
-        :response          (on-response resource payload)
-        :intent-patch      (on-intent-patch resource payload)
-        ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
-        ;; way, so we register it here.
-        :intent-unroutable (ignored resource :unroutable-intent payload)
-        :url-changed       (on-url-changed resource payload)
-        :protocol-failed   (on-read-failed resource payload :protocol)
-        :network-failed    (on-read-failed resource payload :network)
-        :disconnected      (on-disconnected resource)
-
-        ;; writes
-        :submit-write      (on-submit-write resource payload)
-        :write-ack         (on-write-ack resource payload)
-        :write-failed      (on-write-failed resource payload)
-
-        ;; An event this vocabulary does not contain changes nothing, and says so.
-        (ignored resource :unknown-event {:event event-k})))))
+    (let [built (transition resource event)]
+      (case (announce-rule (first event))
+        :never  built
+        :always (announced resource built true)
+        (announced resource built false)))))
