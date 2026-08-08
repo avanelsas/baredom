@@ -3,31 +3,22 @@
   (:require
    [barebuild.consumer-resource :as consumer-resource]
    [barebuild.validation :as validation]
+   [demo.alert :as alert]
    [demo.selector :as selector]
    [baredom.utils.dom :as du]
    [goog.object :as gobj]))
 
 (defn form-values
-  "The x-form-submit values as a CLJS map keyed by field name."
+  "The x-form-submit values as a CLJS map keyed by field name. Read key by key rather than with
+   js->clj: x-form hands over a null-prototype object, which js->clj does not recognise as one to
+   convert and returns untouched."
   [^js e]
   (let [vals (.. e -detail -values)]
-    (into {} (map (fn [k] [k (gobj/get vals k)]) (js/Object.keys vals)))))
+    (into {} (map (fn [k] [k (gobj/get vals k)])) (js/Object.keys vals))))
 
 (defn clear-form! [^js form]
   (.clearErrors form)
   (.reset form))
-
-(defn remove-alert! [^js host]
-  (when-let [^js existing (.querySelector host "x-alert")]
-    (.remove existing)))
-
-(defn show-alert! [^js host message]
-  (remove-alert! host)
-  (let [alert (.createElement js/document "x-alert")]
-    (du/set-attr! alert "type" "error")
-    (du/set-attr! alert "text" message)
-    (du/set-attr! alert "dismissible" "")
-    (.insertBefore host alert (.querySelector host "x-form"))))
 
 (defn write-failure-message [failure]
   (case (:cause failure)
@@ -36,24 +27,29 @@
     "Something went wrong."))
 
 (defn write-plan
-  "{:errors [...]} when `record` fails `shape`, else {:payload ...} carrying the record coerced
-  to the types the shape declares."
-  [record shape payload]
-  (let [{:keys [errors] conformed :record} (validation/conform-payload record shape)]
+  "{:errors [...]} when the payload's record fails `shape`, else {:payload ...} carrying that
+  record coerced to the types the shape declares."
+  [shape payload]
+  (let [{:keys [errors] conformed :record} (validation/conform-payload (:record payload) shape)]
     (if (seq errors)
       {:errors errors}
       {:payload (assoc payload :record conformed)})))
+
+(defn- alert!
+  "Report `message` above the form, where a field-level error has nowhere to land."
+  [^js host message]
+  (alert/show! host message (.querySelector host "x-form")))
 
 (defn- show-field-errors! [^js form errors]
   (doseq [{:keys [field message]} errors]
     (.setFieldError form field message)))
 
 (defn attempt-write!
-  "Carry out the write plan for `record`. A write already in flight is ignored."
-  [^js consumer ^js form record shape payload]
+  "Carry out the write `payload` describes. A write already in flight is ignored."
+  [^js consumer ^js form shape payload]
   (when-not (:writing? (consumer-resource/view consumer))
     (.clearErrors form)
-    (let [plan (write-plan record shape payload)]
+    (let [plan (write-plan shape payload)]
       (if-let [errors (:errors plan)]
         (show-field-errors! form errors)
         (consumer-resource/submit-write! consumer (:payload plan))))))
@@ -63,7 +59,7 @@
         field                     (get details "field")]
     (if (and field (.querySelector form (selector/attr= "name" field)))
       (.setFieldError form field message)
-      (show-alert! host message))))
+      (alert! host message))))
 
 (defn on-failure!
   "Clear the UI on recovery, and report this form's own write failing: a rejection inline where
@@ -73,12 +69,12 @@
     (cond
       (nil? failure)
       (do (.clearErrors form)
-          (remove-alert! host))
+          (alert/clear! host))
 
       (and (= :write (:for failure)) (consumer-resource/own-write? this view))
       (if (= :rejected (:cause failure))
         (apply-rejection! form host failure)
-        (show-alert! host (write-failure-message failure))))))
+        (alert! host (write-failure-message failure))))))
 
 (defn on-writing!
   "Drive the submit button's loading state from this form's own write, running `on-success` and

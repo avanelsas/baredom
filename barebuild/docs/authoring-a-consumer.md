@@ -33,7 +33,9 @@ x_<name>_consumer/          ; app code. This repo's demo keeps these under demo/
 ```
 
 - **`model.cljs`** holds `tag-name` and a pure projection function (accepted response ->
-  whatever the child needs). No DOM. This is where unit tests live.
+  whatever the child needs). No DOM. This is where unit tests live. A consumer with nothing to
+  project, one that only reacts to the `:pending?` / `:writing?` flags as `x-spinner-consumer`
+  does, has no pure layer to test and keeps the element file alone.
 - **`x_<name>_consumer.cljs`** holds the DOM effects (render, failure UI, loading) and calls
   `consumer-resource/register!` from `init!`.
 
@@ -321,13 +323,16 @@ One `<server-resource>` fans out to any number of consumers.
 
 ## Worked examples
 
-**Minimal — `x-stat-consumer`** (display-only scalar): `project-stat` (model) + a one-line
-`render!` (set the `value` attr) + `on-pending!` (toggle the `loading` attr). ~20 lines.
+**Minimal — `x-stat-consumer`** (display-only scalar): `project-stat` (model) + a `render-key`
+naming that same projection + a one-line `render!` (set the `value` attr). ~15 lines.
+
+**Flags only, `x-spinner-consumer`**: no model projection and no `render!`. `on-pending` and
+`on-writing` share one handler that shows the spinner while the resource is reading or writing.
+The one to copy for a consumer that draws no server data.
 
 **Full — `x-table-consumer`**: `accepted-response->view-model` + gesture translators (model);
 `render!` (build `x-table-row`/`x-table-cell` children + pagination), `on-failure!` (an
-`x-alert`), `on-pending!` (`aria-busy` + dim), sort/page gestures via `submit-intent!`, and
-row delete via `submit-write!`.
+`x-alert`), sort/page gestures via `submit-intent!`, and row delete via `submit-write!`.
 
 **Writing — `x-task-form-consumer`**: populates an `x-form` from the shape, validates the
 payload locally, submits with `submit-write!`, uses `on-writing!` to disable the submit

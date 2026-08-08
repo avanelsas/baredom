@@ -32,8 +32,9 @@
         shape    (get-in view [:accepted :shape])
         project  (get-in view [:intent :project])]
     (when (and shape project)
-      (let [record (model/new-task-record entered project (today-iso))]
-        (consumer-form/attempt-write! consumer form record shape {:op :create :record record})))))
+      (consumer-form/attempt-write!
+       consumer form shape
+       {:op :create :record (model/new-task-record entered project (today-iso))}))))
 
 (defn- on-writing! [^js form view ^js this]
   (consumer-form/on-writing! form view this (du/getv this k-add-button)

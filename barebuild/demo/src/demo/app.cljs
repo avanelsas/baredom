@@ -33,43 +33,43 @@
    [barebuild.core :as core]
    [barereplay.init :as barereplay]))
 
-;; Registers the BareDOM components, the demo's consumers, then the BareBuild runtime.
+(def ^:private registrations
+  "Every element the demo page needs defined: the BareDOM components it drives, then the demo's
+   own consumers, which are host-app code."
+  [x-alert/init!
+   x-button/init!
+   x-date-picker/init!
+   x-drag-panel/init!
+   x-drop-zone/init!
+   x-form/init!
+   x-form-field/init!
+   x-grid/init!
+   x-modal/init!
+   x-pagination/init!
+   x-progress/init!
+   x-search-field/init!
+   x-select/init!
+   x-spacer/init!
+   x-spinner/init!
+   x-stat/init!
+   x-table/init!
+   x-table-row/init!
+   x-table-cell/init!
+   x-typography/init!
+
+   x-board-consumer/init!
+   x-project-form-consumer/init!
+   x-project-selector-consumer/init!
+   x-progress-consumer/init!
+   x-search-field-consumer/init!
+   x-spinner-consumer/init!
+   x-stat-consumer/init!
+   x-table-consumer/init!
+   x-task-form-consumer/init!
+   x-task-quickadd-consumer/init!])
+
 (defn ^:export init []
-  ;; BareDOM components
-  (x-alert/init!)
-  (x-button/init!)
-  (x-date-picker/init!)
-  (x-drag-panel/init!)
-  (x-drop-zone/init!)
-  (x-form/init!)
-  (x-form-field/init!)
-  (x-grid/init!)
-  (x-modal/init!)
-  (x-pagination/init!)
-  (x-progress/init!)
-  (x-search-field/init!)
-  (x-select/init!)
-  (x-spacer/init!)
-  (x-spinner/init!)
-  (x-stat/init!)
-  (x-table/init!)
-  (x-table-row/init!)
-  (x-table-cell/init!)
-  (x-typography/init!)
-
-  ;; the demo's consumers, host-app code
-  (x-board-consumer/init!)
-  (x-project-form-consumer/init!)
-  (x-project-selector-consumer/init!)
-  (x-progress-consumer/init!)
-  (x-search-field-consumer/init!)
-  (x-spinner-consumer/init!)
-  (x-stat-consumer/init!)
-  (x-table-consumer/init!)
-  (x-task-form-consumer/init!)
-  (x-task-quickadd-consumer/init!)
-
-  ;; the recorder
+  (doseq [register! registrations]
+    (register!))
   (barereplay/init!)
-  ;; the BareBuild runtime
   (core/init))
