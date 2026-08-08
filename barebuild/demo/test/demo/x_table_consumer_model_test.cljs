@@ -17,13 +17,12 @@
 
 (deftest columns-from-shape-in-declared-order
   (let [{:keys [columns]} (model/accepted-response->view-model accepted)]
-    (is (= [{:key "title"  :label "title"  :type :string  :sort-direction "none"}
-            {:key "owner"  :label "owner"  :type :string  :sort-direction "asc"}
-            {:key "start"  :label "start"  :type :date    :sort-direction "none"}
-            {:key "status" :label "status" :type :string  :sort-direction "none"}]
+    (is (= [{:key "title"  :sort-direction "none"}
+            {:key "owner"  :sort-direction "asc"}
+            {:key "start"  :sort-direction "none"}
+            {:key "status" :sort-direction "none"}]
            columns)
-        "columns from shape.fields in order, the label is the field key, the sorted one
-         carries the echoed direction")))
+        "columns from shape.fields in order, the sorted one carrying the echoed direction")))
 
 (deftest rows-lift-id-and-project-declared-cells
   (let [{:keys [rows]} (model/accepted-response->view-model accepted)]

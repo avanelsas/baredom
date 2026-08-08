@@ -1,15 +1,21 @@
 (ns demo.x-task-form-consumer.x-task-form-consumer
   (:require
+   [demo.alert :as alert]
    [demo.consumer-form :as consumer-form]
    [demo.selector :as selector]
+   [demo.task-edit :as task-edit]
    [demo.x-task-form-consumer.model :as model]
    [barebuild.consumer-resource :as consumer-resource]
    [baredom.utils.dom :as du]))
 
-(def ^:private k-refs "__xConsumerRefs")
-(def ^:private k-populated? "__xConsumerPopulated?")
-(def ^:private k-edit-id "__xConsumerEditId")
-(def ^:private k-edit-extras "__xConsumerEditExtras")
+(def ^:private k-refs "__xTaskFormRefs")
+(def ^:private k-edit-id "__xTaskFormEditId")
+(def ^:private k-edit-extras "__xTaskFormEditExtras")
+
+(defn- refs
+  "The consumer's own elements, found once at connect."
+  [^js el]
+  (du/getv el k-refs))
 
 (defn- submit! [^js e]
   (let [entered  (consumer-form/form-values e)
@@ -19,15 +25,11 @@
         edit-id  (du/getv consumer k-edit-id)
         record   (merge entered (du/getv consumer k-edit-extras))]
     (when shape
-      (let [payload (if edit-id
-                      {:op :update :id edit-id :record record}
-                      {:op :create :record record})]
-        (consumer-form/attempt-write! consumer form record shape payload)))))
-
-(defn- refs
-  "The consumer's own elements, found once at connect."
-  [^js el]
-  (du/getv el k-refs))
+      (consumer-form/attempt-write!
+       consumer form shape
+       (if edit-id
+         {:op :update :id edit-id :record record}
+         {:op :create :record record})))))
 
 (defn- on-failure! [^js form view ^js this]
   (consumer-form/on-failure! form (:modal (refs this)) view this))
@@ -56,7 +58,7 @@
     (set! (.-textContent submit) verb)
     (du/set-attr! modal "label" title)
     (set! (.-textContent header) title)
-    (consumer-form/remove-alert! modal)))
+    (alert/clear! modal)))
 
 (defn- open-create! [^js el]
   (du/setv! el k-edit-id nil)
@@ -68,7 +70,7 @@
   (let [accepted (:accepted (consumer-resource/view el))]
     (when-let [row (model/row-by-id accepted id)]
       (du/setv! el k-edit-id id)
-      (du/setv! el k-edit-extras (select-keys row ["projectId" "assigneeId"]))
+      (du/setv! el k-edit-extras (model/unshown-fields row))
       (apply-mode! el "Update" "Edit Task")
       (prefill-form! (:form (refs el)) row (get-in accepted [:shape :fields]))
       (.show ^js (:modal (refs el))))))
@@ -82,8 +84,7 @@
     (.addEventListener trigger "press" (fn [_e] (open-create! el)))
     (.addEventListener modal "x-modal-dismiss" (fn [_e] (consumer-form/clear-form! form)))
     (.addEventListener form "x-form-submit" (fn [e] (submit! e)))
-    (.addEventListener (.closest el "server-resource") "x-task-edit-request"
-                       (fn [^js e] (open-edit! el (.. e -detail -id))))))
+    (task-edit/on-request! el (fn [id] (open-edit! el id)))))
 
 (defn- make-option! [{:keys [value label]}]
   (let [opt (.createElement js/document "option")]
@@ -91,13 +92,11 @@
     (set! (.-textContent opt) label)
     opt))
 
-(defn- render! [^js form {accepted :accepted} ^js this]
-  ;; populate once, and not before a response, or it stays empty for good
-  (when (and accepted (not (du/getv this k-populated?)))
-    (let [^js select (.querySelector form "x-select")]
-      (doseq [choice (model/status-choices accepted)]
-        (.appendChild select (make-option! choice)))
-      (du/setv! this k-populated? true))))
+(defn- render! [^js form {accepted :accepted} _this]
+  (when-let [^js select (.querySelector form "x-select")]
+    (set! (.-innerHTML select) "")
+    (doseq [choice (model/status-choices accepted)]
+      (.appendChild select (make-option! choice)))))
 
 (defn init!
   []
@@ -105,6 +104,7 @@
    {:tag        model/tag-name
     :child-tag  "x-form"
     :on-connect connect!
+    :render-key (fn [view] (model/status-choices (:accepted view)))
     :render     render!
     :on-writing on-writing!
     :on-failure on-failure!}))

@@ -697,10 +697,57 @@
        :body    (slurp (io/file rel))}
       (json-response 404 {:error "not-found" :uri uri}))))
 
+;; --- the task write vocabulary, as data ------------------------------------
+;; The client's op table (`write-ops` in resource.cljs) says a write is a method, a target and a
+;; body. This is the same claim from the server's side: a row per op naming the method it answers,
+;; whether it addresses a member, the validation that can reject it and the mutation an accepted
+;; one performs. Adding an op is a row, not another branch in `handler`.
+
+(def ^:private task-writes
+  [{:method :post   :member? false
+    :error  (fn [_uri record] (record-error record))
+    :mutate (fn [ts _uri record] (create-task ts record))}
+
+   {:method :put    :member? true
+    :error  (fn [uri record] (update-error @tasks (task-id-from-uri uri) (task-id-str uri) record))
+    :mutate (fn [ts uri record] (update-task ts (task-id-from-uri uri) record))}
+
+   {:method :patch  :member? true
+    :error  (fn [uri record] (move-error @tasks (task-id-from-uri uri) (task-id-str uri) record))
+    :mutate (fn [ts uri record] (move-task ts (task-id-from-uri uri) record))}
+
+   ;; Delete is idempotent over an absent row, so it has nothing to reject.
+   {:method :delete :member? true
+    :error  (fn [_uri _record] nil)
+    :mutate (fn [ts uri _record] (delete-task ts (task-id-from-uri uri)))}])
+
+(defn- task-write
+  "The row answering this request, or nil when it is not a write under /api/tasks."
+  [method uri]
+  (let [member? (str/starts-with? uri "/api/tasks/")]
+    (when (or member? (= "/api/tasks" uri))
+      (some #(when (and (= method (:method %)) (= member? (:member? %))) %) task-writes))))
+
+(defn- perform-task-write!
+  "Reject the write or apply it. Both verdicts are HTTP 200: the outcome carries it, where a 4xx
+   would read as a network failure to the client. An accepted write returns the full
+   post-mutation envelope, shaped by the write's query, so the client installs it with no
+   follow-up read."
+  [{:keys [error mutate]} req]
+  (let [uri    (:uri req)
+        params (parse-query (:query-string req))
+        record (request-record req)]
+    (if-let [e (error uri record)]
+      (json-response 200 (write-rejected-ack params e))
+      (do (swap! tasks mutate uri record)
+          (json-response 200 (accepted-envelope params))))))
+
 (defn handler [req]
-  (let [uri (:uri req)]
+  (let [uri    (:uri req)
+        method (:request-method req)
+        write  (task-write method uri)]
     (cond
-      (= :options (:request-method req))
+      (= :options method)
       {:status 204 :headers cors-headers}
 
       (= "/health" uri)
@@ -715,18 +762,18 @@
       ;; GET /api/users, /api/projects — the related collections the board projects alongside
       ;; tasks. Same accepted envelope; a task references these by opaque string id. Users are
       ;; read-only; projects also accept a create (POST) below.
-      (= "/api/users" uri)
+      (and (= :get method) (= "/api/users" uri))
       (json-response 200 (collection-envelope (parse-query (:query-string req))
                                               users-revision users users-shape))
 
-      (and (= :get (:request-method req)) (= "/api/projects" uri))
+      (and (= :get method) (= "/api/projects" uri))
       (json-response 200 (collection-envelope (parse-query (:query-string req))
                                               projects-revision @projects projects-shape))
 
-      ;; POST /api/projects — create a project from the JSON record body. Structural validation
-      ;; against projects-shape; a rejection carries the projects revision and field details.
-      ;; An accepted create appends the project and returns the full post-mutation collection.
-      (and (= :post (:request-method req)) (= "/api/projects" uri))
+      ;; POST /api/projects, create a project from the JSON record body. Its own branch rather
+      ;; than a task-writes row: a project write answers with the projects collection and its own
+      ;; revision, not the tasks envelope.
+      (and (= :post method) (= "/api/projects" uri))
       (let [params (parse-query (:query-string req))
             record (request-record req)]
         (if-let [error (project-error record)]
@@ -735,45 +782,11 @@
               (json-response 200 (collection-envelope params projects-revision
                                                       @projects projects-shape)))))
 
-      ;; POST /api/tasks — create a task from the JSON record body. Server-only semantic
-      ;; validation (end >= start) yields a rejected ack + field details; otherwise the record
-      ;; is appended with a server-minted id and the full post-mutation envelope, shaped by the
-      ;; write's query, is returned. Both are HTTP 200; the client installs the envelope directly.
-      (and (= :post (:request-method req)) (= "/api/tasks" uri))
-      (let [params (parse-query (:query-string req))
-            record (request-record req)]
-        (if-let [error (record-error record)]
-          (json-response 200 (write-rejected-ack params error))
-          (do (swap! tasks create-task record)
-              (json-response 200 (accepted-envelope params)))))
+      ;; Every /api/tasks write: create, update, move and delete.
+      (some? write)
+      (perform-task-write! write req)
 
-      ;; PUT /api/tasks/:id — replace the row with the record body. A full replace, validated
-      ;; exactly like a create, plus a not-found rejection when the id matches no row. Both
-      ;; verdicts are HTTP 200; an accepted write returns the full post-mutation envelope.
-      (and (= :put (:request-method req))
-           (str/starts-with? uri "/api/tasks/"))
-      (let [params (parse-query (:query-string req))
-            id     (task-id-from-uri uri)
-            record (request-record req)]
-        (if-let [error (update-error @tasks id (task-id-str uri) record)]
-          (json-response 200 (write-rejected-ack params error))
-          (do (swap! tasks update-task id record)
-              (json-response 200 (accepted-envelope params)))))
-
-      ;; PATCH /api/tasks/:id — the :move op. Repositions a card (server-owned rank) to the
-      ;; destination status + index the body carries; every other field is left as-is. HTTP 200,
-      ;; the full post-mutation envelope, like the other writes.
-      (and (= :patch (:request-method req))
-           (str/starts-with? uri "/api/tasks/"))
-      (let [params (parse-query (:query-string req))
-            id     (task-id-from-uri uri)
-            record (request-record req)]
-        (if-let [error (move-error @tasks id (task-id-str uri) record)]
-          (json-response 200 (write-rejected-ack params error))
-          (do (swap! tasks move-task id record)
-              (json-response 200 (accepted-envelope params)))))
-
-      (= "/api/tasks" uri)
+      (and (= :get method) (= "/api/tasks" uri))
       (let [params  (parse-query (:query-string req))
             fixture (get params "fixture")]
         (cond
@@ -783,15 +796,6 @@
           ;; verdict (§3.1); a 4xx would read as a network failure to the client.
           (unsupported-sort? params) (json-response 200 (rejected-envelope params))
           :else                      (json-response 200 (accepted-envelope params))))
-
-      ;; DELETE /api/tasks/:id — mutate the in-memory set, return the full post-mutation
-      ;; envelope shaped by the write's query (HTTP 200, `accepted`); the client installs it
-      ;; directly. Deleting the last row on a page lets the server clamp the page in the echo.
-      (and (= :delete (:request-method req))
-           (str/starts-with? uri "/api/tasks/"))
-      (let [params (parse-query (:query-string req))]
-        (swap! tasks delete-task (task-id-from-uri uri))
-        (json-response 200 (accepted-envelope params)))
 
       :else
       (json-response 404 {:error "not-found" :uri uri}))))

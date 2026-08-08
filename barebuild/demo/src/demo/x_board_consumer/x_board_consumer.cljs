@@ -18,15 +18,15 @@
 
 (defn- set-card-content! [^js panel row]
   (let [{:keys [title assignee project initial hue]} (model/card-vm row)
-        head   (ensure-child! panel "[slot=header]" "span" #(set! (.-slot %) "header"))
-        body   (ensure-child! panel ".board-card-body" "div" #(set! (.-className %) "board-card-body"))
-        avatar (ensure-child! body ".board-card-avatar" "span" #(set! (.-className %) "board-card-avatar"))
-        meta   (ensure-child! body ".board-card-meta" "span" #(set! (.-className %) "board-card-meta"))]
+        head     (ensure-child! panel "[slot=header]" "span" #(set! (.-slot %) "header"))
+        body     (ensure-child! panel ".board-card-body" "div" #(set! (.-className %) "board-card-body"))
+        avatar   (ensure-child! body ".board-card-avatar" "span" #(set! (.-className %) "board-card-avatar"))
+        subtitle (ensure-child! body ".board-card-meta" "span" #(set! (.-className %) "board-card-meta"))]
     (du/set-attr! panel "label" title)
     (set! (.-textContent head) title)
     (set! (.-textContent avatar) initial)
     (.setProperty (.-style avatar) "background-color" (str "hsl(" hue " 55% 48%)"))
-    (set! (.-textContent meta) (str assignee " · " project))))
+    (set! (.-textContent subtitle) (str assignee " · " project))))
 
 (defn- make-card! [row]
   (let [panel (.createElement js/document "x-drag-panel")]

@@ -19,6 +19,15 @@
   (testing "no answer yet, no row"
     (is (nil? (model/row-by-id nil "1")))))
 
+(deftest unshown-fields-carry-the-references-the-form-never-offers
+  (let [row {"id" 1 "title" "A" "projectId" "p-1" "assigneeId" "u-2" "status" "todo"}]
+    (testing "an update is a full replace, so the references travel with it"
+      (is (= {"projectId" "p-1" "assigneeId" "u-2"} (model/unshown-fields row))))
+    (testing "nothing the form does collect is carried twice"
+      (is (empty? (select-keys (model/unshown-fields row) ["title" "status" "id"]))))
+    (testing "a row without them yields nothing to carry"
+      (is (= {} (model/unshown-fields {"id" 1 "title" "A"}))))))
+
 (deftest status-choices-prefers-the-labels-the-shape-declares
   (testing "options carry the value to submit and the label to show"
     (is (= [{:value "todo" :label "To do"} {:value "doing" :label "Doing"}]

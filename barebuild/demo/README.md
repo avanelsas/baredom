@@ -81,7 +81,10 @@ demo/
   src/demo/
     app.cljs                 ; registers the driven components + consumers, then barebuild.core/init
     consumer_form.cljs       ; shared glue for the three write forms
-    x_<name>_consumer/       ; the example consumers (pure model.cljs + element file)
+    alert.cljs               ; the shared error banner
+    task_edit.cljs           ; the table asking the task form to open on a row
+    x_<name>_consumer/       ; the example consumers (element file, plus a model.cljs where the
+                             ; consumer has a pure layer to test)
   test/demo/                 ; consumer model tests
 ```
 

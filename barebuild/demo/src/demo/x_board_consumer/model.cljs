@@ -9,13 +9,12 @@
   [accepted-response]
   (let [by-status (group-by #(get % "status") (:value accepted-response))]
     (into {}
-          (map (fn [s]
-                 [s (vec (sort-by #(or (get % "rank") 0) (get by-status s [])))])
-               statuses))))
+          (map (fn [s] [s (vec (sort-by #(or (get % "rank") 0) (get by-status s)))]))
+          statuses)))
 
 (def empty-columns
   "The three columns, empty."
-  (into {} (map (fn [s] [s []]) statuses)))
+  (zipmap statuses (repeat [])))
 
 (defn project-selected?
   "True when the intent names a project."
@@ -52,10 +51,11 @@
      :remove (vec (remove kept present-ids))}))
 
 (defn- name-hue
-  "A stable hue (0-359) per name, so an assignee keeps one avatar colour."
+  "A stable hue (0-359) per name, so an assignee keeps one avatar colour. The modulo folds into
+   every step rather than landing at the end, where a long name would already have run past the
+   precision a double carries."
   [name]
-  (let [s (str name)]
-    (mod (reduce (fn [h i] (+ (* h 31) (.charCodeAt s i))) 7 (range (count s))) 360)))
+  (reduce (fn [h ch] (mod (+ (* h 31) (.charCodeAt ch 0)) 360)) 7 (str name)))
 
 (defn card-vm
   "What a card renders."

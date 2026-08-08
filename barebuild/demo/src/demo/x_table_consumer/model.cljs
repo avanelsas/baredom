@@ -32,33 +32,30 @@
       (fn [v] (get by-value v v)))
     identity))
 
+(defn- labellers
+  "One labeller per declared field, built once for the whole table rather than per cell."
+  [fields]
+  (into {} (map (juxt :key labeller)) fields))
+
 (defn- row-cells
   "The displayed cell text per declared field."
-  [fields row]
-  (into {} (map (fn [{:keys [key] :as field}] [key ((labeller field) (get row key))])) fields))
+  [fs row]
+  (into {} (map (fn [[k label]] [k (label (get row k))])) fs))
+
+(defn- column
+  "One header column: the field key, and the direction it is sorted in right now."
+  [{sorted-key :sort :keys [direction]} {:keys [key]}]
+  {:key            key
+   :sort-direction (if (= sorted-key key) direction "none")})
 
 (defn accepted-response->view-model
   [accepted-response]
-  (let [{:keys [query shape]} accepted-response
-        sort-column-name      (:sort query)
-        sort-direction        (:direction query)
+  (let [{:keys [query shape]}   accepted-response
         {:keys [id-key fields]} shape
-        columns (mapv
-                 (fn [{:keys [key type]}]
-                   {:key key
-                    :label key
-                    :type type
-                    :sort-direction (if (= sort-column-name key)
-                                      sort-direction
-                                      "none")})
-                 fields)
-        rows (mapv
-              (fn [row]
-                {:id (get row id-key)
-                 :cells (row-cells fields row)})
-              (:value accepted-response))]
-    {:columns columns
-     :rows rows}))
+        fs                      (labellers fields)]
+    {:columns (mapv (partial column query) fields)
+     :rows    (mapv (fn [row] {:id (get row id-key) :cells (row-cells fs row)})
+                    (:value accepted-response))}))
 
 (defn grid-template
   "The table's `columns` template: the fields split the width evenly, the actions column takes
