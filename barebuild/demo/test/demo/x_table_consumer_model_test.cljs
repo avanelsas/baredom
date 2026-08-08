@@ -22,8 +22,8 @@
             {:key "start"  :label "start"  :type :date    :sort-direction "none"}
             {:key "status" :label "status" :type :string  :sort-direction "none"}]
            columns)
-        "columns from shape.fields in order; the header label is the field key; the sorted
-         column carries the echoed direction, others \"none\"")))
+        "columns from shape.fields in order, the label is the field key, the sorted one
+         carries the echoed direction")))
 
 (deftest rows-lift-id-and-project-declared-cells
   (let [{:keys [rows]} (model/accepted-response->view-model accepted)]
@@ -93,8 +93,7 @@
                            [{:value "todo"  :label "To do"}
                             {:value "doing" :label "In progress"}])
         {:keys [rows]} (model/accepted-response->view-model labelled)]
-    (testing "a field with options names its values, so a cell reads the same as the form
-              control that offers them rather than showing the raw domain value"
+    (testing "a cell reads the same as the form control that offers the value"
       (is (= "In progress" (get-in (first rows) [:cells "status"])))
       (is (= "To do" (get-in (second rows) [:cells "status"]))))
     (testing "fields without options are untouched"
@@ -104,19 +103,47 @@
   (let [labelled (assoc-in accepted [:shape :fields 3 :options]
                            [{:value "todo" :label "To do"}])
         {:keys [rows]} (model/accepted-response->view-model labelled)]
-    (testing "an unlisted value is shown raw rather than blanked, so a server that adds a
-              status before it adds its label does not empty the column"
+    (testing "an unlisted value shows raw rather than blank"
       (is (= "doing" (get-in (first rows) [:cells "status"]))))))
 
+(deftest failure-message-shows-the-server-its-own-words-and-speaks-for-every-other-cause
+  (testing "the server's own message is passed through"
+    (is (= "That project is closed."
+           (model/failure-message {:cause    :rejected
+                                   :for      :read
+                                   :response {:error {:message "That project is closed."}}}))))
+  (testing "the client's own readings speak for themselves"
+    (is (= "The server sent an unexpected response."
+           (model/failure-message {:cause :protocol :detail {:reason :empty-body}})))
+    (is (= "The server's data didn't match the expected format."
+           (model/failure-message {:cause :contract :errors [{:code :missing-id-key}]}))))
+  (testing "an unknown cause still says something"
+    (is (= "Something went wrong." (model/failure-message {})))))
+
+(deftest failure-message-names-the-status-a-server-that-answered-sent
+  (testing "auth statuses are told apart"
+    (is (= "Your session has expired. Please sign in again."
+           (model/failure-message {:cause :network :error {:kind :http-status :status 401}})))
+    (is (= "Your session has expired. Please sign in again."
+           (model/failure-message {:cause :network :error {:kind :http-status :status 403}})))
+    (is (= "That resource was not found."
+           (model/failure-message {:cause :network :error {:kind :http-status :status 404}}))))
+  (testing "any other status is still the server answering"
+    (is (= "The server returned an error. Please try again."
+           (model/failure-message {:cause :network :error {:kind :http-status :status 500}}))))
+  (testing "no answer at all reads as unreachable"
+    (is (= "Couldn't reach the server. Please try again."
+           (model/failure-message {:cause :network :error {:kind :offline}})))
+    (is (= "Couldn't reach the server. Please try again."
+           (model/failure-message {:cause :network :error {:kind :timeout :after 60000}})))))
+
 (deftest grid-template-keeps-the-actions-column-off-the-even-split
-  (testing "the declared fields share the width, the actions column takes what its buttons need.
-            Splitting it evenly with the rest shrank it below the buttons as fields were added,
-            and the table's overflow:hidden clipped them"
+  (testing "the fields split the width, the actions column takes what its buttons need"
     (is (= "repeat(6,minmax(0,1fr)) max-content"
            (model/grid-template [{:key "title"} {:key "owner"} {:key "start"}
                                  {:key "end"} {:key "est"} {:key "status"}])))
     (is (= "repeat(1,minmax(0,1fr)) max-content" (model/grid-template [{:key "title"}]))))
-  (testing "a shape declaring no fields still leaves the actions column a track of its own,
-            rather than a repeat(0,...) the browser discards along with the whole template"
+  (testing "no fields still leaves the actions column a track, not a repeat(0,...) the browser
+            discards"
     (is (= "max-content" (model/grid-template [])))
     (is (= "max-content" (model/grid-template nil)))))

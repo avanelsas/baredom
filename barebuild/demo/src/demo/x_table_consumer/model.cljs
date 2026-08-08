@@ -2,10 +2,30 @@
 
 (def tag-name "x-table-consumer")
 
+(defn- network-message
+  "The message for a read that got no usable answer. A status the server did send is named."
+  [error]
+  (case (:kind error)
+    :http-status (case (:status error)
+                   (401 403) "Your session has expired. Please sign in again."
+                   404       "That resource was not found."
+                   "The server returned an error. Please try again.")
+    "Couldn't reach the server. Please try again."))
+
+(defn failure-message
+  "The alert text for a failure. A rejection shows the server's own message, every other cause
+   this client's reading of the answer."
+  [failure]
+  (case (:cause failure)
+    :rejected (get-in failure [:response :error :message])
+    :network  (network-message (:error failure))
+    :protocol "The server sent an unexpected response."
+    :contract "The server's data didn't match the expected format."
+    "Something went wrong."))
+
 (defn- labeller
-  "A value -> display text fn for one field. When the shape gives the field `options`, they name
-   its values, so a cell shows the same text the form's control offers. An unlisted value shows
-   as itself rather than blank."
+  "A value -> display text fn for one field, from its declared `options`. An unlisted value
+   shows as itself."
   [{:keys [options]}]
   (if (seq options)
     (let [by-value (into {} (map (juxt :value :label)) options)]
@@ -41,20 +61,15 @@
      :rows rows}))
 
 (defn grid-template
-  "The table's `columns` template: the declared fields share the width evenly, and the actions
-   column takes exactly what its buttons need.
-
-   Passing the column *count* instead makes every track `minmax(0,1fr)`, the actions column
-   included, and those tracks may shrink below their content. Each field the server declares
-   takes another share, so the buttons are eventually narrower than themselves and clipped by
-   the table's own `overflow:hidden`. `max-content` takes the actions column out of the split."
+  "The table's `columns` template: the fields split the width evenly, the actions column takes
+   `max-content` so it cannot shrink below its buttons."
   [columns]
   (if (seq columns)
     (str "repeat(" (count columns) ",minmax(0,1fr)) max-content")
     "max-content"))
 
 (defn reconcile-plan
-  "Diff current row ids against desired rows: ids to remove, and the desired order flagged new/existing."
+  "The ids to remove, and the desired order flagged new or existing."
   [old-ids new-rows]
   (let [old-set (set old-ids)
         new-set (set (map (comp str :id) new-rows))]

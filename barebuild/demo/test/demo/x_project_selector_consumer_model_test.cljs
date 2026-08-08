@@ -1,6 +1,5 @@
 (ns demo.x-project-selector-consumer-model-test
-  "The project selector's pure layer: the gesture it sends to the tasks resource, and the
-   option projection from the projects value."
+  "The selector's pure layer: the gesture out, and the options in."
   (:require [cljs.test :refer-macros [deftest is testing]]
             [demo.x-project-selector-consumer.model :as model]))
 

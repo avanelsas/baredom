@@ -33,8 +33,7 @@
    [barebuild.core :as core]
    [barereplay.init :as barereplay]))
 
-;; Rregisters the BareDOM components it uses, the demo's own
-;; consumers, and then the BareBuild runtime (server-resource) via barebuild.core.
+;; Registers the BareDOM components, the demo's consumers, then the BareBuild runtime.
 (defn ^:export init []
   ;; BareDOM components
   (x-alert/init!)
@@ -58,7 +57,7 @@
   (x-table-cell/init!)
   (x-typography/init!)
 
-  ;; the demo's consumers (host-app code, not part of BareBuild)
+  ;; the demo's consumers, host-app code
   (x-board-consumer/init!)
   (x-project-form-consumer/init!)
   (x-project-selector-consumer/init!)
@@ -70,7 +69,7 @@
   (x-task-form-consumer/init!)
   (x-task-quickadd-consumer/init!)
 
-  ;; set up the recorder of events
+  ;; the recorder
   (barereplay/init!)
-  ;; the BareBuild runtime element
+  ;; the BareBuild runtime
   (core/init))

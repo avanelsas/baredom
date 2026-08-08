@@ -7,22 +7,6 @@
 
 (def ^:private k-data-field-key "data-field-key")
 
-(defn- network-message [error]
-  (case (:kind error)
-    :http-status (case (:status error)
-                   (401 403) "Your session has expired. Please sign in again."
-                   404       "That resource was not found."
-                   "The server returned an error. Please try again.")
-    "Couldn't reach the server. Please try again."))
-
-(defn- failure-message [last-failure]
-  (case (:cause last-failure)
-    :rejected (get-in last-failure [:response :error :message])
-    :network  (network-message (:error last-failure))
-    :protocol "The server sent an unexpected response."
-    :contract "The server's data didn't match the expected format."
-    "Something went wrong."))
-
 (defn- create-x-alert!
   [{:keys [text type dismissible timeout-ms]}]
   (let [alert (.createElement js/document "x-alert")]
@@ -92,19 +76,26 @@
                     (js/CustomEvent. "x-task-edit-request"
                                      #js {:detail #js {:id id} :bubbles true :composed true}))))
 
-(defn- create-table-cell!
-  [s is-header sort-direction]
+(defn- create-body-cell!
+  "A cell showing `text`, tagged with its field key so re-render can find it."
+  [text field-key]
   (let [cell (.createElement js/document "x-table-cell")]
-    (when is-header
-      (du/set-attr! cell "type" "header")
-      (du/set-attr! cell "scope" "col")
-      (du/set-attr! cell "sortable" "")
-      (du/set-attr! cell "sort-direction" sort-direction)
-      (.addEventListener cell "x-table-cell-sort" request-sort!))
-    (set! (.-textContent cell) (str s))
+    (du/set-attr! cell k-data-field-key field-key)
+    (set! (.-textContent cell) (str text))
     cell))
 
-;; What a row offers, in the order it is shown. A third action is a row here.
+(defn- create-header-cell!
+  "A body cell that also announces its sort and asks for another."
+  [label field-key sort-direction]
+  (let [cell (create-body-cell! label field-key)]
+    (du/set-attr! cell "type" "header")
+    (du/set-attr! cell "scope" "col")
+    (du/set-attr! cell "sortable" "")
+    (du/set-attr! cell "sort-direction" sort-direction)
+    (.addEventListener cell "x-table-cell-sort" request-sort!)
+    cell))
+
+;; What a row offers, in order. A third action is a row here.
 (def ^:private row-actions
   [{:label "Edit"   :variant "primary" :on-press edit-row-request!}
    {:label "Delete" :variant "danger"  :on-press delete-row-request!}])
@@ -120,7 +111,7 @@
     button))
 
 (defn- create-actions!
-  "The row's buttons, laid out side by side."
+  "The row's buttons, side by side."
   [id]
   (let [actions (.createElement js/document "span")]
     (.setProperty (.-style actions) "display" "inline-flex")
@@ -143,9 +134,7 @@
   [columns]
   (let [row (.createElement js/document "x-table-row")]
     (doseq [{k :key label :label sort-direction :sort-direction} columns]
-      (let [cell (create-table-cell! label true sort-direction)]
-        (du/set-attr! cell k-data-field-key k)
-        (.appendChild row cell)))
+      (.appendChild row (create-header-cell! label k sort-direction)))
     (.appendChild row (create-header-actions-cell!))
     row))
 
@@ -154,9 +143,7 @@
   (let [row (.createElement js/document "x-table-row")]
     (du/set-attr! row "data-row-id" (str id))
     (doseq [{k :key} columns]
-      (let [cell (create-table-cell! (get cells k) false nil)]
-        (du/set-attr! cell k-data-field-key k)
-        (.appendChild row cell)))
+      (.appendChild row (create-body-cell! (get cells k) k)))
     (.appendChild row (create-body-actions-cell! id))
     row))
 
@@ -169,8 +156,8 @@
   (.querySelector table (str "x-table-row" (selector/attr= "data-row-id" id))))
 
 (defn- ensure-header! [^js table columns]
-  ;; the template tracks the declared fields, so it is written on every render rather than only
-  ;; when the header is built. x-table's own change guard makes the repeat writes free.
+  ;; written every render, not only when the header is built. x-table's change guard makes the
+  ;; repeats free.
   (du/set-attr! table "columns" (model/grid-template columns))
   (if-let [header (.querySelector table "x-table-row:not([data-row-id])")]
     (doseq [{:keys [key sort-direction]} columns]
@@ -209,8 +196,7 @@
     (apply-plan! table (model/reconcile-plan (current-row-ids table) rows) columns)))
 
 (defn- render! [^js table {accepted :accepted} ^js this]
-  ;; the view is projected before the first response, and a table with no shape has no columns.
-  ;; Building the header from an empty column list would fix it at one column for good
+  ;; a header built from an empty column list would be fixed at one column for good
   (when accepted
     (render-table! (model/accepted-response->view-model accepted) table)
     (apply-pagination! (:page-info accepted) this)))
@@ -220,7 +206,7 @@
   (when failure
     (.appendChild this (create-x-alert! {:type        "error"
                                          :dismissible true
-                                         :text        (failure-message failure)}))))
+                                         :text        (model/failure-message failure)}))))
 
 (defn init! []
   (consumer-resource/register!

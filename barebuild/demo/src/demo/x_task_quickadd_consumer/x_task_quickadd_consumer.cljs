@@ -1,5 +1,5 @@
 (ns demo.x-task-quickadd-consumer.x-task-quickadd-consumer
-  "A create task form consumer, living at the bottom of the To Do column."
+  "The create-task form at the bottom of the To Do column."
   (:require
    [demo.consumer-form :as consumer-form]
    [demo.x-task-quickadd-consumer.model :as model]
@@ -7,9 +7,6 @@
    [baredom.utils.dom :as du]))
 
 (def ^:private k-add-button "__xQuickAddButton")
-
-(defn- current-project-id []
-  (.get (js/URLSearchParams. (.-search js/location)) "tasks.project"))
 
 (defn- today-iso []
   (subs (.toISOString (js/Date.)) 0 10))
@@ -31,8 +28,9 @@
   (let [entered  (consumer-form/form-values e)
         form     (.-currentTarget e)
         consumer (.closest form model/tag-name)
-        shape    (get-in (consumer-resource/view consumer) [:accepted :shape])
-        project  (current-project-id)]
+        view     (consumer-resource/view consumer)
+        shape    (get-in view [:accepted :shape])
+        project  (get-in view [:intent :project])]
     (when (and shape project)
       (let [record (model/new-task-record entered project (today-iso))]
         (consumer-form/attempt-write! consumer form record shape {:op :create :record record})))))
@@ -53,7 +51,7 @@
     (.addEventListener cancel "press" (fn [_e] (consumer-form/clear-form! form) (collapse! el)))
     (.addEventListener form "x-form-submit" (fn [e] (submit! e)))))
 
-;; No :render: the form paints nothing from the resource, it only submits to it.
+;; No :render: the form only submits.
 (defn init! []
   (consumer-resource/register!
    {:tag        model/tag-name

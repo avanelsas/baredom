@@ -1,11 +1,9 @@
 (ns demo.consumer-form-test
-  "The pure submit decision: write-plan turns a record, its shape, and a payload into a value,
-  with no DOM in sight."
+  "write-plan: a record, its shape and a payload into a value."
   (:require [cljs.test :refer-macros [deftest is]]
             [demo.consumer-form :as cf]))
 
-;; The parsed shape carries keyword types (closed protocol vocabulary), string keys (opaque
-;; domain), matching what the wire hands a consumer.
+;; Keyword types, string keys, as the wire hands a consumer.
 (def ^:private shape
   {:fields [{:key "title" :type :string :required true}
             {:key "owner" :type :string :required true}]})
@@ -14,7 +12,7 @@
   (let [payload {:op :create :record {"title" "Ship" "owner" "Zoe"}}]
     (is (= {:payload payload}
            (cf/write-plan {"title" "Ship" "owner" "Zoe"} shape payload))
-        "a record that satisfies the shape produces the payload to dispatch")))
+        "a valid record produces the payload")))
 
 (deftest write-plan-invalid-record-yields-errors
   (let [plan (cf/write-plan {"title" "" "owner" "Zoe"} shape {:op :create})]
@@ -30,9 +28,7 @@
   (let [entered {"title" "Ship" "estimate" "5"}
         plan    (cf/write-plan entered estimate-shape {:op :create :record entered})]
     (is (= {:payload {:op :create :record {"title" "Ship" "estimate" 5}}} plan)
-        "the payload carries the record as the shape declares it, so what reaches the wire is
-         a JSON number rather than the string the form held. The server checks the parsed body
-         against the same declared type and refuses the string")))
+        "the wire gets a JSON number, not the string the form held")))
 
 (deftest write-plan-reports-a-number-field-that-cannot-be-read
   (let [entered {"title" "Ship" "estimate" "abc"}

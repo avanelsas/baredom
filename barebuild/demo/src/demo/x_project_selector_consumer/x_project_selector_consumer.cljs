@@ -1,25 +1,21 @@
 (ns demo.x-project-selector-consumer.x-project-selector-consumer
-  "A consumer of the PROJECTS <server-resource> that drives the TASKS resource. Selecting a
-  project sends a targeted intent to \"tasks\", which writes tasks.project to the URL and
-  refetches the filtered set."
+  "A PROJECTS consumer that drives TASKS. A selection is a targeted intent to \"tasks\", which
+  writes tasks.project to the URL and refetches."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
+   [demo.url :as url]
    [demo.x-project-selector-consumer.model :as model]
    [baredom.utils.dom :as du]))
 
 (def ^:private tasks-resource-id "tasks")
 (def ^:private all-label "All projects")
 
-;; --- the current selection, read from the shared URL projection ---------------
+;; --- the current selection -----------------------------------------------------
 
 (defn- current-project-id
-  "The selection lives in the TASKS resource's URL scope, and this consumer belongs to PROJECTS,
-  so its own projected intent cannot carry it. Reading the address bar is the only route a
-  per-resource view leaves open, and it is why this one component does not rewind with a
-  time-travel projection the way the board does."
+  "The selection as the x-select spells it, blank meaning all projects. See `demo.url`."
   []
-  (or (.get (js/URLSearchParams. (.-search js/location)) "tasks.project")
-      model/all-projects-value))
+  (or (url/tasks-project-id) model/all-projects-value))
 
 ;; --- option rendering ---------------------------------------------------------
 
@@ -44,10 +40,9 @@
       (consumer-resource/submit-intent! el (model/translate-project-gesture id) tasks-resource-id))))
 
 (defn- show-selection!
-  "Drive the x-select to the current URL selection. A user pick updates only the inner
-  <select>, never the value attribute, so the attribute can be stale (e.g. \"\" at load while
-  the box shows a project). Setting the attribute to a value it already holds is a no-op that
-  never re-applies, so when the displayed value differs we remove first to force a re-apply."
+  "Drive the x-select to the URL selection. A user pick moves only the inner <select>, so the
+  attribute can be stale, and re-setting the value it already holds never re-applies. Hence the
+  remove first."
   [^js x-select]
   (let [desired (current-project-id)]
     (when (not= desired (.-value x-select))

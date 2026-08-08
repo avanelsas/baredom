@@ -1,5 +1,5 @@
 (ns demo.x-task-quickadd-consumer-model-test
-  "The quick-add's pure layer: completing the small form's two fields into a full create record."
+  "The quick-add's pure layer: two form fields into a full create record."
   (:require [cljs.test :refer-macros [deftest is]]
             [demo.x-task-quickadd-consumer.model :as model]))
 

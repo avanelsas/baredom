@@ -25,8 +25,7 @@
         (consumer-form/attempt-write! consumer form record shape payload)))))
 
 (defn- refs
-  "The consumer's own elements, found once at connect: the open trigger, the submit button, the
-   modal, its title, and the form."
+  "The consumer's own elements, found once at connect."
   [^js el]
   (du/getv el k-refs))
 
@@ -51,8 +50,7 @@
    :form    (.querySelector el "x-form")})
 
 (defn- apply-mode!
-  "Dress the modal as a create or an edit: the submit verb, both titles, and no alert carried
-   over from the last time it was open."
+  "Dress the modal as a create or an edit, dropping any alert from last time."
   [^js el verb title]
   (let [{:keys [^js modal ^js submit ^js header]} (refs el)]
     (set! (.-textContent submit) verb)
@@ -66,16 +64,9 @@
   (apply-mode! el "Create" "Create Task")
   (.show ^js (:modal (refs el))))
 
-(defn- row-by-id
-  "The accepted row `id` names. The id arrives from the DOM as a string, so both sides are
-   compared as strings rather than trusting the server's id to be one."
-  [accepted id]
-  (let [id-key (get-in accepted [:shape :id-key])]
-    (first (filter #(= (str (get % id-key)) id) (:value accepted)))))
-
 (defn- open-edit! [^js el id]
   (let [accepted (:accepted (consumer-resource/view el))]
-    (when-let [row (row-by-id accepted id)]
+    (when-let [row (model/row-by-id accepted id)]
       (du/setv! el k-edit-id id)
       (du/setv! el k-edit-extras (select-keys row ["projectId" "assigneeId"]))
       (apply-mode! el "Update" "Edit Task")
@@ -85,8 +76,8 @@
 (defn- connect!
   [_child ^js el]
   (du/setv! el k-refs (find-refs el))
-  ;; Listeners on the consumer's own subtree (trigger, modal, form) are GC'd with it. The edit
-  ;; request is the exception: it is dispatched by the table consumer and caught on the resource.
+  ;; own-subtree listeners are GC'd with the consumer. The edit request is not: the table
+  ;; consumer dispatches it on the resource.
   (let [{:keys [^js trigger ^js modal ^js form]} (refs el)]
     (.addEventListener trigger "press" (fn [_e] (open-create! el)))
     (.addEventListener modal "x-modal-dismiss" (fn [_e] (consumer-form/clear-form! form)))
@@ -94,25 +85,18 @@
     (.addEventListener (.closest el "server-resource") "x-task-edit-request"
                        (fn [^js e] (open-edit! el (.. e -detail -id))))))
 
-(defn- field-choices
-  "What the status select should offer. A field's :options are the catalogue, each with the
-   value to submit and the label to show. Falling back to :enum keeps a server that declares
-   only the constraint working, with the raw value as its own label."
-  [field]
-  (or (:options field)
-      (mapv (fn [v] {:value v :label v}) (:enum field))))
+(defn- make-option! [{:keys [value label]}]
+  (let [opt (.createElement js/document "option")]
+    (set! (.-value opt) value)
+    (set! (.-textContent opt) label)
+    opt))
 
 (defn- render! [^js form {accepted :accepted} ^js this]
-  ;; populate the select once. Not before a response: there are no choices to offer yet, and
-  ;; marking it populated would leave the select empty for good
+  ;; populate once, and not before a response, or it stays empty for good
   (when (and accepted (not (du/getv this k-populated?)))
-    (let [status (->> (get-in accepted [:shape :fields]) (filter #(= "status" (:key %))) first)
-          select (.querySelector form "x-select")]
-      (doseq [{:keys [value label]} (field-choices status)]
-        (let [opt (.createElement js/document "option")]
-          (set! (.-value opt) value)
-          (set! (.-textContent opt) label)
-          (.appendChild select opt)))
+    (let [^js select (.querySelector form "x-select")]
+      (doseq [choice (model/status-choices accepted)]
+        (.appendChild select (make-option! choice)))
       (du/setv! this k-populated? true))))
 
 (defn init!
