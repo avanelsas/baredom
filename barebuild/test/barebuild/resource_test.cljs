@@ -80,28 +80,29 @@
   (let [r* (assoc base :request-count 1
                        :active-request {:request/id "tasks:1" :query {}})]
     (is (= {:resource r*
-            :effects  [(notified base)
-                       [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]]}
+            :effects  [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
+                       (notified r*)]}
            (resource/step base [:connected {}]))
-        "connect notifies, then fetches the endpoint, recording a fresh live request")))
+        "connect fetches the endpoint, recording a fresh live request, then announces")))
 
-(deftest connected-notifies-a-loading-view-before-the-read-opens
-  (testing "boot opens its read through the same combinator every other transition uses, so the
-            notify is built before the read starts. A resource that has fetched nothing answers
-            nothing, so that view already reports pending? and the first paint says loading"
+(deftest connected-announces-although-the-view-did-not-move
+  (testing "opening a read does not move the view, so the moved-view rule alone would announce
+            nothing at boot and no consumer would ever get a first one"
     (let [{:keys [resource effects]} (resource/step base [:connected {}])
-          view                       (get-in (first effects) [1 :view])]
-      (is (true? (:pending? view)))
-      (is (= (resource/project resource) view)
-          "the read is invisible to a consumer, so notifying either side of it is the same view"))))
+          view                       (get-in (last effects) [1 :view])]
+      (is (= (resource/project base) (resource/project resource))
+          "identical either side, so the rule cannot decide this one")
+      (is (= [:fetch :notify-consumers] (mapv first effects)) "and the notify lands last")
+      (is (true? (:pending? view))
+          "a resource that has fetched nothing answers nothing, so the first paint says loading"))))
 
 (deftest connected-carries-url-intent
   (let [r (assoc base :url-intent {:sort "start" :direction "desc"})
         {:keys [resource effects]} (resource/step r [:connected {}])]
-    (is (= [(notified r)
-            [:fetch {:method     "GET"
+    (is (= [[:fetch {:method     "GET"
                      :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=start"
-                     :request/id "tasks:1"}]]
+                     :request/id "tasks:1"}]
+            (notified resource)]
            effects)
         "a resource booted from a sorted URL fetches that query on connect")
     (is (= {:request/id "tasks:1" :query {:sort "start" :direction "desc"}}
@@ -125,11 +126,9 @@
         {:keys [resource effects]} (resource/step r [:connected {:embed embed}])]
     (testing "the embed still installs (it is genuinely the last accepted value)"
       (is (= embed (:last-accepted resource))))
-    (testing "notifies AND fetches the current intent under a fresh id. The notify is built before
-              the read opens, and an installed embed answers something, so pending? already reads
-              true and the view it carries is the one the post-step resource projects"
-      (is (= [(notified resource)
-              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
+    (testing "fetches the current intent under a fresh id, announcing after it opens"
+      (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]
+              (notified resource)]
              effects)))))
 
 (deftest connected-with-broken-embed-fetches
@@ -137,8 +136,8 @@
         {:keys [resource effects]} (resource/step base [:connected {:embed marker}])]
     (is (nil? (:last-accepted resource)) "a broken embed is not installed")
     (is (= [[:diagnostic {:code :broken-embed}]
-            (notified base)
-            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]] effects)
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1" :request/id "tasks:1"}]
+            (notified resource)] effects)
         "diagnoses the broken embed, then falls back to a normal fetch")))
 
 (deftest connected-with-rejected-embed-installs-failure-and-skips-fetch
@@ -165,8 +164,8 @@
       (is (nil? (:last-accepted resource)))
       (is (= {:request/id "tasks:1" :query {:sort "owner"}} (:active-request resource))))
     (is (= [[:diagnostic {:code :stale-rejected-embed}]
-            (notified r)
-            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]]
+            [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&sort=owner" :request/id "tasks:1"}]
+            (notified resource)]
            effects)
         "diagnoses the stale rejection, then fetches the current intent")))
 
@@ -187,17 +186,15 @@
         {:keys [resource effects]} (resource/step r [:intent-patch patch])]
     (testing "the patch merges into :url-intent (sort preserved, direction updated)"
       (is (= {:sort "owner" :direction "desc"} (:url-intent resource))))
-    (testing "emits a scoped :replace url-write, notifies, then fetches the new intent. The
-              notify names the resource as the gesture left it, before the read opened: an intent
-              the value does not answer already reads as pending, so opening the read does not
-              change what a consumer sees"
+    (testing "emits a scoped :replace url-write, fetches the new intent, then announces. The URL
+              lands before the announce, so no consumer sees the new value under the old address"
       (is (= [[:url-write {:resource/id "tasks"
                            :params      {:sort "owner" :direction "desc"}
                            :mode        :replace}]
-              (notified (assoc base :url-intent {:sort "owner" :direction "desc"}))
               [:fetch {:method     "GET"
                        :url        "/api/tasks?requestId=tasks:1&direction=desc&sort=owner"
-                       :request/id "tasks:1"}]]
+                       :request/id "tasks:1"}]
+              (notified resource)]
              effects)))))
 
 (deftest intent-patch-from-empty-intent
@@ -287,17 +284,13 @@
         {:keys [resource effects]} (resource/step r [:url-changed {:page "2"}])]
     (testing "the URL-derived intent replaces :url-intent (not merged)"
       (is (= {:page "2"} (:url-intent resource))))
-    (testing "notifies, then fetches the new intent, and does NOT write the URL (browser already
-              moved). The notify names the resource as the address bar left it, before the read
-              opened, which a consumer cannot tell apart: the new intent already reads as pending"
-      (is (= [(notified (assoc base :url-intent {:page "2"}))
-              [:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]]
+    (testing "fetches the new intent and does NOT write the URL, the browser having already moved"
+      (is (= [[:fetch {:method "GET" :url "/api/tasks?requestId=tasks:1&page=2" :request/id "tasks:1"}]
+              (notified resource)]
              effects)))))
 
 (deftest opening-a-read-does-not-change-the-projected-view
-  (testing "every transition that trails a fetch notifies before opening the read, so the notify
-            names the resource without it. That is safe because an intent the value does not
-            answer already projects as pending, which is what a consumer reads"
+  (testing "an in-flight read is invisible to a consumer, so opening one never moves the view"
     (let [before (assoc base :url-intent {:page "2"})
           after  (:resource (resource/step before [:url-changed {:page "2"}]))]
       (is (some? (:active-request after)) "the read did open")
@@ -327,14 +320,13 @@
     (testing "a non-matching id never installs"
       (is (nil? (installed (answering "tasks:9" {:sort "owner"})))))))
 
-(deftest a-notify-before-a-trailing-fetch-already-reports-pending
-  (testing "the :fetch is appended after effects the transition already built, so the view a
-            consumer is handed was projected before the read opened. It still reports pending?,
-            because a read only opens when the intent is unanswered"
-    (let [{:keys [effects]}          (resource/step base [:url-changed {:sort "owner"}])
-          [[fx-1 m-1] [fx-2]] effects]
-      (is (= [:notify-consumers :fetch] [fx-1 fx-2]))
-      (is (true? (:pending? (:view m-1)))))))
+(deftest a-trailing-fetch-is-announced-once-it-has-opened
+  (testing "the notify is appended after every effect the transition built, so the view a consumer
+            is handed reports the read that is now in flight rather than the value before it"
+    (let [{:keys [effects]}   (resource/step base [:url-changed {:sort "owner"}])
+          [[fx-1] [fx-2 m-2]] effects]
+      (is (= [:fetch :notify-consumers] [fx-1 fx-2]))
+      (is (true? (:pending? (:view m-2)))))))
 
 (deftest only-events-that-answer-a-request-are-checked-for-being-late
   (testing "the rule keys off the event, so one that carries no request id is dispatched whatever
@@ -657,6 +649,18 @@
       (is (= [[:abort {:request/id "tasks:1"}]] effects))
       (is (nil? (:active-request resource))))))
 
+(deftest disconnected-does-not-notify-even-when-the-view-moves
+  (testing "abandoning the read turns `pending?` false, so the view does move. A removed element
+            has no consumer left to hand it to"
+    (let [r (assoc base :last-accepted accepted
+                        :url-intent (:query accepted)
+                        :request-count 1
+                        :active-request {:request/id "tasks:1" :query (:query accepted)})
+          {:keys [resource effects]} (resource/step r [:disconnected {}])]
+      (is (true? (resource/pending? r)) "a read is in flight, so the view going in reports pending")
+      (is (false? (resource/pending? resource)) "and the value left behind does not")
+      (is (= [[:abort {:request/id "tasks:1"}]] effects) "yet the abort is the only effect"))))
+
 (deftest disconnected-with-no-request-is-a-noop
   (is (= {:resource base :effects []}
          (resource/step base [:disconnected {}]))
@@ -669,27 +673,27 @@
     (testing "an active write is recorded under a namespaced id, carrying the payload"
       (is (= {:request/id "tasks:w1" :payload {:op :delete :id 7} :query {}} (:active-write resource)))
       (is (true? (resource/writing? resource))))
-    (testing "notify first (so the button disables), then the :write effect, which carries the
-              request step already decided, not the payload for the executor to interpret"
-      (is (= [(notified resource)
-              [:write {:request/id "tasks:w1"
+    (testing "the :write effect carries the request step already decided, not the payload for the
+              executor to interpret"
+      (is (= [[:write {:request/id "tasks:w1"
                        :method   "DELETE"
-                       :url      "/api/tasks/7?requestId=tasks:w1"}]]
+                       :url      "/api/tasks/7?requestId=tasks:w1"}]
+              (notified resource)]
              effects)))))
 
 (deftest submit-write-decides-the-request-in-step
-  (testing "a create rides the same spine and step, not the executor, resolves it to a
-            POST with a body; the payload stays on :active-write, never in the effect"
+  (testing "a create rides the same spine and step, not the executor, resolves it to a POST with a
+            body. The payload stays on :active-write, never in the effect"
     (let [record  {"owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"}
           payload {:op :create :record record}
           {:keys [resource effects]} (resource/step base [:submit-write payload])]
       (is (= {:request/id "tasks:w1" :payload payload :query {}} (:active-write resource)))
-      (is (= [(notified resource)
-              [:write {:request/id "tasks:w1"
+      (is (= [[:write {:request/id "tasks:w1"
                        :method   "POST"
                        :url      "/api/tasks?requestId=tasks:w1"
                        :body     record
-                       :headers  {"content-type" "application/json"}}]]
+                       :headers  {"content-type" "application/json"}}]
+              (notified resource)]
              effects)))))
 
 (deftest submit-write-update-addresses-the-member-with-a-body
@@ -701,7 +705,7 @@
                       :url      "/api/tasks/7?requestId=tasks:w1"
                       :body     record
                       :headers  {"content-type" "application/json"}}]
-             (second effects))))))
+             (first effects))))))
 
 (deftest submit-write-of-an-unsupported-op-leaves-the-resource-untouched
   (let [{:keys [resource effects]} (resource/step base [:submit-write {:op :frobnicate :id 7}])]
@@ -862,8 +866,7 @@
     (testing "a re-read follows: the write landed, but the envelope describing the new state was
               unusable, so the current view is not backed by valid data. It cannot loop, since a
               read that also fails the contract records a :read failure that answers the intent"
-      (is (= :notify-consumers (ffirst effects)))
-      (is (= :fetch (first (second effects)))))))
+      (is (= [:fetch :notify-consumers] (mapv first effects))))))
 
 (deftest failure-of-a-normalized-query-answers-the-intent-and-does-not-spin
   (testing "a server may honor less of a query than was asked and echo only what it honored. The
