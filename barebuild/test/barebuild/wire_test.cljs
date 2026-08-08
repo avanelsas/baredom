@@ -63,7 +63,7 @@
     (testing "required and enum are carried onto the field when present"
       (is (= {:key "owner"  :type :string :required true} owner))
       (is (= {:key "status" :type :string :required true :enum ["todo" "done"]} status)))
-    (testing "a field WITHOUT constraints stays bare — no nil :required/:enum keys (W2 decision #2)"
+    (testing "a field WITHOUT constraints stays bare, no nil :required/:enum keys (W2 decision #2)"
       (is (= {:key "end" :type :date} end)))))
 
 (deftest shape-carries-field-options

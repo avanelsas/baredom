@@ -60,8 +60,8 @@
 (def ^:private effect-handlers (executor/performers handle-event!))
 
 (defn- current-url-intent
-  "The resource's query as the address bar currently holds it. The only place this element reads
-  the address bar."
+  "The resource's query as the address bar currently holds it, the read half of the URL projection.
+  `executor/url-write!` is the write half."
   [resource-id]
   (url/parse-scoped-query (.-search js/location) resource-id))
 

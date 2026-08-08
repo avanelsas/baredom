@@ -5,7 +5,7 @@
             [barebuild.utils.url :as url]))
 
 (deftest build-scoped-url-reflects-the-new-params
-  (testing "the new params win — the URL reflects the mutation, not the stale value (regression)"
+  (testing "the new params win, the URL reflects the mutation, not the stale value (regression)"
     (is (= "/t?tasks.sort=owner"
            (url/build-scoped-url "?tasks.sort=STALE" "/t" {"tasks" {:sort "owner"}}))))
   (testing "only this resource's prefixed params are replaced; others are preserved"
