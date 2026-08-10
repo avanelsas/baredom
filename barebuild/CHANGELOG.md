@@ -20,6 +20,7 @@
 - A defect while delivering a response is reported as itself rather than as a network failure.
 - `normalize-headers` moves from the server-resource model to `barebuild.utils.request`, and the request pipeline moves to a new `barebuild.transport`.
 - Demo. The table page's tasks resource is named, so the project selector's targeted intent reaches it.
+- Demo. The dev-server echoes the whole rejected query rather than a rebuilt sort and direction, so a rejection with a search or page active reverts the URL as the contract says it should.
 
 ## 0.6.0
 

@@ -1,5 +1,5 @@
 ;; HTTP-level test for the dev-server: call the handler directly (no port bind)
-;; and assert the §6.5 envelope. Run with `bb run test:server`.
+;; and assert the envelope in docs/server-contract.md. Run with `bb run test:server`.
 (ns server-test
   (:require [clojure.test :refer [deftest is testing run-tests use-fixtures]]
             [clojure.string :as str]
@@ -16,11 +16,16 @@
 (defn- delete-raw [uri qs]
   (server/handler {:request-method :delete :uri uri :query-string qs}))
 
+;; The server reads a request body as a stream, exactly as httpkit hands it one, so the tests send
+;; one too rather than making the server accept a second body shape it never sees in production.
+(defn- body-stream [s]
+  (java.io.ByteArrayInputStream. (.getBytes ^String s "UTF-8")))
+
 (defn- post-raw [uri qs body]
-  (server/handler {:request-method :post :uri uri :query-string qs :body body}))
+  (server/handler {:request-method :post :uri uri :query-string qs :body (body-stream body)}))
 
 (defn- put-raw [uri qs body]
-  (server/handler {:request-method :put :uri uri :query-string qs :body body}))
+  (server/handler {:request-method :put :uri uri :query-string qs :body (body-stream body)}))
 
 (defn- record-json [m] (json/generate-string m))
 
@@ -69,7 +74,7 @@
     (is (true? (get-in by-key ["owner" :required])) "owner is required")
     (is (true? (get-in by-key ["status" :required])) "status is required")
     (is (= ["todo" "doing" "done"] (get-in by-key ["status" :enum])) "status carries its enum")
-    (is (nil? (get-in by-key ["end" :required])) "end is optional — no required key emitted")
+    (is (nil? (get-in by-key ["end" :required])) "end is optional, no required key emitted")
     (is (nil? (get-in by-key ["owner" :enum])) "owner has no enum")))
 
 (deftest empty-query-echoes-empty
@@ -82,7 +87,7 @@
     (is (= 40 (count titles)) "the full seeded set")
     (is (= (count titles) (count (distinct titles))) "every task has a unique title")))
 
-;; --- step 2a: sorting + normalized echo ------------------------------------
+;; --- sorting and the normalized echo ---------------------------------------
 
 (deftest sort-owner-ascending
   (let [[_ body] (get-json "/api/tasks" "sort=owner&direction=asc")]
@@ -106,7 +111,7 @@
     (is (= "asc" (get-in body [:query :direction])) "unknown direction coerced to asc")
     (is (non-decreasing? (owners body)))))
 
-;; --- step 3a: rejection ----------------------------------------------------
+;; --- rejection -------------------------------------------------------------
 
 (deftest unsupported-sort-field-is-rejected
   (let [[status body] (get-json "/api/tasks" "sort=bogus&direction=asc&requestId=r9")]
@@ -124,7 +129,20 @@
   (let [[_ body] (get-json "/api/tasks" "sort=owner")]
     (is (= "accepted" (:outcome body)) "a supported field is still accepted")))
 
-;; --- step 4a: paging -------------------------------------------------------
+;; The client adopts an accepted echo as the canonical intent and reverts the URL on a rejection
+;; only when the rejected echo is the query it asked for. An echo that drops or invents a key reads
+;; as a correction, so the whole query has to come back untouched.
+(deftest rejection-echoes-the-whole-query-unchanged
+  (let [[_ body] (get-json "/api/tasks" "search=audit&page=2&sort=bogus&direction=desc&requestId=r10")]
+    (is (= {:search "audit" :page "2" :sort "bogus" :direction "desc"} (:query body))
+        "every param the client sent comes back, and only those")))
+
+(deftest rejection-invents-no-query-key
+  (let [[_ body] (get-json "/api/tasks" "sort=bogus&requestId=r11")]
+    (is (= {:sort "bogus"} (:query body))
+        "a direction the client never sent is not added to the echo")))
+
+;; --- paging ----------------------------------------------------------------
 
 (deftest second-page-returns-second-slice
   (let [[_ body] (get-json "/api/tasks" "page=2")]
@@ -148,7 +166,7 @@
     (is (= {:sort "id" :direction "desc"} (:query body)) "page 1 omitted; sort echoed")
     (is (= (vec (range 40 30 -1)) (ids body)) "sorted by id desc, first page")))
 
-;; --- step 7a: search filtering + echo --------------------------------------
+;; --- search filtering and its echo -----------------------------------------
 
 (deftest search-filters-and-is-echoed
   (let [[_ body] (get-json "/api/tasks" "search=alice")]
@@ -271,7 +289,7 @@
     (is (= "accepted" (:outcome body)))
     (is (= {:project "p-1"} (:query body)) "the project term is echoed so it round-trips")
     (is (every? #(= "p-1" (:projectId %)) (:value body)) "only that project's tasks")
-    (is (> n 10) "more than one flat page's worth — the board read is not paged")
+    (is (> n 10) "more than one flat page's worth, so the board read is not paged")
     (is (= n (get-in body [:pageInfo :totalCount])) "every matching row is returned")
     (is (= 1 (get-in body [:pageInfo :totalPages])) "served as a single unpaged response")))
 
@@ -295,7 +313,7 @@
     (is (= "accepted" (:outcome body))
         "a flat-demo write with no project/assignee/rank is still accepted")))
 
-;; --- step 5a: failure fixtures + SSR boot -----------------------------------
+;; --- failure fixtures and the SSR boot page --------------------------------
 
 (deftest fixture-bad-outcome-is-unknown-outcome
   (let [[status body] (get-json "/api/tasks" "fixture=bad-outcome")]
@@ -340,7 +358,7 @@
   (is (= 404 (:status (get-raw "/dist/../server.clj" nil))) "no path traversal")
   (is (= 404 (:status (get-raw "/dist/nope.js" nil))) "missing file -> 404"))
 
-;; --- writes: delete (step W1a) ---------------------------------------------
+;; --- writes: delete --------------------------------------------------------
 
 (deftest delete-returns-post-mutation-envelope
   (let [resp (delete-raw "/api/tasks/7" "requestId=w-1")
@@ -396,7 +414,7 @@
     (is (str/includes? (get-in resp [:headers "access-control-allow-methods"]) "PATCH")
         "the preflight advertises PATCH for :move")))
 
-;; --- writes: create (step W3a) ---------------------------------------------
+;; --- writes: create --------------------------------------------------------
 
 (def ^:private new-task
   {"title" "Ship the release" "owner" "Zoe" "start" "2026-03-01" "end" "2026-03-10" "status" "todo"})
@@ -524,13 +542,13 @@
 (deftest create-with-blank-optional-end-is-accepted-and-reads-clean
   (let [resp (post-raw "/api/tasks" "requestId=w-c7" (record-json (assoc new-task "end" "")))
         body (json/parse-string (:body resp) true)]
-    (is (= "accepted" (:outcome body)) "end is optional — a blank end is not rejected")
+    (is (= "accepted" (:outcome body)) "end is optional, so a blank end is not rejected")
     (testing "the stored row's blank end normalizes to nil (JSON null), not \"\", so reads stay valid"
       (let [[_ after] (get-json "/api/tasks" "search=Zoe")
             row       (first (:value after))]
         (is (nil? (:end row)) "blank optional end stored as null")))))
 
-;; --- writes: update (step U1a) ---------------------------------------------
+;; --- writes: update --------------------------------------------------------
 
 (defn- update-rejection [uri request-id record]
   (let [resp (put-raw uri (str "requestId=" request-id) (record-json record))
@@ -596,7 +614,7 @@
     (is (string? (:message error)))
     (is (= "999" (get-in error [:details :id])) "details name the id that matched no row")
     (is (nil? (get-in error [:details :field]))
-        "no field is named — the record is fine, the target is not")))
+        "no field is named, since the record is fine and the target is not")))
 
 (deftest update-of-non-numeric-id-is-rejected
   (let [error (update-rejection "/api/tasks/abc" "w-u5" new-task)]
@@ -627,7 +645,7 @@
 ;; --- writes: the :move op (server-owned rank) ------------------------------
 
 (defn- patch-raw [uri qs body]
-  (server/handler {:request-method :patch :uri uri :query-string qs :body body}))
+  (server/handler {:request-method :patch :uri uri :query-string qs :body (body-stream body)}))
 
 (defn- project-tasks [project]
   (second (get-json "/api/tasks" (str "project=" project))))
@@ -682,7 +700,7 @@
                            "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
     (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
       (is (= "Renamed" (:title after)) "the edit applied")
-      (is (= before (:rank after)) "rank is server-owned — an update leaves it untouched"))))
+      (is (= before (:rank after)) "rank is server-owned, so an update leaves it untouched"))))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]
