@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Adds a collapse button to the dock header that folds the panel down to its title bar and back.
+
 ## 0.3.0
 
 Pins BareBuild 0.6.0, which splits `barebuild.utils` into three namespaces. The dock reads the URL projection from `barebuild.utils.url`. No change to the replay behaviour or to the dock itself.

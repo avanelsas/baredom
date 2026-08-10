@@ -58,14 +58,19 @@
 
   .transport { display: flex; align-items: center; gap: 0.2rem; }
   .transport x-slider { flex: 1 1 auto; display: block; }
-  .nav { flex: 0 0 auto; }
-  .transport .nav {
+  .nav {
+  flex: 0 0 auto;
   --x-button-padding-inline: 0.25rem;
   --x-button-height-md: 1.9rem;
   --x-button-ghost-bg-hover: rgba(127, 127, 127, 0.2);
   --x-button-ghost-bg-active: rgba(127, 127, 127, 0.32);
   }
   .nav svg { display: block; width: 15px; height: 15px; }
+
+  .head { display: flex; align-items: center; gap: 0.5rem; }
+  .head .title { flex: 1 1 auto; min-width: 0; }
+
+  .panel[data-collapsed]::part(body) { display: none; }
 
   .log {
   display: block;
@@ -101,10 +106,15 @@
 (def ^:private k-view "__brDockView")
 (def ^:private k-live-url "__brDockLiveUrl")
 
-(def ^:private svg-start "M6 6h2v12H6zm3.5 6l8.5 6V6z")
-(def ^:private svg-prev  "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z")
-(def ^:private svg-next  "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z")
-(def ^:private svg-end   "M6 18l8.5-6L6 6v12zM16 6v12h2V6z")
+(def ^:private attr-collapsed "data-collapsed")
+(def ^:private attr-label     "label")
+
+(def ^:private svg-start    "M6 6h2v12H6zm3.5 6l8.5 6V6z")
+(def ^:private svg-prev     "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z")
+(def ^:private svg-next     "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z")
+(def ^:private svg-end      "M6 18l8.5-6L6 6v12zM16 6v12h2V6z")
+(def ^:private svg-collapse "M6 13h12v-2H6z")
+(def ^:private svg-expand   "M12 15.5L5.5 9 7 7.5l5 5 5-5L18.5 9z")
 
 (defn- data-json [entries n]
   (if-let [d (label/detail-at entries n)]
@@ -120,6 +130,17 @@
   (if disabled?
     (du/set-attr! btn "disabled" "")
     (du/remove-attr! btn "disabled")))
+
+(defn- icon-svg [path]
+  (str "<svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='"
+       path "'/></svg>"))
+
+(defn- collapse-affordance
+  "What the collapse button offers next, given the panel's current state."
+  [collapsed?]
+  (if collapsed?
+    {:label "Expand panel"   :path svg-expand}
+    {:label "Collapse panel" :path svg-collapse}))
 
 (defn- make-item! [entries i]
   (let [^js item (.createElement js/document "x-timeline-item")]
@@ -151,6 +172,16 @@
       (du/remove-attr! badge "data-live"))
     (set! (.-textContent count-el) (str n " / " total))
     (set! (.-textContent event-el) (if event (label/event->label event) ""))))
+
+(defn- render-collapse! [refs collapsed?]
+  (let [^js panel (:panel refs)
+        ^js btn   (:collapse refs)
+        {:keys [label path]} (collapse-affordance collapsed?)]
+    (if collapsed?
+      (du/set-attr! panel attr-collapsed "")
+      (du/remove-attr! panel attr-collapsed))
+    (du/set-attr! btn attr-label label)
+    (set! (.-innerHTML btn) (icon-svg path))))
 
 (defn- render-log! [refs entries n]
   (let [^js timeline (:timeline refs)
@@ -223,23 +254,28 @@
   (and (not= (:n prev) n)
        (not (and (= (:n prev) (:total prev)) (= n total)))))
 
-(defn- render! [^js el refs entries n]
-  (let [total (count entries)
-        view  {:n n :total total}
-        prev  (du/getv el k-view)]
+(defn- render!
+  "Draw the dock for one position. `render-collapse!` runs before `render-log!`:
+   the log's scroll cannot land while the body is still display:none."
+  [^js el refs entries n]
+  (let [total      (count entries)
+        collapsed? (boolean (:collapsed? (du/getv el k-state)))
+        view       {:n n :total total :collapsed? collapsed?}
+        prev       (du/getv el k-view)]
     (when (not= view prev)
       (when (scrub-move? prev n total)
         (sync-url! el entries n total)
         (project! entries n))
       (du/setv! el k-view view)
       (render-status! refs entries n)
+      (render-collapse! refs collapsed?)
       (render-log! refs entries n)
       (render-data! refs entries n)
       (render-nav! refs n total)
       (render-slider! refs n total))))
 
 (defn- apply-at! [^js el refs entries n pinned?]
-  (du/setv! el k-state {:n n :pinned? pinned?})
+  (du/setv! el k-state (assoc (du/getv el k-state) :n n :pinned? pinned?))
   (render! el refs entries n))
 
 (defn- go! [^js el refs n]
@@ -248,19 +284,39 @@
         n'      (label/clamp n 0 total)]
     (apply-at! el refs entries n' (= n' total))))
 
-(defn- icon-svg [path]
-  (str "<svg viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='"
-       path "'/></svg>"))
+(defn- attr-markup
+  "One attribute as markup, separator included. An empty value renders bare."
+  [[name value]]
+  (if (= "" value)
+    (str " " name)
+    (str " " name "='" value "'")))
 
-(defn- nav-btn [cls aria path]
-  (str "<x-button class='nav " cls "' variant='ghost' aria-label='" aria "'>"
-       (icon-svg path)
-       "</x-button>"))
+(defn- nav-btn
+  "A ghost icon button. `attrs` is a name to value map of anything beyond the
+   shared ones, an empty value meaning a bare boolean attribute."
+  ([cls label path] (nav-btn cls label path {}))
+  ([cls label path attrs]
+   (str "<x-button class='nav " cls "' variant='ghost'"
+        (attr-markup [attr-label label])
+        (apply str (map attr-markup attrs))
+        ">"
+        (icon-svg path)
+        "</x-button>")))
+
+(defn- collapse-btn
+  "The collapse button in its starting state. `data-no-drag` keeps a press on it
+   from starting a panel drag."
+  []
+  (let [{:keys [label path]} (collapse-affordance false)]
+    (nav-btn "collapse" label path {"data-no-drag" ""})))
 
 (defn- markup []
   (str "<style>" styles "</style>"
        "<x-floating-panel class='panel' open label='BareReplay'>"
-       "<span slot='header'>BareReplay</span>"
+       "<div class='head' slot='header'>"
+       "<span class='title'>BareReplay</span>"
+       (collapse-btn)
+       "</div>"
        "<div class='body'>"
        "<div class='status'><span class='badge'></span><span class='count'></span></div>"
        "<div class='event'></div>"
@@ -291,7 +347,8 @@
    :start    (.querySelector root ".nav-start")
    :prev     (.querySelector root ".nav-prev")
    :next     (.querySelector root ".nav-next")
-   :end      (.querySelector root ".nav-end")})
+   :end      (.querySelector root ".nav-end")
+   :collapse (.querySelector root ".collapse")})
 
 (defn- position-top-right! [^js panel]
   (js/requestAnimationFrame
@@ -322,6 +379,13 @@
 (defn- current-n [^js el]
   (:n (du/getv el k-state)))
 
+(defn- toggle-collapsed!
+  "Flip the collapse fact and redraw from it, the same shape every other gesture
+   takes: move the state value, then let `render!` decide what the DOM owes it."
+  [^js el refs]
+  (du/setv! el k-state (update (du/getv el k-state) :collapsed? not))
+  (render! el refs (store/entries) (current-n el)))
+
 (defn- wire! [^js el ^js root]
   (let [refs (build-refs root)]
     (.addEventListener (:slider refs) "x-slider-input"
@@ -339,6 +403,7 @@
     (.addEventListener (:prev refs) "press" (fn [_] (go! el refs (dec (current-n el)))))
     (.addEventListener (:next refs) "press" (fn [_] (go! el refs (inc (current-n el)))))
     (.addEventListener (:end refs) "press" (fn [_] (go! el refs (count (store/entries)))))
+    (.addEventListener (:collapse refs) "press" (fn [_] (toggle-collapsed! el refs)))
     (position-top-right! (:panel refs))
     (go! el refs (count (store/entries)))
     (store/subscribe!
