@@ -1,16 +1,19 @@
 name: ci
 
 on:
-  # BareBuild (barebuild/) is a self-contained subproject with its own workflow
-  # (barebuild.yml). Ignore it here so BareDOM CI never runs on barebuild-only changes.
+  # BareBuild (barebuild/) and BareReplay (barereplay/) are self-contained subprojects
+  # with their own workflows (barebuild.yml, barereplay.yml). Both depend on BareDOM and
+  # neither is depended on by it, so BareDOM CI never needs to run on their changes.
   pull_request:
     branches: [main]
     paths-ignore:
       - 'barebuild/**'
+      - 'barereplay/**'
   push:
     branches: [main]
     paths-ignore:
       - 'barebuild/**'
+      - 'barereplay/**'
 
 concurrency:
   group: ci-${{ github.ref }}
