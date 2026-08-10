@@ -1,0 +1,71 @@
+name: barereplay
+
+# BareReplay is a self-contained subproject that only shares this repo for convenience.
+# BareDOM's ci.yml ignores barereplay/, so the two pipelines never trigger each other.
+#
+# Unlike barebuild.yml this workflow also runs on src/ and barebuild/src/ changes:
+# barereplay's shadow-cljs.edn compiles ../src and ../barebuild/src from source, so a
+# change upstream can break the replay build even though nothing under barereplay/ moved.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'barereplay/**'
+      - 'barebuild/src/**'
+      - 'src/**'
+      - '.github/workflows/barereplay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'barereplay/**'
+      - 'barebuild/src/**'
+      - 'src/**'
+      - '.github/workflows/barereplay.yml'
+
+concurrency:
+  group: barereplay-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  barereplay:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: 'latest'
+
+      - name: Setup clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.01.19
+          clj-kondo --version
+
+      - name: Install deps
+        working-directory: barereplay
+        run: npm ci
+
+      - name: Lint
+        working-directory: barereplay
+        run: clj-kondo --lint src test
+
+      - name: Unit tests (Node)
+        working-directory: barereplay
+        run: npm test
+
+      - name: Jar build
+        working-directory: barereplay
+        run: clojure -T:build jar
