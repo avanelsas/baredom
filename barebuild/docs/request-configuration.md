@@ -113,7 +113,7 @@ left to the browser, and your consumer's `on-failure` receives a `:network` fail
 
 A **write** that runs out of budget is followed by a re-read, because giving up on the response
 says nothing about whether the server committed. See
-[Writes](./authoring-a-consumer.md#writes-create--delete).
+[Writes](./authoring-a-consumer.md#writes).
 
 ## A request decorator
 

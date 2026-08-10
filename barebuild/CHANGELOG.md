@@ -3,6 +3,15 @@
 ## Unreleased
 
 - Breaking. A failure names its cause under `:cause` rather than under `:failure`. A consumer branching on the tag reads `(:cause failure)`.
+- Breaking. Every view hook is handed the whole view rather than its own slice. `:on-failure`, `:on-pending` and `:on-writing` take `(child view this)` as `:render` already did, and `:on-connect` takes `(child this)`. A hook's slice decides only when it fires, never what it may read.
+- Breaking. Every hook fires once on the first apply, whatever its slice holds, and only on movement after that. `:render` was the only one that used to get that first call, so write your hooks to be idempotent.
+- Breaking. `:observed-attributes` is gone from the `register!` config. A consumer drives its child from the view alone, so it observes none.
+- Breaking. The two host-app seams are `decorator/install!` and `recorder/install!`, replacing `set-request-decorator!` and `set-recorder!`. A value that is not callable is refused when it is registered rather than failing at every call site later.
+- Breaking. `barebuild.validation` exposes `validate-contract`, `validate-payload` and `conform-payload`. `validate-value-type` and `err` are no longer public.
+- Adds `validation/conform-payload`, the write-side entry point. It reads a record as its shape declares it before validating, so a number typed into a form is not reported as the wrong type.
+- Adds `:write` to the view, the write the resource last submitted and how it ended, with `consumer-resource/own-write?` to ask whether it was this consumer's. A write moves `:writing?` for every consumer the resource drives, so a form acting on that movement asks this first.
+- Adds `consumer-resource/view`, the view a consumer was last applied, for a gesture handler that fires from the DOM and is handed none.
+- Naming `:request-decorator` in `init` sets the hook to whatever the key holds, nil included, and leaving the key out leaves the installed one alone, so a second `init` does not silently drop it.
 - Fixes a read that outlived the disconnect that ordered its abort. A consumer that removes its host while being notified fires `disconnectedCallback` in the middle of the connect's own effects, and the abort that step emits now reaches the request rather than running before it was issued.
 - A member write arriving without the member to address is reported as `:member-write-without-id` rather than as an op the vocabulary lacks.
 - An envelope member of the wrong kind is reported as a protocol failure rather than as a server that could not be reached. A `shape` or `query` that is not an object, and a `fields` or `options` that is not a list, no longer end the request as a transport failure.
@@ -10,6 +19,7 @@
 - A field that declares no `type` is checked for presence only, as an absent `required` or `enum` constrains nothing.
 - A defect while delivering a response is reported as itself rather than as a network failure.
 - `normalize-headers` moves from the server-resource model to `barebuild.utils.request`, and the request pipeline moves to a new `barebuild.transport`.
+- Demo. The table page's tasks resource is named, so the project selector's targeted intent reaches it.
 
 ## 0.6.0
 

@@ -4,29 +4,32 @@ Two live showcases for [BareBuild](../README.md), both driving BareDOM component
 state over one shared backend. They exist to demonstrate the runtime. **They are not part of
 BareBuild itself** (`demo.*` namespaces).
 
-- **Table** (`index.html`). One `<server-resource>` driving five consumers: reads plus create,
-  edit and delete of a flat task list.
-- **Board** (`board.html`). A relational kanban board proving **two `<server-resource>`
-  elements coordinate through the URL**: pick a project and its board loads, drag a card to
-  another column, create a project, add a task.
+- **Table** (`index.html`). A flat task list with reads plus create, edit and delete, filtered
+  by a project selector that a second `<server-resource>` drives.
+- **Board** (`board.html`). A relational kanban board where a drag between columns is a **move**
+  write: pick a project and its board loads, drag a card, create a project, add a task.
 
 ## Disclaimer
 
 - The code for the BareBuild demos has been written by me.
 - I used Claude as a brainstorming tool to sharpen my thoughts and ideas, and to assist in writing the demo server needed to implement the BareBuild contract for the demos.
+- I used Claude to write tests, review the code, and help write some of the docs
 
 ## Table demo (`index.html`)
 
-One `<server-resource>` manages five independent **consumers**, each a thin element that
-projects the same server value onto a different component.
+Two `<server-resource>` elements, a **projects** one holding the selector and a **tasks** one
+holding the rest, drive seven independent **consumers**. Each consumer is a thin element that
+projects its resource's value onto a different component.
 
-| Consumer | Drives | Shows |
-|---|---|---|
-| `x-stat-consumer` | `x-stat` | total task count (a scalar) |
-| `x-progress-consumer` | `x-progress` | page position (bounded numeric, indeterminate while loading) |
-| `x-table-consumer` | `x-table` | the task list, with sortable columns, per-row edit and delete, and a dynamically created `x-pagination` |
-| `x-search-field-consumer` | `x-search-field` | a debounced free-text filter |
-| `x-task-form-consumer` | `x-modal` + `x-form` | create or edit a task, with the form fields validated against the `shape` the server sends |
+| Consumer | Resource | Drives | Shows |
+|---|---|---|---|
+| `x-project-selector-consumer` | projects | `x-select` | the project list. Selecting one filters the tasks resource through the URL |
+| `x-stat-consumer` | tasks | `x-stat` | total task count (a scalar) |
+| `x-progress-consumer` | tasks | `x-progress` | page position (bounded numeric, indeterminate while loading) |
+| `x-spinner-consumer` | tasks | `x-spinner` | reading or writing, from the `pending?` and `writing?` flags alone |
+| `x-table-consumer` | tasks | `x-table` | the task list, with sortable columns, per-row edit and delete, and a dynamically created `x-pagination` |
+| `x-search-field-consumer` | tasks | `x-search-field` | a debounced free-text filter |
+| `x-task-form-consumer` | tasks | `x-modal` + `x-form` | create or edit a task, with the form fields validated against the `shape` the server sends |
 
 Sort, page, filter, create, edit and delete all round-trip through the server, and the query
 lands in the URL. Invalid queries and network failures keep the last good view on screen.
@@ -35,8 +38,8 @@ lands in the URL. Invalid queries and network failures keep the last good view o
 
 Two `<server-resource>` elements share the page and the URL: a **projects** resource and a
 **tasks** resource. Each owns its own query namespace (`projects.*`, `tasks.*`), and consumers
-coordinate by naming a sibling rather than through a shared store. This is a relational case
-the table demo cannot show.
+coordinate by naming a sibling rather than through a shared store. It is the fuller relational
+case: the tasks are grouped into columns, and a drag between them is a move write.
 
 | Consumer | Resource | Drives | Shows |
 |---|---|---|---|

@@ -1,26 +1,25 @@
-# BareBuild — Architecture Diagram
+# BareBuild architecture
 
-A projection of server state into presentational BareDOM components, with writes running
-back through the same loop. Two custom elements (`<server-resource>`, `<x-table-consumer>`)
-sit between an independent JSON server and the visual `<x-table>`; the whole lifecycle is
-one pure `step` function whose only outputs are a next value and a list of effects executed
-at a decisionless edge.
+A projection of server state into presentational BareDOM components, with writes running back
+through the same loop. One shipped element, `<server-resource>`, sits between a JSON server and
+the consumers you write. The whole lifecycle is one pure `step` function whose only outputs are
+a next value and a list of effects, performed at a decisionless edge.
 
-Two figures: **Figure 1** is the whole picture (boxes = structure, arrows = data flow);
-**Figure 2** zooms into the pure `step` ↔ effects ↔ executor loop.
+Three figures. **Figure 1** is the whole picture, boxes for structure and arrows for data flow.
+**Figure 2** zooms into the pure loop. **Figure 3** is the consumer layer.
 
-## Figure 1 — Overview (structure + data flow)
+## Figure 1. Overview
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart TB
-  subgraph SERVER["bb dev-server (oracle · cheshire, independent JSON)"]
-    API["/api/tasks<br/>accepted | rejected envelope"]
-    BOOT["/demo/boot<br/>SSR embed (script/json)"]
+  subgraph SERVER["Your server (plain JSON, see the server contract)"]
+    API["endpoint<br/>accepted | rejected envelope"]
+    BOOT["SSR boot<br/>embedded envelope (script/json)"]
   end
 
   subgraph BROWSER["Browser"]
-    URL["URL query (tasks.*)<br/>+ history / popstate"]
+    URL["URL query (scoped to the resource id)<br/>+ history / popstate"]
   end
 
   subgraph SR["&lt;server-resource&gt;"]
@@ -29,67 +28,64 @@ flowchart TB
     EXEC["executor (run-effects!)<br/>decisionless edge"]
   end
 
-  subgraph CONS["&lt;x-table-consumer&gt;"]
-    PROJ["project<br/>accepted → view-model"]
+  subgraph CONS["Your consumer"]
+    PROJ["projection<br/>accepted → view data"]
     C2["Conversion 2: CLJS → DOM"]
   end
 
-  TABLE["&lt;x-table&gt; · &lt;x-table-cell&gt;<br/>x-pagination"]
+  COMP["The BareDOM component it drives"]
 
   URL -->|"connect / popstate: canonical url-intent"| STEP
   BOOT -->|"embedded envelope on load"| WIRE
-  EXEC -->|"fetch: GET /api/tasks?requestId=tasks:N + query"| API
-  EXEC -->|"write: POST /api/tasks · DELETE /api/tasks/:id"| API
+  EXEC -->|"fetch: GET endpoint?query + requestId"| API
+  EXEC -->|"write: POST · PUT · PATCH · DELETE"| API
   EXEC -.->|"abort: cancel in-flight"| API
   API -->|"JSON envelope: value · shape · query echo · requestId"| WIRE
-  API -->|"JSON ack: outcome · requestId · revision"| WIRE
   WIRE -->|"CLJS response, or protocol-failure marker"| STEP
   STEP -->|"effects: fetch · write · url-write · route-intent · notify · abort · diagnostic"| EXEC
   EXEC -->|"url-write: push/replaceState (scoped)"| URL
   EXEC -->|"notify-consumers: applyResource(view, ctx)"| PROJ
   PROJ --> C2
-  C2 -->|"x-table-row / x-table-cell children"| TABLE
-  TABLE -->|"x-table-cell-sort (direction) · page-request · delete"| CONS
+  C2 -->|"attributes and properties"| COMP
+  COMP -->|"gesture"| CONS
   CONS -->|"submit-intent! → :intent-patch"| STEP
   CONS -->|"submit-write! → :submit-write"| STEP
 ```
 
-**Arrow legend (the data that rides each edge):**
+**Arrow legend, the data that rides each edge:**
 
-- **URL → step** — on connect and on back/forward, `construct-url-intent` reads the
-  `tasks.*` params and `canonicalize-query`s them into the `:url-intent`.
-- **executor → server** — a `:fetch` effect becomes `GET /api/tasks?requestId=…&<query>`.
-  The request id is minted *inside* `step` and carried on the effect.
-- **executor → server (write)** — a `:write` effect becomes `POST /api/tasks` with the
-  record as its body, or `DELETE /api/tasks/:id`. The write id is minted in `step` the same
-  way the request id is.
-- **server → wire** — a plain JSON envelope (accepted: `outcome/requestId/revision/query/
-  value/shape/pageInfo`; rejected: `outcome/requestId/query/error`), or for a write a bare
-  ack (`outcome/requestId/revision`, plus `error` when rejected). The server emits it
-  independently (cheshire), never via BareBuild's bijection.
-- **wire → step** — Conversion 1 parses it to a CLJS `:response` value, or a
+- **URL to step.** On connect and on back or forward, the element reads the params its resource
+  id owns and `canonicalize-query`s them into the `:url-intent`.
+- **executor to server.** A `:fetch` effect becomes `GET endpoint?requestId=…&<query>`. The
+  request id is minted *inside* `step` and carried on the effect. A `:write` effect becomes the
+  method its op declares, with the record as its body when the op carries one, and its write id
+  is minted the same way.
+- **server to wire.** A plain JSON envelope. Accepted carries
+  `outcome/requestId/revision/query/value/shape/pageInfo`, rejected carries `error` instead of
+  `value` and `shape`. A write is answered with the same envelope.
+- **wire to step.** Conversion 1 parses it into a CLJS `:response` value, or into a
   `:protocol-failed` marker for a malformed envelope.
-- **step → executor** — the pure result: a next resource value plus effects as data.
-- **executor → URL** — a `:url-write` reflects the (adopted, normalized) query back into
-  the address bar via `build-scoped-url` + `history`.
-- **executor → consumer** — a `:notify-consumers` projects the resource into a view
-  (`:accepted :failure :intent :pending? :writing?`) and calls `applyResource` with it. The
-  machine's own bookkeeping never crosses this edge.
-- **consumer → x-table** — `project` builds a `{:columns :rows}` view-model; Conversion 2
-  renders it as `x-table-row`/`x-table-cell` children.
-- **x-table → consumer → step** — a sort/page gesture becomes an intent patch via
-  `translate-gesture` and re-enters `step` as `:intent-patch`. A delete gesture instead
-  becomes `{:op :delete :id …}` and re-enters as `:submit-write`; the ack triggers a
-  refetch, so the removed row disappears through the ordinary render path.
+- **step to executor.** The pure result. A next resource value plus effects as data.
+- **executor to URL.** A `:url-write` reflects the adopted, normalized query back into the
+  address bar with `build-scoped-url` and `history`.
+- **executor to consumer.** A `:notify-consumers` projects the resource into a view
+  (`:accepted :failure :intent :pending? :writing? :write`) and calls `applyResource` with it.
+  The runtime's own bookkeeping never crosses this edge.
+- **consumer to component.** Your projection builds whatever the component wants, and
+  Conversion 2 assigns it as attributes or properties.
+- **component to step.** A gesture becomes an intent patch and re-enters as `:intent-patch`, or
+  a write payload that re-enters as `:submit-write`.
 
-## Figure 2 — Zoom: the pure loop (`step` ↔ effects ↔ executor)
+The demo's table page is this diagram with `/api/tasks` and `x-table-consumer` filled in.
+
+## Figure 2. The pure loop
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart LR
   EVENTS["Events in (closed set)<br/><br/>:connected (embed)<br/>:intent-patch (query-patch, gesture-class, target-id)<br/>:intent-unroutable (resource/id)<br/>:url-changed (query)<br/>:response<br/>:protocol-failed<br/>:network-failed<br/>:submit-write<br/>:write-ack<br/>:write-failed<br/>:disconnected"]
 
-  STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count<br/>:resource/id · :endpoint · :history-policy"]
+  STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure · :last-write<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count<br/>:resource/id · :endpoint · :history-policy"]
 
   EFFECTS["Effects out (data)<br/><br/>:fetch (request/id, method, url)<br/>:write (write/id, method, url, headers, body)<br/>:url-write (params, mode)<br/>:route-intent (resource/id, patch)<br/>:notify-consumers (resource/id, view)<br/>:abort (request/id)<br/>:diagnostic (stale-*, unsupported-write)"]
 
@@ -101,56 +97,57 @@ flowchart LR
 
 **What the loop guarantees:**
 
-- **Pure vs edge.** Every decision lives in `step` and is visible in the returned
-  effects; the executor only performs them (fetch, write, history, notify, abort,
-  diagnostics). `step` is `=`-testable and replayable from an event log.
-- **Writes re-enter the same loop.** `submit-write!` → `:submit-write` → a `:write` effect;
-  the ack returns as `:write-ack` and schedules a refetch. `writing?` derives from
-  `:active-write` exactly as `pending?` derives from `:active-request`, and a stale ack is
-  dropped by the same id-match rule. Nothing is rendered optimistically, so no rollback
-  path exists to get wrong.
-- **One request in flight.** `start` mints a monotonic `:request/id` into
-  `:active-request`; `pending?`/`installable?` derive purely from the value. A response is
-  installed iff its id matches the live request; a gesture made mid-flight is picked up by
-  the single trailing fetch once the in-flight request clears.
-- **Two conversions only.** JSON↔CLJS at the network edge (`wire`, Figure 1 left) and
-  CLJS→DOM at the component edge (`x-table-consumer`, Figure 1 right). CLJS values in
-  between, because structural `=` is load-bearing.
+- **Pure versus edge.** Every decision lives in `step` and is visible in the returned effects.
+  The executor only performs them: fetch, write, history, notify, abort, diagnostics. `step` is
+  `=`-testable and replayable from an event log.
+- **Writes re-enter the same loop.** `submit-write!` becomes `:submit-write`, which becomes a
+  `:write` effect. The ack returns as `:write-ack`, and an accepted one carries the server's
+  full post-mutation state, which installs exactly as a read's response does. `writing?` derives
+  from `:active-write` exactly as `pending?` derives from `:active-request`, and a stale ack is
+  dropped by the same id-match rule. Nothing is rendered optimistically, so no rollback path
+  exists to get wrong.
+- **One request in flight.** `start` mints a monotonic `:request/id` into `:active-request`, and
+  `pending?` and `installable?` derive purely from the value. A response is installed only if
+  its id matches the live request. A gesture made mid-flight is picked up by the single trailing
+  fetch once the in-flight request clears.
+- **Two conversions only.** JSON to CLJS at the network edge (`wire`, Figure 1 left) and CLJS to
+  DOM at the component edge (the consumer, Figure 1 right). CLJS values in between, because
+  structural `=` is load-bearing.
 
-## Figure 3 — The consumer layer (one mechanism, many thin consumers)
+## Figure 3. The consumer layer
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart TB
   SR["&lt;server-resource&gt;<br/>notify-consumers → project → applyResource(view)"]
 
-  subgraph MECH["consumer-resource/register! — shared mechanism (one file)"]
+  subgraph MECH["consumer-resource/register!, the shared mechanism (one file)"]
     APPLY["applyResource<br/>child caching · submit-intent! · submit-write! · four change-guards"]
-    G1["render, on render-key slice of the view change"]
-    G2["on-failure, on :failure change (nil = recover)"]
-    G3["on-pending, on :pending? change"]
-    G4["on-writing, on :writing? change"]
+    G1["render, on the render-key slice of the view changing"]
+    G2["on-failure, on :failure changing (nil = recovered)"]
+    G3["on-pending, on :pending? changing"]
+    G4["on-writing, on :writing? changing"]
     APPLY --> G1
     APPLY --> G2
     APPLY --> G3
     APPLY --> G4
   end
 
-  subgraph TABLE["&lt;x-table-consumer&gt;"]
-    TR["render → rows/cells + pagination"]
-    TF["on-failure → x-alert"]
+  subgraph LIST["A list consumer"]
+    TR["render → rows and cells + pagination"]
+    TF["on-failure → an alert"]
     TP["on-pending → aria-busy + dim"]
     TG["gestures → submit-intent! · submit-write!"]
   end
 
-  subgraph FORM["&lt;x-task-form-consumer&gt;"]
+  subgraph FORM["A form consumer"]
     FR["render → populate fields from :shape"]
     FW["on-writing → disable submit · close on success"]
     FF["on-failure → field error from rejection details"]
-    FG["submit → validate · submit-write!"]
+    FG["submit → conform · submit-write!"]
   end
 
-  subgraph STAT["&lt;x-stat-consumer&gt;"]
+  subgraph STAT["A scalar consumer"]
     ST["render → value attr"]
     SP["on-pending → loading attr"]
   end
@@ -168,17 +165,17 @@ flowchart TB
   FG -->|":submit-write"| SR
 ```
 
-**The de-complect.** Every consumer braids three concerns; the mechanism owns one and each
+**The de-complect.** Every consumer braids three concerns. The mechanism owns one and each
 consumer owns the other two:
 
-- **Mechanism** (`consumer_resource.cljs`) — *how a consumer is driven*: the `applyResource`
+- **Mechanism** (`consumer_resource.cljs`), *how a consumer is driven*: the `applyResource`
   install, the four change-guards, child caching, intent and write submission. Written once.
-- **Calculation** (each `model.cljs`) — *resource → view data*: pure, node-tested projection.
-- **Effect** (each element file) — *view data → DOM*: the
-  `render`/`on-failure`/`on-pending`/`on-writing` hooks, all `(child view this)`, each handed the
-  whole view and told apart only by the slice whose movement fires it.
+- **Calculation** (each `model.cljs`), *resource to view data*: a pure, node-tested projection.
+- **Effect** (each element file), *view data to DOM*: the `render`, `on-failure`, `on-pending`
+  and `on-writing` hooks, all `(child view this)`, each handed the whole view and told apart
+  only by the slice whose movement fires it.
 
-Adding a component is therefore a projection plus a render fn (plus optional hooks) — the
-mechanism is untouched. x-stat (scalar, display-only), x-table (list, gestures, failure UI,
-pagination) and x-task-form (writes, validation, modal lifecycle) span that range, driven by
-the same core.
+Adding a component is therefore a projection plus a render fn, plus optional hooks. The
+mechanism is untouched. A scalar, a list with gestures and failure UI, and a form with writes
+and validation span that range, driven by the same core. To write one, see
+[authoring a consumer](./authoring-a-consumer.md).
