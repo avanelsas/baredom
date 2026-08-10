@@ -186,17 +186,35 @@
                         (update-vals (reconstruct/resources-at entries n)
                                      (comp :url-intent :value))))
 
+(def url-changed-event
+  "Dispatched on window after the dock rewrites the address bar, so anything drawing URL-derived
+  state can re-read it. A consumer cannot learn this from its own resource: a render-key names
+  facts the view carries, and a scrub that only moves the url moves no view. Deliberately not a
+  popstate, which <server-resource> answers with a live refetch."
+  "barereplay-url-changed")
+
+(defn- replace-url!
+  "Rewrite the address bar and tell the page it moved."
+  [href]
+  (.replaceState js/history nil "" href)
+  (.dispatchEvent js/window (js/CustomEvent. url-changed-event)))
+
+(defn- restore-live-url!
+  "Put the url the replay borrowed back, if it is still holding one."
+  [^js el]
+  (when-let [saved (du/getv el k-live-url)]
+    (replace-url! saved)
+    (du/setv! el k-live-url nil)))
+
 (defn- sync-url!
   "Update the URL during a replay. If n>=total we are back at the live url."
   [^js el entries n total]
   (if (>= n total)
-    (when-let [saved (du/getv el k-live-url)]
-      (.replaceState js/history nil "" saved)
-      (du/setv! el k-live-url nil))
+    (restore-live-url! el)
     (do
       (when-not (du/getv el k-live-url)
         (du/setv! el k-live-url (str (.-pathname js/location) (.-search js/location))))
-      (.replaceState js/history nil "" (reconstructed-url entries n)))))
+      (replace-url! (reconstructed-url entries n)))))
 
 (defn- scrub-move?
   "True when the step moved to a real replay position, not merely the live tail advancing
@@ -336,9 +354,7 @@
     (wire! el root)))
 
 (defn- disconnected! [^js el]
-  (when-let [saved (du/getv el k-live-url)]
-    (.replaceState js/history nil "" saved)
-    (du/setv! el k-live-url nil))
+  (restore-live-url! el)
   (store/unsubscribe!))
 
 (def ^:private element-opts
