@@ -91,7 +91,8 @@ surfaces the error.
 
 ## Write acks
 
-A create, update or delete answers on the same two-outcome envelope as a read, always HTTP 200.
+A create, update, move or delete answers with the same two-outcome envelope as a read, always
+HTTP 200.
 
 ### Accepted: The server performed the write
 
@@ -120,8 +121,8 @@ update of an id that no longer exists is the common case. Send what identifies t
 instead (e.g. `{"id": "42"}`). A consumer that finds no matching input surfaces the message
 as a banner rather than silently discarding it.
 
-Business rules the client cannot know : "end date must not precede start date", uniqueness,
-authorization, belong here as a rejected ack. The client's local validation
+Business rules the client cannot know belong here as a rejected ack. "End date must not precede
+start date", uniqueness, authorization. The client's local validation
 (see [The shape](#the-shape)) is only a faster UX. The server is the authority.
 
 ## The shape

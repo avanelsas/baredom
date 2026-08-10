@@ -1,19 +1,20 @@
 # Authoring a resource consumer
 
 A **consumer** is a thin custom element that renders a `<server-resource>`'s value into a
-presentational BareDOM component. You write two small pieces. A pure projection and a
-render function, and register with `consumer-resource/register!`. The shared mechanism
-supplies everything else: the `applyResource` method, the change-guards, child caching, and
-gesture submission.
+presentational BareDOM component. You write two small pieces, a pure projection and a render
+function, and register them with `consumer-resource/register!`. The shared mechanism supplies
+everything else: the `applyResource` method, the change-guards, child caching, and gesture
+submission.
 
 The value your projection reads is the accepted server envelope, carried on the view described
 below. Its exact shape is the [server contract](./server-contract.md).
 
 ## What BareBuild provides, what you write
 
-BareBuild ships the runtime and the consumer mechanism, plus two pure validators you can lean
-on: accepted values are contract-checked automatically upstream (you never call it), and
-`validation/validate-payload` checks a write payload against the shape before you submit.
+BareBuild ships the runtime and the consumer mechanism, plus two pure validators. Accepted
+values are contract-checked automatically upstream, which you never call yourself, and
+`validation/conform-payload` reads a write payload as the shape declares it and reports what
+does not fit, before you submit.
 
 It does not ship a generic projection or formatter layer. There is no built-in `project`,
 `format-vm`, or formatter registry. Turning an accepted value into what the component wants,
@@ -251,12 +252,12 @@ A gesture is only submittable once the host has booted, which it does after ever
 element inside it is defined. Your listeners are live before that, so a gesture fired in the
 gap is reported to the console and dropped rather than thrown out of your handler.
 
-`:gesture-class` is `:refinement` (-> replace history) or `:navigation` (-> push history);
+`:gesture-class` is `:refinement` (-> replace history) or `:navigation` (-> push history), and
 `step` resolves it to a URL-write mode. This mapping is fixed: a `:navigation` gesture pushes a
 history entry, everything else replaces. It is not configurable per resource. Display-only
 consumers have no gestures.
 
-## Writes (create / delete)
+## Writes
 
 A write is the same shape of gesture, submitted with `submit-write!` instead:
 
@@ -266,11 +267,20 @@ A write is the same shape of gesture, submitted with `submit-write!` instead:
     (consumer-resource/submit-write! consumer {:op :delete :id 42})))
 ```
 
-The payload is `{:op :delete :id <id>}` or `{:op :create :record {…}}`, where `record` is a
-map keyed by the **shape's field keys** (opaque domain strings, not keywords). `step` turns
-it into a `:write` effect. The ack comes back as `:write-ack`. An accepted ack already carries
-the server's new collection state (value + shape), which step installs directly, so no separate
-refetch is issued. You never render a write's result yourself. It arrives on the view's
+Four ops, each one payload. `record` is a map keyed by the **shape's field keys** (opaque
+domain strings, not keywords), and `id` is the value of the row's `idKey`:
+
+| Op | Payload | Request |
+|---|---|---|
+| `:create` | `{:op :create :record {…}}` | `POST <endpoint>` |
+| `:update` | `{:op :update :id <id> :record {…}}` | `PUT <endpoint>/<id>`, a full replace of every field the shape declares |
+| `:move` | `{:op :move :id <id> :record {"status" … "index" …}}` | `PATCH <endpoint>/<id>`, a positional command carrying only the destination |
+| `:delete` | `{:op :delete :id <id>}` | `DELETE <endpoint>/<id>` |
+
+`step` turns the payload into a `:write` effect, and the ack comes back as `:write-ack`. An
+accepted ack already carries the server's new collection state (value + shape), which `step`
+installs directly, so no separate refetch is issued. You never render a write's result
+yourself. It arrives on the view's
 `:accepted` and reaches you through `render` like any other accepted value. Writes never touch
 the URL.
 
@@ -286,14 +296,18 @@ about whether a write committed, so the report survives the refetch that follows
 failure UI stays up until something actually answers it: a later write that succeeds, or the
 user dismissing it. A read succeeding only retires a `:read` failure.
 
-Validate a create payload before submitting, against the shape the server sent:
+Conform a create payload before submitting, against the shape the server sent:
 
 ```clojure
-(let [errors (validation/validate-payload record shape)]
+(let [{:keys [record errors]} (validation/conform-payload form-values shape)]
   (if (seq errors)
     (doseq [{:keys [field message]} errors] (.setFieldError form field message))
     (consumer-resource/submit-write! consumer {:op :create :record record})))
 ```
+
+`conform-payload` returns the record to send and the errors to show. It reads each value as
+the type its field declares first, so a number typed into a form arrives as a number rather
+than being reported as the wrong type.
 
 Each error is `{:field :code :message}` with `:code` one of `:missing-required`,
 `:wrong-type`, `:not-in-enum`. This is a UX shortcut only. The server re-validates and is
@@ -323,18 +337,18 @@ One `<server-resource>` fans out to any number of consumers.
 
 ## Worked examples
 
-**Minimal — `x-stat-consumer`** (display-only scalar): `project-stat` (model) + a `render-key`
+**Minimal, `x-stat-consumer`** (display-only scalar): `project-stat` (model) + a `render-key`
 naming that same projection + a one-line `render!` (set the `value` attr). ~15 lines.
 
 **Flags only, `x-spinner-consumer`**: no model projection and no `render!`. `on-pending` and
 `on-writing` share one handler that shows the spinner while the resource is reading or writing.
 The one to copy for a consumer that draws no server data.
 
-**Full — `x-table-consumer`**: `accepted-response->view-model` + gesture translators (model);
-`render!` (build `x-table-row`/`x-table-cell` children + pagination), `on-failure!` (an
+**Full, `x-table-consumer`**: `accepted-response->view-model` + gesture translators (model),
+then `render!` (build `x-table-row`/`x-table-cell` children + pagination), `on-failure!` (an
 `x-alert`), sort/page gestures via `submit-intent!`, and row delete via `submit-write!`.
 
-**Writing — `x-task-form-consumer`**: populates an `x-form` from the shape, validates the
+**Writing, `x-task-form-consumer`**: populates an `x-form` from the shape, conforms the
 payload locally, submits with `submit-write!`, uses `on-writing!` to disable the submit
 button and close the modal on success, and `on-failure!` to map a server rejection back onto
 the offending field.
@@ -343,5 +357,5 @@ the offending field.
 project is selected, so its `render-key` names both and its empty gate reads `(:project intent)`
 rather than the URL. It is the reference for a component whose view is not server data alone.
 
-All three are driven by the same 70-line `consumer_resource.cljs`. The difference between
+All of them are driven by the same single `consumer_resource.cljs`. The difference between
 them is exactly their projection and their hooks.
