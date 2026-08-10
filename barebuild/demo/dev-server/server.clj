@@ -101,11 +101,80 @@
 (def ^:private user-ids (mapv :id users))
 (def ^:private project-ids (mapv :id initial-projects))
 
-(defn- user-name [id]
-  (some #(when (= (:id %) id) (:name %)) users))
+(defn- name-index
+  "The id to display-name index of a related collection."
+  [rows]
+  (into {} (map (juxt :id :name)) rows))
 
-(defn- project-name [id]
-  (some #(when (= (:id %) id) (:name %)) @projects))
+(def ^:private user-names (name-index users))
+
+;; --- rank: the server-owned position within a column -----------------------
+;; Rank is a card's position within its (projectId, status) column and it belongs to the server, so
+;; the client never sends it in a record. Every mutation that adds a row, removes one, or moves one
+;; between columns ends by re-densing the columns it touched, so ranks stay a clean 0..n-1.
+
+(defn- task-by-id
+  "The row whose id is `id`, or nil when the set holds none."
+  [ts id]
+  (some #(when (= (:id %) id) %) ts))
+
+(defn- replace-row
+  "`ts` with the row whose id is `id` replaced by `row`. An id matching no row leaves the set
+  untouched."
+  [ts id row]
+  (mapv (fn [t] (if (= (:id t) id) row t)) ts))
+
+(defn- column-of
+  "The (projectId, status) column a task lives in. Rank is dense within it."
+  [t]
+  [(:projectId t) (:status t)])
+
+(defn- column-members
+  "The tasks in column `col`, in rank order."
+  [ts col]
+  (->> ts (filter #(= (column-of %) col)) (sort-by :rank) vec))
+
+(defn- insert-at
+  "`xs` with `x` inserted at index `i`, clamped to the ends."
+  [xs x i]
+  (let [i (max 0 (min (count xs) (int i)))]
+    (vec (concat (subvec xs 0 i) [x] (subvec xs i)))))
+
+(defn- dense-ranks
+  "`ts` with every task in column `col` renumbered 0..n-1, in the order `ordered` gives."
+  [ts col ordered]
+  (let [rank-of (into {} (map-indexed (fn [idx t] [(:id t) idx]) ordered))]
+    (mapv (fn [t] (if (= (column-of t) col) (assoc t :rank (rank-of (:id t))) t)) ts)))
+
+(defn- place-and-dense
+  "Renumber column `col` to a dense 0-based sequence. When `place-id` names a task in the column it
+  is inserted at `place-rank` instead of at its stored rank, which is how a dropped card lands where
+  it was released. With no `place-id` the stored order is kept, which is what closes the gap in a
+  column a card has left."
+  [ts col place-id place-rank]
+  (let [members (column-members ts col)
+        placed  (some #(when (= (:id %) place-id) %) members)
+        ordered (if placed
+                  (insert-at (filterv #(not= (:id %) place-id) members) placed place-rank)
+                  members)]
+    (dense-ranks ts col ordered)))
+
+(defn reindex-columns
+  "After task `id` has landed in a new place, re-dense its destination column, placing the task at
+  its requested rank, and its old column, closing the gap it left behind."
+  [ts id old-col]
+  (let [moved    (task-by-id ts id)
+        dest-col (column-of moved)]
+    (cond-> (place-and-dense ts dest-col id (:rank moved))
+      (not= old-col dest-col) (place-and-dense old-col nil nil))))
+
+(defn- append-rank
+  "The next rank at the bottom of column `col`: one past the current max, or 0 for an empty column.
+  A card that arrives in a column it was not in lands below the others, and rank stays server-owned,
+  minted here rather than sent by the client."
+  [ts col]
+  (let [ranks (->> ts (filter #(= (column-of %) col)) (keep :rank))]
+    (if (seq ranks) (inc (reduce max ranks)) 0)))
 
 (defn- gen-task
   "Deterministic demo task for 1-based id `i`. `projectId` runs on a different cycle from `status`
@@ -124,15 +193,10 @@
      :assigneeId (nth user-ids (mod (dec i) (count user-ids)))}))
 
 (defn- seed-ranks
-  "Assign a dense 0-based rank to each task within its (projectId, status) column, by id order, then
-  restore the set's natural id order. Rank places a card within its board column and the server owns
-  it."
+  "Assign a dense 0-based rank to each task within its column. The seed arrives in id order and
+  re-densing keeps the order it finds, so re-densing every column is the whole job."
   [ts]
-  (->> (vals (group-by (juxt :projectId :status) ts))
-       (mapcat (fn [group]
-                 (map-indexed (fn [idx t] (assoc t :rank idx)) (sort-by :id group))))
-       (sort-by :id)
-       vec))
+  (reduce (fn [acc col] (place-and-dense acc col nil nil)) ts (distinct (map column-of ts))))
 
 ;; 40 rows so pagination is worth demoing. The set is mutable server state, so it lives in an atom.
 ;; This is honest backend state rather than a BareBuild value: the stateless rule governs the client
@@ -161,9 +225,20 @@
             {:key "status" :type "string" :required true :enum statuses
              :options (mapv (fn [s] {:value s :label (status-labels s)}) statuses)}]})
 
-;; Fields the server can sort by, derived from the shape (id-key plus display fields).
+;; Fields the server can sort by, derived from the shape (id-key plus display fields). Each maps to
+;; the row key it reads, so the whitelist and the accessor are one value and cannot drift.
 (def ^:private sortable-fields
-  (into #{(:idKey tasks-shape)} (map :key (:fields tasks-shape))))
+  (into {} (map (fn [k] [k (keyword k)]))
+        (cons (:idKey tasks-shape) (map :key (:fields tasks-shape)))))
+
+;; Declared fields the search does not scan. `est` holds a number, and a substring match against a
+;; number answers a text search with arithmetic coincidences.
+(def ^:private unsearchable-fields #{"est"})
+
+;; Fields the search scans, derived from the shape like the sortable ones rather than restated, so a
+;; field is searchable the day it is declared.
+(def ^:private searchable-fields
+  (into [] (comp (map :key) (remove unsearchable-fields) (map keyword)) (:fields tasks-shape)))
 
 ;; --- paging ----------------------------------------------------------------
 
@@ -173,16 +248,16 @@
   "Pages needed to hold `n` rows, at least 1. `n` is the count of the set actually being served,
   which is the full task set or the subset a search narrowed it to."
   [n]
-  (max 1 (int (Math/ceil (/ n (double page-size))))))
+  (max 1 (quot (+ n page-size -1) page-size)))
 
 (defn- parse-page
   "1-based page number from `params`, clamped to [1, tp]. Absent or non-numeric yields 1. `tp` is
   the total-pages of the set being served, so a search that narrows the set to fewer pages clamps an
   out-of-range page down."
   [params tp]
-  (let [raw (get params "page")
-        n   (if raw (try (Integer/parseInt raw) (catch Exception _ 1)) 1)]
-    (-> n (max 1) (min tp))))
+  (-> (or (some-> (get params "page") parse-long) 1)
+      (max 1)
+      (min tp)))
 
 (defn- paginate
   "The page-size slice of `ts` for 1-based `page`."
@@ -205,8 +280,8 @@
   (if term
     (let [needle (str/lower-case term)]
       (filterv (fn [t]
-                 (some (fn [v] (str/includes? (str/lower-case (str v)) needle))
-                       ((juxt :title :owner :start :end :status) t)))
+                 (some (fn [k] (str/includes? (str/lower-case (str (get t k))) needle))
+                       searchable-fields))
                ts))
     ts))
 
@@ -224,43 +299,47 @@
 
 ;; --- query handling --------------------------------------------------------
 
-(defn normalize-query
-  "Canonicalize the raw query into what the server actually honors. Single source of truth, since
-  `accepted-envelope` applies it and echoes it, so the echo can never drift.
-
-  A non-blank `search` term is kept, which is the reason `tp` is threaded in: a narrowed set clamps
-  `page` and echoes the clamped value. A valid `sort` field is kept with a `direction` that defaults
-  to \"asc\", so any value other than \"desc\" is coerced to \"asc\". An absent or unknown sort
-  yields no sort keys. `page` is echoed only when it is not the default page 1, kept as a string
-  because the URL's value domain is strings."
-  [params tp]
-  (let [sort (get params "sort")
-        term (search-term params)
-        proj (project-term params)
-        page (parse-page params tp)]
+(defn resolve-query
+  "Everything the server honors from a raw query, read once, as one value: the project and search
+  filters, and the sort field with its direction. A valid `sort` field is kept with a `direction`
+  that defaults to \"asc\", so any value other than \"desc\" is coerced to \"asc\", and an absent or
+  unknown sort yields no sort keys. The page is not here, since clamping it needs the count of the
+  narrowed set, so the caller completes the value with :page once it has filtered."
+  [params]
+  (let [proj  (project-term params)
+        term  (search-term params)
+        field (get params "sort")]
     (cond-> {}
       proj
-      (assoc "project" proj)
+      (assoc :project proj)
 
       term
-      (assoc "search" term)
+      (assoc :search term)
 
-      (contains? sortable-fields sort)
-      (assoc "sort" sort
-             "direction" (if (= "desc" (get params "direction")) "desc" "asc"))
+      (contains? sortable-fields field)
+      (assoc :sort field
+             :direction (if (= "desc" (get params "direction")) "desc" "asc")))))
 
-      (> page 1)
-      (assoc "page" (str page)))))
+(defn echo-query
+  "The URL projection of a resolved query: the client's own string keys, and string values, because
+  the URL's value domain is strings. The default page 1 is omitted, since the URL carries no page for
+  it. The client adopts this echo as its canonical intent, so it is a projection of the same value
+  the server filtered and sorted by rather than a second reading of the request."
+  [{:keys [project search sort direction page] :or {page 1}}]
+  (cond-> {}
+    project    (assoc "project" project)
+    search     (assoc "search" search)
+    sort       (assoc "sort" sort "direction" direction)
+    (> page 1) (assoc "page" (str page))))
 
 (defn sort-tasks
-  "Order the task set per a normalized query. Ties break on :id so the order is deterministic. An
-  empty query leaves the natural id order untouched."
-  [ts nq]
-  (if-let [field (get nq "sort")]
-    (let [asc (sort-by (juxt (keyword field) :id) ts)]
-      (if (= "desc" (get nq "direction"))
-        (vec (reverse asc))
-        (vec asc)))
+  "Order the task set per a resolved query. Ties break on :id so the order is deterministic, and a
+  descending sort reverses that tie-break along with the rest. An empty query leaves the natural id
+  order untouched."
+  [ts {:keys [sort direction]}]
+  (if-let [k (sortable-fields sort)]
+    (let [asc (vec (sort-by (juxt k :id) ts))]
+      (if (= "desc" direction) (vec (rseq asc)) asc))
     ts))
 
 ;; --- rejection -------------------------------------------------------------
@@ -327,53 +406,62 @@
 (defn- json-response [status body]
   (response status "application/json" (json/generate-string body)))
 
+(defn- not-found
+  "The 404, one value, since both the static path and the handler's fallthrough answer with it."
+  [uri]
+  (json-response 404 {:error "not-found" :uri uri}))
+
 (defn- raw-json-response
   "A response whose body is a literal string, so a fixture can send a body that is deliberately not
   a valid envelope, or not even valid JSON."
   [status body-string]
   (response status "application/json" body-string))
 
-(defn- denormalize-task
-  "Add the server-owned display names for a task's user and project references, so a consumer renders
-  a name without joining across resources. A nil reference yields a nil name, and the presentation
-  layer decides any fallback."
-  [t]
-  (assoc t
-         :assigneeName (user-name (:assigneeId t))
-         :projectName  (project-name (:projectId t))))
+(defn- denormalize
+  "`rows` with the server-owned display names for each task's user and project references added, so a
+  consumer renders a name without joining across resources. A nil reference yields a nil name, and
+  the presentation layer decides any fallback. The project index is built once per response, so every
+  row in one response reads one snapshot of a collection a concurrent create can grow."
+  [rows]
+  (let [project-names (name-index @projects)]
+    (mapv (fn [t]
+            (assoc t
+                   :assigneeName (user-names (:assigneeId t))
+                   :projectName  (project-names (:projectId t))))
+          rows)))
 
 (defn accepted-envelope
   "Build the complete accepted envelope for the task set `ts`. Rows are filtered by project for board
   reads and by the search term, then sorted, then sliced to the requested page for the flat view. A
   `?project=` read is the whole column set unpaginated, because a board places every card and paging
-  it would hide some. The query echo is the server-normalized query and `pageInfo` reflects the
-  filtered set. Each returned row carries its denormalized user and project names."
+  it would hide some. The query echo is the resolved query projected back onto the URL, and
+  `pageInfo` reflects the filtered set. Each returned row carries its denormalized user and project
+  names."
   [ts params]
-  (let [proj     (project-term params)
-        term     (search-term params)
-        filtered (-> (filter-by-project ts proj)
-                     (filter-tasks term))
-        paged?   (nil? proj)
+  (let [{:keys [project search] :as resolved} (resolve-query params)
+        filtered (-> (filter-by-project ts project)
+                     (filter-tasks search))
+        paged?   (nil? project)
         tp       (if paged? (total-pages (count filtered)) 1)
-        nq       (normalize-query params tp)
-        page     (parse-page params tp)
-        sorted   (sort-tasks filtered nq)
-        rows     (if paged? (paginate sorted page) sorted)]
+        q        (assoc resolved :page (parse-page params tp))
+        sorted   (sort-tasks filtered q)
+        rows     (if paged? (paginate sorted (:page q)) sorted)]
     {:outcome   "accepted"
      :requestId (request-id params)
      :revision  tasks-revision
-     :query     nq
-     :value     (mapv denormalize-task rows)
+     :query     (echo-query q)
+     :value     (denormalize rows)
      :shape     tasks-shape
-     :pageInfo  {:page       (if paged? page 1)
+     :pageInfo  {:page       (:page q)
                  :pageSize   (if paged? page-size (count rows))
                  :totalPages tp
                  :totalCount (count filtered)}}))
 
 (defn collection-envelope
   "The read envelope for a small related collection such as users or projects: the full set, with no
-  paging, search or sort. The same accepted shape as tasks, so one consumer mechanism drives all."
-  [params rev rows shape]
+  paging, search or sort. The same accepted shape as tasks, and the same argument order, the rows it
+  answers with first, so one consumer mechanism drives all."
+  [rows params rev shape]
   {:outcome   "accepted"
    :requestId (request-id params)
    :revision  rev
@@ -381,6 +469,21 @@
    :value     rows
    :shape     shape
    :pageInfo  {:page 1 :pageSize (count rows) :totalPages 1 :totalCount (count rows)}})
+
+(defn- users-envelope [rows params]
+  (collection-envelope rows params users-revision users-shape))
+
+(defn- projects-envelope [rows params]
+  (collection-envelope rows params projects-revision projects-shape))
+
+;; --- the read vocabulary, as data ------------------------------------------
+;; A related collection answers a GET with its whole set and nothing else, so it is a row: the uri it
+;; answers and the envelope that answers it. /api/tasks is not here, since its read carries the
+;; paging, sorting, rejection and failure fixtures the small collections have no notion of.
+
+(def ^:private read-ops
+  {"/api/users"    (fn [params] (users-envelope users params))
+   "/api/projects" (fn [params] (projects-envelope @projects params))})
 
 ;; --- writes: acks ----------------------------------------------------------
 
@@ -390,8 +493,8 @@
 
 (defn write-rejected-ack
   "The rejected write ack: the envelope head plus a structured error of code, message and details.
-  Still HTTP 200, because the outcome carries the verdict. `details` names the offending field so
-  the client can map it back onto the form."
+  Still HTTP 200, because the outcome carries the verdict. The `error` it is handed names the
+  offending field in its `details`, so the client can map the rejection back onto the form."
   [params error rev]
   {:outcome   "rejected"
    :requestId (request-id params)
@@ -400,23 +503,14 @@
 
 ;; --- writes: delete --------------------------------------------------------
 
-(defn- task-id-str
-  "The raw `:id` segment of `/api/tasks/:id`. An update echoes it back in a not-found rejection so
-  the message names what the client asked for, numeric or not."
-  [uri]
-  (subs uri (count "/api/tasks/")))
-
-(defn- task-id-from-uri
-  "The 1-based id in `/api/tasks/:id`, or nil when the tail is not an integer. A nil id simply
-  matches no row, which keeps delete a no-op rather than an error."
-  [uri]
-  (try (Long/parseLong (task-id-str uri)) (catch Exception _ nil)))
-
 (defn delete-task
-  "Drop the row whose id is `id` from `ts`. Idempotent, since an absent id leaves the set unchanged
-  and the outcome it promises already holds."
+  "Drop the row whose id is `id` from `ts` and close the gap it leaves, so the column it left keeps
+  its dense ranks. Idempotent, since an absent id leaves the set unchanged and the outcome it
+  promises already holds."
   [ts id]
-  (filterv #(not= (:id %) id) ts))
+  (if-let [gone (task-by-id ts id)]
+    (place-and-dense (filterv #(not= (:id %) id) ts) (column-of gone) nil nil)
+    ts))
 
 ;; --- writes: create and update ---------------------------------------------
 
@@ -426,7 +520,7 @@
   (when-let [b (:body req)]
     (json/parse-string (slurp b))))
 
-(defn- blank?
+(defn- unfilled?
   "nil or a blank string, the server's notion of an unfilled field."
   [v]
   (or (nil? v) (and (string? v) (str/blank? v))))
@@ -455,17 +549,17 @@
   (some (fn [{:keys [key type required enum]}]
           (let [v (get record key)]
             (cond
-              (and required (blank? v))
+              (and required (unfilled? v))
               {:code    "missing-required"
                :message (str "\"" key "\" is required.")
                :details {:field key}}
 
-              (and (not (blank? v)) (not (type-ok? type v)))
+              (and (not (unfilled? v)) (not (type-ok? type v)))
               {:code    "invalid-type"
                :message (str "\"" key "\" is not a valid " type ".")
                :details {:field key}}
 
-              (and enum (not (blank? v)) (not (contains? (set enum) v)))
+              (and enum (not (unfilled? v)) (not (some #{v} enum)))
               {:code    "invalid-value"
                :message (str "\"" key "\" must be one of: " (str/join ", " enum) ".")
                :details {:field key}})))
@@ -478,12 +572,12 @@
   [record]
   (let [start (get record "start")
         end   (get record "end")]
-    (when (and (not (blank? start)) (not (blank? end)) (neg? (compare end start)))
+    (when (and (not (unfilled? start)) (not (unfilled? end)) (neg? (compare end start)))
       {:code    "invalid-range"
        :message "End date must be on or after the start date."
        :details {:field "end"}})))
 
-(defn record-error
+(defn task-error
   "Validate a write record: structural first, then the cross-field range rule. Returns the first
   error, or nil when the record is acceptable. Create and update run the same checks, because an
   update is a full replace, so its payload is a complete record the shape validates exactly as it
@@ -498,109 +592,61 @@
   the record is fine and the target is not, and a consumer with nothing to highlight surfaces it as a
   message instead. Otherwise the ordinary record validation applies."
   [ts id raw-id record]
-  (if (some #(= (:id %) id) ts)
-    (record-error record)
+  (if (task-by-id ts id)
+    (task-error record)
     {:code    "not-found"
      :message (str "No task with id \"" raw-id "\".")
      :details {:id raw-id}}))
 
-(defn- record->row
-  "The client-owned row fields for a write `record`, keyed by the opaque strings. Blank optional
-  fields normalize to nil so the row stays read-contract valid, since \"\" is not a valid date and
-  nil is. Rank is not here, because it is server-owned and set only by a move."
-  [record]
-  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
-    {:title      (field "title")
-     :owner      (field "owner")
-     :start      (field "start")
-     :end        (field "end")
-     :est        (field "est")
-     :status     (field "status")
-     :projectId  (field "projectId")
-     :assigneeId (field "assigneeId")}))
+(defn- row-of
+  "The client-owned fields of a write `record`, read by the opaque string keys `ks` and stored under
+  their keywords. Blank optional fields normalize to nil so the row stays read-contract valid, since
+  \"\" is not a valid date and nil is. The server-owned fields, id and rank, are never here."
+  [record ks]
+  (into {} (map (fn [k] [(keyword k) (let [v (get record k)] (when-not (unfilled? v) v))])) ks))
+
+(def ^:private task-ref-keys
+  "Reference fields a task write accepts that the read shape does not declare: the board's project
+  and assignee. They are row data rather than display columns, so the flat table builds no column
+  from them, and no field of the shape constrains what a write may put there."
+  ["projectId" "assigneeId"])
+
+(def ^:private task-row-keys (into (mapv :key (:fields tasks-shape)) task-ref-keys))
+
+(def ^:private project-row-keys (mapv :key (:fields projects-shape)))
 
 (defn- next-id
   "Server-assigned id for a new task: one past the current max, since ids are 1-based."
   [ts]
   (inc (reduce max 0 (map :id ts))))
 
-(defn- column-of
-  "The (projectId, status) column a task lives in. Rank is dense within it."
-  [t]
-  [(:projectId t) (:status t)])
-
-(defn- append-rank
-  "The next rank at the bottom of column `col`: one past the current max, or 0 for an empty column.
-  A board create lands its card below the others, and rank stays server-owned, minted here rather
-  than sent by the client."
-  [ts col]
-  (let [ranks (->> ts (filter #(= (column-of %) col)) (keep :rank))]
-    (if (seq ranks) (inc (reduce max ranks)) 0)))
-
 (defn create-task
   "Append a task built from `record` with a server-minted id and a server-minted rank at the bottom
   of its column. Returns the updated set."
   [ts record]
-  (let [row (record->row record)]
+  (let [row (row-of record task-row-keys)]
     (conj ts (merge {:id   (next-id ts)
                      :rank (append-rank ts (column-of row))}
                     row))))
 
 (defn update-task
   "Replace the row whose id is `id` with `record`. PUT semantics, a full replace of the client-owned
-  fields, so a key the client omitted becomes nil. The server-owned fields, id and rank, are
-  preserved across the replace, and only a move changes rank. An id matching no row leaves the set
-  untouched, and the handler rejects that case before calling this."
+  fields, so a key the client omitted becomes nil. The server owns id and rank: a row that stays in
+  its column keeps its rank, and one whose new status or project moves it to another column lands at
+  the bottom of that column, since a rank minted in one column places nothing in another. Both
+  columns are re-densed. An id matching no row leaves the set untouched, and the handler rejects that
+  case before calling this."
   [ts id record]
-  (mapv (fn [t]
-          (if (= (:id t) id)
-            (merge {:id id :rank (:rank t)} (record->row record))
-            t))
-        ts))
+  (if-let [old (task-by-id ts id)]
+    (let [row     (merge {:id id} (row-of record task-row-keys))
+          old-col (column-of old)
+          rank    (if (= old-col (column-of row)) (:rank old) (append-rank ts (column-of row)))]
+      (reindex-columns (replace-row ts id (assoc row :rank rank)) id old-col))
+    ts))
 
-;; --- writes: the move op, and the server-owned rank ------------------------
-;; Rank is a card's position within its (projectId, status) column and it belongs to the server, so
-;; the client never sends it in a record. A move carries only the destination, a status and an index.
-;; The server places the card there and re-denses the affected columns so ranks stay a clean 0..n.
-
-(defn- column-members
-  "The tasks in column `col`, in rank order."
-  [ts col]
-  (->> ts (filter #(= (column-of %) col)) (sort-by :rank) vec))
-
-(defn- insert-at
-  "`xs` with `x` inserted at index `i`, clamped to the ends."
-  [xs x i]
-  (let [i (max 0 (min (count xs) (int i)))]
-    (vec (concat (subvec xs 0 i) [x] (subvec xs i)))))
-
-(defn- dense-ranks
-  "`ts` with every task in column `col` renumbered 0..n-1, in the order `ordered` gives."
-  [ts col ordered]
-  (let [rank-of (into {} (map-indexed (fn [idx t] [(:id t) idx]) ordered))]
-    (mapv (fn [t] (if (= (column-of t) col) (assoc t :rank (rank-of (:id t))) t)) ts)))
-
-(defn- place-and-dense
-  "Renumber column `col` to a dense 0-based sequence. When `place-id` names a task in the column it
-  is inserted at `place-rank` instead of at its stored rank, which is how a dropped card lands where
-  it was released. With no `place-id` the stored order is kept, which is what closes the gap in a
-  column a card has left."
-  [ts col place-id place-rank]
-  (let [members (column-members ts col)
-        placed  (some #(when (= (:id %) place-id) %) members)
-        ordered (if placed
-                  (insert-at (filterv #(not= (:id %) place-id) members) placed place-rank)
-                  members)]
-    (dense-ranks ts col ordered)))
-
-(defn reindex-columns
-  "After a board move of task `id`, re-dense its destination column, placing the task at its
-  requested rank, and its old column, closing the gap it left behind."
-  [ts id old-col]
-  (let [moved    (first (filter #(= (:id %) id) ts))
-        dest-col (column-of moved)]
-    (cond-> (place-and-dense ts dest-col id (:rank moved))
-      (not= old-col dest-col) (place-and-dense old-col nil nil))))
+;; --- writes: the move op ---------------------------------------------------
+;; A move carries only the destination, a status and an index. The server places the card there and
+;; re-denses the affected columns.
 
 (defn move-error
   "First error for a move of `id`: a missing target, since a move, like an update, is not idempotent
@@ -608,7 +654,7 @@
   `place-and-dense`, so it needs no bound check."
   [ts id raw-id record]
   (cond
-    (not (some #(= (:id %) id) ts))
+    (not (task-by-id ts id))
     {:code "not-found" :message (str "No task with id \"" raw-id "\".") :details {:id raw-id}}
 
     (not (contains? status-set (get record "status")))
@@ -616,16 +662,19 @@
      :message (str "\"" (get record "status") "\" is not a status.")
      :details {:field "status"}}))
 
+(defn- move-index
+  "The 0-based destination index a move carries, or the bottom of the column when it carries none.
+  `insert-at` clamps anything past the end, so the size of the whole set stands in for the bottom."
+  [ts record]
+  (or (get record "index") (count ts)))
+
 (defn move-task
   "Reposition task `id` to the destination status and index the move record carries. Only status and
   rank change and every other field is kept. The destination and vacated columns are re-densed."
   [ts id record]
-  (let [old-row (first (filter #(= (:id %) id) ts))
-        old-col (column-of old-row)
-        index   (or (get record "index") (count ts))
-        moved   (assoc old-row :status (get record "status") :rank index)
-        ts*     (mapv (fn [t] (if (= (:id t) id) moved t)) ts)]
-    (reindex-columns ts* id old-col)))
+  (let [old (task-by-id ts id)
+        row (assoc old :status (get record "status") :rank (move-index ts record))]
+    (reindex-columns (replace-row ts id row) id (column-of old))))
 
 ;; --- writes: create project ------------------------------------------------
 ;; The board demo creates projects. The same write contract as tasks, validated against
@@ -637,25 +686,22 @@
   [record]
   (structural-error projects-shape record))
 
-(defn- project->row
-  "The client-owned fields for a project write record. Blank optional fields normalize to nil."
-  [record]
-  (let [field (fn [k] (let [v (get record k)] (when-not (blank? v) v)))]
-    {:name        (field "name")
-     :description (field "description")}))
+(def ^:private project-id-prefix "p-")
+
+(defn- project-id-suffix
+  "The number in a project id, or 0 for an id that does not carry one."
+  [id]
+  (or (parse-long (subs id (count project-id-prefix))) 0))
 
 (defn- next-project-id
-  "Server-assigned id for a new project: `p-` plus one past the current max numeric suffix."
+  "Server-assigned id for a new project: the prefix plus one past the current max suffix."
   [ps]
-  (let [n (reduce (fn [m p]
-                    (max m (try (Integer/parseInt (subs (:id p) 2)) (catch Exception _ 0))))
-                  0 ps)]
-    (str "p-" (inc n))))
+  (str project-id-prefix (inc (reduce max 0 (map (comp project-id-suffix :id) ps)))))
 
 (defn create-project
   "Append a project built from `record` with a server-minted id. Returns the updated set."
   [ps record]
-  (conj ps (merge {:id (next-project-id ps)} (project->row record))))
+  (conj ps (merge {:id (next-project-id ps)} (row-of record project-row-keys))))
 
 ;; --- fixtures: controlled failure modes for the client ---------------------
 
@@ -721,82 +767,90 @@
              (not (str/includes? rel ".."))
              (.exists (io/file rel)))
       (response 200 (content-type-for rel) (slurp (io/file rel)))
-      (json-response 404 {:error "not-found" :uri uri}))))
+      (not-found uri))))
 
 ;; --- the write vocabulary, as data -----------------------------------------
 ;; The client's op table in resource.cljs says a write is a method, a target and a body. This is the
 ;; same claim from the server's side: a row per op naming the path and method it answers, whether it
 ;; addresses a member, the collection it mutates, the check that can reject it and the mutation an
-;; accepted one performs. Adding an op is a row here, never another branch in `handler`.
+;; accepted one performs. The URL is the table's business, not the ops': `write-op` reads the member
+;; id out of the path the row already declares and hands it over as a target, so an op never parses a
+;; URL. Adding an op is a row here, never another branch in `handler`.
 
 (def ^:private collections
-  "The two writable collections: where the state lives, the revision its acks carry, and the envelope
-  that answers a write to it. A task write answers with the paged task envelope, a project write with
-  its own collection envelope."
-  {:tasks    {:state    tasks
-              :revision tasks-revision
-              :ack      (fn [ts params] (accepted-envelope ts params))}
-   :projects {:state    projects
-              :revision projects-revision
-              :ack      (fn [ps params] (collection-envelope params projects-revision
-                                                             ps projects-shape))}})
+  "The two writable collections: where the state lives, the revision its acks carry, how the id in a
+  path reads as a row id, and the envelope that answers a write to it. A task write answers with the
+  paged task envelope, a project write with its own collection envelope. Task ids are numbers, so an
+  unparsable one reads as nil and matches no row."
+  {:tasks    {:state tasks :revision tasks-revision :id parse-long :ack accepted-envelope}
+   :projects {:state projects :revision projects-revision :id identity :ack projects-envelope}})
 
 (def ^:private write-ops
   [{:path "/api/tasks" :method :post :member? false :collection :tasks
-    :error  (fn [_ts _uri record] (record-error record))
-    :mutate (fn [ts _uri record] (create-task ts record))}
+    :error  (fn [_ts {:keys [record]}] (task-error record))
+    :mutate (fn [ts {:keys [record]}] (create-task ts record))}
 
    {:path "/api/tasks" :method :put :member? true :collection :tasks
-    :error  (fn [ts uri record] (update-error ts (task-id-from-uri uri) (task-id-str uri) record))
-    :mutate (fn [ts uri record] (update-task ts (task-id-from-uri uri) record))}
+    :error  (fn [ts {:keys [id raw-id record]}] (update-error ts id raw-id record))
+    :mutate (fn [ts {:keys [id record]}] (update-task ts id record))}
 
    {:path "/api/tasks" :method :patch :member? true :collection :tasks
-    :error  (fn [ts uri record] (move-error ts (task-id-from-uri uri) (task-id-str uri) record))
-    :mutate (fn [ts uri record] (move-task ts (task-id-from-uri uri) record))}
+    :error  (fn [ts {:keys [id raw-id record]}] (move-error ts id raw-id record))
+    :mutate (fn [ts {:keys [id record]}] (move-task ts id record))}
 
    ;; Delete is idempotent over an absent row, so it has nothing to reject.
    {:path "/api/tasks" :method :delete :member? true :collection :tasks
-    :error  (fn [_ts _uri _record] nil)
-    :mutate (fn [ts uri _record] (delete-task ts (task-id-from-uri uri)))}
+    :error  (fn [_ts _target] nil)
+    :mutate (fn [ts {:keys [id]}] (delete-task ts id))}
 
    {:path "/api/projects" :method :post :member? false :collection :projects
-    :error  (fn [_ps _uri record] (project-error record))
-    :mutate (fn [ps _uri record] (create-project ps record))}])
+    :error  (fn [_ps {:keys [record]}] (project-error record))
+    :mutate (fn [ps {:keys [record]}] (create-project ps record))}])
 
 (defn- write-op
-  "The row answering this request, or nil when it is not a write this server serves."
+  "The row answering this request, carrying the raw id its path addresses, or nil when this is not a
+  write the server serves. The id segment is read from the row's own `:path` and URL-decoded, since
+  an opaque id may contain any character."
   [method uri]
-  (some (fn [op]
-          (let [path    (:path op)
-                member? (str/starts-with? uri (str path "/"))]
+  (some (fn [{:keys [path] :as op}]
+          (let [addressed? (str/starts-with? uri (str path "/"))]
             (when (and (= method (:method op))
-                       (= member? (:member? op))
-                       (or member? (= uri path)))
-              op)))
+                       (= addressed? (:member? op))
+                       (or addressed? (= uri path)))
+              (cond-> op
+                addressed?
+                (assoc :raw-id (java.net.URLDecoder/decode (subs uri (inc (count path))) "UTF-8"))))))
         write-ops))
 
 (def ^:private write-lock (Object.))
 
 (defn- perform-write!
   "Reject the write or apply it. Both verdicts are HTTP 200, because the outcome carries the verdict
-  where a 4xx would read as a network failure to the client. An accepted write answers with the full
-  post-mutation envelope, shaped by the write's query, so the client installs it with no follow-up
-  read. The check, the mutation and the answering envelope all see one snapshot of the collection,
-  which is what the lock is for."
-  [{:keys [error mutate collection]} uri params record]
-  (let [{:keys [state revision ack]} (collections collection)]
+  where a 4xx would read as a network failure to the client. The check and the mutation see one
+  target value, the id the path addressed and the record the body carried. An accepted write answers
+  with the full post-mutation envelope, shaped by the write's query, so the client installs it with
+  no follow-up read. That query only shapes the answer and is never the thing being written, so an
+  unsupported sort in it is normalized away here rather than rejected as a read would reject it: a
+  write is not a URL the client is asking the server to honor. The check, the mutation and the
+  answering envelope all see one snapshot of the collection, which is what the lock is for."
+  [{:keys [error mutate collection raw-id]} params record]
+  (let [{:keys [state revision ack] parse-id :id} (collections collection)
+        target                                    {:id     (when raw-id (parse-id raw-id))
+                                                   :raw-id raw-id
+                                                   :record record}]
     (locking write-lock
       (let [rows @state]
-        (if-let [e (error rows uri record)]
+        (if-let [e (error rows target)]
           (json-response 200 (write-rejected-ack params e revision))
-          (json-response 200 (ack (reset! state (mutate rows uri record)) params)))))))
+          (json-response 200 (ack (reset! state (mutate rows target)) params)))))))
 
 (defn handler [req]
-  (let [uri     (:uri req)
-        method  (:request-method req)
-        params  (parse-query (:query-string req))
-        op      (write-op method uri)
-        fixture (get params "fixture")]
+  (let [uri        (:uri req)
+        method     (:request-method req)
+        params     (parse-query (:query-string req))
+        write      (write-op method uri)
+        collection (when (= :get method) (read-ops uri))
+        fixture    (get params "fixture")]
     (cond
       (= :options method)
       {:status 204 :headers cors-headers}
@@ -810,16 +864,11 @@
       (str/starts-with? uri "/dist/")
       (serve-dist uri)
 
-      ;; The related collections the board projects alongside tasks. A task references these by
-      ;; opaque string id. Users are read-only, projects also accept a create through write-ops.
-      (and (= :get method) (= "/api/users" uri))
-      (json-response 200 (collection-envelope params users-revision users users-shape))
+      (some? write)
+      (perform-write! write params (request-record req))
 
-      (and (= :get method) (= "/api/projects" uri))
-      (json-response 200 (collection-envelope params projects-revision @projects projects-shape))
-
-      (some? op)
-      (perform-write! op uri params (request-record req))
+      (some? collection)
+      (json-response 200 (collection params))
 
       (and (= :get method) (= "/api/tasks" uri))
       (cond
@@ -828,7 +877,7 @@
         :else                      (json-response 200 (accepted-envelope @tasks params)))
 
       :else
-      (json-response 404 {:error "not-found" :uri uri}))))
+      (not-found uri))))
 
 (defn -main [& _]
   (http/run-server handler {:port port})
