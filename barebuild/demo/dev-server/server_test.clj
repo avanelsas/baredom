@@ -402,6 +402,12 @@
     (is (= 40 (get-in (second (get-json "/api/tasks" nil)) [:pageInfo :totalCount]))
         "the set is unchanged")))
 
+(deftest member-id-is-url-decoded
+  (let [body (json/parse-string (:body (delete-raw "/api/tasks/%37" "requestId=w-e1")) true)]
+    (is (= "accepted" (:outcome body)))
+    (is (not (some #{7} (ids body)))
+        "the id in the path is URL-encoded, so an encoded 7 addresses row 7")))
+
 (deftest options-advertises-write-verbs
   (let [resp (server/handler {:request-method :options :uri "/api/tasks/7"})]
     (is (= 204 (:status resp)) "preflight is a no-content response")
@@ -700,7 +706,27 @@
                            "status" "todo" "projectId" "p-1" "assigneeId" "u-1"}))
     (let [after (first (filter #(= 1 (:id %)) (:value (project-tasks "p-1"))))]
       (is (= "Renamed" (:title after)) "the edit applied")
-      (is (= before (:rank after)) "rank is server-owned, so an update leaves it untouched"))))
+      (is (= before (:rank after))
+          "rank is server-owned, so an update inside one column leaves it untouched"))))
+
+;; An edit form carries `status`, so a plain update can move a row between columns. The rank it
+;; carried places nothing in the column it just joined, so the server re-ranks it there.
+(deftest update-into-another-column-redenses-both
+  (put-raw "/api/tasks/1" "requestId=w-m7"
+           (record-json {"title" "Renamed" "owner" "Alice" "start" "2026-01-01"
+                         "status" "done" "projectId" "p-1" "assigneeId" "u-1"}))
+  (let [body  (project-tasks "p-1")
+        moved (first (filter #(= 1 (:id %)) (:value body)))]
+    (is (= "done" (:status moved)) "the edit applied")
+    (is (= 5 (:rank moved)) "the row lands at the bottom of its new column")
+    (is (= [0 1 2 3 4 5] (column-ranks body "done")) "the destination column stays dense")
+    (is (= [0 1 2 3] (column-ranks body "todo")) "the vacated column closed its gap")))
+
+(deftest delete-closes-the-gap-in-its-column
+  (delete-raw "/api/tasks/1" "requestId=w-m8")
+  (let [body (project-tasks "p-1")]
+    (is (= [0 1 2 3] (column-ranks body "todo")) "the column re-denses after a delete")
+    (is (= [0 1 2 3 4] (column-ranks body "done")) "an untouched column is left alone")))
 
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]

@@ -43,7 +43,9 @@ page and sort the user is looking at, exactly as it would for a GET.
   the path and never in the body: the server owns identity.
 - **Move** is a **positional command**, not a record edit. It PATCHes a member to its
   destination `{status, index}`, and the server repositions it by its server-owned rank. Rank
-  never travels in a record, so update preserves it and only move changes it.
+  never travels in a record, so a move is the only write that positions a row deliberately. An
+  update still carries the field the columns are keyed on, so one can leave a row in a column its
+  stored rank means nothing in, and a server that keeps ranks dense re-ranks it there.
 - **Delete** puts the record's id in the path, taken from the `idKey` field of the row.
 
 The id in the path is URL-encoded, so an opaque id may contain any character.
