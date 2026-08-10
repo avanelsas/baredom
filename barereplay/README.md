@@ -31,7 +31,7 @@ first event.
 
 The dock mounts itself in the top-right corner. Move it by its handle, travel with
 the transport buttons or the timeline, and open the Data pane to see each step's
-request and response.
+request and response. The dock can be collapsed to its title bar.
 
 ## Install
 
