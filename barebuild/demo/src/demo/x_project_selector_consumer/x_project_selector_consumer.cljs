@@ -3,6 +3,7 @@
   writes tasks.project to the URL and refetches."
   (:require
    [barebuild.consumer-resource :as consumer-resource]
+   [barereplay.dock :as dock]
    [demo.url :as url]
    [demo.x-project-selector-consumer.model :as model]
    [baredom.utils.dom :as du]))
@@ -17,6 +18,17 @@
   []
   (or (url/tasks-project-id) model/all-projects-value))
 
+(defn- show-selection!
+  "Drive the x-select to the URL selection. A user pick moves only the inner <select>, so the
+  attribute can be stale, and re-setting the value it already holds never re-applies. Hence the
+  remove first. Both routes to the selection end here: a render, and a URL the browser or the
+  replay dock moved under us."
+  [^js x-select]
+  (let [desired (current-project-id)]
+    (when (not= desired (.-value x-select))
+      (du/remove-attr! x-select "value")
+      (du/set-attr! x-select "value" desired))))
+
 ;; --- option rendering ---------------------------------------------------------
 
 (defn- make-option! [{:keys [id name]}]
@@ -30,7 +42,7 @@
   (.appendChild x-select (make-option! {:id model/all-projects-value :name all-label}))
   (doseq [o (model/project-options accepted)]
     (.appendChild x-select (make-option! o)))
-  (du/set-attr! x-select "value" (current-project-id)))
+  (show-selection! x-select))
 
 ;; --- wiring -------------------------------------------------------------------
 
@@ -39,19 +51,10 @@
     (when (not= id (current-project-id))
       (consumer-resource/submit-intent! el (model/translate-project-gesture id) tasks-resource-id))))
 
-(defn- show-selection!
-  "Drive the x-select to the URL selection. A user pick moves only the inner <select>, so the
-  attribute can be stale, and re-setting the value it already holds never re-applies. Hence the
-  remove first."
-  [^js x-select]
-  (let [desired (current-project-id)]
-    (when (not= desired (.-value x-select))
-      (du/remove-attr! x-select "value")
-      (du/set-attr! x-select "value" desired))))
-
 (defn- on-connect! [^js x-select ^js el]
   (.addEventListener x-select "select-change" (fn [e] (on-select-change! el e)))
-  (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select))))
+  (.addEventListener js/window "popstate" (fn [_e] (show-selection! x-select)))
+  (.addEventListener js/window dock/url-changed-event (fn [_e] (show-selection! x-select))))
 
 (defn init! []
   (consumer-resource/register!
