@@ -20,6 +20,7 @@
    [baredom.components.x-table-row.x-table-row :as x-table-row]
    [baredom.components.x-table-cell.x-table-cell :as x-table-cell]
    [baredom.components.x-typography.x-typography :as x-typography]
+   [demo.x-auth-consumer.x-auth-consumer :as x-auth-consumer]
    [demo.x-board-consumer.x-board-consumer :as x-board-consumer]
    [demo.x-project-form-consumer.x-project-form-consumer :as x-project-form-consumer]
    [demo.x-project-selector-consumer.x-project-selector-consumer :as x-project-selector-consumer]
@@ -57,6 +58,7 @@
    x-table-cell/init!
    x-typography/init!
 
+   x-auth-consumer/init!
    x-board-consumer/init!
    x-project-form-consumer/init!
    x-project-selector-consumer/init!

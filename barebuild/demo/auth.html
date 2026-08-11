@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BareBuild — credentials demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-fg: #1f2430;
+      --card-bg: #ffffff;
+      --muted: #6b7280;
+      --rule: #d8dce4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --page-fg: #e7e9ee; --card-bg: #1b1f27; --muted: #9aa2b1; --rule: #2c313b; }
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      color: var(--page-fg);
+      max-width: 60rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    header { margin-bottom: 1.5rem; }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { font-size: 1rem; margin: 2rem 0 0.5rem; }
+    .subtitle { color: var(--muted); margin-top: 0; font-size: 0.875rem; }
+    code { font-size: 0.85em; }
+
+    .auth-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      background: var(--card-bg);
+    }
+    [data-token] {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      margin-right: auto;
+    }
+    x-auth-consumer[data-unauthorized] .auth-bar {
+      border-color: color-mix(in srgb, crimson 45%, var(--rule));
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-left: 3px solid var(--rule);
+      padding-left: 0.75rem;
+      margin: 0.75rem 0;
+    }
+
+    .log-heading { margin-top: 2rem; }
+    .log-caption { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.75rem; }
+    .log {
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--card-bg);
+    }
+    .log-line {
+      display: grid;
+      grid-template-columns: minmax(9rem, 14rem) 5rem 7rem minmax(0, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--rule);
+    }
+    .log-line:first-child { border-top: none; }
+    .log-head {
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .log-token, .log-status { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .log-detail { color: var(--muted); }
+    .log-line[data-outcome] .log-outcome { font-weight: 600; }
+    .log-line[data-outcome="accepted"] .log-outcome { color: seagreen; }
+    .log-line[data-outcome="refused"] .log-outcome,
+    .log-line[data-outcome="failed"] .log-outcome { color: crimson; }
+    @media (prefers-color-scheme: dark) {
+      .log-line[data-outcome="accepted"] .log-outcome { color: mediumseagreen; }
+      .log-line[data-outcome="refused"] .log-outcome,
+      .log-line[data-outcome="failed"] .log-outcome { color: lightcoral; }
+    }
+
+    /* the log lives inside the consumer, so the empty state reads as such */
+    [data-log]:empty::after {
+      content: "No requests yet.";
+      display: block;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BareBuild — credentials</h1>
+    <p class="subtitle">
+      The same projection as the other demos, behind a bearer token. A static header is declared
+      on the element, the rotating credential is attached by a decorator at the edge, and a
+      refused credential arrives as a failure the consumer decides what to do about.
+    </p>
+  </header>
+
+  <main id="app">
+    <server-resource
+      resource-id="secure"
+      src="http://localhost:8090/api/secure/tasks"
+      headers='{"X-Demo-Client": "barebuild-auth-demo"}'
+      credentials="same-origin">
+      <x-auth-consumer>
+        <div class="auth-bar">
+          <span data-token></span>
+          <x-button data-action="refresh" variant="secondary" size="sm">Refresh</x-button>
+          <x-button data-action="expire" variant="secondary" size="sm">Expire the token</x-button>
+          <x-button data-action="reauth" variant="primary" size="sm">Re-authenticate</x-button>
+        </div>
+        <x-table></x-table>
+        <h2 class="log-heading">What actually went over the wire</h2>
+        <p class="log-caption">
+          One line per request, written by the decorator itself as it attached the credential,
+          paired with what the server answered. Nothing here is narrated by the page, which is
+          why an accepted read shows no status: a non-2xx becomes a failure before the envelope
+          is ever read, so success <em>implies</em> a 200 rather than reporting one.
+</p>
+        <div class="log">
+          <div class="log-line log-head">
+            <span class="log-token">credential attached</span>
+            <span class="log-status">status</span>
+            <span class="log-outcome">outcome</span>
+            <span class="log-detail">detail</span>
+          </div>
+          <div data-log></div>
+        </div>
+      </x-auth-consumer>
+    </server-resource>
+
+    <h2>What each part is doing</h2>
+
+    <p class="note">
+      <strong><code>headers</code></strong> declares a static header, read once when the element
+      connects. It is a fact about the resource, so it lives on the element and it shows up in the
+      BareReplay trace alongside the request.
+    </p>
+
+    <p class="note">
+      <strong>The decorator</strong> attaches the bearer token. A credential that refreshes on its
+      own schedule is not a fact about the resource at any moment, so it lives at the edge instead.
+      It runs after <code>step</code>, on the request <code>step</code> already produced, which is
+      why <strong>the token never appears in the trace</strong>. Open the BareReplay dock and
+      compare: the static header is recorded, the token is not.
+    </p>
+
+    <p class="note">
+      <strong><code>credentials</code></strong> is set to <code>same-origin</code> here, which is
+      the browser default. It is a straight pass-through to <code>fetch</code>, so there is nothing
+      of BareBuild's to observe in it. Cookie auth would use <code>include</code> and needs the
+      server to answer with a concrete <code>Access-Control-Allow-Origin</code>, which this
+      dev-server does not do.
+    </p>
+
+    <p class="note">
+      <strong>Expire the token</strong> makes the next request carry a credential the server
+      refuses. The 401 never reaches envelope parsing: it arrives as a network failure carrying
+      <code>{:kind :http-status :status 401}</code>, and this app answers it by offering
+      re-authentication. BareBuild does not retry for you, and does not decide what a 401 means.
+      <strong>The table empties</strong>, because rows the server will no longer serve have no
+      business staying on screen, and the log gains a <code>401 refused</code> line naming the
+      credential that was turned away.
+    </p>
+
+    <p class="note">
+      <strong>Re-authenticate</strong> mints a fresh token and asks again. The log gains a
+      <code>200 accepted</code> line carrying the <em>new</em> credential, so the rotation is
+      visible rather than claimed.
+    </p>
+
+    <p class="note">
+      <strong>Refresh</strong>, and the asking-again that the other two buttons do, is a
+      <code>submit-refresh!</code>. A read follows an <em>intent patch</em> only when the intent
+      moved, and "ask the same question again" moves nothing, so it is its own event rather than a
+      query field invented to force a change. Watch the address bar: it stays exactly as it was.
+      The URL is a projection of what the read is <em>about</em>, and a retry is not about
+      anything.
+    </p>
+  </main>
+
+  <script type="module">
+    import { init } from "../dist/demo.js";
+    init();
+  </script>
+</body>
+</html>
