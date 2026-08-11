@@ -11,6 +11,7 @@
 - Adds `validation/conform-payload`, the write-side entry point. It reads a record as its shape declares it before validating, so a number typed into a form is not reported as the wrong type.
 - Adds `:write` to the view, the write the resource last submitted and how it ended, with `consumer-resource/own-write?` to ask whether it was this consumer's. A write moves `:writing?` for every consumer the resource drives, so a form acting on that movement asks this first.
 - Adds `consumer-resource/view`, the view a consumer was last applied, for a gesture handler that fires from the DOM and is handed none.
+- Adds `:refresh` and `consumer-resource/submit-refresh!`, a read of the current intent that leaves the intent and the URL untouched, for a gesture that asks the same question again rather than a different one.
 - Naming `:request-decorator` in `init` sets the hook to whatever the key holds, nil included, and leaving the key out leaves the installed one alone, so a second `init` does not silently drop it.
 - Fixes a read that outlived the disconnect that ordered its abort. A consumer that removes its host while being notified fires `disconnectedCallback` in the middle of the connect's own effects, and the abort that step emits now reaches the request rather than running before it was issued.
 - A member write arriving without the member to address is reported as `:member-write-without-id` rather than as an op the vocabulary lacks.

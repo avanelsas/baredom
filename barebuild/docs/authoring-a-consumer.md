@@ -257,6 +257,21 @@ gap is reported to the console and dropped rather than thrown out of your handle
 history entry, everything else replaces. It is not configurable per resource. Display-only
 consumers have no gestures.
 
+### Asking the same question again
+
+A read follows an intent patch only when the intent **moved**. When the gesture is "ask again"
+rather than "ask something else" — a reload button, a retry after an error — there is nothing to
+patch, and inventing a field to perturb would put a non-fact in the URL:
+
+```clojure
+(defn- on-reload [^js e]
+  (consumer-resource/submit-refresh! (.closest (.-currentTarget e) "x-<name>-consumer")))
+```
+
+`submit-refresh!` re-reads the current intent. The intent does not move, the URL is not written,
+and what the resource holds stands until an answer replaces it. A read already in flight is the
+answer to that request, so a second one is not opened on top of it.
+
 ## Writes
 
 A write is the same shape of gesture, submitted with `submit-write!` instead:

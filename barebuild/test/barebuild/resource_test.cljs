@@ -203,6 +203,48 @@
     (is (= {:sort "owner" :direction "asc"} (:url-intent resource))
         "merging a patch into a nil url-intent yields just the patch")))
 
+;; :refresh -- the same intent, asked again ------------------------------------
+
+(deftest refresh-opens-a-read-without-moving-the-intent
+  ;; genuinely answered: the accepted envelope's query is the intent, which is the state a page
+  ;; sits in after a successful read and the only one where "ask again" means anything.
+  (let [sorted   (assoc accepted :query {:sort "owner"})
+        answered (assoc base :last-accepted sorted :url-intent {:sort "owner"})
+        {:keys [resource effects]} (resource/step answered [:refresh])]
+    (is (false? (resource/pending? answered)) "the fixture really is answered")
+    (testing "the intent is untouched, so the URL is never written"
+      (is (= {:sort "owner"} (:url-intent resource)))
+      (is (nil? (some (fn [[fx _]] (when (= :url-write fx) fx)) effects))
+          "a refresh does not claim the query moved"))
+    (testing "a read for that same intent is opened and announced"
+      (is (= [[:fetch {:method     "GET"
+                       :url        "/api/tasks?requestId=tasks:1&sort=owner"
+                       :request/id "tasks:1"}]
+              (notified resource)]
+             effects)))
+    (testing "the value already held stands until an answer replaces it"
+      (is (= sorted (:last-accepted resource))))))
+
+(deftest refresh-re-reads-an-intent-a-failure-already-answered
+  (testing "the case a retry-after-error needs: answered by a failure, asked again anyway"
+    (let [failed (:resource (resource/step
+                             (assoc base :url-intent {}
+                                    :active-request {:request/id "tasks:1" :query {}})
+                             [:network-failed {:request/id "tasks:1"
+                                               :error {:kind :http-status :status 401}}]))]
+      (is (some? (:last-failure failed)))
+      (is (nil? (:active-request failed)))
+      (is (some (fn [[fx _]] (= :fetch fx)) (:effects (resource/step failed [:refresh])))
+          "an answered intent is exactly what refresh exists to ask again"))))
+
+(deftest refresh-does-not-stack-on-a-read-already-in-flight
+  (let [busy (assoc base :active-request {:request/id "tasks:1" :query {}})
+        {:keys [resource effects]} (resource/step busy [:refresh])]
+    (is (= {:request/id "tasks:1" :query {}} (:active-request resource))
+        "the in-flight read is left alone")
+    (is (nil? (some (fn [[fx _]] (when (= :fetch fx) fx)) effects))
+        "single-flight: the read already open is the answer to this request")))
+
 (deftest intent-patch-history-mode-from-gesture-class
   (let [r base]
     (testing ":navigation resolves to :push via the default :history-policy every boot carries"

@@ -49,6 +49,7 @@ flowchart TB
   C2 -->|"attributes and properties"| COMP
   COMP -->|"gesture"| CONS
   CONS -->|"submit-intent! → :intent-patch"| STEP
+  CONS -->|"submit-refresh! → :refresh"| STEP
   CONS -->|"submit-write! → :submit-write"| STEP
 ```
 
@@ -73,8 +74,10 @@ flowchart TB
   The runtime's own bookkeeping never crosses this edge.
 - **consumer to component.** Your projection builds whatever the component wants, and
   Conversion 2 assigns it as attributes or properties.
-- **component to step.** A gesture becomes an intent patch and re-enters as `:intent-patch`, or
-  a write payload that re-enters as `:submit-write`.
+- **component to step.** A gesture becomes an intent patch and re-enters as `:intent-patch`, a
+  bare ask-again that re-enters as `:refresh`, or a write payload that re-enters as
+  `:submit-write`. `:refresh` is the one read a gesture can open without claiming the query
+  moved, so the URL is left alone.
 
 The demo's table page is this diagram with `/api/tasks` and `x-table-consumer` filled in.
 
@@ -83,7 +86,7 @@ The demo's table page is this diagram with `/api/tasks` and `x-table-consumer` f
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '18px'}}}%%
 flowchart LR
-  EVENTS["Events in (closed set)<br/><br/>:connected (embed)<br/>:intent-patch (query-patch, gesture-class, target-id)<br/>:intent-unroutable (resource/id)<br/>:url-changed (query)<br/>:response<br/>:protocol-failed<br/>:network-failed<br/>:submit-write<br/>:write-ack<br/>:write-failed<br/>:disconnected"]
+  EVENTS["Events in (closed set)<br/><br/>:connected (embed)<br/>:intent-patch (query-patch, gesture-class, target-id)<br/>:refresh<br/>:intent-unroutable (resource/id)<br/>:url-changed (query)<br/>:response<br/>:protocol-failed<br/>:network-failed<br/>:submit-write<br/>:write-ack<br/>:write-failed<br/>:disconnected"]
 
   STEP["step (pure)<br/>resource × event → resource′ + effects<br/><br/>resource value:<br/>:url-intent · :last-accepted · :last-failure · :last-write<br/>:active-request (request/id, query)<br/>:active-write (write/id, payload)<br/>:request-count · :write-count<br/>:resource/id · :endpoint · :history-policy"]
 

@@ -474,6 +474,14 @@
     (hand-to-sibling resource payload)
     (apply-intent-patch resource payload)))
 
+(defn- on-refresh
+  "Read the current intent again. Nothing about what the read is *about* changes, which is the whole
+  of the difference from an intent patch: no merge, no URL write, and the value the resource already
+  holds is left standing until an answer replaces it. A read already in flight is the answer to this
+  request, so `open-read` declining is the correct outcome rather than a missed refresh."
+  [resource]
+  (open-read (result resource)))
+
 (defn- on-read-failed
   "The :protocol-failed and :network-failed transitions, which differ only in `cause`. The read
   produced no answer, so the intent is still unanswered and a fresh read follows."
@@ -533,6 +541,7 @@
     :connected         (on-connected resource (:embed payload))
     :response          (on-response resource payload)
     :intent-patch      (on-intent-patch resource payload)
+    :refresh           (on-refresh resource)
     ;; The executor could not resolve the target of a :route-intent. The gesture is lost either
     ;; way, so we register it here.
     :intent-unroutable (ignored resource :unroutable-intent payload)
