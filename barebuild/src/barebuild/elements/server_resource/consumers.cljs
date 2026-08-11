@@ -31,11 +31,12 @@
   ([emit! ^js el patch target-id] (submit-intent! emit! el (assoc patch :target-id target-id))))
 
 (defn- ctx
-  "What a consumer may call back into. Built once at boot, the same two closures for the element's
+  "What a consumer may call back into. Built once at boot, the same three closures for the element's
   whole life."
   [emit! ^js el]
-  {:submit-intent! (partial submit-intent! emit! el)
-   :submit-write!  (fn [payload] (emit! el [:submit-write payload]))})
+  {:submit-intent!  (partial submit-intent! emit! el)
+   :submit-refresh! (fn [] (emit! el [:refresh]))
+   :submit-write!   (fn [payload] (emit! el [:submit-write payload]))})
 
 (defn install!
   "Cache the consumers among `nodes` and the ctx they submit through, reporting a host that drives

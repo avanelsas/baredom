@@ -23,6 +23,14 @@
   ([^js consumer patch]           (submit! consumer :submit-intent! [patch]))
   ([^js consumer patch target-id] (submit! consumer :submit-intent! [patch target-id])))
 
+(defn submit-refresh!
+  "Ask the server-resource to read the current intent again. For a gesture that wants the same
+   question answered afresh rather than a different question asked: the intent does not move, the
+   URL is not written, and what the resource holds stands until an answer replaces it. A read
+   already in flight already answers this, so one is not opened on top of it."
+  [^js consumer]
+  (submit! consumer :submit-refresh! []))
+
 (defn- consumer-tag [^js consumer]
   (.. consumer -tagName toLowerCase))
 
