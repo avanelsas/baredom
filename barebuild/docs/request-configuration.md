@@ -16,6 +16,10 @@ asks for: `credentials`, `headers` and `timeout`.
 All three are optional. `credentials` and `headers` do nothing unless you set them. `timeout`
 is the one attribute with a default, for the reason given below.
 
+Everything on this page is running in the credentials demo (`demo/auth.html`): a static header
+on the element, a rotating bearer token attached by a decorator, a 401 reaching a consumer, and
+the trace showing the static header but not the token.
+
 ## `credentials`
 
 Sets the fetch credentials mode, one of `same-origin`, `include` or `omit`.

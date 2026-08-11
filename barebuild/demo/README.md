@@ -1,6 +1,6 @@
 # BareBuild demos
 
-Two live showcases for [BareBuild](../README.md), both driving BareDOM components from server
+Three live showcases for [BareBuild](../README.md), all driving BareDOM components from server
 state over one shared backend. They exist to demonstrate the runtime. **They are not part of
 BareBuild itself** (`demo.*` namespaces).
 
@@ -8,6 +8,9 @@ BareBuild itself** (`demo.*` namespaces).
   by a project selector that a second `<server-resource>` drives.
 - **Board** (`board.html`). A relational kanban board where a drag between columns is a **move**
   write: pick a project and its board loads, drag a card, create a project, add a task.
+- **Credentials** (`auth.html`). The same projection behind a bearer token: a static header on
+  the element, a rotating credential attached by a decorator at the edge, and a 401 arriving as
+  a failure the consumer decides what to do about.
 
 ## Disclaimer
 
@@ -69,6 +72,7 @@ python3 -m http.server 8095   # from barebuild/, in another shell
 
 - **Table**: <http://localhost:8095/demo/index.html>
 - **Board**: <http://localhost:8095/demo/board.html>
+- **Credentials**: <http://localhost:8095/demo/auth.html>
 - **SSR variant** (the table, first response embedded so it paints with no initial fetch):
   <http://localhost:8090/demo/boot>
 
@@ -80,6 +84,7 @@ Hard-refresh after a rebuild to clear the ES-module cache.
 demo/
   index.html                 ; the table demo page
   board.html                 ; the kanban board demo page
+  auth.html                  ; the credentials demo page
   dev-server/                ; Babashka tasks + projects state + API (server.clj) + handler tests
   src/demo/
     app.cljs                 ; registers the driven components + consumers, then barebuild.core/init

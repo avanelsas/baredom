@@ -381,10 +381,15 @@
 
 ;; --- request/response plumbing ---------------------------------------------
 
+;; The demo pages are served from another port, so every request is cross-origin and any header
+;; past the safelisted ones must be advertised here or the browser blocks the request.
+(def ^:private allowed-request-headers
+  ["content-type" "authorization" "x-demo-client"])
+
 (def ^:private cors-headers
   {"access-control-allow-origin"  "*"
    "access-control-allow-methods" "GET,POST,PUT,PATCH,DELETE,OPTIONS"
-   "access-control-allow-headers" "content-type"})
+   "access-control-allow-headers" (str/join "," allowed-request-headers)})
 
 (defn- parse-query [qs]
   (if (str/blank? qs)
@@ -484,6 +489,33 @@
 (def ^:private read-ops
   {"/api/users"    (fn [params] (users-envelope users params))
    "/api/projects" (fn [params] (projects-envelope @projects params))})
+
+;; --- the protected read ----------------------------------------------------
+;; One route behind a bearer token, answering the same envelope /api/tasks does. The rule is
+;; trivial and written down once: a token the demo minted opens it, the expired one does not.
+
+(def ^:private token-prefix "demo-")
+
+(def ^:private expired-token "demo-expired")
+
+(defn bearer-token
+  "The token an Authorization header carries, or nil when absent or not a bearer."
+  [req]
+  (when-let [header (get-in req [:headers "authorization"])]
+    (second (re-matches #"(?i)\s*bearer\s+(\S+)\s*" header))))
+
+(defn token-accepted?
+  "Whether `token` opens the protected read."
+  [token]
+  (boolean (and token
+                (str/starts-with? token token-prefix)
+                (not= token expired-token))))
+
+(defn- unauthorized
+  "The 401 the protected read answers without an accepted token. Not an envelope: an HTTP failure
+  reaches the client as a network failure, never as envelope parsing."
+  []
+  (json-response 401 {:error "unauthorized" :message "Bearer token missing or expired."}))
 
 ;; --- writes: acks ----------------------------------------------------------
 
@@ -869,6 +901,11 @@
 
       (some? collection)
       (json-response 200 (collection params))
+
+      (and (= :get method) (= "/api/secure/tasks" uri))
+      (if (token-accepted? (bearer-token req))
+        (json-response 200 (accepted-envelope @tasks params))
+        (unauthorized))
 
       (and (= :get method) (= "/api/tasks" uri))
       (cond

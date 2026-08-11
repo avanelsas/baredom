@@ -728,6 +728,68 @@
     (is (= [0 1 2 3] (column-ranks body "todo")) "the column re-denses after a delete")
     (is (= [0 1 2 3 4] (column-ranks body "done")) "an untouched column is left alone")))
 
+;; --- the protected read ----------------------------------------------------
+
+(defn- get-secure
+  "GET the protected read with `auth` as the Authorization header, or none when nil."
+  [auth]
+  (server/handler (cond-> {:request-method :get :uri "/api/secure/tasks" :query-string nil}
+                    auth (assoc :headers {"authorization" auth}))))
+
+(deftest secure-read-without-a-token-is-401
+  (let [resp (get-secure nil)]
+    (is (= 401 (:status resp)))
+    (is (= "unauthorized" (:error (json/parse-string (:body resp) true))))))
+
+(deftest secure-read-with-a-minted-token-is-the-accepted-envelope
+  (let [resp (get-secure "Bearer demo-1")
+        body (json/parse-string (:body resp) true)]
+    (is (= 200 (:status resp)))
+    (is (= "accepted" (:outcome body)) "a credential opens the route, the envelope is unchanged")
+    (is (seq (:value body)))
+    (is (some? (:shape body)))))
+
+(deftest secure-read-accepts-a-rotated-token
+  (is (= 200 (:status (get-secure "Bearer demo-2"))) "any minted token opens it, not one fixed one")
+  (is (= 200 (:status (get-secure "Bearer demo-99")))))
+
+(deftest secure-read-with-the-expired-token-is-401
+  (is (= 401 (:status (get-secure "Bearer demo-expired")))))
+
+(deftest secure-read-rejects-a-foreign-or-malformed-token
+  (testing "a token this demo never minted"
+    (is (= 401 (:status (get-secure "Bearer nope")))))
+  (testing "a scheme that is not bearer"
+    (is (= 401 (:status (get-secure "Basic demo-1")))))
+  (testing "a header with no token at all"
+    (is (= 401 (:status (get-secure "Bearer"))))))
+
+(deftest bearer-scheme-is-case-insensitive
+  (is (= 200 (:status (get-secure "bearer demo-1"))) "schemes are case-insensitive per RFC 7235"))
+
+(deftest the-query-echo-is-a-closed-vocabulary
+  (testing "a field the server does not know never comes back"
+    (let [[status body] (get-json "/api/tasks" "requestId=t-echo&attempt=2")]
+      (is (= 200 status))
+      (is (= {} (:query body))
+          "so a client cannot carry a private field through a round trip, and two reads that
+           differ only by one produce identical envelopes")))
+  (testing "a field it does know is echoed"
+    (let [[_ body] (get-json "/api/tasks" "requestId=t-echo2&sort=owner")]
+      (is (= "owner" (get-in body [:query :sort]))))))
+
+(deftest preflight-allows-every-header-the-demos-send
+  (let [resp    (server/handler {:request-method :options :uri "/api/secure/tasks"})
+        allowed (get-in resp [:headers "access-control-allow-headers"])]
+    (is (= 204 (:status resp)))
+    (testing "the decorator's bearer token"
+      (is (str/includes? allowed "authorization")))
+    (testing "the static header auth.html declares on its element"
+      (is (str/includes? allowed "x-demo-client")
+          "an unadvertised header is blocked by the browser before the request is sent"))
+    (testing "the write content-type"
+      (is (str/includes? allowed "content-type")))))
+
 (defn run []
   (let [{:keys [fail error]} (run-tests 'server-test)]
     (System/exit (if (pos? (+ (or fail 0) (or error 0))) 1 0))))
