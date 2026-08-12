@@ -2,6 +2,12 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.7.1] - 2026-08-12
+
+### Fixed
+
+- **`x-drop-zone`** no longer animates a panel in from the top-left corner. `animate-moves` measured panels with `getBoundingClientRect`, which returns `(0,0)` inside a `display: none` subtree, so a panel captured while hidden flew in from the viewport origin once shown. The FLIP decision is now a pure `flip-delta` that returns nil when either box was measured with zero size, and nil when the panel did not move.
+
 ## [3.7.0] - 2026-07-30
 
 Two new components that work as a pair: a panel the user can pick up and a region that accepts it. Together they cover kanban boards, sortable lists, and any interface where something is moved from one place to another.
