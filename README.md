@@ -18,6 +18,13 @@
 
 ---
 
+**Part of a set.** [BareDOM](https://github.com/avanelsas/baredom) is a comprehensive web component
+library. [BareBuild](https://github.com/avanelsas/barebuild) is a small runtime that drives web
+components from server state alone. [BareReplay](https://github.com/avanelsas/barereplay) is a
+powerful time-travel replay debugger for BareBuild-based apps.
+
+---
+
 ## What is BareDOM?
 
 BareDOM is a library of UI components built entirely on web standards — Custom Elements v1, Shadow DOM, and ES modules. There is no framework runtime, no virtual DOM, and no JavaScript framework peer dependency. Every component is a native HTML element that you register once and use anywhere.
