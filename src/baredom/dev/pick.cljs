@@ -60,11 +60,14 @@
           (du/getv el k-pick-id))))
 
 (defn element-for
-  "The element carrying `id`, or nil. Walks the document on every call, so an id always resolves
-   to whatever is there now rather than to a node that has since been replaced."
+  "The element carrying `id`, or nil for an unknown or nil id. Resolves fresh on every call, so a
+   held result goes stale."
   [id]
-  (some (fn [^js el] (when (= id (du/getv el k-pick-id)) el))
-        (elements-under js/document.body)))
+  ;; An unstamped element reads back as undefined, and CLJS = holds undefined equal to nil. Without
+  ;; the guard, a nil id matches the first element never picked.
+  (when id
+    (some (fn [^js el] (when (= id (du/getv el k-pick-id)) el))
+          (elements-under js/document.body))))
 
 (defn- custom-element?
   "True when `el` is a custom element. A custom element's tag name must contain a hyphen, which is
