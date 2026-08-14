@@ -1,6 +1,7 @@
 (ns baredom.dev.pick
-  "Click-to-select for a REPL. `pick!` puts the page into select mode and answers with a stable,
-   readable id for whatever is clicked. `element-for` turns that id back into an element.
+  "Pointing at elements from a REPL, in both directions. `pick!` puts the page into select mode and
+   answers with a stable, readable id for whatever is clicked. `show!` takes an id and outlines
+   where it is. `element-for` turns an id back into an element.
 
    The id is minted here rather than reused from x-trace-history's component id, which is an
    integer assigned inside the trace hook and only exists while the recorder is installed. Picking
@@ -8,6 +9,7 @@
 
    Dev-only. Nothing here is reachable from a component."
   (:require [baredom.utils.dom :as du]
+            [baredom.utils.overlay :as overlay]
             [clojure.string :as str]))
 
 ;; The id lives on the element so it survives re-projection, which replaces nodes but does not
@@ -16,9 +18,10 @@
 (def ^:private k-pick-id "__xPickId")
 
 ;; One atom: the per-tag counters that make an id, the last id picked so a REPL can read it after
-;; the click, and the listener currently installed so `cancel!` can remove it. A second would need
-;; justifying.
-(defonce ^:private state (atom {:counts {} :last nil :listener nil}))
+;; the click, the click listener so `cancel!` can remove it, the outline box once something has
+;; been shown, and the scroll listener that hides it again. A second would need justifying.
+(defonce ^:private state
+  (atom {:counts {} :last nil :listener nil :box nil :scroll-listener nil}))
 
 (defn- tag-of
   "The lowercase tag name of `el`."
@@ -89,7 +92,7 @@
 (defn pick!
   "Enter select mode and answer with the id of the next element clicked. Returns a promise, and
    records the id so `picked` can read it afterwards. The click is swallowed, so selecting a
-   button does not also press it."
+   button does not also press it. A second call abandons the first, whose promise never settles."
   []
   (cancel!)
   ;; Clear the last pick on entering select mode, so `picked` answers nil until a click lands
@@ -113,3 +116,86 @@
    for its click, so an early call says nothing rather than repeating the last answer."
   []
   (:last @state))
+
+;; Showing, the other direction ----------------------------------------------------------
+;; An id tells you the order of a thing, never where it is. The outline is drawn on a shared
+;; overlay layer, which escapes every stacking context and takes no pointer events, so showing
+;; something never changes what a click would hit.
+
+(def ^:private outline-css
+  "Deliberately not themed. This is a dev overlay, not a component, and it has to stay legible
+   over whatever it is drawn on top of."
+  "[part=box] { position: fixed; box-sizing: border-box; display: none;
+                border: 2px solid #e11d48; border-radius: 2px;
+                background: rgba(225, 29, 72, 0.08); }")
+
+;; Just under the maximum, so the outline sits above every stacking context on the page.
+(def ^:private outline-z-index 2147483000)
+
+(defn- ensure-box!
+  "The one box this namespace draws with. Created on first use, and `near` decides only which
+   overlay root it is created in, since the box is shared from then on."
+  [^js near]
+  (or (:box @state)
+      (let [^js layer (overlay/make-layer! near outline-css outline-z-index)
+            ^js box   (.createElement js/document "div")]
+        (.setAttribute box "part" "box")
+        (.appendChild (.-shadowRoot layer) box)
+        (swap! state assoc :box box)
+        box)))
+
+(defn- offscreen?
+  "True when `rect` lies outside the viewport, where an outline would be drawn and never seen."
+  [^js rect]
+  (or (neg? (.-bottom rect))
+      (neg? (.-right rect))
+      (> (.-top rect) (.-innerHeight js/window))
+      (> (.-left rect) (.-innerWidth js/window))))
+
+(defn- scroll-position
+  "Where the page is scrolled to, as a pair."
+  []
+  [(.-scrollX js/window) (.-scrollY js/window)])
+
+(defn hide!
+  "Take the outline off, and stop watching for the scroll that would strand it."
+  []
+  (when-let [^js box (:box @state)]
+    (set! (.. box -style -display) "none"))
+  (when-let [listener (:scroll-listener @state)]
+    (.removeEventListener js/window "scroll" listener true)
+    (.removeEventListener js/window "resize" listener))
+  (swap! state assoc :scroll-listener nil)
+  nil)
+
+(defn- hide-when-page-moves!
+  "Hide the outline once the page has actually moved from `from`. The box is positioned once, so
+   leaving it up would point it confidently at whatever has moved into that spot.
+
+   Comparing positions rather than reacting to the event matters: scrolling an offscreen element
+   into view queues a scroll event that arrives after this listener is installed, and reacting to
+   it would hide the outline a frame after drawing it."
+  [from]
+  (let [listener (fn [_] (when (not= from (scroll-position)) (hide!)))]
+    (swap! state assoc :scroll-listener listener)
+    (.addEventListener js/window "scroll" listener true)
+    (.addEventListener js/window "resize" listener)))
+
+(defn show!
+  "Outline the element `id` names, scrolling it into view when it is off screen. The outline goes
+   away on the next scroll or resize rather than following the element. Returns the id, or nil
+   when the id resolves to nothing."
+  [id]
+  (when-let [^js el (element-for id)]
+    (hide!)
+    (when (offscreen? (.getBoundingClientRect el))
+      (.scrollIntoView el #js {:block "center" :inline "center"}))
+    (let [^js box  (ensure-box! el)
+          ^js rect (.getBoundingClientRect el)]
+      (set! (.. box -style -left)    (str (.-left rect) "px"))
+      (set! (.. box -style -top)     (str (.-top rect) "px"))
+      (set! (.. box -style -width)   (str (.-width rect) "px"))
+      (set! (.. box -style -height)  (str (.-height rect) "px"))
+      (set! (.. box -style -display) "block")
+      (hide-when-page-moves! (scroll-position))
+      id)))
