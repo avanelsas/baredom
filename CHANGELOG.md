@@ -2,6 +2,16 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.8.0] - 2026-08-14
+
+### Added
+
+- **`baredom.dev.pick`** — a dev-only namespace for pointing at elements from a REPL, in both directions. `pick!` puts the page into click-to-select and answers with a stable `tag#n` id for whatever is clicked, `element-for` resolves that id back to an element, and `show!` outlines where it is. The id is minted here rather than reused from `x-trace-history`'s component id, which is an integer assigned inside the trace hook and only exists while the recorder is installed, because picking has to work with tracing off. Ids are numbered per tag in document order, so `x-table-cell#7` is the seventh cell on the page rather than the seventh one clicked, and an id survives a re-projection replacing the node.
+
+### Notes
+
+- **Nothing here is reachable from a component**, and no custom element is registered, so the ESM bundle and the framework adapters are unchanged. The namespace ships in the Clojars jar alongside the other `baredom.dev` namespaces and is not exported to npm.
+
 ## [3.7.1] - 2026-08-12
 
 ### Fixed
