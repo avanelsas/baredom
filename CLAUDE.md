@@ -118,6 +118,28 @@ Reference by name when discussing architecture:
   - Don't invent a third shape — pick whichever matches the removability requirement.
 - **`form-validity`** — a form-associated control composes `baredom.utils.forms` for its ElementInternals constraint validation rather than hand-writing the `error → customError` / `required+empty → valueMissing` / `else → clear` decision. The decision is a pure function (`forms/validity`) split from its effect (`forms/set-validity!`/`forms/sync!`); the component supplies only its per-control variation (empty predicate, anchor, value, non-default message). The popup-selection controls additionally compose `forms/apply-error-display!` + the pure `forms/error-describedby` for the inline `[part=error]` / `data-invalid` / `aria-invalid` / `aria-describedby` recipe. Golden samples: `x-select` (`forms/sync!` + `forms/apply-error-display!`), `x-form-field` (`forms/set-validity!`; keeps its own labeled-field error display). A form-associated control also installs the instance-level validation API via `forms/install-validity-api!` — see the shared-utilities list below.
 
+## Writing style
+
+Write docstrings, comments and test descriptions succinctly. Use Simplified Technical English in
+spirit: short sentences, active voice, present tense, one idea per sentence, no ambiguity. Keep the
+domain vocabulary this project already uses. The approved word list is not adopted.
+
+- **A docstring says what.** Not how it works, not why it exists.
+- **Where the what alone leaves a caller able to misuse the function, add one more sentence.** It
+  states a fact the caller needs, never an argument for the design.
+- **A block comment (`;;` above a form) is the one place a mechanism may be stated**, and only a
+  mechanism the code does not show. State the fact and stop. Not design argument, not alternatives
+  weighed, not history.
+- **An inline comment follows the docstring rule.** State the fact, not the reasoning.
+- **A test description says what the test asserts.** This binds the `deftest` name and every
+  `testing` string.
+- **No em dashes.** Use a period, a comma, a colon, or parentheses.
+- **No semicolons as punctuation.** The `;;` marker is unaffected. Two clauses joined by a
+  semicolon are two sentences.
+- Aim for one sentence. Cut a docstring past two.
+
+The rule applies to new and changed text. Existing text stays as it is until someone asks.
+
 ## Closure Advanced Compilation Safety
 
 All code must survive Google Closure Advanced Compilation (minification + renaming).
