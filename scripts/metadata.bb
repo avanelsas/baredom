@@ -163,27 +163,151 @@
   (into {} (map (fn [[_ k v]] [(symbol k) v])
                 (re-seq #"\(def\s+(?:\^:private\s+)?(\S+)\s+\"([^\"]+)\"\)" text))))
 
+;; ── CSS API ─────────────────────────────────────────────────────────────────
+;; A component's styling surface lives in its implementation, not its model: the
+;; custom properties are written into the CSS it installs, and the parts are the
+;; names it stamps on its own elements. Both are read from there so the manifest
+;; reports what the component actually exposes rather than a second declaration
+;; that could disagree with it.
+
+(defn component-source
+  "Every .cljs in `dir`, concatenated. The custom properties are written into the
+   CSS the implementation installs, and a part is named in whichever file stamps
+   it, which for some components is the model."
+  [dir]
+  (->> (.listFiles ^java.io.File dir)
+       (filter (fn [^java.io.File f]
+                 (and (.isFile f) (str/ends-with? (.getName f) ".cljs"))))
+       (map slurp)
+       (str/join "\n")))
+
+(defn- declared-tokens
+  "The custom properties a component names in a `tk-` def. x-theme owns the
+   shared vocabulary, so its tokens are not namespaced to its tag and it says
+   which they are instead."
+  [text]
+  (set (map second (re-seq #"\(def\s+(?:\^:private\s+)?tk-[a-z0-9-]+\s+\"(--x-[a-z0-9-]+)\"" text))))
+
+;; A property is namespaced to the component that owns it, and a tag can prefix
+;; another tag: --x-table-cell-padding starts with --x-table- but belongs to
+;; x-table-cell. Ownership goes to the longest tag that prefixes the property, so
+;; a parent styling its children publishes their tokens as theirs, not its own.
+(defn- owner-of
+  [tags prop]
+  (->> tags
+       (filter (fn [t] (str/starts-with? prop (str "--" t "-"))))
+       (sort-by count)
+       last))
+
+(defn- own-property?
+  "True when `prop` belongs to `tag`: namespaced to it more closely than to any
+   other tag, or named in one of its `tk-` defs."
+  [tag tags tokens prop]
+  (or (= tag (owner-of tags prop))
+      (contains? tokens prop)))
+
+;; Two ways a component says what a property falls back to. It declares a value,
+;; `--x-button-gap:0.5rem`, or it reads the property with a fallback,
+;; `var(--x-command-palette-width,560px)`. A declaration is the component's own
+;; setting and wins. The fallback pattern allows one level of nesting, so
+;; `var(--x-a,var(--x-b,#fff))` is read whole.
+
+;; A component that builds its CSS by concatenating strings leaves a symbol name
+;; where a value should be. That value is only known at runtime, so it is no
+;; default at all rather than a wrong one.
+(defn- literal-value
+  [v]
+  (let [v (str/trim v)]
+    (when-not (or (str/blank? v) (re-find #"[\"{}]" v)) v)))
+
+(defn- values-by-pattern
+  [re text]
+  (into {} (keep (fn [[_ k v]] (when-let [lit (literal-value v)] [k lit])))
+        (re-seq re text)))
+
+(defn- declared-values
+  [text]
+  (values-by-pattern #"(--x-[a-z0-9-]+)\s*:\s*([^;\"}]+)" text))
+
+(defn- fallback-values
+  [text]
+  (values-by-pattern #"var\(\s*(--x-[a-z0-9-]+)\s*,\s*((?:[^()]|\([^()]*\))*)\)" text))
+
+(defn extract-css-properties
+  "The custom properties `tag` exposes, as {:name n} or {:name n :default d}.
+   `tags` is every tag in the library, which is what tells a parent's tokens from
+   a child's. A property with no default anywhere is one the page is expected to
+   supply."
+  [tag tags text]
+  (let [defaults (merge (fallback-values text) (declared-values text))
+        tokens   (declared-tokens text)
+        used     (set (re-seq #"--x-[a-z0-9-]+" text))]
+    (->> (filter (partial own-property? tag tags tokens) used)
+         sort
+         (mapv (fn [prop]
+                 (let [d (get defaults prop)]
+                   (cond-> {:name prop}
+                     (seq d) (assoc :default d))))))))
+
+;; Three ways a component names a part: a def, a literal at the call site, and
+;; the `attr-part` symbol followed by a literal. A component that computes a part
+;; name at runtime, as x-calendar does for one of its buttons, cannot be read
+;; statically and that part goes unpublished.
+(def ^:private part-patterns
+  [#"\(def\s+(?:\^:private\s+)?[a-z-]*part-[a-z0-9-]+\s+\"([a-z0-9-]+)\""
+   #"\"part\"\s+\"([a-z0-9-]+)\""
+   #"attr-part\s+\"([a-z0-9-]+)\""])
+
+(defn extract-css-parts
+  "The shadow parts named in `text`."
+  [text]
+  (->> (mapcat (fn [re] (map second (re-seq re text))) part-patterns)
+       distinct
+       sort
+       (mapv (fn [n] {:name n}))))
+
 ;; ── Model discovery ─────────────────────────────────────────────────────────
+;; Two passes: a tag cannot be attributed a custom property until every tag is
+;; known, because ownership is decided by the longest tag that prefixes it.
+(defn- component-dirs []
+  (->> (.listFiles (io/file components-dir))
+       (filter (fn [^java.io.File f] (.isDirectory f)))
+       (filter (fn [^java.io.File d] (.exists (io/file d "model.cljs"))))))
+
+(defn all-tag-names
+  "Every tag the component directories declare."
+  []
+  (into #{} (keep (fn [d] (extract-tag-name (slurp (io/file d "model.cljs")))))
+        (component-dirs)))
+
 (defn discover-models
   "Find all model.cljs files and extract metadata."
   []
-  (let [comps-dir (io/file components-dir)]
+  (let [comps-dir (io/file components-dir)
+        tags      (all-tag-names)]
     (->> (.listFiles comps-dir)
          (filter #(.isDirectory %))
          (map (fn [dir]
                 (let [model-file (io/file dir "model.cljs")]
                   (when (.exists model-file)
-                    (let [text (slurp model-file)
-                          tag  (extract-tag-name text)]
+                    (let [text   (slurp model-file)
+                          tag    (extract-tag-name text)
+                          source (component-source dir)]
                       (when tag
-                        {:tag-name    tag
-                         :dir-name    (.getName dir)
-                         :properties  (parse-def-value text "property-api")
-                         :events      (parse-def-value text "event-schema")
-                         :methods     (parse-def-value text "method-api")
-                         :attributes  (extract-observed-attributes text)
-                         :slots       (extract-slots text)
-                         :string-defs (extract-string-defs text)}))))))
+                        ;; array-map: ten keys is past the size a map literal keeps
+                        ;; in insertion order, and a caller printing or diffing
+                        ;; these would see them reshuffle.
+                        (array-map
+                         :tag-name       tag
+                         :dir-name       (.getName dir)
+                         :properties     (parse-def-value text "property-api")
+                         :events         (parse-def-value text "event-schema")
+                         :methods        (parse-def-value text "method-api")
+                         :attributes     (extract-observed-attributes text)
+                         :slots          (extract-slots text)
+                         :css-properties (extract-css-properties tag tags source)
+                         :css-parts      (extract-css-parts source)
+                         :string-defs    (extract-string-defs text))))))))
          (remove nil?)
          (vec))))
 

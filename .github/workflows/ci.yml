@@ -59,6 +59,9 @@ jobs:
       - name: Check du discipline (no gobj on host, no make-el shim)
         run: bb scripts/check_du_discipline.bb
 
+      - name: Check the css api the manifest publishes
+        run: bb scripts/check_css_api.bb
+
       - name: Build ESM library
         run: npm run build
 
