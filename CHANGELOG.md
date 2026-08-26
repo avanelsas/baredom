@@ -2,6 +2,35 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.9.0] - 2026-08-26
+
+The manifest declares `schemaVersion 1.0.0` and omitted three fields the schema defines. It now
+publishes all three, so an editor reading `custom-elements.json` completes attributes and custom
+properties that it previously knew nothing about.
+
+### Added
+
+- **`attributes`** — every attribute a component observes. An attribute that a `property-api`
+  entry reflects also carries that property's type and field name. The rest carry a name alone,
+  because the component states no type for them. 809 attributes across 108 components, 480 of
+  them typed. `observed-attributes` names symbols rather than strings, so each one is resolved
+  through the model's own constants: a symbol that escaped resolution would publish `attr-columns`
+  as if it were an attribute name.
+
+- **`cssProperties` and `cssParts`** — the custom properties a component reads and the parts it
+  exposes, read from the implementation source that writes them rather than from a second
+  declaration. A property is owned by the longest tag that prefixes it, so `--x-table-cell-padding`
+  belongs to `x-table-cell` and not to `x-table`. 1351 properties and 489 parts.
+
+- **`scripts/check_css_api.bb` and `scripts/check_attribute_api.bb`** — CI checks that read each
+  component crudely and assert the manifest agrees. Each is written to avoid the assumption its
+  extractor makes, because a check that shares one agrees with the bug.
+
+### Notes
+
+- **`src/` is unchanged**, so the ESM bundles, the framework adapters and the compiled namespaces
+  in the jar are identical to 3.8.0. Only the manifest grew.
+
 ## [3.8.0] - 2026-08-14
 
 ### Added
