@@ -115,7 +115,7 @@
 ;; ── Custom Elements Manifest generation ─────────────────────────────────────
 (defn generate-cem-module
   "Generate a CEM module entry for a component."
-  [{:keys [tag-name properties events methods slots string-defs]}]
+  [{:keys [tag-name properties events methods slots string-defs css-properties css-parts]}]
   (let [interface-name (tag->interface-name tag-name)
         sdefs (or string-defs {})
         members (vec (concat
@@ -148,13 +148,19 @@
                     [{:name ""}])]
     {:kind         "javascript-module"
      :path         (str "dist/" tag-name ".js")
-     :declarations [{:kind       "class"
-                     :name       interface-name
-                     :tagName    tag-name
-                     :superclass {:name "HTMLElement"}
-                     :members    members
-                     :events     (or cem-events [])
-                     :slots      cem-slots}]
+     ;; array-map, not a literal: nine keys is past the size a map literal keeps
+     ;; in insertion order, and a hash-map would reshuffle every declaration in
+     ;; the manifest on every run.
+     :declarations [(array-map
+                     :kind          "class"
+                     :name          interface-name
+                     :tagName       tag-name
+                     :superclass    {:name "HTMLElement"}
+                     :members       members
+                     :events        (or cem-events [])
+                     :slots         cem-slots
+                     :cssProperties (or css-properties [])
+                     :cssParts      (or css-parts []))]
      :exports      [{:kind        "js"
                      :name        "init"
                      :declaration {:name "init"}}
