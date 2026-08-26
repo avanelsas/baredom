@@ -22,6 +22,7 @@
 library. [BareBuild](https://github.com/avanelsas/barebuild) is a small runtime that drives web
 components from server state alone. [BareReplay](https://github.com/avanelsas/barereplay) is a
 powerful time-travel replay debugger for BareBuild-based apps.
+[BareProbe](https://github.com/avanelsas/bareprobe) reads the same log from a REPL.
 
 ---
 

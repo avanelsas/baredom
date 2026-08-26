@@ -113,9 +113,27 @@
          "}\n")))
 
 ;; ── Custom Elements Manifest generation ─────────────────────────────────────
+(defn- cem-attributes
+  "The attributes a component observes, as CEM entries.
+
+   A property declares which attribute it reflects, so an attribute named there
+   carries that property's type and field name. The rest carry a name alone: the
+   component states no type for them, and stating one here would be a guess."
+  [attributes properties sdefs]
+  (let [reflected (into {}
+                        (keep (fn [[k {:keys [type reflects-attribute]}]]
+                                (when reflects-attribute
+                                  [(resolve-sym reflects-attribute sdefs)
+                                   {:fieldName (kebab->camel (name k))
+                                    :type      {:text (cljs-type->ts type)}}])))
+                        properties)]
+    (mapv (fn [attr-name] (merge {:name attr-name} (get reflected attr-name)))
+          attributes)))
+
 (defn generate-cem-module
   "Generate a CEM module entry for a component."
-  [{:keys [tag-name properties events methods slots string-defs css-properties css-parts]}]
+  [{:keys [tag-name properties attributes events methods slots string-defs
+           css-properties css-parts]}]
   (let [interface-name (tag->interface-name tag-name)
         sdefs (or string-defs {})
         members (vec (concat
@@ -148,7 +166,7 @@
                     [{:name ""}])]
     {:kind         "javascript-module"
      :path         (str "dist/" tag-name ".js")
-     ;; array-map, not a literal: nine keys is past the size a map literal keeps
+     ;; array-map, not a literal: ten keys is past the size a map literal keeps
      ;; in insertion order, and a hash-map would reshuffle every declaration in
      ;; the manifest on every run.
      :declarations [(array-map
@@ -157,6 +175,7 @@
                      :tagName       tag-name
                      :superclass    {:name "HTMLElement"}
                      :members       members
+                     :attributes    (cem-attributes attributes properties sdefs)
                      :events        (or cem-events [])
                      :slots         cem-slots
                      :cssProperties (or css-properties [])

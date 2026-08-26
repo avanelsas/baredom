@@ -42,3 +42,6 @@ modal.hide();   // typed method
 ## IDE support
 
 The `custom-elements.json` manifest enables HTML intellisense in editors that support it. For VS Code, install the [Lit Plugin](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) or the [Custom Elements Language Server](https://marketplace.visualstudio.com/items?itemName=nicktomlin.vscode-lit-html) to get attribute autocomplete and validation in HTML templates.
+
+Each component publishes the attributes it observes. An attribute that a
+`property-api` entry reflects also carries that property's type and field name.

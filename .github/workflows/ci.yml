@@ -62,6 +62,9 @@ jobs:
       - name: Check the css api the manifest publishes
         run: bb scripts/check_css_api.bb
 
+      - name: Check the attributes the manifest publishes
+        run: bb scripts/check_attribute_api.bb
+
       - name: Build ESM library
         run: npm run build
 

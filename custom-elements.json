@@ -54,6 +54,49 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "kind",
+        "fieldName" : "kind",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "grab",
+        "fieldName" : "grab",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "auto-scroll",
+        "fieldName" : "autoScroll",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "pending",
+        "fieldName" : "pending",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-drag-panel-drag-start",
         "type" : {
@@ -133,6 +176,25 @@
         "name" : "HTMLElement"
       },
       "members" : [ ],
+      "attributes" : [ {
+        "name" : "columns"
+      }, {
+        "name" : "min-column-size"
+      }, {
+        "name" : "gap"
+      }, {
+        "name" : "row-gap"
+      }, {
+        "name" : "column-gap"
+      }, {
+        "name" : "align-items"
+      }, {
+        "name" : "justify-items"
+      }, {
+        "name" : "auto-flow"
+      }, {
+        "name" : "inline"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -191,6 +253,23 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "legend",
+        "fieldName" : "legend",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -297,6 +376,27 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "href",
+        "fieldName" : "href",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "filename",
+        "fieldName" : "filename",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "aria-label"
+      } ],
       "events" : [ {
         "name" : "x-file-download-click",
         "type" : {
@@ -397,6 +497,33 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "loading",
+        "fieldName" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "pressed",
+        "fieldName" : "pressed",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "type"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "label"
       } ],
       "events" : [ {
         "name" : "press",
@@ -723,6 +850,55 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "autocomplete",
+        "fieldName" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "debounce",
+        "fieldName" : "debounce",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
       "events" : [ {
         "name" : "x-search-field-input",
         "type" : {
@@ -939,6 +1115,91 @@
           "type" : {
             "text" : "boolean"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "start",
+        "fieldName" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "end",
+        "fieldName" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min"
+      }, {
+        "name" : "max"
+      }, {
+        "name" : "format"
+      }, {
+        "name" : "locale"
+      }, {
+        "name" : "separator"
+      }, {
+        "name" : "auto-swap"
+      }, {
+        "name" : "range-allow-same-day"
+      }, {
+        "name" : "close-on-select"
+      }, {
+        "name" : "placeholder"
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "autocomplete"
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
+      }, {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
         }
       } ],
       "events" : [ {
@@ -1196,6 +1457,85 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "start",
+        "fieldName" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "end",
+        "fieldName" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min",
+        "fieldName" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "step",
+        "fieldName" : "step",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min-gap",
+        "fieldName" : "minGap",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-value",
+        "fieldName" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-labelledby"
+      }, {
+        "name" : "aria-describedby"
+      } ],
       "events" : [ {
         "name" : "x-range-slider-change-request",
         "type" : {
@@ -1325,6 +1665,21 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "page"
+      }, {
+        "name" : "total-pages"
+      }, {
+        "name" : "sibling-count"
+      }, {
+        "name" : "boundary-count"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
       } ],
       "events" : [ {
         "name" : "page-change-request",
@@ -1457,6 +1812,25 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -1595,6 +1969,43 @@
       }, {
         "kind" : "field",
         "name" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "shape",
+        "fieldName" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "path",
+        "fieldName" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "ratio",
+        "fieldName" : "ratio",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "width",
+        "fieldName" : "width",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "height",
+        "fieldName" : "height",
         "type" : {
           "text" : "string"
         }
@@ -1750,6 +2161,49 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "checked",
+        "fieldName" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
+      }, {
+        "name" : "aria-labelledby"
+      } ],
       "events" : [ {
         "name" : "x-switch-change-request",
         "type" : {
@@ -1862,6 +2316,43 @@
       }, {
         "kind" : "field",
         "name" : "dividerLabel",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "position",
+        "fieldName" : "position",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "min-start",
+        "fieldName" : "minStart",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "min-end",
+        "fieldName" : "minEnd",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "divider-label",
+        "fieldName" : "dividerLabel",
         "type" : {
           "text" : "string"
         }
@@ -2014,6 +2505,73 @@
           }
         } ]
       } ],
+      "attributes" : [ {
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "origin",
+        "fieldName" : "origin",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "count",
+        "fieldName" : "count",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "spread",
+        "fieldName" : "spread",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "velocity",
+        "fieldName" : "velocity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "gravity",
+        "fieldName" : "gravity",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "duration",
+        "fieldName" : "duration",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "colors",
+        "fieldName" : "colors",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "shapes",
+        "fieldName" : "shapes",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "auto-fire",
+        "fieldName" : "autoFire",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-confetti-fire",
         "type" : {
@@ -2114,6 +2672,61 @@
         "name" : "shape",
         "type" : {
           "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "src",
+        "fieldName" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "alt",
+        "fieldName" : "alt",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "initials",
+        "fieldName" : "initials",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "shape",
+        "fieldName" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "status",
+        "fieldName" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
         }
       } ],
       "events" : [ ],
@@ -2318,6 +2931,49 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "accept",
+        "fieldName" : "accept",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "multiple",
+        "fieldName" : "multiple",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "max-size",
+        "fieldName" : "maxSize",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "max-files",
+        "fieldName" : "maxFiles",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-file-upload-select",
         "type" : {
@@ -2516,6 +3172,23 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "active-state"
+      }, {
+        "name" : "active-index"
+      }, {
+        "name" : "stiffness"
+      }, {
+        "name" : "damping"
+      }, {
+        "name" : "mass"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "duration"
+      }, {
+        "name" : "disabled"
+      } ],
       "events" : [ {
         "name" : "x-morph-stack-change",
         "type" : {
@@ -2598,6 +3271,25 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "color",
+        "fieldName" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -2651,6 +3343,25 @@
       }, {
         "kind" : "field",
         "name" : "count",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "preset",
+        "fieldName" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "count",
+        "fieldName" : "count",
         "type" : {
           "text" : "number"
         }
@@ -2748,6 +3459,23 @@
         },
         "readonly" : true
       } ],
+      "attributes" : [ {
+        "name" : "target"
+      }, {
+        "name" : "orientation"
+      }, {
+        "name" : "mode"
+      }, {
+        "name" : "theme"
+      }, {
+        "name" : "wave-intensity"
+      }, {
+        "name" : "splash-intensity"
+      }, {
+        "name" : "layers"
+      }, {
+        "name" : "disabled"
+      } ],
       "events" : [ {
         "name" : "x-liquid-fill-progress",
         "type" : {
@@ -2818,6 +3546,19 @@
       }, {
         "kind" : "field",
         "name" : "params",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "key",
+        "fieldName" : "key",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "params",
+        "fieldName" : "params",
         "type" : {
           "text" : "string"
         }
@@ -3002,6 +3743,79 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "length",
+        "fieldName" : "length",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "mask",
+        "fieldName" : "mask",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readonly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "autofocus",
+        "fieldName" : "autofocus",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-otp-input-input",
         "type" : {
@@ -3159,6 +3973,49 @@
             "text" : "string"
           }
         } ]
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "headline",
+        "fieldName" : "headline",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "message",
+        "fieldName" : "message",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "confirm-text",
+        "fieldName" : "confirmText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "cancel-text",
+        "fieldName" : "cancelText",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "danger",
+        "fieldName" : "danger",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "events" : [ {
         "name" : "x-cancel-dialogue-cancel-request",
@@ -3391,6 +4248,67 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "text",
+        "fieldName" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "from",
+        "fieldName" : "from",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "from-attr",
+        "fieldName" : "fromAttr",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "show-tooltip",
+        "fieldName" : "showTooltip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "tooltip-ms",
+        "fieldName" : "tooltipMs",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "success-message",
+        "fieldName" : "successMessage",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "error-message",
+        "fieldName" : "errorMessage",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "hotkey",
+        "fieldName" : "hotkey",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-copy-request",
         "type" : {
@@ -3565,6 +4483,29 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "layout"
+      }, {
+        "name" : "track"
+      }, {
+        "name" : "threshold"
+      }, {
+        "name" : "no-progress"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "marker"
+      }, {
+        "name" : "autoplay"
+      }, {
+        "name" : "autoplay-speed"
+      }, {
+        "name" : "autoplay-loop"
+      }, {
+        "name" : "autoplay-indicator"
       } ],
       "events" : [ {
         "name" : "x-scroll-timeline-entry-change",
@@ -3756,6 +4697,27 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "text"
+      }, {
+        "name" : "trigger"
+      }, {
+        "name" : "mode"
+      }, {
+        "name" : "per-char"
+      }, {
+        "name" : "mass"
+      }, {
+        "name" : "tension"
+      }, {
+        "name" : "friction"
+      }, {
+        "name" : "intensity"
+      }, {
+        "name" : "radius"
+      }, {
+        "name" : "font-family"
+      } ],
       "events" : [ {
         "name" : "x-kinetic-font-spring-activate",
         "type" : {
@@ -3902,6 +4864,55 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "accepts",
+        "fieldName" : "accepts",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "pending",
+        "fieldName" : "pending",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "pending-index",
+        "fieldName" : "pendingIndex",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "animate-moves",
+        "fieldName" : "animateMoves",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-drop-zone-enter",
         "type" : {
@@ -4023,6 +5034,25 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "variant"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "pill"
+      }, {
+        "name" : "dot"
+      }, {
+        "name" : "count"
+      }, {
+        "name" : "max"
+      }, {
+        "name" : "text"
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -4195,6 +5225,55 @@
           "type" : {
             "text" : "boolean"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -4383,6 +5462,43 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "speed",
+        "fieldName" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "density",
+        "fieldName" : "density",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "fullscreen",
+        "fieldName" : "fullscreen",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "paused",
+        "fieldName" : "paused",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -4474,6 +5590,59 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "thickness",
+        "fieldName" : "thickness",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "color",
+        "fieldName" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "inset",
+        "fieldName" : "inset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "length",
+        "fieldName" : "length",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "align",
+        "fieldName" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "role"
+      }, {
+        "name" : "aria-label"
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -4570,6 +5739,49 @@
       }, {
         "kind" : "field",
         "name" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "shape",
+        "fieldName" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "layers",
+        "fieldName" : "layers",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "height",
+        "fieldName" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "flip",
+        "fieldName" : "flip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "mirror",
+        "fieldName" : "mirror",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "path",
+        "fieldName" : "path",
         "type" : {
           "text" : "string"
         }
@@ -4715,6 +5927,25 @@
         },
         "readonly" : true
       } ],
+      "attributes" : [ {
+        "name" : "layout"
+      }, {
+        "name" : "threshold"
+      }, {
+        "name" : "split"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "autoplay"
+      }, {
+        "name" : "autoplay-speed"
+      }, {
+        "name" : "autoplay-loop"
+      }, {
+        "name" : "autoplay-indicator"
+      } ],
       "events" : [ {
         "name" : "x-scroll-story-step-change",
         "type" : {
@@ -4858,6 +6089,43 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "direction",
+        "fieldName" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "radius",
+        "fieldName" : "radius",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "max-scale",
+        "fieldName" : "maxScale",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "lift",
+        "fieldName" : "lift",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "gap",
+        "fieldName" : "gap",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-proximity-list-select",
         "type" : {
@@ -4914,6 +6182,25 @@
       }, {
         "kind" : "field",
         "name" : "striped",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "position",
+        "fieldName" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "striped",
+        "fieldName" : "striped",
         "type" : {
           "text" : "boolean"
         }
@@ -5012,6 +6299,57 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "title",
+        "fieldName" : "title",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "status",
+        "fieldName" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "icon",
+        "fieldName" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "connector",
+        "fieldName" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "position",
+        "fieldName" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "data-last"
+      }, {
+        "name" : "data-index"
+      }, {
+        "name" : "data-position"
+      }, {
+        "name" : "data-striped"
       } ],
       "events" : [ {
         "name" : "x-timeline-item-connected",
@@ -5152,6 +6490,23 @@
           "text" : "number"
         }
       } ],
+      "attributes" : [ {
+        "name" : "columns"
+      }, {
+        "name" : "caption"
+      }, {
+        "name" : "selectable"
+      }, {
+        "name" : "striped"
+      }, {
+        "name" : "bordered"
+      }, {
+        "name" : "full-width"
+      }, {
+        "name" : "compact"
+      }, {
+        "name" : "row-count"
+      } ],
       "events" : [ {
         "name" : "x-table-sort",
         "type" : {
@@ -5239,6 +6594,31 @@
       }, {
         "kind" : "field",
         "name" : "rowIndex",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "interactive",
+        "fieldName" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "row-index",
+        "fieldName" : "rowIndex",
         "type" : {
           "text" : "number"
         }
@@ -5379,6 +6759,73 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "scope",
+        "fieldName" : "scope",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "align",
+        "fieldName" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "valign",
+        "fieldName" : "valign",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "col-span",
+        "fieldName" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "row-span",
+        "fieldName" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "truncate",
+        "fieldName" : "truncate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "sticky",
+        "fieldName" : "sticky",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "sortable",
+        "fieldName" : "sortable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "sort-direction",
+        "fieldName" : "sortDirection",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-table-cell-sort",
         "type" : {
@@ -5486,6 +6933,13 @@
       "members" : [ {
         "kind" : "field",
         "name" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "preset",
+        "fieldName" : "preset",
         "type" : {
           "text" : "string"
         }
@@ -5702,6 +7156,41 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "placeholder"
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-select-change-request",
         "type" : {
@@ -5830,6 +7319,25 @@
       }, {
         "kind" : "field",
         "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
         "type" : {
           "text" : "string"
         }
@@ -6011,6 +7519,71 @@
             "text" : "boolean"
           }
         }
+      } ],
+      "attributes" : [ {
+        "name" : "label"
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder"
+      }, {
+        "name" : "hint"
+      }, {
+        "name" : "error"
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "rows",
+        "fieldName" : "rows",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "maxlength",
+        "fieldName" : "maxLength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "minlength",
+        "fieldName" : "minLength",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "autocomplete",
+        "fieldName" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "resize"
       } ],
       "events" : [ {
         "name" : "x-text-area-change-request",
@@ -6202,6 +7775,97 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "text",
+        "fieldName" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "path",
+        "fieldName" : "path",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "preset",
+        "fieldName" : "preset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "speed",
+        "fieldName" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "direction",
+        "fieldName" : "direction",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "effect",
+        "fieldName" : "effect",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "font-size",
+        "fieldName" : "fontSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "start-size",
+        "fieldName" : "startSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "end-size",
+        "fieldName" : "endSize",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "repeat",
+        "fieldName" : "repeat",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "echo-count",
+        "fieldName" : "echoCount",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "echo-delay",
+        "fieldName" : "echoDelay",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "echo-opacity",
+        "fieldName" : "echoOpacity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "echo-scale",
+        "fieldName" : "echoScale",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -6356,6 +8020,27 @@
           "text" : "number"
         }
       } ],
+      "attributes" : [ {
+        "name" : "orb-count"
+      }, {
+        "name" : "color-primary"
+      }, {
+        "name" : "color-secondary"
+      }, {
+        "name" : "color-background"
+      }, {
+        "name" : "pulse-speed"
+      }, {
+        "name" : "rest-rate"
+      }, {
+        "name" : "connection-distance"
+      }, {
+        "name" : "orb-size"
+      }, {
+        "name" : "opacity"
+      }, {
+        "name" : "interactive"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -6438,6 +8123,57 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "title",
+        "fieldName" : "title",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "status",
+        "fieldName" : "status",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "icon",
+        "fieldName" : "icon",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "connector",
+        "fieldName" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "position",
+        "fieldName" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "data-last"
+      }, {
+        "name" : "data-index"
+      }, {
+        "name" : "data-position"
+      }, {
+        "name" : "data-striped"
       } ],
       "events" : [ {
         "name" : "x-timeline-item-connected",
@@ -6594,6 +8330,49 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "heading",
+        "fieldName" : "heading",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "close-label",
+        "fieldName" : "closeLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "no-close",
+        "fieldName" : "noClose",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "portal",
+        "fieldName" : "portal",
+        "type" : {
+          "text" : "boolean"
         }
       } ],
       "events" : [ {
@@ -6802,6 +8581,61 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "align",
+        "fieldName" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "emphasis",
+        "fieldName" : "emphasis",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "trend",
+        "fieldName" : "trend",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "loading",
+        "fieldName" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "hint",
+        "fieldName" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -6959,6 +8793,61 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "colors",
+        "fieldName" : "colors",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "blur",
+        "fieldName" : "blur",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "speed",
+        "fieldName" : "speed",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "count",
+        "fieldName" : "count",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "opacity",
+        "fieldName" : "opacity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "blend",
+        "fieldName" : "blend",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "paused",
+        "fieldName" : "paused",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -7093,6 +8982,37 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "offset",
+        "fieldName" : "offset",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "z-index",
+        "fieldName" : "zIndex",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -7251,6 +9171,55 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "x",
+        "fieldName" : "x",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "y",
+        "fieldName" : "y",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "closable",
+        "fieldName" : "closable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "resizable",
+        "fieldName" : "resizable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "focus-on-open",
+        "fieldName" : "focusOnOpen",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "step",
+        "fieldName" : "step",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
       "events" : [ {
         "name" : "x-floating-panel-toggle",
         "type" : {
@@ -7401,6 +9370,17 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "peek"
+      }, {
+        "name" : "rotation"
+      }, {
+        "name" : "scroll-distance"
+      }, {
+        "name" : "align"
+      }, {
+        "name" : "disabled"
+      } ],
       "events" : [ {
         "name" : "x-scroll-stack-change",
         "type" : {
@@ -7492,6 +9472,19 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "size"
+      }, {
+        "name" : "overlap"
+      }, {
+        "name" : "max"
+      }, {
+        "name" : "direction"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -7565,6 +9558,31 @@
       }, {
         "kind" : "field",
         "name" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "type",
+        "fieldName" : "type",
         "type" : {
           "text" : "string"
         }
@@ -7682,6 +9700,19 @@
         "type" : {
           "text" : "number"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "type"
+      }, {
+        "name" : "text"
+      }, {
+        "name" : "icon"
+      }, {
+        "name" : "dismissible"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "timeout-ms"
       } ],
       "events" : [ {
         "name" : "x-alert-dismiss",
@@ -7848,6 +9879,37 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "steps",
+        "fieldName" : "steps",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "current",
+        "fieldName" : "current",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-stepper-change",
         "type" : {
@@ -7995,6 +10057,15 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "intensity"
+      }, {
+        "name" : "duration"
+      }, {
+        "name" : "frequency"
+      }, {
+        "name" : "disabled"
+      } ],
       "events" : [ {
         "name" : "x-ripple-effect-start",
         "type" : {
@@ -8080,6 +10151,25 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -8284,6 +10374,61 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "step",
+        "fieldName" : "step",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "connector",
+        "fieldName" : "connector",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "prev-label",
+        "fieldName" : "prevLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "next-label",
+        "fieldName" : "nextLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "done-label",
+        "fieldName" : "doneLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "skip-label",
+        "fieldName" : "skipLabel",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "counter",
+        "fieldName" : "counter",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "dots",
+        "fieldName" : "dots",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-welcome-tour-start",
         "type" : {
@@ -8454,6 +10599,21 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "target"
+      }, {
+        "name" : "title"
+      }, {
+        "name" : "placement"
+      }, {
+        "name" : "connector"
+      }, {
+        "name" : "cutout-padding"
+      }, {
+        "name" : "cutout-radius"
+      }, {
+        "name" : "scroll-to"
+      } ],
       "events" : [ {
         "name" : "x-welcome-tour-step-connected",
         "type" : {
@@ -8533,6 +10693,49 @@
       }, {
         "kind" : "field",
         "name" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-value",
+        "fieldName" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "indeterminate",
+        "fieldName" : "indeterminate",
         "type" : {
           "text" : "boolean"
         }
@@ -8629,6 +10832,37 @@
       }, {
         "kind" : "field",
         "name" : "overlay",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "active",
+        "fieldName" : "active",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "progress",
+        "fieldName" : "progress",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "spinner",
+        "fieldName" : "spinner",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "overlay",
+        "fieldName" : "overlay",
         "type" : {
           "text" : "string"
         }
@@ -8791,6 +11025,23 @@
             "text" : "string"
           }
         } ]
+      } ],
+      "attributes" : [ {
+        "name" : "type"
+      }, {
+        "name" : "heading"
+      }, {
+        "name" : "message"
+      }, {
+        "name" : "icon"
+      }, {
+        "name" : "dismissible"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "timeout-ms"
+      }, {
+        "name" : "show-progress"
       } ],
       "events" : [ {
         "name" : "x-toast-dismiss",
@@ -9056,6 +11307,51 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "language",
+        "fieldName" : "language",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "filename",
+        "fieldName" : "filename",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-copy",
+        "fieldName" : "showCopy",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "line-numbers",
+        "fieldName" : "lineNumbers",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "wrap",
+        "fieldName" : "wrap",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "max-lines",
+        "fieldName" : "maxLines",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "expanded",
+        "fieldName" : "expanded",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "code"
+      } ],
       "events" : [ {
         "name" : "x-code-copy",
         "type" : {
@@ -9267,6 +11563,73 @@
         "name" : "data",
         "type" : {
           "text" : "any"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "data"
+      }, {
+        "name" : "height",
+        "fieldName" : "height",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "padding",
+        "fieldName" : "padding",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "x-format"
+      }, {
+        "name" : "y-format"
+      }, {
+        "name" : "grid",
+        "fieldName" : "grid",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "axes",
+        "fieldName" : "axes",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "tooltip",
+        "fieldName" : "tooltip",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "cursor",
+        "fieldName" : "cursor",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "loading",
+        "fieldName" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -9522,6 +11885,61 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-multi-combobox-change-request",
         "type" : {
@@ -9717,6 +12135,49 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "orientation",
+        "fieldName" : "orientation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "sticky",
+        "fieldName" : "sticky",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "elevated",
+        "fieldName" : "elevated",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "breakpoint",
+        "fieldName" : "breakpoint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "alignment",
+        "fieldName" : "alignment",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "focus-visible",
         "type" : {
@@ -9832,6 +12293,25 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -9940,6 +12420,27 @@
           "text" : "number"
         }
       } ],
+      "attributes" : [ {
+        "name" : "blob-count"
+      }, {
+        "name" : "blob-size"
+      }, {
+        "name" : "color"
+      }, {
+        "name" : "noise"
+      }, {
+        "name" : "noise-scale"
+      }, {
+        "name" : "noise-speed"
+      }, {
+        "name" : "noise-intensity"
+      }, {
+        "name" : "blur"
+      }, {
+        "name" : "threshold"
+      }, {
+        "name" : "palette"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -10007,6 +12508,25 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "src",
+        "fieldName" : "src",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "fallback-locale",
+        "fieldName" : "fallbackLocale",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -10169,6 +12689,91 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "start",
+        "fieldName" : "start",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "end",
+        "fieldName" : "end",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min",
+        "fieldName" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled-dates",
+        "fieldName" : "disabledDates",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "first-day-of-week",
+        "fieldName" : "firstDayOfWeek",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "month",
+        "fieldName" : "month",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-week-numbers",
+        "fieldName" : "showWeekNumbers",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "range-allow-same-day",
+        "fieldName" : "rangeAllowSameDay",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "auto-swap",
+        "fieldName" : "autoSwap",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-calendar-change",
         "type" : {
@@ -10304,6 +12909,31 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "removable",
+        "fieldName" : "removable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-chip-remove",
         "type" : {
@@ -10412,6 +13042,17 @@
         },
         "readonly" : true
       } ],
+      "attributes" : [ {
+        "name" : "direction"
+      }, {
+        "name" : "source"
+      }, {
+        "name" : "easing"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
+      } ],
       "events" : [ {
         "name" : "x-scroll-parallax-enter",
         "type" : {
@@ -10516,6 +13157,19 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "stiffness"
+      }, {
+        "name" : "damping"
+      }, {
+        "name" : "radius"
+      }, {
+        "name" : "intensity"
+      }, {
+        "name" : "grab-radius"
+      }, {
+        "name" : "disabled"
+      } ],
       "events" : [ {
         "name" : "x-soft-body-grab",
         "type" : {
@@ -10593,6 +13247,31 @@
       }, {
         "kind" : "field",
         "name" : "rowIndex",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "interactive",
+        "fieldName" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "row-index",
+        "fieldName" : "rowIndex",
         "type" : {
           "text" : "number"
         }
@@ -10693,6 +13372,37 @@
       }, {
         "kind" : "field",
         "name" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "keys",
+        "fieldName" : "keys",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "separator",
+        "fieldName" : "separator",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "platform",
+        "fieldName" : "platform",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
         "type" : {
           "text" : "string"
         }
@@ -10877,6 +13587,73 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "precision",
+        "fieldName" : "precision",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "shape",
+        "fieldName" : "shape",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "allow-clear",
+        "fieldName" : "allowClear",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-labelledby"
+      }, {
+        "name" : "aria-describedby"
+      } ],
       "events" : [ {
         "name" : "x-rating-change-request",
         "type" : {
@@ -10949,6 +13726,13 @@
         "name" : "HTMLElement"
       },
       "members" : [ ],
+      "attributes" : [ {
+        "name" : "col-span"
+      }, {
+        "name" : "row-span"
+      }, {
+        "name" : "order"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -11030,6 +13814,31 @@
           "type" : {
             "text" : "void"
           }
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
         }
       } ],
       "events" : [ {
@@ -11190,6 +13999,11 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "position"
+      }, {
+        "name" : "max"
+      } ],
       "events" : [ {
         "name" : "x-notification-center-push",
         "type" : {
@@ -11348,6 +14162,29 @@
             "text" : "void"
           }
         }
+      } ],
+      "attributes" : [ {
+        "name" : "mode"
+      }, {
+        "name" : "snap"
+      }, {
+        "name" : "loop"
+      }, {
+        "name" : "auto-play"
+      }, {
+        "name" : "interval"
+      }, {
+        "name" : "show-controls"
+      }, {
+        "name" : "show-indicators"
+      }, {
+        "name" : "active-index"
+      }, {
+        "name" : "gap"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "label"
       } ],
       "events" : [ {
         "name" : "x-scroll-change",
@@ -11531,6 +14368,21 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "src"
+      }, {
+        "name" : "alt"
+      }, {
+        "name" : "decorative"
+      }, {
+        "name" : "ratio"
+      }, {
+        "name" : "fit"
+      }, {
+        "name" : "position"
+      }, {
+        "name" : "loading"
+      } ],
       "events" : [ {
         "name" : "x-image-load",
         "type" : {
@@ -11666,6 +14518,49 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-value",
+        "fieldName" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "indeterminate",
+        "fieldName" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-progress-circle-complete",
         "type" : {
@@ -11749,6 +14644,43 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "loading",
+        "fieldName" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "pressed",
+        "fieldName" : "pressed",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "type"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "mode"
+      }, {
+        "name" : "particle-count"
+      }, {
+        "name" : "intensity"
+      }, {
+        "name" : "particle-size"
+      }, {
+        "name" : "reassemble-speed"
       } ],
       "events" : [ {
         "name" : "press",
@@ -12030,6 +14962,15 @@
           "text" : "number"
         }
       } ],
+      "attributes" : [ {
+        "name" : "variant"
+      }, {
+        "name" : "align"
+      }, {
+        "name" : "truncate"
+      }, {
+        "name" : "line-clamp"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -12190,6 +15131,29 @@
           }
         } ]
       } ],
+      "attributes" : [ {
+        "name" : "autoplay"
+      }, {
+        "name" : "interval"
+      }, {
+        "name" : "loop"
+      }, {
+        "name" : "arrows"
+      }, {
+        "name" : "dots"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "current"
+      }, {
+        "name" : "transition"
+      }, {
+        "name" : "direction"
+      }, {
+        "name" : "peek"
+      }, {
+        "name" : "aria-label"
+      } ],
       "events" : [ {
         "name" : "x-carousel-change",
         "type" : {
@@ -12345,6 +15309,73 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "scope",
+        "fieldName" : "scope",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "align",
+        "fieldName" : "align",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "valign",
+        "fieldName" : "valign",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "col-span",
+        "fieldName" : "colSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "row-span",
+        "fieldName" : "rowSpan",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "truncate",
+        "fieldName" : "truncate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "sticky",
+        "fieldName" : "sticky",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "sortable",
+        "fieldName" : "sortable",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "sort-direction",
+        "fieldName" : "sortDirection",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-table-cell-sort",
         "type" : {
@@ -12482,6 +15513,31 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "header",
+        "fieldName" : "header",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "duration-ms",
+        "fieldName" : "durationMs",
+        "type" : {
+          "text" : "number"
+        }
+      } ],
       "events" : [ {
         "name" : "x-collapse-toggle",
         "type" : {
@@ -12590,6 +15646,35 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "orientation"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "controls"
       } ],
       "events" : [ {
         "name" : "tab-select",
@@ -12779,6 +15864,65 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "type",
+        "fieldName" : "type",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "hint"
+      }, {
+        "name" : "error"
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readonly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "autocomplete",
+        "fieldName" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-form-field-input",
         "type" : {
@@ -12878,6 +16022,27 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "variant"
+      }, {
+        "name" : "padding"
+      }, {
+        "name" : "radius"
+      }, {
+        "name" : "interactive",
+        "fieldName" : "interactive",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label"
       } ],
       "events" : [ {
         "name" : "press",
@@ -13111,6 +16276,85 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "currency",
+        "fieldName" : "currency",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "locale",
+        "fieldName" : "locale",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min",
+        "fieldName" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placeholder",
+        "fieldName" : "placeholder",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "hint",
+        "fieldName" : "hint",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "error",
+        "fieldName" : "error",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-currency-field-change-request",
         "type" : {
@@ -13214,6 +16458,27 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "as"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "padding"
+      }, {
+        "name" : "center",
+        "fieldName" : "center",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "fluid",
+        "fieldName" : "fluid",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label"
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -13379,6 +16644,35 @@
           "text" : "number"
         }
       } ],
+      "attributes" : [ {
+        "name" : "blobs"
+      }, {
+        "name" : "speed"
+      }, {
+        "name" : "amplitude"
+      }, {
+        "name" : "blur"
+      }, {
+        "name" : "goo"
+      }, {
+        "name" : "tint"
+      }, {
+        "name" : "specular"
+      }, {
+        "name" : "specular-size"
+      }, {
+        "name" : "specular-intensity"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "mode"
+      }, {
+        "name" : "frost"
+      }, {
+        "name" : "color-1"
+      }, {
+        "name" : "color-2"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -13491,6 +16785,29 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "separator"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "wrap"
+      }, {
+        "name" : "max-items"
+      }, {
+        "name" : "items-before"
+      }, {
+        "name" : "items-after"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "preserve-aria-current"
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
       } ],
       "events" : [ ],
       "slots" : [ {
@@ -13643,6 +16960,55 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "checked",
+        "fieldName" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "indeterminate",
+        "fieldName" : "indeterminate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
+      }, {
+        "name" : "aria-labelledby"
+      } ],
       "events" : [ {
         "name" : "x-checkbox-change-request",
         "type" : {
@@ -13749,6 +17115,13 @@
           "text" : "boolean"
         }
       } ],
+      "attributes" : [ {
+        "name" : "size"
+      }, {
+        "name" : "axis"
+      }, {
+        "name" : "grow"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -13848,6 +17221,29 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "position"
+      }, {
+        "name" : "gap"
+      }, {
+        "name" : "blur"
+      }, {
+        "name" : "threshold"
+      }, {
+        "name" : "ripple-scale"
+      }, {
+        "name" : "ripple-speed"
+      }, {
+        "name" : "color"
+      }, {
+        "name" : "magnet-radius"
+      }, {
+        "name" : "magnet-strength"
+      }, {
+        "name" : "disabled"
+      }, {
+        "name" : "bob-intensity"
       } ],
       "events" : [ {
         "name" : "x-liquid-dock-select",
@@ -14006,6 +17402,49 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "checked",
+        "fieldName" : "checked",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "required",
+        "fieldName" : "required",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-describedby"
+      }, {
+        "name" : "aria-labelledby"
+      } ],
       "events" : [ {
         "name" : "x-radio-change-request",
         "type" : {
@@ -14110,6 +17549,25 @@
           }
         } ]
       } ],
+      "attributes" : [ {
+        "name" : "position",
+        "fieldName" : "position",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max-toasts",
+        "fieldName" : "maxToasts",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-toaster-dismiss",
         "type" : {
@@ -14157,6 +17615,17 @@
         "name" : "HTMLElement"
       },
       "members" : [ ],
+      "attributes" : [ {
+        "name" : "columns"
+      }, {
+        "name" : "gap"
+      }, {
+        "name" : "row-gap"
+      }, {
+        "name" : "column-gap"
+      }, {
+        "name" : "row-height"
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -14211,6 +17680,27 @@
         "type" : {
           "text" : "boolean"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "collapsed",
+        "fieldName" : "collapsed",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "placement"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "breakpoint"
+      }, {
+        "name" : "label"
       } ],
       "events" : [ {
         "name" : "toggle",
@@ -14344,6 +17834,25 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "loading",
+        "fieldName" : "loading",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "novalidate",
+        "fieldName" : "novalidate",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "autocomplete",
+        "fieldName" : "autocomplete",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-form-submit",
         "type" : {
@@ -14437,6 +17946,21 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "progress"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "color"
+      }, {
+        "name" : "bloom"
+      }, {
+        "name" : "density"
+      }, {
+        "name" : "seed"
+      }, {
+        "name" : "label"
+      } ],
       "events" : [ {
         "name" : "x-organic-progress-complete",
         "type" : {
@@ -14509,6 +18033,21 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "orientation"
+      }, {
+        "name" : "activation"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "loop"
+      } ],
       "events" : [ {
         "name" : "value-change-request",
         "type" : {
@@ -14572,6 +18111,35 @@
         "type" : {
           "text" : "string"
         }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "selected",
+        "fieldName" : "selected",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "orientation"
+      }, {
+        "name" : "size"
+      }, {
+        "name" : "variant"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "controls"
       } ],
       "events" : [ {
         "name" : "tab-select",
@@ -14702,6 +18270,37 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "text",
+        "fieldName" : "text",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "placement",
+        "fieldName" : "placement",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "delay",
+        "fieldName" : "delay",
+        "type" : {
+          "text" : "number"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
       "events" : [ {
         "name" : "x-tooltip-show",
         "type" : {
@@ -14816,6 +18415,31 @@
           "text" : "string"
         }
       } ],
+      "attributes" : [ {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "animation",
+        "fieldName" : "animation",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "width",
+        "fieldName" : "width",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "height",
+        "fieldName" : "height",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ ],
       "slots" : [ {
         "name" : ""
@@ -14904,6 +18528,49 @@
       }, {
         "kind" : "field",
         "name" : "static",
+        "type" : {
+          "text" : "boolean"
+        }
+      } ],
+      "attributes" : [ {
+        "name" : "variant",
+        "fieldName" : "variant",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "radius",
+        "fieldName" : "radius",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "padding",
+        "fieldName" : "padding",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "color",
+        "fieldName" : "color",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "intensity",
+        "fieldName" : "intensity",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "static",
+        "fieldName" : "static",
         "type" : {
           "text" : "boolean"
         }
@@ -15110,6 +18777,61 @@
           }
         }
       } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "alpha",
+        "fieldName" : "alpha",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "swatches",
+        "fieldName" : "swatches",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "mode",
+        "fieldName" : "mode",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      } ],
       "events" : [ {
         "name" : "x-color-picker-input",
         "type" : {
@@ -15257,6 +18979,35 @@
             "text" : "void"
           }
         }
+      } ],
+      "attributes" : [ {
+        "name" : "open",
+        "fieldName" : "open",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "modal"
+      }, {
+        "name" : "dismissible"
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "no-scrim"
+      }, {
+        "name" : "close-on-scrim"
+      }, {
+        "name" : "close-on-escape"
+      }, {
+        "name" : "label"
+      }, {
+        "name" : "placeholder"
+      }, {
+        "name" : "empty-text"
       } ],
       "events" : [ {
         "name" : "x-command-palette-open-request",
@@ -15508,6 +19259,73 @@
             "text" : "boolean"
           }
         }
+      } ],
+      "attributes" : [ {
+        "name" : "value",
+        "fieldName" : "value",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "min",
+        "fieldName" : "min",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "max",
+        "fieldName" : "max",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "step",
+        "fieldName" : "step",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "disabled",
+        "fieldName" : "disabled",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "readonly",
+        "fieldName" : "readOnly",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "name",
+        "fieldName" : "name",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "label",
+        "fieldName" : "label",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "show-value",
+        "fieldName" : "showValue",
+        "type" : {
+          "text" : "boolean"
+        }
+      }, {
+        "name" : "size",
+        "fieldName" : "size",
+        "type" : {
+          "text" : "string"
+        }
+      }, {
+        "name" : "aria-label"
+      }, {
+        "name" : "aria-labelledby"
+      }, {
+        "name" : "aria-describedby"
       } ],
       "events" : [ {
         "name" : "x-slider-change-request",
