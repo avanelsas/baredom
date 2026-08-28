@@ -155,11 +155,18 @@
                                                 {:name name :type {:text (cljs-type->ts type)}})
                                               args))))
                              methods))))
+        ;; The detail shape is the useful half of an event and was being dropped:
+        ;; every consumer was told "CustomEvent" and left to guess what it
+        ;; carries. `generate-event-detail-type` is the same function the .d.ts
+        ;; uses, so the manifest and the types cannot describe an event
+        ;; differently.
         cem-events (when events
-                     (mapv (fn [[event-key _event-info]]
+                     (mapv (fn [[event-key event-info]]
                              (let [en (resolve-sym event-key sdefs)]
                                {:name en
-                                :type {:text "CustomEvent"}}))
+                                :type {:text (str "CustomEvent<"
+                                                  (generate-event-detail-type (:detail event-info))
+                                                  ">")}}))
                            events))
         cem-slots (if (seq slots)
                     (mapv (fn [s] (if (= s "default") {:name ""} {:name s})) slots)

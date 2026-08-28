@@ -100,12 +100,12 @@
       "events" : [ {
         "name" : "x-drag-panel-drag-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ kind: string; value: string }>"
         }
       }, {
         "name" : "x-drag-panel-drag-cancel",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ kind: string; value: string; reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -400,7 +400,7 @@
       "events" : [ {
         "name" : "x-file-download-click",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ href: string; filename: string }>"
         }
       } ],
       "slots" : [ {
@@ -528,32 +528,32 @@
       "events" : [ {
         "name" : "press",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "press-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "press-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "hover-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "hover-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "focus-visible",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -902,22 +902,22 @@
       "events" : [ {
         "name" : "x-search-field-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-search-field-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-search-field-search",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-search-field-clear",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string }>"
         }
       } ],
       "slots" : [ {
@@ -1205,17 +1205,17 @@
       "events" : [ {
         "name" : "x-date-picker-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; mode: string }>"
         }
       }, {
         "name" : "x-date-picker-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; mode: string; reason: string }>"
         }
       }, {
         "name" : "x-date-picker-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; mode: string; reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -1539,17 +1539,17 @@
       "events" : [ {
         "name" : "x-range-slider-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ start: number; end: number; previousStart: number; previousEnd: number; min: number; max: number }>"
         }
       }, {
         "name" : "x-range-slider-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ start: number; end: number; min: number; max: number }>"
         }
       }, {
         "name" : "x-range-slider-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ start: number; end: number; min: number; max: number }>"
         }
       } ],
       "slots" : [ {
@@ -1684,12 +1684,12 @@
       "events" : [ {
         "name" : "page-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ page: number; previousPage: number }>"
         }
       }, {
         "name" : "page-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ page: number }>"
         }
       } ],
       "slots" : [ {
@@ -1836,12 +1836,12 @@
       "events" : [ {
         "name" : "x-modal-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       }, {
         "name" : "x-modal-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -2207,12 +2207,12 @@
       "events" : [ {
         "name" : "x-switch-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         }
       }, {
         "name" : "x-switch-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; checked: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -2360,12 +2360,12 @@
       "events" : [ {
         "name" : "x-split-pane-resize",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ position: number; orientation: string }>"
         }
       }, {
         "name" : "x-split-pane-resize-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ position: number; orientation: string }>"
         }
       } ],
       "slots" : [ {
@@ -2575,12 +2575,12 @@
       "events" : [ {
         "name" : "x-confetti-fire",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ count: number; origin: string }>"
         }
       }, {
         "name" : "x-confetti-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ duration: number }>"
         }
       } ],
       "slots" : [ {
@@ -2977,12 +2977,12 @@
       "events" : [ {
         "name" : "x-file-upload-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ files: any; rejected: any }>"
         }
       }, {
         "name" : "x-file-upload-remove",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ file: Record<string, any>; remaining: any }>"
         }
       } ],
       "slots" : [ {
@@ -3192,12 +3192,12 @@
       "events" : [ {
         "name" : "x-morph-stack-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ from: string; to: string; reason: string }>"
         }
       }, {
         "name" : "x-morph-stack-changed",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ from: string; to: string }>"
         }
       } ],
       "slots" : [ {
@@ -3479,7 +3479,7 @@
       "events" : [ {
         "name" : "x-liquid-fill-progress",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; velocity: number }>"
         }
       } ],
       "slots" : [ {
@@ -3819,17 +3819,17 @@
       "events" : [ {
         "name" : "x-otp-input-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string; complete: boolean }>"
         }
       }, {
         "name" : "x-otp-input-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string; complete: boolean }>"
         }
       }, {
         "name" : "x-otp-input-complete",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       } ],
       "slots" : [ {
@@ -4020,22 +4020,22 @@
       "events" : [ {
         "name" : "x-cancel-dialogue-cancel-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-cancel-dialogue-cancel",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-cancel-dialogue-confirm-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-cancel-dialogue-confirm",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -4312,17 +4312,17 @@
       "events" : [ {
         "name" : "x-copy-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ text: string; mode: string; from: string; fromAttr: string }>"
         }
       }, {
         "name" : "x-copy-success",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ text: string }>"
         }
       }, {
         "name" : "x-copy-error",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ error: string }>"
         }
       } ],
       "slots" : [ {
@@ -4510,42 +4510,42 @@
       "events" : [ {
         "name" : "x-scroll-timeline-entry-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; previousIndex: number; previousId: string }>"
         }
       }, {
         "name" : "x-scroll-timeline-entry-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         }
       }, {
         "name" : "x-scroll-timeline-entry-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         }
       }, {
         "name" : "x-scroll-timeline-progress",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       }, {
         "name" : "x-scroll-timeline-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-timeline-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-timeline-autoplay-pause",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       }, {
         "name" : "x-scroll-timeline-autoplay-resume",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       } ],
       "slots" : [ {
@@ -4721,12 +4721,12 @@
       "events" : [ {
         "name" : "x-kinetic-font-spring-activate",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-kinetic-font-spring-settle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -4916,17 +4916,17 @@
       "events" : [ {
         "name" : "x-drop-zone-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ kind: string; value: string }>"
         }
       }, {
         "name" : "x-drop-zone-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ kind: string; value: string }>"
         }
       }, {
         "name" : "x-drop-zone-drop",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ kind: string; value: string; from: string | null; to: string; index: number; panel: HTMLElement }>"
         }
       } ],
       "slots" : [ {
@@ -5279,22 +5279,22 @@
       "events" : [ {
         "name" : "x-combobox-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; label: string; previousValue: string }>"
         }
       }, {
         "name" : "x-combobox-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; label: string }>"
         }
       }, {
         "name" : "x-combobox-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ query: string }>"
         }
       }, {
         "name" : "x-combobox-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean; source: string }>"
         }
       } ],
       "slots" : [ {
@@ -5949,42 +5949,42 @@
       "events" : [ {
         "name" : "x-scroll-story-step-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; previousIndex: number; previousId: string }>"
         }
       }, {
         "name" : "x-scroll-story-step-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         }
       }, {
         "name" : "x-scroll-story-step-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; id: string; progress: number }>"
         }
       }, {
         "name" : "x-scroll-story-progress",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       }, {
         "name" : "x-scroll-story-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-story-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-story-autoplay-pause",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       }, {
         "name" : "x-scroll-story-autoplay-resume",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; activeIndex: number; activeId: string }>"
         }
       } ],
       "slots" : [ {
@@ -6129,7 +6129,7 @@
       "events" : [ {
         "name" : "x-proximity-list-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         }
       } ],
       "slots" : [ {
@@ -6208,7 +6208,7 @@
       "events" : [ {
         "name" : "x-timeline-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; status: string; label: string }>"
         }
       } ],
       "slots" : [ {
@@ -6354,17 +6354,17 @@
       "events" : [ {
         "name" : "x-timeline-item-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string; position: string; disabled: boolean }>"
         }
       }, {
         "name" : "x-timeline-item-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string }>"
         }
       }, {
         "name" : "x-timeline-item-click",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string }>"
         }
       } ],
       "slots" : [ {
@@ -6510,12 +6510,12 @@
       "events" : [ {
         "name" : "x-table-sort",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ colIndex: number; direction: string; previousDirection: string }>"
         }
       }, {
         "name" : "x-table-row-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; selectionMode: string }>"
         }
       } ],
       "slots" : [ {
@@ -6626,17 +6626,17 @@
       "events" : [ {
         "name" : "x-table-row-click",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>"
         }
       }, {
         "name" : "x-table-row-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>"
         }
       }, {
         "name" : "x-table-row-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -6829,17 +6829,17 @@
       "events" : [ {
         "name" : "x-table-cell-sort",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         }
       }, {
         "name" : "x-table-cell-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ type: string; scope: string; colSpan: number; rowSpan: number; align: string }>"
         }
       }, {
         "name" : "x-table-cell-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -7194,12 +7194,12 @@
       "events" : [ {
         "name" : "x-select-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; label: string; previousValue: string }>"
         }
       }, {
         "name" : "select-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; label: string }>"
         }
       } ],
       "slots" : [ {
@@ -7345,17 +7345,17 @@
       "events" : [ {
         "name" : "x-menu-open",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-menu-close",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-menu-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string }>"
         }
       } ],
       "slots" : [ {
@@ -7588,17 +7588,17 @@
       "events" : [ {
         "name" : "x-text-area-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         }
       }, {
         "name" : "x-text-area-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-text-area-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       } ],
       "slots" : [ {
@@ -8178,17 +8178,17 @@
       "events" : [ {
         "name" : "x-timeline-item-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string; position: string; disabled: boolean }>"
         }
       }, {
         "name" : "x-timeline-item-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string }>"
         }
       }, {
         "name" : "x-timeline-item-click",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ status: string; label: string }>"
         }
       } ],
       "slots" : [ {
@@ -8378,12 +8378,12 @@
       "events" : [ {
         "name" : "x-popover-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean; source: string }>"
         }
       }, {
         "name" : "x-popover-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -9018,27 +9018,27 @@
       "events" : [ {
         "name" : "x-context-menu-open-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-context-menu-open",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-context-menu-close-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-context-menu-close",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-context-menu-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ item: Record<string, any> }>"
         }
       } ],
       "slots" : [ {
@@ -9223,17 +9223,17 @@
       "events" : [ {
         "name" : "x-floating-panel-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       }, {
         "name" : "x-floating-panel-dismiss-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       }, {
         "name" : "x-floating-panel-move",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ x: number; y: number; source: string }>"
         }
       } ],
       "slots" : [ {
@@ -9384,12 +9384,12 @@
       "events" : [ {
         "name" : "x-scroll-stack-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ stackedCount: number; totalCount: number; progress: number }>"
         }
       }, {
         "name" : "x-scroll-stack-progress",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number; stackedCount: number; totalCount: number }>"
         }
       } ],
       "slots" : [ {
@@ -9590,7 +9590,7 @@
       "events" : [ {
         "name" : "x-menu-item-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string }>"
         }
       } ],
       "slots" : [ {
@@ -9717,7 +9717,7 @@
       "events" : [ {
         "name" : "x-alert-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ type: string; reason: string; text: string }>"
         }
       } ],
       "slots" : [ {
@@ -9913,7 +9913,7 @@
       "events" : [ {
         "name" : "x-stepper-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ from: number; to: number }>"
         }
       } ],
       "slots" : [ {
@@ -10069,12 +10069,12 @@
       "events" : [ {
         "name" : "x-ripple-effect-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ x: number; y: number }>"
         }
       }, {
         "name" : "x-ripple-effect-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ x: number; y: number }>"
         }
       } ],
       "slots" : [ {
@@ -10175,12 +10175,12 @@
       "events" : [ {
         "name" : "x-drawer-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       }, {
         "name" : "x-drawer-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -10432,22 +10432,22 @@
       "events" : [ {
         "name" : "x-welcome-tour-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-welcome-tour-step-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ step: number; previousStep: number }>"
         }
       }, {
         "name" : "x-welcome-tour-complete",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ stepsCompleted: number }>"
         }
       }, {
         "name" : "x-welcome-tour-skip",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ step: number }>"
         }
       } ],
       "slots" : [ {
@@ -10617,12 +10617,12 @@
       "events" : [ {
         "name" : "x-welcome-tour-step-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-welcome-tour-step-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -10743,7 +10743,7 @@
       "events" : [ {
         "name" : "x-progress-complete",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; max: number }>"
         }
       } ],
       "slots" : [ {
@@ -10870,7 +10870,7 @@
       "events" : [ {
         "name" : "x-splash-hidden",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -11046,7 +11046,7 @@
       "events" : [ {
         "name" : "x-toast-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ type: string; reason: string; heading: string; message: string }>"
         }
       } ],
       "slots" : [ {
@@ -11355,12 +11355,12 @@
       "events" : [ {
         "name" : "x-code-copy",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ code: string }>"
         }
       }, {
         "name" : "x-code-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ expanded: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -11635,12 +11635,12 @@
       "events" : [ {
         "name" : "x-chart-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>"
         }
       }, {
         "name" : "x-chart-hover",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ seriesId: string; index: number; x: number; y: number; value: number }>"
         }
       } ],
       "slots" : [ {
@@ -11943,22 +11943,22 @@
       "events" : [ {
         "name" : "x-multi-combobox-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: any; action: string; item: string }>"
         }
       }, {
         "name" : "x-multi-combobox-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: any }>"
         }
       }, {
         "name" : "x-multi-combobox-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ query: string }>"
         }
       }, {
         "name" : "x-multi-combobox-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean; source: string }>"
         }
       } ],
       "slots" : [ {
@@ -12181,17 +12181,17 @@
       "events" : [ {
         "name" : "focus-visible",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "navigate",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ href: string; source: string }>"
         }
       }, {
         "name" : "brand-activate",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       } ],
       "slots" : [ {
@@ -12532,17 +12532,17 @@
       "events" : [ {
         "name" : "x-i18n-loading",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ locale: string }>"
         }
       }, {
         "name" : "x-i18n-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ locale: string }>"
         }
       }, {
         "name" : "x-i18n-error",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ locale: string; message: string }>"
         }
       } ],
       "slots" : [ {
@@ -12777,12 +12777,12 @@
       "events" : [ {
         "name" : "x-calendar-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; start: string; end: string; mode: string }>"
         }
       }, {
         "name" : "x-calendar-navigate",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ month: string }>"
         }
       } ],
       "slots" : [ {
@@ -12937,7 +12937,7 @@
       "events" : [ {
         "name" : "x-chip-remove",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; label: string }>"
         }
       } ],
       "slots" : [ {
@@ -13056,17 +13056,17 @@
       "events" : [ {
         "name" : "x-scroll-parallax-enter",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-parallax-leave",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-scroll-parallax-progress",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       } ],
       "slots" : [ {
@@ -13173,12 +13173,12 @@
       "events" : [ {
         "name" : "x-soft-body-grab",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-soft-body-release",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -13279,17 +13279,17 @@
       "events" : [ {
         "name" : "x-table-row-click",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean }>"
         }
       }, {
         "name" : "x-table-row-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ rowIndex: number; selected: boolean; disabled: boolean; interactive: boolean }>"
         }
       }, {
         "name" : "x-table-row-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -13657,17 +13657,17 @@
       "events" : [ {
         "name" : "x-rating-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; previousValue: number; max: number }>"
         }
       }, {
         "name" : "x-rating-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; max: number }>"
         }
       }, {
         "name" : "x-rating-hover",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; max: number }>"
         }
       } ],
       "slots" : [ {
@@ -13844,12 +13844,12 @@
       "events" : [ {
         "name" : "x-dropdown-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean; source: string }>"
         }
       }, {
         "name" : "x-dropdown-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -14007,17 +14007,17 @@
       "events" : [ {
         "name" : "x-notification-center-push",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ id: string; count: number }>"
         }
       }, {
         "name" : "x-notification-center-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ id: string; type: string; reason: string; text: string; count: number }>"
         }
       }, {
         "name" : "x-notification-center-empty",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -14189,22 +14189,22 @@
       "events" : [ {
         "name" : "x-scroll-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ activeIndex: number; previousIndex: number }>"
         }
       }, {
         "name" : "x-scroll-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ direction: string; activeIndex: number }>"
         }
       }, {
         "name" : "x-scroll-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ activeIndex: number }>"
         }
       }, {
         "name" : "x-scroll-loop",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ direction: string }>"
         }
       } ],
       "slots" : [ {
@@ -14386,12 +14386,12 @@
       "events" : [ {
         "name" : "x-image-load",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ src: string; naturalWidth: number; naturalHeight: number }>"
         }
       }, {
         "name" : "x-image-error",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ src: string }>"
         }
       } ],
       "slots" : [ {
@@ -14564,7 +14564,7 @@
       "events" : [ {
         "name" : "x-progress-circle-complete",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; max: number }>"
         }
       } ],
       "slots" : [ {
@@ -14685,42 +14685,42 @@
       "events" : [ {
         "name" : "press",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "press-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "press-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ source: string }>"
         }
       }, {
         "name" : "hover-start",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "hover-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "focus-visible",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "burst",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ mode: string; pressX: number; pressY: number }>"
         }
       }, {
         "name" : "reform",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ mode: string; duration: number }>"
         }
       } ],
       "slots" : [ {
@@ -15157,7 +15157,7 @@
       "events" : [ {
         "name" : "x-carousel-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; previousIndex: number; reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -15379,17 +15379,17 @@
       "events" : [ {
         "name" : "x-table-cell-sort",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ direction: string; previousDirection: string }>"
         }
       }, {
         "name" : "x-table-cell-connected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ type: string; scope: string; colSpan: number; rowSpan: number; align: string }>"
         }
       }, {
         "name" : "x-table-cell-disconnected",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -15541,12 +15541,12 @@
       "events" : [ {
         "name" : "x-collapse-toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean; source: string }>"
         }
       }, {
         "name" : "x-collapse-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -15679,7 +15679,7 @@
       "events" : [ {
         "name" : "tab-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string }>"
         }
       } ],
       "slots" : [ {
@@ -15926,12 +15926,12 @@
       "events" : [ {
         "name" : "x-form-field-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-form-field-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       } ],
       "slots" : [ {
@@ -16047,7 +16047,7 @@
       "events" : [ {
         "name" : "press",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -16358,17 +16358,17 @@
       "events" : [ {
         "name" : "x-currency-field-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string; previousValue: string }>"
         }
       }, {
         "name" : "x-currency-field-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       }, {
         "name" : "x-currency-field-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ name: string; value: string }>"
         }
       } ],
       "slots" : [ {
@@ -17012,12 +17012,12 @@
       "events" : [ {
         "name" : "x-checkbox-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         }
       }, {
         "name" : "x-checkbox-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; checked: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -17248,7 +17248,7 @@
       "events" : [ {
         "name" : "x-liquid-dock-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ index: number; item: any; source: string }>"
         }
       } ],
       "slots" : [ {
@@ -17448,12 +17448,12 @@
       "events" : [ {
         "name" : "x-radio-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; previousChecked: boolean; nextChecked: boolean }>"
         }
       }, {
         "name" : "x-radio-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; checked: boolean }>"
         }
       } ],
       "slots" : [ {
@@ -17571,7 +17571,7 @@
       "events" : [ {
         "name" : "x-toaster-dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ type: string; reason: string; heading: string; message: string }>"
         }
       } ],
       "slots" : [ {
@@ -17705,12 +17705,12 @@
       "events" : [ {
         "name" : "toggle",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ open: boolean }>"
         }
       }, {
         "name" : "dismiss",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ reason: string }>"
         }
       } ],
       "slots" : [ {
@@ -17856,12 +17856,12 @@
       "events" : [ {
         "name" : "x-form-submit",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ values: Record<string, any> }>"
         }
       }, {
         "name" : "x-form-reset",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -17964,12 +17964,12 @@
       "events" : [ {
         "name" : "x-organic-progress-complete",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       }, {
         "name" : "x-organic-progress-bloom-end",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ progress: number }>"
         }
       } ],
       "slots" : [ {
@@ -18051,12 +18051,12 @@
       "events" : [ {
         "name" : "value-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; previousValue: string }>"
         }
       }, {
         "name" : "value-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string }>"
         }
       } ],
       "slots" : [ {
@@ -18144,7 +18144,7 @@
       "events" : [ {
         "name" : "tab-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string }>"
         }
       } ],
       "slots" : [ {
@@ -18304,12 +18304,12 @@
       "events" : [ {
         "name" : "x-tooltip-show",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-tooltip-hide",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       } ],
       "slots" : [ {
@@ -18835,12 +18835,12 @@
       "events" : [ {
         "name" : "x-color-picker-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; h: number; s: number; l: number; a: number }>"
         }
       }, {
         "name" : "x-color-picker-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: string; h: number; s: number; l: number; a: number }>"
         }
       } ],
       "slots" : [ {
@@ -19012,37 +19012,37 @@
       "events" : [ {
         "name" : "x-command-palette-open-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-command-palette-open",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-command-palette-close-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-command-palette-close",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{}>"
         }
       }, {
         "name" : "x-command-palette-select-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ item: Record<string, any> }>"
         }
       }, {
         "name" : "x-command-palette-select",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ item: Record<string, any> }>"
         }
       }, {
         "name" : "x-command-palette-query-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ query: string }>"
         }
       } ],
       "slots" : [ {
@@ -19330,17 +19330,17 @@
       "events" : [ {
         "name" : "x-slider-change-request",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; previousValue: number; min: number; max: number }>"
         }
       }, {
         "name" : "x-slider-input",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; min: number; max: number }>"
         }
       }, {
         "name" : "x-slider-change",
         "type" : {
-          "text" : "CustomEvent"
+          "text" : "CustomEvent<{ value: number; min: number; max: number }>"
         }
       } ],
       "slots" : [ {
