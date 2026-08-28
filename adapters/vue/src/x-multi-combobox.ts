@@ -57,7 +57,7 @@ export const XMultiCombobox = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", (detail.value));
+          if (detail.value != null) emit("update:modelValue", (detail.value));
           emit("change", e as CustomEvent);
         };
         el.addEventListener("x-multi-combobox-change", handler);

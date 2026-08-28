@@ -17,8 +17,8 @@
     /** Two-way bindable form value — `bind:value={...}`. */
     value?: string;
     oninput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
-    onchangerequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
-    onchange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
+    onchangerequest?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
+    onchange?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
     el?: XDatePickerElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -63,13 +63,13 @@
     const oninputHandler = (e: Event) => oninput?.(e as CustomEvent<{ value: string; mode: string }>);
     node.addEventListener("x-date-picker-input", oninputHandler);
     cleanups.push(() => node.removeEventListener("x-date-picker-input", oninputHandler));
-    const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+    const onchangerequestHandler = (e: Event) => onchangerequest?.(e as CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>);
     node.addEventListener("x-date-picker-change-request", onchangerequestHandler);
     cleanups.push(() => node.removeEventListener("x-date-picker-change-request", onchangerequestHandler));
     const onchangeHandler = (e: Event) => {
-      const detail = (e as CustomEvent<{ value: string; mode: string; reason: string }>).detail;
-      value = String(detail.value);
-      onchange?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+      const detail = (e as CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>).detail;
+      if (detail.value != null) value = String(detail.value);
+      onchange?.(e as CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>);
     };
     node.addEventListener("x-date-picker-change", onchangeHandler);
     cleanups.push(() => node.removeEventListener("x-date-picker-change", onchangeHandler));

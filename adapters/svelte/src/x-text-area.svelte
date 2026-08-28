@@ -66,7 +66,7 @@
     cleanups.push(() => node.removeEventListener("x-text-area-input", oninputHandler));
     const onchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ name: string; value: string }>).detail;
-      value = String(detail.value);
+      if (detail.value != null) value = String(detail.value);
       onchange?.(e as CustomEvent<{ name: string; value: string }>);
     };
     node.addEventListener("x-text-area-change", onchangeHandler);

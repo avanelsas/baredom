@@ -57,7 +57,7 @@
     cleanups.push(() => node.removeEventListener("page-change-request", onpagechangerequestHandler));
     const onpagechangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ page: number }>).detail;
-      page = Number(detail.page);
+      if (detail.page != null) page = Number(detail.page);
       onpagechange?.(e as CustomEvent<{ page: number }>);
     };
     node.addEventListener("page-change", onpagechangeHandler);

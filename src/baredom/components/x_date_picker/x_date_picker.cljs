@@ -284,6 +284,26 @@
 ;; Date selection
 ;; ---------------------------------------------------------------------------
 
+(defn- change-detail
+  "The detail a change or change-request carries.
+
+   Every key is present in every mode, null where the current mode has nothing to
+   say, so a caller reads one shape without branching on `mode` first. They used
+   to be omitted instead, which made the declaration untrue and left a caller
+   testing a field that was never there. `date` is the day a range click is
+   asking for, reported before the component has decided whether it becomes the
+   start, the end, or the start of a fresh range — which is why it is its own
+   field and not one of the other two.
+
+   See https://github.com/avanelsas/baredom/issues/370."
+  [{:keys [value date start end]} mode-s reason]
+  #js {:value  value
+       :date   date
+       :start  start
+       :end    end
+       :mode   mode-s
+       :reason reason})
+
 (defn- set-single-value!
   [^js el ^js d]
   (if d
@@ -298,9 +318,10 @@
           canon  (when state (gobj/get state "canon"))
           mode   (when canon (:mode canon))
           mode-s (if (= mode :range) "range" "single")
-          req-detail (if (= mode :single)
-                       #js {:value (dates/date->iso d) :mode mode-s :reason reason}
-                       #js {:date (dates/date->iso d) :mode mode-s :reason reason})
+          req-detail (change-detail (if (= mode :single)
+                                      {:value (dates/date->iso d)}
+                                      {:date  (dates/date->iso d)})
+                                    mode-s reason)
           allowed? (du/dispatch-cancelable! el model/event-change-request req-detail)]
       (when allowed?
         (if (= mode :single)
@@ -309,7 +330,7 @@
             (read-state! el)
             (render! el)
             (du/dispatch! el model/event-change
-                       #js {:value iso :mode mode-s :reason reason})
+                          (change-detail {:value iso} mode-s reason))
             ;; Auto-close if close-on-select
             (when (du/has-attr? el model/attr-close-on-select)
               (du/remove-attr! el "open")
@@ -362,9 +383,7 @@
                   new-canon (when new-state (gobj/get new-state "canon"))
                   s-iso     (when (:start-d new-canon) (dates/date->iso (:start-d new-canon)))
                   e-iso     (when (:end-d new-canon) (dates/date->iso (:end-d new-canon)))
-                  chg-detail (cond-> #js {:mode mode-s :reason reason}
-                               s-iso (doto (gobj/set "start" s-iso))
-                               e-iso (doto (gobj/set "end" e-iso)))]
+                  chg-detail (change-detail {:start s-iso :end e-iso} mode-s reason)]
               (du/dispatch! el model/event-change chg-detail))))))))
 
 ;; ---------------------------------------------------------------------------
@@ -375,15 +394,20 @@
 
 (defn- clear-detail
   [mode-s reason]
-  (if (= mode-s "range")
-    #js {:start "" :end "" :mode mode-s :reason reason}
-    #js {:value "" :mode mode-s :reason reason}))
+  (change-detail (if (= mode-s "range")
+                   {:start "" :end ""}
+                   {:value ""})
+                 mode-s reason))
 
 (defn- commit-display!
   [^js el reason]
   (let [refs    (du/getv el k-refs)
         ^js inp (when refs (gobj/get refs "input"))
-        val     (when inp (.-value inp))
+        ;; Empty rather than nil when there is no input yet, which `commit()` can
+        ;; reach on an element that was never connected. A text field with no text
+        ;; has the value "", and null on this event would mean the field does not
+        ;; apply — which is what it means on a change, and is not true here.
+        val     (or (when inp (.-value inp)) "")
         state   (du/getv el k-state)
         canon   (when state (gobj/get state "canon"))
         mode    (:mode canon)
@@ -408,12 +432,12 @@
             ;; to ^js ev and read (.-defaultPrevented ev), which is undefined
             ;; on a boolean — so the cancel path never blocked the commit.
             (when (du/dispatch-cancelable! el model/event-change-request
-                                           #js {:value iso :mode mode-s :reason reason})
+                                           (change-detail {:value iso} mode-s reason))
               (set-single-value! el date)
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
-                         #js {:value iso :mode mode-s :reason reason})))))
+                          (change-detail {:value iso} mode-s reason))))))
 
       :else
       (let [{:keys [ok? start end]} (model/parse-display->range val {:separator (:separator canon)})]
@@ -421,16 +445,15 @@
           (let [s-iso (dates/date->iso start)
                 e-iso (dates/date->iso end)]
             (when (du/dispatch-cancelable! el model/event-change-request
-                                           #js {:start s-iso :end e-iso
-                                                :mode mode-s :reason reason})
+                                           (change-detail {:start s-iso :end e-iso}
+                                                          mode-s reason))
               (du/set-attr! el model/attr-start s-iso)
               (du/set-attr! el model/attr-end   e-iso)
               (du/setv! el k-range-step 0)
               (read-state! el)
               (render! el)
               (du/dispatch! el model/event-change
-                         #js {:start s-iso :end e-iso
-                              :mode mode-s :reason reason}))))))))
+                          (change-detail {:start s-iso :end e-iso} mode-s reason)))))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Month navigation
@@ -733,8 +756,11 @@
         canon   (when state (gobj/get state "canon"))
         mode-s  (if (= (:mode canon) :range) "range" "single")]
     (du/setv! el k-display (when inp (.-value inp)))
+    ;; The listener only fires from the input it is attached to, so `inp` is
+    ;; there; the fallback is so every site honours the declared `string` rather
+    ;; than one of them resting on that being true.
     (du/dispatch! el model/event-input
-               #js {:value (when inp (.-value inp)) :mode mode-s})))
+               #js {:value (or (when inp (.-value inp)) "") :mode mode-s})))
 
 (defn- on-input-keydown!
   [^js el ^js e]

@@ -19,8 +19,8 @@ export interface XDatePickerProps {
   required?: boolean;
   defaultValue?: string;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
-  onChangeRequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
-  onChange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
+  onChangeRequest?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
+  onChange?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
   ref?: XDatePickerElement | ((el: XDatePickerElement) => void);
   children?: JSX.Element;
   class?: string;
@@ -60,13 +60,13 @@ export function XDatePicker(props: XDatePickerProps): JSX.Element {
     {
       const handler = (e: Event) => {
         if (local.value !== undefined) e.preventDefault();
-        local.onChangeRequest?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+        local.onChangeRequest?.(e as CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>);
       };
       el.addEventListener("x-date-picker-change-request", handler);
       onCleanup(() => el.removeEventListener("x-date-picker-change-request", handler));
     }
     {
-      const handler = (e: Event) => local.onChange?.(e as CustomEvent<{ value: string; mode: string; reason: string }>);
+      const handler = (e: Event) => local.onChange?.(e as CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>);
       el.addEventListener("x-date-picker-change", handler);
       onCleanup(() => el.removeEventListener("x-date-picker-change", handler));
     }

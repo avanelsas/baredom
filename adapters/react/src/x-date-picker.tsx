@@ -20,8 +20,8 @@ export interface XDatePickerProps {
   required?: boolean;
   defaultValue?: string;
   onInput?: (e: CustomEvent<{ value: string; mode: string }>) => void;
-  onChangeRequest?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
-  onChange?: (e: CustomEvent<{ value: string; mode: string; reason: string }>) => void;
+  onChangeRequest?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
+  onChange?: (e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => void;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;

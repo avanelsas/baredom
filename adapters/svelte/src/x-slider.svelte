@@ -68,7 +68,7 @@
     cleanups.push(() => node.removeEventListener("x-slider-input", oninputHandler));
     const onchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: number; min: number; max: number }>).detail;
-      value = String(detail.value);
+      if (detail.value != null) value = String(detail.value);
       onchange?.(e as CustomEvent<{ value: number; min: number; max: number }>);
     };
     node.addEventListener("x-slider-change", onchangeHandler);

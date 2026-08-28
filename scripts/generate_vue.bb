@@ -163,7 +163,10 @@
                (str "      {\n"
                     "        const handler = (e: Event) => {\n"
                     "          const detail = (e as CustomEvent).detail;\n"
-                    "          emit(\"update:modelValue\", " coerce "(detail." (:detail-field v-model-cfg) "));\n"
+                    ;; See generate_svelte.bb: a null field means the value does
+                    ;; not apply, and coercing it emitted the string "null".
+                    "          if (detail." (:detail-field v-model-cfg) " != null) "
+                    "emit(\"update:modelValue\", " coerce "(detail." (:detail-field v-model-cfg) "));\n"
                     "          emit(\"" emit-name "\", e as CustomEvent);\n"
                     "        };\n"
                     "        el.addEventListener(\"" dom-name "\", handler);\n"

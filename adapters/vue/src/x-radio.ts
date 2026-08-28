@@ -52,7 +52,7 @@ export const XRadio = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", Boolean(detail.checked));
+          if (detail.checked != null) emit("update:modelValue", Boolean(detail.checked));
           emit("change", e as CustomEvent);
         };
         el.addEventListener("x-radio-change", handler);

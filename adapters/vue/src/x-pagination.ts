@@ -53,7 +53,7 @@ export const XPagination = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", Number(detail.page));
+          if (detail.page != null) emit("update:modelValue", Number(detail.page));
           emit("page-change", e as CustomEvent);
         };
         el.addEventListener("page-change", handler);

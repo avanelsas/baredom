@@ -53,7 +53,7 @@
     cleanups.push(() => node.removeEventListener("x-select-change-request", onchangerequestHandler));
     const onselectchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: string; label: string }>).detail;
-      value = String(detail.value);
+      if (detail.value != null) value = String(detail.value);
       onselectchange?.(e as CustomEvent<{ value: string; label: string }>);
     };
     node.addEventListener("select-change", onselectchangeHandler);

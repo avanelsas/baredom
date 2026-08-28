@@ -65,7 +65,7 @@
     cleanups.push(() => node.removeEventListener("x-multi-combobox-change-request", onchangerequestHandler));
     const onchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: any }>).detail;
-      value = (detail.value);
+      if (detail.value != null) value = (detail.value);
       onchange?.(e as CustomEvent<{ value: any }>);
     };
     node.addEventListener("x-multi-combobox-change", onchangeHandler);

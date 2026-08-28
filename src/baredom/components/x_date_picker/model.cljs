@@ -207,10 +207,27 @@
           (format-date (:start-d canon) config)
           :else "")))))
 
+;; A change and a change-request carry one shape in both modes. `value` is filled
+;; in single mode, `start` and `end` in range mode, and `date` is the day a range
+;; click is asking for, named while it is still a request and the component has
+;; not yet decided whether it lands as the start, the end, or the start of a
+;; fresh range. The three are null rather than absent in the mode that has
+;; nothing to say, so a caller reads one shape and null-checks it instead of
+;; testing for a key that was never there.
 (def event-schema
   {event-input          {:cancelable false :detail {:value 'string :mode 'string}}
-   event-change-request {:cancelable true  :detail {:value 'string :mode 'string :reason 'string}}
-   event-change         {:cancelable false :detail {:value 'string :mode 'string :reason 'string}}})
+   event-change-request {:cancelable true  :detail {:value  'NullableString
+                                                    :date   'NullableString
+                                                    :start  'NullableString
+                                                    :end    'NullableString
+                                                    :mode   'string
+                                                    :reason 'string}}
+   event-change         {:cancelable false :detail {:value  'NullableString
+                                                    :date   'NullableString
+                                                    :start  'NullableString
+                                                    :end    'NullableString
+                                                    :mode   'string
+                                                    :reason 'string}}})
 
 (def method-api
   {:focus  {:args [] :returns 'void}

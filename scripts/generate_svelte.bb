@@ -238,7 +238,14 @@
                  (if is-form-change
                    (str "    const " prop-name "Handler = (e: Event) => {\n"
                         "      const detail = (e as CustomEvent<" detail-ts ">).detail;\n"
-                        "      " bindable-name " = " coerce "(detail."
+                        ;; Only when the detail carries one. A null field means
+                        ;; the value does not apply — x-date-picker sends it in
+                        ;; range mode, where there is no single value — and
+                        ;; coercing that wrote the string "null" into the bound
+                        ;; variable and onto the element. An empty string is a
+                        ;; value and still writes.
+                        "      if (detail." (:detail-field form-ctl-cfg) " != null) "
+                        bindable-name " = " coerce "(detail."
                         (:detail-field form-ctl-cfg) ");\n"
                         "      " prop-name "?.(e as CustomEvent<" detail-ts ">);\n"
                         "    };\n"
