@@ -2,7 +2,7 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## Unreleased
+## [3.11.0] - 2026-08-28
 
 ### Fixed
 
@@ -18,7 +18,9 @@ All notable changes to BareDOM will be documented in this file.
   genuinely changes spelling.
 
   Breaking for anyone writing `e.detail.pressX` — which never resolved to anything. Only
-  `x-particle-button` is affected; no other component has a kebab-case detail key.
+  `x-particle-button` is affected; no other component has a kebab-case detail key. Every adapter
+  published the wrong key, so all five are released with it: `-react` 2.4.1, `-angular` 2.10.1,
+  `-vue` 0.4.2, `-svelte` 0.4.2, `-solid` 0.4.1.
 
 ### Added
 
