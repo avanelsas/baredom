@@ -16,7 +16,7 @@ export interface XParticleButtonProps {
   onHoverStart?: (e: CustomEvent<{}>) => void;
   onHoverEnd?: (e: CustomEvent<{}>) => void;
   onFocusVisible?: (e: CustomEvent<{}>) => void;
-  onBurst?: (e: CustomEvent<{ mode: string; pressX: number; pressY: number }>) => void;
+  onBurst?: (e: CustomEvent<{ mode: string; "press-x": number; "press-y": number }>) => void;
   onReform?: (e: CustomEvent<{ mode: string; duration: number }>) => void;
   ref?: XParticleButtonElement | ((el: XParticleButtonElement) => void);
   children?: JSX.Element;
@@ -68,7 +68,7 @@ export function XParticleButton(props: XParticleButtonProps): JSX.Element {
       onCleanup(() => el.removeEventListener("focus-visible", handler));
     }
     {
-      const handler = (e: Event) => local.onBurst?.(e as CustomEvent<{ mode: string; pressX: number; pressY: number }>);
+      const handler = (e: Event) => local.onBurst?.(e as CustomEvent<{ mode: string; "press-x": number; "press-y": number }>);
       el.addEventListener("burst", handler);
       onCleanup(() => el.removeEventListener("burst", handler));
     }

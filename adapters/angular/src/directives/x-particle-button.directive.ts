@@ -27,7 +27,7 @@ export class BaredomParticleButton implements OnInit, OnDestroy {
   @Output() hoverStart = new EventEmitter<CustomEvent<{}>>();
   @Output() hoverEnd = new EventEmitter<CustomEvent<{}>>();
   @Output() focusVisible = new EventEmitter<CustomEvent<{}>>();
-  @Output() burst = new EventEmitter<CustomEvent<{ mode: string; pressX: number; pressY: number }>>();
+  @Output() burst = new EventEmitter<CustomEvent<{ mode: string; "press-x": number; "press-y": number }>>();
   @Output() reform = new EventEmitter<CustomEvent<{ mode: string; duration: number }>>();
 
   ngOnInit(): void {
