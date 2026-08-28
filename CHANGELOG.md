@@ -2,6 +2,37 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- **Event detail keys are published as the component dispatches them.** `x-particle-button`
+  dispatches `#js {:press-x … :press-y …}`, so those are the keys on the event, but the generated
+  types camel-cased them and promised `pressX` and `pressY`. Every typed caller read a field that
+  is not there. The `.d.ts`, `custom-elements.json` and all five adapters now say `"press-x"`,
+  quoted because a hyphenated key is not a bare identifier in a TypeScript type.
+
+  This supersedes the detail half of the 3.3.0 fix "TypeScript declarations", which corrected the
+  same invalid identifiers by renaming them. That made the types compile and made them wrong.
+  Property names are unaffected and still camel-case, because a property reflects an attribute and
+  genuinely changes spelling.
+
+  Breaking for anyone writing `e.detail.pressX` — which never resolved to anything. Only
+  `x-particle-button` is affected; no other component has a kebab-case detail key.
+
+### Added
+
+- **`detail` on every event in `custom-elements.json`** — what an event carries, as data, beside
+  the TypeScript in `type.text`. A reader no longer parses a type expression to learn the shape.
+  Both come from one function, so they cannot disagree.
+
+### Changed
+
+- **`scripts/check_event_api.bb` also compares the manifest with the model.** It read the model on
+  both sides, so anything the generator did between them was invisible — which is how the
+  camel-casing above survived it. It now compares names and types over the union of both sides, so
+  a schema edited without regenerating is caught too.
+
 ## [3.10.0] - 2026-08-28
 
 ### Changed

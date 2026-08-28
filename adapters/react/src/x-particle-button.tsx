@@ -17,7 +17,7 @@ export interface XParticleButtonProps {
   onHoverStart?: (e: CustomEvent<{}>) => void;
   onHoverEnd?: (e: CustomEvent<{}>) => void;
   onFocusVisible?: (e: CustomEvent<{}>) => void;
-  onBurst?: (e: CustomEvent<{ mode: string; pressX: number; pressY: number }>) => void;
+  onBurst?: (e: CustomEvent<{ mode: string; "press-x": number; "press-y": number }>) => void;
   onReform?: (e: CustomEvent<{ mode: string; duration: number }>) => void;
   children?: React.ReactNode;
   className?: string;

@@ -26,7 +26,7 @@ export const XParticleButton = defineComponent({
     "hover-start": (_e: CustomEvent<{}>) => true,
     "hover-end": (_e: CustomEvent<{}>) => true,
     "focus-visible": (_e: CustomEvent<{}>) => true,
-    "burst": (_e: CustomEvent<{ mode: string; pressX: number; pressY: number }>) => true,
+    "burst": (_e: CustomEvent<{ mode: string; "press-x": number; "press-y": number }>) => true,
     "reform": (_e: CustomEvent<{ mode: string; duration: number }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {

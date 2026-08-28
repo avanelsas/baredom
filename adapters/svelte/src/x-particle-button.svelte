@@ -14,7 +14,7 @@
     onhoverstart?: (e: CustomEvent<{}>) => void;
     onhoverend?: (e: CustomEvent<{}>) => void;
     onfocusvisible?: (e: CustomEvent<{}>) => void;
-    onburst?: (e: CustomEvent<{ mode: string; pressX: number; pressY: number }>) => void;
+    onburst?: (e: CustomEvent<{ mode: string; "press-x": number; "press-y": number }>) => void;
     onreform?: (e: CustomEvent<{ mode: string; duration: number }>) => void;
     el?: XParticleButtonElement | null;
     children?: import("svelte").Snippet;
@@ -66,7 +66,7 @@
     const onfocusvisibleHandler = (e: Event) => onfocusvisible?.(e as CustomEvent<{}>);
     node.addEventListener("focus-visible", onfocusvisibleHandler);
     cleanups.push(() => node.removeEventListener("focus-visible", onfocusvisibleHandler));
-    const onburstHandler = (e: Event) => onburst?.(e as CustomEvent<{ mode: string; pressX: number; pressY: number }>);
+    const onburstHandler = (e: Event) => onburst?.(e as CustomEvent<{ mode: string; "press-x": number; "press-y": number }>);
     node.addEventListener("burst", onburstHandler);
     cleanups.push(() => node.removeEventListener("burst", onburstHandler));
     const onreformHandler = (e: Event) => onreform?.(e as CustomEvent<{ mode: string; duration: number }>);

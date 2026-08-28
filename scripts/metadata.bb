@@ -335,26 +335,38 @@
     (or (get string-defs sym) (str sym))
     (str sym)))
 
-;; ── Event detail type generation ─────────────────────────────────────────────
-(defn generate-event-detail-type
-  "Generate TypeScript type for an event detail.
+;; ── Event detail ────────────────────────────────────────────────────────────
+;; A detail field is the key of the `#js {}` literal the component dispatches, so
+;; it reaches JavaScript spelled exactly as the model writes it. It is not
+;; camel-cased on the way out, unlike a property name, which reflects an attribute
+;; and genuinely changes spelling. Camel-casing it published `pressX` for an
+;; `x-particle-button` burst that dispatches `press-x`, so every typed caller read
+;; a field that is not there.
+(defn event-detail-fields
+  "An event detail as [field-name ts-type] pairs.
+
+   A map keeps the order the model declares, which a map literal holds up to eight
+   entries; no detail is near that. A set has no order and is sorted.
    Handles both map format {:key 'type} and set format #{:key1 :key2}."
   [detail]
   (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
+    (set? detail) (map (fn [k] [(name k) "string"]) (sort detail))
+    (map? detail) (map (fn [[k v]] [(name k) (cljs-type->ts v)]) detail)
+    :else         nil))
 
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
+(defn- ts-property-name
+  "`nm` as a TypeScript property name. A name that is not an identifier is quoted,
+   which is how `press-x` is written in a type and how it must be read off a
+   detail."
+  [nm]
+  (if (re-matches #"[A-Za-z_$][A-Za-z0-9_$]*" nm) nm (pr-str nm)))
 
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
+(defn generate-event-detail-type
+  "Generate TypeScript type for an event detail."
+  [detail]
+  (if-let [fields (seq (event-detail-fields detail))]
+    (str "{ " (str/join "; " (map (fn [[nm ty]] (str (ts-property-name nm) ": " ty)) fields)) " }")
+    "{}"))
 
 ;; ── Compound component detection ────────────────────────────────────────────
 (def compound-children

@@ -41,22 +41,10 @@
 
 ;; ── CustomEvent detail → TypeScript object type ─────────────────────────────
 
-(defn event-detail->ts
+(def event-detail->ts
   "Generate a TypeScript type for a CustomEvent detail.
-   Converts kebab-case keys to camelCase for valid TypeScript."
-  [detail]
-  (cond
-    (or (nil? detail) (and (coll? detail) (empty? detail)))
-    "{}"
 
-    (set? detail)
-    (let [fields (map #(str (kebab->camel (name %)) ": string") (sort detail))]
-      (str "{ " (str/join "; " fields) " }"))
-
-    (map? detail)
-    (let [fields (map (fn [[k v]]
-                        (str (kebab->camel (name k)) ": " (cljs-type->ts v)))
-                      detail)]
-      (str "{ " (str/join "; " fields) " }"))
-
-    :else "{}"))
+   This is `metadata.bb`'s function, not a second copy of it. It was a copy, and
+   the two drifted the moment one was corrected: the manifest published `press-x`
+   while five adapters went on publishing `pressX` for the same event."
+  generate-event-detail-type)

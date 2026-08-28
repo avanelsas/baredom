@@ -26,7 +26,8 @@
 ;; Usage: bb scripts/check_event_api.bb
 
 (load-file "scripts/metadata.bb")
-(require '[clojure.set :as set]
+(require '[cheshire.core :as json]
+         '[clojure.set :as set]
          '[clojure.walk :as walk]
          '[edamame.core :as edamame])
 
@@ -199,9 +200,59 @@
              (pr-str (vec (sort (set/difference d ks))))
              ", which no dispatch site sends")))}))
 
+(defn- published
+  "Where what the manifest publishes differs from what the model declares.
+
+   The two checks above read the model on both sides, so anything the emitter does
+   between them is invisible to them: camel-casing a detail key published `pressX`
+   for a burst that dispatches `press-x`, and nothing noticed.
+
+   Field types as well as names, and over the union of the two sides. Reading only
+   the manifest would miss the ordinary way this goes stale, which is a schema
+   edited and the generator not run: the event is absent from the manifest, so
+   there is nothing to iterate and nothing to report."
+  [{:keys [tag-name events string-defs]} manifest]
+  ;; Spelled out rather than borrowed from `event-detail-fields`. That is the
+  ;; emitter's own function, and using it here made both sides agree by
+  ;; construction: with the camel-casing put back this reported nothing, which is
+  ;; the one bug it was written to catch. A check may not share the step it checks.
+  (let [fields    (fn [detail]
+                    (into (sorted-map)
+                          (map (fn [[k v]] [(name k) (cljs-type->ts v)]))
+                          (when (map? detail) detail)))
+        declared  (into {} (map (fn [[k v]] [(resolve-sym k string-defs)
+                                             (fields (:detail v))]))
+                        events)
+        ;; The manifest is read with keywordised keys, so a detail field arrives as
+        ;; `:press-x` and is named back.
+        emitted   (into {} (map (fn [e] [(:name e)
+                                         (into (sorted-map)
+                                               (map (juxt (comp name key) val))
+                                               (:detail e))]))
+                        (get manifest tag-name))]
+    (for [event (sort (set/union (set (keys declared)) (set (keys emitted))))
+          :let  [d (get declared event) e (get emitted event)]
+          :when (not= d e)]
+      (cond
+        (nil? e) (str tag-name " declares " event ", which the manifest does not publish")
+        (nil? d) (str tag-name " does not declare " event ", which the manifest publishes")
+        :else    (str tag-name " declares " event " as " (pr-str d)
+                      " and the manifest publishes " (pr-str e))))))
+
+(defn- manifest-events
+  "Each tag's published events, from the manifest as it stands on disk."
+  []
+  (into {}
+        (for [m (:modules (json/parse-string (slurp "custom-elements.json") true))
+              d (:declarations m)
+              :when (:tagName d)]
+          [(:tagName d) (:events d)])))
+
 (let [models  (filter (comp seq :events) (discover-models))
+      manifest (manifest-events)
       results (map checked models)
-      found   (mapcat :problems results)
+      found   (concat (mapcat :problems results)
+                      (mapcat #(published % manifest) models))
       n-cmp   (reduce + (map (comp count :compared) results))
       n-unr   (reduce + (map (comp count :unread) results))]
   (doseq [p found] (println "  " p))
