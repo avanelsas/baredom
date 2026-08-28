@@ -2,7 +2,7 @@
 
 All notable changes to BareDOM will be documented in this file.
 
-## Unreleased
+## [3.10.0] - 2026-08-28
 
 ### Changed
 
@@ -19,7 +19,8 @@ All notable changes to BareDOM will be documented in this file.
 
 ### Fixed
 
-- **The Svelte and Vue adapters no longer write `"null"` into a bound value.** Both coerced the
+- **The Svelte and Vue adapters no longer write `"null"` into a bound value.** Released as
+  `@vanelsas/baredom-svelte` 0.4.1 and `@vanelsas/baredom-vue` 0.4.1. Both coerced the
   change detail unconditionally — `String(detail.value)`, `Number(detail.page)` — so a detail field
   that did not apply arrived as the literal string `"null"` in `bind:value` / `v-model` and was
   written back onto the element as an attribute. They now write only when the field is present.
