@@ -61,10 +61,12 @@ A calendar date picker with single-date and date-range modes. Renders a text inp
 | Event                       | Cancelable | Detail                                              | Description                              |
 |-----------------------------|------------|------------------------------------------------------|------------------------------------------|
 | `x-date-picker-input`       | no         | `{ value, mode }`                                   | Fired on each user text input            |
-| `x-date-picker-change-request` | **yes** | `{ value?, date?, start?, end?, mode, reason }`     | Fired before committing a date selection |
-| `x-date-picker-change`      | no         | `{ value?, start?, end?, mode, reason }`            | Fired after the selection is committed   |
+| `x-date-picker-change-request` | **yes** | `{ value, date, start, end, mode, reason }`         | Fired before committing a date selection |
+| `x-date-picker-change`      | no         | `{ value, date, start, end, mode, reason }`         | Fired after the selection is committed   |
 
-`reason` is one of `"click"`, `"keyboard"`, `"blur"`, or `"programmatic"`. In single mode, `value` contains the ISO date string. In range mode, `start` and `end` contain the ISO date strings (either may be absent if the range is incomplete).
+`reason` is one of `"click"`, `"keyboard"`, `"blur"`, or `"programmatic"`.
+
+Every key is always present and `null` where the current mode has nothing to say, so a handler null-checks rather than testing for a missing key. In single mode `value` holds the ISO date string. In range mode `start` and `end` hold them, and either is `null` while the range is incomplete. `date` appears on a range click and is the day being asked for, before the component has decided whether it becomes the start, the end, or the start of a fresh range; it is `null` otherwise.
 
 ### Clearing by emptying the input
 

@@ -1210,12 +1210,12 @@
       }, {
         "name" : "x-date-picker-change-request",
         "type" : {
-          "text" : "CustomEvent<{ value: string; mode: string; reason: string }>"
+          "text" : "CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>"
         }
       }, {
         "name" : "x-date-picker-change",
         "type" : {
-          "text" : "CustomEvent<{ value: string; mode: string; reason: string }>"
+          "text" : "CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>"
         }
       } ],
       "slots" : [ {

@@ -29,8 +29,8 @@ export class BaredomDatePicker implements OnInit, OnDestroy {
   @Input() set required(v: boolean) { this.el.required = v as any; }
 
   @Output() input = new EventEmitter<CustomEvent<{ value: string; mode: string }>>();
-  @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string; mode: string; reason: string }>>();
-  @Output() change = new EventEmitter<CustomEvent<{ value: string; mode: string; reason: string }>>();
+  @Output() changeRequest = new EventEmitter<CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>>();
+  @Output() change = new EventEmitter<CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>>();
 
   ngOnInit(): void {
     this.listen('x-date-picker-input', this.input);

@@ -55,7 +55,7 @@
     cleanups.push(() => node.removeEventListener("x-switch-change-request", onchangerequestHandler));
     const onchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: string; checked: boolean }>).detail;
-      checked = Boolean(detail.checked);
+      if (detail.checked != null) checked = Boolean(detail.checked);
       onchange?.(e as CustomEvent<{ value: string; checked: boolean }>);
     };
     node.addEventListener("x-switch-change", onchangeHandler);

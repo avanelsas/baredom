@@ -51,7 +51,7 @@ export const XSelect = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", String(detail.value));
+          if (detail.value != null) emit("update:modelValue", String(detail.value));
           emit("select-change", e as CustomEvent);
         };
         el.addEventListener("select-change", handler);

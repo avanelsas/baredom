@@ -56,7 +56,7 @@ export const XCombobox = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", String(detail.value));
+          if (detail.value != null) emit("update:modelValue", String(detail.value));
           emit("change", e as CustomEvent);
         };
         el.addEventListener("x-combobox-change", handler);

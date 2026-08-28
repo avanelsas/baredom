@@ -45,7 +45,7 @@
     cleanups.push(() => node.removeEventListener("value-change-request", onvaluechangerequestHandler));
     const onvaluechangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: string }>).detail;
-      value = String(detail.value);
+      if (detail.value != null) value = String(detail.value);
       onvaluechange?.(e as CustomEvent<{ value: string }>);
     };
     node.addEventListener("value-change", onvaluechangeHandler);

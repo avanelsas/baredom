@@ -2,6 +2,39 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- **`x-date-picker` change details are one shape in both modes.** `x-date-picker-change` and
+  `x-date-picker-change-request` carried a different key set per mode — `value` in single mode,
+  `start` and `end` in range mode, and `date` on a range click — while `event-schema` declared only
+  the first. Every key is now always present and `null` where the mode has nothing to say, so the
+  declaration is true and a handler null-checks instead of testing for a key that was never there.
+
+  This widens the published types from `string` to `string | null` for `value`, `date`, `start` and
+  `end` on those two events, in `custom-elements.json`, the `.d.ts` files and all five framework
+  adapters. A consumer writing `const v: string = e.detail.value` will need a null check. Nothing
+  about when the events fire has changed.
+
+### Fixed
+
+- **The Svelte and Vue adapters no longer write `"null"` into a bound value.** Both coerced the
+  change detail unconditionally — `String(detail.value)`, `Number(detail.page)` — so a detail field
+  that did not apply arrived as the literal string `"null"` in `bind:value` / `v-model` and was
+  written back onto the element as an attribute. They now write only when the field is present.
+  `false`, `0` and `""` are values and still write; only `null` and `undefined` are skipped.
+  Affects the twelve form controls in each adapter. React, Solid and Angular do not write back and
+  were never affected.
+
+### Added
+
+- **`scripts/check_event_api.bb`** — a CI check that reads each component's dispatch calls and
+  asserts the manifest's event details agree with them. It reads forms rather than text, follows a
+  detail through a `let`, a helper, a namespace alias and `clj->js`, and reports what it could not
+  read rather than counting it as agreement. 198 of 201 events are compared; the three it cannot
+  resolve are named. It is what found the `x-date-picker` mismatch above.
+
 ## [3.9.0] - 2026-08-26
 
 The manifest declares `schemaVersion 1.0.0` and omitted three fields the schema defines. It now

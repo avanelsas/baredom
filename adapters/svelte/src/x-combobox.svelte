@@ -63,7 +63,7 @@
     cleanups.push(() => node.removeEventListener("x-combobox-change-request", onchangerequestHandler));
     const onchangeHandler = (e: Event) => {
       const detail = (e as CustomEvent<{ value: string; label: string }>).detail;
-      value = String(detail.value);
+      if (detail.value != null) value = String(detail.value);
       onchange?.(e as CustomEvent<{ value: string; label: string }>);
     };
     node.addEventListener("x-combobox-change", onchangeHandler);

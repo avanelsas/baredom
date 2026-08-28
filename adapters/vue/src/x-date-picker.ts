@@ -30,8 +30,8 @@ export const XDatePicker = defineComponent({
   emits: {
     "update:modelValue": (_v: string) => true,
     "input": (_e: CustomEvent<{ value: string; mode: string }>) => true,
-    "change-request": (_e: CustomEvent<{ value: string; mode: string; reason: string }>) => true,
-    "change": (_e: CustomEvent<{ value: string; mode: string; reason: string }>) => true,
+    "change-request": (_e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => true,
+    "change": (_e: CustomEvent<{ value: string | null; date: string | null; start: string | null; end: string | null; mode: string; reason: string }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XDatePickerElement | null>(null);
@@ -62,7 +62,7 @@ export const XDatePicker = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", String(detail.value));
+          if (detail.value != null) emit("update:modelValue", String(detail.value));
           emit("change", e as CustomEvent);
         };
         el.addEventListener("x-date-picker-change", handler);

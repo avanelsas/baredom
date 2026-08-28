@@ -53,7 +53,7 @@ export const XCheckbox = defineComponent({
       {
         const handler = (e: Event) => {
           const detail = (e as CustomEvent).detail;
-          emit("update:modelValue", Boolean(detail.checked));
+          if (detail.checked != null) emit("update:modelValue", Boolean(detail.checked));
           emit("change", e as CustomEvent);
         };
         el.addEventListener("x-checkbox-change", handler);
