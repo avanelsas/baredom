@@ -2,6 +2,21 @@
 
 All notable changes to BareDOM will be documented in this file.
 
+## [3.12.0] - 2026-09-15
+
+### Added
+
+- **`x-file-download` saves through the native save dialog.** A new `picker` attribute makes a
+  click open `showSaveFilePicker`, so the user chooses the folder and the name. The component
+  then fetches `href` and streams it into the chosen file, and reports the outcome as
+  `x-file-download-success`, `x-file-download-cancel` or `x-file-download-error` with the failing
+  phase. Browsers without the API, such as Firefox, Safari and Brave, keep the plain download, as
+  do cross-origin frames and a dialog that cannot open. `picker` is off by default, so existing
+  pages are unchanged.
+
+  All five adapters gain the `picker` prop and the three events: `-react` 2.5.0, `-angular`
+  2.11.0, `-vue` 0.5.0, `-svelte` 0.5.0, `-solid` 0.5.0.
+
 ## [3.11.0] - 2026-08-28
 
 ### Fixed
