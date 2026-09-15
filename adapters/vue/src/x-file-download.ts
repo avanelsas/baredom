@@ -18,9 +18,13 @@ export const XFileDownload = defineComponent({
     href: { type: String as PropType<string | undefined>, default: undefined },
     filename: { type: String as PropType<string | undefined>, default: undefined },
     disabled: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    picker: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   emits: {
     "click": (_e: CustomEvent<{ href: string; filename: string }>) => true,
+    "success": (_e: CustomEvent<{ filename: string }>) => true,
+    "cancel": (_e: CustomEvent<{}>) => true,
+    "error": (_e: CustomEvent<{ error: string; phase: string }>) => true,
   },
   setup(props, { emit, attrs, slots, expose }) {
     const elRef = ref<XFileDownloadElement | null>(null);
@@ -34,6 +38,21 @@ export const XFileDownload = defineComponent({
         const handler = (e: Event) => emit("click", e as CustomEvent);
         el.addEventListener("x-file-download-click", handler);
         cleanup.push(() => el.removeEventListener("x-file-download-click", handler));
+      }
+      {
+        const handler = (e: Event) => emit("success", e as CustomEvent);
+        el.addEventListener("x-file-download-success", handler);
+        cleanup.push(() => el.removeEventListener("x-file-download-success", handler));
+      }
+      {
+        const handler = (e: Event) => emit("cancel", e as CustomEvent);
+        el.addEventListener("x-file-download-cancel", handler);
+        cleanup.push(() => el.removeEventListener("x-file-download-cancel", handler));
+      }
+      {
+        const handler = (e: Event) => emit("error", e as CustomEvent);
+        el.addEventListener("x-file-download-error", handler);
+        cleanup.push(() => el.removeEventListener("x-file-download-error", handler));
       }
     });
 

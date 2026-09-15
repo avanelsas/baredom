@@ -10,7 +10,11 @@ export interface XFileDownloadProps {
   href?: string;
   filename?: string;
   disabled?: boolean;
+  picker?: boolean;
   onClick?: (e: CustomEvent<{ href: string; filename: string }>) => void;
+  onSuccess?: (e: CustomEvent<{ filename: string }>) => void;
+  onCancel?: (e: CustomEvent<{}>) => void;
+  onError?: (e: CustomEvent<{ error: string; phase: string }>) => void;
   ref?: XFileDownloadElement | ((el: XFileDownloadElement) => void);
   children?: JSX.Element;
   class?: string;
@@ -20,7 +24,7 @@ export interface XFileDownloadProps {
 }
 
 export function XFileDownload(props: XFileDownloadProps): JSX.Element {
-  const [local, others] = splitProps(props, ["onClick", "ref", "children"]);
+  const [local, others] = splitProps(props, ["onClick", "onSuccess", "onCancel", "onError", "ref", "children"]);
   let el!: XFileDownloadElement;
 
   const setRef = (r: XFileDownloadElement) => {
@@ -34,6 +38,21 @@ export function XFileDownload(props: XFileDownloadProps): JSX.Element {
       const handler = (e: Event) => local.onClick?.(e as CustomEvent<{ href: string; filename: string }>);
       el.addEventListener("x-file-download-click", handler);
       onCleanup(() => el.removeEventListener("x-file-download-click", handler));
+    }
+    {
+      const handler = (e: Event) => local.onSuccess?.(e as CustomEvent<{ filename: string }>);
+      el.addEventListener("x-file-download-success", handler);
+      onCleanup(() => el.removeEventListener("x-file-download-success", handler));
+    }
+    {
+      const handler = (e: Event) => local.onCancel?.(e as CustomEvent<{}>);
+      el.addEventListener("x-file-download-cancel", handler);
+      onCleanup(() => el.removeEventListener("x-file-download-cancel", handler));
+    }
+    {
+      const handler = (e: Event) => local.onError?.(e as CustomEvent<{ error: string; phase: string }>);
+      el.addEventListener("x-file-download-error", handler);
+      onCleanup(() => el.removeEventListener("x-file-download-error", handler));
     }
   });
 

@@ -20,11 +20,18 @@ export class BaredomFileDownload implements OnInit, OnDestroy {
   @Input() set href(v: string) { this.el.href = v as any; }
   @Input() set filename(v: string) { this.el.filename = v as any; }
   @Input() set disabled(v: boolean) { this.el.disabled = v as any; }
+  @Input() set picker(v: boolean) { this.el.picker = v as any; }
 
   @Output() click = new EventEmitter<CustomEvent<{ href: string; filename: string }>>();
+  @Output() success = new EventEmitter<CustomEvent<{ filename: string }>>();
+  @Output() cancel = new EventEmitter<CustomEvent<{}>>();
+  @Output() error = new EventEmitter<CustomEvent<{ error: string; phase: string }>>();
 
   ngOnInit(): void {
     this.listen('x-file-download-click', this.click);
+    this.listen('x-file-download-success', this.success);
+    this.listen('x-file-download-cancel', this.cancel);
+    this.listen('x-file-download-error', this.error);
   }
 
   ngOnDestroy(): void {

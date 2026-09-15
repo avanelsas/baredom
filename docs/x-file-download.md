@@ -10,35 +10,74 @@ A styled, accessible button-like anchor that initiates a native browser file dow
 
 ## Attributes
 
-| Attribute    | Type    | Default | Description                                          |
-|--------------|---------|---------|------------------------------------------------------|
-| `href`       | string  | `""`    | URL of the file to download                          |
-| `filename`   | string  | `""`    | Suggested save name (`<a download="…">`)             |
-| `disabled`   | boolean | false   | Prevents click interaction and dims the component    |
-| `aria-label` | string  | —       | Accessible label when slot content is absent         |
+| Attribute    | Type    | Default | Description                                                  |
+|--------------|---------|---------|--------------------------------------------------------------|
+| `href`       | string  | `""`    | URL of the file to download                                  |
+| `filename`   | string  | `""`    | Suggested save name (`<a download="…">`)                     |
+| `disabled`   | boolean | false   | Prevents click interaction and dims the component            |
+| `aria-label` | string  | —       | Accessible label when slot content is absent                 |
+| `picker`     | boolean | false   | Saves through the native save dialog when the browser has one |
 
 When `href` is a `data:` URL and no `filename` is provided, the component automatically sets the `download` attribute on the inner anchor. This is required because browsers block top-level navigation to `data:` URLs — without the `download` attribute the link would do nothing.
 
 ## Properties
 
-| Property   | Type    | Reflects   | Description                        |
-|------------|---------|------------|------------------------------------|
-| `href`     | string  | `href`     | URL of the file to download        |
-| `filename` | string  | `filename` | Suggested save name for the file   |
-| `disabled` | boolean | `disabled` | Whether the component is disabled  |
+| Property   | Type    | Reflects   | Description                         |
+|------------|---------|------------|-------------------------------------|
+| `href`     | string  | `href`     | URL of the file to download         |
+| `filename` | string  | `filename` | Suggested save name for the file    |
+| `disabled` | boolean | `disabled` | Whether the component is disabled   |
+| `picker`   | boolean | `picker`   | Whether saving uses the save dialog |
+
+## Saving through the save dialog
+
+With `picker`, a click opens the native save dialog (`showSaveFilePicker`). The user chooses the folder and the name. The component then fetches `href` and writes the response into the chosen file.
+
+```html
+<x-file-download picker href="/exports/project.zip" filename="project.zip">
+  Save project
+</x-file-download>
+```
+
+A page that builds the file in the browser sets `href` to an object URL:
+
+```js
+el.href = URL.createObjectURL(zipBlob);
+```
+
+The dialog is used when all of these hold. Otherwise the click is a normal download.
+
+- `picker` is set and `href` is not empty
+- the browser has `showSaveFilePicker`
+- the page is a secure context
+- the page is not inside a cross-origin or sandboxed iframe
+
+The dialog suggests `filename`. Without `filename` it suggests the last path segment of `href`. A `blob:` or `data:` URL without `filename` has no suggestion.
+
+While a save runs, the host has `data-busy`, the anchor has `aria-busy="true"` and the cursor shows progress. Clicks are ignored until the save ends.
 
 ## Events
 
-| Event                   | Cancelable | Detail                               |
-|-------------------------|------------|--------------------------------------|
-| `x-file-download-click` | yes        | `{ href: string, filename: string }` |
+| Event                     | Cancelable | Detail                               |
+|---------------------------|------------|--------------------------------------|
+| `x-file-download-click`   | yes        | `{ href: string, filename: string }` |
+| `x-file-download-success` | no         | `{ filename: string }`               |
+| `x-file-download-cancel`  | no         | `{}`                                 |
+| `x-file-download-error`   | no         | `{ error: string, phase: string }`   |
 
-Dispatched on the host element before the native download begins. Calling `event.preventDefault()` suppresses the download.
+`x-file-download-click` is dispatched on the host element before the download or the dialog. Calling `event.preventDefault()` suppresses both.
+
+The other three events fire only when the save dialog is used:
+
+- `x-file-download-success`: the file is written. `filename` is the name the user chose.
+- `x-file-download-cancel`: the user closed the dialog. The browser also reports a folder it refuses as a cancel.
+- `x-file-download-error`: the save failed. `error` is the error name (for example `NotAllowedError` or `TypeError`), or `HTTP <status>` for a failed response. `phase` is `pick`, `fetch` or `write`.
+
+When the dialog cannot open (`SecurityError`), the component starts a normal download instead and dispatches none of these events. Removing the element during a save aborts it with `error: "AbortError"`.
 
 ```js
-el.addEventListener('x-file-download-click', (e) => {
-  console.log(e.detail.href, e.detail.filename);
-  // e.preventDefault() — suppresses the download
+el.addEventListener('x-file-download-error', (e) => {
+  console.log(e.detail.error, e.detail.phase);
 });
 ```
 
@@ -80,6 +119,15 @@ el.addEventListener('x-file-download-click', (e) => {
 - When `disabled`, `aria-disabled="true"` is set on the anchor and `pointer-events: none` prevents mouse interaction.
 - Provide meaningful slot content or an `aria-label` attribute for screen reader users.
 - The icon SVG is decorative (`aria-hidden="true"`).
+- While a save runs, `aria-busy="true"` is set on the anchor.
+- The component announces nothing. Use the outcome events to announce success or failure, for example with `x-toast`.
+
+## Known limits
+
+- In picker mode the component fetches `href` itself. A cross-origin `href` needs CORS, or the save fails with `error: "TypeError"` and `phase: "fetch"`.
+- Picking an existing file and then failing may leave that file empty.
+- Firefox, Safari and Brave (by default) have no save dialog. They always download.
+- A normal download cannot report whether the user saved or cancelled.
 
 ## Usage Examples
 

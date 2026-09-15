@@ -10,13 +10,17 @@
 (def ^:private k-refs     "__xFileDownloadRefs")
 (def ^:private k-model    "__xFileDownloadModel")
 (def ^:private k-handlers "__xFileDownloadHandlers")
+;; Untraced: an opaque in-flight AbortController. data-busy and the outcome events trace the save.
+(def ^:private k-abort    "__xFileDownloadAbort")
 
 ;; ── String-literal constants ──────────────────────────────────────────────
 (def ^:private attr-part          "part")
 (def ^:private attr-download      "download")
 (def ^:private attr-aria-label    "aria-label")
 (def ^:private attr-aria-disabled "aria-disabled")
+(def ^:private attr-aria-busy     "aria-busy")
 (def ^:private attr-data-disabled "data-disabled")
+(def ^:private attr-data-busy     "data-busy")
 
 (def ^:private part-anchor  "anchor")
 (def ^:private part-icon    "icon")
@@ -105,6 +109,9 @@
    "pointer-events:none;"
    "cursor:default;"
    "}"
+   ":host([data-busy]) [part=anchor]{"
+   "cursor:progress;"
+   "}"
    "@media (prefers-reduced-motion:reduce){"
    "[part=anchor]{transition:none;}"
    "}"))
@@ -162,7 +169,8 @@
    {:href-raw          (du/get-attr el model/attr-href)
     :filename-raw      (du/get-attr el model/attr-filename)
     :disabled-present? (du/has-attr? el model/attr-disabled)
-    :aria-label-raw    (du/get-attr el model/attr-aria-label)}))
+    :aria-label-raw    (du/get-attr el model/attr-aria-label)
+    :picker-present?   (du/has-attr? el model/attr-picker)}))
 
 ;; ---------------------------------------------------------------------------
 ;; DOM patching (render-orchestrator: phase list of named helpers)
@@ -170,17 +178,9 @@
 (defn- apply-href! [^js anchor-el {:keys [href]}]
   (set! (.-href anchor-el) href))
 
-(defn- apply-download-attr! [^js anchor-el {:keys [href filename]}]
-  ;; data: URLs must always carry the download attribute — browsers block
-  ;; top-frame navigation to data URLs, so without it clicking fails.
-  (cond
-    (and (string? filename) (not= filename ""))
-    (du/set-attr! anchor-el attr-download filename)
-
-    (model/data-url? href)
-    (du/set-attr! anchor-el attr-download "")
-
-    :else
+(defn- apply-download-attr! [^js anchor-el m]
+  (if-some [download (model/download-value m)]
+    (du/set-attr!    anchor-el attr-download download)
     (du/remove-attr! anchor-el attr-download)))
 
 (defn- apply-anchor-aria! [^js anchor-el {:keys [disabled? aria-label]}]
@@ -211,19 +211,119 @@
         (apply-model! el new-m)))))
 
 ;; ---------------------------------------------------------------------------
+;; Save through the native save dialog
+;; ---------------------------------------------------------------------------
+(defn- saving? [^js el]
+  (some? (du/getv el k-abort)))
+
+(defn- apply-busy! [^js el busy?]
+  (let [^js anchor-el (gobj/get (du/getv el k-refs) rk-anchor)]
+    (du/set-bool-attr! el attr-data-busy busy?)
+    (if busy?
+      (du/set-attr!    anchor-el attr-aria-busy val-true)
+      (du/remove-attr! anchor-el attr-aria-busy))))
+
+(defn- set-saving! [^js el controller]
+  (du/setv-untraced! el k-abort controller)
+  (apply-busy! el (some? controller)))
+
+(defn- top-reachable? []
+  (try
+    (some? (.. js/window -top -location -href))
+    (catch :default _ false)))
+
+(defn- picker-usable? [{:keys [picker? href]}]
+  (and picker?
+       (not= href "")
+       (fn? (.-showSaveFilePicker js/window))
+       (top-reachable?)))
+
+(defn- start-fallback-download! [m]
+  (.click (doto (.createElement js/document "a")
+            (apply-href! m)
+            (apply-download-attr! m))))
+
+(defn- failure-in [phase]
+  (fn tag-failure [err]
+    (js/Promise.reject
+     (if (map? err)
+       err
+       {:phase phase :error (model/error-name err)}))))
+
+(defn- empty-body []
+  (.-body (js/Response. "")))
+
+(defn- open-picker! [m]
+  (js/Promise.
+   (fn call-picker [resolve]
+     (resolve (.showSaveFilePicker js/window (clj->js (model/picker-options m)))))))
+
+(defn- fetch-ok! [^js signal href]
+  (.then (js/fetch href #js {:signal signal})
+         (fn response-received [^js response]
+           (if (.-ok response)
+             response
+             (js/Promise.reject {:phase model/phase-fetch
+                                 :error (model/http-error (.-status response))})))))
+
+(defn- write-response! [^js signal ^js handle ^js response]
+  (.then (.createWritable handle)
+         (fn writable-created [^js writable]
+           (let [^js body (or (.-body response) (empty-body))]
+             (.pipeTo body writable #js {:signal signal})))))
+
+(defn- save-to-handle! [^js signal href ^js handle]
+  (-> (fetch-ok! signal href)
+      (.catch (failure-in model/phase-fetch))
+      (.then (fn fetched [^js response]
+               (.catch (write-response! signal handle response)
+                       (failure-in model/phase-write))))
+      (.then (fn written [_]
+               (.-name handle)))))
+
+(defn- on-saved! [^js el filename]
+  (set-saving! el nil)
+  (du/dispatch! el model/event-success (model/success-detail filename)))
+
+(defn- on-failed! [^js el m {:keys [phase error] :as failure}]
+  (set-saving! el nil)
+  (case (model/failure-outcome failure)
+    :cancel   (du/dispatch! el model/event-cancel (model/cancel-detail))
+    :fallback (start-fallback-download! m)
+    :error    (du/dispatch! el model/event-error (model/error-detail error phase))))
+
+(defn- start-save! [^js el m]
+  (let [^js controller (js/AbortController.)
+        signal         (.-signal controller)]
+    (set-saving! el controller)
+    (-> (open-picker! m)
+        (.catch (failure-in model/phase-pick))
+        (.then (fn picked [^js handle]
+                 (save-to-handle! signal (:href m) handle)))
+        (.then (fn saved [filename]
+                 (on-saved! el filename))
+               (fn failed [failure]
+                 (on-failed! el m failure))))))
+
+(defn- abort-save! [^js el]
+  (when-some [^js controller (du/getv el k-abort)]
+    (.abort controller)))
+
+;; ---------------------------------------------------------------------------
 ;; Event handlers
 ;; ---------------------------------------------------------------------------
 (defn- on-anchor-click [^js el ^js evt]
-  (let [disabled? (du/has-attr? el model/attr-disabled)]
-    (if disabled?
+  (let [m (du/getv el k-model)]
+    (cond
+      (or (:disabled? m) (saving? el))
       (.preventDefault evt)
-      ;; current-model isn't worth the bookkeeping for one read site; a fresh
-      ;; read is fine here because clicks are user-driven and rare relative
-      ;; to attribute mutations.
-      (let [m      (read-model el)
-            detail #js {:href (:href m) :filename (:filename m)}]
-        (when-not (du/dispatch-cancelable! el model/event-click detail)
-          (.preventDefault evt))))))
+
+      (not (du/dispatch-cancelable! el model/event-click (model/click-detail m)))
+      (.preventDefault evt)
+
+      (picker-usable? m)
+      (do (.preventDefault evt)
+          (start-save! el m)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Listener management
@@ -256,7 +356,8 @@
   (update-from-attrs! el))
 
 (defn- disconnected! [^js el]
-  (remove-listeners! el))
+  (remove-listeners! el)
+  (abort-save! el))
 
 (defn- attribute-changed! [^js el _name old-val new-val]
   (when (not= old-val new-val)
