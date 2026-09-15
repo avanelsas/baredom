@@ -11,7 +11,11 @@ export interface XFileDownloadProps {
   href?: string;
   filename?: string;
   disabled?: boolean;
+  picker?: boolean;
   onClick?: (e: CustomEvent<{ href: string; filename: string }>) => void;
+  onSuccess?: (e: CustomEvent<{ filename: string }>) => void;
+  onCancel?: (e: CustomEvent<{}>) => void;
+  onError?: (e: CustomEvent<{ error: string; phase: string }>) => void;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -21,7 +25,7 @@ export interface XFileDownloadProps {
 
 export const XFileDownload = forwardRef<XFileDownloadElement, XFileDownloadProps>(
   function XFileDownload(props, forwardedRef) {
-    const { onClick, children, ...rest } = props;
+    const { onClick, onSuccess, onCancel, onError, children, ...rest } = props;
     const innerRef = useRef<XFileDownloadElement>(null);
 
     const setRef = (el: XFileDownloadElement | null) => {
@@ -39,9 +43,21 @@ export const XFileDownload = forwardRef<XFileDownloadElement, XFileDownloadProps
         el.addEventListener("x-file-download-click", onClick as EventListener);
         cleanup.push(() => el.removeEventListener("x-file-download-click", onClick as EventListener));
       }
+      if (onSuccess) {
+        el.addEventListener("x-file-download-success", onSuccess as EventListener);
+        cleanup.push(() => el.removeEventListener("x-file-download-success", onSuccess as EventListener));
+      }
+      if (onCancel) {
+        el.addEventListener("x-file-download-cancel", onCancel as EventListener);
+        cleanup.push(() => el.removeEventListener("x-file-download-cancel", onCancel as EventListener));
+      }
+      if (onError) {
+        el.addEventListener("x-file-download-error", onError as EventListener);
+        cleanup.push(() => el.removeEventListener("x-file-download-error", onError as EventListener));
+      }
 
       return () => cleanup.forEach(fn => fn());
-    }, [onClick]);
+    }, [onClick, onSuccess, onCancel, onError]);
 
     return <x-file-download ref={setRef} {...rest}>{children}</x-file-download>;
   }

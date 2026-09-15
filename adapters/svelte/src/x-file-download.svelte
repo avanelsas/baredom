@@ -8,7 +8,11 @@
     href?: string;
     filename?: string;
     disabled?: boolean;
+    picker?: boolean;
     onclick?: (e: CustomEvent<{ href: string; filename: string }>) => void;
+    onsuccess?: (e: CustomEvent<{ filename: string }>) => void;
+    oncancel?: (e: CustomEvent<{}>) => void;
+    onerror?: (e: CustomEvent<{ error: string; phase: string }>) => void;
     el?: XFileDownloadElement | null;
     children?: import("svelte").Snippet;
     class?: string;
@@ -22,7 +26,11 @@
     href,
     filename,
     disabled,
+    picker,
     onclick,
+    onsuccess,
+    oncancel,
+    onerror,
     el = $bindable(null),
     children,
     class: className,
@@ -37,6 +45,15 @@
     const onclickHandler = (e: Event) => onclick?.(e as CustomEvent<{ href: string; filename: string }>);
     node.addEventListener("x-file-download-click", onclickHandler);
     cleanups.push(() => node.removeEventListener("x-file-download-click", onclickHandler));
+    const onsuccessHandler = (e: Event) => onsuccess?.(e as CustomEvent<{ filename: string }>);
+    node.addEventListener("x-file-download-success", onsuccessHandler);
+    cleanups.push(() => node.removeEventListener("x-file-download-success", onsuccessHandler));
+    const oncancelHandler = (e: Event) => oncancel?.(e as CustomEvent<{}>);
+    node.addEventListener("x-file-download-cancel", oncancelHandler);
+    cleanups.push(() => node.removeEventListener("x-file-download-cancel", oncancelHandler));
+    const onerrorHandler = (e: Event) => onerror?.(e as CustomEvent<{ error: string; phase: string }>);
+    node.addEventListener("x-file-download-error", onerrorHandler);
+    cleanups.push(() => node.removeEventListener("x-file-download-error", onerrorHandler));
     return () => cleanups.forEach((fn) => fn());
   });
 </script>
@@ -46,6 +63,7 @@
   {href}
   {filename}
   {disabled}
+  {picker}
   class={className}
   {id}
   {...rest}

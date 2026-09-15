@@ -94,6 +94,20 @@
         </x-file-download>
       </div>
 
+      <x-typography variant="overline">Save dialog: generated file (picker, blob: URL)</x-typography>
+      <div class="row">
+        <x-file-download id="picker-blob" picker filename="notes.txt">
+          Save notes.txt
+        </x-file-download>
+      </div>
+
+      <x-typography variant="overline">Save dialog: server file, name taken from href</x-typography>
+      <div class="row">
+        <x-file-download picker href="x-file-download.html">
+          Save this page
+        </x-file-download>
+      </div>
+
       <x-typography variant="overline">Live controls</x-typography>
       <div class="controls">
         <label>
@@ -107,6 +121,10 @@
         <label>
           disabled
           <x-switch id="ctrl-disabled"></x-switch>
+        </label>
+        <label>
+          picker
+          <x-switch id="ctrl-picker"></x-switch>
         </label>
       </div>
       <div class="row">
@@ -123,29 +141,37 @@
     <script>
       const liveDl = document.getElementById('live-dl');
 
+      document.getElementById('picker-blob').href = URL.createObjectURL(
+        new Blob(['Saved through the native save dialog.\n'], { type: 'text/plain' })
+      );
+
       // Live controls
       function updateLive() {
         const href     = document.getElementById('ctrl-href').value;
         const filename = document.getElementById('ctrl-filename').value;
         const disabled = document.getElementById('ctrl-disabled').checked;
+        const picker   = document.getElementById('ctrl-picker').checked;
 
         liveDl.setAttribute('href', href);
         if (filename) liveDl.setAttribute('filename', filename);
         else          liveDl.removeAttribute('filename');
         if (disabled) liveDl.setAttribute('disabled', '');
         else          liveDl.removeAttribute('disabled');
+        liveDl.picker = picker;
       }
 
-      document.querySelectorAll('.controls input, .controls x-switch, .controls x-form-field').forEach(el => {
-        el.addEventListener('change', updateLive);
-        el.addEventListener('input',  updateLive);
+      document.querySelectorAll('.controls x-switch').forEach(el => {
+        el.addEventListener('x-switch-change', updateLive);
+      });
+      document.querySelectorAll('.controls x-form-field').forEach(el => {
+        el.addEventListener('x-form-field-input', updateLive);
       });
 
       // Event logging — listen on all x-file-download elements
       const log = document.getElementById('event-log');
       let logEmpty = true;
 
-      document.addEventListener('x-file-download-click', (e) => {
+      function logEvent(e) {
         if (logEmpty) {
           log.innerHTML = '';
           logEmpty = false;
@@ -153,8 +179,13 @@
         const time   = new Date().toLocaleTimeString();
         const detail = JSON.stringify(e.detail);
         const entry  = document.createElement('div');
-        entry.textContent = `[${time}] x-file-download-click ${detail}`;
+        entry.textContent = `[${time}] ${e.type} ${detail}`;
         log.prepend(entry);
+      }
+
+      ['x-file-download-click', 'x-file-download-success',
+       'x-file-download-cancel', 'x-file-download-error'].forEach(name => {
+        document.addEventListener(name, logEvent);
       });
     </script>
   </body>

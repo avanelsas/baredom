@@ -8,7 +8,87 @@
       (is (= ""    (:href m)))
       (is (= ""    (:filename m)))
       (is (= false (:disabled? m)))
-      (is (= nil   (:aria-label m))))))
+      (is (= nil   (:aria-label m)))
+      (is (= false (:picker? m))))))
+
+(deftest normalize-picker-test
+  (testing "picker-present? true sets picker?"
+    (is (= true (:picker? (model/normalize {:picker-present? true}))))))
+
+(deftest download-value-test
+  (testing "returns filename when present"
+    (is (= "a.txt" (model/download-value {:href "data:text/plain,x" :filename "a.txt"}))))
+  (testing "returns the empty string for a data: URL without filename"
+    (is (= "" (model/download-value {:href "data:text/plain,x" :filename ""}))))
+  (testing "returns nil for any other href without filename"
+    (is (nil? (model/download-value {:href "/file.pdf" :filename ""})))
+    (is (nil? (model/download-value {})))))
+
+(deftest suggested-name-test
+  (testing "returns filename when present"
+    (is (= "report.pdf" (model/suggested-name {:href "/x/other.pdf" :filename "report.pdf"}))))
+  (testing "returns the last path segment of href without filename"
+    (is (= "q1.pdf" (model/suggested-name {:href "/reports/q1.pdf" :filename ""})))
+    (is (= "q1.pdf" (model/suggested-name {:href "https://example.com/reports/q1.pdf?v=2#top"})))
+    (is (= "q1.pdf" (model/suggested-name {:href "//cdn.example.com/q1.pdf"})))
+    (is (= "my file.zip" (model/suggested-name {:href "/files/my%20file.zip"}))))
+  (testing "keeps a segment that does not percent-decode"
+    (is (= "bad%E0.zip" (model/suggested-name {:href "/files/bad%E0.zip"}))))
+  (testing "returns nil when href names no file"
+    (is (nil? (model/suggested-name {:href "https://example.com"})))
+    (is (nil? (model/suggested-name {:href "https://example.com/"})))
+    (is (nil? (model/suggested-name {:href "https://example.com?x=1"})))
+    (is (nil? (model/suggested-name {:href ""})))
+    (is (nil? (model/suggested-name {}))))
+  (testing "returns nil for blob: and data: URLs"
+    (is (nil? (model/suggested-name {:href "blob:https://example.com/uuid"})))
+    (is (nil? (model/suggested-name {:href "data:text/plain,hello"})))))
+
+(deftest picker-options-test
+  (testing "returns suggestedName when there is a suggested name"
+    (is (= {:suggestedName "p.zip"}
+           (model/picker-options {:href "blob:x" :filename "p.zip"}))))
+  (testing "returns an empty map without a suggested name"
+    (is (= {} (model/picker-options {:href "blob:x" :filename ""})))
+    (is (= {} (model/picker-options {})))))
+
+(deftest failure-outcome-test
+  (testing "returns :cancel for AbortError from the picker"
+    (is (= :cancel (model/failure-outcome {:phase model/phase-pick :error model/error-abort}))))
+  (testing "returns :fallback for SecurityError from the picker"
+    (is (= :fallback (model/failure-outcome {:phase model/phase-pick :error model/error-security}))))
+  (testing "returns :error for every other failure"
+    (is (= :error (model/failure-outcome {:phase model/phase-pick :error "TypeError"})))
+    (is (= :error (model/failure-outcome {:phase model/phase-fetch :error model/error-abort})))
+    (is (= :error (model/failure-outcome {:phase model/phase-write :error model/error-security})))
+    (is (= :error (model/failure-outcome {})))))
+
+(deftest error-name-test
+  (testing "returns the rejection name"
+    (is (= "AbortError" (model/error-name (js/DOMException. "x" "AbortError"))))
+    (is (= "TypeError" (model/error-name (js/TypeError. "x")))))
+  (testing "returns Error when there is no name"
+    (is (= "Error" (model/error-name nil)))
+    (is (= "Error" (model/error-name #js {})))
+    (is (= "Error" (model/error-name "boom")))))
+
+(deftest http-error-test
+  (testing "formats the status"
+    (is (= "HTTP 404" (model/http-error 404)))))
+
+(deftest event-details-test
+  (testing "click detail carries href and filename"
+    (let [d (model/click-detail {:href "/p.zip" :filename "p.zip"})]
+      (is (= "/p.zip" (.-href d)))
+      (is (= "p.zip" (.-filename d)))))
+  (testing "success detail carries filename"
+    (is (= "p.zip" (.-filename (model/success-detail "p.zip")))))
+  (testing "cancel detail is empty"
+    (is (= 0 (.-length (js/Object.keys (model/cancel-detail))))))
+  (testing "error detail carries error and phase"
+    (let [d (model/error-detail "HTTP 404" model/phase-fetch)]
+      (is (= "HTTP 404" (.-error d)))
+      (is (= "fetch" (.-phase d))))))
 
 (deftest normalize-href-test
   (testing "href-raw is forwarded"

@@ -384,6 +384,12 @@
         "type" : {
           "text" : "boolean"
         }
+      }, {
+        "kind" : "field",
+        "name" : "picker",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "attributes" : [ {
         "name" : "href",
@@ -405,6 +411,12 @@
         }
       }, {
         "name" : "aria-label"
+      }, {
+        "name" : "picker",
+        "fieldName" : "picker",
+        "type" : {
+          "text" : "boolean"
+        }
       } ],
       "events" : [ {
         "name" : "x-file-download-click",
@@ -414,6 +426,28 @@
         "detail" : {
           "href" : "string",
           "filename" : "string"
+        }
+      }, {
+        "name" : "x-file-download-success",
+        "type" : {
+          "text" : "CustomEvent<{ filename: string }>"
+        },
+        "detail" : {
+          "filename" : "string"
+        }
+      }, {
+        "name" : "x-file-download-cancel",
+        "type" : {
+          "text" : "CustomEvent<{}>"
+        }
+      }, {
+        "name" : "x-file-download-error",
+        "type" : {
+          "text" : "CustomEvent<{ error: string; phase: string }>"
+        },
+        "detail" : {
+          "error" : "string",
+          "phase" : "string"
         }
       } ],
       "slots" : [ {
