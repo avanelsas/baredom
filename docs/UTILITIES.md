@@ -10,6 +10,13 @@ Before adding a new utility function, check whether it already exists here. Add 
 |----------|-----------|-------------|
 | `make-element-class` | `[opts-map]` | Create a custom element class from a declarative options map |
 | `register!` | `[tag-name class-opts]` | Register a custom element if not already defined |
+| `hold-key` | value | The symbol `Symbol.for("x-render-hold")`. Every element class offers the hold of its render under it. |
+
+**The hold of a render.** `el[hold-key](f)` calls `f` with no arguments. While `f` runs, the
+element does not receive its attribute changes. When `f` returns or throws, the element receives
+each change in order, so each one sees the final attributes. An error from the element is reported
+and not thrown. A call on an element that is already held only calls `f`. The hold ends when `f`
+returns, so work that `f` starts and does not finish is not held.
 
 ## `baredom.utils.dom` (alias `du`)
 
