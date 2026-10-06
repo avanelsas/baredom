@@ -443,3 +443,53 @@
 
 (deftest read-parts-of-a-node-with-no-parts-is-empty
   (is (= {} (mirror/read-parts (mirror/make-node! [:div [:span]])))))
+
+(def ^:private task-row
+  (unit/split :row [:li
+                    [:span {:role "checkbox" :aria-checked (comp str :done?) :aria-label :text}]
+                    [:span :text]]))
+
+(defn- write-task! [^js node task]
+  (mirror/write! (mirror/read-parts node) (unit/writes task-row task)))
+
+(deftest write-brings-the-parts-of-a-node-to-the-writes-of-an-item
+  (let [node  (mirror/make-node! (:shell task-row))
+        check (.-firstElementChild node)
+        label (.-lastElementChild node)]
+    (write-task! node {:done? true :text "Buy milk"})
+    (testing "each hole has the value of the item"
+      (is (= "true" (.getAttribute check "aria-checked")))
+      (is (= "Buy milk" (.getAttribute check "aria-label")))
+      (is (= "Buy milk" (.-textContent label))))
+    (testing "the fixed attribute stays"
+      (is (= "checkbox" (.getAttribute check "role"))))
+    (testing "the same item again writes nothing"
+      (is (= [] (records-of! node (fn [] (write-task! node {:done? true :text "Buy milk"}))))))
+    (testing "another item writes only what differs"
+      (is (= ["aria-checked"]
+             (mapv attribute-name
+                   (records-of! node (fn [] (write-task! node {:done? false :text "Buy milk"})))))))))
+
+(deftest write-applies-a-write-of-text-alone-and-of-attributes-alone
+  (let [node (mirror/make-node! [:div [:b {:data-x-part "count"}] [:i {:data-x-part "state"}]])]
+    (mirror/write! (mirror/read-parts node) {"count" {:text 3} "state" {:attrs {:hidden true}}})
+    (is (= "3" (.-textContent (.-firstElementChild node))))
+    (is (= "" (.getAttribute (.-lastElementChild node) "hidden")))))
+
+(deftest write-of-nil-text-clears-the-text-of-a-part
+  (let [node (mirror/make-node! [:b {:data-x-part "count"} "3"])]
+    (mirror/write! (mirror/read-parts node) {"count" {:text nil}})
+    (is (= "" (.-textContent node)))))
+
+(deftest write-refuses-a-part-name-that-no-node-has
+  (let [node  (mirror/make-node! [:b {:data-x-part "count"} "3"])
+        parts (mirror/read-parts node)
+        wrong (array-map "count" {:text 4} "gone" {:text "x"} "lost" {:text "y"})]
+    (testing "the error names every part that has no node"
+      (is (= ["gone" "lost"]
+             (try (mirror/write! parts wrong) (catch ExceptionInfo e (:parts (ex-data e)))))))
+    (testing "nothing is written"
+      (is (= "3" (.-textContent node))))))
+
+(deftest write-returns-nothing
+  (is (nil? (mirror/write! {} {}))))

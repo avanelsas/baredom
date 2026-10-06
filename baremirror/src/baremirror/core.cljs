@@ -1,7 +1,7 @@
 (ns baremirror.core
   "The functions that bring the document to what an application wants: the places of keyed nodes,
-   attributes and text. A key is a string, and a container is a parent with an optional `:before`
-   anchor."
+   the nodes of shells, and the attributes and text of their parts. A key is a string, and a
+   container is a parent with an optional `:before` anchor."
   (:require [baremirror.plan :as plan]
             [baremirror.unit :as unit]))
 
@@ -180,3 +180,26 @@
    A keyed node below `node` is left out with everything in it."
   [^js node]
   (into {} (keep part) (tree-seq (constantly true) unkeyed-children node)))
+
+(defn- missing-parts
+  "The part names of `writes` that have no node in `parts`."
+  [parts writes]
+  (into [] (remove parts) (keys writes)))
+
+(defn- write-part!
+  "Applies the write of one part to its node: the text, then the attributes."
+  [parts [part-name {:keys [attrs] :as write}]]
+  (let [node (parts part-name)]
+    (when (contains? write :text)
+      (set-text! node (:text write)))
+    (when attrs
+      (set-attrs! node attrs))))
+
+(defn write!
+  "Applies `writes` to `parts`. Both are maps by part name: `parts` holds the nodes, as
+   `read-parts` gives them, and `writes` holds `:text` and `:attrs`, as `unit/writes` gives them.
+   Throws before any write when a part name has no node."
+  [parts writes]
+  (when-some [missing (seq (missing-parts parts writes))]
+    (throw (ex-info "write!: no node has these part names." {:parts (vec missing)})))
+  (run! (partial write-part! parts) writes))
