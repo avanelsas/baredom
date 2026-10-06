@@ -5,6 +5,10 @@
 
 (def attr-key "data-x-key")
 
+(def hold-key
+  "The key under which an element offers the hold of its render."
+  (js/Symbol.for "x-render-hold"))
+
 (defn- keyed
   "The key of `node` and the node, when it has a key."
   [^js node]
@@ -80,3 +84,11 @@
   [containers wanted make-node]
   (let [reading (read-places containers)]
     (perform! reading (plan/plan (:places reading) wanted) make-node)))
+
+(defn with-one-render!
+  "Calls `f` with `el` while `el` holds its attribute changes, when it offers that."
+  [^js el f]
+  (if-some [hold (unchecked-get el hold-key)]
+    (.call hold el (partial f el))
+    (f el))
+  nil)

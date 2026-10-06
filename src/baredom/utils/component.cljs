@@ -1,4 +1,48 @@
-(ns baredom.utils.component)
+(ns baredom.utils.component
+  (:require [baredom.utils.dom :as du]))
+
+(def hold-key
+  "The key under which an element offers the hold of its render."
+  (js/Symbol.for "x-render-hold"))
+
+;; Untraced: bookkeeping of a hold, nil outside one.
+(def ^:private k-held-changes "__xRenderHeldChanges")
+
+(defn- held? [^js el]
+  (some? (du/getv el k-held-changes)))
+
+(defn- note-change!
+  "Adds `change` to the changes that `el` holds."
+  [^js el change]
+  (du/setv-untraced! el k-held-changes (conj (du/getv el k-held-changes) change)))
+
+(defn- deliver!
+  "Gives one held change to `attribute-changed-fn`. An error is reported and not thrown."
+  [attribute-changed-fn ^js el change]
+  (try
+    (apply attribute-changed-fn el change)
+    (catch :default e
+      (js/reportError e))))
+
+(defn- release!
+  "Ends the hold of `el` and delivers each held change, in order."
+  [attribute-changed-fn ^js el]
+  (let [changes (du/getv el k-held-changes)]
+    (du/setv-untraced! el k-held-changes nil)
+    (run! (partial deliver! attribute-changed-fn el) changes)))
+
+(defn- with-held-changes!
+  "Calls `f` while `el` holds its attribute changes, then releases them.
+   An element that is already held only calls `f`."
+  [attribute-changed-fn ^js el f]
+  (if (held? el)
+    (f)
+    (do
+      (du/setv-untraced! el k-held-changes [])
+      (try
+        (f)
+        (finally
+          (release! attribute-changed-fn el))))))
 
 (defonce ^{:doc "Dev-only extension point for dev/x-trace-history. Holds a
                  1-arg function called on each lifecycle callback (connected,
@@ -72,7 +116,14 @@
                       :attribute n
                       :old-value o
                       :new-value v})
-              (attribute-changed-fn this n o v))))
+              (if (held? this)
+                (note-change! this [n o v])
+                (attribute-changed-fn this n o v)))))
+
+    (aset proto hold-key
+          (fn [f]
+            (this-as ^js this
+              (with-held-changes! attribute-changed-fn this f))))
 
     (when form-disabled-fn
       (set! (.-formDisabledCallback proto)
