@@ -230,3 +230,21 @@
     {:key-path (into [] (keep (comp first keyed)) (reverse nodes))
      :part     part-name
      :node     node}))
+
+(defn- render-current!
+  "Renders the view of the state that `state` holds.
+   It renders again while a dispatch during the render has put another state there."
+  [state view render!]
+  (let [rendered @state]
+    (render! (view rendered))
+    (when-not (identical? rendered @state)
+      (recur state view render!))))
+
+(defn dispatcher
+  "A function of an event. It puts `(step state event)` into the state holder `state`, renders
+   the view of what `state` then holds, and returns the new state."
+  [state step view render!]
+  (fn [event]
+    (let [new-state (swap! state step event)]
+      (render-current! state view render!)
+      new-state)))

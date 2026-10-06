@@ -567,3 +567,57 @@
     (.addEventListener root "press" (partial reset! event))
     (.dispatchEvent (find-one root "i") (js/Event. "press" #js {:bubbles true}))
     (is (= {:key-path [] :part nil :node nil} (mirror/read-origin @event)))))
+
+(defn- view-of [n]
+  {:shown n})
+
+(deftest dispatcher-steps-the-state-and-renders-its-view
+  (let [state     (atom 1)
+        rendered  (atom [])
+        dispatch! (mirror/dispatcher state + view-of (partial swap! rendered conj))]
+    (testing "it returns the new state"
+      (is (= 3 (dispatch! 2))))
+    (testing "the state holder has the new state"
+      (is (= 3 @state)))
+    (testing "the view of the new state is rendered once"
+      (is (= [{:shown 3}] @rendered)))))
+
+(deftest dispatcher-renders-when-the-step-leaves-the-state-as-it-was
+  (let [rendered  (atom [])
+        dispatch! (mirror/dispatcher (atom 1) (fn [state _event] state) view-of
+                                     (partial swap! rendered conj))]
+    (dispatch! :refused)
+    (is (= [{:shown 1}] @rendered))))
+
+(defn- interrupted-screen!
+  "The state and the screen after a dispatch of 1.
+   `answers` maps a shown state to the event that its render dispatches before it finishes."
+  [answers]
+  (let [state     (atom 0)
+        screen    (atom nil)
+        dispatch! (atom nil)
+        render!   (fn [{:keys [shown] :as vm}]
+                    (when-some [event (answers shown)]
+                      (@dispatch! event))
+                    (reset! screen vm))]
+    (reset! dispatch! (mirror/dispatcher state + view-of render!))
+    (@dispatch! 1)
+    {:state @state :screen @screen}))
+
+(deftest dispatcher-ends-on-the-current-state-when-a-render-dispatches
+  (testing "one dispatch during the render"
+    (is (= {:state 11 :screen {:shown 11}}
+           (interrupted-screen! {1 10}))))
+  (testing "a dispatch during the render that follows it"
+    (is (= {:state 111 :screen {:shown 111}}
+           (interrupted-screen! {1 10 11 100})))))
+
+(deftest dispatcher-renders-no-more-when-a-dispatch-during-the-render-leaves-the-state
+  (let [renders   (atom 0)
+        dispatch! (atom nil)
+        render!   (fn [_vm]
+                    (when (= 1 (swap! renders inc))
+                      (@dispatch! 0)))]
+    (reset! dispatch! (mirror/dispatcher (atom 0) + view-of render!))
+    (@dispatch! 1)
+    (is (= 2 @renders))))
