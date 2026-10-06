@@ -1,5 +1,6 @@
 (ns baremirror.plan-test
-  (:require [baremirror.plan :as plan]
+  (:require [baremirror.generators :as generators]
+            [baremirror.plan :as plan]
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
@@ -9,48 +10,28 @@
 
 (def ^:private pool (mapv str (range 14)))
 
-(defn- put [places [k container]]
-  (update places container conj k))
+(def ^:private gen-board (generators/places containers pool 10))
 
-(defn- gen-places
-  "A generator of places: up to `limit` keys of `pool`, in any order, spread over `containers`."
-  [containers pool limit]
-  (gen/let [ks (gen/vector-distinct (gen/elements pool) {:max-elements limit})
-            cs (gen/vector (gen/elements containers) (count ks))]
-    (reduce put (zipmap containers (repeat [])) (map vector ks cs))))
+(def ^:private gen-small (generators/places [:todo :done] (subvec pool 0 6) 5))
 
-(def ^:private gen-board (gen-places containers pool 10))
+(def ^:private gen-edited
+  (generators/edited containers
+                     (generators/places containers (mapv str (range 60)) 40)
+                     4))
 
-(def ^:private gen-small (gen-places [:todo :done] (subvec pool 0 6) 5))
-
-(defn- without [k ks]
-  (filterv (partial not= k) ks))
-
-(defn- insert-before [ks before k]
-  (let [[head tail] (split-with (partial not= before) ks)]
-    (-> (vec head) (conj k) (into tail))))
-
-(defn- take-out [places k]
-  (update-vals places (partial without k)))
-
-(defn- place [places {:keys [key in before]}]
-  (update (take-out places key) in (fnil insert-before []) before key))
-
-(defn- perform
-  "The places after `plan` is performed on `current`, with the containers taken in `order`."
-  [current {removed :remove placements :place} order]
-  (reduce place
-          (reduce take-out current removed)
-          (mapcat (group-by :in placements) order)))
+(defn- in-order
+  "The `plan` with its placements grouped by container, the containers taken in `order`."
+  [order plan]
+  (assoc plan :place (vec (mapcat (group-by :in (:place plan)) order))))
 
 (defn- arrivals
   "Every places value that one placement of one of `ks` can make of `places`."
   [ks places]
   (for [k         ks
-        :let      [others (take-out places k)]
+        :let      [others (plan/perform places {:remove [k]})]
         container (keys others)
         i         (range (inc (count (get others container))))]
-    (place places {:key k :in container :before (get-in others [container i])})))
+    (plan/perform places {:place [{:key k :in container :before (get-in others [container i])}]})))
 
 (defn- next-wave
   "The places one more placement away, and everything seen so far."
@@ -67,6 +48,27 @@
          (take (inc (count ks)))
          (take-while (complement (partial some #{wanted})))
          count)))
+
+(defn- extend-lengths
+  "The `lengths` with the rank `r` and the length of the longest rising run that ends at it."
+  [lengths r]
+  (conj lengths [r (inc (transduce (comp (filter (comp (partial > r) first)) (map second))
+                                   max 0 lengths))]))
+
+(defn- longest-rising-length
+  "The length of a longest rising run in `ranks`, found by comparing every pair."
+  [ranks]
+  (transduce (map second) max 0 (reduce extend-lengths [] ranks)))
+
+(defn- fewest-in-container
+  "The fewest placements one container needs, by the plain method with no shortcut."
+  [current wanted container]
+  (let [rank (zipmap (get current container) (range))
+        ks   (get wanted container)]
+    (- (count ks) (longest-rising-length (keep rank ks)))))
+
+(defn- fewest-by-counting [current wanted]
+  (transduce (map (partial fewest-in-container current wanted)) + (keys wanted)))
 
 (defn- all-keys [places]
   (into #{} cat (vals places)))
@@ -87,6 +89,15 @@
   (testing "a container that only one side names is planned"
     (is (= {:remove ["a"] :place [{:key "b" :in :done :before nil}]}
            (plan/plan {:todo ["a"]} {:done ["b"]}))))
+  (testing "two keys swapped in the middle of a list are one placement"
+    (let [current {:todo ["a" "b" "c" "d" "e"]}
+          wanted  {:todo ["a" "c" "b" "d" "e"]}
+          p       (plan/plan current wanted)]
+      (is (= 1 (count (:place p))))
+      (is (= wanted (plan/perform current p)))))
+  (testing "a key added between keys that stay is the one placement"
+    (is (= {:remove [] :place [{:key "x" :in :todo :before "b"}]}
+           (plan/plan {:todo ["a" "b"]} {:todo ["a" "x" "b"]}))))
   (testing "the plan of no places is empty"
     (is (= {:remove [] :place []} (plan/plan {} {})))))
 
@@ -100,7 +111,7 @@
   (prop/for-all [current gen-board
                  wanted  gen-board
                  order   (gen/shuffle containers)]
-    (= wanted (perform current (plan/plan current wanted) order))))
+    (= wanted (plan/perform current (in-order order (plan/plan current wanted))))))
 
 (defspec plan-removes-exactly-the-keys-wanted-nowhere 1000
   (prop/for-all [current gen-board
@@ -124,5 +135,22 @@
   (prop/for-all [current gen-small
                  wanted  gen-small]
     (let [{removed :remove placements :place} (plan/plan current wanted)]
-      (= (fewest-placements (reduce take-out current removed) wanted)
+      (= (fewest-placements (plan/perform current {:remove removed}) wanted)
          (count placements)))))
+
+(deftest perform-of-small-cases
+  (testing "a released key leaves the places as a removed key does"
+    (is (= {:todo ["a"]}
+           (plan/perform {:todo ["a" "b"]} {:release ["b"]}))))
+  (testing "a placement into a container the places do not name adds it"
+    (is (= {:todo [] :done ["a"]}
+           (plan/perform {:todo ["a"]} {:place [{:key "a" :in :done :before nil}]})))))
+
+(defspec performing-the-plan-of-an-edited-copy-gives-the-copy 500
+  (prop/for-all [[current wanted] gen-edited]
+    (= wanted (plan/perform current (plan/plan current wanted)))))
+
+(defspec plan-of-an-edited-copy-uses-the-fewest-placements 500
+  (prop/for-all [[current wanted] gen-edited]
+    (= (fewest-by-counting current wanted)
+       (count (:place (plan/plan current wanted))))))
