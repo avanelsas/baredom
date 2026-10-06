@@ -1,9 +1,9 @@
 (ns baremirror.core
   "The functions that bring the document to what an application wants: the places of keyed nodes,
-   the nodes of shells, and the attributes and text of their parts. A key is a string, and a
+   the nodes of templates, and the attributes and text of their parts. A key is a string, and a
    container is a parent with an optional `:before` anchor."
   (:require [baremirror.plan :as plan]
-            [baremirror.unit :as unit]))
+            [baremirror.template :as template]))
 
 (def attr-key "data-x-key")
 
@@ -144,23 +144,23 @@
 (declare make-node!)
 
 (defn- append-child!
-  "Appends one child of a shell to `el`: a node for a shell, text for anything else."
+  "Appends one child of a template to `el`: a node for a template, text for anything else."
   [^js el child]
   (.append el (if (vector? child) (make-node! child) (str child))))
 
 (defn- fixed-pieces
-  "The pieces of `shell`. Throws when its element is not fixed."
-  [shell]
-  (if (unit/fixed? shell)
-    (unit/pieces shell)
-    (throw (ex-info "make-node!: the shell is not fixed. split takes holes and :on out of a shell."
-                    {:tag (first shell)}))))
+  "The pieces of the template `fixed`. Throws when its element is not fixed."
+  [fixed]
+  (if (template/fixed? fixed)
+    (template/pieces fixed)
+    (throw (ex-info "make-node!: the template is not fixed. split takes holes and :on out of it."
+                    {:tag (first fixed)}))))
 
 (defn make-node!
-  "Makes one detached HTML element from `shell`.
-   Throws when the shell is not fixed, as `unit/fixed?` defines it."
-  [shell]
-  (let [[tag attrs children] (fixed-pieces shell)
+  "Makes one detached HTML element from the template `fixed`.
+   Throws when the template is not fixed, as `template/fixed?` defines it."
+  [fixed]
+  (let [[tag attrs children] (fixed-pieces fixed)
         el                   (.createElement js/document (name tag))]
     (set-attrs! el attrs)
     (run! (partial append-child! el) children)
@@ -169,7 +169,7 @@
 (defn- part
   "The part name of `node` and the node, when it is a part."
   [^js node]
-  (when-some [part-name (.getAttribute node unit/attr-part)]
+  (when-some [part-name (.getAttribute node template/attr-part)]
     [part-name node]))
 
 (defn- unkeyed-children [^js node]
@@ -196,8 +196,8 @@
       (set-attrs! node attrs))))
 
 (defn write!
-  "Applies `writes` to `parts`. Both are maps by part name: `parts` holds the nodes, as
-   `read-parts` gives them, and `writes` holds `:text` and `:attrs`, as `unit/writes` gives them.
+  "Applies `writes` to `parts`, which are maps by part name: the nodes as `read-parts` gives
+   them, and `:text` and `:attrs` as `template/writes` gives them.
    Throws before any write when a part name has no node."
   [parts writes]
   (when-some [missing (seq (missing-parts parts writes))]
