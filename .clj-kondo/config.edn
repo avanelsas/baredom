@@ -1,4 +1,5 @@
-{:linters {:unresolved-symbol {:exclude [(js*)]}
+{:lint-as {clojure.test.check.clojure-test/defspec clojure.test/deftest}
+ :linters {:unresolved-symbol {:exclude [(js*)]}
            :unresolved-namespace {:exclude [goog.object]}}
  :config-in-ns {baredom.dev.hot-reload
                 {:linters {:private-call {:level :off}}}
