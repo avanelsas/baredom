@@ -212,3 +212,32 @@
     (when (.-moveBefore parent)
       (testing "it still has the focus"
         (is (identical? moved (.-activeElement js/document)))))))
+
+(defn- holding-element!
+  "An element that offers a hold. The hold adds its start, its `this` and its end to `log`."
+  [log]
+  (doto (element! "div")
+    (unchecked-set mirror/hold-key (fn [f]
+                                     (this-as this
+                                       (swap! log conj :hold this)
+                                       (f)
+                                       (swap! log conj :release))))))
+
+(deftest with-one-render-calls-the-work-inside-the-hold-of-the-element
+  (let [log (atom [])
+        el  (holding-element! log)]
+    (mirror/with-one-render! el (partial swap! log conj))
+    (testing "the hold runs on the element, and the work gets the element"
+      (is (= [:hold el el :release] @log)))))
+
+(deftest with-one-render-calls-the-work-on-an-element-with-no-hold
+  (let [log (atom [])
+        el  (element! "div")]
+    (mirror/with-one-render! el (partial swap! log conj))
+    (is (= [el] @log))))
+
+(deftest with-one-render-returns-nothing
+  (testing "on an element with no hold"
+    (is (nil? (mirror/with-one-render! (element! "div") identity))))
+  (testing "on an element whose hold returns a value"
+    (is (nil? (mirror/with-one-render! (holding-element! (atom [])) identity)))))

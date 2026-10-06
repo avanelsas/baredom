@@ -2,7 +2,8 @@
   (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [baredom.components.x-progress.model :as progress-model]
             [baredom.components.x-progress.x-progress :as x-progress]
-            [baredom.utils.component :as component]))
+            [baredom.utils.component :as component]
+            [baremirror.core :as mirror]))
 
 (def ^:private probe-tag "x-hold-probe")
 
@@ -139,3 +140,14 @@
     (testing "the held element ends with the shadow tree of writes one by one"
       (is (= (.-innerHTML (.-shadowRoot one-by-one))
              (.-innerHTML (.-shadowRoot held)))))))
+
+(deftest baremirror-holds-the-changes-of-a-baredom-element
+  (let [el     (make-probe)
+        during (atom nil)]
+    (mirror/with-one-render! el (fn [^js held]
+                                  (write-both! held)
+                                  (reset! during @calls)))
+    (testing "no change arrives while the work runs"
+      (is (= [] @during)))
+    (testing "each change arrives after the work"
+      (is (= [["a" "1" "2"] ["b" "1" "2"]] @calls)))))
