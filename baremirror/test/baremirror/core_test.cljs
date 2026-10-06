@@ -2,6 +2,7 @@
   (:require [baremirror.core :as mirror]
             [baremirror.generators :as generators]
             [baremirror.plan :as plan]
+            [baremirror.template :as template]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.properties :as prop]))
@@ -358,3 +359,137 @@
 
 (deftest set-text-returns-nothing
   (is (nil? (mirror/set-text! (element! "span") "new"))))
+
+(defn- child-tags [^js node]
+  (mapv (fn [^js child] (.-localName child)) (array-seq (.-children node))))
+
+(deftest make-node-makes-one-detached-element-from-a-template
+  (let [node (mirror/make-node! [:li {:class "row"} "Buy " [:b "milk"] [:x-button {:size "sm"}]])]
+    (testing "the element has the tag and the attributes of the template"
+      (is (= "li" (.-localName node)))
+      (is (= "row" (.getAttribute node "class"))))
+    (testing "the children are in the order of the template"
+      (is (= ["b" "x-button"] (child-tags node)))
+      (is (= "Buy milk" (.-textContent node)))
+      (is (= "sm" (.getAttribute (.-lastElementChild node) "size"))))
+    (testing "the element is in no document"
+      (is (not (.-isConnected node))))))
+
+(deftest make-node-writes-a-fixed-value-as-set-attrs-does
+  (let [node (mirror/make-node! [:x-checkbox {:checked true :disabled false :tabindex 0}])]
+    (is (= "" (.getAttribute node "checked")))
+    (is (not (.hasAttribute node "disabled")))
+    (is (= "0" (.getAttribute node "tabindex")))))
+
+(deftest make-node-writes-a-child-that-is-a-number-as-its-text
+  (is (= "3 left" (.-textContent (mirror/make-node! [:span 3 " left"])))))
+
+(deftest make-node-makes-a-new-element-on-each-call
+  (let [fixed [:li "text"]]
+    (is (not (identical? (mirror/make-node! fixed) (mirror/make-node! fixed))))))
+
+(deftest make-node-refuses-a-template-that-split-has-not-seen
+  (testing "a keyword as an attribute value"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:x-button {:variant :primary}]))))
+  (testing "a hole as a child"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:span :text]))))
+  (testing "an :on entry"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:x-button {:on {"press" :remove}}]))))
+  (testing "a sequence as a child"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:ul (map (partial vector :li) ["a" "b"])]))))
+  (testing "a hole in a template below"
+    (is (thrown? ExceptionInfo (mirror/make-node! [:li [:span :text]])))))
+
+(deftest make-node-makes-the-fixed-template-that-split-gives
+  (let [node (mirror/make-node! (:fixed (template/split :row [:li [:span :text]])))]
+    (is (= "row.0" (.getAttribute (.-firstElementChild node) "data-x-part")))))
+
+(deftest make-node-takes-a-template-of-a-tag-alone
+  (is (= "li" (.-localName (mirror/make-node! [:li])))))
+
+(defn- part-names [^js node]
+  (set (keys (mirror/read-parts node))))
+
+(deftest read-parts-finds-the-parts-below-a-node
+  (let [node  (mirror/make-node! [:div
+                                  [:header {:data-x-part "top"}
+                                   [:span {:data-x-part "title"}]]
+                                  [:ul [:li [:b {:data-x-part "deep"}]]]])
+        parts (mirror/read-parts node)]
+    (testing "a part is found at any depth"
+      (is (= #{"top" "title" "deep"} (set (keys parts)))))
+    (testing "a name maps to its node"
+      (is (identical? (.-firstElementChild node) (parts "top"))))))
+
+(deftest read-parts-includes-the-node-it-is-given
+  (is (= #{"row" "label"}
+         (part-names (mirror/make-node! [:li {:data-x-part "row"}
+                                         [:span {:data-x-part "label"}]])))))
+
+(deftest read-parts-leaves-out-a-keyed-node-below
+  (let [node (mirror/make-node! [:ul {:data-x-part "list"}
+                                 [:li {:data-x-key "1" :data-x-part "row"}
+                                  [:span {:data-x-part "label"}]]])]
+    (testing "the keyed node and its parts are not in the map of the node around it"
+      (is (= #{"list"} (part-names node))))
+    (testing "the keyed node gives its own parts when it is the node given"
+      (is (= #{"row" "label"} (part-names (.-firstElementChild node)))))))
+
+(deftest read-parts-gives-the-last-node-of-a-name-that-occurs-twice
+  (let [node (mirror/make-node! [:div
+                                 [:span {:data-x-part "label"}]
+                                 [:b {:data-x-part "label"}]])]
+    (is (identical? (.-lastElementChild node) ((mirror/read-parts node) "label")))))
+
+(deftest read-parts-of-a-node-with-no-parts-is-empty
+  (is (= {} (mirror/read-parts (mirror/make-node! [:div [:span]])))))
+
+(def ^:private task-row
+  (template/split :row [:li
+                    [:span {:role "checkbox" :aria-checked (comp str :done?) :aria-label :text}]
+                    [:span :text]]))
+
+(defn- write-task! [^js node task]
+  (mirror/write! (mirror/read-parts node) (template/writes task-row task)))
+
+(deftest write-brings-the-parts-of-a-node-to-the-writes-of-an-item
+  (let [node  (mirror/make-node! (:fixed task-row))
+        check (.-firstElementChild node)
+        label (.-lastElementChild node)]
+    (write-task! node {:done? true :text "Buy milk"})
+    (testing "each hole has the value of the item"
+      (is (= "true" (.getAttribute check "aria-checked")))
+      (is (= "Buy milk" (.getAttribute check "aria-label")))
+      (is (= "Buy milk" (.-textContent label))))
+    (testing "the fixed attribute stays"
+      (is (= "checkbox" (.getAttribute check "role"))))
+    (testing "the same item again writes nothing"
+      (is (= [] (records-of! node (fn [] (write-task! node {:done? true :text "Buy milk"}))))))
+    (testing "another item writes only what differs"
+      (is (= ["aria-checked"]
+             (mapv attribute-name
+                   (records-of! node (fn [] (write-task! node {:done? false :text "Buy milk"})))))))))
+
+(deftest write-applies-a-write-of-text-alone-and-of-attributes-alone
+  (let [node (mirror/make-node! [:div [:b {:data-x-part "count"}] [:i {:data-x-part "state"}]])]
+    (mirror/write! (mirror/read-parts node) {"count" {:text 3} "state" {:attrs {:hidden true}}})
+    (is (= "3" (.-textContent (.-firstElementChild node))))
+    (is (= "" (.getAttribute (.-lastElementChild node) "hidden")))))
+
+(deftest write-of-nil-text-clears-the-text-of-a-part
+  (let [node (mirror/make-node! [:b {:data-x-part "count"} "3"])]
+    (mirror/write! (mirror/read-parts node) {"count" {:text nil}})
+    (is (= "" (.-textContent node)))))
+
+(deftest write-refuses-a-part-name-that-no-node-has
+  (let [node  (mirror/make-node! [:b {:data-x-part "count"} "3"])
+        parts (mirror/read-parts node)
+        wrong (array-map "count" {:text 4} "gone" {:text "x"} "lost" {:text "y"})]
+    (testing "the error names every part that has no node"
+      (is (= ["gone" "lost"]
+             (try (mirror/write! parts wrong) (catch ExceptionInfo e (:parts (ex-data e)))))))
+    (testing "nothing is written"
+      (is (= "3" (.-textContent node))))))
+
+(deftest write-returns-nothing
+  (is (nil? (mirror/write! {} {}))))

@@ -1,8 +1,9 @@
 (ns baremirror.core
   "The functions that bring the document to what an application wants: the places of keyed nodes,
-   attributes and text. A key is a string, and a container is a parent with an optional `:before`
-   anchor."
-  (:require [baremirror.plan :as plan]))
+   the nodes of templates, and the attributes and text of their parts. A key is a string, and a
+   container is a parent with an optional `:before` anchor."
+  (:require [baremirror.plan :as plan]
+            [baremirror.template :as template]))
 
 (def attr-key "data-x-key")
 
@@ -139,3 +140,66 @@
         (set! (.-data node) wanted))
       (set! (.-textContent el) wanted)))
   nil)
+
+(declare make-node!)
+
+(defn- append-child!
+  "Appends one child of a template to `el`: a node for a template, text for anything else."
+  [^js el child]
+  (.append el (if (vector? child) (make-node! child) (str child))))
+
+(defn- fixed-pieces
+  "The pieces of the template `fixed`. Throws when its element is not fixed."
+  [fixed]
+  (if (template/fixed? fixed)
+    (template/pieces fixed)
+    (throw (ex-info "make-node!: the template is not fixed. split takes holes and :on out of it."
+                    {:tag (first fixed)}))))
+
+(defn make-node!
+  "Makes one detached HTML element from the template `fixed`.
+   Throws when the template is not fixed, as `template/fixed?` defines it."
+  [fixed]
+  (let [[tag attrs children] (fixed-pieces fixed)
+        el                   (.createElement js/document (name tag))]
+    (set-attrs! el attrs)
+    (run! (partial append-child! el) children)
+    el))
+
+(defn- part
+  "The part name of `node` and the node, when it is a part."
+  [^js node]
+  (when-some [part-name (.getAttribute node template/attr-part)]
+    [part-name node]))
+
+(defn- unkeyed-children [^js node]
+  (remove keyed (array-seq (.-children node))))
+
+(defn read-parts
+  "The parts of `node` by name: `node` itself and the parts below it.
+   A keyed node below `node` is left out with everything in it."
+  [^js node]
+  (into {} (keep part) (tree-seq (constantly true) unkeyed-children node)))
+
+(defn- missing-parts
+  "The part names of `writes` that have no node in `parts`."
+  [parts writes]
+  (into [] (remove parts) (keys writes)))
+
+(defn- write-part!
+  "Applies the write of one part to its node: the text, then the attributes."
+  [parts [part-name {:keys [attrs] :as write}]]
+  (let [node (parts part-name)]
+    (when (contains? write :text)
+      (set-text! node (:text write)))
+    (when attrs
+      (set-attrs! node attrs))))
+
+(defn write!
+  "Applies `writes` to `parts`, which are maps by part name: the nodes as `read-parts` gives
+   them, and `:text` and `:attrs` as `template/writes` gives them.
+   Throws before any write when a part name has no node."
+  [parts writes]
+  (when-some [missing (seq (missing-parts parts writes))]
+    (throw (ex-info "write!: no node has these part names." {:parts (vec missing)})))
+  (run! (partial write-part! parts) writes))
